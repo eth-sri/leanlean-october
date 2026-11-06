@@ -12,23 +12,17 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 open scoped ComplexConjugate
 
@@ -72,7 +66,6 @@ theorem norm_sum_smul_sq_le_gram {ι E : Type*} [NormedAddCommGroup E] [InnerPro
       apply Finset.sum_congr rfl
       intro j _
       change (c j * (conj (c i) * inner ℂ (v i) (v j))).re = _
-      congr 1
       ring
     _ ≤ ∑ i∈s,∑ j∈s,‖c i‖*‖c j‖*‖inner ℂ (v i) (v j)‖ := by
       apply Finset.sum_le_sum
@@ -82,7 +75,7 @@ theorem norm_sum_smul_sq_le_gram {ι E : Type*} [NormedAddCommGroup E] [InnerPro
       simpa only [norm_mul,Complex.norm_conj,mul_assoc] using
         Complex.re_le_norm (conj (c i)*(c j*inner ℂ (v i) (v j)))
     _ ≤ _ := symmetric_kernel_quadratic_le s (fun i => ‖c i‖)
-      (fun i j => ‖inner ℂ (v i) (v j)‖) (fun _ _ _ _ => norm_nonneg _)
+      (fun i j => ‖inner ℂ (v i) (v j)‖) (by simp)
       (fun i _ j _ => by rw [←inner_conj_symm,Complex.norm_conj])
 
 theorem gram_large_sieve {ι E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
@@ -113,13 +106,9 @@ theorem gram_large_sieve {ι E : Type*} [NormedAddCommGroup E] [InnerProductSpac
   have hprod := mul_le_mul_of_nonneg_left hy (sq_nonneg ‖x‖)
   change A≤B*‖x‖^2
   by_cases hA0 : A=0
-  · rw [hA0]
-    exact mul_nonneg hB (sq_nonneg _)
+  · nlinarith
   · apply le_of_mul_le_mul_right (a := A) ?_ (lt_of_le_of_ne hA (Ne.symm hA0))
-    calc
-      A*A = A^2 := by ring
-      _ ≤ _ := hn2.trans hprod
-      _ = (B*‖x‖^2)*A := by ring
+    linarith
 
 noncomputable def bvExp (x : ℝ) : ℂ := Complex.exp (Complex.I*(2*Real.pi*x:ℝ))
 
@@ -139,8 +128,7 @@ theorem conj_bvExp (x : ℝ) : conj (bvExp x)=bvExp (-x) := by
   rw [←Complex.exp_conj]
   congr 1
   simp only [map_mul, Complex.conj_I, Complex.conj_ofReal]
-  push_cast
-  ring
+  simp
 
 theorem bvExp_nat_mul (n : ℕ) (x : ℝ) : bvExp ((n:ℝ)*x)=bvExp x^n := by
   unfold bvExp
@@ -157,7 +145,7 @@ theorem bvExp_sub_one_lower {x : ℝ} (hx : |x|≤1/2) :
     nlinarith [Real.pi_pos]
   have h := Real.mul_abs_le_abs_sin hs
   rw [abs_mul,abs_of_pos Real.pi_pos] at h
-  have hpi : Real.pi≠0 := ne_of_gt Real.pi_pos
+  have hpi := ne_of_gt Real.pi_pos
   have he : 2/Real.pi*(Real.pi*|x|)=2*|x| := by field_simp
   rw [he] at h
   have hid : 2*Real.pi*x/2=Real.pi*x := by ring
@@ -168,18 +156,18 @@ theorem exponential_sum_bound (N : ℕ) {x : ℝ} (hx : |x|≤1/2) (hx0 : x≠0)
     ‖∑ n∈Finset.range N,bvExp ((n:ℝ)*x)‖≤1/(2*|x|) := by
   have ha : 0 < |x| := abs_pos.mpr hx0
   have hden := bvExp_sub_one_lower hx
-  have hn : 0<‖bvExp x-1‖ := lt_of_lt_of_le (by positivity : 0<4*|x|) hden
+  have hn : 0<‖bvExp x-1‖ := by linarith
   have he := geom_sum_mul (bvExp x) N
   have hnorm := congrArg norm he
   rw [norm_mul] at hnorm
   have hu : ‖bvExp x^N-1‖≤2 := by
     calc
       _ ≤ ‖bvExp x^N‖+‖(1:ℂ)‖ := norm_sub_le _ _
-      _ = 2 := by simp [norm_pow]; norm_num
-  have htimes : ‖∑ n∈Finset.range N,bvExp x^n‖*(4*|x|)≤2 := by
-    exact (mul_le_mul_of_nonneg_left hden (norm_nonneg _)).trans (hnorm.trans_le hu)
+      _ = 2 := by simp; norm_num
+  have htimes : ‖∑ n∈Finset.range N,bvExp x^n‖*(4*|x|)≤2 :=
+    (mul_le_mul_of_nonneg_left hden (norm_nonneg _)).trans (hnorm.trans_le hu)
   simp_rw [bvExp_nat_mul]
-  apply (le_div_iff₀ (by positivity : (0:ℝ)<2*|x|)).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   nlinarith
 
 theorem reciprocal_sum_le_harmonic {ι : Type*} (s : Finset ι) (t : ι→ℝ) (D : ℕ)
@@ -190,7 +178,7 @@ theorem reciprocal_sum_le_harmonic {ι : Type*} (s : Finset ι) (t : ι→ℝ) (
   let r : ι→ℕ := fun i => ⌊t i⌋₊
   have hr : ∀ i∈s,r i∈Finset.Icc 1 D := by
     intro i hi
-    exact Finset.mem_Icc.mpr ⟨Nat.le_floor (by simpa using (ht i hi).1),
+    exact Finset.mem_Icc.mpr ⟨Nat.le_floor (by simp_all),
       Nat.floor_le_of_le (ht i hi).2⟩
   have hinj : Set.InjOn r s := by
     intro i hi j hj he
@@ -223,33 +211,27 @@ theorem reciprocal_sum_le_scaled_harmonic {ι : Type*} (s : Finset ι) (t : ι�
   have hDr : 0<(D:ℝ) := by exact_mod_cast hD
   have hh := reciprocal_sum_le_harmonic s (fun i => (D:ℝ)*t i) D
     (fun i hi => ⟨by have h := mul_le_mul_of_nonneg_left (ht i hi).1 hDr.le
-                     field_simp at h
-                     nlinarith,
-      by nlinarith [(ht i hi).2]⟩)
+                     grind,
+      by simp_all⟩)
     (fun i hi j hj hij => by
       rw [←mul_sub,abs_mul,abs_of_pos hDr]
       have h := (div_le_iff₀ hDr).mp (hsep i hi j hj hij)
       nlinarith)
   have hm := mul_le_mul_of_nonneg_left hh hDr.le
   rw [Finset.mul_sum] at hm
-  calc
-    _ = ∑ i∈s,(D:ℝ)*(1/((D:ℝ)*t i)) := by
-      apply Finset.sum_congr rfl
-      intro i _
-      field_simp
-    _ ≤ _ := hm
+  grind
 
 @[simp] theorem bvExp_int (m : ℤ) : bvExp m=1 := by
   unfold bvExp
   have he : Complex.I * ((2*Real.pi*(m:ℝ):ℝ):ℂ)=(m:ℂ)*(2*Real.pi*Complex.I) := by
     push_cast
     ring
-  rw [he,Complex.exp_int_mul,Complex.exp_two_pi_mul_I,one_zpow]
+  simp_all
 
 theorem bvExp_sub_int (x : ℝ) (m : ℤ) : bvExp (x-m)=bvExp x := by
   rw [sub_eq_add_neg,bvExp_add]
   have h : bvExp (-(m:ℝ))=1 := by simpa using bvExp_int (-m)
-  rw [h,mul_one]
+  simp_all
 
 noncomputable def bvCentered (x : ℝ) : ℝ := x-(⌊x+1/2⌋:ℤ)
 
@@ -257,7 +239,7 @@ theorem abs_bvCentered_le (x : ℝ) : |bvCentered x|≤1/2 := by
   have hl := Int.floor_le (x+1/2)
   have hu := Int.lt_floor_add_one (x+1/2)
   dsimp [bvCentered]
-  exact abs_le.mpr ⟨by linarith,by linarith⟩
+  grind
 
 theorem bvExp_centered (x : ℝ) : bvExp (bvCentered x)=bvExp x := bvExp_sub_int _ _
 
@@ -272,9 +254,7 @@ theorem centered_difference_separated {ι : Type*} (s : Finset ι) (θ : ι→�
     1/(D:ℝ)≤|bvCentered (θ i-a)-bvCentered (θ j-a)| := by
   have h := hsep i hi j hj hij (⌊θ i-a+1/2⌋-⌊θ j-a+1/2⌋)
   dsimp [bvCentered]
-  convert h using 2
-  push_cast
-  ring
+  grind
 
 theorem exponential_kernel_row_bound {ι : Type*} (s : Finset ι) (θ : ι→ℝ)
     {D : ℕ} (hD : 0<D)
@@ -310,8 +290,8 @@ theorem exponential_kernel_row_bound {ι : Type*} (s : Finset ι) (θ : ι→ℝ
       have hjb := (Finset.mem_filter.mp hj).2
       have hkb := (Finset.mem_filter.mp hk).2
       cases b <;> simp only [decide_eq_false_iff_not,decide_eq_true_eq,not_le] at hjb hkb
-      · simpa only [abs_of_neg hjb,abs_of_neg hkb,neg_sub_neg,abs_sub_comm] using h
-      · simpa only [abs_of_nonneg hjb,abs_of_nonneg hkb] using h
+      · grind
+      grind
   have hrec : (∑ j∈t,1/|r j|)≤2*(D:ℝ)*(harmonic D:ℝ) := by
     have hp := hhalf true
     have hm := hhalf false
@@ -328,13 +308,10 @@ theorem exponential_kernel_row_bound {ι : Type*} (s : Finset ι) (θ : ι→ℝ
         exact exponential_sum_bound N (abs_bvCentered_le _) (hn j hj)
       _ = (∑ j∈t,1/|r j|)/2 := by
         rw [Finset.sum_div]
-        apply Finset.sum_congr rfl
-        intro j _
         ring
       _ ≤ _ := by linarith
   rw [←Finset.sum_erase_add _ _ hi]
   have hd : ‖∑ n∈Finset.range N,bvExp ((n:ℝ)*(θ i-θ i))‖=(N:ℝ) := by simp
-  rw [hd]
   linarith
 
 noncomputable def bvExponentialVector (N : ℕ) (θ : ℝ) : EuclideanSpace ℂ (Fin N) :=
@@ -359,8 +336,7 @@ theorem inner_bvExponentialVector_coefficients (N : ℕ) (θ : ℝ) (a : Fin N�
   apply Finset.sum_congr rfl
   intro n _
   rw [conj_bvExp]
-  congr 2
-  ring
+  simp
 
 theorem additive_large_sieve {ι : Type*} (s : Finset ι) (θ : ι→ℝ)
     {D : ℕ} (hD : 0<D)
@@ -370,7 +346,7 @@ theorem additive_large_sieve {ι : Type*} (s : Finset ι) (θ : ι→ℝ)
       ((N:ℝ)+(D:ℝ)*(harmonic D:ℝ))*(∑ n:Fin N,‖a n‖^2) := by
   have hH : 0≤(harmonic D:ℝ) := by
     rw [harmonic_eq_sum_Icc,Rat.cast_sum]
-    exact Finset.sum_nonneg (fun _ _ => by simp only [Rat.cast_inv,Rat.cast_natCast]; positivity)
+    exact Finset.sum_nonneg (fun _ _ => by simp)
   have hB : 0≤(N:ℝ)+(D:ℝ)*(harmonic D:ℝ) := by positivity
   have hr : ∀ i∈s,(∑ j∈s,‖inner ℂ (bvExponentialVector N (θ i))
       (bvExponentialVector N (θ j))‖)≤(N:ℝ)+(D:ℝ)*(harmonic D:ℝ) := by
@@ -379,11 +355,7 @@ theorem additive_large_sieve {ι : Type*} (s : Finset ι) (θ : ι→ℝ)
     have hh := exponential_kernel_row_bound s (fun i => -θ i) hD
       (fun j hj k hk hjk m => by
         have h := hsep j hj k hk hjk (-m)
-        have he : -θ j- -θ k-(m:ℝ)=-(θ j-θ k-(-m:ℤ)) := by
-          push_cast
-          ring
-        rw [he,abs_neg]
-        exact h) N hi
+        grind) N hi
     convert hh using 1
     apply Finset.sum_congr rfl
     intro j _
@@ -396,10 +368,10 @@ theorem additive_large_sieve {ι : Type*} (s : Finset ι) (θ : ι→ℝ)
   simpa only [inner_bvExponentialVector_coefficients,EuclideanSpace.norm_sq_eq,WithLp.ofLp_toLp] using h
 
 theorem rat_abs_lower (r : ℚ) (hr : r≠0) : 1/(r.den:ℝ)≤|(r:ℝ)| := by
-  have hn : r.num≠0 := fun h => hr (Rat.zero_of_num_zero h)
+  have hn : r.num≠0 := by positivity
   have ha : (1:ℝ)≤|(r.num:ℝ)| := by
     exact_mod_cast Int.one_le_abs hn
-  rw [Rat.cast_def,abs_div,abs_of_pos (by exact_mod_cast r.den_pos : (0:ℝ)<r.den)]
+  rw [Rat.cast_def,abs_div,abs_of_pos (by positivity : (0:ℝ)<r.den)]
   exact div_le_div_of_nonneg_right ha (Nat.cast_nonneg _)
 
 theorem rational_frequency_separation {r t : ℚ} {Q : ℕ}
@@ -409,34 +381,34 @@ theorem rational_frequency_separation {r t : ℚ} {Q : ℕ}
   have hu0 : r-t-(m:ℚ)≠0 := by
     intro he
     have hm0 : m=0 := by
-      have hlo : (-1:ℚ)<(m:ℚ) := by linarith [hr.1,ht.2]
-      have hup : (m:ℚ)<1 := by linarith [ht.1,hr.2]
+      have hlo : (-1:ℚ)<(m:ℚ) := by linarith
+      have hup : (m:ℚ)<1 := by linarith
       have h1 : (-1:ℤ) < m := by exact_mod_cast hlo
       have h2 : m<1 := by exact_mod_cast hup
       omega
-    simp only [hm0,Int.cast_zero,sub_zero,sub_eq_zero] at he
+    simp only [hm0, Int.cast_zero, sub_eq_zero] at he
     exact hrt he
   have hd : (r-t-(m:ℚ)).den≤Q^2 := by
     rw [Rat.sub_intCast_den]
     calc
-      _ ≤ r.den*t.den := Nat.le_of_dvd (Nat.mul_pos r.den_pos t.den_pos) (Rat.sub_den_dvd _ _)
+      _ ≤ r.den*t.den := Nat.le_of_dvd (by positivity) (Rat.sub_den_dvd _ _)
       _ ≤ Q*Q := Nat.mul_le_mul hrQ htQ
       _ = _ := by ring
   have hl := rat_abs_lower (r-t-(m:ℚ)) hu0
   push_cast at hl
   exact (one_div_le_one_div_of_le
-    (by exact_mod_cast (r-t-(m:ℚ)).den_pos : (0:ℝ)<(r-t-(m:ℚ)).den)
+    (by positivity : (0:ℝ)<(r-t-(m:ℚ)).den)
     (by exact_mod_cast hd)).trans hl
 
 theorem rational_additive_large_sieve (s : Finset ℚ) {Q : ℕ} (hQ : 0<Q)
     (hs : ∀ r∈s,0≤r ∧ r<1 ∧ r.den≤Q) (N : ℕ) (a : Fin N→ℂ) :
     (∑ r∈s,‖∑ n:Fin N,a n*bvExp (((n:ℕ):ℝ)*(r:ℝ))‖^2)≤
       ((N:ℝ)+(Q:ℝ)^2*(harmonic (Q^2):ℝ))*(∑ n:Fin N,‖a n‖^2) := by
-  have h := additive_large_sieve s (fun r => (r:ℝ)) (pow_pos hQ 2)
+  have h := additive_large_sieve s (fun r => (r:ℝ)) (by positivity)
     (fun r hr t ht hrt m => rational_frequency_separation
-      ⟨(hs r hr).1,(hs r hr).2.1⟩ ⟨(hs t ht).1,(hs t ht).2.1⟩ hrt
-      (hs r hr).2.2 (hs t ht).2.2 m) N a
-  simpa only [Nat.cast_pow] using h
+      (by grind) (by grind) hrt
+      (by grind) (by grind) m) N a
+  simp_all
 
 end LargePrimeGaps
 

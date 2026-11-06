@@ -7,16 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyPhysicalEntry
-open HeckeFamily CenteredMomentEnergyOriginalSource CenteredMomentEnergyState
-open CenteredMomentFiniteProfileExceptional CenteredMomentCommonRadialData
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentSecondHeightFamily CenteredMomentExceptionalAmplitudePair
-open CenteredMomentInductionEnergy
+open CenteredMomentEnergyState
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance physicalEntryDecidableSum : DecidableEq (ι⊕Fin 2) := Classical.decEq _

@@ -81,7 +81,7 @@ theorem band_rescale {x x' : ℝ} (hL : 0 < Real.log x) (hL' : 0 < Real.log x')
     congr 1
     field_simp
   unfold band
-  rw [h]
+  simp_all
 
 /-- `0 ≤ a_j^0 ≤ 1` once `∏_{p ≤ Y} (1 - 1/p) · γ L ≥ 1`. -/
 theorem unstrippedProxy_le_one {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ)
@@ -96,11 +96,9 @@ theorem unstrippedProxy_le_one {x γ : ℝ} (hx : 1 < x) (hL : 1 ≤ Real.log x)
   have hg : (if x ^ γ < n then dampedWeight x j n else 0) ≤ 1 := by
     split_ifs
     · exact dampedWeight_le_one x hj n
-    · exact zero_le_one
+    · simp
   rw [div_le_one (by positivity)]
-  calc (if x ^ γ < n then dampedWeight x j n else 0) ≤ 1 := hg
-    _ ≤ _ := hY
-    _ ≤ dampedDensity x j * (γ * Real.log x) := mul_le_mul_of_nonneg_right hPiD hγL.le
+  nlinarith
 
 /-- The prime factors of a number where `[m prime, m > x^γ] - a_j^0(m) ≠ 0` are at least
 `exp(L^{0.28})`. -/
@@ -113,22 +111,21 @@ theorem primeFactors_ge_of_primeProxyDiff {x γ : ℝ} (hL : 1 ≤ Real.log x) {
   unfold primeProxyDiff at h
   by_cases hm : m.Prime ∧ x ^ γ < m
   · rw [Nat.Prime.primeFactors hm.1, mem_singleton] at hp
-    subst hp
-    exact hγ.trans hm.2.le
+    grind
   · simp only [hm, ↓reduceIte, zero_sub, neg_ne_zero] at h
     unfold unstrippedProxy at h
     split_ifs at h with hxm
-    · have hg : dampedWeight x j m ≠ 0 := fun h0 => h (by rw [h0, zero_div])
+    · have hg : dampedWeight x j m ≠ 0 := fun h0 => h (by simp_all)
       by_cases hpP : p ∈ candidatePrimes x
       · exact (mem_candidatePrimes hL hpP).2.1
       · unfold dampedWeight at hg
         split_ifs at hg with hrough
         · have hpm : p ∈ (candidateStrip x m).primeFactors := by
             rw [candidateStrip, primeFactors_stripPrimes, mem_filter]
-            exact ⟨hp, hpP⟩
-          exact hY.trans (hrough p hpm).le
-        · exact absurd rfl hg
-    · exact absurd rfl h
+            exact by grind
+          grind
+        simp_all
+    simp_all
 
 /-- `r^e ≤ 2^{|e|}` for `1/2 ≤ r ≤ 2`. -/
 theorem rpow_le_two_rpow_abs {r : ℝ} (h1 : 1 / 2 ≤ r) (h2 : r ≤ 2) (e : ℝ) :
@@ -150,7 +147,7 @@ theorem rpow_le_of_near {a b : ℝ} (hb : 0 < b) (h1 : b / 2 ≤ a) (h2 : a ≤ 
   have hr2 : a / b ≤ 2 := by rw [div_le_iff₀ hb]; linarith
   have := rpow_le_two_rpow_abs hr1 hr2 e
   rw [Real.div_rpow ha.le hb.le, div_le_iff₀ (by positivity)] at this
-  exact this
+  omega
 
 /-! ### The scale `x' = λμ` -/
 
@@ -163,9 +160,7 @@ theorem log_scale_bounds (hx : 0 < x) (hκ : 1 < κ) (h1 : x / κ ≤ x') (h2 : 
     (hLκ : 2 * Real.log κ ≤ Real.log x) :
     Real.log x / 2 ≤ Real.log x' ∧ Real.log x' ≤ 2 * Real.log x := by
   have h := abs_log_sub_le hx hκ h1 h2
-  rw [abs_le] at h
-  have := Real.log_nonneg hκ.le
-  constructor <;> linarith
+  grind
 
 /-- The rescaling ratio `T / log log x'` lies in `[0.96, 1.02]` when `T ≥ 50`. -/
 theorem ratio_bounds (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x')
@@ -182,7 +177,7 @@ theorem ratio_bounds (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x'
     rw [Real.log_mul (by norm_num) hL.ne'] at this
     unfold logLog; linarith
   have hlog2 : Real.log 2 < 7 / 10 := by have := Real.log_two_lt_d9; linarith
-  have hlog2' : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2' : 0 < Real.log 2 := by positivity
   have hTp0 : 0 < Real.log (Real.log x') := by linarith
   refine ⟨hTp0, ?_, ?_⟩
   · rw [le_div_iff₀ hTp0]; linarith
@@ -193,8 +188,8 @@ theorem rescale_window {ρ a : ℝ} (hρ1 : 96 / 100 ≤ ρ) (hρ2 : ρ ≤ 102 
     (ha1 : 11 / 100 ≤ a) (ha2 : a ≤ 19 / 100) :
     21 / 200 ≤ a * ρ ∧ a * ρ ≤ 39 / 200 := by
   constructor
-  · have := mul_le_mul ha1 hρ1 (by norm_num) (by linarith); linarith
-  · have := mul_le_mul ha2 hρ2 (by linarith) (by norm_num); linarith
+  · nlinarith
+  nlinarith
 
 /-- The gap `0.04 / K` rescales to at least `0.02 / K`. -/
 theorem rescale_gap {ρ a a' K : ℝ} (hK : 0 < K) (hρ1 : 96 / 100 ≤ ρ)
@@ -202,9 +197,7 @@ theorem rescale_gap {ρ a a' K : ℝ} (hK : 0 < K) (hρ1 : 96 / 100 ≤ ρ)
   have h4 : 2 / 100 / K ≤ ρ * (4 / 100 / K) := by
     rw [mul_div_assoc']
     exact div_le_div_of_nonneg_right (by linarith) hK.le
-  have h5 := mul_le_mul_of_nonneg_right h (show 0 ≤ ρ by linarith)
-  rw [add_mul] at h5
-  linarith
+  nlinarith
 
 /-- `(log x')^{-1/100} ≤ γ/2`. -/
 theorem log_rpow_le_half (hL : 0 < Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x')
@@ -256,12 +249,7 @@ theorem roughLevel_lt (hL : 0 < Real.log x) (hp2 : Real.log x' ≤ 2 * Real.log 
           Real.rpow_lt_rpow_of_exponent_lt (by norm_num) (by norm_num)
       _ = 2 := Real.rpow_one 2
   have h4 : 0 < Real.log x ^ (0.24 : ℝ) := by positivity
-  have h5 : Real.log x ^ (0.24 : ℝ) = Real.log x ^ (24 / 100 : ℝ) := by norm_num
-  calc Real.log x' ^ (0.24 : ℝ) ≤ (2 * Real.log x) ^ (0.24 : ℝ) := h1
-    _ = 2 ^ (0.24 : ℝ) * Real.log x ^ (0.24 : ℝ) := h2
-    _ < 2 * Real.log x ^ (0.24 : ℝ) := mul_lt_mul_of_pos_right h3 h4
-    _ = 2 * Real.log x ^ (24 / 100 : ℝ) := by rw [h5]
-    _ ≤ Real.log x ^ (28 / 100 : ℝ) := by linarith
+  nlinarith
 
 /-- `exp(L^{0.28}) ≤ x^γ` when `γ ≥ T^{-21}` and `T^{21} ≤ L^{0.72}`. -/
 theorem exp_le_rpow_gamma (hx : 0 < x) (hL : 0 < Real.log x) (hT : 0 < logLog x)
@@ -368,8 +356,8 @@ theorem box_P4 {c Ch Cj A A₀ B κp κ : ℝ} {x x' lam lo hi : ℝ} {j : ℕ}
     have hBpos : 0 ≤ Real.log x' ^ B := by positivity
     calc |t| ≤ 2 * x' * Real.log x' ^ B := ht
       _ ≤ 2 * (κ * x) * (2 * Real.log x) ^ |B| :=
-          mul_le_mul (mul_le_mul_of_nonneg_left hx2 (by norm_num)) hB' hBpos (by positivity)
-      _ = x * (2 * κ * 2 ^ |B| * Real.log x ^ |B|) := by rw [h2L]; ring
+          mul_le_mul (by linarith) hB' hBpos (by positivity)
+      _ = x * (2 * κ * 2 ^ |B| * Real.log x ^ |B|) := by grind
       _ ≤ x * x := mul_le_mul_of_nonneg_left hBx hx0.le
       _ ≤ x ^ (3 : ℝ) := hx3
   have hbound := hκpx j hj1 hj2 lam lo hi hH hlamx hlo hhi k hk1 hk' χ t ht'
@@ -386,16 +374,16 @@ theorem box_P4 {c Ch Cj A A₀ B κp κ : ℝ} {x x' lam lo hi : ℝ} {j : ℕ}
 theorem log_cube_le {x x' : ℝ} (hL16 : 16 ≤ Real.log x) (hp1 : Real.log x / 2 ≤ Real.log x') :
     Real.log x ^ (3 : ℝ) ≤ Real.log x' ^ (4 : ℝ) := by
   have e3 : Real.log x ^ (3 : ℝ) = Real.log x ^ (3 : ℕ) := by
-    exact_mod_cast Real.rpow_natCast (Real.log x) 3
+    exact_mod_cast (by simp)
   have e4 : Real.log x' ^ (4 : ℝ) = Real.log x' ^ (4 : ℕ) := by
-    exact_mod_cast Real.rpow_natCast (Real.log x') 4
+    exact_mod_cast (by simp)
   rw [e3, e4]
   have hL0 : 0 ≤ Real.log x := by linarith
   have h16 : Real.log x ^ 3 * 16 ≤ Real.log x ^ 3 * Real.log x :=
     mul_le_mul_of_nonneg_left hL16 (by positivity)
   have hL4 : (Real.log x / 2) ^ 4 = Real.log x ^ 3 * Real.log x / 16 := by ring
   calc Real.log x ^ 3 ≤ (Real.log x / 2) ^ 4 := by
-        rw [hL4, le_div_iff₀ (by norm_num)]; linarith only [h16]
+        linarith
     _ ≤ Real.log x' ^ 4 := pow_le_pow_left₀ (by positivity) hp1 4
 
 /-- Restricting a sum over `[⌈λ⌉, ⌊2λ⌋]` to `(lo, hi]`. -/
@@ -408,8 +396,8 @@ theorem sum_Icc_ite_Ioc {lam lo hi : ℝ} (hlo : lam ≤ lo) (hhi : hi ≤ 2 * l
     obtain ⟨h1, h2⟩ := mem_Ioc.1 hm
     have : lo < m := (Nat.floor_lt (by linarith)).1 h1
     exact mem_Icc.2 ⟨Nat.ceil_le.2 (by linarith), h2.trans (Nat.floor_le_floor (by linarith))⟩
-  rw [← sum_subset hsub fun m _ hm => by simp only [hm, ↓reduceIte, zero_mul]]
-  exact sum_congr rfl fun m hm => by simp only [hm, ↓reduceIte]
+  rw [← sum_subset hsub fun m _ hm => by simp_all]
+  simp_all
 
 /-- The conclusion of `typeII_box` at one `x`. -/
 def BoxBound (q : ℝ) (K : ℕ) (c Ch Cj κ C₂ x : ℝ) : Prop :=
@@ -473,7 +461,7 @@ theorem typeII_box (h₁ : OneSidedTypeII) {q : ℝ} (hq : 0 < q) (hq₁ : q < 1
   have hL0 : 0 < Real.log x := by linarith
   have hT0 : 0 < logLog x := by linarith
   have hγ0 : 0 < presieveExponent c Ch x := lt_of_lt_of_le (by positivity) hγlow
-  have hxγ1 : 1 ≤ x ^ presieveExponent c Ch x := Real.one_le_rpow hx1'.le hγ0.le
+  have hxγ1 := Real.one_le_rpow hx1'.le hγ0.le
   have hlam0 : 0 < lam := lt_of_lt_of_le (by linarith) hlam
   have hmu0 : 0 < mu := lt_of_lt_of_le (by linarith) hmu
   have hx'0 : 0 < lam * mu := by positivity
@@ -576,13 +564,13 @@ theorem typeII_box (h₁ : OneSidedTypeII) {q : ℝ} (hq : 0 < q) (hq₁ : q < 1
   have hHm := hx'γ.trans hlam
   have hHn := hx'γ.trans hmu
   have hker := hX₂ (lam * mu) ((le_max_right _ _).trans hx'X) (presieveExponent c Ch x / 2)
-    lam mu hγ' hHm hHn (by rw [one_mul])
+    lam mu hγ' hHm hHn (by simp)
   have hFinv' : ∀ i h, ∀ p ∈ band (lam * mu) (a' i), F (p * h) = F h := by
     intro i h p hp; rw [hband i] at hp; exact hFinv i h p hp
   have key := hX₁ (lam * mu) ((le_max_left _ _).trans hx'X) a' (presieveExponent c Ch x / 2)
-    lam mu F α β ha' hgap' hγ' hHm hHn (by rw [div_one]) (by rw [one_mul]) hF hFinv' hα hP4
+    lam mu F α β ha' hgap' hγ' hHm hHn (by simp) (by simp) hF hFinv' hα hP4
     hβ' hker
-  have hW : (fun i => band (lam * mu) (a' i)) = fun i => band x (a i) := funext hband
+  have hW := funext hband
   rw [hW] at key
   have hconv : ∑ m ∈ Icc ⌈lam⌉₊ ⌊2 * lam⌋₊, ∑ n ∈ Icc ⌈mu⌉₊ ⌊2 * mu⌋₊,
       α m * β n * F (m * n - 1) *

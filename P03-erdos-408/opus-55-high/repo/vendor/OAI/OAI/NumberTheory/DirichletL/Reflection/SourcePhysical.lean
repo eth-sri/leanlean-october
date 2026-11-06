@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Reflection.CanonicalInactiveEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ τ : Type*} [Fintype σ] [DecidableEq σ] [Fintype τ]
-variable {N a c : Eis} {mode : Bool}
-variable (G : PrimeFamily τ) (FF : φ→Ideal Eis) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
-    (lists : σ→Finset (Ideal Eis)) (hmax : ∀ i,∀ P∈lists i,P.IsMaximal)
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool}
+variable (G : PrimeFamily τ) (FF : φ→Ideal ActualEisensteinCubic.O) (rows : Finset (Ideal ActualEisensteinCubic.O)) (hrows : ∀ K∈rows,Admissible K)
+    (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (hmax : ∀ i,∀ P∈lists i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P) (T : Finset σ)
 
 abbrev OriginalSplitCompletion :=

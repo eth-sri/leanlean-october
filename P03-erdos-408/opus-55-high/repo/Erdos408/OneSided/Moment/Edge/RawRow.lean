@@ -105,17 +105,15 @@ theorem memAt_eq (S : Particle x d → ℕ) (y : ℕ × ℕ) :
   unfold memAt
   split_ifs with h
   · refine (Fintype.sum_eq_single (f := fun xp : Particle x d => if xp.1 = y then S xp else 0)
-      (⟨y, h⟩ : Particle x d) fun xp hne => ite_eq_right_iff.2 fun hxy =>
-        absurd (Subtype.ext hxy) hne).trans ?_
+      (⟨y, h⟩ : Particle x d) (by grind)).trans ?_
     simp
-  · exact sum_eq_zero fun xp _ => ite_eq_right_iff.2 fun hxy => absurd (hxy ▸ xp.2) h
+  · exact sum_eq_zero (by grind)
 
 /-- The real multiplicity sum of `rawWeight` is the multiplicity `memAt`. -/
 theorem sum_ite_eq_memAt (S : Particle x d → ℕ) (y : ℕ × ℕ) :
     (∑ xp : Particle x d, if xp.1 = y then (S xp : ℝ) else 0) = memAt x d S y := by
   unfold memAt
-  push_cast
-  rfl
+  simp
 
 variable (x d) in
 /-- The multiplicity `S(p, ·) = ∑_ℓ S(p, ℓ)` of the prime `p` in the memory `S`. -/
@@ -124,7 +122,7 @@ def rawMult (S : Particle x d → ℕ) (p : ℕ) : ℝ :=
 
 /-- The multiplicity of a prime is nonnegative. -/
 theorem rawMult_nonneg (S : Particle x d → ℕ) (p : ℕ) : 0 ≤ rawMult x d S p :=
-  sum_nonneg fun xp _ => by split_ifs <;> positivity
+  sum_nonneg fun xp _ => by positivity
 
 /-- The multiplicities of distinct primes sum to at most the size of the memory. -/
 theorem sum_rawMult_le (S : Particle x d → ℕ) (T : Finset ℕ) :
@@ -134,19 +132,14 @@ theorem sum_rawMult_le (S : Particle x d → ℕ) (T : Finset ℕ) :
   rw [sum_comm, Nat.cast_sum]
   refine sum_le_sum fun xp _ => ?_
   rw [sum_ite_eq]
-  split_ifs
-  exacts [le_rfl, by positivity]
+  grind
 
 /-- The multiplicity of a pair is at most the multiplicity of its prime. -/
 theorem memAt_le_rawMult (S : Particle x d → ℕ) (y : ℕ × ℕ) :
     (memAt x d S y : ℝ) ≤ rawMult x d S y.1 := by
   rw [← sum_ite_eq_memAt]
   refine sum_le_sum fun xp _ => ?_
-  split_ifs with h₁ h₂ h₂
-  · exact le_rfl
-  · exact absurd (congrArg Prod.fst h₁) h₂
-  · positivity
-  · exact le_rfl
+  grind
 
 /-- The pad product is the omission product of the source lists for the omission tuple of the
 source symmetrization. -/
@@ -178,10 +171,7 @@ theorem prod_lab_eq {I : Finset (Fin K)} {i : Fin K} (hi : i ∈ I) (lab : Fin K
         freshOf I lab j) := by
         refine prod_congr rfl fun j _ => ?_
         simp only [selOf, freshOf, mem_erase]
-        by_cases hj : j = i
-        · subst hj
-          simp [hi]
-        · by_cases hjI : j ∈ I <;> simp [hj, hjI]
+        grind
     _ = _ := by
         rw [prod_mul_distrib, prod_mul_distrib, prod_ite_eq']
         simp
@@ -200,17 +190,15 @@ theorem card_perm_apply_eq {α : Type*} [Fintype α] [DecidableEq α] (a b : α)
     intro c
     refine card_nbij' (fun τ => Equiv.swap a c * τ) (fun τ => Equiv.swap a c * τ) ?_ ?_ ?_ ?_
     · intro τ hτ
-      simp only [coe_filter, Set.mem_ofPred_eq, mem_univ, true_and] at hτ ⊢
-      simp [Equiv.Perm.mul_apply, hτ]
+      simp_all
     · intro τ hτ
-      simp only [coe_filter, Set.mem_ofPred_eq, mem_univ, true_and] at hτ ⊢
-      simp [Equiv.Perm.mul_apply, hτ]
+      simp_all
     · intro τ _
-      simp [← mul_assoc]
+      simp
     · intro τ _
-      simp [← mul_assoc]
+      simp
   have hsum := card_eq_sum_card_fiberwise (f := fun τ : Equiv.Perm α => τ a)
-    (s := univ) (t := univ) (fun _ _ => mem_univ _)
+    (s := univ) (t := univ) (by simp)
   rw [card_univ, Fintype.card_perm] at hsum
   rw [hsum, hfib b]
   simp only [hfib, sum_const, card_univ, smul_eq_mul, mul_comm]
@@ -256,16 +244,15 @@ theorem sum_rawChoices (S I : Finset (Fin K)) (F : EdgeChoice x d Y d₀ u v r �
     simp only [rawChoices, edgeChoices, mem_filter, mem_product, mem_univ, true_and,
       and_true] at hc
     simp only [labChoices, mem_filter, mem_product, mem_univ, true_and, and_true]
-    exact ⟨hc.1, hc.2.2⟩
+    simp_all
   · intro t ht
     simp only [labChoices, mem_filter, mem_product, mem_univ, true_and, and_true] at ht
     simp only [rawChoices, edgeChoices, mem_filter, mem_product, mem_univ, true_and,
       and_true]
-    exact ⟨ht.1, ht.2⟩
+    omega
   · intro c hc
     rw [← (mem_filter.1 hc).2.1]
-  · intro t _
-    rfl
+  · simp
   · intro c hc
     rw [← (mem_filter.1 hc).2.1]
 
@@ -274,7 +261,7 @@ theorem mem_band_lab {c : EdgeChoice x d Y d₀ u v r} (hc : c ∈ edgeChoices x
     (i : Fin K) : (c.2.2.2.1 i).1 ∈ band x (d.a i) := by
   simp only [edgeChoices, mem_product, Fintype.mem_piFinset, mem_univ, true_and,
     and_true] at hc
-  exact hc i
+  simp_all
 
 /-- The labels of `labChoices` lie in the bands of their groups. -/
 theorem mem_band_of_mem_labChoices {I : Finset (Fin K)} {lab : Fin K → ℕ × Bool}
@@ -284,8 +271,7 @@ theorem mem_band_of_mem_labChoices {I : Finset (Fin K)} {lab : Fin K → ℕ × 
 /-- The labels of `labChoices` are flagged exactly on `I`. -/
 theorem flag_iff_of_mem_labChoices {I : Finset (Fin K)} {lab : Fin K → ℕ × Bool}
     (hlab : lab ∈ labChoices x d I) (i : Fin K) : (lab i).2 = true ↔ i ∈ I := by
-  rw [← (mem_filter.1 hlab).2, mem_filter]
-  simp
+  simp [← (mem_filter.1 hlab).2, mem_filter]
 
 end Choices
 
@@ -327,7 +313,7 @@ theorem mul_pow_le_dampConst (hq : 0 < q) (hq₁ : q < 1) (n : ℕ) :
     simp only [Nat.add_sub_cancel]
     unfold dampConst
     rw [pow_succ, ← mul_assoc, div_eq_mul_one_div] at hle
-    exact le_of_mul_le_mul_right (by rwa [mul_comm (pendingWeight q)] at hle) h₀
+    nlinarith
 
 /-- With disjoint bands, each particle is promoted by at most one group, so the memory after
 the edge has `S'(x) ≥ S(x) - 1`. -/
@@ -341,7 +327,7 @@ theorem sub_one_le_edgeMem (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i
       by_contra hij
       have hij' := congrArg Prod.fst ((mem_filter.1 hi).2.2.trans (mem_filter.1 hj).2.2.symm)
       change (c.2.2.2.1 i).1 = (c.2.2.2.1 j).1 at hij'
-      exact disjoint_left.1 (hdisj i j hij) (mem_band_lab hc i) (hij' ▸ mem_band_lab hc j)
+      exact disjoint_left.1 (by grind) (mem_band_lab hc i) (hij' ▸ mem_band_lab hc j)
   unfold edgeMem
   omega
 
@@ -367,41 +353,38 @@ theorem pow_hits_mul_prod_le (hq : 0 < q) (hq₁ : q < 1)
     rw [memAt_eq, memAt_eq]
     split_ifs
     · exact sub_one_le_edgeMem hdisj hc _
-    · exact Nat.zero_le _
+    · omega
   -- the promoted particles are distinct and hit the target
   have hcard : ∀ xp : Particle x d, (J.filter fun i => y i = xp.1).card ≤ 1 := fun xp =>
     card_le_one.2 fun i hi j hj => by
       by_contra hij
       have hij' := congrArg Prod.fst ((mem_filter.1 hi).2.trans (mem_filter.1 hj).2.symm)
       change (c.2.2.2.1 i).1 = (c.2.2.2.1 j).1 at hij'
-      exact disjoint_left.1 (hdisj i j hij) (mem_band_lab hc i) (hij' ▸ mem_band_lab hc j)
+      exact disjoint_left.1 (by grind) (mem_band_lab hc i) (hij' ▸ mem_band_lab hc j)
   have hhits : ∑ i ∈ J, memAt x d S' (y i) ≤ pendingHits x d c.2.2.1.1 S' := by
     unfold memAt pendingHits
     rw [sum_comm]
     refine sum_le_sum fun xp _ => ?_
     rw [← sum_filter, sum_const, smul_eq_mul]
     rcases Nat.eq_zero_or_pos (J.filter fun i => xp.1 = y i).card with h0 | hpos
-    · rw [h0, zero_mul]
-      exact Nat.zero_le _
+    · grind
     · obtain ⟨i, hi⟩ := card_pos.1 hpos
       have hxi := (mem_filter.1 hi).2
       have hline : lineOf xp.1.1 c.2.2.1.1 = xp.1.2 := by rw [hxi]; rfl
-      rw [ite_eq_left_iff.2 (fun h => absurd hline h)]
+      rw [ite_eq_left_iff.2 (by omega)]
       have : (J.filter fun i => xp.1 = y i).card ≤ 1 := by
         simpa only [eq_comm] using hcard xp
-      calc (J.filter fun i => xp.1 = y i).card * S' xp ≤ 1 * S' xp :=
-            Nat.mul_le_mul_right _ this
-        _ = S' xp := one_mul _
+      grind
   have hexp : ∑ i ∈ J, (memAt x d S (y i) - 1) ≤ pendingHits x d c.2.2.1.1 S' :=
-    (sum_le_sum fun i _ => hmem i).trans hhits
+    (sum_le_sum (by grind)).trans hhits
   calc pendingWeight q ^ pendingHits x d c.2.2.1.1 S' * ∏ i ∈ J, (memAt x d S (y i) : ℝ)
       ≤ pendingWeight q ^ (∑ i ∈ J, (memAt x d S (y i) - 1)) *
           ∏ i ∈ J, (memAt x d S (y i) : ℝ) :=
         mul_le_mul_of_nonneg_right (pow_le_pow_of_le_one h₀.le h₁.le hexp)
-          (prod_nonneg fun _ _ => by positivity)
+          (by positivity)
     _ = ∏ i ∈ J, ((memAt x d S (y i) : ℝ) * pendingWeight q ^ (memAt x d S (y i) - 1)) := by
         rw [← prod_pow_eq_pow_sum, ← prod_mul_distrib]
-        exact prod_congr rfl fun i _ => mul_comm _ _
+        ring
     _ ≤ ∏ _i ∈ J, dampConst q :=
         prod_le_prod₀ (fun i _ => by positivity) fun i _ => mul_pow_le_dampConst hq hq₁ _
     _ = dampConst q ^ J.card := prod_const _
@@ -420,8 +403,8 @@ theorem primeMass_eq_of_mem_band
     (hp : p ∈ band x (d.a i)) : primeMass x d p = harmonicMass (band x (d.a i)) := by
   unfold primeMass
   rw [Fintype.sum_eq_single i fun j hji =>
-    ite_eq_right_iff.2 fun hpj => absurd hp (disjoint_left.1 (hdisj j i hji) hpj)]
-  exact ite_eq_left hp
+    ite_eq_right_iff.2 fun hpj => absurd hp (disjoint_left.1 (by grind) hpj)]
+  simp_all
 
 /-- With nonnegative band masses and baselines at least `1/2`, the birth weights are
 nonnegative; off the band primes `V(p) = 0`. -/
@@ -429,15 +412,14 @@ theorem primeWeight_nonneg_of (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i
     (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (p : ℕ) :
     0 ≤ primeWeight q x d N p := by
   have hV0 : 0 ≤ primeMass x d p :=
-    sum_nonneg fun i _ => by split_ifs; linarith [hV i]; exact le_rfl
+    sum_nonneg fun i _ => by grind
   unfold primeWeight
   by_cases hp : p ∈ bandPrimes x d
   · have := hb p hp
-    exact one_div_nonneg.2 (mul_nonneg (mul_nonneg hV0 (by positivity)) (by linarith))
+    positivity
   · have h0 : primeMass x d p = 0 :=
-      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 ⟨i, mem_univ i, hpi⟩)
-    rw [h0]
-    simp
+      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 (by grind))
+    simp_all
 
 /-- At a prime of band `i`, `0 < ν(p) ≤ 2 μ_i(p)` with `μ_i(p) = 1/(p V_i)`
 (`mem:measure-masses`). -/
@@ -449,20 +431,16 @@ theorem primeWeight_le_two
     0 < primeWeight q x d N p ∧
       primeWeight q x d N p ≤ 2 * (1 / (p * harmonicMass (band x (d.a i)))) := by
   have hVi := hV i
-  have hb₁ := hb p (mem_biUnion.2 ⟨i, mem_univ i, hp⟩)
+  have hb₁ := hb p (mem_biUnion.2 (by grind))
   have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hp).pos
   unfold primeWeight
   rw [primeMass_eq_of_mem_band hdisj hp]
-  refine ⟨one_div_pos.2 (mul_pos (mul_pos (by linarith) (by positivity)) (by linarith)), ?_⟩
+  refine ⟨by positivity, ?_⟩
   rw [show 2 * (1 / (p * harmonicMass (band x (d.a i)))) =
     1 / (harmonicMass (band x (d.a i)) * p * (1 / 2)) by field_simp]
   refine one_div_le_one_div_of_le (by positivity) ?_
   have : (p : ℝ) * (1 / 2) ≤ ((p : ℝ) + 1) * baseline q N p := by nlinarith
-  calc harmonicMass (band x (d.a i)) * p * (1 / 2)
-      = harmonicMass (band x (d.a i)) * ((p : ℝ) * (1 / 2)) := by ring
-    _ ≤ harmonicMass (band x (d.a i)) * (((p : ℝ) + 1) * baseline q N p) :=
-        mul_le_mul_of_nonneg_left this (by linarith)
-    _ = _ := by ring
+  nlinarith
 
 /-- The birth weights of a band sum to at most `2`. -/
 theorem sum_primeWeight_band_le_two
@@ -477,8 +455,7 @@ theorem sum_primeWeight_band_le_two
     _ = 2 / harmonicMass (band x (d.a i)) * harmonicMass (band x (d.a i)) := by
         nth_rewrite 3 [harmonicMass]
         rw [mul_sum]
-        refine sum_congr rfl fun p _ => ?_
-        field_simp
+        grind
     _ = 2 := by field_simp
 
 /-- The fresh draws outside `I` have total birth weight at most `2^K`. -/
@@ -492,18 +469,17 @@ theorem sum_freshDraws_le
       = ∑ T ∈ freshDraws x d I, ∏ i, if i ∈ I then 1 else primeWeight q x d N (T i) := by
         refine sum_congr rfl fun T _ => ?_
         rw [prod_filter]
-        exact prod_congr rfl fun i _ => by split_ifs <;> rfl
+        simp
     _ = ∏ i, ∑ t ∈ (if i ∈ I then {1} else band x (d.a i)),
           if i ∈ I then 1 else primeWeight q x d N t := by
         rw [freshDraws, prod_univ_sum]
     _ ≤ ∏ _i : Fin K, (2 : ℝ) := by
         refine prod_le_prod₀ (fun i _ => sum_nonneg fun t _ => ?_) fun i _ => ?_
-        · split_ifs
-          exacts [zero_le_one, hν _]
+        · grind
         split_ifs with hi
         · simp
         · exact sum_primeWeight_band_le_two hdisj hV hb i
-    _ = 2 ^ K := by rw [prod_const, card_univ, Fintype.card_fin]
+    _ = 2 ^ K := by simp
 
 open scoped Classical in
 /-- **The exceptional fresh draws** (PD `mem:measure-masses` and test (ii)): at a source passing
@@ -526,9 +502,9 @@ theorem sum_bad_le (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band
         unfold freshWeight
         calc ∏ i ∈ univ.filter (· ∉ I), primeWeight q x d N (T i)
             ≤ ∏ i ∈ univ.filter (· ∉ I), 2 * (1 / ((T i : ℝ) * harmonicMass (band x (d.a i)))) :=
-              prod_le_prod₀ (fun i _ => hν _) fun i hi => by
+              prod_le_prod₀ (by grind) fun i hi => by
                 have hTi := hT' i
-                rw [ite_eq_right (mem_filter.1 hi).2] at hTi
+                rw [ite_eq_right (by grind)] at hTi
                 exact (primeWeight_le_two hdisj hV hb hTi).2
           _ = 2 ^ (univ.filter (· ∉ I)).card *
                 ∏ i ∈ univ.filter (· ∉ I), 1 / ((T i : ℝ) * harmonicMass (band x (d.a i))) := by
@@ -537,8 +513,8 @@ theorem sum_bad_le (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band
                 ∏ i ∈ univ.filter (· ∉ I), 1 / ((T i : ℝ) * harmonicMass (band x (d.a i))) := by
               refine mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) ?_)
                 (prod_nonneg fun i _ => one_div_nonneg.2 (mul_nonneg (by positivity)
-                  (by linarith [hV i])))
-              exact (card_filter_le _ _).trans (by rw [card_univ, Fintype.card_fin])
+                  (by grind)))
+              exact (card_filter_le _ _).trans (by simp)
     _ = 2 ^ K * ∑ T ∈ (freshDraws x d I).filter
           (fun T => ¬ Separated x d d₀ I (I.max' hI) rr p T), freshWeight x d I T := by
         rw [mul_sum]
@@ -558,15 +534,14 @@ theorem sum_labChoices_le {x : ℝ} {d : Data K} (I : Finset (Fin K)) (E : Finse
     ∑ lab ∈ (labChoices x d I).filter (fun lab => freshOf I lab ∈ E), ∏ i, ω (lab i) ≤
       Bm ^ I.card * ∑ T ∈ E, ∏ i ∈ univ.filter (· ∉ I), ω (T i, false) := by
   classical
-  rw [← sum_fiberwise_of_maps_to (g := freshOf I) (t := E) (fun lab hlab => (mem_filter.1 hlab).2),
+  rw [← sum_fiberwise_of_maps_to (g := freshOf I) (t := E) (by simp),
     mul_sum]
   refine sum_le_sum fun T _ => ?_
   -- the label weights of the fiber as a product over the groups
   set g : Fin K → ℕ × Bool → ℝ := fun i l =>
     if i ∈ I then (if l.2 then ω l else 0) else (if l = (T i, false) then ω l else 0) with hg
   have hg0 : ∀ i l, 0 ≤ g i l := fun i l => by
-    simp only [hg]
-    split_ifs <;> first | exact hω _ | exact le_rfl
+    grind
   calc ∑ lab ∈ ((labChoices x d I).filter fun lab => freshOf I lab ∈ E).filter
         (fun lab => freshOf I lab = T), ∏ i, ω (lab i)
       = ∑ lab ∈ ((labChoices x d I).filter fun lab => freshOf I lab ∈ E).filter
@@ -576,32 +551,31 @@ theorem sum_labChoices_le {x : ℝ} {d : Data K} (I : Finset (Fin K)) (E : Finse
         have hf := flag_iff_of_mem_labChoices hlab i
         simp only [hg]
         by_cases hi : i ∈ I
-        · rw [ite_eq_left hi, ite_eq_left (hf.2 hi)]
+        · simp_all
         · rw [ite_eq_right hi]
           have hl : lab i = (T i, false) := by
             refine Prod.ext ?_ ?_
             · rw [← hT]
               simp [freshOf, hi]
-            · simpa [hi] using hf
-          rw [ite_eq_left hl]
+            · simp_all
+          simp_all
     _ ≤ ∑ lab ∈ Fintype.piFinset (fun i => band x (d.a i) ×ˢ (univ : Finset Bool)),
           ∏ i, g i (lab i) :=
         sum_le_sum_of_subset_of_nonneg (fun lab hlab =>
           (mem_filter.1 (mem_filter.1 (mem_filter.1 hlab).1).1).1)
-          fun lab _ _ => prod_nonneg fun i _ => hg0 i _
+          fun lab _ _ => prod_nonneg (by grind)
     _ = ∏ i, ∑ l ∈ band x (d.a i) ×ˢ (univ : Finset Bool), g i l := (prod_univ_sum _ _).symm
     _ ≤ ∏ i, if i ∈ I then Bm else ω (T i, false) := by
-        refine prod_le_prod₀ (fun i _ => sum_nonneg fun l _ => hg0 i l) fun i _ => ?_
+        refine prod_le_prod₀ (fun i _ => sum_nonneg (by grind)) fun i _ => ?_
         by_cases hi : i ∈ I
         · rw [ite_eq_left hi]
           simp only [hg, ite_eq_left hi, sum_product, Fintype.sum_bool, ↓reduceIte,
             Bool.false_eq_true, add_zero]
-          exact hB i hi
+          simp_all
         · rw [ite_eq_right hi]
           simp only [hg, ite_eq_right hi]
           rw [sum_ite_eq']
-          split_ifs
-          exacts [le_rfl, hω _]
+          grind
     _ = Bm ^ I.card * ∏ i ∈ univ.filter (· ∉ I), ω (T i, false) := by
         rw [prod_ite, prod_const, filter_mem_eq_inter, univ_inter]
 
@@ -660,9 +634,9 @@ theorem rawAmp_le_crude (hq : 0 < q) (hq₁ : q < 1)
     have hW : rawWeight q N s c ≤ ∏ i, labWeight q x d N s.2.2.1 (c.2.2.2.1 i) := by
       refine prod_le_prod₀ (fun i _ => ?_) fun i _ => ?_
       · split_ifs
-        · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
-            (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; linarith [hV i])
-        · exact hν _
+        · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
+            (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; grind)
+        simp_all
       · unfold labWeight
         split_ifs with hf
         · have hVi := hV i
@@ -673,12 +647,12 @@ theorem rawAmp_le_crude (hq : 0 < q) (hq₁ : q < 1)
           change (memAt x d s.2.2.1 (edgePromoted c i) : ℝ) ≤ rawMult x d s.2.2.1 (c.2.2.2.1 i).1
             at h₁
           nlinarith
-        · exact le_rfl
+        simp
     have hW0 : 0 ≤ rawWeight q N s c := prod_nonneg fun i _ => by
       split_ifs
-      · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
-          (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; linarith [hV i])
-      · exact hν _
+      · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
+          (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; grind)
+      simp_all
     calc (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
           pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
           pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) * rawWeight q N s c
@@ -689,9 +663,8 @@ theorem rawAmp_le_crude (hq : 0 < q) (hq₁ : q < 1)
           · exact pow_le_one₀ hρ0 hρ1
       _ = _ := by ring
   · exact absurd ((rawDet_iff s c).1 hv.2) hdet
-  · rw [mul_one]
-    exact mul_nonneg (by positivity) hω0
-  · rw [mul_zero]
+  · positivity
+  simp
 
 /-- The targets with a given determinant against the source number at most `16`
 (`mem:neighbor`). -/
@@ -754,8 +727,8 @@ theorem sum_rawAmp_fresh_le (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.
           split_ifs
           · rw [← mul_sum]
             exact mul_le_mul_of_nonneg_left (sum_target_le hU s _)
-              (mul_nonneg hr0 (prod_nonneg fun i _ => hω0 _))
-          · simp
+              (mul_nonneg hr0 (prod_nonneg (by grind)))
+          simp
       _ = r₀ * 16 * ∑ lab ∈ (labChoices x d I).filter (fun lab => freshOf I lab ∈ E),
             ∏ i, ω (lab i) := by
           rw [sum_filter, mul_sum]
@@ -836,11 +809,11 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
   have hdC := one_le_dampConst hq hq₁
   have hVa : ∀ i, 1 / 2 ≤ primeMass x d (c.2.2.2.1 i).1 := fun i => by
     rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]
-    exact hV i
+    simp_all
   set m : Fin K → ℝ := fun i => (memAt x d s.2.2.1 (edgePromoted c i) : ℝ) with hm
   set F := ∏ i ∈ univ.filter (· ∉ I), primeWeight q x d N (c.2.2.2.1 i).1 with hF
-  have hF0 : 0 ≤ F := prod_nonneg fun i _ => hν _
-  have hm0 : ∀ i, 0 ≤ m i := fun i => Nat.cast_nonneg _
+  have hF0 : 0 ≤ F := prod_nonneg (by grind)
+  have hm0 : ∀ i, 0 ≤ m i := by grind
   unfold rawAmp
   split_ifs with h
   · rw [mul_one]
@@ -852,9 +825,8 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
         congr 1
         · exact prod_congr rfl fun i _ => by rw [sum_ite_eq_memAt]
         · rw [hF]
-          refine prod_congr (filter_congr fun i _ => ?_) fun i _ => rfl
-          rw [← hflag, mem_filter]
-          simp
+          refine prod_congr (filter_congr fun i _ => ?_) (by simp)
+          simp [← hflag, mem_filter]
       rw [hsplit]
       refine mul_le_mul_of_nonneg_right ?_ hF0
       calc ∏ i ∈ I, m i / primeMass x d (c.2.2.2.1 i).1 ≤ ∏ i ∈ I, 2 * m i :=
@@ -864,17 +836,17 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
         _ = 2 ^ I.card * ∏ i ∈ I, m i := by rw [prod_mul_distrib, prod_const]
         _ ≤ 2 ^ K * ∏ i ∈ I, m i := by
             refine mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) ?_)
-              (prod_nonneg fun i _ => hm0 i)
-            exact (card_le_univ I).trans (by rw [Fintype.card_fin])
+              (by positivity)
+            exact (card_le_univ I).trans (by simp)
         _ = 2 ^ K * (m i₀ * ∏ i ∈ I.erase i₀, m i) := by rw [mul_prod_erase I m hi₀I]
     -- the damping absorbs the other promotions
     have hdamp := pow_hits_mul_prod_le hq hq₁ hdisj (s := s) hc (I.erase i₀)
     have hdamp' : pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) *
         ∏ i ∈ I.erase i₀, m i ≤ dampConst q ^ K :=
-      hdamp.trans (pow_le_pow_right₀ hdC ((card_le_univ _).trans (by rw [Fintype.card_fin])))
+      hdamp.trans (pow_le_pow_right₀ hdC ((card_le_univ _).trans (by simp)))
     have hW0 : 0 ≤ rawWeight q N s c := prod_nonneg fun i _ => by
       split_ifs
-      · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
+      · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
           (by linarith [hVa i])
       · exact hν _
     set r₀ := (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 with hr₀
@@ -889,7 +861,7 @@ theorem rawAmp_le_anchor (hq : 0 < q) (hq₁ : q < 1)
       _ ≤ r₀ * 2 ^ K * m i₀ * F * dampConst q ^ K :=
           mul_le_mul_of_nonneg_left hdamp' (by have := hm0 i₀; positivity)
       _ = r₀ * (2 * dampConst q) ^ K * m i₀ * F := by ring
-  · rw [mul_zero]
+  simp
 
 open scoped Classical in
 /-- **The anchor count**: at a source in the box, for a fresh draw `T` passing the phase
@@ -924,7 +896,7 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
   rcases F.eq_empty_or_nonempty with hF | ⟨t₀, ht₀⟩
   · rw [hF, card_empty, Nat.cast_zero]
     positivity
-  have hprime : ∀ i h, (s.2.1.1 i h).Prime := fun i h =>
+  have hprime := fun i h =>
     TypeII.band_prime (mem_band_of_mem_lists s.2.1.2 i h)
   -- the data of a triple of `F`, in the form of `anchor_unique`
   have hdata : ∀ t ∈ F, t.2.2 ∈ labChoices x d I ∧ freshOf I t.2.2 = T ∧
@@ -939,7 +911,7 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
     unfold selOf
     split_ifs with hj
     · exact mem_band_of_mem_labChoices (hdata t ht).1 j
-    · exact mem_singleton_self 1
+    · simp
   have hselban : ∀ t ∈ F, ∀ j i h, selOf I i₀ t.2.2 j ≠ s.2.1.1 i h := by
     intro t ht j i h
     unfold selOf
@@ -957,11 +929,11 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
     intro t ht
     obtain ⟨hlab, hT, hp, hline, hcond⟩ := hdata t ht
     obtain ⟨hlab₀, hT₀, hp₀, hline₀, hcond₀⟩ := hdata t₀ ht₀
-    have hps : xp.1.1 ∈ band x (d.a i₀) := hp ▸ mem_band_of_mem_labChoices hlab i₀
+    have hps := hp ▸ mem_band_of_mem_labChoices hlab i₀
     obtain ⟨ho, hZ⟩ := anchor_unique hU hu hdisj s.2.1.2 s.1.2 hI hsep hps
       (fun i h => hp ▸ hcond.2.2.1 i₀ i h) (hsel t ht) (hsel t₀ ht₀) (hselban t ht)
       (hselban t₀ ht₀) hcond.1 hcond.2.1 hcond₀.1 hcond₀.2.1 t.2.1.2 t₀.2.1.2
-      (hline.trans hline₀.symm) (hdet t ht) (hdet t₀ ht₀)
+      (by omega) (hdet t ht) (hdet t₀ ht₀)
     refine ⟨ho, funext fun j => Prod.ext ?_ ?_⟩
     · by_cases hj : j = i₀
       · rw [hj, ← hp, ← hp₀]
@@ -969,10 +941,10 @@ theorem card_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
         · have := congrFun hZ j
           simp only [selOf, mem_erase, hj, ne_eq, not_false_eq_true, hjI, and_self,
             ↓reduceIte] at this
-          exact this
+          omega
         · have := congrFun (hT.trans hT₀.symm) j
           simp only [freshOf, hjI, ↓reduceIte] at this
-          exact this
+          omega
     · rw [Bool.eq_iff_iff, flag_iff_of_mem_labChoices hlab, flag_iff_of_mem_labChoices hlab₀]
   -- so `F` lies in a product of `(M!/M)^K` symmetrizations, `16` targets and one label
   have hsub : F ⊆ (univ.filter fun σ : Fin K → Equiv.Perm (Fin (padCount x + 1)) =>
@@ -1034,7 +1006,7 @@ theorem sum_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
   have hC0 : 0 ≤ C₀ := by positivity
   set νF : (Fin K → ℕ) → ℝ := fun T => ∏ i ∈ univ.filter (· ∉ I), primeWeight q x d N (T i)
     with hνF
-  have hνF0 : ∀ T, 0 ≤ νF T := fun T => prod_nonneg fun i _ => hν _
+  have hνF0 : ∀ T, 0 ≤ νF T := fun T => prod_nonneg (by grind)
   set P : Particle x d → (Fin K → Equiv.Perm (Fin (padCount x + 1))) ×
       ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r) × (Fin K → ℕ × Bool) → Prop :=
     fun xp t => freshOf I t.2.2 ∈ G ∧
@@ -1082,7 +1054,7 @@ theorem sum_anchor_le (hU : 0 < d₀ * Y * d.Hm) (hu : 0 < u)
           refine sum_congr rfl fun xp _ => ?_
           simp only [hP, hG', true_and]
           by_cases h₁ : xp.1 = ((t.2.2 i₀).1, lineOf (t.2.2 i₀).1 t.2.1.1) <;>
-            by_cases h₂ : AnchorCond s t.1 t.2.1 t.2.2 <;> simp [h₁, h₂]
+            by_cases h₂ : AnchorCond s t.1 t.2.1 t.2.2 <;> simp [h₂]
         · rw [ite_eq_right hG']
           refine (sum_eq_zero fun xp _ => ?_).symm
           simp [hP, hG']
@@ -1139,8 +1111,8 @@ theorem sum_rawAmp_good_le (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.H
         · exact le_of_eq (by simp only [edgePromoted]; ring)
         · exact absurd (anchorCond_of_valid h₁) h₂
         · rw [mul_zero]
-          exact mul_nonneg (by positivity) (mul_nonneg (mul_nonneg hm hF) zero_le_one)
-        · simp
+          positivity
+        simp
     _ = ∑ σ, ∑ z', ∑ lab ∈ labChoices x d I,
           ∑ _σ' : Fin K → Equiv.Perm (Fin (padCount x + 1)), κ * H σ z' lab := by
         rw [sum_filter, sum_rawChoices]
@@ -1155,7 +1127,6 @@ theorem sum_rawAmp_good_le (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y * d.H
             ((univ : Finset ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r)) ×ˢ labChoices x d I),
             H t.1 t.2.1 t.2.2 := by
         simp only [sum_const, card_univ, nsmul_eq_mul, card_edgeSymm, sum_product, mul_sum]
-        refine sum_congr rfl fun σ _ => sum_congr rfl fun z' _ => sum_congr rfl fun lab _ => ?_
         ring
     _ ≤ (((padCount x + 1).factorial ^ K : ℕ) : ℝ) * κ *
           (B * (16 * (((padCount x + 1).factorial / (padCount x + 1) : ℝ)) ^ K * 2 ^ K)) :=
@@ -1182,7 +1153,7 @@ theorem freshOf_mem_freshDraws {S I : Finset (Fin K)} {c : EdgeChoice x d Y d₀
   refine Fintype.mem_piFinset.2 fun i => ?_
   unfold freshOf
   split_ifs
-  · exact mem_singleton_self 1
+  · simp
   · exact mem_band_lab (mem_filter.1 hc).1 i
 
 /-- **The row without promotions** (PD §4, dirty raw edges, `I = ∅`): the raw coefficients of
@@ -1209,10 +1180,10 @@ theorem rawAmp_nonneg (hq : 0 < q)
   split_ifs
   · refine mul_nonneg (by positivity) (prod_nonneg fun i _ => ?_)
     split_ifs
-    · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
-        (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; linarith [hV i])
-    · exact hν _
-  · exact le_rfl
+    · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
+        (by rw [primeMass_eq_of_mem_band hdisj (mem_band_lab hc i)]; grind)
+    simp_all
+  simp
 
 /-- **The row with promotions** (PD `mem:epsilon`, `I ≠ ∅`): the raw coefficients of the piece
 `(S, I)` sum to at most `16 (4 C_ρ)^K B / M^K + 16 (2B + 1)^K 2^K exp(-L^{a_{i_*}}/4)`. At a
@@ -1248,11 +1219,11 @@ theorem sum_rawAmp_le_of_nonempty (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * 
     refine (sum_rawAmp_fresh_le hq hq₁ hU hdisj hV hb s S I Bad).trans ?_
     have hpow : (2 * (B : ℝ)) ^ I.card ≤ (2 * B + 1) ^ K :=
       (pow_le_pow_left₀ (by positivity) (by linarith) _).trans
-        (pow_le_pow_right₀ (by linarith [(Nat.cast_nonneg B : (0 : ℝ) ≤ B)])
-          ((card_le_univ I).trans (by rw [Fintype.card_fin])))
-    exact mul_le_mul (mul_le_mul_of_nonneg_left hpow (by norm_num))
+        (pow_le_pow_right₀ (by simp)
+          ((card_le_univ I).trans (by simp)))
+    exact mul_le_mul (by linarith)
       (sum_bad_le hdisj hV hb hgood hI)
-      (sum_nonneg fun T _ => prod_nonneg fun i _ => hν _) (by positivity)
+      (sum_nonneg fun T _ => prod_nonneg (by grind)) (by positivity)
   · -- a source failing the second good-state test has no admissible edge
     refine le_trans (le_of_eq (sum_eq_zero fun c _ => ?_)) hR0
     unfold rawAmp

@@ -73,8 +73,8 @@ theorem sum_divisors_truncModel {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {J 
       ∑ d ∈ n.divisors, (if ∏ p ∈ R j ∪ U, p = d then c j * ∏ p ∈ U, (w p - 1) else 0) =
         if R j ∪ U ⊆ divs Q n then c j * ∏ p ∈ U, (w p - 1) else 0 := by
     intro U hU
-    have hUQ : U ⊆ Q \ R j := mem_powerset.1 (mem_filter.1 hU).1
-    have hsub : R j ∪ U ⊆ Q := union_subset (hR j hj) (hUQ.trans sdiff_subset)
+    have hUQ := mem_powerset.1 (mem_filter.1 hU).1
+    have hsub := union_subset (hR j hj) (hUQ.trans sdiff_subset)
     rw [sum_ite_eq]
     by_cases h : R j ∪ U ⊆ divs Q n
     · rw [ite_eq_left h, ite_eq_left (Nat.mem_divisors.2 ⟨(prod_dvd_iff hQ hsub n).2 h, hn⟩)]
@@ -87,12 +87,11 @@ theorem sum_divisors_truncModel {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {J 
     ext U
     simp only [mem_filter, mem_powerset, union_subset_iff, subset_sdiff]
     constructor
-    · rintro ⟨⟨⟨hUQ, hUR⟩, hU⟩, -, hUD⟩
-      exact ⟨⟨hUD, hUR⟩, hU⟩
+    · simp_all
     · rintro ⟨⟨hUD, hUR⟩, hU⟩
       exact ⟨⟨⟨hUD.trans (divs_subset Q n), hUR⟩, hU⟩, hRj, hUD⟩
   · refine sum_eq_zero fun U _ => ?_
-    rw [ite_eq_right fun h => hRj (subset_union_left.trans h)]
+    grind
 
 /-- The list form, with every damping factor expanded. -/
 theorem listForm_eq_sum (Q : Finset ℕ) (J : Finset κ) (R : κ → Finset ℕ) (c : κ → ℂ)
@@ -103,9 +102,8 @@ theorem listForm_eq_sum (Q : Finset ℕ) (J : Finset κ) (R : κ → Finset ℕ)
   unfold listForm
   refine sum_congr rfl fun j _ => ?_
   split_ifs
-  · rw [← prod_one_add]
-    simp
-  · rfl
+  · simp [← prod_one_add]
+  simp
 
 /-- The truncation error: the subsets with `|U| > h₀`. -/
 theorem listForm_sub_sum_divisors {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {J : Finset κ}
@@ -119,7 +117,7 @@ theorem listForm_sub_sum_divisors {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {
   split_ifs
   · rw [← mul_sub, ← sum_filter_add_sum_filter_not _ (fun U : Finset ℕ => #U ≤ h₀)]
     ring
-  · ring
+  simp
 
 /-- The number of subsets of `D \ R` with more than `h₀` elements is at most
 `4^{|D|} / 2^{h₀}`. -/
@@ -162,12 +160,12 @@ theorem norm_listForm_sub_le {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {J : F
         ‖∏ p ∈ U, (w p - 1)‖ ≤ 1 := by
       intro U hU
       rw [norm_prod]
-      refine prod_le_one₀ (fun _ _ => norm_nonneg _) fun p hp => hw p ?_
-      exact divs_subset Q n (sdiff_subset (mem_powerset.1 (mem_filter.1 hU).1 hp))
+      refine prod_le_one₀ (by simp) fun p hp => hw p ?_
+      exact divs_subset Q n (by grind)
     calc _ ≤ ∑ _U ∈ (divs Q n \ R j).powerset.filter (fun U => ¬#U ≤ h₀), (1 : ℝ) :=
           sum_le_sum this
-      _ = _ := by rw [sum_const, nsmul_eq_mul, mul_one]
-  · simp
+      _ = _ := by simp
+  simp
 
 /-- The truncated model vanishes off the products `∏(R_j ∪ U)` with `U ⊆ Q \ R_j` and
 `|U| ≤ h₀`. -/
@@ -176,10 +174,7 @@ theorem exists_of_truncModel_ne_zero {Q : Finset ℕ} {J : Finset κ} {R : κ �
     ∃ j ∈ J, ∃ U ⊆ Q \ R j, #U ≤ h₀ ∧ ∏ p ∈ R j ∪ U, p = d := by
   obtain ⟨j, hj, hj'⟩ := exists_ne_zero_of_sum_ne_zero hd
   obtain ⟨U, hU, hU'⟩ := exists_ne_zero_of_sum_ne_zero hj'
-  obtain ⟨hU₁, hU₂⟩ := mem_filter.1 hU
-  refine ⟨j, hj, U, mem_powerset.1 hU₁, hU₂, ?_⟩
-  by_contra h
-  exact hU' (ite_eq_right h)
+  grind
 
 /-- The mass of the truncated model:
 `∑_d |A_d|/d ≤ (∑_j |c_j| / ∏ R_j) ∏_{p ∈ Q} (1 + 1/p)`. -/
@@ -207,8 +202,7 @@ theorem sum_norm_truncModel_div_le {Q : Finset ℕ} (J : Finset κ) (R : κ → 
         exact sdiff_subset ((mem_powerset.1 (mem_filter.1 hU).1) hp)
       have hc := norm_nonneg (c j)
       gcongr
-      calc ‖c j‖ * ∏ p ∈ U, ‖w p - 1‖ ≤ ‖c j‖ * 1 := by gcongr
-        _ = ‖c j‖ := mul_one _
+      nlinarith
     · simp
   refine (sum_le_sum h1).trans ?_
   rw [sum_comm]
@@ -220,25 +214,23 @@ theorem sum_norm_truncModel_div_le {Q : Finset ℕ} (J : Finset κ) (R : κ → 
       ∑ d ∈ s, (if ∏ p ∈ R j ∪ U, p = d then ‖c j‖ / (∏ p ∈ R j ∪ U, p : ℕ) else 0) ≤
         ‖c j‖ / (∏ p ∈ R j, (p : ℝ)) * ∏ p ∈ U, (1 / (p : ℝ)) := by
     intro U hU
-    have hUQ : U ⊆ Q \ R j := mem_powerset.1 (mem_filter.1 hU).1
-    have hdisj : Disjoint (R j) U := disjoint_of_subset_right hUQ disjoint_sdiff
+    have hUQ := mem_powerset.1 (mem_filter.1 hU).1
+    have hdisj := disjoint_of_subset_right hUQ disjoint_sdiff
     rw [sum_ite_eq]
     have heq : ‖c j‖ / ((∏ p ∈ R j ∪ U, p : ℕ) : ℝ) =
         ‖c j‖ / (∏ p ∈ R j, (p : ℝ)) * ∏ p ∈ U, (1 / (p : ℝ)) := by
       simp only [one_div, prod_inv_distrib]
       rw [Nat.cast_prod, prod_union hdisj, div_eq_mul_inv, div_eq_mul_inv, mul_inv, mul_assoc]
     split_ifs
-    · exact heq.le
-    · rw [← heq]
-      positivity
+    · linarith
+    · positivity
   refine (sum_le_sum h2).trans ?_
   rw [← mul_sum]
   have hR0 : 0 ≤ ‖c j‖ / ∏ p ∈ R j, (p : ℝ) := by positivity
   refine mul_le_mul_of_nonneg_left ?_ hR0
   rw [prod_one_add]
   refine sum_le_sum_of_subset_of_nonneg ?_ fun _ _ _ => by positivity
-  intro U hU
-  exact mem_powerset.2 ((mem_powerset.1 (mem_filter.1 hU).1).trans sdiff_subset)
+  grind
 
 /-- `D(n)` of a disjoint union. -/
 theorem divs_union (Q₁ Q₂ : Finset ℕ) (n : ℕ) : divs (Q₁ ∪ Q₂) n = divs Q₁ n ∪ divs Q₂ n :=
@@ -254,14 +246,13 @@ theorem union_subset_divs_iff {Q₁ Q₂ R₁ R₂ : Finset ℕ} (hQ : Disjoint 
     constructor
     · intro p hp
       rcases mem_union.1 (h (mem_union_left _ hp)) with h' | h'
-      · exact h'
+      · omega
       · exact absurd (divs_subset Q₂ n h') (disjoint_left.1 hQ (hR₁ hp))
     · intro p hp
       rcases mem_union.1 (h (mem_union_right _ hp)) with h' | h'
       · exact absurd (divs_subset Q₁ n h') (disjoint_right.1 hQ (hR₂ hp))
-      · exact h'
-  · rintro ⟨h₁, h₂⟩
-    exact union_subset_union h₁ h₂
+      omega
+  grind
 
 /-- List forms on disjoint prime sets multiply: the lists are pairs, the represented sets
 are unions. -/
@@ -285,23 +276,21 @@ theorem listForm_mul {Q₁ Q₂ : Finset ℕ} (hQ : Disjoint Q₁ Q₂) {J₁ : 
         ext p
         simp only [mem_sdiff, mem_union]
         constructor
-        · rintro ⟨hp | hp, hp'⟩
-          · exact Or.inl ⟨hp, fun h => hp' (Or.inl h)⟩
-          · exact Or.inr ⟨hp, fun h => hp' (Or.inr h)⟩
+        · simp_all
         · rintro (⟨hp, hp'⟩ | ⟨hp, hp'⟩)
           · refine ⟨Or.inl hp, ?_⟩
             rintro (h | h)
-            · exact hp' h
+            · simp_all
             · exact disjoint_left.1 hQ (hD₁ hp) (hR₂ j₂ hj₂ h)
           · refine ⟨Or.inr hp, ?_⟩
             rintro (h | h)
             · exact disjoint_left.1 hQ (hR₁ j₁ hj₁ h) (hD₂ hp)
-            · exact hp' h
+            simp_all
       rw [hsd, prod_union (disjoint_of_subset_left (sdiff_subset.trans hD₁)
         (disjoint_of_subset_right (sdiff_subset.trans hD₂) hQ))]
       ring
-    · rw [ite_eq_right h₂, ite_eq_right fun h => h₂ (hiff.1 h).2, mul_zero]
-  · rw [ite_eq_right h₁, ite_eq_right fun h => h₁ (hiff.1 h).1, zero_mul]
+    simp_all
+  simp_all
 
 /-- The weight sum `∑_j [R_j ⊆ D(n)] |c_j|` of a product of list forms on disjoint sets. -/
 theorem sum_norm_mul {Q₁ Q₂ : Finset ℕ} (hQ : Disjoint Q₁ Q₂) {J₁ : Finset κ}
@@ -314,10 +303,8 @@ theorem sum_norm_mul {Q₁ Q₂ : Finset ℕ} (hQ : Disjoint Q₁ Q₂) {J₁ : 
   refine sum_congr rfl fun j₁ hj₁ => sum_congr rfl fun j₂ hj₂ => ?_
   have hiff := union_subset_divs_iff hQ (hR₁ j₁ hj₁) (hR₂ j₂ hj₂) n
   by_cases h₁ : R₁ j₁ ⊆ divs Q₁ n
-  · by_cases h₂ : R₂ j₂ ⊆ divs Q₂ n
-    · rw [ite_eq_left h₁, ite_eq_left h₂, ite_eq_left (hiff.2 ⟨h₁, h₂⟩), norm_mul]
-    · rw [ite_eq_right h₂, ite_eq_right fun h => h₂ (hiff.1 h).2, mul_zero]
-  · rw [ite_eq_right h₁, ite_eq_right fun h => h₁ (hiff.1 h).1, zero_mul]
+  · simp_all
+  simp_all
 
 /-- The mass `∑_j |c_j| / ∏ R_j` of a product of list forms on disjoint sets. -/
 theorem sum_norm_div_mul {Q₁ Q₂ : Finset ℕ} (hQ : Disjoint Q₁ Q₂) {J₁ : Finset κ}
@@ -327,8 +314,7 @@ theorem sum_norm_div_mul {Q₁ Q₂ : Finset ℕ} (hQ : Disjoint Q₁ Q₂) {J�
       (∑ j ∈ J₁, ‖c₁ j‖ / ∏ p ∈ R₁ j, (p : ℝ)) * ∑ j ∈ J₂, ‖c₂ j‖ / ∏ p ∈ R₂ j, (p : ℝ) := by
   rw [sum_mul_sum, sum_product]
   refine sum_congr rfl fun j₁ hj₁ => sum_congr rfl fun j₂ hj₂ => ?_
-  rw [prod_union (disjoint_of_subset_left (hR₁ j₁ hj₁) (disjoint_of_subset_right
-    (hR₂ j₂ hj₂) hQ)), norm_mul]
+  rw [prod_union (by grind), norm_mul]
   ring
 
 /-- (6.27): `∑_{n ≤ N} z^{|D(n)|} ≤ N ∏_{p ∈ Q} (1 + (z - 1)/p)` for `z ≥ 1`. -/
@@ -343,7 +329,7 @@ theorem sum_pow_card_divs_le {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {z : �
       rw [← prod_const, show z = 1 + (z - 1) by ring, prod_one_add]
       simp
     rw [this, ← sum_filter]
-    refine sum_congr ?_ fun _ _ => rfl
+    refine sum_congr ?_ (by simp)
     ext U
     simp only [mem_powerset, mem_filter]
     constructor
@@ -359,11 +345,11 @@ theorem sum_pow_card_divs_le {Q : Finset ℕ} (hQ : ∀ p ∈ Q, p.Prime) {z : �
     rw [← sum_filter, sum_const, nsmul_eq_mul, Nat.Ioc_filter_dvd_card_eq_div, prod_div_distrib,
       prod_const]
     have hpos : (0 : ℝ) < ∏ p ∈ U, (p : ℝ) :=
-      prod_pos fun p hp => by exact_mod_cast (hQ p (mem_powerset.1 hU hp)).pos
+      prod_pos fun p hp => by exact_mod_cast (hQ p (by grind)).pos
     have hdiv : ((N / ∏ p ∈ U, p : ℕ) : ℝ) ≤ N / ∏ p ∈ U, (p : ℝ) := by
       rw [← Nat.cast_prod]
       exact Nat.cast_div_le
-    have hz1 : 0 ≤ (z - 1) ^ #U := pow_nonneg (by linarith) _
+    have hz1 : 0 ≤ (z - 1) ^ #U := by positivity
     calc ((N / ∏ p ∈ U, p : ℕ) : ℝ) * (z - 1) ^ #U ≤ N / (∏ p ∈ U, (p : ℝ)) * (z - 1) ^ #U :=
           mul_le_mul_of_nonneg_right hdiv hz1
       _ = N * ((z - 1) ^ #U / ∏ p ∈ U, (p : ℝ)) := by ring

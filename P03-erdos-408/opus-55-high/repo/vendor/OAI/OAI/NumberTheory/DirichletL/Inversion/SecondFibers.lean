@@ -12,7 +12,7 @@ open ActualEisensteinCubic
 open CompletedGauss (primaryGenerator primaryGenerator_mul)
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
 open InverseInitialFibers (divisor_card_mul_le divisor_card_pos)
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 @[ext] structure OuterTriple where
@@ -52,13 +52,13 @@ lemma core_dvd_label {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
     x.core ⟨i.val, by omega⟩ ∣ f := by
   have hJ : x.core 0 ∣ f := by
     rw [← hx.label]
-    exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (dvd_mul_right _ _) _) _
+    exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (by simp) _) _
   fin_cases i
-  · exact hJ
+  · simp_all
   · rw [← hx.label]
-    exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (dvd_mul_left _ _) _) _
+    exact dvd_mul_of_dvd_left (dvd_mul_of_dvd_left (by simp) _) _
   · rw [← hx.label]
-    exact dvd_mul_of_dvd_left (dvd_mul_left _ _) _
+    exact dvd_mul_of_dvd_left (by simp) _
   · exact (show x.core 3 ∣ x.core 0 from ⟨x.cubeResidual, hx.j_split.symm⟩).trans hJ
 
 lemma common_label_dvd {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
@@ -80,7 +80,7 @@ lemma cube_radical_dvd {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
     (x.core 4 * x.secondCube).radical ∣ γ.q0 * x.core 0 := by
   apply Ideal.dvd_iff_le.mpr
   have hle := Ideal.radical_mono (Ideal.dvd_iff_le.mp (cube_product_dvd_square hx))
-  rw [Ideal.radical_pow (γ.q0 * x.core 0) (by decide : (2 : ℕ) ≠ 0)] at hle
+  rw [Ideal.radical_pow (γ.q0 * x.core 0) (by positivity)] at hle
   exact Ideal.le_radical.trans hle
 
 lemma cube_factor_dvd_target {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
@@ -117,10 +117,10 @@ lemma core_ne_zero {Jo Jn : ℕ} {x : SecondTuple Jo Jn}
           dsimp
           omega
         exact (he ▸ core_dvd_outer_label hx ⟨i.val-5, by omega⟩).trans
-          (dvd_pow_self _ (by decide : 2 ≠ 0))
+          (by simp)
   intro hz
   rw [hz, zero_dvd_iff] at hd
-  exact (pow_ne_zero 2 (mul_ne_zero hq hf)) hd
+  exact (pow_ne_zero 2 (by positivity)) hd
 
 theorem valid_key_injective {Jo Jn : ℕ} (γ : OuterTriple) (f : Ideal O) (k : O)
     (hf : f ≠ 0) (hq : γ.q0 ≠ 0) {x y : SecondTuple Jo Jn}
@@ -163,26 +163,26 @@ theorem valid_tuple_card_le {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
   let encode (x : T) : Target :=
     (fun i => ⟨x.val.core ⟨i.val, by omega⟩,
       (mem_idealDivisors hf).mpr (core_dvd_label (hT x.val x.property) i)⟩,
-    ⟨x.val.core 4, (mem_idealDivisors (pow_ne_zero 2 (mul_ne_zero hq hf))).mpr
+    ⟨x.val.core 4, (mem_idealDivisors (by positivity)).mpr
       (cube_factor_dvd_target (hT x.val x.property))⟩,
     (fun i => ⟨x.val.core ⟨i.val+5, by omega⟩,
       (mem_idealDivisors (mul_ne_zero hq hf)).mpr (core_dvd_outer_label (hT x.val x.property) i)⟩),
     (fun i => ⟨(x.val.oldAssigned i).val,
-      (mem_idealDivisors (mul_ne_zero (mul_ne_zero hq hf) ht)).mpr
+      (mem_idealDivisors (by positivity)).mpr
         ((hT x.val x.property).old_dvd i)⟩),
     (fun i => ⟨(x.val.newAssigned i).val,
-      (mem_idealDivisors (mul_ne_zero hf hr)).mpr ((hT x.val x.property).new_dvd i)⟩))
+      (mem_idealDivisors (by positivity)).mpr ((hT x.val x.property).new_dvd i)⟩))
   have hi : Function.Injective encode := by
     intro x y he
     apply Subtype.ext
-    apply valid_key_injective γ f k hf hq (hT x.val x.property) (hT y.val y.property)
+    apply valid_key_injective γ f k hf hq (by grind) (by grind)
     · funext i
       fin_cases i
       · exact congrArg (fun z : Target => (z.1 0).val) he
       · exact congrArg (fun z : Target => (z.1 1).val) he
       · exact congrArg (fun z : Target => (z.1 2).val) he
       · exact congrArg (fun z : Target => (z.1 3).val) he
-      · exact congrArg (fun z : Target => z.2.1.val) he
+      · grind
       · exact congrArg (fun z : Target => (z.2.2.1 0).val) he
       · exact congrArg (fun z : Target => (z.2.2.1 1).val) he
       · exact congrArg (fun z : Target => (z.2.2.1 2).val) he
@@ -211,17 +211,15 @@ theorem valid_tuple_card_le_separated {Jo Jn : ℕ} (T : Finset (SecondTuple Jo 
   let dr := (idealDivisors γ.residual).card
   have hqf : (idealDivisors (γ.q0*f)).card ≤ dq*df := divisor_card_mul_le _ _ hq hf
   have hsq : (idealDivisors ((γ.q0*f)^2)).card ≤ (dq*df)^2 :=
-    (divisor_card_sq_le _ (mul_ne_zero hq hf)).trans (Nat.pow_le_pow_left hqf 2)
+    (divisor_card_sq_le _ (by positivity)).trans (Nat.pow_le_pow_left hqf 2)
   have hold : (idealDivisors (γ.q0*f*γ.quotient)).card ≤ dq*df*dt :=
-    (divisor_card_mul_le _ _ (mul_ne_zero hq hf) ht).trans (Nat.mul_le_mul_right _ hqf)
+    (divisor_card_mul_le _ _ (by positivity) ht).trans (Nat.mul_le_mul_right _ hqf)
   have hnew : (idealDivisors (f*γ.residual)).card ≤ df*dr := divisor_card_mul_le _ _ hf hr
   apply (valid_tuple_card_le T γ f k hf hq ht hr hT).trans
   calc
     _ ≤ df^4 * (dq*df)^2 * (dq*df)^3 * (dq*df*dt)^Jo * (df*dr)^Jn := by
       gcongr
     _ = _ := by
-      dsimp [df, dq, dt, dr]
-      simp only [mul_pow, pow_add]
       ring
 
 theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
@@ -237,12 +235,6 @@ theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo J
     (pow_le_pow_right₀ (divisor_card_pos γ.quotient ht) ho))
     (pow_le_pow_right₀ (divisor_card_pos γ.residual hr) hn)
 
-def originalSource {Jo Jn : ℕ} (source : Finset (SecondTuple Jo Jn))
-    (oldLists : Fin Jo → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (newLists : Fin Jn → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (keep : SecondTuple Jo Jn → Prop) : Finset (SecondTuple Jo Jn) :=
-  source.filter fun x => (∀ i, x.oldAssigned i ∈ oldLists i) ∧
-    (∀ i, x.newAssigned i ∈ newLists i) ∧ keep x
 
 end
 end SevenEighths.InverseSecondFibers

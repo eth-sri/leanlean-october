@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerMarked
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic UniqueFactorizationMonoid ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma prime_dvd_iff_valuation (P : PrimeIdeal) (I : Id) (hI : I≠0) :
     P.val∣I ↔ primeValuations I P≠0 := by
   rw [primeValuations_apply,Multiset.count_ne_zero,mem_normalizedFactors_iff hI]
-  exact ⟨fun h=>⟨P.property,h⟩,fun h=>h.2⟩
+  grind
 
 lemma prime_dvd_high_completed (P : PrimeIdeal) (v : PrimeIdeal→₀HighValuation) :
     P.val∣(highIdeals v).1.1*(highIdeals v).1.2^3 ↔ (v P).1.1+3*(v P).1.2≠0 := by
   have hI : (highIdeals v).1.1≠0 := idealFromValuations_ne_zero _
   have hJ : (highIdeals v).1.2≠0 := idealFromValuations_ne_zero _
-  rw [prime_dvd_iff_valuation P _ (mul_ne_zero hI (pow_ne_zero _ hJ)),
-    primeValuations_mul _ _ hI (pow_ne_zero _ hJ),primeValuations_pow]
+  rw [prime_dvd_iff_valuation P _ (by positivity),
+    primeValuations_mul _ _ hI (by positivity),primeValuations_pow]
   simp only [highIdeals,primeValuations_idealFromValuations,Finsupp.add_apply,
     Finsupp.mapRange_apply,Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
 
@@ -53,7 +52,7 @@ lemma completedValuationMark_product (T : Finset PrimeIdeal) (v : PrimeIdeal→�
   · rw [ite_eq_left h]
     apply Finset.prod_eq_one
     intro P hP
-    exact ite_eq_left (h P hP)
+    exact ite_eq_left (by grind)
   · rw [ite_eq_right h]
     push Not at h
     obtain ⟨P,hP,hv⟩ := h
@@ -64,10 +63,10 @@ lemma highIdealMask_mark (S : Finset Id) (D I J K L : Id) :
     highIdealMask S D I J K L=(if D∣I*J^3 then 1 else 0)*highIdealMask S 1 I J K L := by
   unfold highIdealMask completedMask
   simp only [one_dvd,true_and]
-  split_ifs <;> simp_all
+  grind
 
 lemma markedIdealHighSummand_mark (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K L : Id) :
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) (I J K L : Id) :
     markedIdealHighSummand S D η u x w z I J K L=
       (if D∣I*J^3 then 1 else 0)*markedIdealHighSummand S 1 η u x w z I J K L := by
   rw [markedIdealHighSummand,highIdealMask_mark,markedIdealHighSummand,mul_assoc]

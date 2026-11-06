@@ -9,49 +9,39 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalMainPaid
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open HeckeFamily
+open CenteredMomentAllocatedNaturalSource
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
 open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+open CenteredMomentSectorLocalization
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
 open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentSecondPhysicalBlock CanonicalQuadraticSieve CompletedGauss
+open ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
 
 omit [DecidableEq α] in
-lemma common_raw_caps (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
+lemma common_raw_caps (src:Input α)(C R:Ideal HeckeFamily.O)(B:actualAllocations src.pools C)
     (τ:Character)(t F:ℝ)(h₁:src.X₁≤F)(h₂:src.X₂≤F)(h₃:src.Y₁≤F)(h₄:src.Y₂≤F):
     let d:=commonData (withHeight src τ t) C R B
     d.X₁≤F ∧ d.X₂≤F ∧ d.Y₁≤F ∧ d.Y₂≤F:=by
@@ -70,7 +60,7 @@ theorem actual_main_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     (hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∃Z₀:ℝ,1<Z₀ ∧
     ∀θ:α→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
-    ∀εchild:ℝ,∀Q:Ideal O,Q≤M → ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
+    ∀εchild:ℝ,∀Q:Ideal HeckeFamily.O,Q≤M → ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
@@ -78,10 +68,10 @@ theorem actual_main_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
-    ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
+    ∀(C D R0:Ideal HeckeFamily.O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
-    τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
     ∀K sigma delta reserve cost asource:ℝ,0<K → 0≤sigma → 1≤cost → 0<asource →
     let input:=child src C R0 B τ t
@@ -89,18 +79,18 @@ theorem actual_main_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
       (Real.logb Z (firstNominalScale C D
         (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve
-    ∀(Scols:Finset (Ideal O))(βsource:Ideal O→ℂ)(C₂ D₂:Ideal O),
+    ∀(Scols:Finset (Ideal HeckeFamily.O))(βsource:Ideal HeckeFamily.O→ℂ)(C₂ D₂:Ideal HeckeFamily.O),
     ∀hC₂:Supported C₂,∀hD₂:Supported D₂,primeSupport C₂=primeSupport D₂ →
-    ∀(U:Finset (CommonIndex C₂ D₂))(Rwindow:ℝ)(rows:Finset O)(Wkernel:𝓢(ℝ,ℂ))(dyad:Fin 4→ℤ),
-    (∀I:Ideal O,βsource I≠0 → asource*volume input≤(I.absNorm:ℝ)) →
+    ∀(U:Finset (CommonIndex C₂ D₂))(Rwindow:ℝ)(rows:Finset HeckeFamily.O)(Wkernel:𝓢(ℝ,ℂ))(dyad:Fin 4→ℤ),
+    (∀I:Ideal HeckeFamily.O,βsource I≠0 → asource*volume input≤(I.absNorm:ℝ)) →
     physicalBlock τ t Scols βsource C₂ D₂ hC₂ hD₂ U Rwindow rows Wkernel Kmain dyad≠0 →
     ∀family:RayFourExpansion.RayCharacter→Character,Family τ C₂ D₂ hC₂ hD₂ U family →
     ∀χ:RayFourExpansion.RayCharacter,
     Real.logb Z (dyadicScale (dyad 1))+Real.logb Z ((family χ).modulus.absNorm:ℝ)≤Mcap →
-    ∀Cpick Rpick:Ideal O,Cpick=C₂ ∨ Cpick=D₂ → Rpick≠0 →
+    ∀Cpick Rpick:Ideal HeckeFamily.O,Cpick=C₂ ∨ Cpick=D₂ → Rpick≠0 →
     ∀B₂:actualAllocations input.pools Cpick,
     frozenCoefficient B₂.val Cpick Rpick input.ν input.W input.P≠0 →
-    ∀Dalloc:Ideal O,∀alloc:Allocation Dalloc
+    ∀Dalloc:Ideal HeckeFamily.O,∀alloc:Allocation Dalloc
       (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B₂.val⊕Fin 2)),
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
     src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
@@ -131,7 +121,7 @@ theorem actual_main_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
   intro Scols βsource C₂ D₂ hC₂ hD₂ hCD₂ U Rwindow rows Wkernel dyad hlower hphysical
     family hfamily χ hwidth Cpick Rpick hside hRpick B₂ hB₂ Dalloc alloc p hp₁ hp₂
     hX₁ hX₂ hY₁ hY₂ Mdecl θclip hθclip hcap hMdecl hclip
-  have hz:1<Z:=hZ₀.trans_le hZ
+  have hz:1<Z:=by linarith
   have hcost0:0<cost:=zero_lt_one.trans_le hcost
   let input:=child src C R0 B τ t
   let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
@@ -165,14 +155,14 @@ theorem actual_main_child_from_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremo
     (fun i=>hhi i.val) (fun i=>hMs i.val) Cpick Rpick B₂ Dalloc alloc hRpick
     (family χ) dyad hn hwidth p hp₁ hp₂ caps₂.1 caps₂.2.1 caps₂.2.2.1 caps₂.2.2.2
     (Real.logb Z (volume src)) Mdecl (envelopeRef (cost*(τ.modulus.absNorm:ℝ)) C₂ D₂ U dyad)
-    0 (sigma/3) _ 0 θclip (envelope_pos _ (mul_pos hcost0 hτnorm) _ _ hC₂ _ _) le_rfl
+    0 (sigma/3) _ 0 θclip (envelope_pos _ (by positivity) _ _ hC₂ _ _) le_rfl
     (by positivity) hδ le_rfl hθclip
     (by simpa only [input,CenteredMomentAmplificationChildInput.child,commonData,withHeight,hmatch.scale,
       Real.logb_rpow (zero_lt_one.trans hz) hz.ne'] using hpar)
     (by simpa only [CenteredMomentAllocatedChildCapacity.preVolume,commonData,withHeight,
       zero_add] using hshift)
     (by linarith) hclip
-  simpa only [zero_add] using hh
+  simpa using hh
 
 end SevenEighths.CenteredMomentEnergyCanonicalMainPaid
 

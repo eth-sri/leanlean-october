@@ -79,7 +79,7 @@ private theorem inv_one_add_div_two_pi_sq_le {a : ℝ} (ha : 0 ≤ a) :
     linarith
   rw [← div_eq_mul_inv, le_div_iff₀ (by positivity), inv_mul_eq_div, div_le_iff₀ (by positivity),
     ← mul_pow]
-  exact pow_le_pow_left₀ (by positivity) h 2
+  nlinarith
 
 /-- `((1 + |u|)²)⁻¹` is integrable. -/
 private theorem integrable_inv_one_add_abs_sq :
@@ -114,7 +114,7 @@ theorem exists_plateauTwist_separation : ∃ C₀ : ℝ, ∀ Λ X lam : ℝ, 1 �
   have hdec : ∀ v s, ‖ft2 Φ v s‖ ≤ M * ((1 + |v|) ^ 2)⁻¹ * ((1 + |s|) ^ 2)⁻¹ := fun v s => by
     have h := norm_ft2_mul_le hΦc (by norm_num) hΦs hΦM v s
     rw [mul_assoc, ← mul_inv, ← div_eq_mul_inv, le_div_iff₀ (by positivity), mul_comm]
-    exact h
+    omega
   -- `K(τ, σ) = ft2 Φ (τ/(2πX), (τ + σ)/(2π)) / ((2π)² X)`
   set c : ℝ := (2 * π) ^ 2 * X with hc
   have hc0 : 0 < c := by positivity
@@ -235,7 +235,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
     refine hasCompactSupport_of_lt_abs (R := 4) fun u hu => ?_
     by_contra h
     have h' := lt_of_dyadicBump_ne_zero fun h0 => h (by rw [h0, Complex.ofReal_zero])
-    exact absurd hu (not_lt.2 (abs_le.2 ⟨by linarith, h'.2.le⟩))
+    exact by grind
   obtain ⟨P, hP⟩ := exists_norm_iteratedFDeriv_le (Complex.ofRealCLM.contDiff.comp hηd) hc 2
   have hP0 : 0 ≤ P := (norm_nonneg _).trans (hP 0 (Nat.zero_le _) 0)
   refine ⟨16 * (1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2), fun lam => ?_⟩
@@ -256,7 +256,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
           gcongr
           norm_num
       _ = K := by ring
-  have hK0 : 0 ≤ K := (norm_nonneg _).trans (hφM 0 (Nat.zero_le _) 0)
+  have hK0 : 0 ≤ K := by positivity
   -- `F(z) = φ(e^z)` is supported in `[-4, 4]` with `|F| ≤ 1` and `|F''| ≤ 2 K e^8`
   set F : ℝ → ℂ := φ ∘ exp with hF
   have hFd : ContDiff ℝ ∞ F := hφd.comp contDiff_exp
@@ -267,8 +267,8 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
       have h' := lt_of_dyadicBump_ne_zero h
       rcases lt_abs.1 hz with hz | hz
       · linarith [add_one_le_exp z]
-      · have : exp z < 1 := Real.exp_lt_one_iff.2 (by linarith)
-        linarith [h'.1]
+      · have  := Real.exp_lt_one_iff.2 (by linarith)
+        linarith
     simp [hF, hφ, hη]
   have hF0 : ∀ z, ‖F z‖ ≤ 1 := by
     intro z
@@ -286,11 +286,11 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
         intro i hi1 _
         rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_eq_iterate, iter_deriv_exp,
           Real.norm_eq_abs, abs_of_pos (exp_pos _)]
-        exact (exp_le_exp.2 ((le_abs_self z).trans hz)).trans
-          (le_self_pow₀ (one_le_exp (by norm_num)) (by omega))
+        exact (exp_le_exp.2 (by grind)).trans
+          (le_self_pow₀ (by simp) (by omega))
       have h := norm_iteratedFDeriv_comp_le hφd contDiff_exp (by simp) z
         (fun i hi => hφM i hi _) hD
-      rwa [Nat.factorial_two, Nat.cast_ofNat] at h
+      simp_all
   obtain ⟨hint, hI⟩ := integral_norm_ft_le (hFd.of_le (by simp)) (by norm_num) hFs hF0 hF2
   -- rescale: `g(ξ) = ft F (ξ/(2π)) / (2π)`
   have hpi : (0 : ℝ) < 2 * π := by positivity
@@ -303,14 +303,7 @@ theorem exists_bumpTwist_mellin : ∃ C₀ : ℝ, ∀ lam : ℝ, ∃ g : ℝ →
     rw [hg]
     refine hI.trans ?_
     have h1 : 1 ≤ (1 + |lam|) ^ 2 := by nlinarith [abs_nonneg lam]
-    have h8 : 0 ≤ 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2 := by positivity
-    calc 4 * 4 * (1 + 2 * K * exp 4 ^ 2) =
-        16 * (1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2 * (1 + |lam|) ^ 2) := by
-          rw [hK]
-          ring
-      _ ≤ 16 * ((1 + 2 * (4 * P * (2 * π) ^ 2) * exp 4 ^ 2) * (1 + |lam|) ^ 2) := by
-          nlinarith
-      _ = _ := by ring
+    linarith
   · -- `η(y) e(-λy) = F(log y)`, then invert and substitute `ξ = 2π t`
     have hF' : (dyadicBump y : ℂ) * Complex.exp (-(2 * π * Complex.I * ((lam * y : ℝ) : ℂ))) =
         F (log y) := by

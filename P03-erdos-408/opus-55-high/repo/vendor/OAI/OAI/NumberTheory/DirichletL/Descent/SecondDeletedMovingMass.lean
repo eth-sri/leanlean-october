@@ -9,13 +9,9 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedMovingMassUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
-open InverseSecondProfileUniform InverseAmbientProfileTower
+local instance inverseSecondDeletedMovingMassUnits : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 
 end

@@ -47,10 +47,7 @@ lemma one_sub_pow_le_exp {n : ℕ} {T : ℝ} (hn : T / 15 ≤ n) :
     _ ≤ Real.exp (-(failureDecay * T)) := by
         refine exp_le_exp.2 ?_
         unfold failureDecay
-        have : chernoffTheta / 4500 * T ≤ chernoffTheta * (1 / 4) / 75 * n := by
-          have := mul_le_mul_of_nonneg_left hn (show 0 ≤ chernoffTheta / 300 by positivity)
-          linarith
-        linarith
+        nlinarith
 
 /-- For large `x`, each family's free-factor sum is small, uniformly in `2 ≤ j ≤ J_c`. -/
 theorem eventually_freeFactorSum_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ : 1 < κ) :
@@ -75,12 +72,12 @@ theorem eventually_freeFactorSum_le {c : ℝ} (hc : 0 < c) (Ch Cj κ : ℝ) (hκ
     · rw [mem_singleton.1 h]; exact subset_union_right
   have hFT : (F.card : ℝ) ≤ logLog x ∧ logLog x / 15 ≤ F.card := by
     rcases mem_insert.1 hF with h | h
-    · rw [h]; exact ⟨hgroups.2.2.2.2.1, hcard.1⟩
-    · rw [mem_singleton.1 h]; exact ⟨hgroups.2.2.2.2.2.1, hcard.2⟩
+    · grind
+    · grind
   exact freeFactorSum_le_of_facts (⌈6 * logLog x⌉₊) failureDecay hx hlogx hγ0 hγ1 hside hFC
-    (fun g hg => (hgS g (hFC hg)).1) hxX hPX (hDγL (j' + 1) (by omega)) (hκE (j' + 1) (by omega))
-    (one_sub_pow_le_exp hFT.2) (hδ F.card hFT.1) (hH j' hj')
-    (herr j' hj' F hFT.1 fun g hg => (hgS g (hFC hg)).2)
+    (by grind) hxX hPX (by grind) (by grind)
+    (one_sub_pow_le_exp hFT.2) (by grind) (by grind)
+    (herr j' hj' F hFT.1 (by grind))
 
 /-- The final arithmetic: `e^{aT/4} (S₁ + S₂) ≤ 20 κ (x/L) L^{-a/2}`. -/
 lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT : 0 ≤ T)
@@ -99,7 +96,7 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
       5 * Real.exp (-(3 * a * T / 4)) := by
     have h3 : Real.exp (a * T / 4) * Real.exp (-(a * T)) = Real.exp (-(3 * a * T / 4)) := by
       rw [← exp_add]; ring_nf
-    have h4 : 0 ≤ Real.exp (a * T / 4) := (exp_pos _).le
+    have h4 : 0 ≤ Real.exp (a * T / 4) := by positivity
     have h5 : Real.exp (a * T / 4) * Real.exp (-T) ≤ Real.exp (a * T / 4) * Real.exp (-(a * T)) :=
       mul_le_mul_of_nonneg_left h1 h4
     nlinarith
@@ -113,7 +110,7 @@ lemma final_le {a T L X x κ S₁ S₂ : ℝ} (ha0 : 0 < a) (ha1 : a ≤ 1) (hT 
   rw [hrpow]
   calc Real.exp (a / 4 * T) * (S₁ + S₂)
       ≤ Real.exp (a / 4 * T) * (X / L * (10 * Real.exp (-(3 * a * T / 4)))) :=
-        mul_le_mul_of_nonneg_left hsum (exp_pos _).le
+        mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = 10 * (X / L) * Real.exp (-(a / 2 * T)) := by
         rw [show Real.exp (-(a / 2 * T)) = Real.exp (a / 4 * T) * Real.exp (-(3 * a * T / 4)) by
           rw [← exp_add]; ring_nf]

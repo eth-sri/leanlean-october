@@ -8,26 +8,25 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalZeroPhysical
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
+open FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-open CompletedHeight SecondPassIntegration FourierBridge
-local notation "O"=>ActualEisensteinCubic.O
+open CompletedHeight FourierBridge
 
 theorem original_dyadic_zero_tail
     (om:𝓢(ℝ,ℂ))(b Mmax Fmax eta tau saving eps:ℝ)
     (hs:∀y,om y≠0→y≤b)(hMm:0≤Mmax)(hFm:0≤Fmax)(heta:0≤eta)(htau:0<tau)(heps:0<eps):
     ∃Czero Ctail:ℝ,0≤Czero ∧ 0≤Ctail ∧
     ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-      (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+      (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
       (Z M r ell V Γ theta:ℝ),
       1<Z→2≤Z^eta→0≤M→M≤Mmax→0≤ell→0≤V→ (-eta≤r) → (r+3*ell+V≤Fmax)→0≤Γ→b≤Z^eta→
@@ -52,7 +51,7 @@ theorem original_dyadic_zero_tail
   let G:=SchwartzMap.seminorm ℝ 0 0 om
   let Cz':=Cz*G^2*‖paperRadialFourier rowMajorant 0‖
   let Ct':=Ct*G^2*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) rowMajorant)
-  refine ⟨Cz',Ct',by dsimp [Cz'];positivity,by dsimp [Ct'];positivity,?_⟩
+  refine ⟨Cz',Ct',by positivity,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hc pool Q labels β Ψ m slots lists weights Z M r ell V Γ theta
     hZ hbin hM hMmax hell hV hr hF hΓ hb hΨ hQ hn hlabels hβ hslots hw W mark
   have hz:0<Z:=zero_lt_one.trans hZ
@@ -66,11 +65,11 @@ theorem original_dyadic_zero_tail
     have hnon:om (primeProductNorm p U/Z^r)≠0:=by
       intro hh
       exact hU (by simp [W,normTwistedSource,hh])
-    have hle:primeProductNorm p U≤b*Z^r:=(div_le_iff₀ (Real.rpow_pos_of_pos hz _)).mp (hs _ hnon)
+    have hle:primeProductNorm p U≤b*Z^r:=(div_le_iff₀ (by positivity)).mp (hs _ hnon)
     apply hle.trans
     calc
-      b*Z^r≤Z^eta*Z^r:=mul_le_mul_of_nonneg_right hb (Real.rpow_nonneg hz.le _)
-      _=Z^(r+eta):=by rw [←Real.rpow_add hz];congr 1;ring
+      b*Z^r≤Z^eta*Z^r:=mul_le_mul_of_nonneg_right hb (by positivity)
+      _=Z^(r+eta):=by rw [←Real.rpow_add hz];ring
   have hzero':=hzero p hp hcop hg hinj hc pool Q labels β Ψ m slots lists weights W rowMajorant
     Z M r ell V eta Γ G hZ (by linarith) (by linarith) hΓ hG hΨ hQ hn hlabels hβ hslots hw hW hsupport
   have hcb:=reopenedCubeFamily_cube_norms p Q _ hQ

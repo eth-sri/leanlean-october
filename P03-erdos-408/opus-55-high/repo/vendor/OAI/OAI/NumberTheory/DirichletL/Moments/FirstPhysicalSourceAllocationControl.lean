@@ -9,14 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocationCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAllocationGaussEnergy CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentSourceMass
+open CenteredMomentCommonRadialData
+open CenteredMomentAmplificationChildInput
 open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance firstAllocationControlDecidableEq {κ : Type*} : DecidableEq κ := Classical.decEq _
 
@@ -27,13 +26,13 @@ lemma frozen_live_control (B : Tuple ι) (M : ι→ℝ) :
   rw [mul_comm]
   exact Finset.prod_filter_mul_prod_filter_not Finset.univ (fun i=>B (Sum.inl i)=1) M
 
-lemma frozen_child_control (s : Input ι) (C R : Ideal O)
+lemma frozen_child_control (s : Input ι) (C R : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations s.pools C) (τ : HeckeFamily.Character) (t : ℝ) :
     (frozenControl B.val s.M)^2 * (∏i,(child s C R B τ t).M i)^2 = (∏i,s.M i)^2 := by
   rw [←mul_pow]
   exact congrArg (fun x:ℝ=>x^2) (frozen_live_control B.val s.M)
 
-lemma allocated_control_sum (s : Input ι) (C R : Ideal O)
+lemma allocated_control_sum (s : Input ι) (C R : Ideal ActualEisensteinCubic.O)
     (τ : HeckeFamily.Character) (t : ℝ) :
     (∑B : actualAllocations s.pools C,
       (frozenControl B.val s.M)^2 * (∏i,(child s C R B τ t).M i)^2) =
@@ -43,20 +42,20 @@ lemma allocated_control_sum (s : Input ι) (C R : Ideal O)
 
 theorem allocated_control_mass (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃D : ℝ,0<D ∧ ∀{κ : Type*}[Fintype κ],Fintype.card κ≤N →
-      ∀(s : Input κ)(C R : Ideal O),C≠0 →
+      ∀(s : Input κ)(C R : Ideal ActualEisensteinCubic.O),C≠0 →
       ∀(τ : HeckeFamily.Character)(t : ℝ),
         ((actualAllocations s.pools C).card:ℝ)/(Ideal.absNorm C:ℝ) *
           (∑B : actualAllocations s.pools C,
             (frozenControl B.val s.M)^2 * (∏i,(child s C R B τ t).M i)^2) ≤
           D*(Ideal.absNorm C:ℝ)^(ε-1)*(∏i,s.M i)^2 := by
   obtain ⟨D,hD,hcard⟩ := CenteredMomentAllocationCost.actualAllocations_uniform_small_power
-    (N+2) (ε/2) (half_pos hε)
+    (N+2) (ε/2) (by positivity)
   refine ⟨D^2,sq_pos_of_pos hD,?_⟩
   intro κ _ hn s C R hC τ t
-  have hN : (0:ℝ)<Ideal.absNorm C := CenteredMomentFirstScale.norm_pos C hC
-  have hh := hcard (ι:=κ⊕Fin 2) (by simp only [Fintype.card_sum,Fintype.card_fin];omega)
+  have hN := CenteredMomentFirstScale.norm_pos C hC
+  have hh := hcard (ι:=κ⊕Fin 2) (by simpa)
     s.pools C hC
-  have hs := pow_le_pow_left₀ (Nat.cast_nonneg (actualAllocations s.pools C).card) hh 2
+  have hs := pow_le_pow_left₀ (by positivity) hh 2
   rw [mul_pow,←Real.rpow_mul_natCast hN.le,show ε/2*(2:ℕ)=ε by norm_num] at hs
   rw [allocated_control_sum]
   calc

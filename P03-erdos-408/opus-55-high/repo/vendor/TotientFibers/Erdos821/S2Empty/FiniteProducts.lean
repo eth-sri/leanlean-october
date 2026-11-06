@@ -5,7 +5,6 @@ public import Mathlib.Algebra.BigOperators.Ring.Finset
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Empty
 
@@ -17,7 +16,7 @@ theorem sum_pi_prod {ι : Type*} [Fintype ι] [DecidableEq ι] {β : ι → Type
   classical
   calc
     _ = ∑ x ∈ Fintype.piFinset (fun i => (Finset.univ : Finset (β i))),
-        ∏ i, f i (x i) := by simp [Fintype.piFinset_univ]
+        ∏ i, f i (x i) := by simp
     _ = _ := by
       rw [← Finset.prod_univ_sum (fun i => (Finset.univ : Finset (β i))) f]
 

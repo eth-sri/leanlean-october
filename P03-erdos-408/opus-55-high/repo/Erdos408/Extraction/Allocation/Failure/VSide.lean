@@ -77,7 +77,7 @@ lemma SideGroup.sideModel_mem (c : ℕ) :
   have he2 := sum_powersetCard_two_prod_le g (hg.modelWeight_nonneg c)
   have he20 : 0 ≤ ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p :=
     sum_nonneg fun K hK => prod_nonneg fun p hp =>
-      hg.modelWeight_nonneg c p ((mem_powersetCard.1 hK).1 hp)
+      hg.modelWeight_nonneg c p (by grind)
   unfold sideModel
   refine ⟨by nlinarith, by linarith, by nlinarith⟩
 
@@ -133,7 +133,7 @@ lemma SideGroup.one_sub_sideAlpha_mul_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
     -- `μ_g ≥ V_g - 1/p₀ ≥ 2/5`
     have hμ : 2 / 5 ≤ ∑ p ∈ g, modelWeight c p := by
       obtain ⟨p₀, hp₀⟩ := card_eq_one.1 h1
-      have hp₀g : p₀ ∈ g := (mem_filter.1 (hp₀ ▸ mem_singleton_self p₀)).1
+      have hp₀g := (mem_filter.1 (hp₀ ▸ mem_singleton_self p₀)).1
       have hlow : ∀ p ∈ g, (1 : ℝ) / p - (if p = p₀ then (1 : ℝ) / p else 0) ≤
           modelWeight c p := by
         intro p hp
@@ -143,10 +143,10 @@ lemma SideGroup.one_sub_sideAlpha_mul_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
           exact hg.modelWeight_nonneg c p₀ hp₀g
         · have hnd : ¬ p ∣ d := by
             intro hpd
-            have : p ∈ g.filter (· ∣ d) := mem_filter.2 ⟨hp, hpd⟩
+            have : p ∈ g.filter (· ∣ d) := by grind
             rw [hp₀] at this
-            exact hpp (mem_singleton.1 this)
-          have hnc : ¬ p ∣ c := fun h => hnd ((hcd p hp).1 h)
+            exact by grind
+          have hnc : ¬ p ∣ c := by grind
           simp only [hpp, ↓reduceIte, sub_zero, modelWeight, hnc]
           exact one_div_le_one_div_of_le (by linarith) (by linarith)
       have := sum_le_sum hlow
@@ -155,10 +155,8 @@ lemma SideGroup.one_sub_sideAlpha_mul_le {c₁ : ℝ} (hc₁ : 0 ≤ c₁) (hc�
       have : (1 : ℝ) / p₀ ≤ 1 / 100 := one_div_le_one_div_of_le (by norm_num) h100
       unfold harmonicMass at hV'
       linarith
-    have hm : 1 / 5 ≤ sideModel g c := by linarith
-    have := mul_le_mul hα hm (by norm_num) hα0
-    linarith
-  · nlinarith
+    nlinarith
+  nlinarith
 
 end Group
 
@@ -176,15 +174,14 @@ lemma prod_keepPrimes_eq {𝒢 : Finset (Finset ℕ)} (hdisj : (𝒢 : Set (Fins
   by_cases hp : p ∈ d.primeFactors
   · obtain ⟨g₀, hg₀, hpg₀⟩ := mem_biUnion.1 (hdP p hp)
     rw [sum_eq_single g₀]
-    · simp [show p ∈ g₀ from hpg₀]
+    · simp_all
     · intro g hg hne
       have : p ∉ g := fun hpg => disjoint_left.1 (hdisj hg hg₀ hne) hpg hpg₀
-      simp [this]
-    · exact fun h => absurd hg₀ h
+      simp_all
+    simp_all
   · have : d.factorization p = 0 := Finsupp.notMem_support_iff.1 (by
-      rwa [Nat.support_factorization])
-    rw [this]
-    exact sum_eq_zero fun g _ => by split_ifs <;> rfl
+      simp_all)
+    simp_all
 
 /-- Sums of products over the group parts factor: `∑_{d ∈ D} ∏_g h_g(d_g) ≤ ∏_g ∑_{m} h_g(m)`. -/
 lemma sum_prod_keepPrimes_le {𝒢 : Finset (Finset ℕ)}
@@ -209,8 +206,7 @@ lemma sum_prod_keepPrimes_le {𝒢 : Finset (Finset ℕ)}
     _ ≤ ∑ κ ∈ Fintype.piFinset (fun g : 𝒢 => Dg g.1), ∏ g : 𝒢, h g.1 (κ g) := by
         refine sum_le_sum_of_subset_of_nonneg (fun κ hκ => ?_) fun κ hκ _ =>
           prod_nonneg fun g _ => hh g.1 g.2 _ (Fintype.mem_piFinset.1 hκ g)
-        obtain ⟨d, hd, rfl⟩ := mem_image.1 hκ
-        exact Fintype.mem_piFinset.2 fun g => hDg d hd g.1 g.2
+        grind
 
 /-- Group parts keep the primes of the group. -/
 lemma primeCount_keepPrimes {g : Finset ℕ} (hg : ∀ p ∈ g, p.Prime) {d : ℕ} (hd : d ≠ 0) :

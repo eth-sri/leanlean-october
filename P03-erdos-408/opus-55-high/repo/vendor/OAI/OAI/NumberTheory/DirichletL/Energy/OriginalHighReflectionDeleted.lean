@@ -9,11 +9,11 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDirect
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyOriginalHighReflectionGeometry CenteredMomentEnergyReferenceLowReflectionError
@@ -22,11 +22,10 @@ open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem deleted_original_from_low
     (Wslot:ℝ→ℂ)(aslot bslot lo hi:ℝ)
@@ -38,7 +37,7 @@ theorem deleted_original_from_low
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(Lslot ε κ:ℝ)(η₀:Character)(Q:Ideal O)(K:ℝ),0≤K →
+      ∀(Lslot ε κ:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤K →
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap ε κ Z η₀ Q degree S K →
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
@@ -90,21 +89,21 @@ theorem deleted_original_from_low
   have hsumle:(∑i∈F,w i)≤∑i,w i:=Finset.sum_le_sum_of_subset_of_nonneg
     (Finset.subset_univ F) (fun i _ _=>hw i)
   have hg:=actual_deleted_gates s hZ.1 (by linarith) hBmask Mcap L X₁ X₂ (∑i,w i) (∑i∈F,w i) κ xi hs hL
-    hX₁ hX₂ (Finset.sum_nonneg (fun i _=>hw i)) hsum hsumle hκ hxi.le hxiM hshort hlarge hcap D₁ D₂ hD₁ hD₂
+    hX₁ hX₂ (by linarith) hsum hsumle hκ hxi.le hxiM hshort hlarge hcap D₁ D₂ hD₁ hD₂
   dsimp only at hg
   rw [←hg.1,←hg.2.1]
   have hZpos:0<Z:=zero_lt_one.trans hZ.1
   have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
-  have hLpos:0≤L:=by linarith [s.width_nonneg]
+  have hLpos:0≤L:=by linarith
   have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
   have hprod: (∏i∈F,Z^(w i))≤∏i,Z^(w i):=Finset.prod_le_prod_of_subset_of_one_le₀
-    (Finset.subset_univ F) (fun i _=> (Real.rpow_pos_of_pos hZpos _).le)
+    (Finset.subset_univ F) (fun i _=> by positivity)
     (fun i _ _=>Real.one_le_rpow hZ.1.le (hw i))
   rcases hg.2.2.2.2.2.2.2 with hd|hr
   · have hdirect:=direct_child_from_low M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
       η₀ Q degree S K hlow hBmask ha F θ w σ freq t height hw hwL hσlo hσhi hheight hfreq
       s hQ hs W₁ W₂ hs₁ hs₂ (Z^short) (Z^along)
-      (Real.rpow_pos_of_pos hZpos _) (Real.rpow_pos_of_pos hZpos _)
+      (by positivity) (by positivity)
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hg.2.2.2.1)
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hg.2.2.2.2.1) hd.2 hd.1
     exact hdirect.trans (le_add_of_nonneg_right (by positivity))
@@ -127,10 +126,10 @@ theorem deleted_original_from_low
     apply le_trans _ (le_add_of_nonneg_left (by positivity))
     apply add_le_add
     · gcongr
-      exact hg.2.2.2.2.2.2.1
+      linarith
     · gcongr
-      · exact hZ.1.le
-      · exact hg.2.2.1
+      · linarith
+      linarith
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionDeleted
 

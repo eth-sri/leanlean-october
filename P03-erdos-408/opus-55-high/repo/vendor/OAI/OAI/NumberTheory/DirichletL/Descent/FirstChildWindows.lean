@@ -8,9 +8,9 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalRetainedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform
+open InverseMomentFirstProfileUniform
 open InverseSecondChildWindows
 
 theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
@@ -35,7 +35,7 @@ theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
   have ha : 0<a := by dsimp [a];positivity
   have hb : 0<b := by dsimp [b];positivity
   obtain ⟨w,hwc,hwone,hws⟩ := positive_cutoff a (a+b+1) ha (by linarith)
-  refine ⟨w,a/2,a+b+2,half_pos ha,by linarith,hwc,by convert hws using 1; ring_nf,?_⟩
+  refine ⟨w,a/2,a+b+2,half_pos ha,by linarith,hwc,by grind,?_⟩
   intro c θ u v r n hc hcb hu hv hr hn hnz
   have hu0 := (hlo 0).trans_le hu.1
   have hv0 := (hlo 1).trans_le hv.1
@@ -55,7 +55,7 @@ theorem fresh_three_window (g : 𝓢(ℝ,ℂ)) (m bcap : ℝ)
       _ ≤ u*v*r*n := mul_le_mul_of_nonneg_right
         (mul_le_mul (mul_le_mul hu.1 hv.1 (hlo 1).le hu0.le) hr.1 (hlo 2).le (by positivity)) hn.le
       _ ≤ _ := hs.2
-  exact hwone n ⟨hnlo,by linarith⟩
+  grind
 
 def outerIndex (i : Fin 7) : Fin 9 := i.castLE (by decide)
 
@@ -82,9 +82,9 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
   let left : Fin 3→Fin 7 := ![0,2,5]
   let right : Fin 3→Fin 7 := ![1,2,5]
   obtain ⟨w₁,a₁,b₁,ha₁,hab₁,hwc₁,hws₁,hfresh₁⟩ := fresh_three_window g₁ m₁ bcap
-    (lo ∘ left) (hi ∘ left) hm₁ hg₁ (fun i=>hlo (left i)) (fun i=>hhi (left i))
+    (lo ∘ left) (hi ∘ left) hm₁ hg₁ (by grind) (by grind)
   obtain ⟨w₂,a₂,b₂,ha₂,hab₂,hwc₂,hws₂,hfresh₂⟩ := fresh_three_window g₂ m₂ bcap
-    (lo ∘ right) (hi ∘ right) hm₂ hg₂ (fun i=>hlo (right i)) (fun i=>hhi (right i))
+    (lo ∘ right) (hi ∘ right) hm₂ hg₂ (by grind) (by grind)
   let l : Fin 9→ℝ := ![lo 0,lo 1,lo 2,lo 3,lo 4,lo 5,lo 6,a₁,a₂]
   let u : Fin 9→ℝ := ![hi 0,hi 1,hi 2,hi 3,hi 4,hi 5,hi 6,b₁,b₂]
   have hl (i : Fin 9) : 0<l i := by
@@ -96,20 +96,18 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     · exact hlo 4
     · exact hlo 5
     · exact hlo 6
-    · exact ha₁
-    · exact ha₂
+    · positivity
+    · positivity
   let H (i : Fin 9) := |Real.log (l i)|+|Real.log (u i)|+Bρ i
-  have hH (i : Fin 9) : 0≤H i := by dsimp [H];exact add_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (hBρ i)
+  have hH (i : Fin 9) : 0≤H i := by dsimp [H];exact by grind
   choose V hVc hVs hVone hVsupport hVzero using
     fun i : Fin 9=>FourierBridge.exists_complex_smooth_cutoff (H i) (hH i)
   let U (i : Fin 9) : 𝓢(ℝ,ℂ) := (hVc i).toSchwartzMap (hVs i)
-  refine ⟨w₁,w₂,U,(fun i=>H i+1),min a₁ a₂,max b₁ b₂,lt_min ha₁ ha₂,
-    (min_le_left _ _).trans (hab₁.trans (le_max_left _ _)),hwc₁,hwc₂,?_,?_,
-    (fun i=>by linarith [hH i]),hVc,(fun i=>(subset_tsupport _).trans (hVsupport i)),hfresh₁,hfresh₂,?_⟩
-  · intro x hx
-    exact ⟨(min_le_left _ _).trans (hws₁ hx).1,(hws₁ hx).2.trans (le_max_left _ _)⟩
-  · intro x hx
-    exact ⟨(min_le_right _ _).trans (hws₂ hx).1,(hws₂ hx).2.trans (le_max_right _ _)⟩
+  refine ⟨w₁,w₂,U,(fun i=>H i+1),min a₁ a₂,max b₁ b₂,by positivity,
+    (min_le_left _ _).trans (by grind),hwc₁,hwc₂,?_,?_,
+    (fun i=>by grind),hVc,(fun i=>(subset_tsupport _).trans (hVsupport i)),hfresh₁,hfresh₂,?_⟩
+  · grind
+  · grind
   · intro q ρ hρ hblock hw₁ hw₂ i
     have hq (k : Fin 9) : q k∈Set.Icc (l k) (u k) := by
       fin_cases k
@@ -122,7 +120,7 @@ theorem fixed_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
       · exact hblock 6
       · exact hws₁ (subset_tsupport _ hw₁)
       · exact hws₂ (subset_tsupport _ hw₂)
-    exact hVone i _ (translated_log_bound _ _ _ _ _ (hl i) (hq i) (hρ i))
+    exact hVone i _ (translated_log_bound _ _ _ _ _ (hl i) (hq i) (by grind))
 
 end SevenEighths.InverseMomentFirstChildWindows
 end

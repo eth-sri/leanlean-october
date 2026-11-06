@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicLossBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth
@@ -30,7 +30,7 @@ theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
         C*C₂*U^((a-1/2+6*e)*r+2*κ+η)+C*Cn*U^(2*R+2+η)/(1+V)^n := by
   obtain ⟨Cb,hCb,hbound⟩ := buffered_polynomial_bound e κ he he' hκ
   let E := HeckeReciprocalBound.bound 2
-  have hE : 0≤E := tsum_nonneg (fun _ => norm_nonneg _)
+  have hE : 0≤E := tsum_nonneg (by simp)
   let C := 1+2*Cb*Real.pi+8*Cb+E*Real.pi
   have hC : 0<C := by dsimp [C]; positivity
   refine ⟨C,hC,?_⟩
@@ -40,7 +40,7 @@ theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   have hH : 0≤H := by dsimp [H]; positivity
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one (χ j)).trans hQ
   have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
-  have hD : 1≤U^r := Real.one_le_rpow hU hr
+  have hD := Real.one_le_rpow hU hr
   have hb := hbound χ hχ T a i hT ha ha' hmax j inverse W A B hA hWs hW
     (U^r) σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
   dsimp only at hb
@@ -49,7 +49,7 @@ theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   have hpow : (U^r)^(3/2 : ℝ)≤U^(2*R+2+η) := by
     rw [←Real.rpow_mul hUp.le]
     exact Real.rpow_le_rpow_of_exponent_le hU (by nlinarith)
-  have hwidth : |2-a-6*e|≤2 := abs_le.mpr ⟨by linarith,by linarith⟩
+  have hwidth : |2-a-6*e|≤2 := abs_le.mpr (by grind)
   have hc : C₂*(U^r)^(a+6*e-1/2)*(Cb*(presentationComplexity (χ j) H)^κ)*Real.pi≤
       (2*Cb*Real.pi)*C₂*U^((a-1/2+6*e)*r+2*κ+η) := by
     calc
@@ -81,7 +81,7 @@ theorem scaled_direct_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   calc
     _ ≤ (2*Cb*Real.pi)*C₂*U^((a-1/2+6*e)*r+2*κ+η)+
         (8*Cb)*Cn*U^(2*R+2+η)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by
-      exact add_le_add (add_le_add hc hj) ht
+      linarith
     _ = (2*Cb*Real.pi)*C₂*U^((a-1/2+6*e)*r+2*κ+η)+
         (8*Cb+E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by ring
     _ ≤ _ := by gcongr

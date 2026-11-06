@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Contractions
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -32,14 +31,9 @@ theorem normBound_conditioned_form {α β δ : Type*} [Fintype α] [Fintype β] 
   have hbound := h.trans (mul_le_mul
     (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt (hP f)) hC)
     (Real.sqrt_le_sqrt (hP g)) (Real.sqrt_nonneg _)
-    (mul_nonneg hC (Real.sqrt_nonneg _)))
+    (by positivity))
   rw [Real.sqrt_mul hS, Real.sqrt_mul hS] at hbound
-  have heq (U V : ℝ) : C * (Real.sqrt S * Real.sqrt U) * (Real.sqrt S * Real.sqrt V) =
-      (C * S) * Real.sqrt U * Real.sqrt V := by
-    calc
-      _ = (C * (Real.sqrt S) ^ 2) * Real.sqrt U * Real.sqrt V := by ring
-      _ = _ := by rw [Real.sq_sqrt hS]
-  simpa only [heq] using hbound
+  grind
 
 
 end Erdos821.P3Clean

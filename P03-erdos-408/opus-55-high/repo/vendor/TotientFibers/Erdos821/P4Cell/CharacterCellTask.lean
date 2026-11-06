@@ -37,7 +37,7 @@ def CharacterCellTask : Prop :=
 private def level {Q : ℕ} (χ : CharacterIndex Q) : ℕ := χ.1.val + 1
 
 /-- The quotient character after both characters have been lifted to their common level. -/
-private noncomputable def cellQuotient {Q : ℕ} (χ ψ : CharacterIndex Q) :
+private def cellQuotient {Q : ℕ} (χ ψ : CharacterIndex Q) :
     DirichletCharacter ℂ (Nat.lcm (level χ) (level ψ)) :=
   (DirichletCharacter.changeLevel (Nat.dvd_lcm_left _ _) χ.2)⁻¹ *
     DirichletCharacter.changeLevel (Nat.dvd_lcm_right _ _) ψ.2
@@ -55,7 +55,7 @@ private lemma cellQuotient_ne_one {Q : ℕ} {χ ψ : CharacterIndex Q}
   let m := level ψ
   have hn : 0 < n := Nat.succ_pos _
   have hm : 0 < m := Nat.succ_pos _
-  have hL : 0 < Nat.lcm n m := Nat.lcm_pos hn hm
+  have hL := Nat.lcm_pos hn hm
   let : NeZero (Nat.lcm n m) := ⟨ne_of_gt hL⟩
   have hEq :
       DirichletCharacter.changeLevel (Nat.dvd_lcm_left n m) χ.2 =
@@ -67,7 +67,7 @@ private lemma cellQuotient_ne_one {Q : ℕ} {χ ψ : CharacterIndex Q}
       exact hq
     calc
       A = A * 1 := by simp
-      _ = A * (A⁻¹ * B) := by rw [← hq']
+      _ = A * (A⁻¹ * B) := by simp_all
       _ = B := by group
   have hCond := congrArg DirichletCharacter.conductor hEq
   have hlevels : n = m := by
@@ -87,7 +87,7 @@ private lemma cellQuotient_ne_one {Q : ℕ} {χ ψ : CharacterIndex Q}
     | mk b d =>
       have hab : a.val = b.val := by
         simpa [n, m, level] using congrArg (fun q : ℕ => q - 1) hlevels
-      have hab' : a = b := Fin.ext hab
+      have hab' := Fin.ext hab
       subst b
       have hcd : c = d := by
         let : NeZero (Nat.lcm (a.val + 1) (a.val + 1)) :=
@@ -100,8 +100,7 @@ private lemma cellQuotient_ne_one {Q : ℕ} {χ ψ : CharacterIndex Q}
           exact hEq
         exact DirichletCharacter.changeLevel_injective
           (Nat.dvd_lcm_left (a.val + 1) (a.val + 1)) hEq'
-      subst d
-      rfl
+      simp_all
 
 private lemma cellQuotient_eval {Q : ℕ} (χ ψ : CharacterIndex Q) (a : ℕ) :
     cellQuotient χ ψ (a : ZMod (Nat.lcm (level χ) (level ψ))) =
@@ -112,7 +111,7 @@ private lemma cellQuotient_eval {Q : ℕ} (χ ψ : CharacterIndex Q) (a : ℕ) :
   let r := Nat.lcm n m
   let : NeZero r := ⟨Nat.ne_of_gt (Nat.lcm_pos (Nat.succ_pos _) (Nat.succ_pos _))⟩
   by_cases ha : IsUnit (a : ZMod r)
-  · have hac : a.Coprime r := (ZMod.isUnit_iff_coprime a r).mp ha
+  · have hac := (ZMod.isUnit_iff_coprime a r).mp ha
     have hχ :
         DirichletCharacter.changeLevel (Nat.dvd_lcm_left n m) χ.2 (a : ZMod r) =
           χ.2 (a : ZMod n) := by
@@ -120,13 +119,13 @@ private lemma cellQuotient_eval {Q : ℕ} (χ ψ : CharacterIndex Q) (a : ℕ) :
         (Nat.dvd_lcm_left n m) ha.unit
       calc
         _ = DirichletCharacter.changeLevel (Nat.dvd_lcm_left n m) χ.2
-            (ha.unit : ZMod r) := by rw [ha.unit_spec]
+            (ha.unit : ZMod r) := by simp
         _ = χ.2 (ZMod.cast (ha.unit : ZMod r)) := h
         _ = χ.2 (a : ZMod n) := by
           congr 1
           calc
             ZMod.cast (ha.unit : ZMod r) = ZMod.cast (a : ZMod r) := by
-              rw [ha.unit_spec]
+              simp
             _ = (a : ZMod n) := ZMod.cast_natCast (Nat.dvd_lcm_left n m) a
     have hψ :
         DirichletCharacter.changeLevel (Nat.dvd_lcm_right n m) ψ.2 (a : ZMod r) =
@@ -135,13 +134,13 @@ private lemma cellQuotient_eval {Q : ℕ} (χ ψ : CharacterIndex Q) (a : ℕ) :
         (Nat.dvd_lcm_right n m) ha.unit
       calc
         _ = DirichletCharacter.changeLevel (Nat.dvd_lcm_right n m) ψ.2
-            (ha.unit : ZMod r) := by rw [ha.unit_spec]
+            (ha.unit : ZMod r) := by simp
         _ = ψ.2 (ZMod.cast (ha.unit : ZMod r)) := h
         _ = ψ.2 (a : ZMod m) := by
           congr 1
           calc
             ZMod.cast (ha.unit : ZMod r) = ZMod.cast (a : ZMod r) := by
-              rw [ha.unit_spec]
+              simp
             _ = (a : ZMod m) := ZMod.cast_natCast (Nat.dvd_lcm_right n m) a
     change
       ((DirichletCharacter.changeLevel (Nat.dvd_lcm_left n m) χ.2)⁻¹ *
@@ -152,24 +151,24 @@ private lemma cellQuotient_eval {Q : ℕ} (χ ψ : CharacterIndex Q) (a : ℕ) :
     rfl
   · have hnot : ¬ (a.Coprime n ∧ a.Coprime m) := by
       intro h
-      have hprod : a.Coprime (n * m) := Nat.Coprime.mul_right h.1 h.2
+      have hprod := Nat.Coprime.mul_right h.1 h.2
       exact ha ((ZMod.isUnit_iff_coprime a r).2 <|
         Nat.Coprime.of_dvd_right (Nat.lcm_dvd_mul n m) hprod)
     rcases not_and_or.mp hnot with hn | hm
     · have hχ : ¬ IsUnit (a : ZMod n) := by
         rwa [ZMod.isUnit_iff_coprime]
-      have hq : cellQuotient χ ψ (a : ZMod r) = 0 := by
-        exact MulChar.map_nonunit (cellQuotient χ ψ) ha
-      have hv : charValue χ a = 0 := by
-        exact MulChar.map_nonunit χ.2 hχ
-      simp [hq, hv]
+      have hq : cellQuotient χ ψ (a : ZMod r) = 0 :=
+        MulChar.map_nonunit (cellQuotient χ ψ) ha
+      have hv : charValue χ a = 0 :=
+        MulChar.map_nonunit χ.2 hχ
+      simp_all
     · have hψ : ¬ IsUnit (a : ZMod m) := by
         rwa [ZMod.isUnit_iff_coprime]
-      have hq : cellQuotient χ ψ (a : ZMod r) = 0 := by
-        exact MulChar.map_nonunit (cellQuotient χ ψ) ha
-      have hv : charValue ψ a = 0 := by
-        exact MulChar.map_nonunit ψ.2 hψ
-      simp [hq, hv]
+      have hq : cellQuotient χ ψ (a : ZMod r) = 0 :=
+        MulChar.map_nonunit (cellQuotient χ ψ) ha
+      have hv : charValue ψ a = 0 :=
+        MulChar.map_nonunit ψ.2 hψ
+      simp_all
 
 private abbrev Coordinate (G : PrimeGroups) (k : Fin G.size → ℕ) :=
   Σ g, Fin (k g)
@@ -225,17 +224,17 @@ private lemma tupleWeight_split {G : PrimeGroups} {k : Fin G.size → ℕ}
   calc
     ∏ i, f i = f i₀ * ∏ i ∈ Finset.univ.erase i₀, f i := by
       symm
-      exact Finset.mul_prod_erase Finset.univ f (Finset.mem_univ i₀)
+      exact Finset.mul_prod_erase Finset.univ f (by simp)
     _ = mu G i₀.1 p.val * restWeight i₀ y := by
-      have hfirst : f i₀ = mu G i₀.1 p.val := by simp [f, Equiv.piSplitAt]
+      have hfirst : f i₀ = mu G i₀.1 p.val := by simp [f]
       have hrest : ∏ i ∈ Finset.univ.erase i₀, f i = restWeight i₀ y := by
         rw [Finset.prod_subtype (s := Finset.univ.erase i₀)
           (p := fun i : Coordinate G k => i ≠ i₀) (F := inferInstance)
-          (by intro i; simp)]
+          (by simp)]
         apply Finset.prod_congr rfl
         intro i hi
-        simp [f, Equiv.piSplitAt, i.property]
-      rw [hfirst, hrest]
+        simp [f, i.property]
+      simp_all
 
 private lemma product_split {G : PrimeGroups} {k : Fin G.size → ℕ}
     (i₀ : Coordinate G k) (p : Label G i₀.1)
@@ -254,17 +253,17 @@ private lemma product_split {G : PrimeGroups} {k : Fin G.size → ℕ}
   calc
     ∏ i, f i = f i₀ * ∏ i ∈ Finset.univ.erase i₀, f i := by
       symm
-      exact Finset.mul_prod_erase Finset.univ f (Finset.mem_univ i₀)
+      exact Finset.mul_prod_erase Finset.univ f (by simp)
     _ = restProduct i₀ y * p.val := by
-      have hfirst : f i₀ = p.val := by simp [f, Equiv.piSplitAt]
+      have hfirst : f i₀ = p.val := by simp [f]
       have hrest : ∏ i ∈ Finset.univ.erase i₀, f i = restProduct i₀ y := by
         rw [Finset.prod_subtype (s := Finset.univ.erase i₀)
           (p := fun i : Coordinate G k => i ≠ i₀) (F := inferInstance)
-          (by intro i; simp)]
+          (by simp)]
         apply Finset.prod_congr rfl
         intro i hi
-        simp [f, Equiv.piSplitAt, i.property]
-      rw [hfirst, hrest, Nat.mul_comm]
+        simp [f, i.property]
+      grind
 
 private lemma labelWeight_sum {G : PrimeGroups} (g : Fin G.size)
     (hmass : 0 < mass G g) :
@@ -273,7 +272,7 @@ private lemma labelWeight_sum {G : PrimeGroups} (g : Fin G.size)
   have hrecip : ∑ p : Label G g, (p.val : ℝ)⁻¹ = mass G g := by
     simpa [mass, Label] using
       (Finset.sum_attach (G.primes g) fun p : ℕ => (p : ℝ)⁻¹)
-  have hm0 : mass G g ≠ 0 := ne_of_gt hmass
+  have hm0 := ne_of_gt hmass
   calc
     ∑ p : Label G g, mu G g p.val =
         ∑ p : Label G g, (mass G g)⁻¹ * (p.val : ℝ)⁻¹ := by
@@ -281,11 +280,11 @@ private lemma labelWeight_sum {G : PrimeGroups} (g : Fin G.size)
       intro p hp
       have hpPrime := G.prime g p.val p.property
       have hp0 : (p.val : ℝ) ≠ 0 := by exact_mod_cast hpPrime.ne_zero
-      simp [mu, div_eq_mul_inv]
+      simp [mu]
       field_simp
     _ = (mass G g)⁻¹ * ∑ p : Label G g, (p.val : ℝ)⁻¹ := by
       rw [Finset.mul_sum]
-    _ = 1 := by rw [hrecip]; field_simp
+    _ = 1 := by simp_all
 
 set_option maxHeartbeats 1000000 in
 private lemma groupWeight_sum_one {G : PrimeGroups} {k : Fin G.size → ℕ}
@@ -294,8 +293,8 @@ private lemma groupWeight_sum_one {G : PrimeGroups} {k : Fin G.size → ℕ}
   classical
   calc
     (∑ f : Fin (k g) → Label G g, ∏ j, mu G g (f j).val) =
-      (∑ p : Label G g, mu G g p.val) ^ k g := by
-        exact (Fintype.sum_pow (fun p : Label G g => mu G g p.val) (k g)).symm
+      (∑ p : Label G g, mu G g p.val) ^ k g :=
+        (Fintype.sum_pow (fun p : Label G g => mu G g p.val) (k g)).symm
     _ = 1 := by rw [labelWeight_sum g hmass]; simp
 
 set_option maxHeartbeats 1000000 in
@@ -333,9 +332,9 @@ private lemma restWeight_sum_one {G : PrimeGroups} {k : Fin G.size → ℕ}
       (∑ z : Tuple G k, tupleWeight G k z) =
           ∑ xy : Label G i₀.1 ×
               (∀ i : {i : Coordinate G k // i ≠ i₀}, Label G i.1.1),
-            tupleWeight G k (e.symm xy) := by
-        exact Fintype.sum_equiv e (fun z => tupleWeight G k z)
-          (fun xy => tupleWeight G k (e.symm xy)) (by intro z; simp [e])
+            tupleWeight G k (e.symm xy) :=
+        Fintype.sum_equiv e (fun z => tupleWeight G k z)
+          (fun xy => tupleWeight G k (e.symm xy)) (by simp)
       _ = ∑ xy : Label G i₀.1 ×
               (∀ i : {i : Coordinate G k // i ≠ i₀}, Label G i.1.1),
             mu G i₀.1 xy.1.val * restWeight i₀ xy.2 := by
@@ -348,9 +347,8 @@ private lemma restWeight_sum_one {G : PrimeGroups} {k : Fin G.size → ℕ}
           (fun p : Label G i₀.1 => mu G i₀.1 p.val)
           (fun y : (∀ i : {i : Coordinate G k // i ≠ i₀}, Label G i.1.1) =>
             restWeight i₀ y)).symm
-  have hlabel := labelWeight_sum i₀.1 (hmass i₀.1)
-  rw [htotal, hlabel] at hfactor
-  simpa using hfactor.symm
+  have hlabel := labelWeight_sum i₀.1 (by grind)
+  grind
 
 private lemma restProduct_pos {G : PrimeGroups} {k : Fin G.size → ℕ}
     (i₀ : Coordinate G k)
@@ -360,7 +358,7 @@ private lemma restProduct_pos {G : PrimeGroups} {k : Fin G.size → ℕ}
   unfold restProduct
   apply Finset.prod_pos
   intro i hi
-  exact Nat.Prime.pos (G.prime i.1.1 (y i).val (y i).property)
+  exact Nat.Prime.pos (G.prime i.1.1 (y i).val (by simp))
 
 private lemma restWeight_nonneg {G : PrimeGroups} {k : Fin G.size → ℕ}
     (i₀ : Coordinate G k)
@@ -371,7 +369,7 @@ private lemma restWeight_nonneg {G : PrimeGroups} {k : Fin G.size → ℕ}
   unfold restWeight
   apply Finset.prod_nonneg
   intro i hi
-  exact one_div_nonneg.mpr (mul_nonneg (le_of_lt (hmass i.1.1)) (Nat.cast_nonneg _))
+  exact one_div_nonneg.mpr (mul_nonneg (by grind) (Nat.cast_nonneg _))
 
 private lemma cell_mul_eq_iff_band (h : ℝ) (j : ℤ) (a p : ℕ)
     (hh : 0 < h) (ha : 0 < a) (hp : 0 < p) :
@@ -384,8 +382,8 @@ private lemma cell_mul_eq_iff_band (h : ℝ) (j : ℤ) (a p : ℕ)
   rw [cell, Int.floor_eq_iff]
   constructor
   · rintro ⟨hlo, hhi⟩
-    have hlo' : (j : ℝ) * h ≤ Real.log ((a * p : ℕ) : ℝ) := by
-      exact (le_div_iff₀ hh).mp hlo
+    have hlo' : (j : ℝ) * h ≤ Real.log ((a * p : ℕ) : ℝ) :=
+      (le_div_iff₀ hh).mp hlo
     have hhi' : Real.log ((a * p : ℕ) : ℝ) < ((j + 1 : ℤ) : ℝ) * h := by
       simpa [Int.cast_add, Int.cast_one] using (div_lt_iff₀ hh).mp hhi
     constructor
@@ -394,11 +392,11 @@ private lemma cell_mul_eq_iff_band (h : ℝ) (j : ℤ) (a p : ℕ)
         Real.exp ((j : ℝ) * h) ≤ Real.exp (Real.log ((a * p : ℕ) : ℝ)) :=
           Real.exp_le_exp.mpr hlo'
         _ = ((a * p : ℕ) : ℝ) := Real.exp_log hprod
-        _ = (p : ℝ) * (a : ℝ) := by rw [Nat.cast_mul]; ring
+        _ = (p : ℝ) * (a : ℝ) := by grind
     · apply (lt_div_iff₀ haR).2
       calc
         (p : ℝ) * (a : ℝ) = (a : ℝ) * (p : ℝ) := by ring
-        _ = ((a * p : ℕ) : ℝ) := by rw [Nat.cast_mul]
+        _ = ((a * p : ℕ) : ℝ) := by simp
         _ = Real.exp (Real.log ((a * p : ℕ) : ℝ)) := (Real.exp_log hprod).symm
         _ < Real.exp (((j + 1 : ℤ) : ℝ) * h) := Real.exp_lt_exp.mpr hhi'
   · rintro ⟨hlo, hhi⟩
@@ -408,17 +406,16 @@ private lemma cell_mul_eq_iff_band (h : ℝ) (j : ℤ) (a p : ℕ)
         calc
           Real.exp ((j : ℝ) * h) ≤ (a : ℝ) * (p : ℝ) := by
             nlinarith [(div_le_iff₀ haR).1 hlo]
-          _ = ((a * p : ℕ) : ℝ) := by rw [Nat.cast_mul]
+          _ = ((a * p : ℕ) : ℝ) := by simp
       have hmul' : Real.exp ((j : ℝ) * h) ≤ Real.exp (Real.log ((a * p : ℕ) : ℝ)) := by
         calc
           Real.exp ((j : ℝ) * h) ≤ ((a * p : ℕ) : ℝ) := hmul
           _ = Real.exp (Real.log ((a * p : ℕ) : ℝ)) := (Real.exp_log hprod).symm
-      have hlog := Real.exp_le_exp.mp hmul'
-      simpa using hlog
+      simp_all
     ·
       have hmul : ((a * p : ℕ) : ℝ) < Real.exp (((j + 1 : ℤ) : ℝ) * h) := by
         calc
-          ((a * p : ℕ) : ℝ) = (a : ℝ) * (p : ℝ) := by rw [Nat.cast_mul]
+          ((a * p : ℕ) : ℝ) = (a : ℝ) * (p : ℝ) := by simp
           _ < Real.exp (((j + 1 : ℤ) : ℝ) * h) := by
             nlinarith [(lt_div_iff₀ haR).1 hhi]
       have hmul' : Real.exp (Real.log ((a * p : ℕ) : ℝ)) <
@@ -427,13 +424,13 @@ private lemma cell_mul_eq_iff_band (h : ℝ) (j : ℤ) (a p : ℕ)
           Real.exp (Real.log ((a * p : ℕ) : ℝ)) = ((a * p : ℕ) : ℝ) := Real.exp_log hprod
           _ < Real.exp (((j + 1 : ℤ) : ℝ) * h) := hmul
       have hloghi := Real.exp_lt_exp.mp hmul'
-      have hloghi' : Real.log ((a * p : ℕ) : ℝ) < ((j + 1 : ℤ) : ℝ) * h := by
-        exact hloghi
-      simpa [Int.cast_add, Int.cast_one] using (div_lt_iff₀ hh).2 hloghi'
+      have hloghi' : Real.log ((a * p : ℕ) : ℝ) < ((j + 1 : ℤ) : ℝ) * h :=
+        hloghi
+      simpa using (div_lt_iff₀ hh).2 hloghi'
 
 private lemma nat_mem_Icc_ceil_floor (lo hi : ℝ) (hhi : 0 ≤ hi) (p : ℕ) :
     p ∈ Finset.Icc ⌈lo⌉₊ ⌊hi⌋₊ ↔ lo ≤ (p : ℝ) ∧ (p : ℝ) ≤ hi := by
-  simp [Finset.mem_Icc, Nat.ceil_le, Nat.le_floor_iff hhi]
+  simp [Nat.le_floor_iff hhi]
 
 private lemma cell_group_interval_set_eq {G : PrimeGroups} (g : Fin G.size)
     (a : ℕ) (h : ℝ) (j : ℤ) (loGroup hiGroup lowerPrime upperPrime lo hi : ℝ)
@@ -458,14 +455,14 @@ private lemma cell_group_interval_set_eq {G : PrimeGroups} (g : Fin G.size)
     dsimp [lastNat]
     rw [Nat.cast_sub hceil]
     simpa [sub_lt_iff_lt_add] using Nat.ceil_lt_add_one hupperCell.le
-  have hceil_of_lt {p : ℕ} (hp : (p : ℝ) < upperCell) : p < Nat.ceil upperCell := by
-    exact Nat.lt_ceil.mpr hp
+  have hceil_of_lt {p : ℕ} (hp : (p : ℝ) < upperCell) : p < Nat.ceil upperCell :=
+    Nat.lt_ceil.mpr hp
   have hp_le_last {p : ℕ} (hp : (p : ℝ) < upperCell) : p ≤ lastNat := by
     have := hceil_of_lt hp
     dsimp [lastNat]
     omega
-  have hlastNat_lt {p : ℕ} (hp : p ≤ lastNat) : (p : ℝ) < upperCell := by
-    exact lt_of_le_of_lt (Nat.cast_le.mpr hp) hlast_lt
+  have hlastNat_lt {p : ℕ} (hp : p ≤ lastNat) : (p : ℝ) < upperCell :=
+    lt_of_le_of_lt (Nat.cast_le.mpr hp) hlast_lt
   ext p
   simp only [Finset.mem_filter]
   rw [nat_mem_Icc_ceil_floor lo hi hhiNonneg p]
@@ -476,15 +473,15 @@ private lemma cell_group_interval_set_eq {G : PrimeGroups} (g : Fin G.size)
     have hpBounds := cell_mul_eq_iff_band h j a p hh ha (Nat.Prime.pos hpprime) |>.mp hcell
     have hpLo : lo ≤ (p : ℝ) := by
       rw [hlo]
-      exact max_le_iff.mpr ⟨hpLoGroup, max_le_iff.mpr ⟨hprimeLower p hpgroup, hpBounds.1⟩⟩
+      exact by grind
     have hpHi : (p : ℝ) ≤ hi := by
       rw [hhi]
       apply le_min
-      · exact hpHiGroup
+      · omega
       · apply le_min
-        · exact hprimeUpper p hpgroup
+        · grind
         · exact_mod_cast hp_le_last hpBounds.2
-    exact ⟨⟨hpLo, hpHi⟩, hpprime⟩
+    grind
   · rintro ⟨⟨hpLo, hpHi⟩, hpprime⟩
     rw [hlo] at hpLo
     rcases max_le_iff.mp hpLo with ⟨hpLoGroup, hpLower⟩
@@ -493,11 +490,11 @@ private lemma cell_group_interval_set_eq {G : PrimeGroups} (g : Fin G.size)
     rcases le_min_iff.mp hpHi with ⟨hpHiGroup, hpUpper⟩
     rcases le_min_iff.mp hpUpper with ⟨hpUpperPrime, hpLast⟩
     have hpLast' : p ≤ lastNat := by exact_mod_cast hpLast
-    have hpCellUpper : (p : ℝ) < upperCell := hlastNat_lt hpLast'
-    have hpgroup : p ∈ G.primes g := (hgroup p).mpr ⟨hpprime, hpLoGroup, hpHiGroup⟩
+    have hpCellUpper := hlastNat_lt hpLast'
+    have hpgroup := (hgroup p).mpr ⟨hpprime, hpLoGroup, hpHiGroup⟩
     have hcell := (cell_mul_eq_iff_band h j a p hh ha (Nat.Prime.pos hpprime)).mpr
-      ⟨hpCellLower, hpCellUpper⟩
-    exact ⟨hpgroup, hcell⟩
+      (by grind)
+    grind
 
 private lemma commonModulus_bound {x qexp : ℝ} {Q : ℕ} (χ ψ : CharacterIndex Q)
     (hlog : 1 ≤ L x) (hQ : (Q : ℝ) ≤ L x ^ qexp) :
@@ -506,9 +503,9 @@ private lemma commonModulus_bound {x qexp : ℝ} {Q : ℕ} (χ ψ : CharacterInd
   have hm : level ψ ≤ Q := Nat.succ_le_of_lt ψ.1.is_lt
   have hnpos : 0 < level χ := Nat.succ_pos _
   have hmpos : 0 < level ψ := Nat.succ_pos _
-  have hlcm : Nat.lcm (level χ) (level ψ) ≤ level χ * level ψ :=
+  have hlcm :=
     Nat.le_of_dvd (Nat.mul_pos hnpos hmpos) (Nat.lcm_dvd_mul _ _)
-  have hprod : level χ * level ψ ≤ Q * Q := Nat.mul_le_mul hn hm
+  have hprod := Nat.mul_le_mul hn hm
   calc
     (Nat.lcm (level χ) (level ψ) : ℝ) ≤ (level χ : ℝ) * (level ψ : ℝ) := by
       exact_mod_cast hlcm
@@ -542,12 +539,12 @@ private lemma conditional_cell_harmonic_bound
   let r := Nat.lcm n m
   let q := cellQuotient χ ψ
   have hrpos : 0 < r := Nat.lcm_pos (Nat.succ_pos _) (Nat.succ_pos _)
-  have hrone : 1 ≤ r := Nat.one_le_iff_ne_zero.mpr hrpos.ne'
-  have hrBound : (r : ℝ) ≤ L x ^ (2 * qexp) := by
-    exact commonModulus_bound χ ψ hlog hQ
+  have hrone := Nat.one_le_iff_ne_zero.mpr hrpos.ne'
+  have hrBound : (r : ℝ) ≤ L x ^ (2 * qexp) :=
+    commonModulus_bound χ ψ hlog hQ
   have hqnot : q ≠ 1 := cellQuotient_ne_one hχ hψ hne
-  have hmass : P.vmin ≤ mass G g := (hG.2.2.1 g).1
-  have hvmin : 0 < P.vmin := P.positive.2.2.1
+  have hmass := (hG.2.2.1 g).1
+  have hvmin := P.positive.2.2.1
   have hmassPos : 0 < mass G g := lt_of_lt_of_le hvmin hmass
   have hgBig : g ∈ G.big := by simp [PrimeGroups.big, hgsmall]
   obtain ⟨loGroup, hiGroup, hgroup⟩ := hG.2.2.2.2 g hgBig
@@ -565,7 +562,7 @@ private lemma conditional_cell_harmonic_bound
     exact h'.2
   have hprimesNonempty : (G.primes g).Nonempty := by
     by_contra hne'
-    have hempty : G.primes g = ∅ := Finset.not_nonempty_iff_eq_empty.mp hne'
+    have hempty := Finset.not_nonempty_iff_eq_empty.mp hne'
     have : mass G g = 0 := by simp [mass, hempty]
     linarith
   obtain ⟨p₀, hp₀⟩ := hprimesNonempty
@@ -580,15 +577,14 @@ private lemma conditional_cell_harmonic_bound
     dsimp [hi]
     apply le_min_iff.mpr
     constructor
-    · exact hhiGroupNonneg
-    · apply le_min_iff.mpr
-      exact ⟨le_of_lt (Real.exp_pos _), Nat.cast_nonneg _⟩
+    · omega
+    · positivity
   have hLoBound : Real.exp (L x ^ P.c) ≤ lo := by
     dsimp [lo]
-    exact le_trans (le_max_left _ _) (le_max_right _ _)
+    exact by simp
   have hHiBound : hi ≤ x := by
     dsimp [hi]
-    exact le_trans (min_le_right _ _) (le_trans (min_le_left _ _) hExpUpper)
+    exact by grind
   have hIntervalSet := cell_group_interval_set_eq g a h j loGroup hiGroup
     (Real.exp (L x ^ P.c)) (Real.exp (L x ^ P.d)) lo hi hgroup
     hprimeLower hprimeUpper ha hh hhiNonneg rfl rfl
@@ -603,7 +599,7 @@ private lemma conditional_cell_harmonic_bound
     simp [mu]
     ring
   have hqmul (p : ℕ) : q ((a : ZMod r) * (p : ZMod r)) =
-      q (a : ZMod r) * q (p : ZMod r) := map_mul q _ _
+      q (a : ZMod r) * q (p : ZMod r) := by simp
   let c : ℂ := (mass G g : ℂ)⁻¹ * q (a : ZMod r)
   let f (p : ℕ) : ℂ := q (p : ZMod r) * mellin p 0 / (p : ℂ)
   have hterm (p : Label G g) :
@@ -625,22 +621,22 @@ private lemma conditional_cell_harmonic_bound
         by_cases hc : cell h (a * p.val) = j
         · simp only [ite_eq_left hc]
           exact hterm p
-        · simp [hc]
+        grind
       _ = c * ∑ p : Label G g, if cell h (a * p.val) = j then f p.val else 0 := by
         rw [Finset.mul_sum]
       _ = c * ∑ p ∈ G.primes g, if cell h (a * p) = j then f p else 0 := by
         congr 1
-        simpa [Label] using (Finset.sum_attach (G.primes g)
+        simpa using (Finset.sum_attach (G.primes g)
           (fun p : ℕ => if cell h (a * p) = j then f p else 0))
       _ = c * ∑ p ∈ (G.primes g).filter (fun p => cell h (a * p) = j), f p := by
         rw [← Finset.sum_filter]
-      _ = c * ∑ p ∈ S, f p := by rw [hSet]
+      _ = c * ∑ p ∈ S, f p := by grind
   by_cases hlohi : lo ≤ hi
   · have hHarmVal := hHarm lo hi 0 r q hLoBound hlohi (by simpa using hHiBound)
       hrone hrBound hqnot (by simp; positivity)
     have hqNorm : ‖q (a : ZMod r)‖ ≤ 1 := DirichletCharacter.norm_le_one q _
     have hInvNorm : ‖(mass G g : ℂ)⁻¹‖ = (mass G g)⁻¹ := by
-      simp [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hmassPos]
+      simp [abs_of_pos hmassPos]
     have hCoeff : ‖c‖ ≤ P.vmin⁻¹ := by
       dsimp [c]
       rw [norm_mul, hInvNorm]
@@ -659,7 +655,7 @@ private lemma conditional_cell_harmonic_bound
       apply Finset.eq_empty_iff_forall_notMem.mpr
       intro p hp
       have hpint := (nat_mem_Icc_ceil_floor lo hi hhiNonneg p).mp (Finset.mem_filter.mp hp).1
-      exact (not_le_of_gt (lt_of_not_ge hlohi)) (hpint.1.trans hpint.2)
+      exact by linarith
     rw [hsum, hSempty]
     simp
     positivity
@@ -672,11 +668,11 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
   have hB : 0 < 2 * qexp := by positivity
   have hC : (0 : ℝ) < 1 := by norm_num
   obtain ⟨K0, hK0, hHEvent⟩ := H P.c 1 (2 * qexp) D hPc hC hB hD
-  have hvmin : 0 < P.vmin := P.positive.2.2.1
+  have hvmin := P.positive.2.2.1
   have hK : 0 < K0 / P.vmin := div_pos hK0 hvmin
   refine ⟨K0 / P.vmin, hK, ?_⟩
   have hLarge : ∀ᶠ x : ℝ in atTop, Real.exp 1 ≤ x :=
-    Filter.eventually_atTop.2 ⟨Real.exp 1, fun _ hx => hx⟩
+    Filter.eventually_atTop.2 ⟨Real.exp 1, by simp⟩
   filter_upwards [hHEvent, hLarge] with x hHarm hxLarge
   have hlogx : 1 ≤ L x := by
     unfold L
@@ -685,7 +681,7 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
   have hdle1 : P.d ≤ 1 := by
     rcases P.ordered with ⟨ha, hab, hbc, hcd, hd⟩
     linarith
-  have hpow : L x ^ P.d ≤ L x := Real.rpow_le_self_of_one_le hlogx hdle1
+  have hpow := Real.rpow_le_self_of_one_le hlogx hdle1
   have hxpos : 0 < x := lt_of_lt_of_le (Real.exp_pos 1) hxLarge
   have hExpUpper : Real.exp (L x ^ P.d) ≤ x := by
     calc
@@ -697,7 +693,7 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
     by_contra hnone
     have hzero : ∀ g : Fin G.size, k g = 0 := by
       intro g
-      have hn : ¬ 0 < k g := fun hkg => hnone ⟨g, hkg⟩
+      have hn : ¬ 0 < k g := by grind
       omega
     have hsum : (∑ g : Fin G.size, k g) = 0 := by
       apply Finset.sum_eq_zero
@@ -714,8 +710,7 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
     intro g
     exact lt_of_lt_of_le hvmin (hG.2.2.1 g).1
   let e := splitCoordinate G k i0
-  have hrestMass : ∑ y : (∀ i : {i : Coordinate G k // i ≠ i0}, Label G i.1.1),
-      restWeight i0 y = 1 := restWeight_sum_one i0 hmassAll
+  have hrestMass := restWeight_sum_one i0 hmassAll
   let F : Tuple G k → ℂ := fun z =>
     if cell h (product G k z) = j then
       star (charValue χ (product G k z)) * charValue ψ (product G k z) else 0
@@ -732,11 +727,11 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
           ∑ z : Tuple G k, (tupleWeight G k z : ℂ) * F z := rfl
       _ = ∑ xy : Label G g ×
               (∀ i : {i : Coordinate G k // i ≠ i0}, Label G i.1.1),
-            (tupleWeight G k (e.symm xy) : ℂ) * F (e.symm xy) := by
-        exact Fintype.sum_equiv e
+            (tupleWeight G k (e.symm xy) : ℂ) * F (e.symm xy) :=
+        Fintype.sum_equiv e
           (fun z => (tupleWeight G k z : ℂ) * F z)
           (fun xy => (tupleWeight G k (e.symm xy) : ℂ) * F (e.symm xy))
-          (by intro z; simp [e])
+          (by simp)
       _ = ∑ xy : Label G g ×
               (∀ i : {i : Coordinate G k // i ≠ i0}, Label G i.1.1),
             (restWeight i0 xy.2 : ℂ) *
@@ -756,7 +751,7 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
           rw [← cellQuotient_eval χ ψ (restProduct i0 xy.2 * xy.1.val)]
           push_cast
           ring
-        · simp [hc]
+        grind
   have hsplitOuter :
       (∑ xy : Label G g ×
           (∀ i : {i : Coordinate G k // i ≠ i0}, Label G i.1.1),
@@ -777,8 +772,8 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
       ‖∑ p : Label G g, if cell h (restProduct i0 y * p.val) = j then
         (mu G g p.val : ℂ) *
           cellQuotient χ ψ (restProduct i0 y * p.val) else 0‖ ≤
-        (K0 / P.vmin) * L x ^ (-D) := by
-    exact conditional_cell_harmonic_bound hHarm hK0 hG hgsmall
+        (K0 / P.vmin) * L x ^ (-D) :=
+    conditional_cell_harmonic_bound hHarm hK0 hG hgsmall
       (restProduct i0 y) (restProduct_pos i0 y) h hwidth j Q χ ψ hQ hχ hψ hne
       hlogx hExpUpper
   have htermNorm (y : ∀ i : {i : Coordinate G k // i ≠ i0}, Label G i.1.1) :
@@ -790,7 +785,7 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
     have hnonneg := restWeight_nonneg i0 y hmassAll
     rw [norm_mul]
     have hnormCast : ‖(restWeight i0 y : ℂ)‖ = restWeight i0 y := by
-      simp [Complex.norm_real, abs_of_nonneg hnonneg]
+      simp [abs_of_nonneg hnonneg]
     rw [hnormCast]
     exact mul_le_mul_of_nonneg_left (hinner y) hnonneg
   rw [hsplit, hsplitOuter]
@@ -806,8 +801,7 @@ theorem CharacterCellTask_proof : CharacterCellTask := by
               cellQuotient χ ψ (restProduct i0 y * p.val) else 0‖ := norm_sum_le _ _
     _ ≤ ∑ y, restWeight i0 y * ((K0 / P.vmin) * L x ^ (-D)) := by
       apply Finset.sum_le_sum
-      intro y hy
-      exact htermNorm y
+      grind
     _ = (K0 / P.vmin) * L x ^ (-D) := by
       rw [← Finset.sum_mul, hrestMass]
       simp

@@ -60,7 +60,7 @@ theorem fourierInv_eq_integral (g : ℝ → ℂ) (x : ℝ) :
 theorem hasCompactSupport_of_lt_abs {f : ℝ → ℂ} {R : ℝ} (hsupp : ∀ x, R < |x| → f x = 0) :
     HasCompactSupport f := by
   refine HasCompactSupport.intro (isCompact_closedBall 0 R) fun x hx => hsupp x ?_
-  simpa [Real.norm_eq_abs] using hx
+  simp_all
 
 /-- The derivatives of a function vanishing outside `[-R, R]` also vanish outside `[-R, R]`. -/
 theorem iteratedDeriv_eq_zero_of_lt_abs {f : ℝ → ℂ} {R : ℝ}
@@ -70,15 +70,14 @@ theorem iteratedDeriv_eq_zero_of_lt_abs {f : ℝ → ℂ} {R : ℝ}
   have hts : tsupport f ⊆ Metric.closedBall 0 R := by
     refine closure_minimal (fun y hy => ?_) Metric.isClosed_closedBall
     by_contra h
-    exact hy (hsupp y (by simpa [Real.norm_eq_abs] using h))
+    exact hy (hsupp y (by simp_all))
   have hx' : x ∉ tsupport f := fun h => by
     have := hts h
-    simp [Real.norm_eq_abs] at this
+    simp at this
     linarith
   -- derivatives vanish off the closed support
   have := Function.notMem_support.1 fun h => hx' (support_iteratedFDeriv_subset (𝕜 := ℝ) k h)
-  rw [iteratedDeriv_eq_iteratedFDeriv, this]
-  rfl
+  simp [iteratedDeriv_eq_iteratedFDeriv, this]
 
 /-- The trivial bound `|ft g ξ| ≤ 2 R M` for `g` supported in `[-R, R]` with `|g| ≤ M`. -/
 theorem norm_ft_le {g : ℝ → ℂ} {R M : ℝ} (hR : 0 ≤ R) (hsupp : ∀ x, R < |x| → g x = 0)
@@ -94,7 +93,7 @@ theorem norm_ft_le {g : ℝ → ℂ} {R M : ℝ} (hR : 0 ≤ R) (hsupp : ∀ x, 
   refine (norm_setIntegral_le_of_norm_le_const (C := M) (by simp) fun x _ => ?_).trans
     (le_of_eq ?_)
   · rw [norm_mul, Complex.norm_exp]
-    simpa using hM x
+    simp_all
   · rw [Real.volume_real_Icc_of_le (by linarith)]
     ring
 
@@ -107,13 +106,13 @@ theorem norm_ft_mul_le {f : ℝ → ℂ} {k : ℕ} (hf : ContDiff ℝ k f) {R M 
     (2 * Real.pi * |ξ|) ^ k * ‖ft f ξ‖ ≤ 2 * R * M := by
   -- the derivatives are continuous with compact support, hence integrable
   have hint : ∀ n : ℕ, n ≤ (k : ℕ∞) → Integrable (iteratedDeriv n f) := fun n hn =>
-    (hf.continuous_iteratedDeriv n (by exact_mod_cast hn)).integrable_of_hasCompactSupport
+    (hf.continuous_iteratedDeriv n (by simp_all)).integrable_of_hasCompactSupport
       (hasCompactSupport_of_lt_abs (iteratedDeriv_eq_zero_of_lt_abs hsupp n))
   -- differentiating `k` times multiplies the transform by `(2πiξ)^k`
   have hk := congrFun (Real.fourier_iteratedDeriv (N := k) hf hint le_rfl) ξ
   calc (2 * Real.pi * |ξ|) ^ k * ‖ft f ξ‖ = ‖ft (iteratedDeriv k f) ξ‖ := by
         rw [ft_eq_fourier, ft_eq_fourier, hk, norm_smul, norm_pow]
-        simp [abs_of_pos Real.pi_pos]
+        simp
     _ ≤ 2 * R * M := norm_ft_le hR (iteratedDeriv_eq_zero_of_lt_abs hsupp k) hM ξ
 
 /-- For `f` of class `C²` supported in `[-R, R]` with `|f| ≤ M₀` and `|f''| ≤ M₂`, the
@@ -157,8 +156,7 @@ theorem ft_inversion {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R : ℝ}
     (hsupp : ∀ x, R < |x| → f x = 0) (x : ℝ) :
     ∫ ξ : ℝ, Complex.exp (2 * Real.pi * Complex.I * (x : ℂ) * (ξ : ℂ)) * ft f ξ = f x := by
   -- enlarge the support radius to make it nonnegative
-  have hsupp' : ∀ x, max R 0 < |x| → f x = 0 := fun x hx =>
-    hsupp x ((le_max_left R 0).trans_lt hx)
+  have hsupp' : ∀ x, max R 0 < |x| → f x = 0 := by grind
   have hfc : Continuous f := hf.continuous
   have hfi : Integrable f :=
     hfc.integrable_of_hasCompactSupport (hasCompactSupport_of_lt_abs hsupp)
@@ -167,7 +165,7 @@ theorem ft_inversion {f : ℝ → ℂ} (hf : ContDiff ℝ 2 f) {R : ℝ}
   obtain ⟨M₂, hM₂⟩ := (hf.continuous_iteratedDeriv 2 le_rfl).bounded_above_of_compact_support
     (hasCompactSupport_of_lt_abs (iteratedDeriv_eq_zero_of_lt_abs hsupp 2))
   -- so the transform is integrable, and Mathlib's inversion theorem applies
-  have hFi := (integral_norm_ft_le hf (le_max_right R 0) hsupp' hM₀ hM₂).1
+  have hFi := (integral_norm_ft_le hf (by positivity) hsupp' hM₀ hM₂).1
   rw [ft_eq_fourier] at hFi
   rw [← fourierInv_eq_integral, ft_eq_fourier, hfc.fourierInv_fourier_eq hfi hFi]
 

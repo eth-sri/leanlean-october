@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth
@@ -42,20 +42,19 @@ theorem buffered_polynomial_bound (e ε : ℝ)
   have hlr : a+6*e-σ≤2-σ := by linarith
   have hmem {s : ℂ} (hs : s ∈ (uIcc (a+6*e-σ) (2-σ) ×ℂ uIcc (-V) V)) :=
     translated_rectangle_mem (a:=a) (e:=e) (σ:=σ) (freq:=freq)
-      (by linarith : a+6*e≤a+6*e-σ+σ) (by linarith : 2-σ+σ≤2) hlr hV hfreq hs
+      (by simp) (by simp) hlr hV hfreq hs
   have hz {s : ℂ} (hs : s ∈ (uIcc (a+6*e-σ) (2-σ) ×ℂ uIcc (-V) V)) :=
-    hrect χ hχ T a i hT ha ha' hmax j (s+shift σ freq) (hmem hs).1 (hmem hs).2.1 (hmem hs).2.2
+    hrect χ hχ T a i hT ha ha' hmax j (s+shift σ freq) (by grind) (by grind) (by grind)
   have hseries (s : ℂ) (hs : s ∈ (uIcc (a+6*e-σ) (2-σ) ×ℂ uIcc (-V) V)) :
       ‖series (χ j) inverse (s+shift σ freq)‖≤K := by
     have hb := (hz hs).2
     cases inverse
     · exact (le_add_of_nonneg_right (norm_nonneg _)).trans hb
     · exact (le_add_of_nonneg_left (norm_nonneg _)).trans hb
-  have hbound := polynomial_bound_of_rectangle (χ j) (hχ j) inverse W A B hA hWs hW
+  have hbound := polynomial_bound_of_rectangle (χ j) (by grind) inverse W A B hA hWs hW
     D σ freq (a+6*e-σ) (2-σ) V C₂ Cn K n hD hlr (by linarith) hV hC₂ hCn hK hm₂ hmn
-    (fun _ hs _ => (hz hs).1) hseries
-  dsimp only [K] at hbound
-  convert hbound using 1 ; congr 2 <;> ring_nf
+    (by grind) hseries
+  grind
 
 end SevenEighths.HeckeDyadic
 

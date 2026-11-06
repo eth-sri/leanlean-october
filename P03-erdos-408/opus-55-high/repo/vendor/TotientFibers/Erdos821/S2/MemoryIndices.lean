@@ -7,7 +7,6 @@ public import Erdos821.S2.HistorySizes
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -23,7 +22,7 @@ theorem memoryEntry_enumeration {g : P.Group} (z : P.Memory g) :
   have hl : List.ofFn (memoryEntry z) = z.toList := by
     rw [he, ← List.Vector.toList_ofFn, List.Vector.ofFn_get]
     rfl
-  rw [Finset.val_univ_fin, Multiset.map_coe, ← List.ofFn_eq_map, hl, Multiset.coe_toList]
+  simp_all
 
 theorem deleteMemoryIndices_eq_map {g : P.Group} (z : P.Memory g)
     (B : Finset (Fin z.card)) :
@@ -51,7 +50,7 @@ theorem zeroMemoryIndices_delete_card {g : P.Group} (z : P.Memory g)
     simp only [Finset.mem_filter, Finset.mem_sdiff, Finset.mem_univ, true_and, zeroMemoryIndices]
     tauto
   change ((Finset.univ \ B).filter (fun i => (memoryEntry z i).2 = 0)).card = _
-  rw [he, Finset.card_sdiff_of_subset hB]
+  grind
 
 theorem zeroMemoryIndices_add_card {g : P.Group} (z w : P.Memory g) :
     (zeroMemoryIndices (z + w)).card = (zeroMemoryIndices z).card + (zeroMemoryIndices w).card := by
@@ -83,8 +82,8 @@ theorem local_rho_cancellation (rho q eta V : ℝ) (hρ : rho ≠ 0)
     rho ^ Z * (-eta / rho) ^ t * (q / rho ^ (2 : ℕ)) ^ (Z - t) *
       (-eta * V / rho) ^ b * rho ^ (Z - t + b) =
       (-eta) ^ t * q ^ (Z - t) * (-eta * V) ^ b := by
-  have hZ : Z = (Z - t) + t := (Nat.sub_add_cancel ht).symm
-  rw [show rho ^ Z = rho ^ (Z - t) * rho ^ t by rw [← pow_add, ← hZ]]
+  have hZ := (Nat.sub_add_cancel ht).symm
+  rw [show rho ^ Z = rho ^ (Z - t) * rho ^ t by grind]
   simp only [div_pow, pow_add]
   field_simp [hρ]
   ring
@@ -102,7 +101,7 @@ theorem ghostChoiceWeight_rho_cancel (F : FixedData) (n : ℕ) (rho : ℝ) (hρ 
   apply Finset.prod_congr rfl
   intro g _
   have hn := congrArg (fun Z => rho ^ Z) (ghostChoiceValid_zero_card c hc g)
-  have ht : (c.1 g).card ≤ (zeroMemoryIndices (s.2.2 g)).card := Finset.card_le_card (hc g).1
+  have ht := Finset.card_le_card (hc g).1
   simp only [div_one, one_pow]
   calc
     _ = (rho ^ (zeroMemoryIndices (s.2.2 g)).card * (-eta F n i / rho) ^ (c.1 g).card *

@@ -9,40 +9,37 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
+open CanonicalRowCompletion CanonicalQuadraticSieve
 open CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum
 open UniqueFactorizationMonoid HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
 
 def deletedPeriod (q:ℕ):ℕ := 2592*q^2
 
 theorem deletedPeriod_ne_zero (q:ℕ)(hq:q≠0):deletedPeriod q≠0 := by
   unfold deletedPeriod
-  exact mul_ne_zero (by norm_num) (pow_ne_zero _ hq)
+  positivity
 
-theorem fixed_bad_divides_reflection (q:ℕ)(P:Ideal O)(hP:P∈fixedBadPrimes):
+theorem fixed_bad_divides_reflection (q:ℕ)(P:Ideal ActualEisensteinCubic.O)(hP:P∈fixedBadPrimes):
     P∣Ideal.span {reflectionConductor q} := by
-  change P∈({Ideal.span {goodLambda},Ideal.span {(2:O)}}:Finset (Ideal O)) at hP
+  change P∈({Ideal.span {goodLambda},Ideal.span {(2:ActualEisensteinCubic.O)}}:Finset (Ideal ActualEisensteinCubic.O)) at hP
   rcases Finset.mem_insert.mp hP with rfl|hP
   · apply Ideal.dvd_iff_le.mpr
     apply Ideal.span_singleton_le_span_singleton.mpr
-    have h3:goodLambda∣(3:O):=CubicEisenstein.halfPrimary_lambda_dvd_three
+    have h3:goodLambda∣(3:ActualEisensteinCubic.O):=CubicEisenstein.halfPrimary_lambda_dvd_three
     apply h3.trans
     refine ⟨(864*q:ℕ),?_⟩
     unfold reflectionConductor
-    push_cast
-    ring
+    grind
   · rw [Finset.mem_singleton.mp hP]
     apply Ideal.dvd_iff_le.mpr
     apply Ideal.span_singleton_le_span_singleton.mpr
     refine ⟨(1296*q:ℕ),?_⟩
     unfold reflectionConductor
-    push_cast
-    ring
+    grind
 
-theorem excluded_mem_iff (q:ℕ)(hq:q≠0)(P:Ideal O):
+theorem excluded_mem_iff (q:ℕ)(hq:q≠0)(P:Ideal ActualEisensteinCubic.O):
     P∈reflectionExcludedPrimes q ↔ Prime P ∧ P∣Ideal.span {reflectionConductor q} := by
   constructor
   · intro hP
@@ -65,12 +62,11 @@ theorem excluded_product_divides_reflection (q:ℕ)(hq:q≠0):
 
 theorem deleted_reflection_ideal (q:ℕ):
     Ideal.span {reflectionConductor (deletedPeriod q)}=
-      (Ideal.span {reflectionConductor q}:Ideal O)^2 := by
+      (Ideal.span {reflectionConductor q}:Ideal ActualEisensteinCubic.O)^2 := by
   rw [Ideal.span_singleton_pow]
   congr 1
   unfold reflectionConductor deletedPeriod
-  push_cast
-  ring_nf
+  grind
 
 theorem deleted_excluded_eq (q:ℕ)(hq:q≠0):
     reflectionExcludedPrimes (deletedPeriod q)=reflectionExcludedPrimes q := by
@@ -81,27 +77,26 @@ theorem deleted_excluded_eq (q:ℕ)(hq:q≠0):
   · rintro ⟨hp,hd⟩
     exact ⟨hp,hp.dvd_of_dvd_pow hd⟩
   · rintro ⟨hp,hd⟩
-    exact ⟨hp,hd.trans (dvd_pow_self _ (by decide:2≠0))⟩
+    exact ⟨hp,hd.trans (by simp)⟩
 
 theorem deleted_period_ideal (q:ℕ):
-    (Ideal.span {(deletedPeriod q:O)}:Ideal O)=
-      Ideal.span {(q:O)}*Ideal.span {reflectionConductor q} := by
+    (Ideal.span {(deletedPeriod q:ActualEisensteinCubic.O)}:Ideal ActualEisensteinCubic.O)=
+      Ideal.span {(q:ActualEisensteinCubic.O)}*Ideal.span {reflectionConductor q} := by
   rw [Ideal.span_singleton_mul_span_singleton]
   congr 1
   unfold deletedPeriod reflectionConductor
-  push_cast
-  ring_nf
+  grind
 
 theorem deleted_period_le_modulus (χ:Character)(q:ℕ)(hq:q≠0)
-    (hperiod:Ideal.span {(q:O)}≤χ.modulus):
-    Ideal.span {(deletedPeriod q:O)}≤
+    (hperiod:Ideal.span {(q:ActualEisensteinCubic.O)}≤χ.modulus):
+    Ideal.span {(deletedPeriod q:ActualEisensteinCubic.O)}≤
       (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)).modulus := by
-  change Ideal.span {(deletedPeriod q:O)}≤χ.modulus*(∏P∈reflectionExcludedPrimes q,P)
+  change Ideal.span {(deletedPeriod q:ActualEisensteinCubic.O)}≤χ.modulus*(∏P∈reflectionExcludedPrimes q,P)
   rw [deleted_period_ideal]
   exact Ideal.mul_mono hperiod (Ideal.dvd_iff_le.mp (excluded_product_divides_reflection q hq))
 
 theorem deleted_element_period (χ:Character)(q:ℕ)(hq:q≠0)
-    (hperiod:Ideal.span {(q:O)}≤χ.modulus):
+    (hperiod:Ideal.span {(q:ActualEisensteinCubic.O)}≤χ.modulus):
     FactorsModulo (fixedBaseConductor (deletedPeriod q))
       (HeckeRowClosure.elementHom
         (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))) := by
@@ -110,14 +105,14 @@ theorem deleted_element_period (χ:Character)(q:ℕ)(hq:q≠0)
   exact deleted_period_le_modulus χ q hq hperiod (Ideal.mul_le_left hxy)
 
 theorem deleted_base_gates (χ:Character)(q:ℕ)(hq:q≠0)
-    (hperiod:Ideal.span {(q:O)}≤χ.modulus):
+    (hperiod:Ideal.span {(q:ActualEisensteinCubic.O)}≤χ.modulus):
     deletedPeriod q≠0 ∧ reflectionExcludedPrimes (deletedPeriod q)=reflectionExcludedPrimes q ∧
     (∀x,‖HeckeRowClosure.elementHom
       (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)) x‖≤1) ∧
     FactorsModulo (fixedBaseConductor (deletedPeriod q))
       (HeckeRowClosure.elementHom
-        (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))) := by
-  exact ⟨deletedPeriod_ne_zero q hq,deleted_excluded_eq q hq,
+        (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))) :=
+  ⟨deletedPeriod_ne_zero q hq,deleted_excluded_eq q hq,
     HeckeRowClosure.elementHom_norm _,deleted_element_period χ q hq hperiod⟩
 
 end SevenEighths.InverseInitialExcludedPeriod

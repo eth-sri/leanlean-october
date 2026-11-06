@@ -9,25 +9,24 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open SecondPassArithmetic
 open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseWholePriorityRetainedSource RayFourExpansion
+open InversePrioritySecondSource InverseSecondPrincipalCaller
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
-variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem global_priority_slice_full_tail
     (hp:∀i,p i≠0) (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
-    (original:Finset (Source ι Jo)) (w:Source ι Jo→ℂ) (negative:Bool) (Ψ:Eis→*ℂ) (m:Eis)
+    (original:Finset (Source ι Jo)) (w:Source ι Jo→ℂ) (negative:Bool) (Ψ:ActualEisensteinCubic.O→*ℂ) (m:ActualEisensteinCubic.O)
     (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex)
     (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo) (hs:Function.support om⊆Set.Icc lo hi)

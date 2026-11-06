@@ -10,14 +10,13 @@ noncomputable section
 namespace SevenEighths.ProbePhase
 open ActualEisensteinCubic ActualEisensteinCoordinates QuadraticGaussRay ConcreteTraceCRT
 open QuadraticAllOddCRT
-local notation "O" => ActualEisensteinCubic.O
 
-def G (a : O) : ℂ := fixedGQuotientValue (Ideal.Quotient.mk (Ideal.span {(4 : O)}) a)
+def G (a : ActualEisensteinCubic.O) : ℂ := fixedGQuotientValue (Ideal.Quotient.mk (Ideal.span {(4 : ActualEisensteinCubic.O)}) a)
 
-def reciprocitySign (a b : O) : ℂ :=
+def reciprocitySign (a b : ActualEisensteinCubic.O) : ℂ :=
   (quadraticRaySign (residue a) (residue b) : ℂ)
 
-theorem G_mul (a b : O)
+theorem G_mul (a b : ActualEisensteinCubic.O)
     (ha : EisensteinEPrimaryPhase.odd (residue a))
     (hb : EisensteinEPrimaryPhase.odd (residue b)) :
     G (a * b) = G a * G b * reciprocitySign a b := by
@@ -28,27 +27,25 @@ theorem G_mul (a b : O)
   unfold reciprocitySign
   ring
 
-theorem reciprocitySign_mul_right (a b c : O) :
+theorem reciprocitySign_mul_right (a b c : ActualEisensteinCubic.O) :
     reciprocitySign a (b * c) = reciprocitySign a b * reciprocitySign a c := by
   simp only [reciprocitySign, residue_mul, quadraticRaySign_mul_right, Int.cast_mul]
 
-theorem reciprocitySign_sq (a b : O)
+theorem reciprocitySign_sq (a b : ActualEisensteinCubic.O)
     (ha : EisensteinEPrimaryPhase.odd (residue a))
     (hb : EisensteinEPrimaryPhase.odd (residue b)) :
     reciprocitySign a b ^ 2 = 1 := by
   unfold reciprocitySign
   exact_mod_cast quadraticRaySign_sq (residue a) (residue b) ha hb
 
-theorem reciprocitySign_cube_right (a b : O)
+theorem reciprocitySign_cube_right (a b : ActualEisensteinCubic.O)
     (ha : EisensteinEPrimaryPhase.odd (residue a))
     (hb : EisensteinEPrimaryPhase.odd (residue b)) :
     reciprocitySign a (b ^ 3) = reciprocitySign a b := by
   rw [show b ^ 3 = b ^ 2 * b by ring, reciprocitySign_mul_right,
     pow_two, reciprocitySign_mul_right]
   have hs := reciprocitySign_sq a b ha hb
-  calc
-    _ = reciprocitySign a b ^ 2 * reciprocitySign a b := by ring
-    _ = reciprocitySign a b := by rw [hs, one_mul]
+  grind
 
 theorem quadraticRayValue_cube (r : EisensteinEPrimaryPhase.Coord)
     (hr : EisensteinEPrimaryPhase.odd r) :
@@ -60,11 +57,11 @@ theorem quadraticRayValue_cube (r : EisensteinEPrimaryPhase.Coord)
   rw [quadraticRayValue_eq_fourthRoot _ (odd_mul _ _ (odd_mul _ _ hr hr) hr),
     he r hr, ← quadraticRayValue_eq_fourthRoot r hr]
 
-theorem G_cube (a : O) (ha : EisensteinEPrimaryPhase.odd (residue a))
+theorem G_cube (a : ActualEisensteinCubic.O) (ha : EisensteinEPrimaryPhase.odd (residue a))
     (hu : IsUnit (Ideal.Quotient.mk cubicTwoIdeal a)) :
     G (a ^ 3) = quadraticRayValue (residue a) := by
   have hχ := congrArg
-    (fun η : MulChar (O ⧸ cubicTwoIdeal) O => η (Ideal.Quotient.mk cubicTwoIdeal a))
+    (fun η : MulChar (ActualEisensteinCubic.O ⧸ cubicTwoIdeal) ActualEisensteinCubic.O => η (Ideal.Quotient.mk cubicTwoIdeal a))
     (cubicChar_pow_three cubicTwoIdeal cubicTwoIdeal_good)
   simp only [MulChar.pow_apply' _ (by decide : (3 : ℕ) ≠ 0), MulChar.one_apply hu] at hχ
   have hc := congrArg eisEmbedding hχ

@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Baseline
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -36,15 +35,15 @@ theorem refreshKernel_eq_prod {I : Type*} [Fintype I] {α : I → Type*}
     apply Finset.prod_congr rfl
     intro i _
     by_cases hi : shared i
-    · simp only [ite_eq_left hi, ite_eq_left (h i hi)]
-    · simp only [ite_eq_right hi]
+    · simp only [ite_eq_left (h i hi)]
+    simp_all
   · rw [refreshKernel, ite_eq_right h]
     obtain ⟨i, hi⟩ := not_forall.mp h
-    have hs : shared i := by by_contra hh; exact hi (fun hp => False.elim (hh hp))
-    have hab : a i ≠ b i := fun hh => hi (fun _ => hh)
+    have hs : shared i := by by_contra hh; exact by grind
+    have hab : a i ≠ b i := by grind
     symm
     apply Finset.prod_eq_zero (Finset.mem_univ i)
-    simp only [ite_eq_left hs, ite_eq_right hab]
+    simp_all
 
 theorem refreshKernel_row_sum {I : Type*} [Fintype I] [DecidableEq I] {α : I → Type*} [∀ i, Fintype (α i)]
     (shared : I → Prop) (mu : ∀ i, α i → ℝ) (hmu : ∀ i, (∑ x, mu i x) = 1)
@@ -52,11 +51,7 @@ theorem refreshKernel_row_sum {I : Type*} [Fintype I] [DecidableEq I] {α : I �
   classical
   simp only [refreshKernel_eq_prod]
   rw [← Fintype.prod_sum (fun i x => if shared i then (if a i = x then 1 else 0) else mu i x)]
-  apply Finset.prod_eq_one
-  intro i _
-  by_cases hi : shared i
-  · simp [hi]
-  · simp only [ite_eq_right hi, hmu i]
+  simp_all
 
 theorem refreshMass_reversal {I : Type*} [Fintype I] {α : I → Type*}
     (shared : I → Prop) (mu : ∀ i, α i → ℝ) (a b : ∀ i, α i)
@@ -66,8 +61,7 @@ theorem refreshMass_reversal {I : Type*} [Fintype I] {α : I → Type*}
   apply Finset.prod_congr rfl
   intro i _
   by_cases hi : shared i
-  · simp only [ite_eq_left hi, h i hi]
-  · simp only [ite_eq_right hi]
-    ring
+  · simp only [h i hi]
+  grind
 
 end Erdos821.P3Clean

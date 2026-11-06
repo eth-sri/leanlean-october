@@ -7,30 +7,29 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped Classical
+open RayFourExpansion
+open JointLogSeparation
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def firstFamilySeparatedRow (source : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
-    (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → Eis)
+    (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → ActualEisensteinCubic.O)
     (s : Fin 9 → ℝ) (z : Frequency × (Fin 9 → ℝ)) : ℂ :=
   ∑ x∈source,w x*firstBlockedSeparatedRow p hg F (selector x) (C₁ x) (C₂ x)
     ω₁ ω₂ (A₁ x) (A₂ x) (C x) (R x) (d x) (h x) s z
 
 def firstFamilyEnergy (source : Finset κ) (F : Finset ι)
     (selector C : κ → Finset ι → ℂ) (w : κ → ℂ)
-    (negative : Bool) (ω : ℝ → ℂ) (X t : ℝ) (h : κ → Eis) : ℝ :=
+    (negative : Bool) (ω : ℝ → ℂ) (X t : ℝ) (h : κ → ActualEisensteinCubic.O) : ℝ :=
   ∑ x∈source,‖w x‖*firstBlockEnergy p hg F (selector x) (C x) negative ω X t (h x)
 
 theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
-    (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → Eis)
+    (ω₁ ω₂ : ℝ → ℂ) (A₁ A₂ C R : κ → ℝ) (d h : κ → ActualEisensteinCubic.O)
     (s : Fin 9 → ℝ) (z : Frequency × (Fin 9 → ℝ)) :
     let H := profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2
     ‖firstFamilySeparatedRow p hg source F selector C₁ C₂ w ω₁ ω₂ A₁ A₂ C R d h s z‖ ≤
@@ -75,7 +74,7 @@ theorem first_family_cauchy (source : Finset κ) (F : Finset ι)
       firstFamilyEnergy p hg source F selector C₂ w false ω₂ (s 8) (H 8) h := by
     simp only [firstFamilyEnergy,firstBlockEnergy,Finset.mul_sum,mul_assoc,Bool.false_eq_true,ite_false]
   rw [hleft,hright] at hc
-  exact hc.trans_eq (mul_comm _ _)
+  linarith
 
 end
 end SevenEighths.InverseMoment

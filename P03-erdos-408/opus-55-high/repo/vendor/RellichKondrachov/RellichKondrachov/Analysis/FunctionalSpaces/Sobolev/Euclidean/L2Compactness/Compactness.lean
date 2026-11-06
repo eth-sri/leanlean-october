@@ -39,8 +39,8 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
-open MeasureTheory Set
+open scoped ENNReal MeasureTheory Convolution Pointwise
+open MeasureTheory
 
 noncomputable section
 
@@ -113,18 +113,18 @@ lemma uniformContinuous_ψ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
   -- to the topological support.
   have hx' : ¬ dist (ψ x) 0 < ε := by
     simpa [Set.mem_compl_iff, Set.mem_ofPred_eq] using hx
-  have hxε : ε ≤ dist (ψ x) 0 := le_of_not_gt (by simpa [gt_iff_lt] using hx')
+  have hxε : ε ≤ dist (ψ x) 0 := le_of_not_gt (by omega)
   have hx0 : ψ x ≠ 0 := by
     intro hψ0
     have : dist (ψ x) 0 = 0 := by simp [hψ0]
     have : ε ≤ 0 := by simpa [this] using hxε
-    exact not_lt_of_ge this hε
+    exact by linarith
   have hx_supp : x ∈ Function.support ψ := by
     simpa [Function.support] using hx0
   have hx_tsupp : x ∈ tsupport ψ := by
-    have : x ∈ closure (Function.support ψ) := subset_closure hx_supp
+    have  := subset_closure hx_supp
     simpa [tsupport] using this
-  exact hx_tsupp
+  omega
 
 /-!
 The remainder of the compactness proof (Arzelà–Ascoli on the family `smoothBCF '' closedBall`)

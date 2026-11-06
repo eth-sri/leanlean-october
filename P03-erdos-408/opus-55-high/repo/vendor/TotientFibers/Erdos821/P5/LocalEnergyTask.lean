@@ -6,7 +6,6 @@ public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory
 
 namespace Erdos821.P5Core

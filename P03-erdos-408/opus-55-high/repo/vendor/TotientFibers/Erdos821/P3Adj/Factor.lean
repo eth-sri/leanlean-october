@@ -7,7 +7,6 @@ public import Erdos821.Blueprint.Graph
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -75,7 +74,7 @@ lemma globalSummand_eq_prod (c : GhostChoice s t) :
       else 0)) = 0 := by
       apply Finset.prod_eq_zero (Finset.mem_univ g0)
       rw [ite_eq_right hg0]
-    rw [hzero]
+    linarith
 
 lemma globalSum_split :
     (∑ c : GhostChoice s t,
@@ -124,7 +123,7 @@ lemma interchange_p (A : (g : P.BigGroup) → Finset (Fin (s.2.2 g).card))
         |singleWeight F n rho i g (s.2.2 g) (t.2.2 g) (A g) (b g) p_g| * d ^ (b g).val
       else 0))
   rw [Fintype.piFinset_univ] at h
-  exact h.symm
+  linarith
 
 lemma interchange_b
     (G : ∀ g : P.BigGroup, Fin ((t.2.2 g).card + 1) → ℝ) :
@@ -133,8 +132,7 @@ lemma interchange_b
   have h := Finset.prod_univ_sum
     (t := fun g : P.BigGroup => (Finset.univ : Finset (Fin ((t.2.2 g).card + 1))))
     (f := fun g : P.BigGroup => fun b_g : Fin ((t.2.2 g).card + 1) => G g b_g)
-  rw [Fintype.piFinset_univ] at h
-  exact h.symm
+  simp_all
 
 lemma interchange_A (G : ∀ g : P.BigGroup, Finset (Fin (s.2.2 g).card) → ℝ) :
     (∑ A : ((g : P.BigGroup) → Finset (Fin (s.2.2 g).card)), ∏ g, G g (A g)) =
@@ -142,8 +140,7 @@ lemma interchange_A (G : ∀ g : P.BigGroup, Finset (Fin (s.2.2 g).card) → ℝ
   have h := Finset.prod_univ_sum
     (t := fun g : P.BigGroup => (Finset.univ : Finset (Finset (Fin (s.2.2 g).card))))
     (f := fun g : P.BigGroup => fun A_g : Finset (Fin (s.2.2 g).card) => G g A_g)
-  rw [Fintype.piFinset_univ] at h
-  exact h.symm
+  simp_all
 
 lemma globalKernel_eq_prod (hcoord : s.1 = t.1 ∧ s.2.1 = t.2.1) :
     absoluteScaledMemoryGhostKernel F J n rho d i s t =
@@ -182,8 +179,8 @@ lemma globalKernel_eq_prod (hcoord : s.1 = t.1 ∧ s.2.1 = t.2.1) :
         ∑ b_g : Fin ((t.2.2 g).card + 1),
         ∑ p_g : Fin b_g.val → P.Prime g.val,
           (if singleValid g (s.2.2 g) (t.2.2 g) A_g b_g p_g then
-            |singleWeight F n rho i g (s.2.2 g) (t.2.2 g) A_g b_g p_g| * d ^ b_g.val else 0) := by
-        exact interchange_A F J s
+            |singleWeight F n rho i g (s.2.2 g) (t.2.2 g) A_g b_g p_g| * d ^ b_g.val else 0) :=
+        interchange_A F J s
           (fun g A_g => ∑ b_g : Fin ((t.2.2 g).card + 1),
             ∑ p_g : Fin b_g.val → P.Prime g.val,
               (if singleValid g (s.2.2 g) (t.2.2 g) A_g b_g p_g then

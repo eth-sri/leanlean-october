@@ -9,11 +9,10 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow ProbePhase
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeRow ProbePhase
 
 def calibratedHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
-    (I : Ideal O) (hI : primaryGenerator I≠0) (A s : O) (hA : A≠0) (H : O) : ℂ :=
+    (I : Ideal ActualEisensteinCubic.O) (hI : primaryGenerator I≠0) (A s : ActualEisensteinCubic.O) (hA : A≠0) (H : ActualEisensteinCubic.O) : ℂ :=
   actualCongruenceCoefficient C A s hA H * idealRowHom C.generator (Ideal.span {s}) /
     ((Real.sqrt (elementNorm C.generator):ℂ)*C.tau*C.residueMonoid s) *
     gaussTwo I hI * star (FiniteGaussPhase.angularFactor A * ProbePhase.G A) *
@@ -21,15 +20,12 @@ def calibratedHighCoefficient (C : CalibrationData) (η : HeckeFamily.Character)
 
 lemma div_mul_frequency_cancel (a b c m : ℂ) (hc : c≠0) :
     c*(a/(b*c)*m)=a/b*m := by
-  simp only [div_eq_mul_inv,mul_inv_rev]
-  calc
-    _ = (c*c⁻¹)*(a*b⁻¹*m) := by ring
-    _ = _ := by rw [mul_inv_cancel₀ hc,one_mul]
+  grind
 
-theorem calibratedHighCoefficient_eq_bare (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
-    (η : HeckeFamily.Character) (I : Ideal O) (hI : primaryGenerator I≠0)
-    (A s : O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O) :
+theorem calibratedHighCoefficient_eq_bare (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal)
+    (η : HeckeFamily.Character) (I : Ideal ActualEisensteinCubic.O) (hI : primaryGenerator I≠0)
+    (A s : ActualEisensteinCubic.O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
+    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : ActualEisensteinCubic.O) :
     calibratedHighCoefficient (calibrationForSet S hS) η I hI A s (supportedElement_ne_zero A hA) H=
       star ((calibrationForSet S hS).residueMonoid H)*
         bareSourceCoefficient η I hI A s (supportedElement_ne_zero A hA) H := by
@@ -43,13 +39,7 @@ theorem calibratedHighCoefficient_eq_bare (S : Finset (Ideal O)) (hS : ∀P∈S,
     rw [←he]
     unfold sourceHighCoefficient calibratedHighCoefficient
     simp only [one_pow,mul_one]
-    symm
-    convert div_mul_frequency_cancel
-      (actualCongruenceCoefficient C A s (supportedElement_ne_zero A hA) H * idealRowHom C.generator (Ideal.span {s}))
-      ((Real.sqrt (elementNorm C.generator):ℂ)*C.tau*C.residueMonoid s)
-      (star (C.residueMonoid H))
-      (gaussTwo I hI*star (FiniteGaussPhase.angularFactor A*ProbePhase.G A)*targetMonoid η A*(C.Xi A)⁻¹*reciprocitySign A s)
-      hn using 1 <;> dsimp only [C] <;> ring
+    grind
   · have hz := actualCongruenceCoefficient_zero_off_calibration S hS A s
       (supportedElement_ne_zero A hA) (supportedElement_ne_zero s hs) hcop H hH
     have hξ : C.residueMonoid H=0 := by

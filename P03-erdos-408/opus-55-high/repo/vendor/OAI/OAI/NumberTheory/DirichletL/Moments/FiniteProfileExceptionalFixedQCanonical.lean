@@ -9,51 +9,48 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAsymmetricCanonical
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentForcing CenteredMomentChildRows CompletedGauss
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
+open CenteredMomentSecondCanonicalNonunit
+open CenteredMomentForcing CenteredMomentChildRows
+open CenteredMomentCommonRadialData
+open CenteredMomentCommonPairedSource
+open CenteredMomentCommonExceptionalCost
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 open CenteredMomentFixedQForcingCount CenteredMomentRankinRadical
-local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
 theorem actual_common_canonical_bound (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(ε δ θ B Lbound:ℝ)
     (hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤Lbound):
-    ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
+    ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal HeckeFamily.O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:HeckeFamily.O)} → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s v:Input ι)(p q:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,v.lo i=lo i) → (∀i,v.hi i=hi i) →
       (∀i,1≤s.P i) → (∀i,1≤v.P i) →
       s.W₁=p.profile 0 → s.W₂=p.profile 1 → v.W₁=q.profile 0 → v.W₂=q.profile 1 →
-      ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O),R≠0 → seed∣C → seed∣D →
+      ∀(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)(R seed:Ideal HeckeFamily.O),R≠0 → seed∣C → seed∣D →
       ∀rLeft rRight:ℝ,
       Z^rLeft≤s.X₁ → Z^rLeft≤s.X₂ → Z^rLeft≤s.Y₁ → Z^rLeft≤s.Y₂ →
       Z^rRight≤v.X₁ → Z^rRight≤v.X₂ → Z^rRight≤v.Y₁ → Z^rRight≤v.Y₂ →
-      ∀rows:Finset O,(∀z∈rows,z≠0) →
+      ∀rows:Finset HeckeFamily.O,(∀z∈rows,z≠0) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow s.η Q fixedBadMask 1 z) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow v.η Q fixedBadMask 1 z) →
-      (∀z∈rows,(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
-      (∀z∈rows,(v.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+      (∀z∈rows,(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+        (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+      (∀z∈rows,(v.η.modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+        (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
       ∀(η₀:Character)(χ:RayFourExpansion.RayCharacter)(U:Finset (CommonIndex C D)),
       idealCoeff η₀ C≠0 →
-      ∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀m:HeckeFamily.O,m≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow (childCharacter η₀ χ) Q m
         (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z) →
       ∀Cr M:ℝ,0≤Cr → (∀z∈rows,(Ideal.absNorm (Ideal.span {z}):ℝ)≤Cr*Z^M) →
-      ∀Ds:Finset (Ideal O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z^Lbound) →
+      ∀Ds:Finset (Ideal HeckeFamily.O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z^Lbound) →
       (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
         ‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
         K*(768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*
@@ -94,8 +91,8 @@ theorem actual_common_canonical_bound (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo
     _≤K*(qcost*((768*(6:ℝ)^(normalizedFactors Q).toFinset.card*Cr^(1/6:ℝ))*Z^f))*Z^e*
         ((C.absNorm:ℝ)*D.absNorm)^θ*F:=by
       apply mul_le_mul_of_nonneg_right _ hF
-      apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by positivity) _)
-      apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hz.le _)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact mul_le_mul_of_nonneg_left hc hK.le
     _=_:=by
       have hpow:Z^(f+e)=Z^f*Z^e:=Real.rpow_add hz _ _
@@ -104,7 +101,7 @@ theorem actual_common_canonical_bound (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo
         Z^(f+2*ε+δ-max (max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
           (max (rRight-Real.logb Z (D.absNorm:ℝ)) 0))*((C.absNorm:ℝ)*D.absNorm)^θ*F
       rw [show f+2*ε+δ-max (max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)
-          (max (rRight-Real.logb Z (D.absNorm:ℝ)) 0)=f+e by dsimp [e];ring,hpow]
+          (max (rRight-Real.logb Z (D.absNorm:ℝ)) 0)=f+e by linarith,hpow]
       ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ

@@ -11,34 +11,28 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
-
-open Asymptotics
 
 open Asymptotics
 
-open Asymptotics
+
 
 open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
-open scoped ComplexConjugate
 
 theorem conductor_doubling_error_le (Q X T k D : ℕ) (hD : 1 ≤ D)
     (hQ : 2*D ≤ Q) (hk : X+1 ≤ 2^k) :
     (∑ d∈Finset.Ioc D (2*D),primitiveErrorMass (X:ℝ) d/(d.totient:ℝ)) ≤
       highConductorBlockBound Q X T D k := by
-  have hDr : 0 < (D:ℝ) := by exact_mod_cast (show 0 < D by omega)
+  have hDr : 0 < (D:ℝ) := by exact_mod_cast (by positivity)
   have hdq : ((2*D:ℕ):ℝ) ≤ Q := by exact_mod_cast hQ
   have hsq : (((2*D:ℕ):ℝ)^2) ≤ ((2*D:ℕ):ℝ)*(Q:ℝ) := by
-    nlinarith [show (0:ℝ) ≤ ((2*D:ℕ):ℝ) from Nat.cast_nonneg _]
+    nlinarith
   have hshort : (((2*D:ℕ):ℝ)^2)*vaughanShortBound (2*D) X T ≤
       (D:ℝ)*(2*(Q:ℝ)*vaughanShortBound Q X T) := by
     calc
@@ -46,7 +40,7 @@ theorem conductor_doubling_error_le (Q X T k D : ℕ) (hD : 1 ≤ D)
         mul_le_mul_of_nonneg_left (vaughanShortBound_mono hQ X T) (sq_nonneg _)
       _ ≤ (((2*D:ℕ):ℝ)*(Q:ℝ))*vaughanShortBound Q X T :=
         mul_le_mul_of_nonneg_right hsq (vaughanShortBound_nonneg _ _ _)
-      _ = _ := by push_cast; ring
+      _ = _ := by grind
   have hbilin:=vaughanBilinearBound_doubling Q X T D hD hQ
   have hC : 0 ≤ (k:ℝ)*((k:ℝ)+1)*Real.log (X+1:ℕ) := by
     have h:=log_nat_nonneg (X+1)
@@ -64,14 +58,13 @@ theorem highConductorBlockBound_antitone_radius (Q X T k : ℕ) {R D : ℕ}
     (hR : 1 ≤ R) (hRD : R ≤ D) :
     highConductorBlockBound Q X T D k ≤ highConductorBlockBound Q X T R k := by
   have hdiv : 4*(X:ℝ)/(D:ℝ) ≤ 4*(X:ℝ)/(R:ℝ) :=
-    div_le_div_of_nonneg_left (by positivity) (by exact_mod_cast (show 0 < R by omega))
-      (by exact_mod_cast hRD)
+    div_le_div_of_nonneg_left (by positivity) (by positivity)
+      (by simp_all)
   have hC : 0 ≤ (k:ℝ)*((k:ℝ)+1)*Real.log (X+1:ℕ) := by
     have h:=log_nat_nonneg (X+1)
     positivity
   unfold highConductorBlockBound
-  exact add_le_add le_rfl (mul_le_mul_of_nonneg_left
-    (add_le_add (add_le_add hdiv le_rfl) le_rfl) hC)
+  nlinarith
 
 theorem sum_Ioc_dyadic {A : Type*} [AddCommMonoid A] (F : ℕ→A) (r n : ℕ) :
     (∑ d∈Finset.Ioc (2^r) (2^(r+n)),F d)=
@@ -82,7 +75,7 @@ theorem sum_Ioc_dyadic {A : Type*} [AddCommMonoid A] (F : ℕ→A) (r n : ℕ) :
     rw [Finset.sum_range_succ,←ih]
     exact (Finset.sum_Ioc_consecutive F (show 2^r ≤ 2^(r+n) from
       pow_le_pow_right₀ (by omega) (by omega))
-      (show 2^(r+n) ≤ 2^(r+n+1) from pow_le_pow_right₀ (by omega) (by omega))).symm
+      (by grind)).symm
 
 theorem high_conductor_error_le (X T k r n : ℕ) (hk : X+1 ≤ 2^k) :
     (∑ d∈Finset.Ioc (2^r) (2^(r+n)),primitiveErrorMass (X:ℝ) d/(d.totient:ℝ)) ≤
@@ -93,11 +86,11 @@ theorem high_conductor_error_le (X T k r n : ℕ) (hk : X+1 ≤ 2^k) :
       apply Finset.sum_le_sum
       intro j hj
       have hjn:=Finset.mem_range.mp hj
-      have hD : 1 ≤ 2^(r+j) := one_le_pow₀ (by omega)
+      have hD : 1 ≤ 2^(r+j) := by grind
       have hpow : 2^(r+j+1)=2*2^(r+j) := by rw [pow_succ]; omega
       rw [hpow]
       apply (conductor_doubling_error_le (2^(r+n)) X T k (2^(r+j)) hD ?_ hk).trans
-      · exact highConductorBlockBound_antitone_radius _ _ _ _ (one_le_pow₀ (by omega))
+      · exact highConductorBlockBound_antitone_radius _ _ _ _ (by grind)
           (pow_le_pow_right₀ (by omega) (by omega))
       · rw [←hpow]
         exact pow_le_pow_right₀ (by omega) (by omega)
@@ -109,7 +102,7 @@ theorem endpoint_errors_finite_vaughan_reduction (X T k r n : ℕ) (hk : X+1 ≤
         (n:ℝ)*highConductorBlockBound (2^(r+n)) X T (2^r) k)*(harmonic (2^(r+n)):ℝ)^2+
       ((2^(r+n):ℕ):ℝ)*(Nat.log 2 X:ℝ)*Real.log (2^(r+n):ℕ) := by
   have hR : 2^r ≤ 2^(r+n) := pow_le_pow_right₀ (by omega) (by omega)
-  have hRpos : 1 ≤ 2^r := one_le_pow₀ (by omega)
+  have hRpos : 1 ≤ 2^r := by grind
   have he : Finset.Icc 1 (2^(r+n))=Finset.Icc 1 (2^r)∪Finset.Ioc (2^r) (2^(r+n)) := by
     ext d
     simp only [Finset.mem_Icc,Finset.mem_union,Finset.mem_Ioc]
@@ -135,11 +128,8 @@ theorem endpoint_errors_finite_vaughan_reduction_of_le (X T k r n Q : ℕ)
       ((2^(r+n):ℕ):ℝ)*(Nat.log 2 X:ℝ)*Real.log (2^(r+n):ℕ) := by
   apply le_trans ?_ (endpoint_errors_finite_vaughan_reduction X T k r n hk)
   apply Finset.sum_le_sum_of_subset_of_nonneg
-  · intro q hq
-    have h:=Finset.mem_Icc.mp hq
-    exact Finset.mem_Icc.mpr ⟨h.1,h.2.trans hQ⟩
-  · intro q _ _
-    exact NNReal.coe_nonneg _
+  · grind
+  simp
 
 theorem endpointError_le_floor (x : ℝ) (q : ℕ) :
     (endpointError x q:ℝ) ≤ (endpointError (⌊x⌋₊:ℝ) q:ℝ)+
@@ -156,7 +146,7 @@ theorem endpointError_le_floor (x : ℝ) (q : ℕ) :
     change |residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c-x/q.totient| ≤ _
     calc
       _ ≤ |residuePrefix ArithmeticFunction.vonMangoldt ⌊x⌋₊ q c-(⌊x⌋₊:ℝ)/q.totient|+
-          |(⌊x⌋₊:ℝ)/q.totient-x/q.totient| := abs_sub_le _ _ _
+          |(⌊x⌋₊:ℝ)/q.totient-x/q.totient| := by grind
       _ ≤ (endpointError (⌊x⌋₊:ℝ) q:ℝ)+|x-(⌊x⌋₊:ℝ)|/(q.totient:ℝ) := by
         apply add_le_add (endpointClassError_le ⌊x⌋₊ (Finset.mem_range.mp hc) hcop)
         rw [←sub_div,abs_div,abs_of_nonneg (show (0:ℝ) ≤ q.totient from Nat.cast_nonneg _),abs_sub_comm]
@@ -172,8 +162,6 @@ theorem sum_endpointError_le_floor (x : ℝ) (Q : ℕ) :
   calc
     _ = |x-(⌊x⌋₊:ℝ)| *(∑ q∈Finset.Icc 1 Q,(1:ℝ)/(q.totient:ℝ)) := by
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro q _
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (sum_totient_reciprocal_le Q) (abs_nonneg _)
 
@@ -187,7 +175,7 @@ theorem sum_endpointError_le_floor_add_harmonic {x : ℝ} (hx : 0 ≤ x) (Q : �
     rw [abs_of_nonneg h1]
     have h:=Nat.lt_floor_add_one x
     linarith
-  simpa only [one_mul] using mul_le_mul_of_nonneg_right h2 (sq_nonneg (harmonic Q:ℝ))
+  nlinarith
 
 open Filter Topology
 
@@ -209,10 +197,10 @@ theorem primitiveErrorMass_div_le {x M : ℝ} (hM : 0 ≤ M) {d : ℕ} (hd : 0 <
   apply (div_le_iff₀ hphi).mpr
   calc
     _ ≤ ∑ _χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ d)).filter
-        DirichletCharacter.IsPrimitive, M := by
-      exact Finset.sum_le_sum (fun χ hχ => h χ (Finset.mem_filter.mp hχ).2)
+        DirichletCharacter.IsPrimitive, M :=
+      Finset.sum_le_sum (by grind)
     _ ≤ ∑ _χ : DirichletCharacter ℂ d, M :=
-      Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) (fun _ _ _ => hM)
+      Finset.sum_le_sum_of_subset_of_nonneg (by simp) (by grind)
     _ = _ := by simp [hcard, mul_comm]
 
 theorem small_conductor_mass_le {x M : ℝ} (hM : 0 ≤ M) (R : ℕ)
@@ -224,7 +212,7 @@ theorem small_conductor_mass_le {x M : ℝ} (hM : 0 ≤ M) (R : ℕ)
       apply Finset.sum_le_sum
       intro d hd
       obtain ⟨hd0, hdR⟩ := Finset.mem_Icc.mp hd
-      exact primitiveErrorMass_div_le hM (by omega) (h d (by omega) hdR)
+      exact primitiveErrorMass_div_le hM (by omega) (by grind)
     _ = _ := by simp
 
 noncomputable def dyadicExponent (x : ℝ) : ℕ := Nat.log 2 ⌊x⌋₊+1
@@ -237,7 +225,7 @@ theorem dyadicUpper_bounds {x : ℝ} (hx : 1 ≤ x) :
     x < ((2^(dyadicExponent x):ℕ):ℝ) ∧ ((2^(dyadicExponent x):ℕ):ℝ) ≤ 2*x := by
   have hf : 0 < ⌊x⌋₊ := Nat.floor_pos.mpr hx
   have hlo := Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) ⌊x⌋₊
-  have hup := Nat.pow_log_le_self 2 (by omega : ⌊x⌋₊ ≠ 0)
+  have hup := Nat.pow_log_le_self 2 (by positivity)
   constructor
   · apply (Nat.lt_floor_add_one x).trans_le
     exact_mod_cast hlo
@@ -247,30 +235,29 @@ theorem dyadicUpper_bounds {x : ℝ} (hx : 1 ≤ x) :
     have hh : ((2^(Nat.log 2 ⌊x⌋₊):ℕ):ℝ) ≤ x :=
       (by exact_mod_cast hup : ((2^(Nat.log 2 ⌊x⌋₊):ℕ):ℝ) ≤ ⌊x⌋₊).trans
         (Nat.floor_le (by linarith))
-    push_cast at hh
-    nlinarith
+    grind
 
 theorem log_add_one_le_twice {X : ℕ} (hX : 2 ≤ X) :
     Real.log (X+1:ℕ) ≤ 2*Real.log (X:ℝ) := by
   have hx : (2:ℝ) ≤ X := by exact_mod_cast hX
   calc
     _ ≤ Real.log ((X:ℝ)^2) := Real.log_le_log (by positivity) (by push_cast; nlinarith)
-    _ = _ := by rw [Real.log_pow]; ring
+    _ = _ := by simp
 
 theorem vaughanBinaryExponent_bounds {X : ℕ} (hX : 2 ≤ X) (hL : 1 ≤ Real.log (X:ℝ)) :
     X+1 ≤ 2^(dyadicExponent (X+1:ℕ)) ∧
       (dyadicExponent (X+1:ℕ):ℝ) ≤ 6*Real.log (X:ℝ) := by
   constructor
-  · exact_mod_cast (dyadicUpper_bounds (show (1:ℝ) ≤ (X+1:ℕ) by exact_mod_cast (by omega : 1 ≤ X+1))).1.le
+  · exact_mod_cast (dyadicUpper_bounds (show (1:ℝ) ≤ (X+1:ℕ) by simp)).1.le
   · rw [dyadicExponent, Nat.floor_natCast]
     push_cast
     have hn := Real.natLog_le_logb (X+1) 2
     have hl2 : (1:ℝ)/2 ≤ Real.log 2 := by linarith [Real.log_two_gt_d9]
     have hd : Real.log (X+1:ℕ)/Real.log 2 ≤ 4*Real.log (X:ℝ) := by
-      apply (div_le_iff₀ (Real.log_pos (by norm_num : (1:ℝ)<2))).mpr
+      apply (div_le_iff₀ (by positivity)).mpr
       have h := log_add_one_le_twice hX
       nlinarith
-    norm_num only [Real.logb, Nat.cast_ofNat] at hn
+    norm_num only [Real.logb] at hn
     linarith
 
 theorem vaughanShortBound_power_le {Q X T : ℕ} (hX : 2 ≤ X)
@@ -280,33 +267,33 @@ theorem vaughanShortBound_power_le {Q X T : ℕ} (hX : 2 ≤ X)
     vaughanShortBound Q X T ≤ 32*(X:ℝ)^(3/8:ℝ)*(Real.log (X:ℝ))^2 := by
   let x : ℝ := X
   let L : ℝ := Real.log x
-  have hx1 : 1 ≤ x := by dsimp [x]; exact_mod_cast (by omega : 1 ≤ X)
+  have hx1 : 1 ≤ x := by dsimp [x]; exact_mod_cast (by omega)
   have hx : 0 < x := lt_of_lt_of_le zero_lt_one hx1
   have hL0 : 0 ≤ L := by dsimp [L,x]; linarith
   have htX : (T:ℝ) ≤ x := hT.trans (by
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hx1
+    simpa using Real.rpow_le_rpow_of_exponent_le hx1
       (by norm_num : (1/16:ℝ) ≤ 1))
-  have htL : Real.log (T:ℝ) ≤ L := log_nat_monotone (by change (T:ℝ) ≤ (X:ℝ) at htX; exact_mod_cast htX)
+  have htL : Real.log (T:ℝ) ≤ L := log_nat_monotone (by change (T:ℝ) ≤ (X:ℝ) at htX; simp_all)
   have hqL : Real.log (Q:ℝ) ≤ L := log_nat_monotone hQX
   have hxxL : Real.log (X+1:ℕ) ≤ 2*L := log_add_one_le_twice hX
   have hqroot : Real.sqrt Q ≤ 2*x^(1/4:ℝ) := by
     apply (Real.sqrt_le_sqrt hQ).trans_eq
-    rw [Real.sqrt_mul (by norm_num : (0:ℝ) ≤ 4), Real.sqrt_eq_rpow,
+    rw [Real.sqrt_mul (by positivity), Real.sqrt_eq_rpow,
       Real.sqrt_eq_rpow, ←Real.rpow_mul hx.le]
     norm_num
   have hK : Real.sqrt Q*(1+Real.log Q) ≤ 4*x^(1/4:ℝ)*L := by
     calc
-      _ ≤ (2*x^(1/4:ℝ))*(2*L) := mul_le_mul hqroot (by dsimp [L,x] at *; linarith)
-        (by have hh:=log_nat_nonneg Q; linarith) (by positivity)
+      _ ≤ (2*x^(1/4:ℝ))*(2*L) := mul_le_mul hqroot (by linarith)
+        (by positivity) (by positivity)
       _ = _ := by ring
   have ht2 : ((T*T:ℕ):ℝ) ≤ x^(1/8:ℝ) := by
     calc
-      _ = (T:ℝ)^2 := by push_cast; ring
+      _ = (T:ℝ)^2 := by grind
       _ ≤ (x^(1/16:ℝ))^2 := pow_le_pow_left₀ (Nat.cast_nonneg T) hT 2
       _ = _ := by rw [←Real.rpow_natCast,←Real.rpow_mul hx.le]; norm_num
   have httL : Real.log (T*T:ℕ) ≤ 2*L := by
     calc
-      _ = 2*Real.log (T:ℝ) := by rw [Nat.cast_mul, ←pow_two,Real.log_pow]; norm_num
+      _ = 2*Real.log (T:ℝ) := by simp [Nat.cast_mul, ←pow_two,Real.log_pow]
       _ ≤ _ := by linarith
   have he1 : x^(1/16:ℝ) ≤ x^(3/8:ℝ) :=
     Real.rpow_le_rpow_of_exponent_le hx1 (by norm_num)
@@ -331,7 +318,7 @@ theorem vaughanShortBound_power_le {Q X T : ℕ} (hX : 2 ≤ X)
   unfold vaughanShortBound
   dsimp only
   change _ ≤ 32*x^(3/8:ℝ)*L^2
-  nlinarith [mul_nonneg (Real.rpow_nonneg hx.le (3/8:ℝ)) (sq_nonneg L)]
+  nlinarith [mul_nonneg (by positivity) (sq_nonneg L)]
 
 theorem conductorHarmonicBound_le {Q X : ℕ} (hQ : Q ≤ X)
     (hL : 1 ≤ Real.log (X:ℝ)) :
@@ -339,8 +326,7 @@ theorem conductorHarmonicBound_le {Q X : ℕ} (hQ : Q ≤ X)
   unfold conductorHarmonicBound
   rw [Nat.cast_pow,Real.log_pow]
   have h := log_nat_monotone hQ
-  norm_num only [Nat.cast_ofNat]
-  linarith
+  grind
 
 theorem sqrt_conductorHarmonicBound_le {Q X : ℕ} (hQ : Q ≤ X)
     (hL : 1 ≤ Real.log (X:ℝ)) :
@@ -362,7 +348,7 @@ theorem rpow_absorption {x L a b c : ℝ} (hx : 0 < x) (hL : 0 < L)
 theorem rpow_absorption_of_exponents {x L a b a' b' c : ℝ}
     (hx : 1 ≤ x) (hL : 1 ≤ L) (h : L^a ≤ x^b) (ha : a' ≤ a) (hb : b ≤ b') :
     x^(1-b')*L^c ≤ x*L^(c-a') :=
-  rpow_absorption (lt_of_lt_of_le zero_lt_one hx) (lt_of_lt_of_le zero_lt_one hL)
+  rpow_absorption (by positivity) (by positivity)
     ((Real.rpow_le_rpow_of_exponent_le hL ha).trans
       (h.trans (Real.rpow_le_rpow_of_exponent_le hx hb)))
 
@@ -408,12 +394,12 @@ theorem highConductorBlockBound_log_le {Q X T R k : ℕ} {A : ℝ}
       _ ≤ 2*(4*x^(1/2:ℝ))*(32*x^(3/8:ℝ)*L^2) := by gcongr
       _ = 256*(x^(7/8:ℝ)*L^2) := by
         rw [show (7/8:ℝ)=1/2+3/8 by norm_num, Real.rpow_add hx]; ring
-      _ ≤ _ := by nlinarith [hshortAbs]
+      _ ≤ _ := by linarith
   have hcoef : (k:ℝ)*((k:ℝ)+1)*Real.log (X+1:ℕ) ≤ 84*L^3 := by
     calc
       _ ≤ (6*L)*(7*L)*(2*L) := by
         gcongr
-        · dsimp [L,x] at *; linarith
+        · linarith
         · exact log_add_one_le_twice hX
       _ = _ := by ring
   have hRpos : 0 < (R:ℝ) := (Real.rpow_pos_of_pos hL0 _).trans_le hR
@@ -440,7 +426,7 @@ theorem highConductorBlockBound_log_le {Q X T R k : ℕ} {A : ℝ}
       _ = 32*(x^(31/32:ℝ)*L) := by
         rw [show (31/32:ℝ)=1-1/32 by norm_num,Real.rpow_sub hx,Real.rpow_one]
         ring
-      _ ≤ _ := by nlinarith [habs2]
+      _ ≤ _ := by linarith
   have hb3 : 4*(Q:ℝ)*conductorHarmonicBound Q*Real.sqrt X ≤ 48*x*L^(-A-6) := by
     calc
       _ ≤ 4*(4*x^(1/2:ℝ)*L^(-A-10))*(3*L)*x^(1/2:ℝ) := by
@@ -450,9 +436,7 @@ theorem highConductorBlockBound_log_le {Q X T R k : ℕ} {A : ℝ}
       _ = 48*x*L^(-A-9) := by
         rw [show -A-9=(-A-10)+1 by ring,Real.rpow_add hL0,Real.rpow_one]
         have hh : x^(1/2:ℝ)*x^(1/2:ℝ)=x := by rw [←Real.rpow_add hx]; norm_num
-        calc
-          _ = 48*(x^(1/2:ℝ)*x^(1/2:ℝ))*(L^(-A-10)*L) := by ring
-          _ = _ := by rw [hh]
+        grind
       _ ≤ _ := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)) (by positivity)
   have hbracket := add_le_add (add_le_add hb1 hb2) hb3
@@ -461,7 +445,7 @@ theorem highConductorBlockBound_log_le {Q X T R k : ℕ} {A : ℝ}
         4*(Q:ℝ)*conductorHarmonicBound Q*Real.sqrt X) ≤ 7056*x*L^(-A-3) := by
     calc
       _ ≤ (84*L^3)*(84*x*L^(-A-6)) := by
-        apply mul_le_mul hcoef (by linarith [hbracket]) (by positivity) (by positivity)
+        apply mul_le_mul hcoef (by linarith) (by positivity) (by positivity)
       _ = _ := by
         rw [show -A-3=(-A-6)+3 by ring,Real.rpow_add hL0]
         norm_num

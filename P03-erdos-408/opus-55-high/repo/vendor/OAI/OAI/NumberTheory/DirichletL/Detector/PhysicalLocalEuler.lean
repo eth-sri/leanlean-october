@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceLocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge CanonicalRowCompletion
+open GaussianShiftedPartition ProbeEuler
 
-lemma outerQuotient_mk (s H : O) :
+lemma outerQuotient_mk (s H : ActualEisensteinCubic.O) :
     outerQuotient s (Ideal.Quotient.mk _ H)=idealRowHom H (Ideal.span {s}) := by
   unfold outerQuotient
   apply idealRowHom_congr_mod
   exact Ideal.Quotient.eq.mp (representative_spec _ _)
 
-theorem bareCongruenceCoefficient_all_prime_powers (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (t k j : ℕ) :
+theorem bareCongruenceCoefficient_all_prime_powers (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p}) (t k j : ℕ) :
     bareCongruenceCoefficient (p^t) (p^k) (pow_ne_zero _ hp.ne_zero) (p^j) =
       sourceScalar p hp hg t k j := by
   cases t with

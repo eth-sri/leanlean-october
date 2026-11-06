@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceRectangleEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentRadialSourceDictionary
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
@@ -16,10 +16,9 @@ open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource
 open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
 open ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
  theorem actual_source_energy {ι:Type*} [Fintype ι] [DecidableEq ι]
-    (s:Data ι) (r:Radial) (S₁ S₂:Finset (Ideal O)) (R L B₁ B₂:Ideal O)
+    (s:Data ι) (r:Radial) (S₁ S₂:Finset (Ideal ActualEisensteinCubic.O)) (R L B₁ B₂:Ideal ActualEisensteinCubic.O)
     (X₁ X₂ Y₁ Y₂:ℝ)
     (hm:s.m=fixedBadMask*idealGenerator R) (hA:s.A=1)
     (hX₁:s.X₁=X₁/Ideal.absNorm B₁) (hX₂:s.X₂=X₂/Ideal.absNorm B₂)

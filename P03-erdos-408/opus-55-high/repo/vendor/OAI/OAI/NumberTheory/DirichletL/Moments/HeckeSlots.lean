@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeHeight
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentHeckeSlots
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentCounting CenteredMomentTwist
-local notation "O" => ActualEisensteinCubic.O
 
-def rowSlot (η : Character) (m A z : O) (S : Finset (Ideal O))
-    (β : Ideal O → ℂ) (t : ℝ) : ℂ :=
+def rowSlot (η : Character) (m A z : ActualEisensteinCubic.O) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (β : Ideal ActualEisensteinCubic.O → ℂ) (t : ℝ) : ℂ :=
   ∑ P ∈ S, β P * (idealCoeff η P * CanonicalRowCompletion.idealRowHom (m^6*(A*z)) P) *
     (Ideal.absNorm P:ℂ)^(Complex.I*t)
 
-theorem row_twisted_coefficient_norm (η : Character) (m A z : O) (t : ℝ)
-    (P : Ideal O) (hP : P ≠ 0) :
+theorem row_twisted_coefficient_norm (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (P : Ideal ActualEisensteinCubic.O) (hP : P ≠ 0) :
     ‖(idealCoeff η P * CanonicalRowCompletion.idealRowHom (m^6*(A*z)) P) *
       (Ideal.absNorm P:ℂ)^(Complex.I*t)‖ ≤ 1 := by
   have hn : 0 < (Ideal.absNorm P:ℝ) := by
@@ -28,12 +27,12 @@ theorem row_twisted_coefficient_norm (η : Character) (m A z : O) (t : ℝ)
   exact (mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η P)).trans
     (CanonicalRowCompletion.idealRowHom_norm _ _)
 
-theorem rowSlot_bound (η : Character) (m A z : O) (S : Finset (Ideal O))
-    (β : Ideal O → ℂ) (t H M : ℝ) (hH : 0 ≤ H) (hM : 0 ≤ M)
+theorem rowSlot_bound (η : Character) (m A z : ActualEisensteinCubic.O) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (β : Ideal ActualEisensteinCubic.O → ℂ) (t H M : ℝ) (hH : 0 ≤ H) (hM : 0 ≤ M)
     (hβ : ∀ P ∈ S, ‖β P‖ ≤ M)
     (hN : ∀ P ∈ S, β P ≠ 0 → (Ideal.absNorm P:ℝ) ≤ H) :
     ‖rowSlot η m A z S β t‖ ≤ 128*M*H := by
-  let f : Ideal O → ℂ := fun P => if P ∈ S then
+  let f : Ideal ActualEisensteinCubic.O → ℂ := fun P => if P ∈ S then
     β P * (idealCoeff η P * CanonicalRowCompletion.idealRowHom (m^6*(A*z)) P) *
       (Ideal.absNorm P:ℂ)^(Complex.I*t) else 0
   have hf0 : f 0=0 := by simp only [f, map_zero, zero_mul, mul_zero, ite_self]
@@ -41,19 +40,19 @@ theorem rowSlot_bound (η : Character) (m A z : O) (S : Finset (Ideal O))
     intro P
     by_cases hP : P ∈ S
     · by_cases hP0 : P=0
-      · rw [hP0,hf0,norm_zero]; exact hM
+      · simp_all
       · dsimp only [f]; rw [ite_eq_left hP, mul_assoc, norm_mul]
-        exact (mul_le_mul (hβ P hP) (row_twisted_coefficient_norm η m A z t P hP0)
+        exact (mul_le_mul (by grind) (row_twisted_coefficient_norm η m A z t P hP0)
           (norm_nonneg _) hM).trans_eq (mul_one M)
-    · simp only [f,ite_eq_right hP,norm_zero]; exact hM
+    · simp only [f,ite_eq_right hP,norm_zero]; omega
   have hsup : ∀ P, f P ≠ 0 → (Ideal.absNorm P:ℝ) ≤ H := by
     intro P hP
-    have hm : P ∈ S := by by_contra hn; exact hP (by simp only [f,ite_eq_right hn])
-    exact hN P hm (by intro hz; exact hP (by simp only [f,ite_eq_left hm,hz,zero_mul]))
+    have hm : P ∈ S := by by_contra hn; exact hP (by grind)
+    exact hN P hm (by grind)
   have he : (∑' P, f P)=rowSlot η m A z S β t := by
-    rw [tsum_eq_sum (s := S) (fun P hP => by simp only [f,ite_eq_right hP])]
+    rw [tsum_eq_sum (s := S) (fun P hP => by grind)]
     unfold rowSlot
-    exact Finset.sum_congr rfl (fun P hP => by simp only [f,ite_eq_left hP])
+    exact Finset.sum_congr rfl (fun P hP => by grind)
   rw [← he]
   exact norm_tsum_ideal_ball f H M hH hM hf0 hf hsup
 
@@ -66,13 +65,13 @@ theorem whole_product_normalization (R : ℂ) (q : ι → ℂ) (k p : ι → ℝ
     (hR : ‖(Real.sqrt T:ℂ)⁻¹*R‖ ≤ D*(Real.sqrt T/L)) :
     ‖(Real.sqrt (T*∏ i,p i):ℂ)⁻¹*(R*∏ i,q i)‖ ≤
       D*(∏ i,k i)*(Real.sqrt (T*∏ i,p i)/L) := by
-  have hP : 0 < ∏ i,p i := Finset.prod_pos (fun i _ => hp i)
+  have hP : 0 < ∏ i,p i := Finset.prod_pos (by grind)
   have hTP : 0 < T*∏ i,p i := mul_pos hT hP
-  have hsT : 0 < Real.sqrt T := Real.sqrt_pos.2 hT
-  have hsTP : 0 < Real.sqrt (T*∏ i,p i) := Real.sqrt_pos.2 hTP
+  have hsT := Real.sqrt_pos.2 hT
+  have hsTP := Real.sqrt_pos.2 hTP
   have hQ : ‖∏ i,q i‖ ≤ (∏ i,k i)*(∏ i,p i) := by
     rw [norm_prod,← Finset.prod_mul_distrib]
-    exact Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _) (fun i _ => hq i)
+    exact Finset.prod_le_prod₀ (by simp) (by grind)
   rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_of_nonneg hsT.le] at hR
   have hR' : ‖R‖ ≤ D*T/L := by
     have h := mul_le_mul_of_nonneg_left hR hsT.le
@@ -80,19 +79,17 @@ theorem whole_product_normalization (R : ℂ) (q : ι → ℂ) (k p : ι → ℝ
     have hs := Real.sq_sqrt hT.le
     convert h using 1
     calc
-      D*T/L = D*(Real.sqrt T)^2/L := by rw [hs]
+      D*T/L = D*(Real.sqrt T)^2/L := by simp_all
       _ = _ := by ring
   rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_of_nonneg hsTP.le,norm_mul]
   calc
     _ ≤ (Real.sqrt (T*∏ i,p i))⁻¹*((D*T/L)*((∏ i,k i)*(∏ i,p i))) :=
       mul_le_mul_of_nonneg_left (mul_le_mul hR' hQ (norm_nonneg _) (by positivity)) (inv_nonneg.mpr hsTP.le)
     _ = _ := by
-      have hs := Real.sq_sqrt hTP.le
-      field_simp
-      rw [hs]
+      grind
 
-def centeredSlotRow (η : Character) (m A z : O) (W₁ W₂ : ℝ → ℂ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
+def centeredSlotRow (η : Character) (m A z : ActualEisensteinCubic.O) (W₁ W₂ : ℝ → ℂ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ)
     (p : ι → ℝ) (t X₁ X₂ Y₁ Y₂ T : ℝ) : ℂ :=
   (Real.sqrt (T*∏ i,p i):ℂ)⁻¹ *
     ((rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂-

@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.WholeTailUniformDegree
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 private lemma mul_chain_add_one (a b c d e f : ℝ)
@@ -22,20 +21,20 @@ private lemma mul_chain_add_one (a b c d e f : ℝ)
     (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) ha) hc) hd) he) hf
+          (by linarith) hc) hd) he) hf
 
 theorem original_sector_full_energy_uniform_degree
     (Adecay : ℕ) (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
     (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool) :
-    ∃ (degree degreeTail : ℕ), ∀ {Nlevel a c₀ : Eis} {mode : Bool}
+    ∃ (degree degreeTail : ℕ), ∀ {Nlevel a c₀ : ActualEisensteinCubic.O} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
-    (_hNlevel : (9:Eis)*c₀∣Nlevel)
+    (_hNlevel : (9:ActualEisensteinCubic.O)*c₀∣Nlevel)
     (_hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀-1)
     (_hac : IsCoprime a c₀),
      ∃ (C Ctail Z₀ : ℝ), 0<C ∧ 0<Ctail ∧ 1<Z₀ ∧
-    ∀ {σ : Type v} [Fintype σ], ∀ (J I F B R Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hF : F≠0) (_hB : B≠0) (_hR : R≠0),
+    ∀ {σ : Type v} [Fintype σ], ∀ (J I F B R Q₀ : Ideal ActualEisensteinCubic.O) (_hJ : J≠0) (_hI : I≠0) (_hF : F≠0) (_hB : B≠0) (_hR : R≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R) →
     ∀ (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
       (Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot : ℝ),
@@ -58,17 +57,17 @@ theorem original_sector_full_energy_uniform_degree
       let j := fun b : A => completedLocalExponent J F b.val.val
       (familyRawScale G s X QK QP)⁻¹≤Z^Lscale →
       (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lpool → κ+ρ*Lpool≤cstar/16 →
-    ∀ (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)
       (hrows : ∀ K∈rows,Admissible K)
       (E : SectorArithmetic (N:=Nlevel) G rows Pset S hrows s hc₀),
       (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
+      (∀ f,ringChar (ActualEisensteinCubic.O⧸G.ideal f)≠2) →
       (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
       (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
       (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
       (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
-    ∀ (θ : ℝ) (r aw : Ideal Eis→ℂ),
+      (∀ P∈Pset,∀ b,ringChar (ActualEisensteinCubic.O⧸(G.sum (S P)).ideal b)≠2) →
+    ∀ (θ : ℝ) (r aw : Ideal ActualEisensteinCubic.O→ℂ),
       1≤QK → 2≤QP →
       (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
       (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
@@ -101,12 +100,12 @@ theorem original_sector_full_energy_uniform_degree
   let rr := fun K => r K*shapeArgument (primaryGenerator K)
   let aa := fun P => aw P*shapeArgument (primaryGenerator P)
   let Φ := fixedRadialCoefficientScalar*s.stratumShapeFactor (c₀*primaryGenerator (∏ b,G.ideal b))
-  let g := fun K : rows => ∑' u : Eisˣ,∑ i∈retainedDyads (familyRawScale G s X QK QP) (16*Z^δ),
+  let g := fun K : rows => ∑' u : ActualEisensteinCubic.Oˣ,∑ i∈retainedDyads (familyRawScale G s X QK QP) (16*Z^δ),
     literalDyadicRow G K.val (hrows K.val K.property) S j Pset (E.completion K) s hc₀ u i W θ X rr aa
   let f := fun K : rows => literalWholeRow G K.val (hrows K.val K.property) S j Pset (E.completion K) s hc₀ W θ X r aw
   let Et := (Pset.card:ℝ)*Ctail*(1+‖θ‖)^degreeTail*((Ideal.absNorm (∏ b,G.ideal b):ℝ)*QK*QP)*
     (Z^δ)^(-(Adecay:ℝ))*(familyRawScale G s X QK QP^2)⁻¹
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
+  have hzpos : 0<Z := by linarith
   have hEt : 0≤Et := by dsimp [Et];positivity
   have hΦ : ‖Φ‖=Cshape := by
     dsimp only [Φ,Cshape]
@@ -119,7 +118,7 @@ theorem original_sector_full_energy_uniform_degree
     (fun K hK => by simpa only [rr,row_shape_weight_norm r K (hrows K hK)] using hr K hK)
     (fun P hP => by simpa only [aa,slot_shape_weight_norm aw P (hPr P hP).1] using haw P hP)
   have hrem (K : rows) : ‖f K-Φ*g K‖≤Et := by
-    have hodd : ∀ P∈Pset,∀ b,ringChar (Eis⧸(G.reflected K.val (hrows K.val K.property) (S P)).ideal b)≠2 := by
+    have hodd : ∀ P∈Pset,∀ b,ringChar (ActualEisensteinCubic.O⧸(G.reflected K.val (hrows K.val K.property) (S P)).ideal b)≠2 := by
       intro P hP b
       rcases b with b | b | b
       · exact hGchar b
@@ -128,7 +127,7 @@ theorem original_sector_full_energy_uniform_degree
     have hj : ∀ b : A,j b<6 := by intro b;exact Nat.mod_lt _ (by norm_num)
     have hh := htail (N:=Nlevel) (a:=a) (c:=c₀) (mode:=mode) G K.val (hrows K.val K.property) S j Pset (E.completion K) s hc₀ hNlevel hbase
       hodd hj hprod (fun P hP => (hPr P hP).1) θ X (Z^δ) QK QP r aw hX
-      (Real.rpow_pos_of_pos hzpos _) hQK hQP (hKr K.val K.property).2
+      (by positivity) hQK hQP (hKr K.val K.property).2
       (fun P hP => (hPr P hP).2.2) (hr K.val K.property) haw
     apply hh.trans
     change _ ≤ Et
@@ -139,11 +138,11 @@ theorem original_sector_full_energy_uniform_degree
         ((Ideal.absNorm (∏ b,G.ideal b):ℝ)*QK*QP)*(Z^δ)^(-(Adecay:ℝ))*(familyRawScale G s X QK QP^2)⁻¹ := by ring
     rw [he]
     apply mul_chain_add_one
-    · exact Nat.cast_nonneg _
-    · exact pow_nonneg (add_nonneg zero_le_one (norm_nonneg θ)) _
-    · exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hQK.le) hQP.le
-    · exact Real.rpow_nonneg (Real.rpow_nonneg hzpos.le _) _
-    · exact inv_nonneg.mpr (sq_nonneg _)
+    · simp
+    · positivity
+    · positivity
+    · positivity
+    · positivity
   have hh := row_energy_le_retained (Finset.univ:Finset rows) f (fun K => Φ*g K) Et hEt (fun K _ => hrem K)
   simp only [norm_mul,mul_pow,hΦ,←Finset.mul_sum,Finset.card_univ,Fintype.card_coe] at hh
   apply hh.trans
@@ -152,7 +151,7 @@ theorem original_sector_full_energy_uniform_degree
     _ ≤ _ := by
       dsimp only [Et]
       have hp : 0≤(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by positivity
-      nlinarith only [hp]
+      linarith
 end
 end SevenEighths.InverseReflectedPhase
 

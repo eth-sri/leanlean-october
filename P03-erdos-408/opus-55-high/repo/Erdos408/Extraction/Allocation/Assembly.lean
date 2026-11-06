@@ -45,18 +45,18 @@ lemma abs_endpoint_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw
   have hΦ0 : |Φ (w / x)| ≤ |M 0| := by
     have := hΦ.2.2.2 0 (w / x)
     simp only [iteratedDeriv_zero, Nat.cast_zero, mul_zero, rpow_zero, mul_one] at this
-    exact this.trans (le_abs_self _)
+    exact by grind
   have hε : 0 < c / T ^ 20 := by positivity
   have hslot := abs_slotCount_sub_slotMean_le hx
     (Real.log_le_log hκ0 hxκ) hκ0 hε hH hT hk hadm.1
     (by
-      have : 0 < c / T ^ 20 := hε
+      have  := hε
       linarith [hadm.2]) hB hw1 hwx
   have h2ε : 2 / (c / T ^ 20) = 2 * T ^ 20 / c := by
     field_simp
   rw [h2ε] at hslot
   have hP := inertPoly_mem hq hq₁ hcw.le hcw₁ (K := K) (CN := CN) (x := x)
-    (fun c hc i hi => hmassband _ (hbands.1 (c, i) (mem_product.2 ⟨hc, hi⟩)).1) w
+    (fun c hc i hi => hmassband _ (hbands.1 (c, i) (by grind)).1) w
   rw [endpoint, abs_mul, abs_mul, abs_of_nonneg hP.1]
   calc |Φ (w / x)| * (inertPoly q cw K CN x w * |slotCount x u v B w - slotMean x u v B|)
       ≤ |M 0| * (1 * ((2 * T ^ 20 / c + 1) ^ 3 + T ^ 3)) :=
@@ -79,7 +79,7 @@ lemma card_mul_card_le_at {c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hgroups : GroupFa
   have h1 : ((patternIndex c₂ x).card : ℝ) ≤ (4 : ℝ) ^ (2 * T) := by
     calc ((patternIndex c₂ x).card : ℝ) ≤ ((4 ^ (candidateGroups x).card : ℕ) : ℝ) := by
           exact_mod_cast card_patternIndex_le c₂ x
-      _ = (4 : ℝ) ^ ((candidateGroups x).card : ℝ) := by push_cast; rw [rpow_natCast]
+      _ = (4 : ℝ) ^ ((candidateGroups x).card : ℝ) := by simp
       _ ≤ _ := rpow_le_rpow_of_exponent_le (by norm_num) hC
   have h2 : ((monomialIndex K CN x).card : ℝ) ≤
       2 ^ K * (2 : ℝ) ^ ((K : ℝ) + max CN 0 * logLogLog x) := by
@@ -88,16 +88,12 @@ lemma card_mul_card_le_at {c₂ x : ℝ} {K : ℕ} {CN : ℝ} (hgroups : GroupFa
           exact_mod_cast card_monomialIndex_le K CN x
       _ = 2 ^ K * (2 : ℝ) ^ ((K * inertPerCluster K CN x : ℕ) : ℝ) := by
           rw [rpow_natCast]
-          push_cast
-          ring
+          simp
       _ ≤ _ := by
           gcongr
           · norm_num
           · exact hbands.2.2
-  calc ((patternIndex c₂ x).card : ℝ) * (monomialIndex K CN x).card
-      ≤ (4 : ℝ) ^ (2 * T) * (2 ^ K * (2 : ℝ) ^ ((K : ℝ) + max CN 0 * logLogLog x)) := by
-        gcongr
-    _ ≤ _ := hterms
+  nlinarith
 
 /-- The signed expansion at one scale: `L^4` terms of size `x C* L^{-5-c'}`. -/
 lemma abs_expansion_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < cw)
@@ -129,17 +125,16 @@ lemma abs_expansion_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < c
       obtain ⟨hP, hQ⟩ := mem_sigma.1 hi
       obtain ⟨hP, hmany⟩ := mem_filter.1 hP
       obtain ⟨hU, hS⟩ := mem_sigma.1 hm
-      have hPQ : i.1 ∪ i.2 ⊆ candidateGroups x :=
+      have hPQ :=
         union_subset (mem_powerset.1 hP) ((mem_powerset.1 hQ).trans sdiff_subset)
       refine abs_twoSidedSum_le hbody hgroups hbands hx hT hγ hj1 hκ hadm hB hΦ hPQ ?_ ?_ ?_
       · refine hmany.1.trans ?_
         exact_mod_cast card_le_card (inter_subset_inter_right subset_union_left)
       · refine hmany.2.trans ?_
         exact_mod_cast card_le_card (inter_subset_inter_right subset_union_left)
-      · exact (mem_powerset.1 hS).trans
-          (product_subset_product_left (by simpa using mem_powerset.1 hU)))
+      grind)
   set X := x / L * L ^ (-c') with hX
-  have hrp : ∀ a b : ℝ, L ^ a * L ^ b = L ^ (a + b) := fun a b => (rpow_add hL a b).symm
+  have hrp := fun a b => (rpow_add hL a b).symm
   have hXe : ∀ a : ℝ, a = -c' - 1 → x * L ^ a = X := by
     intro a ha
     rw [ha, rpow_sub_one hL.ne', hX]
@@ -148,19 +143,19 @@ lemma abs_expansion_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < c
   rw [hmain]
   refine hexp.trans ?_
   have hR : Cs * L ^ (-(5 + c')) ≤ |Cs| * L ^ (-(5 + c')) :=
-    mul_le_mul_of_nonneg_right (le_abs_self _) (rpow_pos_of_pos hL _).le
+    mul_le_mul_of_nonneg_right (le_abs_self _) (by positivity)
   have hIJ : (0 : ℝ) ≤ ((patternIndex c₂ x).card : ℝ) * (monomialIndex K CN x).card := by
     positivity
   have hR' : 0 ≤ x * (|Cs| * L ^ (-(5 + c'))) :=
-    mul_nonneg hx0.le (mul_nonneg (abs_nonneg _) (rpow_pos_of_pos hL _).le)
+    mul_nonneg hx0.le (mul_nonneg (abs_nonneg _) (by positivity))
   calc ((patternIndex c₂ x).card : ℝ) * (monomialIndex K CN x).card *
         (x * (Cs * L ^ (-(5 + c'))))
       ≤ ((patternIndex c₂ x).card : ℝ) * (monomialIndex K CN x).card *
         (x * (|Cs| * L ^ (-(5 + c')))) :=
         mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hR hx0.le) hIJ
     _ ≤ L ^ (4 : ℝ) * (x * (|Cs| * L ^ (-(5 + c')))) := mul_le_mul_of_nonneg_right hcard hR'
-    _ = |Cs| * (x * L ^ ((4 : ℝ) + -(5 + c'))) := by rw [← hrp]; ring
-    _ = |Cs| * X := by rw [hXe _ (by ring)]
+    _ = |Cs| * (x * L ^ ((4 : ℝ) + -(5 + c'))) := by grind
+    _ = |Cs| * X := by grind
 
 /-- The candidate-square multiples up to `κ x + 1` at one scale. -/
 lemma card_squares_le_at {x κ c' C₅ : ℝ} (hgroups : GroupFacts x) (hx : 1 < x) (hκ0 : 0 < κ)
@@ -179,7 +174,7 @@ lemma card_squares_le_at {x κ c' C₅ : ℝ} (hgroups : GroupFacts x) (hx : 1 <
     linarith
   have hsum := sum_one_div_candidatePrimes_le hL1 hgroups
   set e := Real.exp (-(L ^ (28 / 100 : ℝ))) with he
-  have he0 : 0 ≤ e := (exp_pos _).le
+  have he0 : 0 ≤ e := by positivity
   have hp : ∀ p ∈ candidatePrimes x,
       ((N : ℝ) + 1) / (p * p) ≤ (κ * x + 1) * e * (1 / p) := by
     intro p hp
@@ -188,12 +183,12 @@ lemma card_squares_le_at {x κ c' C₅ : ℝ} (hgroups : GroupFacts x) (hx : 1 <
     have hinv : 1 / (p : ℝ) ≤ e := by
       rw [one_div, he, exp_neg]
       exact inv_anti₀ (exp_pos _) hp1
-    have h1p : 0 ≤ 1 / (p : ℝ) := div_nonneg zero_le_one (Nat.cast_nonneg _)
+    have h1p : 0 ≤ 1 / (p : ℝ) := by positivity
     have heq : ((N : ℝ) + 1) / (p * p) = ((N : ℝ) + 1) * (1 / p) * (1 / p) := by
       ring
     rw [heq]
     exact mul_le_mul_of_nonneg_right
-      (mul_le_mul hN hinv h1p (by linarith [mul_pos hκ0 hx0])) h1p
+      (mul_le_mul hN hinv h1p (by linarith)) h1p
   calc _ ≤ _ := h1
     _ ≤ ∑ p ∈ candidatePrimes x, (κ * x + 1) * e * (1 / p) := sum_le_sum hp
     _ = (κ * x + 1) * e * ∑ p ∈ candidatePrimes x, (1 : ℝ) / p := by rw [mul_sum]
@@ -241,11 +236,11 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
   have hγ0 : 0 ≤ γ := by
     simp only [γ, presieveExponent]
     positivity
-  have hγ : 1 ≤ x ^ γ := one_le_rpow hx.le hγ0
+  have hγ := one_le_rpow hx.le hγ0
   have hj1 : 1 ≤ j := by omega
   have hΛ : 0 < Λ := rpow_pos_of_pos hL _
   have hBd0 : 0 ≤ Bd := by positivity
-  have hBdL : Bd ≤ L ^ c' := hBd
+  have hBdL := hBd
   have hE := abs_endpoint_le_at hq hq₁ hcw hcw₁ hκ hc hbands hmassband hH hx hxκ hT hk hadm hB hΦ
   -- the cutoff vanishes below `x/κ`
   have hFz : ∀ w ∈ Icc 1 N, ¬ x / κ ≤ (w : ℝ) →
@@ -271,8 +266,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
     by_contra h
     exact hw (exists_sq_dvd_of_not_squarefree x (by omega) h)
   -- the coins lie in `[0, 1]`
-  have hcoin : ∀ w : ℕ, ∀ g ∈ candidateGroups x,
-      0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1 :=
+  have hcoin :=
     fun w g hg => successCoin_mem hc₁.le hc₁' (hgroups.1 g hg).1 w
   -- the decomposition
   rw [proxySum_eq_sum q cw K CN γ j u v B hx0 hκ0 hΦ.2.2.1]
@@ -288,7 +282,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
     hj1 hterms hadm hB hΦ (j := j)
   set X := x / L * L ^ (-c') with hX
   have hX0 : 0 ≤ X := by positivity
-  have hrp : ∀ a b : ℝ, L ^ a * L ^ b = L ^ (a + b) := fun a b => (rpow_add hL a b).symm
+  have hrp := fun a b => (rpow_add hL a b).symm
   have hXe : ∀ a : ℝ, a = -c' - 1 → x * L ^ a = X := by
     intro a ha
     rw [ha, rpow_sub_one hL.ne', hX]
@@ -298,11 +292,10 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
   have hclip : Bd * (∑ w ∈ Icc 1 N, proxyCore x γ j (w + 1) ^ 2) / Λ ≤ X := by
     rw [div_le_iff₀ hΛ]
     calc Bd * ∑ w ∈ Icc 1 N, proxyCore x γ j (w + 1) ^ 2 ≤ L ^ c' * (x * L ^ C₅) :=
-          mul_le_mul hBdL hcore (sum_nonneg fun w _ => sq_nonneg _) (rpow_pos_of_pos hL _).le
+          mul_le_mul hBdL hcore (sum_nonneg fun w _ => sq_nonneg _) (by positivity)
       _ = x * (L ^ (-c' - 1) * L ^ (C₅ + 1 + 2 * c')) := by
-          rw [mul_left_comm, hrp, hrp]
-          ring_nf
-      _ = X * Λ := by rw [← mul_assoc, hXe (-c' - 1) rfl]
+          grind
+      _ = X * Λ := by grind
   have hsqb : Bd * ∑ w ∈ Icc 1 N with (∃ p ∈ candidatePrimes x, p * p ∣ w + 1),
       proxyCore x γ j (w + 1) ≤ X := by
     have hcs := sum_filter_le_sqrt (s := Icc 1 N) (f := fun w => proxyCore x γ j (w + 1))
@@ -315,7 +308,7 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
         ∑ w ∈ Icc 1 N, proxyCore x γ j (w + 1) ^ 2 ≤ Y ^ 2 := by
       have h1 := mul_le_mul hbadc hcore hcore0 (by positivity)
       refine h1.trans (le_of_eq ?_)
-      rw [show Y ^ 2 = x * x * (L ^ (-1 - 2 * c') * L ^ (-1 - 2 * c')) by rw [hYdef]; ring,
+      rw [show Y ^ 2 = x * x * (L ^ (-1 - 2 * c') * L ^ (-1 - 2 * c')) by linarith,
         show x * L ^ (-(2 + 4 * c' + C₅)) * (x * L ^ C₅) =
           x * x * (L ^ (-(2 + 4 * c' + C₅)) * L ^ C₅) by ring, hrp, hrp]
       ring_nf
@@ -323,30 +316,28 @@ theorem abs_proxySum_le_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 < 
         proxyCore x γ j (w + 1) ≤ Y :=
       hcs.trans ((Real.sqrt_le_sqrt hprod).trans (by rw [Real.sqrt_sq hY]))
     have hnn : 0 ≤ ∑ w ∈ Icc 1 N with (∃ p ∈ candidatePrimes x, p * p ∣ w + 1),
-        proxyCore x γ j (w + 1) := sum_nonneg fun w _ => proxyCore_nonneg hj1 hγ _
+        proxyCore x γ j (w + 1) := sum_nonneg (by grind)
     calc Bd * _ ≤ L ^ c' * Y := mul_le_mul hBdL hsq' hnn (by positivity)
       _ = x * L ^ (-c' - 1) := by
-          rw [hYdef, mul_left_comm, hrp]
-          ring_nf
-      _ = X := hXe (-c' - 1) rfl
+          grind
+      _ = X := by grind
   -- the failed patterns
   have hfailb : Bd * ∑ w ∈ Icc 1 N with x / κ ≤ ((w : ℕ) : ℝ),
       proxyCoeff x γ j (w + 1) * failureProb c₁ c₂ x w ≤ |C₃| * X := by
     have hnn : 0 ≤ ∑ w ∈ Icc 1 N with x / κ ≤ ((w : ℕ) : ℝ),
         proxyCoeff x γ j (w + 1) * failureProb c₁ c₂ x w :=
-      sum_nonneg fun w hw => mul_nonneg (hA w (mem_filter.1 hw).1).1
+      sum_nonneg fun w hw => mul_nonneg (by grind)
         (failureProb_nonneg (hcoin w))
     have hxL : 0 ≤ x / L := div_nonneg hx0.le hL.le
     have h1 : C₃ * (x / L) * L ^ (-(2 * c')) ≤ |C₃| * (x / L) * L ^ (-(2 * c')) :=
       mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (le_abs_self _) hxL)
-        (rpow_pos_of_pos hL _).le
+        (by positivity)
     calc Bd * _ ≤ L ^ c' * (|C₃| * (x / L) * L ^ (-(2 * c'))) :=
-          mul_le_mul hBdL (hfail.trans h1) hnn (rpow_pos_of_pos hL _).le
+          mul_le_mul hBdL (hfail.trans h1) hnn (by positivity)
       _ = |C₃| * (x / L * (L ^ c' * L ^ (-(2 * c')))) := by ring
-      _ = |C₃| * X := by rw [hrp, hX]; ring_nf
+      _ = |C₃| * X := by grind
   -- combine
-  calc _ ≤ |Cs| * X + X + X + |C₃| * X := by linarith
-    _ = (|Cs| + |C₃| + 2) * (x / L) * L ^ (-c') := by rw [hX]; ring
+  linarith
 
 
 end Erdos408

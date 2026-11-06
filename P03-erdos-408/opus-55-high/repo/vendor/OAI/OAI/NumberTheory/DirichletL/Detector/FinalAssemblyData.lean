@@ -9,14 +9,13 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
-local notation "O" => HeckeFamily.O
 
 structure SourceData {Δ : ℝ} (D : HighData Δ) where
-  S : Finset (Ideal O)
+  S : Finset (Ideal HeckeFamily.O)
   exclusions : SourceExclusions S
   maximal : ∀P∈S,P.IsMaximal
   first : FirstTail (4*D.e) S
@@ -39,17 +38,17 @@ theorem exists_source_data {Δ : ℝ} (D : HighData Δ) : Nonempty (SourceData D
   obtain ⟨w,W,hw,hc,hs,hp,hb,hn,he,hWn,hWs,hr,hWpos⟩ := exists_fixed_probe_window
   exact ⟨⟨S,hS,hmax,hfirst,w,W,hw,hc,hs,hp,hb,hn,he,hWn,hWs,hr,hWpos⟩⟩
 
-def SourceData.modulus {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : Ideal O := ∏P∈F.S,P
+def SourceData.modulus {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : Ideal HeckeFamily.O := ∏P∈F.S,P
 
 instance {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : NeZero F.modulus :=
   ⟨fixedPrimeProduct_ne_zero F.S F.exclusions.prime⟩
 
-instance {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : Finite (O ⧸ F.modulus) :=
+instance {Δ : ℝ} {D : HighData Δ} (F : SourceData D) : Finite (HeckeFamily.O ⧸ F.modulus) :=
   Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne F.modulus)
 
 theorem source_count_parameters {Δ : ℝ} {D : HighData Δ} (F : SourceData D) :
-    Nonempty (CountParameters F.modulus ⊤ D.t) := by
-  exact exists_count_parameters F.modulus ⊤ le_top F.S F.w F.smooth F.compact
+    Nonempty (CountParameters F.modulus ⊤ D.t) :=
+  exists_count_parameters F.modulus ⊤ le_top F.S F.w F.smooth F.compact
     F.positive_support (fun x=>(F.bounded x).1) F.nonzero 1 2 1 (by norm_num) (by norm_num)
     (by norm_num) F.support (fun x=>(F.bounded x).2) D.t D.t_pos
 

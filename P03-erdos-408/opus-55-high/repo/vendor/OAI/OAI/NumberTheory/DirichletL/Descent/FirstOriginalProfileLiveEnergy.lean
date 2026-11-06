@@ -10,31 +10,30 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileWindows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment ActualEisensteinCubic SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open JointLogSeparation
 variable {ι : Type*} [DecidableEq ι]
 
-def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+def refinedChildEnergy (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l : ℕ)
-    (gate : FirstOriginalOuter ι→Prop) (negative : Bool) (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
+    (gate : FirstOriginalOuter ι→Prop) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
     (omega : ℝ→ℂ) (T t Y : ℝ) : ℝ :=
   ∑x∈refinedOuter p pool Q k gate,
     firstCanonicalSecondEnergy p hp hg hinj pool x.1 x.2.1 negative Ψ m (divisorElement p x)
       (mark (if negative then x.1.rightExponent else x.1.leftExponent))
       (commonSelector p (fun _=>1) l) omega T t Y
 
-def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+def refinedCellRows (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
-    (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
+    (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal ActualEisensteinCubic.O))
+    (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
     (k : SourceIndex) (l : ℕ) (gate : FirstOriginalOuter ι→Prop) (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (K Y : ℝ) (s : Fin 9→ℝ) : ℂ :=
   firstFamilyPhysicalRows p hg
     (refinedSource p pool Q labels β cutoff Y k gate)
@@ -52,15 +51,15 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
       HasCompactSupport (omega₁ : ℝ→ℂ) ∧ HasCompactSupport (omega₂ : ℝ→ℂ) ∧
       tsupport (omega₁ : ℝ→ℂ)⊆Set.Icc lo hi ∧ tsupport (omega₂ : ℝ→ℂ)⊆Set.Icc lo hi ∧
     ∀(ε : ℝ),0<ε→∀(Aker J : ℕ),∃ Cprofile Kpush : ℝ,0≤Cprofile ∧ 0<Kpush ∧
-    ∀{ι : Type*}[DecidableEq ι](p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
-      (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-      (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Γ Ysource Y : ℝ)
+      (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal ActualEisensteinCubic.O))
+      (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+      (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Γ Ysource Y : ℝ)
       (_hΨ : ∀u,‖Ψ u‖≤1) (_hΓ : 0≤Γ) (_hY : 0<Y)
       (_hsf : ∀I∈labels,Squarefree I) (_hn : ∀I∈labels,I≠0)
       (_hβ : ∀I∈labels,∀v∈Q,‖β I v‖≤Γ)
@@ -89,19 +88,19 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
           (1+K*(rawScales k l T₁ T₂) 6/((rawScales k l T₁ T₂) 3*(rawScales k l T₁ T₂) 4*
             ((rawScales k l T₁ T₂) 5)^2*T₁*T₂))^Aker)) := by
   obtain ⟨w₁,w₂,U,M₀,lo,hi,hlo,hlh,hw₁,hw₂,hs₁,hs₂,hM,hUc,hUs,hwin⟩ :=
-    original_cell_windows g₁ g₂ m₁ m₂ 1 (fun _=>0) hm₁ hm₂ hg₁ hg₂ (fun _=>le_rfl)
+    original_cell_windows g₁ g₂ m₁ m₂ 1 (fun _=>0) hm₁ hm₂ hg₁ hg₂ (by simp)
   refine ⟨w₁,w₂,lo,hi,hlo,hlh,hw₁,hw₂,hs₁,hs₂,?_⟩
   intro ε hε Aker J
   obtain ⟨Cprofile,Kpush,hC,hKp,he⟩ := actual_first_original_subset_physical_budget
     ε hε U g₁ g₂ Φ M₀ (fun _=>0) m₁ m₂ 1
-    hM (fun _=>le_rfl) hUs hg₁ hg₂ Aker J
+    hM (by simp) hUs hg₁ hg₂ Aker J
   refine ⟨Cprofile,Kpush,hC,hKp,?_⟩
   intro ι _ p hp _ hg hinj hcop hc hpr pool Q labels β cutoff Ψ m mark Γ Ysource Y hΨ hΓ hY hsf hn hβ
     k l gate hcutoff T₁ T₂ K theta L hT₁ hT₂ hK hL Benergy Z M r ell V delta aa₁ aa₂ bb rr tq hh eta hB hZ hscale hLe hleft hright
   let source := refinedSource p pool Q labels β cutoff Ysource k gate
   have hgates := hwin p hp hg pool Q labels Ysource (coefficient p hp hcop hg Ψ m mark true)
     (coefficient p hp hcop hg Ψ m mark false) k l T₁ T₂ (fun _=>0) 1 1 (-theta) theta
-    hT₁ hT₂ (by intro i;simp) le_rfl le_rfl le_rfl le_rfl
+    hT₁ hT₂ (by simp) le_rfl le_rfl le_rfl le_rfl
   have hb := he p hp hg hinj hcop hc hpr pool (refinedOuter p pool Q k gate) (fun x=>x.1) (fun x=>x.2.1)
     Ψ Ψ m m (divisorElement p) (fun x=>mark x.1.rightExponent) (fun x=>mark x.1.leftExponent)
     (fun _=>commonSelector p (fun _=>1) l) (fun _=>labels) (firstOriginalWeight p β cutoff) (Γ^2) Y
@@ -111,7 +110,7 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
     K L hK (rawScales k l T₁ T₂) (rawScales_pos k l T₁ T₂ hT₁ hT₂)
     source (refined_source_radius p hp pool Q labels β cutoff Ysource Y k gate hn hcutoff)
     (fun x hx=>original_source_positive p hp pool Q labels Ysource x (Finset.mem_filter.mp (Finset.mem_filter.mp hx).1).1)
-    (by intro i;simp) le_rfl le_rfl le_rfl le_rfl hL
+    (by simp) le_rfl le_rfl le_rfl le_rfl hL
     (fun x hx=>hgates.1 x (Finset.mem_filter.mp hx).1)
     (fun x hx=>hgates.2.1 x (Finset.mem_filter.mp hx).1)
     (fun x hx=>hgates.2.2 x (Finset.mem_filter.mp hx).1)

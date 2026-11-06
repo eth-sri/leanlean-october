@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicCutoff
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.HeckeDetectorNormalized
 open HeckeFamily HeckeDyadic HeckeDetectorFourier HeckeDetectorProfiles
@@ -19,14 +19,14 @@ lemma plainCoefficient_positive (χ : Character) (D : ℝ) (hD : 0<D) (s : ℂ) 
       plainCoefficient χ (DyadicTransfer.annularCutoff cutoff) D s := by
   funext J
   unfold plainCoefficient
-  rw [positiveAnnular_eq _ (div_nonneg (Nat.cast_nonneg _) hD.le)]
+  rw [positiveAnnular_eq _ (by positivity)]
 
 lemma inverseCoefficient_positive (χ : Character) (Dstar D : ℝ) (hD : 0<D) (s : ℂ) :
     inverseCoefficient χ cutoff positiveAnnular Dstar D s=
       inverseCoefficient χ cutoff (DyadicTransfer.annularCutoff cutoff) Dstar D s := by
   funext J
   unfold inverseCoefficient
-  rw [positiveAnnular_eq _ (div_nonneg (Nat.cast_nonneg _) hD.le)]
+  rw [positiveAnnular_eq _ (by positivity)]
 
 theorem phaseProduct_norm (χ : Character) (Dstar U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ)
     (hprod : (2 : ℝ)^j*(2 : ℝ)^k<8*U^21) :
@@ -68,7 +68,7 @@ theorem exists_normalized_product (R θ τ : ℝ) (hR : 0≤R)
   obtain ⟨j,hj,k,hk,t,ht,hb,hd,hn,hprod⟩ := hbound U hU χ hχ Dstar hD hDU hQ ρ hρ hzero hheight
   refine ⟨j,hj,k,hk,t,ht,?_,hd,hn,hprod⟩
   rw [phaseProduct_norm χ Dstar U ρ j k t hprod] at hb
-  convert hb using 1; ring
+  linarith
 
 end SevenEighths.HeckeDetectorNormalized
 

@@ -7,14 +7,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseMarked
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePlain
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorRowwisePolynomial
 
 lemma norm_sum_sq_le (u v : ℂ) : ‖u+v‖^2≤2*(‖u‖^2+‖v‖^2) := by
   have h := norm_add_le u v
-  nlinarith [norm_nonneg (u+v),norm_nonneg u,norm_nonneg v,sq_nonneg (‖u‖-‖v‖)]
+  nlinarith [norm_nonneg (u+v), sq_nonneg (‖u‖-‖v‖)]
 
 theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     (W : ℝ→ℂ) (D : ℝ) (hD : 0<D) (S : Finset (Ideal O))
@@ -64,19 +64,19 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
     interval_cases n
     · convert ((qx 0 i x y (by norm_num)).mul (qx 0 i x y (by norm_num))).mul_const (P i) using 1
       · ext u; simp [M]
-      · simp [M]; ring
+      grind
     · convert (((qx 0 i x y (by norm_num)).mul (qx 1 i x y (by norm_num))).const_mul 2).mul_const (P i) using 1
       · ext u; dsimp [M]; ring
-      · simp [M]; ring
+      grind
   have dy (n : ℕ) (i : ι) (x y : ℝ) (hn : n≤1) :
       HasDerivAt (M n i x) (I*M (n+1) i x y) y := by
     interval_cases n
     · convert ((qy 0 i x y (by norm_num)).mul (qy 0 i x y (by norm_num))).mul_const (P i) using 1
       · ext u; simp [M]
-      · simp [M]; ring
+      grind
     · convert (((qy 0 i x y (by norm_num)).mul (qy 1 i x y (by norm_num))).const_mul 2).mul_const (P i) using 1
       · ext u; dsimp [M]; ring
-      · simp [M]; ring
+      grind
   have he (n : ℕ) (hn : n≤2) (x : ℝ) (hx : x∈Icc a b) (y : ℝ) (hy : y∈Icc c d) :
       ∑ i∈rows, ‖M n i x y‖^2≤16*E := by
     have e00 := henergy 0 0 (by norm_num) x hx y hy
@@ -88,7 +88,7 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
     change ∑ i∈rows, ‖Q 1 i x y*Q 1 i x y*P i‖^2≤E at e11
     change ∑ i∈rows, ‖Q 0 i x y*Q 2 i x y*P i‖^2≤E at e02
     interval_cases n
-    · simpa only [M,ite_true] using e00.trans (show E≤16*E by linarith)
+    · grind
     · have heq : (∑ i∈rows, ‖M 1 i x y‖^2)=4*∑ i∈rows, ‖Q 0 i x y*Q 1 i x y*P i‖^2 := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
@@ -96,7 +96,6 @@ theorem plain_squared_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Charact
         have hm : M 1 i x y=2*(Q 0 i x y*Q 1 i x y*P i) := by simp [M]; ring
         rw [hm,norm_mul,mul_pow]
         norm_num
-      rw [heq]
       linarith
     · have hh : (∑ i∈rows, ‖M 2 i x y‖^2)≤
           8*((∑ i∈rows, ‖Q 1 i x y*Q 1 i x y*P i‖^2)+

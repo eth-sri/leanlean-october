@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.CancellationTasks
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -35,7 +34,7 @@ def analyticGeometry (F : FixedData) : Blueprint.Analytic.Geometry where
 
 @[simp] lemma analyticGroups_mass (P : PrimeGroups) (g : P.Group) :
     Blueprint.Analytic.mass (analyticGroups P) g = P.V g := by
-  simp [Blueprint.Analytic.mass, PrimeGroups.V, analyticGroups, one_div]
+  simp [Blueprint.Analytic.mass, PrimeGroups.V, analyticGroups]
 
 @[simp] lemma analyticGroups_big (P : PrimeGroups) :
     (analyticGroups P).big = P.bigGroups := by
@@ -43,11 +42,11 @@ def analyticGeometry (F : FixedData) : Blueprint.Analytic.Geometry where
   ext g
   simp only [PrimeGroups.smallGroups, PrimeGroups.bigGroups,
     Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ, true_and]
-  simp only [Bool.not_eq_false]
+  simp
 
 @[simp] lemma bigGroup_card (P : PrimeGroups) :
-    Fintype.card P.BigGroup = P.bigGroups.card := by
-  exact (Fintype.card_subtype _).trans (by
+    Fintype.card P.BigGroup = P.bigGroups.card :=
+  (Fintype.card_subtype _).trans (by
     simp only [PrimeGroups.bigGroups])
 
 lemma admissible_analytic (F : FixedData) (P : PrimeGroups) (x : ℝ)
@@ -63,20 +62,17 @@ lemma admissible_analytic (F : FixedData) (P : PrimeGroups) (x : ℝ)
       (∑ p ∈ P.primes g, 1 / (p : ℝ)) ≤ max F.vMin F.vMax
     simp only [one_div]
     exact ⟨(hP.2.2.2.2.1 g).1,
-      (hP.2.2.2.2.1 g).2.trans (le_max_right F.vMin F.vMax)⟩
+      (hP.2.2.2.2.1 g).2.trans (by simp)⟩
   · intro g p hp
     change (if g ∈ P.smallGroups then
       Real.exp (L x ^ F.a) ≤ (p : ℝ) ∧ (p : ℝ) ≤ Real.exp (L x ^ F.b)
       else Real.exp (L x ^ F.c) ≤ (p : ℝ) ∧ (p : ℝ) ≤ Real.exp (L x ^ F.d))
     have h := hP.2.2.2.2.2 g p hp
-    have hsmall : g ∈ P.smallGroups ↔ P.big g = false := by
-      exact Finset.mem_filter.trans (by simp only [Finset.mem_univ, true_and])
-    simp only [hsmall]
-    cases hb : P.big g <;>
-      simpa only [hb, Bool.false_eq_true, Bool.true_eq_false,
-        ite_true, ite_false, Blueprint.Analytic.L, L] using h
+    have hsmall : g ∈ P.smallGroups ↔ P.big g = false :=
+      Finset.mem_filter.trans (by simp)
+    simp_all
   · intro g hg
-    have hb : P.big g = true := (Finset.mem_filter.mp hg).2
+    have hb := (Finset.mem_filter.mp hg).2
     exact hint ⟨g, hb⟩
 
 lemma localComparison_of_estimate (F : FixedData) (m : ℕ) (A C₄ : ℝ)

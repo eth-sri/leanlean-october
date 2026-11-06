@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical FourierTransform ContDiff
 
 namespace SevenEighths.InverseMoment
-open MeasureTheory CanonicalCubeSeparation FourierBridge JointLogSeparation CompletedHeight
+open MeasureTheory CanonicalCubeSeparation JointLogSeparation CompletedHeight
 
 theorem reopening_coefficient_twist (W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
     (hs:Function.support W⊆Set.Icc a b)(hW:ContDiff ℝ ∞ W)(theta:ℝ)

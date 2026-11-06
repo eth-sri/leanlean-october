@@ -9,26 +9,25 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondIdealBlockBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
+open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
+open CenteredMomentCanonicalFirst
 open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSecondIdealBlockBound
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentMobiusRegroup CenteredMomentSecondIdealBlockBound
 universe u
 
 theorem fixed_log_block_from_common_energy (W:𝓢(ℝ,ℂ))(decay J₁ J₂:ℕ):
     ∃Cbound:ℝ,0≤Cbound ∧ ∀{ι:Type u}[Fintype ι],∀η:Character,∀s:OriginalData ι,
-    ∀t:ℝ,∀(C D:Ideal O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
-    ∀(E:Finset (CommonIndex C D))(rows:Finset O),(∀h∈rows,h≠0)→
+    ∀t:ℝ,∀(C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
+    ∀(E:Finset (CommonIndex C D))(rows:Finset ActualEisensteinCubic.O),(∀h∈rows,h≠0)→
     ∀K K₀ H₀ A₀ B₀:ℝ,0<K→0<K₀→0<H₀→0<A₀→0<B₀→
     ∀(U:𝓢(ℝ,ℂ))(H:ℝ),0<H→
-    (∀h:O,0≤(U (‖eisEmbedding h‖^2/H)).re)→
+    (∀h:ActualEisensteinCubic.O,0≤(U (‖eisEmbedding h‖^2/H)).re)→
     (∀h∈rows,1≤(U (‖eisEmbedding h‖^2/H)).re)→
-    ∀E₁ E₂:Ideal O→ℝ,
+    ∀E₁ E₂:Ideal ActualEisensteinCubic.O→ℝ,
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 s.columns))
       (fun b=>Ideal.span {element C D hD.1 s.columns b}),0≤E₁ L)→
     (∀L∈divisorPool (Finset.univ:Finset (columns C D hD.1 s.columns))
@@ -48,7 +47,7 @@ theorem fixed_log_block_from_common_energy (W:𝓢(ℝ,ℂ))(decay J₁ J₂:ℕ
           ‖(UniqueFactorizationMonoid.moebius L:ℂ)‖*
             (windowBudget J₁ t (E₁ L)*windowBudget J₂ t (E₂ L)):=by
   obtain ⟨Cb,hCb,hbound⟩:=physical_block_child_bound W (fun _=>logAnnulus) (fun _=>Real.log 4)
-    (fun _=>Real.log_nonneg (by norm_num)) (fun _ _ hn=>logAnnulus_enclosure _ hn) decay J₁ J₂
+    (fun _=>by positivity) (fun _ _ hn=>logAnnulus_enclosure _ hn) decay J₁ J₂
   refine ⟨Cb,hCb,?_⟩
   intro ι inst η s t C D hC hD hCD E rows hrows K K₀ H₀ A₀ B₀ hK hK₀ hH₀ hA₀ hB₀
     U H hH hU hmajor E₁ E₂ hE₁ hE₂ hleft hright

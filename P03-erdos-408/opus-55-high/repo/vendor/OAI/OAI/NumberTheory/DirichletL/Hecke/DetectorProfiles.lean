@@ -7,13 +7,13 @@ public import OAI.NumberTheory.DirichletL.Foundation
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff
 noncomputable section
 
 def expNeg (x : ℝ) : ℂ := Complex.exp (-(x : ℂ))
 
-lemma expNeg_smooth : ContDiff ℝ ∞ expNeg := by
-  exact Complex.ofRealCLM.contDiff.neg.cexp
+lemma expNeg_smooth : ContDiff ℝ ∞ expNeg :=
+  Complex.ofRealCLM.contDiff.neg.cexp
 
 lemma expNeg_hasDerivAt (x : ℝ) : HasDerivAt expNeg (-expNeg x) x := by
   have h := ((Complex.ofRealCLM.hasDerivAt (x := x)).neg).cexp
@@ -22,26 +22,25 @@ lemma expNeg_hasDerivAt (x : ℝ) : HasDerivAt expNeg (-expNeg x) x := by
 lemma iteratedDeriv_expNeg (n : ℕ) :
     iteratedDeriv n expNeg = fun x => (-1 : ℂ)^n*expNeg x := by
   induction n with
-  | zero => ext x; simp
+  | zero => simp
   | succ n ih =>
     rw [iteratedDeriv_succ, ih]
     funext x
-    rw [deriv_const_mul_field, (expNeg_hasDerivAt x).deriv, pow_succ]
-    ring
+    simp [deriv_const_mul_field, (expNeg_hasDerivAt x).deriv, pow_succ]
 
 lemma expNeg_derivative_norm (n : ℕ) (x : ℝ) :
     ‖iteratedFDeriv ℝ n expNeg x‖ = Real.exp (-x) := by
   rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_expNeg]
-  simp [expNeg, norm_pow, Complex.norm_exp]
+  simp [expNeg, Complex.norm_exp]
 
 lemma expNeg_derivative_decay (n i : ℕ) (x : ℝ) (hx : 0 ≤ x) :
     (1+x)^n*‖iteratedFDeriv ℝ i expNeg x‖ ≤ (n.factorial : ℝ)*Real.exp 1 := by
   rw [expNeg_derivative_norm]
   have hf : 0 < (n.factorial : ℝ) := by exact_mod_cast Nat.factorial_pos n
-  have hp := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp (1+x) (by linarith : 0 ≤ 1+x) n)
+  have hp := (div_le_iff₀ hf).mp (Real.pow_div_factorial_le_exp (1+x) (by positivity) n)
   calc
     _ ≤ (Real.exp (1+x)*(n.factorial : ℝ))*Real.exp (-x) :=
-      mul_le_mul_of_nonneg_right hp (Real.exp_pos _).le
+      mul_le_mul_of_nonneg_right hp (by positivity)
     _ = _ := by
       rw [mul_right_comm, ← Real.exp_add, show (1+x)+(-x) = 1 by ring]
       ring

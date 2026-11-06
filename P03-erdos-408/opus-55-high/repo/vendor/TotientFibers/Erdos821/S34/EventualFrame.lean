@@ -6,7 +6,7 @@ public import Erdos821.S34.KernelTransport
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.S34Core
@@ -19,7 +19,7 @@ theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
     1 + (Q : ℝ) ^ 2 * (K * L ^ (-(2 * q + ξexp + 2))) / L ^ (-ξexp) ≤ 2 := by
   have hLpos : 0 < L := by linarith
   have hξpos : 0 < L ^ (-ξexp) := Real.rpow_pos_of_pos hLpos _
-  have hδ : 0 ≤ K * L ^ (-(2 * q + ξexp + 2)) := mul_nonneg hK (Real.rpow_nonneg hLpos.le _)
+  have hδ : 0 ≤ K * L ^ (-(2 * q + ξexp + 2)) := by positivity
   have hQsq : (Q : ℝ) ^ 2 ≤ L ^ (2 * q) := by
     have hs := pow_le_pow_left₀ (Nat.cast_nonneg Q) hQ 2
     have he : (L ^ q) ^ (2 : ℕ) = L ^ (2 * q) := by
@@ -34,14 +34,13 @@ theorem gram_factor_le_two (L q ξexp K : ℝ) (Q : ℕ)
         mul_le_mul_of_nonneg_right hQsq hδ
       _ = K * L ^ (-ξexp - 2) := by
         rw [mul_left_comm, ← Real.rpow_add hLpos]
-        congr 1
-        ring_nf
+        ring
       _ = L ^ (-ξexp) * (K / L ^ (2 : ℕ)) := by
         rw [show -ξexp - 2 = -ξexp + (-2) by ring, Real.rpow_add hLpos,
           Real.rpow_neg hLpos.le (2 : ℝ), Real.rpow_two]
         ring
       _ ≤ L ^ (-ξexp) * 1 := mul_le_mul_of_nonneg_left
-        ((div_le_one₀ (by positivity : (0 : ℝ) < L ^ (2 : ℕ))).mpr hKL) hξpos.le
+        ((div_le_one₀ (by positivity)).mpr hKL) hξpos.le
       _ = _ := mul_one _
   have hd := (div_le_one₀ hξpos).mpr hb
   linarith

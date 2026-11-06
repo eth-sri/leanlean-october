@@ -29,9 +29,7 @@ structure CS (n : ℕ) (E : Type*) [NormedAddCommGroup E] [NormedSpace ℝ E] wh
     [NormedAddCommGroup E] [NormedSpace ℝ E] {x y : CS n E}
     (h : x.toFun = y.toFun) : x = y := by
   cases x
-  cases y
-  cases h
-  rfl
+  simp_all
 
 structure trunc extends (CS 2 ℝ) where
   h3 : (Set.Icc (-1) (1)).indicator 1 ≤ toFun
@@ -188,9 +186,8 @@ theorem integrable_iteratedDeriv_Schwarz {f : 𝓢(ℝ, ℂ)} : Integrable (iter
     rw [iteratedDeriv_succ']
     have hd : (SchwartzMap.derivCLM ℝ ℂ f : ℝ → ℂ) = _root_.deriv f := by
       funext x
-      exact SchwartzMap.derivCLM_apply ℝ f x
-    rw [← hd]
-    exact ih (f := SchwartzMap.derivCLM ℝ ℂ f)
+      exact by simp
+    grind
 
 noncomputable def ofSchwartz (f : 𝓢(ℝ, ℂ)) : W1 n ℂ where
   toFun := f
@@ -207,8 +204,8 @@ noncomputable def norm (f : ℝ → ℂ) : ℝ :=
     (∫ v, ‖f v‖) + (4 * π ^ 2)⁻¹ * (∫ v, ‖deriv (deriv f) v‖)
 
 theorem norm_nonneg {f : ℝ → ℂ} : 0 ≤ norm f :=
-  add_nonneg (integral_nonneg (fun t => by simp))
-    (mul_nonneg (by positivity) (integral_nonneg (fun t => by simp)))
+  add_nonneg (by positivity)
+    (by positivity)
 
 noncomputable instance : Norm W21 where norm := norm ∘ W1.toFun
 
@@ -240,7 +237,7 @@ instance : HMul (CS 2 ℝ) W21 (CS 2 ℂ) where hMul g f := (g : CS 2 ℂ) * f
 theorem hf (f : W21) : Integrable f := f.integrable zero_le_two
 
 theorem hf' (f : W21) : Integrable (deriv f) := by
-  simpa [iteratedDeriv_succ] using f.integrable one_le_two
+  simpa using f.integrable one_le_two
 
 theorem hf'' (f : W21) : Integrable (deriv (deriv f))  := by
   simpa [iteratedDeriv_succ] using f.integrable le_rfl
@@ -310,7 +307,7 @@ theorem W21_approximation (f : W21) (g : trunc) :
         have d1 : deriv (fun v => h R v * f v) = fun v => h' R v * f v + h R v * f' v :=
           funext (fun v => (l3 v).deriv)
         rw [d1] ; convert (l5.add l7).deriv using 1 ; ring
-      simp_rw [this, F]
+      grind
     obtain ⟨c1, mg'⟩ := g'.bounded
     obtain ⟨c2, mg''⟩ := g''.bounded
     let bound v := c2 * ‖f v‖ + 2 * c1 * ‖f' v‖ + ‖f'' v‖
@@ -330,12 +327,12 @@ theorem W21_approximation (f : W21) (g : trunc) :
         · simp
         · rw [mul_comm]
           apply mul_le_mul (mg' _)
-            (inv_le_of_inv_le₀ (by linarith) (by simpa using hR)) (by positivity)
+            (inv_le_of_inv_le₀ (by linarith) (by linarith)) (by positivity)
           exact (abs_nonneg _).trans (mg' 0)
       have hc2 : ∀ᶠ R in atTop, ∀ v, |h'' R v| ≤ c2 := by
         filter_upwards [eventually_ge_atTop 1] with R hR v
         have e1 : 0 ≤ R := by linarith
-        have e2 : R⁻¹ ≤ 1 := inv_le_of_inv_le₀ (by linarith) (by simpa using hR)
+        have e2 : R⁻¹ ≤ 1 := inv_le_of_inv_le₀ (by linarith) (by linarith)
         have e3 : R ≠ 0 := by linarith
         simp only [CS.deriv_scale, CS.deriv_smul, CS.neg_apply, CS.smul_apply, smul_eq_mul, abs_neg,
           abs_mul, abs_inv, abs_eq_self.mpr e1, ge_iff_le, h'']
@@ -370,13 +367,13 @@ theorem W21_approximation (f : W21) (g : trunc) :
           simp only [CS.scale, hR', ↓reduceDIte, funscale, smul_eq_mul, mul_comm R⁻¹]
           exact hR
         apply tendsto_nhds_of_eventually_eq
-        filter_upwards [eh'' v] with R hR ; simp [hR]
+        filter_upwards [eh'' v] with R hR ; simp_all
       · have eh' v : ∀ᶠ R in atTop, h' R v = 0 := by
           filter_upwards [(vR v).eventually evg'] with R hR
           simp [g'] at hR
           simp [h', CS.deriv_scale', mul_comm R⁻¹, hR]
         apply tendsto_nhds_of_eventually_eq
-        filter_upwards [eh' v] with R hR ; simp [hR]
+        filter_upwards [eh' v] with R hR ; simp_all
       · simpa [h, Filter.ZeroAtFilter] using
           ((g.tendsto_scale v).const_sub 1).ofReal.mul tendsto_const_nhds
-    simpa [F] using tendsto_integral_filter_of_dominated_convergence bound e1 e2 e3 e4
+    simpa using tendsto_integral_filter_of_dominated_convergence bound e1 e2 e3 e4

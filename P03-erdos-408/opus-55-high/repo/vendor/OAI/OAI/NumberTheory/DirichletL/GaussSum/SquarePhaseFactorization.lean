@@ -9,33 +9,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,32 +32,26 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
 
 namespace ActualEisensteinCubic
 
@@ -82,15 +64,15 @@ theorem primary_associated_eq (x y : O) (hxy : Associated x y)
       ring
     rw [heq]
     exact dvd_sub hy (dvd_mul_of_dvd_left hx _)
-  have huone : (u : O) = 1 := A3_primary_unit_eq_one _ u.isUnit huprimary
-  simpa only [huone, mul_one] using hu
+  have huone := A3_primary_unit_eq_one _ u.isUnit huprimary
+  simp_all
 
 theorem primary_multiset_prod (s : Multiset O)
     (hs : ∀ x ∈ s, lambda ^ 2 ∣ x - 1) : lambda ^ 2 ∣ s.prod - 1 := by
   induction s using Multiset.induction_on with
   | empty => simp
   | @cons a s ih =>
-    have ha := hs a (Multiset.mem_cons_self _ _)
+    have ha := hs a (by simp)
     have hb := ih (fun x hx => hs x (Multiset.mem_cons_of_mem hx))
     rw [Multiset.prod_cons]
     have heq : a * s.prod - 1 = (a - 1) * s.prod + (s.prod - 1) := by ring
@@ -102,9 +84,9 @@ theorem primary_maximal_divisor_good (t : O) (ht : lambda ^ 2 ∣ t - 1)
   intro hlam
   have hlam2 : lambda ^ 2 ∈ P := by
     simpa only [pow_two] using P.mul_mem_left lambda hlam
-  have hsub : t - 1 ∈ P := Ideal.mem_of_dvd P ht hlam2
+  have hsub := Ideal.mem_of_dvd P ht hlam2
   have hone : (1 : O) ∈ P := by simpa using P.sub_mem htP hsub
-  exact (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal))
+  exact (Ideal.IsMaximal.ne_top (by omega))
     ((Ideal.eq_top_iff_one _).mpr hone)
 
 theorem exists_primary_prime_factorization (t : O) (ht0 : t ≠ 0)
@@ -130,27 +112,26 @@ theorem exists_primary_prime_factorization (t : O) (ht0 : t ≠ 0)
       let : (Ideal.span {a} : Ideal O).IsMaximal :=
         PrincipalIdealRing.isMaximal_of_irreducible ha.irreducible
       obtain ⟨r, hrspan, hrprimary, _⟩ := cubicJacobi_exists_primary_generator
-        (Ideal.span {a}) (hfgood a (Multiset.mem_cons_self _ _))
-      have har : Associated a r := Ideal.span_singleton_eq_span_singleton.mp hrspan
+        (Ideal.span {a}) (by grind)
+      have har := Ideal.span_singleton_eq_span_singleton.mp hrspan
       obtain ⟨s, hsf, hs⟩ := ih
-        (fun r hr => hf r (Multiset.mem_cons_of_mem hr))
-        (fun r hr => hfgood r (Multiset.mem_cons_of_mem hr))
+        (by grind)
+        (by grind)
       refine ⟨r ::ₘ s, ?_, ?_⟩
-      · simpa only [Multiset.prod_cons] using har.symm.mul_mul hsf
+      · simpa using har.symm.mul_mul hsf
       · intro x hx
         rcases Multiset.mem_cons.mp hx with rfl | hx
         · exact ⟨har.prime_iff.mp ha, hrprimary⟩
-        · exact hs x hx
+        simp_all
   obtain ⟨s, hsf, hs⟩ := hreplace
   refine ⟨s, ?_, hs⟩
   exact primary_associated_eq _ _ (hsf.trans hft)
-    (primary_multiset_prod s (fun r hr => (hs r hr).2)) ht
+    (primary_multiset_prod s (by grind)) ht
 
 theorem residue_char_mem (P : Ideal O) :
     (ringChar (O ⧸ P) : O) ∈ P := by
   apply Ideal.Quotient.eq_zero_iff_mem.mp
-  rw [map_natCast]
-  exact CharP.cast_eq_zero (O ⧸ P) (ringChar (O ⧸ P))
+  simp
 
 theorem maximal_eq_or_eq_of_same_residue_char
     (P Q R : Ideal O) [P.IsMaximal] [Q.IsMaximal] [R.IsMaximal]
@@ -164,8 +145,7 @@ theorem maximal_eq_or_eq_of_same_residue_char
   have hp := hcover P inferInstance (residue_char_mem P)
   have hq := hcover Q inferInstance (by rw [← hPQ]; exact residue_char_mem Q)
   have hr := hcover R inferInstance (by rw [← hRP]; exact residue_char_mem R)
-  rcases hp with hp | hp <;> rcases hq with hq | hq <;>
-    rcases hr with hr | hr <;> simp_all
+  grind
 
 theorem prime_divisor_residue_char_ne
     (P Q R : Ideal O) [P.IsMaximal] [Q.IsMaximal] [R.IsMaximal]
@@ -174,8 +154,8 @@ theorem prime_divisor_residue_char_ne
     ringChar (O ⧸ R) ≠ ringChar (O ⧸ P) := by
   intro hRP
   rcases maximal_eq_or_eq_of_same_residue_char P Q R hne hPQ hRP with rfl | rfl
-  · exact htP htR
-  · exact htQ htR
+  · simp_all
+  simp_all
 
 theorem lambda_sq_dvd_three : lambda ^ 2 ∣ (3 : O) := by
   have hlam : lambda ^ 2 = -3 * omega := by
@@ -184,7 +164,7 @@ theorem lambda_sq_dvd_three : lambda ^ 2 ∣ (3 : O) := by
   refine ⟨-omega ^ 2, ?_⟩
   rw [hlam]
   calc
-    (3 : O) = 3 * omega ^ 3 := by rw [omega_primitive.pow_eq_one]; ring
+    (3 : O) = 3 * omega ^ 3 := by simp [omega_primitive.pow_eq_one]
     _ = -3 * omega * -omega ^ 2 := by ring
 
 theorem neg_two_primary : lambda ^ 2 ∣ (-2 : O) - 1 := by
@@ -203,8 +183,8 @@ theorem prime_generator_not_mem_of_ne (P Q : Ideal O)
   have hle : Q ≤ P := by
     rw [hQ]
     exact (Ideal.span_singleton_le_iff_mem _).mpr hq
-  exact hne (Ideal.IsMaximal.eq_of_le (inferInstance : Q.IsMaximal)
-    (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal)) hle).symm
+  exact hne (Ideal.IsMaximal.eq_of_le (by omega)
+    (Ideal.IsMaximal.ne_top (by omega)) hle).symm
 
 theorem cubic_reciprocity_equal_residue_char
     (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
@@ -216,18 +196,18 @@ theorem cubic_reciprocity_equal_residue_char
       cubicChar Q hQgood (Ideal.Quotient.mk Q p) := by
   classical
   let t : O := -(p + q)
-  have hpP : p ∈ P := by rw [hP]; exact Ideal.subset_span (by simp)
-  have hqQ : q ∈ Q := by rw [hQ]; exact Ideal.subset_span (by simp)
-  have hqP : q ∉ P := prime_generator_not_mem_of_ne P Q hne q hQ
-  have hpQ : p ∉ Q := prime_generator_not_mem_of_ne Q P hne.symm p hP
+  have hpP : p ∈ P := by rw [hP]; exact by simp
+  have hqQ : q ∈ Q := by rw [hQ]; exact by simp
+  have hqP := prime_generator_not_mem_of_ne P Q hne q hQ
+  have hpQ := prime_generator_not_mem_of_ne Q P hne.symm p hP
   have htP : t ∉ P := by
     intro ht
     have hs : p + q ∈ P := by simpa only [t, neg_neg] using P.neg_mem ht
-    exact hqP (by simpa only [add_sub_cancel_left] using P.sub_mem hs hpP)
+    exact hqP (by simpa using P.sub_mem hs hpP)
   have htQ : t ∉ Q := by
     intro ht
     have hs : p + q ∈ Q := by simpa only [t, neg_neg] using Q.neg_mem ht
-    exact hpQ (by simpa only [add_sub_cancel_right] using Q.sub_mem hs hqQ)
+    exact hpQ (by simpa using Q.sub_mem hs hqQ)
   have ht0 : t ≠ 0 := fun h => htP (h ▸ P.zero_mem)
   obtain ⟨s, hst, hs⟩ := exists_primary_prime_factorization t ht0
     (neg_add_primary p q hpprimary hqprimary)
@@ -239,14 +219,14 @@ theorem cubic_reciprocity_equal_residue_char
     let : R.IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible (hs r hr).1.irreducible
     have hrR : r ∈ R := Ideal.subset_span (by simp)
     have htR : t ∈ R := Ideal.mem_span_singleton.mpr (hst ▸ Multiset.dvd_prod hr)
-    have hRgood : lambda ∉ R := primary_maximal_divisor_good t
+    have hRgood := primary_maximal_divisor_good t
       (neg_add_primary p q hpprimary hqprimary) R htR
     have hRP := prime_divisor_residue_char_ne P Q R hne hchar t htP htQ htR
     have hRQ : ringChar (O ⧸ R) ≠ ringChar (O ⧸ Q) := by rwa [hchar]
     rw [cubic_reciprocity_distinct_residue_char P R hPgood hRgood hRP
-      p r hP rfl hpprimary (hs r hr).2,
+      p r hP rfl hpprimary (by grind),
       cubic_reciprocity_distinct_residue_char Q R hQgood hRgood hRQ
-      q r hQ rfl hqprimary (hs r hr).2]
+      q r hQ rfl hqprimary (by grind)]
     have hsum : Ideal.Quotient.mk R p + Ideal.Quotient.mk R q = 0 := by
       have hz := Ideal.Quotient.eq_zero_iff_mem.mpr htR
       simpa only [t, map_neg, map_add, neg_eq_zero] using hz
@@ -260,12 +240,11 @@ theorem cubic_reciprocity_equal_residue_char
         cubicChar Q hQgood (Ideal.Quotient.mk Q f.prod) := by
     intro f
     induction f using Multiset.induction_on with
-    | empty => intro _; simp
+    | empty => simp
     | @cons r f ih =>
       intro hf
       simp only [Multiset.prod_cons, map_mul]
-      rw [hf r (Multiset.mem_cons_self _ _), ih
-        (fun x hx => hf x (Multiset.mem_cons_of_mem hx))]
+      simp_all
   have htval := hmul s hlocal
   rw [hst] at htval
   have hpzero : Ideal.Quotient.mk P p = 0 := Ideal.Quotient.eq_zero_iff_mem.mpr hpP
@@ -273,7 +252,7 @@ theorem cubic_reciprocity_equal_residue_char
   simp only [t, map_neg, map_add, hpzero, hqzero, zero_add, add_zero] at htval
   rw [← neg_one_mul (Ideal.Quotient.mk P q), map_mul, A3_cubicChar_neg_one, one_mul,
     ← neg_one_mul (Ideal.Quotient.mk Q p), map_mul, A3_cubicChar_neg_one, one_mul] at htval
-  exact htval
+  omega
 
 theorem cubic_reciprocity_primary
     (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
@@ -283,8 +262,8 @@ theorem cubic_reciprocity_primary
     cubicChar P hPgood (Ideal.Quotient.mk P q) =
       cubicChar Q hQgood (Ideal.Quotient.mk Q p) := by
   by_cases hPQ : P = Q
-  · have hqP : q ∈ P := by rw [hPQ, hQ]; exact Ideal.subset_span (by simp)
-    have hpQ : p ∈ Q := by rw [← hPQ, hP]; exact Ideal.subset_span (by simp)
+  · have hqP : q ∈ P := by rw [hPQ, hQ]; exact by simp
+    have hpQ : p ∈ Q := by rw [← hPQ, hP]; exact by simp
     rw [Ideal.Quotient.eq_zero_iff_mem.mpr hqP,
       Ideal.Quotient.eq_zero_iff_mem.mpr hpQ, MulChar.map_zero, MulChar.map_zero]
   · by_cases hchar : ringChar (O ⧸ Q) = ringChar (O ⧸ P)
@@ -302,11 +281,11 @@ theorem canonicalSextic_sq_reciprocity_primary
       (canonicalSextic Q hQgood (Ideal.Quotient.mk Q p)) ^ 2 := by
   have hP2 : (canonicalSextic P hPgood (Ideal.Quotient.mk P q)) ^ 2 =
       ConcreteTraceCRT.eisEmbedding (cubicChar P hPgood (Ideal.Quotient.mk P q)) := by
-    rw [← MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0), canonicalSextic_pow_two]
+    rw [← MulChar.pow_apply' _ (by positivity), canonicalSextic_pow_two]
     rfl
   have hQ2 : (canonicalSextic Q hQgood (Ideal.Quotient.mk Q p)) ^ 2 =
       ConcreteTraceCRT.eisEmbedding (cubicChar Q hQgood (Ideal.Quotient.mk Q p)) := by
-    rw [← MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0), canonicalSextic_pow_two]
+    rw [← MulChar.pow_apply' _ (by positivity), canonicalSextic_pow_two]
     rfl
   rw [hP2, hQ2, cubic_reciprocity_primary P Q hPgood hQgood p q hP hQ hpprimary hqprimary]
 
@@ -331,7 +310,7 @@ theorem cubicTwoIdeal_residue_char : ringChar (O ⧸ cubicTwoIdeal) = 2 := by
   let : Fintype (O ⧸ cubicTwoIdeal) := Fintype.ofFinite _
   have hmem : (2 : O) ∈ cubicTwoIdeal := by
     rw [cubicTwoIdeal, Ideal.span_singleton_neg]
-    exact Ideal.subset_span (by simp)
+    exact by simp
   have hz : (2 : O ⧸ cubicTwoIdeal) = 0 := by
     simpa only [map_ofNat] using Ideal.Quotient.eq_zero_iff_mem.mpr hmem
   exact (Nat.prime_dvd_prime_iff_eq (CharP.char_is_prime (O ⧸ cubicTwoIdeal) _)
@@ -346,7 +325,7 @@ theorem canonicalSextic_four_eq_fixed_two
   have hfour : Ideal.Quotient.mk P (4 : O) = (Ideal.Quotient.mk P (-2 : O)) ^ 2 := by
     simp only [map_ofNat, map_neg]
     ring
-  rw [hfour, map_pow, ← MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0),
+  rw [hfour, map_pow, ← MulChar.pow_apply' _ (by positivity),
     canonicalSextic_pow_two]
   change ConcreteTraceCRT.eisEmbedding (cubicChar P hgood (Ideal.Quotient.mk P (-2 : O))) = _
   congr 1
@@ -364,11 +343,11 @@ theorem canonicalSextic_four_prod_eq_fixed_two
   simp only [map_prod]
   apply Finset.prod_congr rfl
   intro i hi
-  exact canonicalSextic_four_eq_fixed_two (P i) (hgood i) (p i) (hP i hi) (hprimary i hi)
+  exact canonicalSextic_four_eq_fixed_two (P i) (hgood i) (p i) (by grind) (by grind)
 
 end ActualEisensteinCubic
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace IdealGaussCRT
 
@@ -383,7 +362,7 @@ theorem sum_square_phase_finite_crt {ι T : Type*} [Fintype ι]
       apply Finset.sum_congr rfl
       intro x _
       rw [addChar_finite_crt_factor R e ψ (x ^ 2)]
-      simp only [map_pow, Pi.pow_apply]
+      simp
     _ = ∑ x : ∀ i, R i, ∏ i, coordinateAddChar R e ψ i ((x i) ^ 2) :=
       Equiv.sum_comp e.toEquiv
         (fun x : ∀ i, R i => ∏ i, coordinateAddChar R e ψ i ((x i) ^ 2))
@@ -411,7 +390,7 @@ end IdealGaussCRT
 namespace QuadraticGaussRay
 
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
+open FiniteGaussPhase ActualEisensteinCoordinates
 
 theorem canonicalProductGauss_three_eq_quadraticGamma
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
@@ -422,7 +401,7 @@ theorem canonicalProductGauss_three_eq_quadraticGamma
     canonicalProductGauss p hp hcop hgood (fun _ => 3) =
       quadraticGammaO (∏ i, p i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)) := by
   let c := ∏ i, p i
-  have hc : c ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+  have hc : c ≠ 0 := Finset.prod_ne_zero_iff.mpr (by grind)
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   let (i : ι) : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
@@ -443,8 +422,7 @@ theorem I_zpow_eq_of_mod_four {a b : ℤ} (h : (a : ZMod 4) = b) :
     Complex.I ^ a = Complex.I ^ b := by
   obtain ⟨k, hk⟩ := (ZMod.intCast_eq_intCast_iff_dvd_sub b a 4).mp h.symm
   have ha : a = b + 4 * k := by omega
-  rw [ha, zpow_add₀ Complex.I_ne_zero, zpow_mul]
-  norm_num
+  simp [ha, zpow_add₀ Complex.I_ne_zero, zpow_mul]
 
 theorem fourTerms_eq_of_mod_four {a b c d : ℤ}
     (ha : (a : ZMod 4) = c) (hb : (b : ZMod 4) = d) :
@@ -479,7 +457,6 @@ theorem canonicalProductGauss_three_eq_rayValue
   rw [canonicalProductGauss_three_eq_quadraticGamma p hp hcop hgood hchar,
     quadraticGammaO_eq_rayValue]
 
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
 
 theorem fixed_two_mk_eq_residue_lift (c : O) :
     Ideal.Quotient.mk cubicTwoIdeal c =
@@ -488,9 +465,7 @@ theorem fixed_two_mk_eq_residue_lift (c : O) :
   apply Ideal.Quotient.eq.mpr
   rw [cubicTwoIdeal, Ideal.mem_span_singleton]
   refine ⟨(-2 : O) * z, ?_⟩
-  calc
-    c - lift (residue c) = 4 * z := hz
-    _ = (-2 : O) * (-2 * z) := by ring
+  grind
 
 def fixedGValue (r : EisensteinEPrimaryPhase.Coord) : ℂ :=
   (eisEmbedding (cubicChar cubicTwoIdeal cubicTwoIdeal_good
@@ -502,10 +477,10 @@ theorem residue_eq_of_four_dvd_sub (c d : O) (h : (4 : O) ∣ c - d) :
   have he : c = eval ((coords d).1 + 4 * (coords z).1)
       ((coords d).2 + 4 * (coords z).2) := by
     calc
-      c = d + 4 * z := by linear_combination hz
+      c = d + 4 * z := by grind
       _ = eval (coords d).1 (coords d).2 + 4 * eval (coords z).1 (coords z).2 := by
         rw [eval_coords, eval_coords]
-      _ = _ := by simp only [eval]; push_cast; ring
+      _ = _ := by simp only [eval]; grind
   rw [he, residue_eval]
   simp only [residue, Int.cast_add, Int.cast_mul, Int.cast_ofNat,
     show (4 : ZMod 4) = 0 by decide, zero_mul, add_zero]
@@ -534,7 +509,7 @@ theorem canonicalProductG_eq_fixedGValue
     canonicalProductG p hp hcop hgood = fixedGValue (residue (∏ i, p i)) := by
   rw [canonicalProductG,
     canonicalSextic_four_prod_eq_fixed_two Finset.univ (fun i => Ideal.span {p i}) hgood p
-      (fun i _ => rfl) (fun i _ => hprimary i),
+      (by simp) (by grind),
     canonicalProductGauss_three_eq_rayValue p hp hcop hgood hchar,
     fixed_two_mk_eq_residue_lift]
   rfl

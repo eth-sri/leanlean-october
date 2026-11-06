@@ -10,31 +10,24 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open EisensteinEmbedding ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -54,35 +47,30 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicKubota CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramified_omega_relation : omega^2+omega+1=(0:Eis) := by
@@ -116,7 +104,7 @@ lemma ramifiedParabolic_mul_lower (t x : Eis) :
       (upperTranslation x : Matrix (Fin 2) (Fin 2) Eis)
   funext i j
   fin_cases i <;> fin_cases j <;>
-    simp [ramifiedParabolic,lowerCuspMatrix,upperTranslation,Matrix.mul_apply,Fin.sum_univ_two] <;> ring
+    simp [ramifiedParabolic, lowerCuspMatrix, upperTranslation, Matrix.mul_apply] <;> ring
 
 lemma ramifiedParabolic_character (t x : Eis) :
     complexCharacter (ramifiedParabolic t x)=
@@ -139,7 +127,6 @@ lemma ramifiedParabolic_omega_value (A B : ℤ) :
     linear_combination -3*(B:Eis)*ramified_omega_relation
   rw [hd,symbol_neg_numerator _ _ (primaryCoord_primary _ _),
     symbol_omega_eq_linearRay _ (primaryCoord_primary _ _),linearRay_primaryCoord]
-  congr 2
   ring
 
 lemma ramifiedParabolic_omega_sq_value (A B : ℤ) :
@@ -156,12 +143,12 @@ lemma ramifiedParabolic_omega_sq_value (A B : ℤ) :
     symbol_omega_eq_linearRay _ (primaryCoord_primary _ _),linearRay_primaryCoord]
   have he : cubicExp (2*((A-B)*2+(-1)*A))=cubicExp (-(A+B)) := by
     apply cubicExp_eq_of_dvd_sub
-    exact ⟨A-B,by ring⟩
+    exact by omega
   have hs : cubicExp ((A-B)*2+(-1)*A)^2=cubicExp (2*((A-B)*2+(-1)*A)) := by
     rw [pow_two,←cubicExp_add]
     congr 1
     ring
-  convert congrArg eisEmbedding (hs.trans he) using 1 ; congr 2 ; ring_nf
+  grind
 
 def ramifiedSourceFunction (t : Eis) (w : HyperbolicSpace) : ℂ :=
   cubicSourceResidualFunction (integralComplexMatrix (lowerCuspMatrix t) • w)
@@ -200,9 +187,9 @@ end
 
 section
 open MeasureTheory Filter
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicRamified
+open CubicRamified
 open EisensteinEmbedding (omega3)
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -211,18 +198,16 @@ lemma embedding_cubicExp (n : ℤ) :
   have hw : omega3=Complex.exp (2*Real.pi*Complex.I/3) := by
     rw [←TraceLambdaPhase.exp_minus_four_pi_div_three]
     apply Complex.exp_eq_exp_iff_exists_int.mpr
-    exact ⟨-1,by push_cast;ring⟩
+    exact ⟨-1,by ring⟩
   rw [cubicExp,map_pow,eisEmbedding_omega_actual,hw,←Complex.exp_nat_mul]
   apply Complex.exp_eq_exp_iff_exists_int.mpr
   refine ⟨-(n/3),?_⟩
-  have hn : (n%3).toNat=(n%3) := Int.toNat_of_nonneg (Int.emod_nonneg _ (by norm_num))
+  have hn : (n%3).toNat=(n%3) := by omega
   have hnc : ((n%3).toNat:ℂ)=((n%3:ℤ):ℂ) := by exact_mod_cast hn
   have he : ((n%3:ℤ):ℂ)=(n:ℂ)-3*((n/3:ℤ):ℂ) := by
     have he0 : n%3=n-3*(n/3) := by omega
     exact_mod_cast he0
-  rw [hnc,he]
-  push_cast
-  ring
+  grind
 
 def ramifiedShift10 : ℂ := eisEmbedding (omega-1)/(9*eisLam)
 
@@ -247,7 +232,7 @@ lemma ramifiedShift10_period (A B : ℤ) :
     rw [hw,ActualEisensteinCoordinates.eval_mul,ShortDraftLatticeCount.coords_eval]
     ring
   rw [hcoords,←embedding_cubicExp]
-  exact congrArg eisEmbedding (cubicExp_eq_of_dvd_sub ⟨-B,by ring⟩)
+  exact congrArg eisEmbedding (cubicExp_eq_of_dvd_sub (by omega))
 
 lemma ramifiedShift19_period (A B : ℤ) :
     ShortDraftTrace.breveE (ramifiedShift19*(3*eisEmbedding (ActualEisensteinCoordinates.eval A B)))=
@@ -301,7 +286,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups ENNReal
+open scoped Classical Topology MatrixGroups ENNReal
 
 def arbitraryCuspCompact (M : SL(2,ℂ)) (a b : ℝ) : Set HyperbolicSpace :=
   (M • ·) '' cuspHeightCompact a b
@@ -334,14 +319,14 @@ lemma arbitraryCuspPullback_ae (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
     (F : KernelQuotientL2) :
     arbitraryCuspPullback M a b ha F=ᵐ[hyperbolicVolume.restrict (cuspPeriodStrip a b)]
       fun w => F (integralOrbitProjection globalKubotaKernel (M • w)) := by
-  have h1 := dominatedComplexL2_ae (by simp : (1:ℝ≥0∞)≠⊤)
+  have h1 := dominatedComplexL2_ae (by simp)
     (arbitraryCusp_image_restrict_le M a b ha)
     (kernelCompactPullbackCLM (arbitraryCuspCompact M a b)
       (arbitraryCuspCompact_isCompact M a b ha) F)
   have h2 := (Measure.absolutelyContinuous_of_le_smul
     (arbitraryCusp_image_restrict_le M a b ha)).ae_eq
       (kernelCompactPullbackCLM_ae (arbitraryCuspCompact M a b)
-        (arbitraryCuspCompact_isCompact M a b ha) F)
+        (by grind) F)
   exact (Lp.coeFn_compMeasurePreserving _ (arbitraryCusp_smul_measurePreserving M a b)).trans
     ((arbitraryCusp_smul_measurePreserving M a b).quasiMeasurePreserving.ae_eq_comp (h1.trans h2))
 
@@ -379,7 +364,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace ENNReal
+open scoped Classical Topology MatrixGroups ENNReal
 
 def arbitraryCuspWeightedPhase (ρ : BoundedContinuousFunction ℝ ℂ) (freq : ℂ)
     (w : HyperbolicSpace) : ℂ :=
@@ -430,7 +415,7 @@ lemma arbitraryCuspHeightFourier_integral (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
   filter_upwards [MemLp.coeFn_toLp (arbitraryCuspFourierTest_memLp a b ha ρ freq),
     arbitraryCuspPullback_ae M a b ha F] with w hw hp
   rw [RCLike.inner_apply,arbitraryCuspFourierTestL2,hw,hp]
-  simp only [starRingEnd_apply,star_star]
+  simp
 
 lemma arbitraryCuspHeightFourier_restrict (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
     (ρ : BoundedContinuousFunction ℝ ℂ) (freq : ℂ) (F : KernelQuotientL2) :
@@ -488,7 +473,7 @@ lemma arbitraryCuspHeightFamily_initial (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology
 
 private lemma inner_projection_sandwich {E G : Type*}
     [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]
@@ -536,7 +521,7 @@ theorem kernelEisensteinResidueVector_pairing (a b : ℝ) (ha : 0<a) (hab : a<b)
   ring
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical Topology
 
 lemma kernelLocalCorrectedSeed_initial_eq
     (S : Set KernelQuotient) (hS : IsCompact S)
@@ -554,7 +539,7 @@ lemma kernelLocalCorrectedSeed_initial_eq
   by_cases hq : q∈S
   · simp only [Set.indicator_of_mem hq,kernelCorrectedSeed,hq3,hq4]
     ring
-  · simp only [Set.indicator_of_notMem hq]
+  simp_all
 
 lemma kernelLocalCorrectedSeed_cutoff_eq
     (S : Set KernelQuotient) (hS : IsCompact S)
@@ -615,12 +600,12 @@ lemma kernelL2_eq_of_compact_restrictions (F G : KernelQuotientL2)
   have hS (n : ℕ) : IsCompact (S n) := kernelBarrier_sublevel_isCompact n
   have he (n : ℕ) : ∀ᵐq∂integralQuotientVolume globalKubotaKernel, q∈S n → F q=G q := by
     have hi := h (S n) (hS n)
-    have hf := kernelMassRestriction_coe (S n) (hS n).measurableSet F
-    have hg := kernelMassRestriction_coe (S n) (hS n).measurableSet G
+    have hf := kernelMassRestriction_coe (S n) (by grind) F
+    have hg := kernelMassRestriction_coe (S n) (by grind) G
     filter_upwards [hf,hg] with q hf hg hq
     rw [Set.indicator_of_mem hq] at hf hg
-    change kernelMassRestrictionCLM (S n) (hS n).measurableSet F q=F q at hf
-    change kernelMassRestrictionCLM (S n) (hS n).measurableSet G q=G q at hg
+    change kernelMassRestrictionCLM (S n) (by grind) F q=F q at hf
+    change kernelMassRestrictionCLM (S n) (by grind) G q=G q at hg
     rw [hi] at hf
     exact hf.symm.trans hg
   apply Lp.ext

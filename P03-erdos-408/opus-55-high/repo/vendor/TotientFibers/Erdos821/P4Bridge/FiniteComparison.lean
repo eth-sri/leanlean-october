@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.ConditionalBounds
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open P4Probe
@@ -21,7 +20,7 @@ lemma weighted_mean_sq_le {A : Type*} [Fintype A] (w : A → ℝ)
   have he : 0 ≤ ∑ a, w a * ‖f a‖ ^ 2 :=
     Finset.sum_nonneg (fun a _ => mul_nonneg (hw a) (sq_nonneg _))
   have hh := Real.sq_sqrt he
-  nlinarith [norm_nonneg (∑ a, (w a : ℂ) * f a), Real.sqrt_nonneg (∑ a, w a * ‖f a‖ ^ 2)]
+  nlinarith [norm_nonneg (∑ a, (w a : ℂ) * f a)]
 
 lemma sum_pair_factor {A B : Type*} [Fintype A] [Fintype B]
     (w : A → ℝ) (v : B → ℝ) (f : A → ℂ) (g : B → ℂ) (K : ℂ) :
@@ -30,11 +29,7 @@ lemma sum_pair_factor {A B : Type*} [Fintype A] [Fintype B]
   simp only [star_sum, star_mul, Complex.star_def, Complex.conj_ofReal,
     Finset.sum_mul, Finset.mul_sum, Complex.ofReal_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro b _
-  ring
+  grind
 
 lemma sum_four_factor {A T B U : Type*} [Fintype A] [Fintype T] [Fintype B] [Fintype U]
     (w : A → ℝ) (wt : T → ℝ) (v : B → ℝ) (vu : U → ℝ)
@@ -54,7 +49,7 @@ lemma mean_product_sq_le {A T : Type*} [Fintype A] [Fintype T]
       ∑ a, ∑ t, w a * v t * ‖f a t‖ ^ 2 := by
   have h := weighted_mean_sq_le (fun x : A × T => w x.1 * v x.2)
     (fun x => mul_nonneg (hw x.1) (hv x.2))
-    (by rw [Fintype.sum_prod_type]; simp_rw [← Finset.mul_sum, hsv, mul_one]; exact hsw)
+    (by rw [Fintype.sum_prod_type]; simp_rw [← Finset.mul_sum, hsv, mul_one]; omega)
     (fun x => f x.1 x.2)
   simpa only [Fintype.sum_prod_type] using h
 
@@ -66,8 +61,8 @@ lemma sum_six_permute {A B C D E F : Type*}
   let e : (A × B × C × D × E × F) ≃ (B × D × A × C × E × F) :=
     { toFun := fun x => (x.2.1, x.2.2.2.1, x.1, x.2.2.1, x.2.2.2.2.1, x.2.2.2.2.2)
       invFun := fun x => (x.2.2.1, x.1, x.2.2.2.1, x.2.1, x.2.2.2.2.1, x.2.2.2.2.2)
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl }
+      left_inv := by grind
+      right_inv := by grind }
   have hh : (∑ x : A × B × C × D × E × F,
       H x.1 x.2.1 x.2.2.1 x.2.2.2.1 x.2.2.2.2.1 x.2.2.2.2.2) =
       ∑ x : B × D × A × C × E × F,

@@ -12,26 +12,23 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSourceBounded
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLiveBounded CenteredMomentEnergyOriginalSource
+open CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLiveBounded
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open CenteredMomentNaturalFixedRaySource
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable (η₀:Character)(θ:α→ RayQuotient.Characters M H)
 variable (W:ℝ→ ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)(haslot:0<aslot)
 variable (hWs:Function.support W⊆Set.Icc aslot bslot)
@@ -53,7 +50,7 @@ theorem actual_positive_source_entry
     ∃Sdiag Stail:Finset (ℕ×ℕ),∃Cdiag Ctail:ℝ,0<Cdiag ∧0<Ctail ∧
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e Lslot κ:ℝ)(η₀:Character)(Q:Ideal O)(K:ℝ),0≤e→ 0≤K→
+      ∀(e Lslot κ:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤e→ 0≤K→
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap e κ Z η₀ Q degree S K→
       ∀(θ:α→ RayQuotient.Characters M H)(w σ freq:α→ ℝ)(t height:ℝ),
@@ -82,7 +79,7 @@ theorem actual_positive_source_entry
     M H hH Wslot aslot bslot lo hi haslot hsSlot hcSlot
     a b bΦ rho ε Mcap Bmask ha hlo hhi hbΦ hrho hε hM hBmask
   obtain ⟨Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,hred⟩:=actual_original_reduction
-    (ι:=α) bΦ hbΦ (fun _=>bslot) a b Mcap εdiag ξ saving (fun _=>hbslot) ha (by linarith) hM hεdiag hξ
+    (ι:=α) bΦ hbΦ (fun _=>bslot) a b Mcap εdiag ξ saving (by grind) ha (by linarith) hM hεdiag hξ
   refine ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,?_⟩
   intro degree S
   obtain ⟨J,U,C,hC,hbound⟩:=hstage degree S
@@ -108,15 +105,7 @@ theorem actual_positive_source_entry
         C*(K+1)*diagonalControl s.radial.profile*(sourceControl U (p.profile 0)*sourceControl U (p.profile 1))^2*
           (1+|t|+height)^J*Z^(s.width+e+ε):=hreference
     apply hphysical.trans
-    have hh:=add_le_add_left (mul_le_mul_of_nonneg_left href' (by norm_num : (0:ℝ)≤2))
-      (2*diagonalControl s.radial.profile*(
-        physicalMass inp s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z ξ/
-          CenteredMomentAmplificationChildInput.volume inp+
-        Cdiag*(plainControl inp (p.profile 0) (p.profile 1))^2*
-          Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^εdiag+
-        Ctail*(plainControl inp (p.profile 0) (p.profile 1))^2*
-          Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ*s.radial.scale*Z^(-saving)))
-    convert hh using 1 <;> ring
+    linarith
 end SevenEighths.CenteredMomentEnergyPositiveHighSourceBounded
 
 end

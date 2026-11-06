@@ -10,9 +10,8 @@ namespace OAI
 noncomputable section
 open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma low_compensated_sqrt_factor (q L : ℝ) (hq : 0≤q) (hL : 0<L) :
     Real.sqrt (3*q/L)=Real.sqrt (3*q)*L^(-(1/2:ℝ)) := by
@@ -104,7 +103,7 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
       (mul_nonneg (norm_nonneg (lowUnselectedWeight slots J W Yp p)) hgn)
     have hh2 := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hgb (norm_nonneg (lowUnselectedWeight slots J W Yp p)))
-      (show 0≤V by dsimp [V];positivity)
+      (show 0≤V by positivity)
     calc
       _=‖lowUnselectedWeight slots J W Yp p‖*
         lowGramFactor (calibrationForSet S hS) (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L) ε*
@@ -127,7 +126,7 @@ theorem low_central_compensated_tuple (η : HeckeFamily.Character) (S : Finset I
   have hm := hmass T hT J W Yp hW
   calc
     _≤Cg*((Ci*Real.sqrt (3*q)*(1+‖t‖)^degree*Z^(3/16+254*ε))*Cu) := by gcongr
-    _=_ := by dsimp [C0];ring
+    _=_ := by ring
 
 end SevenEighths.ProbePhysical
 end

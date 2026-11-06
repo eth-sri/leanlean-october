@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff FourierTransform
 open HeckeDetectorProfiles
 noncomputable section
 
@@ -34,10 +34,8 @@ theorem uniform_fourier_moment (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
       intro i hi
       have h0 := hb A B D hA hB hD 0 i hi
       have hp := hb A B D hA hB hD p i hi
-      simp only [pow_zero, one_mul] at h0 ⊢
-      dsimp only [C']
       linarith)
-  simpa only [one_mul] using hh
+  linarith
 
 theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
     (R : ℝ) (hR : 0 < R) :
@@ -50,11 +48,11 @@ theorem schwartz_weighted_tail (g : SchwartzMap ℝ ℂ) (J N : ℕ)
   apply (setIntegral_mono_on (hiJ.const_mul _).integrableOn hiN.integrableOn hs ?_).trans
     (setIntegral_le_integral hiN (Filter.Eventually.of_forall (by intro t; positivity)))
   intro t ht
-  have hp : R^N ≤ (1+‖t‖)^N := pow_le_pow_left₀ hR.le (by change R < ‖t‖ at ht; linarith) N
+  have hp : R^N ≤ (1+‖t‖)^N := pow_le_pow_left₀ hR.le (by grind) N
   calc
     _ ≤ (1+‖t‖)^N*((1+‖t‖)^J*‖(𝓕 g) t‖) :=
       mul_le_mul_of_nonneg_right hp (by positivity)
-    _ = _ := by rw [pow_add]; ring
+    _ = _ := by ring
 
 end
 end SevenEighths.HeckeDetectorFourier

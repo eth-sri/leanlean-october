@@ -11,8 +11,7 @@ open scoped Classical ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (hWs : ContDiff ℝ ∞ W) (J : ℕ) :
@@ -22,13 +21,13 @@ lemma low_mellin_sqrt_weight_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   refine ⟨C,hC,?_⟩
   intro v
   apply CubicReflectionKernel.weighted_two_to_cauchy (by positivity) v
-  have hp : 1≤(1+|v|)^J := one_le_pow₀ (by linarith [abs_nonneg v])
-  have hs : Real.sqrt ((1+|v|)^J)≤(1+|v|)^J := Real.sqrt_le_self_iff.mpr (Or.inr hp)
+  have hp : 1≤(1+|v|)^J := one_le_pow₀ (by simp)
+  have hs := Real.sqrt_le_self_iff.mpr (Or.inr hp)
   have hb' := hb 0 (by simp) v
   simp only [Complex.ofReal_zero,zero_add] at hb'
   calc
     _≤(1+|v|)^2*(‖mellin W ((v:ℂ)*Complex.I)‖*(1+|v|)^J) := by gcongr
-    _=(1+|v|)^(J+2)*‖mellin W ((v:ℂ)*Complex.I)‖ := by rw [pow_add];ring
+    _=(1+|v|)^(J+2)*‖mellin W ((v:ℂ)*Complex.I)‖ := by ring
     _≤C := hb'
 
 theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
@@ -39,7 +38,7 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (W0 : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW0s : ContDiff ℝ ∞ W0) :
     ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal),fixedBadPrimes⊆S→
-      ∃C : ℝ,0<C ∧ ∀(X Y : ℝ)(hX : 0<X)(hY : 1≤Y)(B : RayRing→O→ℂ),
+      ∃C : ℝ,0<C ∧ ∀(X Y : ℝ)(hX : 0<X)(hY : 1≤Y)(B : RayRing→ActualEisensteinCubic.O→ℂ),
         1≤Y^2/lowPhysicalScale (calibrationForSet S hS) X Y→
       ‖∫v : ℝ,lowSeparatedIntegrand (calibrationForSet S hS) W0 W1
         (lowOuterCutoff a₀ b₀) X Y B v‖≤
@@ -69,14 +68,14 @@ theorem lowSeparatedIntegral_actual_gram (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     rw [he,Real.sqrt_mul (by positivity),Real.sqrt_mul hK.le] at hg
     calc
       _≤(‖mellin W0 ((v:ℂ)*Complex.I)‖*Real.sqrt ((1+|v|)^J))*
-          (Real.sqrt K*Real.sqrt A*E) := by convert hg using 1 ;ring
+          (Real.sqrt K*Real.sqrt A*E) := by linarith
       _≤(CM/(1+v^2))*(Real.sqrt K*Real.sqrt A*E) :=
         mul_le_mul_of_nonneg_right (hm v) (by positivity)
-      _=_ := by rw [div_eq_mul_inv];ring
+      _=_ := by ring
   have hi := norm_integral_le_of_norm_le (integrable_inv_one_add_sq.const_mul
     (CM*Real.sqrt K*Real.sqrt A*E)) (Filter.Eventually.of_forall hh)
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hi
-  convert hi using 1 ;ring
+  linarith
 
 end SevenEighths.ProbePhysical
 end

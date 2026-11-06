@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 open CenteredMomentExceptionalAmplitudePair CenteredMomentCommonRadialData

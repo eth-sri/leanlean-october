@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondActualWidth
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondRadicalBudget CenteredMomentSecondHeightFamily
-open CenteredMomentSectorLocalization CenteredMomentSupport CenteredMomentDescentLedger
-open CenteredMomentPartitionNorm CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve
+open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalLedger
+open CenteredMomentSectorLocalization CenteredMomentDescentLedger
+open CenteredMomentPartitionNorm
 
-theorem actual_common_log_ge_unit (C D : Ideal O) (hC : Supported C)
+theorem actual_common_log_ge_unit (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (U : Finset (CommonIndex C D)) (Z : ℝ) (hZ : 1<Z) :
     Real.logb Z ((∏P∈U,P.val).absNorm:ℝ)≤Real.logb Z (normValue (commonFrequencyGenerator C D)) := by
   have hh:=common_log_ge_unit (commonPrime C D) (commonPrime_supported C D hC)

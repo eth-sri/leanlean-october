@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.GraphSharedPairing
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -22,9 +21,9 @@ lemma shared_slot_iff (ν : Pattern P J ell m) (g : P.Group) (i : Fin J) :
     ν.shared g (ν.slot i) ↔ i ∉ ν.changed g := by
   constructor
   · rintro ⟨j, hj, hn⟩
-    have hv : (ν.slot j).val = (ν.slot i).val := congrArg Fin.val hj
+    have hv := congrArg Fin.val hj
     have he : j = i := Fin.ext hv
-    simpa [he] using hn
+    simp_all
   · intro hn
     exact ⟨i, rfl, hn⟩
 
@@ -38,7 +37,6 @@ lemma not_shared_natAdd (ν : Pattern P J ell m) (g : P.Group) (i : Fin ell) :
   rintro ⟨j, hj, _⟩
   have he := congrArg Fin.val hj
   change j.val = J + i.val at he
-  have hi := j.isLt
   omega
 
 end

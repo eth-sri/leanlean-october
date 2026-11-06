@@ -8,58 +8,55 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentRestrictedWindow
 open CanonicalQuadraticSieve CenteredMomentRowNorm CenteredMomentRestrictedEnergy
 open CenteredMomentPlainWindowEnergy CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open HeckeFamily FourierBridge CenteredMomentSmooth
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily FourierBridge
 
-theorem restricted_hasSum_weighted {α : Type*} (keep : O → Prop)
-    (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
+theorem restricted_hasSum_weighted {α : Type*} (keep : ActualEisensteinCubic.O → Prop)
+    (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
     (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
-    HasSum (fun z : O => ‖rowPolynomial S a c z‖^2*
+    HasSum (fun z : ActualEisensteinCubic.O => ‖rowPolynomial S a c z‖^2*
       (if keep z then (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0))
       (restrictedEnergy keep S a c U K) := by
   simpa only [mul_ite,mul_zero,restrictedEnergy] using
     (restricted_summable keep S a ha c U K hK).hasSum
 
-theorem finite_weighted_le_restricted {α : Type*} (keep : O → Prop)
-    (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
+theorem finite_weighted_le_restricted {α : Type*} (keep : ActualEisensteinCubic.O → Prop)
+    (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i})) (c : α → ℂ)
     (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hU : ∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) (rows : Finset O) :
+    (hU : ∀ z : ActualEisensteinCubic.O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) (rows : Finset ActualEisensteinCubic.O) :
     (∑ z∈rows,‖rowPolynomial S a c z‖^2*
       (if keep z then (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0))≤
       restrictedEnergy keep S a c U K := by
   apply sum_le_hasSum rows _ (restricted_hasSum_weighted keep S a ha c U K hK)
   intro z hz
   apply mul_nonneg (sq_nonneg _)
-  split_ifs
-  · exact hU z
-  · exact le_rfl
+  grind
 
-theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
+theorem restricted_window_energy_from_shifted {α : Type*} (keep : ActualEisensteinCubic.O → Prop)
     (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)
-    (J : ℕ) (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+    (J : ℕ) (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
     (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hU : ∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
+    (hU : ∀ z : ActualEisensteinCubic.O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
     (E : ℝ) (hE : 0≤E)
     (henergy : ∀ w : ℝ,(restrictedEnergy keep S a
       (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) U K)≤E*(1+‖w‖)^(2*J)) :
     (restrictedEnergy keep S a (fun i => β i*heightCoeff τ t (Ideal.span {a i})*
       CenteredMomentSmooth.columnPhase V (Real.log ((Ideal.absNorm (Ideal.span {a i}):ℝ)/X)) θ) U K)≤
       E*(∫ w : ℝ,(1+‖w‖)^J*‖columnDensity V hVc hVs w‖)^2 := by
-  let u := fun z : O => if keep z then (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0
-  have hu (z : O) : 0≤u z := by dsimp only [u];split_ifs;exact hU z;exact le_rfl
+  let u := fun z : ActualEisensteinCubic.O => if keep z then (U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re else 0
+  have hu (z : ActualEisensteinCubic.O) : 0≤u z := by dsimp only [u];split_ifs;exact hU z;exact le_rfl
   let c := fun i => β i*heightCoeff τ t (Ideal.span {a i})*
     CenteredMomentSmooth.columnPhase V (Real.log ((Ideal.absNorm (Ideal.span {a i}):ℝ)/X)) θ
-  have hnorm (z : O) (x : ℂ) : ‖(Real.sqrt (u z):ℂ)*x‖^2=u z*‖x‖^2 := by
+  have hnorm (z : ActualEisensteinCubic.O) (x : ℂ) : ‖(Real.sqrt (u z):ℂ)*x‖^2=u z*‖x‖^2 := by
     rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _),mul_pow,
       Real.sq_sqrt (hu z)]
-  have hfin (rows : Finset O) : (∑ z∈rows,‖rowPolynomial S a c z‖^2*u z)≤
+  have hfin (rows : Finset ActualEisensteinCubic.O) : (∑ z∈rows,‖rowPolynomial S a c z‖^2*u z)≤
       E*(∫ w : ℝ,(1+‖w‖)^J*‖columnDensity V hVc hVs w‖)^2 := by
     let φ := fun z : rows => fun w : ℝ => (Real.sqrt (u z):ℂ)*
       (logPhase (θ-w) (Real.log X)*rowPolynomial S a
@@ -74,7 +71,7 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
       simp only [φ]
       simp_rw [hnorm]
       simp only [norm_mul,logPhase_norm,one_mul,← pow_mul]
-      rw [Finset.sum_coe_sort rows (fun z : O => u z*‖rowPolynomial S a
+      rw [Finset.sum_coe_sort rows (fun z : ActualEisensteinCubic.O => u z*‖rowPolynomial S a
         (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) z‖^2)]
       have hbound :=
         (finite_weighted_le_restricted keep S a ha _ U K hK hU rows).trans (henergy w)
@@ -83,9 +80,7 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
         _ = ∑ z ∈ rows, ‖rowPolynomial S a
             (fun i => β i * heightCoeff τ (t + 2 * Real.pi * (w - θ))
               (Ideal.span {a i})) z‖ ^ 2 * u z := by
-          apply Finset.sum_congr rfl
-          intro z hz
-          exact mul_comm _ _
+          grind
         _ ≤ _ := hbound
     have hh := finite_weighted_integral_energy (columnDensity V hVc hVs) φ
       (fun w => (1+‖w‖)^J) (by intro w;positivity) E hE (columnDensity_moments V hVc hVs J) hi hb
@@ -98,23 +93,21 @@ theorem restricted_window_energy_from_shifted {α : Type*} (keep : O → Prop)
       dsimp only [φ]
       ring
     simp only [he,hnorm] at hh
-    rw [Finset.sum_coe_sort rows (fun z : O => u z*‖rowPolynomial S a c z‖^2)] at hh
+    rw [Finset.sum_coe_sort rows (fun z : ActualEisensteinCubic.O => u z*‖rowPolynomial S a c z‖^2)] at hh
     calc
       _ = ∑ z ∈ rows, u z * ‖rowPolynomial S a c z‖ ^ 2 := by
-        apply Finset.sum_congr rfl
-        intro z hz
-        exact mul_comm _ _
+        grind
       _ ≤ _ := hh
   have hs := restricted_hasSum_weighted keep S a ha c U K hK
   rw [← hs.tsum_eq]
   exact Real.tsum_le_of_sum_le (fun z => mul_nonneg (sq_nonneg _) (hu z)) hfin
 
-theorem restricted_window_energy_from_height {α : Type*} (keep : O → Prop)
+theorem restricted_window_energy_from_height {α : Type*} (keep : ActualEisensteinCubic.O → Prop)
     (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V)
-    (J : ℕ) (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+    (J : ℕ) (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
     (U : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hU : ∀ z : O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
+    (hU : ∀ z : ActualEisensteinCubic.O,0≤(U (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
     (E : ℝ) (hE : 0≤E)
     (henergy : ∀ v : ℝ,(restrictedEnergy keep S a
       (fun i => β i*heightCoeff τ v (Ideal.span {a i})) U K)≤E*(1+‖v‖)^(2*J)) :

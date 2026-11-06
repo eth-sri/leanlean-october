@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentDescentLedger
 open CanonicalQuadraticSieve CenteredMomentSecondLedger CenteredMomentPartitionNorm
-local notation "O" => ActualEisensteinCubic.O
 
 def firstSaving (c D₀ w q wo B g ell : ℝ) : ℝ :=
   c/6+5*D₀/6+w/3+q/6+wo+B-5*g/6+ell
@@ -19,7 +18,7 @@ section ActualSecond
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
-theorem common_log_ge_unit (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+theorem common_log_ge_unit (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, Supported (Ideal.span {p i}))
     (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i)
     (U : Finset ι) (Z : ℝ) (hZ : 1 < Z) :
     Real.logb Z (Ideal.absNorm (unitIdeal p U) : ℝ) ≤
@@ -36,7 +35,7 @@ theorem common_log_ge_unit (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p 
       intro i hi
       have hn : 0 ≤ Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) :=
         Real.logb_nonneg hZ (by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))
-      have hm : (1:ℝ) ≤ (min (c i) (d i) : ℕ) := by exact_mod_cast le_min (hc i) (hd i)
+      have hm : (1:ℝ) ≤ (min (c i) (d i) : ℕ) := by exact_mod_cast (by grind)
       nlinarith
 
 end ActualSecond

@@ -9,22 +9,21 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFullAggregate
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseFirstPriorityParents
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem global_canonical_to_original_priority
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (outer:Finset (Source ι Jo))(pool:Finset ι)(selector:Source ι Jo→Finset ι→ℂ)
     (houter:∀x∈outer,x.quotientSupport=∅)(extra:CubeCoordinates ι→Finset ι)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (om:ℝ→ℂ)(X t Y:ℝ)(hY:0<Y):
     (∑x∈outer,firstCanonicalSecondEnergy p hp hg hinj pool x.cube x.firstCommon
       negative Ψ m (primeSubsetGenerator (fun i=>Ideal.span {p i}) x.firstDivisor)

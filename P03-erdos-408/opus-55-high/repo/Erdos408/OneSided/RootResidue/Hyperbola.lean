@@ -43,20 +43,18 @@ theorem pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h k : ZMod n) 
     (fun x => ((x : ZMod n), a * ((x⁻¹ : (ZMod n)ˣ) : ZMod n))) (fun p hp => ?_)
     (fun x hx => ?_) (fun p hp => ?_) (fun x _ => ?_) (fun p hp => ?_)
   · obtain ⟨h₁, h₂⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
-    refine mem_filter.2 ⟨mem_univ _, ?_⟩
-    simp only [hu, ↓reduceDIte, IsUnit.unit_spec]
-    exact h₂
+    have hu := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
+    simp_all
   · refine mem_filter.2 ⟨mem_univ _, ?_, (mem_filter.1 hx).2⟩
     rw [mul_left_comm, Units.mul_inv, mul_one]
   · obtain ⟨h₁, -⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
+    have hu := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
     simp only [hu, ↓reduceDIte, IsUnit.unit_spec]
     refine Prod.ext rfl ?_
     rw [← h₁, mul_comm p.1, mul_assoc, hu.mul_val_inv, mul_one]
   · simp
   · obtain ⟨h₁, -⟩ := (mem_filter.1 hp).2
-    have hu : IsUnit p.1 := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
+    have hu := isUnit_of_mul_isUnit_left (h₁ ▸ ha)
     simp only [hu, ↓reduceDIte]
     congr 1
     rw [IsUnit.unit_spec, ← h₁, mul_comm p.1, mul_assoc, mul_assoc, hu.mul_val_inv,
@@ -75,13 +73,12 @@ theorem natCast_mul_pairSum_hyperbola_eq {a : ZMod n} (ha : IsUnit a) (t c₀ h 
     intro x
     rw [← sum_mul, sum_stdAddChar_mul]
     by_cases hx : t * (x : ZMod n) = t * c₀
-    · simp only [hx, sub_self, ite_true]
-    · simp only [hx, sub_eq_zero, ite_false, mul_zero, zero_mul]
+    · simp_all
+    · grind
   simp only [hdet, kloostermanZMod, mul_sum]
   rw [sum_comm]
   refine sum_congr rfl fun j _ => sum_congr rfl fun x _ => ?_
   rw [← AddChar.map_add_eq_mul, ← AddChar.map_add_eq_mul]
-  congr 1
   ring
 
 /-- The weak Kloosterman bound over `ZMod n`, in the crude form
@@ -109,7 +106,7 @@ theorem norm_kloostermanZMod_le :
   calc ((Nat.gcd (Nat.gcd x.val y.val) n : ℕ) : ℝ) ^ (1 / 4 : ℝ)
       ≤ ((Nat.gcd (Nat.gcd x.val y.val) n : ℕ) : ℝ) ^ (1 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le hg' (by norm_num)
-    _ ≤ Nat.gcd y.val n := by rw [Real.rpow_one]; exact_mod_cast hgy
+    _ ≤ Nat.gcd y.val n := by simp_all
 
 /-- **The hyperbola bound.** `|Ŝ_G(h, k)| ≤ C n^{3/4 + 1/100} (k, n)` on the twisted
 hyperbola `G = {x y = a, t x = t c₀}`, `a` a unit. -/
@@ -124,14 +121,14 @@ theorem norm_pairSum_hyperbola_le :
   refine le_of_mul_le_mul_left ?_ hn
   calc (n : ℝ) * ‖pairSum (hyperbola n a t c₀) h k‖
       = ‖(n : ℂ) * pairSum (hyperbola n a t c₀) h k‖ := by
-        rw [norm_mul, Complex.norm_natCast]
+        simp
     _ ≤ ∑ j : ZMod n, ‖kloostermanZMod n (h + j * t) (k * a)‖ := by
         rw [natCast_mul_pairSum_hyperbola_eq ha]
         refine (norm_sum_le _ _).trans (sum_le_sum fun j _ => ?_)
-        rw [norm_mul, norm_stdAddChar, one_mul]
+        simp
     _ ≤ ∑ _j : ZMod n, B := by
         refine sum_le_sum fun j _ => (hC n _ _).trans ?_
         rw [gcd_val_mul_of_isUnit k ha]
-    _ = n * B := by rw [sum_const, card_univ, ZMod.card, nsmul_eq_mul]
+    _ = n * B := by simp
 
 end Erdos408.OneSided.RootResidue

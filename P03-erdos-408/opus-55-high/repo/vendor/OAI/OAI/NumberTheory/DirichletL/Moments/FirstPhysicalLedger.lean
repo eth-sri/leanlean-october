@@ -9,16 +9,13 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstExtractedLedger
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalLedger
 open CenteredMomentFirstScale CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
-open CenteredMomentSectorLocalization CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger
-open CanonicalQuadraticSieve CenteredMomentRankinRadical
 local notation "O" => ActualEisensteinCubic.O
 
-theorem nominal_log (I J E : Ideal O) (hE : E≠0)
+theorem nominal_log (I J E : Ideal ActualEisensteinCubic.O) (hE : E≠0)
     (Z H X : ℝ) (hH : 0<H) (hX : 0<X) :
     Real.logb Z (firstNominalScale I J E H X)=
       2*Real.logb Z X-Real.logb Z ((commonPart I J).absNorm:ℝ)-
@@ -30,12 +27,11 @@ theorem nominal_log (I J E : Ideal O) (hE : E≠0)
   have he:=norm_pos E hE
   have hr:=active_norm_pos I J
   unfold firstNominalScale
-  rw [Real.logb_div (mul_pos (mul_pos he hr) (sq_pos_of_pos hX)).ne'
-      (mul_pos (mul_pos hH hc) hd).ne',
-    Real.logb_mul (mul_pos he hr).ne' (sq_pos_of_pos hX).ne',
+  rw [Real.logb_div (by positivity)
+      (by positivity),
+    Real.logb_mul (by positivity) (by positivity),
     Real.logb_mul he.ne' hr.ne',Real.logb_pow,
-    Real.logb_mul (mul_pos hH hc).ne' hd.ne',Real.logb_mul hH.ne' hc.ne']
-  push_cast
+    Real.logb_mul (by positivity) hd.ne',Real.logb_mul hH.ne' hc.ne']
   ring
 
 end SevenEighths.CenteredMomentFirstPhysicalLedger

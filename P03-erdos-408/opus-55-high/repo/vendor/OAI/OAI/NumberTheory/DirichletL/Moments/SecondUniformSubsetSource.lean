@@ -10,35 +10,20 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalLiveSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondUniformSubsetSource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondNonexceptionalCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
+open CenteredMomentCommonRadialData
+open CenteredMomentHeckeColumnWindow
+open CenteredMomentSecondWindowBudget
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
-open CenteredMomentLogDyadic CenteredMomentSecondWindowSource
+open CenteredMomentLogDyadic
 open MeasureTheory UniqueFactorizationMonoid CenteredMomentAllocatedDetectorAmplitude CenteredMomentCommonExceptionalCost
 
 lemma control_mono {wlo whi : ℝ} (p : Profiles wlo whi)
@@ -52,12 +37,12 @@ lemma moment_mono {j k : ℕ} (h : j≤k) : profileMoment j≤profileMoment k :=
   apply integral_mono (columnDensity_moments _ logAnnulus_compact logAnnulus_smooth j)
     (columnDensity_moments _ logAnnulus_compact logAnnulus_smooth k)
   intro x
-  exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by linarith [norm_nonneg x]) h) (norm_nonneg _)
+  exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by simp) h) (norm_nonneg _)
 
 omit [DecidableEq ι] in
 lemma factor_mono {wlo whi : ℝ} {S T : Finset (ℕ×ℕ)} (hST : S⊆T)
     (s : Input ι) (p : Profiles wlo whi) {j k : ℕ} (hjk : j≤k)
-    (Q : Ideal O) {A B : ℝ} (hA : 0≤A) (hAB : A≤B) :
+    (Q : Ideal HeckeFamily.O) {A B : ℝ} (hA : 0≤A) (hAB : A≤B) :
     profileFactor S s p j Q A≤profileFactor T s p k Q B := by
   have hp:=control_mono p hST
   have hpn:=p.control_nonneg S
@@ -79,7 +64,6 @@ lemma factor_mono {wlo whi : ℝ} {S T : Finset (ℕ×ℕ)} (hST : S⊆T)
     p.control T^2*(1+‖s.t‖)^(2*k)*slotControl s.toData^2*frozenProfile s^2*profileMoment k^2
   gcongr
 
-open CenteredMomentSourceInputReindex CenteredMomentAmplificationChildInput CenteredMomentCommonProfile
 
 end SevenEighths.CenteredMomentSecondUniformSubsetSource
 

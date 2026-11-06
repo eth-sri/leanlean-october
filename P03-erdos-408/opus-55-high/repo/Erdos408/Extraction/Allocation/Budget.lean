@@ -29,7 +29,7 @@ lemma eventually_endpoint_budget (a : ℝ) {c δ : ℝ} (hc : 0 < c) (hδ : 0 < 
   filter_upwards [eventually_logLog_rpow_le 61 hδ, eventually_le_logLog (max 1 (|a| * β))]
     with x hL hT
   set T := logLog x
-  have hT1 : 1 ≤ T := (le_max_left _ _).trans hT
+  have hT1 : 1 ≤ T := by grind
   rw [show (61 : ℝ) = ((61 : ℕ) : ℝ) by norm_num, rpow_natCast] at hL
   have h20 : 1 ≤ T ^ 20 := one_le_pow₀ hT1
   have h1 : 2 * T ^ 20 / c + 1 ≤ (2 / c + 1) * T ^ 20 := by
@@ -44,7 +44,7 @@ lemma eventually_endpoint_budget (a : ℝ) {c δ : ℝ} (hc : 0 < c) (hδ : 0 < 
     simp only [β]
     nlinarith
   have h5 : 0 ≤ (2 * T ^ 20 / c + 1) ^ 3 + T ^ 3 := by positivity
-  have hβ : |a| * β ≤ T := (le_max_right _ _).trans hT
+  have hβ : |a| * β ≤ T := by grind
   calc a * ((2 * T ^ 20 / c + 1) ^ 3 + T ^ 3) ≤ |a| * ((2 * T ^ 20 / c + 1) ^ 3 + T ^ 3) :=
         mul_le_mul_of_nonneg_right (le_abs_self a) h5
     _ ≤ |a| * (β * T ^ 60) := mul_le_mul_of_nonneg_left h4 (abs_nonneg a)
@@ -58,7 +58,7 @@ lemma eventually_terms_budget (K : ℕ) (CN : ℝ) : ∀ᶠ x : ℝ in atTop,
     (4 : ℝ) ^ (2 * logLog x) * (2 ^ K * (2 : ℝ) ^ ((K : ℝ) + max CN 0 * logLogLog x)) ≤
       Real.log x ^ (4 : ℝ) := by
   have hl2 := log_two_lt_d9
-  have hl20 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hl20 : 0 < Real.log 2 := by positivity
   have hl4 : Real.log 4 = 2 * Real.log 2 := by
     rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]
     norm_num
@@ -68,7 +68,7 @@ lemma eventually_terms_budget (K : ℕ) (CN : ℝ) : ∀ᶠ x : ℝ in atTop,
   set T := logLog x
   have hL0 : 0 < Real.log x := by linarith
   have hLT : Real.log x = Real.exp T := (exp_log hL0).symm
-  rw [hLT, ← exp_mul, rpow_def_of_pos (by norm_num : (0 : ℝ) < 4), ← rpow_natCast (2 : ℝ) K,
+  rw [hLT, ← exp_mul, rpow_def_of_pos (by positivity), ← rpow_natCast (2 : ℝ) K,
     rpow_def_of_pos two_pos, rpow_def_of_pos two_pos, ← exp_add, ← exp_add]
   refine exp_le_exp.2 ?_
   have hK0 : (0 : ℝ) ≤ K := Nat.cast_nonneg K
@@ -77,7 +77,6 @@ lemma eventually_terms_budget (K : ℕ) (CN : ℝ) : ∀ᶠ x : ℝ in atTop,
   have h1 : Real.log 2 * (2 * T) * 2 ≤ 3 * T := by
     have : 0 ≤ T := by linarith [show (0 : ℝ) ≤ 4 * K * Real.log 2 * 2 by positivity]
     nlinarith
-  have h2 : 4 * K * Real.log 2 * 2 ≤ T := by linarith
   nlinarith
 
 /-- The candidate-square multiples are eventually at most `x L^{-D}`. -/
@@ -109,6 +108,6 @@ lemma eventually_squares_budget (κ D : ℝ) : ∀ᶠ x : ℝ in atTop,
     _ = x * Real.log x ^ (-(D + 1)) * (6 * (|κ| + 1) * Real.log x ^ (1 / 2 : ℝ)) := by ring
     _ ≤ x * Real.log x ^ (-(D + 1)) * (Real.log x ^ (1 / 2 : ℝ) * Real.log x ^ (1 / 2 : ℝ)) := by
         gcongr
-    _ = x * Real.log x ^ (-D) := by rw [hhalf, mul_assoc, hDsplit]
+    _ = x * Real.log x ^ (-D) := by grind
 
 end Erdos408

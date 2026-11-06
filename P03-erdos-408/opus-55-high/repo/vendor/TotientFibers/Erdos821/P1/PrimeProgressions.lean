@@ -5,7 +5,6 @@ public import OAI.NumberTheory.PrimeGaps.Main
 
 @[expose] public section
 
-open scoped BigOperators
 open Filter MeasureTheory
 
 namespace Erdos821.P1
@@ -81,19 +80,17 @@ private theorem primeThetaAP_cumulative (r a : ℕ) (x : ℝ) :
     (∑ n ∈ Finset.Icc 0 ⌊x⌋₊, primeThetaCoefficient r a n) = primeThetaAP r a x := by
   classical
   have hzero : primeThetaCoefficient r a 0 = 0 := by
-    simp [primeThetaCoefficient, Nat.not_prime_zero]
+    simp [primeThetaCoefficient]
   unfold primeThetaAP OAI.LargePrimeGaps.residuePrefix OAI.LargePrimeGaps.residueSlice
   rw [show Finset.Icc 0 ⌊x⌋₊ = insert 0 (Finset.Ioc 0 ⌊x⌋₊) by
-    ext n
-    simp only [Finset.mem_Icc, Finset.mem_insert, Finset.mem_Ioc]
-    omega]
+    simp]
   rw [Finset.sum_insert (by simp)]
   rw [hzero, zero_add, Finset.sum_filter]
   apply Finset.sum_congr rfl
   intro n hn
   by_cases hp : n.Prime
   · by_cases hres : n % r = a % r <;>
-      simp [primeThetaCoefficient, hp, hres, OAI.LargePrimeGaps.theta]
+      simp [primeThetaCoefficient, hres, OAI.LargePrimeGaps.theta]
   · simp [primeThetaCoefficient, hp, OAI.LargePrimeGaps.theta]
 
 private theorem primeCountAP_eq_theta_formula (r a : ℕ)
@@ -102,8 +99,8 @@ private theorem primeCountAP_eq_theta_formula (r a : ℕ)
       ∫ t in 2..x, primeThetaAP r a t / (t * Real.log t ^ 2) := by
   classical
   let c : ℕ → ℝ := primeThetaCoefficient r a
-  have hc0 : c 0 = 0 := by simp [c, primeThetaCoefficient, Nat.not_prime_zero]
-  have hc1 : c 1 = 0 := by simp [c, primeThetaCoefficient, Nat.not_prime_one]
+  have hc0 : c 0 = 0 := by simp [c, primeThetaCoefficient]
+  have hc1 : c 1 = 0 := by simp [c, primeThetaCoefficient]
   have hdiff : ∀ t ∈ Set.Icc (2 : ℝ) x,
       DifferentiableAt ℝ (fun u : ℝ => (Real.log u)⁻¹) t := by
     intro t ht
@@ -125,7 +122,7 @@ private theorem primeCountAP_eq_theta_formula (r a : ℕ)
     change ContinuousWithinAt (fun u : ℝ => deriv (fun v : ℝ => (Real.log v)⁻¹) u)
       (Set.Icc (2 : ℝ) x) t
     rw [hderiv]
-    fun_prop (disch := simp [ht0, hlog])
+    fun_prop (disch := positivity)
   have habel := sum_mul_eq_sub_integral_mul₁ c hc0 hc1 x hdiff hint
   have htheta (t : ℝ) :
       (∑ n ∈ Finset.Icc 0 ⌊t⌋₊, c n) = primeThetaAP r a t := by
@@ -141,8 +138,7 @@ private theorem primeCountAP_eq_theta_formula (r a : ℕ)
       constructor
       · rintro ⟨⟨hn0, hnx⟩, ⟨hnprime, hres⟩⟩
         exact ⟨⟨⟨(Nat.Prime.one_lt hnprime).le, hnx⟩, hnprime⟩, hres⟩
-      · rintro ⟨⟨⟨hn1, hnx⟩, hnprime⟩, hres⟩
-        exact ⟨⟨Nat.zero_le _, hnx⟩, ⟨hnprime, hres⟩⟩
+      · simp_all
     calc
       _ = ∑ n ∈ (Finset.Icc 0 ⌊x⌋₊).filter
           (fun n => n.Prime ∧ n % r = a % r), (1 : ℝ) := by
@@ -156,9 +152,9 @@ private theorem primeCountAP_eq_theta_formula (r a : ℕ)
             exact hcond.1.ne_zero rfl
           have hlog : Real.log n ≠ 0 := by
             apply Real.log_ne_zero_of_pos_of_ne_one
-            · exact_mod_cast hcond.1.pos
+            · positivity
             · exact_mod_cast hcond.1.ne_one
-          simp [c, primeThetaCoefficient, hcond, hlog]
+          simp [c, primeThetaCoefficient, hlog]
         · simp [c, primeThetaCoefficient, hcond]
       _ = ((Finset.Icc 0 ⌊x⌋₊).filter
           (fun n => n.Prime ∧ n % r = a % r)).card := by simp
@@ -170,7 +166,7 @@ private theorem primeCountAP_eq_theta_formula (r a : ℕ)
     have ht' : t ∈ Set.Icc (2 : ℝ) x := by simpa [Set.uIcc_of_le hx] using ht
     have ht1 : 1 < t := by linarith [ht'.1]
     have ht0 : t ≠ 0 := by linarith
-    have hlog : Real.log t ≠ 0 := (Real.log_pos ht1).ne'
+    have hlog := (Real.log_pos ht1).ne'
     rw [htheta, Real.deriv_inv_log_apply]
     field_simp
   have hint_eq :
@@ -180,27 +176,23 @@ private theorem primeCountAP_eq_theta_formula (r a : ℕ)
     rw [intervalIntegral.integral_congr (fun t ht => hinterm t ht)]
     rw [intervalIntegral.integral_neg]
   rw [← intervalIntegral.integral_of_le hx] at habel
-  rw [hcount, htheta] at habel
-  rw [hint_eq] at habel
-  simpa [div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using habel
+  grind
 
 private theorem primeThetaAP_le (r a : ℕ) {x : ℝ} (hx : 2 ≤ x) :
     primeThetaAP r a x ≤ x * Real.log x := by
   have hfloorReal : (⌊x⌋₊ : ℝ) ≤ x := Nat.floor_le (by linarith)
-  have hfloorPosNat : 0 < ⌊x⌋₊ := Nat.floor_pos.mpr (by linarith : (1 : ℝ) ≤ x)
+  have hfloorPosNat : 0 < ⌊x⌋₊ := Nat.floor_pos.mpr (by linarith)
   have hfloorPos : 0 < (⌊x⌋₊ : ℝ) := by
     exact_mod_cast hfloorPosNat
   have hfloorOne : 1 ≤ ⌊x⌋₊ := by omega
-  have hlogFloor : 0 ≤ Real.log (⌊x⌋₊ : ℝ) := Real.log_nonneg (by exact_mod_cast hfloorOne)
-  have hlogMono : Real.log (⌊x⌋₊ : ℝ) ≤ Real.log x := Real.log_le_log hfloorPos hfloorReal
+  have hlogFloor : 0 ≤ Real.log (⌊x⌋₊ : ℝ) := Real.log_nonneg (by simp_all)
+  have hlogMono := Real.log_le_log hfloorPos hfloorReal
   have hres : primeThetaAP r a x ≤ (⌊x⌋₊ : ℝ) * Real.log (⌊x⌋₊ : ℝ) := by
     change OAI.LargePrimeGaps.residueSlice OAI.LargePrimeGaps.theta 0 ⌊x⌋₊ r (a % r) ≤ _
     simpa only [Nat.cast_zero, Nat.sub_zero] using
       OAI.LargePrimeGaps.residueSlice_theta_le
         (L := 0) (U := ⌊x⌋₊) (bound := ⌊x⌋₊) le_rfl hfloorOne r (a % r)
-  calc
-    _ ≤ (⌊x⌋₊ : ℝ) * Real.log (⌊x⌋₊ : ℝ) := hres
-    _ ≤ x * Real.log x := mul_le_mul hfloorReal hlogMono hlogFloor (by positivity)
+  nlinarith
 
 private theorem primeThetaAP_nonneg (r a : ℕ) (x : ℝ) :
     0 ≤ primeThetaAP r a x := by
@@ -217,29 +209,27 @@ private theorem primeThetaAP_integrableOn (r a : ℕ) {u v : ℝ}
     intro t ht
     have ht0 : t ≠ 0 := by linarith [hu.trans ht.1]
     have ht1 : 1 < t := by linarith [hu.trans ht.1]
-    have hlog : Real.log t ≠ 0 := (Real.log_pos ht1).ne'
-    have hden : t * Real.log t ^ 2 ≠ 0 := mul_ne_zero ht0 (pow_ne_zero _ hlog)
+    have hlog := (Real.log_pos ht1).ne'
+    have hden : t * Real.log t ^ 2 ≠ 0 := by positivity
     apply ContinuousAt.continuousWithinAt
     dsimp [g]
     fun_prop (disch := simp [hden])
   have hgint : IntegrableOn g (Set.Icc u v) := hgcont.integrableOn_Icc
   have hsumInt := integrableOn_mul_sum_Icc (m := 0) (c := c)
-    (by linarith : 0 ≤ u) hgint
+    (by positivity) hgint
   apply IntegrableOn.congr_fun hsumInt
   · intro t ht
     change g t * (∑ n ∈ Finset.Icc 0 ⌊t⌋₊, primeThetaCoefficient r a n) = _
     rw [primeThetaAP_cumulative]
-    dsimp [g]
     ring
-  · exact measurableSet_Icc
+  simp
 
 private theorem primeThetaAP_errorKernel_integrable (r a : ℕ) {u v : ℝ}
     (hu : 2 ≤ u) (huv : u ≤ v) :
     IntervalIntegrable
       (fun t : ℝ => (primeThetaAP r a t - t / (r.totient : ℝ)) /
         (t * Real.log t ^ 2)) volume u v := by
-  have hTheta : IntervalIntegrable
-      (fun t : ℝ => primeThetaAP r a t / (t * Real.log t ^ 2)) volume u v :=
+  have hTheta :=
     (intervalIntegrable_iff_integrableOn_Icc_of_le huv).mpr
       (primeThetaAP_integrableOn r a hu)
   have hmainCont : ContinuousOn
@@ -247,23 +237,22 @@ private theorem primeThetaAP_errorKernel_integrable (r a : ℕ) {u v : ℝ}
     intro t ht
     have ht1 : 1 < t := by linarith [hu.trans ht.1]
     have ht0 : t ≠ 0 := by linarith
-    have hlog : Real.log t ≠ 0 := (Real.log_pos ht1).ne'
+    have hlog := (Real.log_pos ht1).ne'
     apply ContinuousAt.continuousWithinAt
     fun_prop (disch := simp [ht0, hlog])
   have hmain : IntervalIntegrable
       (fun t : ℝ => (t / (r.totient : ℝ)) / (t * Real.log t ^ 2)) volume u v :=
     hmainCont.intervalIntegrable_of_Icc huv
   convert hTheta.sub hmain using 1
-  ext t
-  ring
+  grind
 
 private theorem endpointError_le_sum (t : ℝ) (r Q : ℕ)
     (hr : 1 ≤ r) (hQ : r ≤ Q) :
     (OAI.LargePrimeGaps.endpointError t r : ℝ) ≤
-      ∑ q ∈ Finset.Icc 1 Q, (OAI.LargePrimeGaps.endpointError t q : ℝ) := by
-  exact Finset.single_le_sum (f := fun q =>
+      ∑ q ∈ Finset.Icc 1 Q, (OAI.LargePrimeGaps.endpointError t q : ℝ) :=
+  Finset.single_le_sum (f := fun q =>
     (OAI.LargePrimeGaps.endpointError t q : ℝ))
-    (fun q hq => NNReal.coe_nonneg _) (Finset.mem_Icc.mpr ⟨hr, hQ⟩)
+    (by simp) (by grind)
 
 private theorem primeThetaAP_error_of_endpoint (D M : ℝ) {t : ℝ}
     (ht : 2 ≤ t) (r a : ℕ) (hr : 1 ≤ r) (ha : Nat.Coprime a r)
@@ -375,17 +364,13 @@ private theorem primeThetaAP_error_of_BV_bound (D b M : ℝ) {t : ℝ}
   have htpos : 0 < t := by linarith
   have hlogpos : 0 < Real.log t := Real.log_pos (by linarith)
   have hz : 0 ≤ t ^ (1 / 2 : ℝ) * (Real.log t) ^ (-b) :=
-    mul_nonneg (Real.rpow_nonneg htpos.le _) (Real.rpow_nonneg hlogpos.le _)
+    by positivity
   have hqNat : r ≤ ⌊t ^ (1 / 2 : ℝ) * (Real.log t) ^ (-b)⌋₊ := by
     apply (Nat.le_floor_iff hz).2
     exact_mod_cast hcut
   have hEP := (endpointError_le_sum t r _ hr hqNat).trans hBV
   have hraw := primeThetaAP_error_of_endpoint D M ht r a hr ha hEP
-  calc
-    _ ≤ M * t * (Real.log t) ^ (-D) + 1 + 2 * Real.sqrt t * Real.log t := hraw
-    _ ≤ M * t * (Real.log t) ^ (-D) + 3 * t * (Real.log t) ^ (-D) := by
-      nlinarith [htail]
-    _ = (M + 3) * t * (Real.log t) ^ (-D) := by ring
+  linarith
 
 private theorem exists_primeThetaAP_profile (A C : ℝ) (hA : 0 < A) (hC : 0 < C) :
     ∃ b Kθ Y₀ : ℝ, 0 < b ∧ 0 < Kθ ∧ Real.exp 4 ≤ Y₀ ∧
@@ -489,11 +474,10 @@ private theorem primeCountAP_error_identity (r a : ℕ) (hr : 1 ≤ r)
           (primeThetaAP r a t - t / (r.totient : ℝ)) / (t * Real.log t ^ 2)) +
           2 / ((r.totient : ℝ) * Real.log 2) := by
   have hφ : 0 < (r.totient : ℝ) := by
-    exact_mod_cast Nat.totient_pos.mpr (by omega : 0 < r)
-  have hlogy : 0 < Real.log y := Real.log_pos (by linarith)
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hthetaInt : IntervalIntegrable
-      (fun t : ℝ => primeThetaAP r a t / (t * Real.log t ^ 2)) volume 2 y :=
+    exact_mod_cast (by positivity)
+  have hlogy := Real.log_pos (by linarith)
+  have hlog2 : 0 < Real.log 2 := by positivity
+  have hthetaInt :=
     (intervalIntegrable_iff_integrableOn_Icc_of_le hy).mpr
       (primeThetaAP_integrableOn r a (by norm_num))
   have hmainCont : ContinuousOn
@@ -501,7 +485,7 @@ private theorem primeCountAP_error_identity (r a : ℕ) (hr : 1 ≤ r)
     intro t ht
     have ht1 : 1 < t := by linarith [ht.1]
     have ht0 : t ≠ 0 := by linarith
-    have hlog : Real.log t ≠ 0 := (Real.log_pos ht1).ne'
+    have hlog := (Real.log_pos ht1).ne'
     apply ContinuousAt.continuousWithinAt
     fun_prop (disch := simp [ht0, hlog])
   have hmainInt : IntervalIntegrable
@@ -526,11 +510,9 @@ private theorem primeCountAP_error_identity (r a : ℕ) (hr : 1 ≤ r)
         have ht1 : 1 < t := by
           have ht' : t ∈ Set.Icc (2 : ℝ) y := by simpa [Set.uIcc_of_le hy] using ht
           linarith [ht'.1]
-        have ht0 : t ≠ 0 := by linarith
-        have hlog : Real.log t ≠ 0 := (Real.log_pos ht1).ne'
-        field_simp
+        grind
       _ = (r.totient : ℝ)⁻¹ * (∫ t in 2..y, ((Real.log t) ^ 2)⁻¹) := by
-        rw [intervalIntegral.integral_const_mul]
+        simp
   have hli : Erdos821.Blueprint.li y =
       (Real.log y)⁻¹ * y - (Real.log 2)⁻¹ * 2 +
         ∫ t in 2..y, ((Real.log t) ^ 2)⁻¹ := by
@@ -541,9 +523,8 @@ private theorem primeCountAP_error_identity (r a : ℕ) (hr : 1 ≤ r)
         (r.totient : ℝ)⁻¹ * (∫ t in 2..y, ((Real.log t) ^ 2)⁻¹) +
           (∫ t in 2..y,
             (primeThetaAP r a t - t / (r.totient : ℝ)) / (t * Real.log t ^ 2)) := by
-    linarith [hErrIntegral, hmainIntegral]
+    linarith
   rw [primeCountAP_eq_theta_formula r a hy, hIntSplit, hli]
-  field_simp [hlogy.ne', hlog2.ne', hφ.ne']
   ring
 
 private theorem primeCountAP_error_from_thetaProfile (r a : ℕ) (hr : 1 ≤ r)

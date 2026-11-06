@@ -51,11 +51,11 @@ theorem card_le_of_sub_le {F : Finset ℤ} {D : ℝ} (hD : 0 ≤ D)
     mem_Icc.2 ⟨min'_le F a ha, le_max' F a ha⟩
   have hmm : F.min' hF ≤ F.max' hF := min'_le_max' F hF
   have hcard : ((F.card : ℕ) : ℤ) ≤ ((F.max' hF + 1 - F.min' hF).toNat : ℤ) := by
-    exact_mod_cast (card_le_card hsub).trans (Int.card_Icc _ _).le
+    exact_mod_cast (card_le_card hsub).trans (by simp)
   rw [Int.toNat_of_nonneg (by omega)] at hcard
   have hle := h _ (max'_mem F hF) _ (min'_mem F hF)
   have hcast : ((F.card : ℤ) : ℝ) ≤ ((F.max' hF - F.min' hF + 1 : ℤ) : ℝ) := by
-    exact_mod_cast (by omega : (F.card : ℤ) ≤ F.max' hF - F.min' hF + 1)
+    exact_mod_cast (by omega)
   push_cast at hcast hle ⊢
   linarith
 
@@ -78,8 +78,7 @@ theorem card_cells_le {F : Finset ℕ} {S : Set ℝ} {α lam δ : ℝ} (hlam : 0
   -- step: `(i - i' - 1) λ < s - t ≤ δ`
   have key : ((i : ℝ) - i' - 1) * lam ≤ δ := by linarith
   have key' : (i : ℝ) - i' - 1 ≤ δ / lam := by rwa [le_div_iff₀ hlam]
-  push_cast
-  linarith
+  simp_all
 
 /-- A point lies in at most one cell `[i/n, (i + 1)/n)`. -/
 theorem eq_of_mem_cell {n i i' : ℕ} (hn : 1 ≤ n) {s : ℝ} (hi : (i : ℝ) / n ≤ s)
@@ -102,7 +101,7 @@ theorem exists_eq_of_mem_Icc_ne {f : ℝ → ℝ} (hf : ContinuousOn f (Set.Icc 
     (h : ¬((lo ≤ f 0 ∧ f 0 ≤ hi) ↔ (lo ≤ f 1 ∧ f 1 ≤ hi))) :
     ∃ t ∈ Set.Icc (0 : ℝ) 1, f t = lo ∨ f t = hi := by
   have hivt := intermediate_value_uIcc (a := (0 : ℝ)) (b := 1) (f := f)
-    (by rwa [Set.uIcc_of_le zero_le_one])
+    (by simp_all)
   rw [Set.uIcc_of_le zero_le_one] at hivt
   -- step: `lo` or `hi` lies between the values at the ends
   have key : lo ∈ Set.uIcc (f 0) (f 1) ∨ hi ∈ Set.uIcc (f 0) (f 1) := by
@@ -111,19 +110,11 @@ theorem exists_eq_of_mem_Icc_ne {f : ℝ → ℝ} (hf : ContinuousOn f (Set.Icc 
     push Not at hcon
     obtain ⟨⟨h₁, h₂⟩, h₃, h₄⟩ := hcon
     refine h ⟨fun ⟨a, b⟩ => ⟨?_, ?_⟩, fun ⟨a, b⟩ => ⟨?_, ?_⟩⟩
-    · by_contra hc
-      linarith [h₂ (not_le.1 hc).le]
-    · by_contra hc
-      linarith [h₃ b]
-    · by_contra hc
-      linarith [h₁ (not_le.1 hc).le]
-    · by_contra hc
-      linarith [h₄ b]
-  rcases key with hk | hk
-  · obtain ⟨t, ht, hft⟩ := hivt hk
-    exact ⟨t, ht, Or.inl hft⟩
-  · obtain ⟨t, ht, hft⟩ := hivt hk
-    exact ⟨t, ht, Or.inr hft⟩
+    · grind
+    · grind
+    · grind
+    · grind
+  grind
 
 /-- A continuous function on `[a, b]` which avoids `θ` is on the same side of `θ` at both
 ends. -/
@@ -136,11 +127,11 @@ theorem lt_iff_lt_of_ne {f : ℝ → ℝ} {a b θ : ℝ} (hf : ContinuousOn f (S
   · intro h
     by_contra hc
     obtain ⟨s, hs, hfs⟩ := hivt (Set.mem_uIcc.2 (Or.inr ⟨not_lt.1 hc, h.le⟩))
-    exact hne s hs hfs
+    simp_all
   · intro h
     by_contra hc
     obtain ⟨s, hs, hfs⟩ := hivt (Set.mem_uIcc.2 (Or.inl ⟨not_lt.1 hc, h.le⟩))
-    exact hne s hs hfs
+    simp_all
 
 /-! ### The transported ratio -/
 
@@ -164,15 +155,15 @@ theorem min_le_tau_of_mem_uIcc {r r' s : ℝ} (hs : s ∈ Set.uIcc r r') (z : �
     rw [tau_sub_tau, tau_sub_tau]
     have h : (s - r) * (s - r') ≤ 0 := by
       rcases hs with ⟨h₁, h₂⟩ | ⟨h₁, h₂⟩
-      · exact mul_nonpos_of_nonneg_of_nonpos (by linarith) (by linarith)
-      · exact mul_nonpos_of_nonpos_of_nonneg (by linarith) (by linarith)
+      · nlinarith
+      · nlinarith
     have : (s - r) * z.2 * ((s - r') * z.2) = (s - r) * (s - r') * ((z.2 : ℝ) ^ 2) := by ring
     rw [this]
     exact mul_nonpos_of_nonpos_of_nonneg h (sq_nonneg _)
   by_contra hc
   push Not at hc
-  have h₁ : tau s z < tau r z := lt_of_lt_of_le hc (min_le_left _ _)
-  have h₂ : tau s z < tau r' z := lt_of_lt_of_le hc (min_le_right _ _)
+  have h₁ : tau s z < tau r z := by grind
+  have h₂ : tau s z < tau r' z := by grind
   nlinarith
 
 /-- For primitive `z`, `ρ(r) - ρ(s) = (r - s)/(τ_r(z) τ_s(z))`, since `det(z, w_z) = 1`. -/
@@ -186,8 +177,7 @@ theorem tauRatio_sub {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1) {r s : ℝ} (hr
   rw [div_sub_div _ _ hr hs]
   congr 1
   unfold tau complement
-  push_cast
-  linear_combination (r - s) * hgcd
+  grind
 
 /-- Where `τ ≥ 1/16`, the transported ratio is `256`-Lipschitz. -/
 theorem abs_tauRatio_sub_le {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1) {r s : ℝ}
@@ -205,10 +195,7 @@ theorem eq_of_tauRatio_eq {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1) {r s : ℝ
     (hr : 0 < tau r z) (hs : 0 < tau s z)
     (h : tau r (complement z) / tau r z = tau s (complement z) / tau s z) : r = s := by
   have := tauRatio_sub hz hr.ne' hs.ne'
-  rw [h, sub_self, eq_comm, div_eq_zero_iff] at this
-  rcases this with h | h
-  · linarith
-  · exact absurd h (mul_pos hr hs).ne'
+  grind
 
 /-- The transported ratio is continuous where `τ` does not vanish. -/
 theorem continuousOn_tauRatio (z : ℤ × ℤ) {S : Set ℝ} (hS : ∀ s ∈ S, tau s z ≠ 0) :
@@ -225,8 +212,7 @@ theorem abs_circleDist_sub_le (a b : ℝ) : |circleDist a - circleDist b| ≤ |a
   have h₂ : |b - round b| ≤ |a - b| + |a - round a| := by
     refine (round_le b (round a)).trans ((abs_sub_le b a _).trans ?_)
     rw [abs_sub_comm b a]
-  rw [abs_le]
-  constructor <;> linarith
+  grind
 
 /-- The circle distance is continuous. -/
 theorem continuous_circleDist : Continuous circleDist :=
@@ -274,8 +260,7 @@ theorem goodFirst_iff_of_atomsAgree {x : ℝ} {d : Data K} {Y : ℝ} (d₀ : ℝ
     push_cast at this
     exact this
   unfold GoodFirst
-  exact forall_congr' fun o => imp_congr_right fun _ => imp_congr_right fun _ =>
-    forall_congr' fun l => imp_congr_right fun _ => imp_congr_right fun hlY => key o l hlY
+  simp_all
 
 /-- The separation of test (ii) depends only on the comparisons at the atoms. -/
 theorem separated_iff_of_atomsAgree {x : ℝ} {d : Data K} {Y : ℝ} (d₀ : ℝ) {J : ℕ}
@@ -298,15 +283,12 @@ theorem separated_iff_of_atomsAgree {x : ℝ} {d : Data K} {Y : ℝ} (d₀ : ℝ
           100 * Real.exp (-Real.log x ^ d.a i)) ∈ goodAtoms x d Y p := by
       refine mem_union_right _ (mem_biUnion.2 ⟨(I, i), mem_univ _, mem_biUnion.2 ⟨T, hT,
         mem_image.2 ⟨((o, o'), (Z, Z')), ?_, rfl⟩⟩⟩)
-      exact mem_product.2 ⟨mem_product.2 ⟨mem_univ _, mem_univ _⟩, mem_product.2 ⟨hZ, hZ'⟩⟩
+      exact by grind
     have := (h _ hmem).2
     push_cast at this ⊢
     exact this
   unfold Separated
-  exact forall_congr' fun o => forall_congr' fun o' => forall_congr' fun Z =>
-    imp_congr_right fun hZ => forall_congr' fun Z' => imp_congr_right fun hZ' =>
-      imp_congr_right fun _ => imp_congr_right fun _ => imp_congr_right fun _ =>
-        imp_congr_right fun _ => imp_congr_right fun _ => key o o' Z hZ Z' hZ'
+  grind
 
 open scoped Classical in
 /-- Test (ii) depends only on the comparisons at the atoms. -/
@@ -346,7 +328,7 @@ theorem exists_breakpoint {x : ℝ} {d : Data K} {Y : ℝ} (d₀ : ℝ) {J : ℕ
   refine ⟨hlt, ?_⟩
   rw [(Ne.symm (hno a ha r Set.left_mem_uIcc)).le_iff_lt,
     (Ne.symm (hno a ha r' Set.right_mem_uIcc)).le_iff_lt]
-  exact hlt
+  omega
 
 /-! ### Faces and breakpoints -/
 
@@ -386,16 +368,16 @@ theorem add_one_div_le {i m n : ℕ} (hn : 1 ≤ n) (hi : i < m * n) :
     ((i : ℝ) + 1) / n ≤ m := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   rw [div_le_iff₀ hn']
-  exact_mod_cast (show i + 1 ≤ m * n by omega)
+  exact_mod_cast (by omega)
 
 /-- A convex combination of two points of `[a, b)` lies in `[a, b)`. -/
 theorem lineMap_mem_Ico {a b y y' t : ℝ} (hy : a ≤ y) (hy' : y < b) (hz : a ≤ y')
     (hz' : y' < b) (ht₀ : 0 ≤ t) (ht₁ : t ≤ 1) : a ≤ y + t * (y' - y) ∧ y + t * (y' - y) < b := by
   constructor
-  · nlinarith [mul_nonneg ht₀ (sub_nonneg.2 hz), mul_nonneg (sub_nonneg.2 ht₁) (sub_nonneg.2 hy)]
+  · nlinarith
   · rcases ht₀.eq_or_lt with rfl | ht
     · linarith
-    · nlinarith [mul_pos ht (sub_pos.2 hz'), mul_nonneg (sub_nonneg.2 ht₁) (sub_pos.2 hy').le]
+    nlinarith
 
 /-- The real cubes are convex. -/
 theorem inCube_lineMap {U V : ℝ} {n : ℕ} {i : ℕ × ℕ × ℕ} {u v r u' v' r' t : ℝ}
@@ -433,12 +415,8 @@ theorem tau_mem_of_uCond {U u τ : ℝ} (hU : 0 < U) (hu : U ≤ u) (hu' : u ≤
     (h₁ : U ≤ u * τ) (h₂ : u * τ ≤ 16 * U) : 1 / 16 ≤ τ ∧ τ ≤ 16 := by
   have hu0 : 0 < u := by linarith
   constructor
-  · by_contra hc
-    push Not at hc
-    nlinarith [mul_lt_mul_of_pos_left hc hu0]
-  · by_contra hc
-    push Not at hc
-    nlinarith [mul_lt_mul_of_pos_left hc hu0]
+  · nlinarith
+  nlinarith
 
 /-- **Classification.** If the indicator of one visit at `z` differs at two points of a cube
 of the grid, the visit makes the cube bad: the cube meets a face of the box condition, or a
@@ -467,7 +445,7 @@ theorem visitBad_of_ne {x : ℝ} {d : Data K} {Y d₀ U V : ℝ} (hU : 0 < U) (h
   by_cases hB : z ∈ Icc (-(rootBound U V : ℤ)) (rootBound U V) ×ˢ
       Icc (-(rootBound U V : ℤ)) (rootBound U V) ∧ Int.gcd z.1 z.2 = 1
   swap
-  · exact absurd (iff_of_false (fun h => hB h.1.1) fun h => hB h.1.1) hne
+  · grind
   refine ⟨hB.2, ?_⟩
   by_cases hu : (U ≤ u * tau r z ∧ u * tau r z ≤ 16 * U) ↔
       (U ≤ u' * tau r' z ∧ u' * tau r' z ≤ 16 * U)
@@ -479,12 +457,12 @@ theorem visitBad_of_ne {x : ℝ} {d : Data K} {Y d₀ U V : ℝ} (hU : 0 < U) (h
       unfold tau
       fun_prop
     obtain ⟨t, ht, hft⟩ := exists_eq_of_mem_Icc_ne hcont (lo := U) (hi := 16 * U)
-      (by simpa using hu)
+      (by simp_all)
     obtain ⟨h₁, h₂, -, -, h₅, h₆⟩ := inCube_lineMap hP hQ ht
     exact ⟨_, _, h₁, h₂, h₅, h₆, hft⟩
   by_cases huc : U ≤ u * tau r z ∧ u * tau r z ≤ 16 * U
   swap
-  · exact absurd (iff_of_false (fun h => huc h.1.2.1) fun h => huc (hu.2 h.1.2.1)) hne
+  · grind
   have huc' := hu.1 huc
   obtain ⟨hτ₁, hτ₂⟩ := tau_mem_of_uCond hU hu₁ hu₂ huc.1 huc.2
   obtain ⟨hτ₁', hτ₂'⟩ := tau_mem_of_uCond hU hu₁' hu₂' huc'.1 huc'.2
@@ -503,25 +481,25 @@ theorem visitBad_of_ne {x : ℝ} {d : Data K} {Y d₀ U V : ℝ} (hU : 0 < U) (h
       unfold tau
       fun_prop
     obtain ⟨t, ht, hft⟩ := exists_eq_of_mem_Icc_ne hcont (lo := V) (hi := 2 * V)
-      (by simpa using hv)
+      (by simp_all)
     refine ⟨_, _, _, inCube_lineMap hP hQ ht, ?_, hft⟩
     rw [tau_lineMap]
     nlinarith [ht.1, ht.2]
   by_cases hvc : V ≤ v * tau r z + z.2 / u ∧ v * tau r z + z.2 / u ≤ 2 * V
   swap
-  · exact absurd (iff_of_false (fun h => hvc h.1.2.2) fun h => hvc (hv.2 h.1.2.2)) hne
+  · simp_all
   -- step: the box condition holds at both points, so the tests change: a breakpoint
   right; right
   have hne' := fun h => hne (and_congr (iff_of_true ⟨hB, huc, hvc⟩ ⟨hB, huc', hv.1 hvc⟩) h)
   have hτ : ∀ s ∈ Set.uIcc r r', 1 / 16 ≤ tau s z := fun s hs =>
     (le_min hτ₁ hτ₁').trans (min_le_tau_of_mem_uIcc hs z)
-  obtain ⟨a, ha, s, hs, hbr⟩ := exists_breakpoint d₀ (fun s hs => by linarith [hτ s hs]) hne'
+  obtain ⟨a, ha, s, hs, hbr⟩ := exists_breakpoint d₀ (fun s hs => by grind) hne'
   obtain ⟨-, -, -, -, h₅, h₆⟩ := hP
   obtain ⟨-, -, -, -, h₅', h₆'⟩ := hQ
   rw [Set.mem_uIcc] at hs
   refine ⟨a, ha, s, ?_, ?_, hτ s (Set.mem_uIcc.2 hs), hbr⟩
-  · rcases hs with ⟨hs, -⟩ | ⟨hs, -⟩ <;> linarith
-  · rcases hs with ⟨-, hs⟩ | ⟨-, hs⟩ <;> linarith
+  · grind
+  grind
 
 /-! ### Counting fiber by fiber -/
 
@@ -533,8 +511,7 @@ theorem card_filter_prod_eq {a b c : ℕ} (P : ℕ × ℕ × ℕ → Prop) :
   rw [card_filter, Nat.cast_sum, sum_product]
   refine sum_congr rfl fun i₁ _ => ?_
   rw [sum_product]
-  push_cast
-  rfl
+  simp
 
 open scoped Classical in
 /-- Counting a subset of `[0, a) × [0, b) × [0, c)` along the first coordinate. -/
@@ -548,10 +525,7 @@ theorem card_filter_prod_le₁ {a b c : ℕ} {P : ℕ × ℕ × ℕ → Prop} {B
           (((range a).filter fun i₁ => P (i₁, i₂, i₃)).card : ℝ) := by
         refine sum_congr rfl fun i₂ _ => ?_
         rw [sum_comm]
-        refine sum_congr rfl fun i₃ _ => ?_
-        rw [card_filter, Nat.cast_sum]
-        push_cast
-        rfl
+        simp
     _ ≤ ∑ _i₂ ∈ range b, ∑ _i₃ ∈ range c, B := sum_le_sum fun i₂ _ => sum_le_sum fun i₃ _ => h i₂ i₃
     _ = b * c * B := by simp only [sum_const, card_range, nsmul_eq_mul]; ring
 
@@ -567,10 +541,7 @@ theorem card_filter_prod_le₂ {a b c : ℕ} {P : ℕ × ℕ × ℕ → Prop} {B
           (((range b).filter fun i₂ => P (i₁, i₂, i₃)).card : ℝ) := by
         refine sum_congr rfl fun i₁ _ => ?_
         rw [sum_comm]
-        refine sum_congr rfl fun i₃ _ => ?_
-        rw [card_filter, Nat.cast_sum]
-        push_cast
-        rfl
+        simp
     _ ≤ ∑ _i₁ ∈ range a, ∑ _i₃ ∈ range c, B := sum_le_sum fun i₁ _ => sum_le_sum fun i₃ _ => h i₁ i₃
     _ = a * c * B := by simp only [sum_const, card_range, nsmul_eq_mul]; ring
 
@@ -584,10 +555,7 @@ theorem card_filter_prod_le₃ {a b c : ℕ} {P : ℕ × ℕ × ℕ → Prop} {B
         (if P (i₁, i₂, i₃) then (1 : ℝ) else 0)
       = ∑ i₁ ∈ range a, ∑ i₂ ∈ range b,
           (((range c).filter fun i₃ => P (i₁, i₂, i₃)).card : ℝ) := by
-        refine sum_congr rfl fun i₁ _ => sum_congr rfl fun i₂ _ => ?_
-        rw [card_filter, Nat.cast_sum]
-        push_cast
-        rfl
+        simp
     _ ≤ ∑ _i₁ ∈ range a, ∑ _i₂ ∈ range b, B := sum_le_sum fun i₁ _ => sum_le_sum fun i₂ _ => h i₁ i₂
     _ = a * b * B := by simp only [sum_const, card_range, nsmul_eq_mul]; ring
 
@@ -597,24 +565,20 @@ theorem card_filter_prod_le₃ {a b c : ℕ} {P : ℕ × ℕ × ℕ → Prop} {B
 theorem abs_sub_le_of_mem_cell {n i : ℕ} {s t : ℝ} (hs : (i : ℝ) / n ≤ s)
     (hs' : s < ((i : ℝ) + 1) / n) (ht : (i : ℝ) / n ≤ t) (ht' : t < ((i : ℝ) + 1) / n) :
     |s - t| ≤ 1 / n := by
-  have h : ((i : ℝ) + 1) / n = i / n + 1 / n := by ring
-  rw [abs_le]
-  constructor <;> linarith
+  grind
 
 /-- Two points of a cell `[(1 + i/n) U, (1 + (i + 1)/n) U)` are within `U/n`. -/
 theorem abs_sub_le_of_mem_cell' {n i : ℕ} {U s t : ℝ} (hs : (1 + (i : ℝ) / n) * U ≤ s)
     (hs' : s < (1 + ((i : ℝ) + 1) / n) * U) (ht : (1 + (i : ℝ) / n) * U ≤ t)
     (ht' : t < (1 + ((i : ℝ) + 1) / n) * U) : |s - t| ≤ U / n := by
-  have h : (1 + ((i : ℝ) + 1) / n) * U = (1 + i / n) * U + U / n := by ring
-  rw [abs_le]
-  constructor <;> linarith
+  grind
 
 /-- Within a column, `τ_r(z)` changes by at most `|z₂|/n`. -/
 theorem abs_tau_sub_le_of_mem_cell {n i : ℕ} {s t : ℝ} (hs : (i : ℝ) / n ≤ s)
     (hs' : s < ((i : ℝ) + 1) / n) (ht : (i : ℝ) / n ≤ t) (ht' : t < ((i : ℝ) + 1) / n)
     (z : ℤ × ℤ) : |tau s z - tau t z| ≤ |(z.2 : ℝ)| / n := by
   rw [tau_sub_tau, abs_mul, div_eq_mul_one_div, mul_comm (|(z.2 : ℝ)|)]
-  exact mul_le_mul_of_nonneg_right (abs_sub_le_of_mem_cell hs hs' ht ht') (abs_nonneg _)
+  exact mul_le_mul_of_nonneg_right (by grind) (abs_nonneg _)
 
 open scoped Classical in
 /-- For a fixed column, the cells in `u` meeting `u τ_r(z) = c U`, `c ≥ 1`, number at most
@@ -644,7 +608,7 @@ theorem card_uFace_fiber_le {U : ℝ} (hU : 0 < U) {n : ℕ} (hn : 1 ≤ n) (z :
             abs_of_pos hcU]
       _ ≤ (16 * U) * (16 * U) * (|(z.2 : ℝ)| / n) / (1 * U) := by
           gcongr
-      _ = 256 * U * |(z.2 : ℝ)| / n := by field_simp; ring
+      _ = 256 * U * |(z.2 : ℝ)| / n := by grind
   · -- step: every counted cell contains a point of `S`
     intro i₁ hi₁
     obtain ⟨hi₁, u, r, h₁, h₂, h₃, h₄, h₅⟩ := mem_filter.1 hi₁
@@ -652,10 +616,8 @@ theorem card_uFace_fiber_le {U : ℝ} (hU : 0 < U) {n : ℕ} (hn : 1 ≤ n) (z :
     push_cast at e₁
     have f₁ : (0 : ℝ) ≤ i₁ / n := by positivity
     refine ⟨u, ⟨r, h₃, h₄, by nlinarith, by nlinarith, h₅⟩, ?_, ?_⟩
-    · calc U + i₁ * (U / n) = (1 + i₁ / n) * U := by ring
-        _ ≤ u := h₁
-    · calc u < (1 + (i₁ + 1) / n) * U := h₂
-        _ = U + (i₁ + 1) * (U / n) := by ring
+    · grind
+    grind
 
 open scoped Classical in
 /-- For fixed `u`-cell and column, the cells in `v` meeting `v τ_r(z) + z₂/u = c V` where
@@ -690,7 +652,7 @@ theorem card_vFace_fiber_le {U V : ℝ} (hU : 0 < U) (hV : 0 < V) (hUV : 1 ≤ U
       rw [e, abs_div, abs_mul, abs_of_pos (by positivity : (0 : ℝ) < u * u')]
       calc |(z.2 : ℝ)| * |u - u'| / (u * u') ≤ |(z.2 : ℝ)| * (U / n) / (U * U) := by
             gcongr
-            exact abs_sub_le_of_mem_cell' hu₁ hu₂ hu₁' hu₂'
+            grind
         _ = |(z.2 : ℝ)| / n * (1 / U) := by field_simp
         _ ≤ |(z.2 : ℝ)| / n * V := by
             gcongr
@@ -703,24 +665,16 @@ theorem card_vFace_fiber_le {U V : ℝ} (hU : 0 < U) (hV : 0 < V) (hUV : 1 ≤ U
     have h₃ : |s - t| ≤ 16 * |(s - t) * tau r z| := by
       rw [abs_mul, abs_of_pos (by linarith : (0 : ℝ) < tau r z)]
       nlinarith [abs_nonneg (s - t)]
-    calc s - t ≤ |s - t| := le_abs_self _
-      _ ≤ 16 * |(s - t) * tau r z| := h₃
-      _ ≤ 16 * (|(z.2 : ℝ)| / n * V + 2 * V * (|(z.2 : ℝ)| / n)) := by
-          rw [key]
-          gcongr
-          exact (abs_add_le _ _).trans (add_le_add h₁ h₂)
-      _ = 48 * V * |(z.2 : ℝ)| / n := by ring
+    grind
   · -- step: every counted cell contains a point of `S`
     intro i₂ hi₂
     obtain ⟨hi₂, u, v, r, ⟨h₁, h₂, h₃, h₄, h₅, h₆⟩, hτ, hv⟩ := mem_filter.1 hi₂
-    have e₂ := add_one_div_le hn (show i₂ < 1 * n by have := mem_range.1 hi₂; omega)
+    have e₂ := add_one_div_le hn (show i₂ < 1 * n by simp_all)
     push_cast at e₂
     have f₂ : (0 : ℝ) ≤ i₂ / n := by positivity
     refine ⟨v, ⟨u, r, h₁, h₂, h₅, h₆, hτ, by nlinarith, by nlinarith, hv⟩, ?_, ?_⟩
-    · calc V + i₂ * (V / n) = (1 + i₂ / n) * V := by ring
-        _ ≤ v := h₃
-    · calc v < (1 + (i₂ + 1) / n) * V := h₄
-        _ = V + (i₂ + 1) * (V / n) := by ring
+    · grind
+    grind
 
 /-! ### Counting the breakpoints -/
 
@@ -742,10 +696,8 @@ theorem card_breakpoint_fiber_offset_le {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 =
       1 / 16 ≤ tau s z ∧ m * (tau s (complement z) / tau s z) -
         round (m * (tau s (complement z) / tau s z)) = e) := fun i => by
     by_cases hi : i ∈ F
-    · rw [← hF, mem_filter, mem_range] at hi
-      obtain ⟨hin, s, hs⟩ := hi
-      exact ⟨s, fun _ => ⟨hin, hs⟩⟩
-    · exact ⟨0, fun h => absurd h hi⟩
+    · grind
+    simp_all
   choose s hs using hF'
   rcases F.eq_empty_or_nonempty with rfl | ⟨i₀, hi₀⟩
   · simp only [card_empty, Nat.cast_zero]
@@ -798,7 +750,7 @@ theorem card_breakpoint_fiber_offset_le {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 =
         exact le_abs_self _
     _ ≤ |(m : ℝ)| * (256 * 1) := by
         gcongr
-        exact hρ.trans (by linarith)
+        linarith
     _ = 256 * |(m : ℝ)| := by ring
 
 open scoped Classical in
@@ -823,13 +775,12 @@ theorem card_breakpoint_fiber_le {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1) {n 
     obtain ⟨hi, s, h₁, h₂, h₃, h₄⟩ := mem_filter.1 hi
     unfold circleDist at h₄
     rcases (abs_eq hθ.le).1 h₄ with h | h
-    · exact mem_union_left _ (mem_filter.2 ⟨hi, s, h₁, h₂, h₃, h⟩)
-    · exact mem_union_right _ (mem_filter.2 ⟨hi, s, h₁, h₂, h₃, h⟩)
+    · grind
+    · grind
   have h₁ := card_breakpoint_fiber_offset_le hz hn m hθ.ne'
   have h₂ := card_breakpoint_fiber_offset_le hz hn m (neg_ne_zero.2 hθ.ne')
   have hcast := (Nat.cast_le (α := ℝ)).2 ((card_le_card hsub).trans (card_union_le _ _))
-  push_cast at hcast
-  linarith
+  grind
 
 /-- The thresholds of the atoms are positive. -/
 theorem pos_of_mem_goodAtoms {x : ℝ} {d : Data K} {Y : ℝ} (hY : 0 < Y) {J : ℕ}
@@ -837,7 +788,7 @@ theorem pos_of_mem_goodAtoms {x : ℝ} {d : Data K} {Y : ℝ} (hY : 0 < Y) {J : 
   unfold goodAtoms at ha
   rcases mem_union.1 ha with ha | ha
   · obtain ⟨b, -, rfl⟩ := mem_image.1 ha
-    exact Real.rpow_pos_of_pos hY _
+    positivity
   · obtain ⟨Ii, -, ha⟩ := mem_biUnion.1 ha
     obtain ⟨T, -, ha⟩ := mem_biUnion.1 ha
     obtain ⟨b, -, rfl⟩ := mem_image.1 ha
@@ -869,9 +820,9 @@ theorem card_filter_visitBad_le {x : ℝ} {d : Data K} {Y U V : ℝ} (hY : 0 < Y
       A.filter (VFace U V n z) ∪ A.filter (Breakpoint x d Y p n z) := by
     intro i hi
     obtain ⟨hi, -, h | h | h⟩ := mem_filter.1 hi
-    · exact mem_union_left _ (mem_union_left _ (mem_filter.2 ⟨hi, h⟩))
-    · exact mem_union_left _ (mem_union_right _ (mem_filter.2 ⟨hi, h⟩))
-    · exact mem_union_right _ (mem_filter.2 ⟨hi, h⟩)
+    · simp_all
+    · simp_all
+    · simp_all
   have hcard := (Nat.cast_le (α := ℝ)).2 ((card_le_card hsub).trans
     ((card_union_le _ _).trans (add_le_add (card_union_le _ _) le_rfl)))
   push_cast at hcard
@@ -887,9 +838,8 @@ theorem card_filter_visitBad_le {x : ℝ} {d : Data K} {Y U V : ℝ} (hY : 0 < Y
           u * tau r z = 16 * U) := by
       intro i₁ hi₁
       obtain ⟨hi₁, u, r, h₁, h₂, h₃, h₄, h₅ | h₅⟩ := mem_filter.1 hi₁
-      · exact mem_union_left _
-          (mem_filter.2 ⟨hi₁, u, r, h₁, h₂, h₃, h₄, by rw [one_mul]; exact h₅⟩)
-      · exact mem_union_right _ (mem_filter.2 ⟨hi₁, u, r, h₁, h₂, h₃, h₄, h₅⟩)
+      · grind
+      · grind
     have e₁ := card_uFace_fiber_le hU hn z le_rfl i₃
     have e₂ := card_uFace_fiber_le hU hn z (by norm_num : (1 : ℝ) ≤ 16) i₃
     have hc := (Nat.cast_le (α := ℝ)).2 ((card_le_card hsub₁).trans (card_union_le _ _))
@@ -906,9 +856,8 @@ theorem card_filter_visitBad_le {x : ℝ} {d : Data K} {Y U V : ℝ} (hY : 0 < Y
           1 / 16 ≤ tau r z ∧ v * tau r z + z.2 / u = 2 * V) := by
       intro i₂ hi₂
       obtain ⟨hi₂, u, v, r, h₁, h₂, h₃ | h₃⟩ := mem_filter.1 hi₂
-      · exact mem_union_left _
-          (mem_filter.2 ⟨hi₂, u, v, r, h₁, h₂, by rw [one_mul]; exact h₃⟩)
-      · exact mem_union_right _ (mem_filter.2 ⟨hi₂, u, v, r, h₁, h₂, h₃⟩)
+      · grind
+      · grind
     have e₁ := card_vFace_fiber_le hU hV hUV hn z 1 i₁ i₃
     have e₂ := card_vFace_fiber_le hU hV hUV hn z 2 i₁ i₃
     have hc := (Nat.cast_le (α := ℝ)).2 ((card_le_card hsub₂).trans (card_union_le _ _))
@@ -929,12 +878,7 @@ theorem card_filter_visitBad_le {x : ℝ} {d : Data K} {Y U V : ℝ} (hY : 0 < Y
     push_cast at hc
     exact hc.trans (sum_le_sum fun a ha =>
       card_breakpoint_fiber_le hz hn a.1 (pos_of_mem_goodAtoms hY ha))
-  push_cast at h₂ h₃
-  calc ((A.filter (VisitBad x d Y U V p n z)).card : ℝ)
-      ≤ n * n * (2 * (256 * |(z.2 : ℝ)| + 2)) + 15 * n * n * (2 * (48 * |(z.2 : ℝ)| + 2)) +
-          15 * n * n * ∑ a ∈ goodAtoms x d Y p, 2 * (256 * |(a.1 : ℝ)| + 1) := by
-        linarith
-    _ = _ := by ring
+  grind
 
 /-! ### The size of the atoms -/
 
@@ -945,12 +889,11 @@ theorem omitProd_le {J : ℕ} {p : Lists K J} {Λ : ℝ} (hΛ : 1 ≤ Λ)
   unfold omitProd
   push_cast
   calc ∏ i, ∏ h ∈ univ.erase (o i), (p i h : ℝ) ≤ ∏ _i : Fin K, Λ ^ (J + 1) := by
-        refine prod_le_prod₀ (fun i _ => prod_nonneg fun h _ => Nat.cast_nonneg _) fun i _ => ?_
+        refine prod_le_prod₀ (fun i _ => by positivity) fun i _ => ?_
         calc ∏ h ∈ univ.erase (o i), (p i h : ℝ) ≤ ∏ _h ∈ univ.erase (o i), Λ :=
-              prod_le_prod₀ (fun h _ => Nat.cast_nonneg _) fun h _ => hp i h
+              prod_le_prod₀ (by simp) (by grind)
           _ = Λ ^ J := by
-              rw [prod_const, card_erase_of_mem (mem_univ _), card_univ, Fintype.card_fin,
-                Nat.add_sub_cancel]
+              simp
           _ ≤ Λ ^ (J + 1) := pow_le_pow_right₀ hΛ (Nat.le_succ J)
     _ = Λ ^ (K * (J + 1)) := by
         rw [prod_const, card_univ, Fintype.card_fin, ← pow_mul, mul_comm]
@@ -961,8 +904,8 @@ theorem listProd_le_pow {J : ℕ} {p : Lists K J} {Λ : ℝ} (hp : ∀ i h, (p i
   unfold listProd
   push_cast
   calc ∏ i, ∏ h, (p i h : ℝ) ≤ ∏ _i : Fin K, ∏ _h : Fin (J + 1), Λ :=
-        prod_le_prod₀ (fun i _ => prod_nonneg fun h _ => Nat.cast_nonneg _) fun i _ =>
-          prod_le_prod₀ (fun h _ => Nat.cast_nonneg _) fun h _ => hp i h
+        prod_le_prod₀ (fun i _ => by positivity) fun i _ =>
+          prod_le_prod₀ (by simp) (by grind)
     _ = Λ ^ (K * (J + 1)) := by
         simp only [prod_const, card_univ, Fintype.card_fin, ← pow_mul, mul_comm]
 
@@ -973,12 +916,11 @@ theorem prod_le_pow_of_forall {x : ℝ} {d : Data K} {Λ : ℝ} (hΛ : 1 ≤ Λ)
     (hT : ∀ i, T i = 1 ∨ T i ∈ band x (d.a i)) : ((∏ i, T i : ℕ) : ℝ) ≤ Λ ^ K := by
   push_cast
   calc ∏ i, (T i : ℝ) ≤ ∏ _i : Fin K, Λ := by
-        refine prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) fun i _ => ?_
+        refine prod_le_prod₀ (by simp) fun i _ => ?_
         rcases hT i with h | h
-        · rw [h, Nat.cast_one]
-          exact hΛ
-        · exact hband i _ h
-    _ = Λ ^ K := by rw [prod_const, card_univ, Fintype.card_fin]
+        · simp_all
+        grind
+    _ = Λ ^ K := by simp
 
 /-- The number of choices from sets each `{1}` or a band is at most `Λ^K`, when the bands
 have at most `Λ ≥ 1` primes. -/
@@ -988,31 +930,25 @@ theorem card_piFinset_le {x : ℝ} {d : Data K} {Λ : ℝ} (hΛ : 1 ≤ Λ)
     ((Fintype.piFinset t).card : ℝ) ≤ Λ ^ K := by
   rw [Fintype.card_piFinset, Nat.cast_prod]
   calc ∏ i, ((t i).card : ℝ) ≤ ∏ _i : Fin K, Λ := by
-        refine prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) fun i _ => ?_
+        refine prod_le_prod₀ (by simp) fun i _ => ?_
         rcases ht i with h | h
-        · rw [h, card_singleton, Nat.cast_one]
-          exact hΛ
-        · rw [h]
-          exact hcard i
-    _ = Λ ^ K := by rw [prod_const, card_univ, Fintype.card_fin]
+        · simp_all
+        simp_all
+    _ = Λ ^ K := by simp
 
 /-- The selections are `1` or a band prime in each group. -/
 theorem eq_one_or_mem_band_of_mem_selections {x : ℝ} {d : Data K} {I : Finset (Fin K)}
     {i : Fin K} {Z : Fin K → ℕ} (hZ : Z ∈ selections x d I i) (j : Fin K) :
     Z j = 1 ∨ Z j ∈ band x (d.a j) := by
   have h := Fintype.mem_piFinset.1 hZ j
-  split_ifs at h
-  · exact Or.inr h
-  · exact Or.inl (mem_singleton.1 h)
+  grind
 
 /-- The fresh draws are `1` or a band prime in each group. -/
 theorem eq_one_or_mem_band_of_mem_freshDraws {x : ℝ} {d : Data K} {I : Finset (Fin K)}
     {T : Fin K → ℕ} (hT : T ∈ freshDraws x d I) (j : Fin K) :
     T j = 1 ∨ T j ∈ band x (d.a j) := by
   have h := Fintype.mem_piFinset.1 hT j
-  split_ifs at h
-  · exact Or.inl (mem_singleton.1 h)
-  · exact Or.inr h
+  grind
 
 /-- The atoms have `|m| ≤ S²`, `S = Λ^{K(J+2)}`, when the labels and band primes are at most
 `Λ ≥ 1` and `1 ≤ Y ≤ Λ^{K(J+1)}`. -/
@@ -1041,17 +977,17 @@ theorem abs_le_of_mem_goodAtoms {x : ℝ} {d : Data K} {Y : ℝ} {J : ℕ} {p : 
     have hD := omitProd_le hΛ hp o
     push_cast
     rw [abs_of_nonneg (by positivity), sq]
-    exact mul_le_mul ((hl'.trans hY).trans hMle) (hD.trans hMle) (by positivity) (by positivity)
+    nlinarith
   · -- step: test (ii), `m = (D Z - D' Z') ∏ T` with `D Z, D' Z' ≤ S` and `∏ T ≤ Λ^K`
     obtain ⟨⟨I, i⟩, -, ha⟩ := mem_biUnion.1 ha
     obtain ⟨T, hT, ha⟩ := mem_biUnion.1 ha
     obtain ⟨⟨⟨o, o'⟩, ⟨Z, Z'⟩⟩, hb, rfl⟩ := mem_image.1 ha
     simp only [mem_product] at hb
-    have hZb : ((∏ j, Z j : ℕ) : ℝ) ≤ Λ ^ K :=
+    have hZb :=
       prod_le_pow_of_forall hΛ hband (eq_one_or_mem_band_of_mem_selections hb.2.1)
-    have hZb' : ((∏ j, Z' j : ℕ) : ℝ) ≤ Λ ^ K :=
+    have hZb' :=
       prod_le_pow_of_forall hΛ hband (eq_one_or_mem_band_of_mem_selections hb.2.2)
-    have hTb : ((∏ j, T j : ℕ) : ℝ) ≤ Λ ^ K :=
+    have hTb :=
       prod_le_pow_of_forall hΛ hband (eq_one_or_mem_band_of_mem_freshDraws hT)
     have hA : ((omitProd p o * ∏ j, Z j : ℕ) : ℝ) ≤ Λ ^ (K * (J + 2)) := by
       rw [Nat.cast_mul, ← hMS]
@@ -1078,11 +1014,11 @@ theorem card_goodAtoms_le {x : ℝ} {d : Data K} {Y : ℝ} {J : ℕ} (p : Lists 
   have hΛ₁ : 1 ≤ Λ := by linarith
   have hMS : Λ ^ (K * (J + 1)) * Λ ^ K = Λ ^ (K * (J + 2)) := by
     rw [← pow_add, show K * (J + 1) + K = K * (J + 2) by ring]
-  have hM₁ : 1 ≤ Λ ^ (K * (J + 1)) := one_le_pow₀ hΛ₁
+  have hM₁ : 1 ≤ Λ ^ (K * (J + 1)) := by linarith
   have hK₁ : 1 ≤ Λ ^ K := one_le_pow₀ hΛ₁
   have hMle : Λ ^ (K * (J + 1)) ≤ Λ ^ (K * (J + 2)) := by rw [← hMS]; nlinarith
   have hKle : Λ ^ K ≤ Λ ^ (K * (J + 2)) := by rw [← hMS]; nlinarith
-  have hS₁ : 1 ≤ Λ ^ (K * (J + 2)) := hM₁.trans hMle
+  have hS₁ : 1 ≤ Λ ^ (K * (J + 2)) := by linarith
   have hJK : ((J : ℝ) + 1) ^ K ≤ Λ ^ K := pow_le_pow_left₀ (by positivity) hJ K
   -- step: the atoms of test (i) number at most `2 S²`
   have hfirst : (((univ ×ˢ range (⌊Y ^ (1 / 5 : ℝ)⌋₊ + 1) :
@@ -1111,14 +1047,10 @@ theorem card_goodAtoms_le {x : ℝ} {d : Data K} {Y : ℝ} {J : ℕ} (p : Lists 
     intro Ii
     have hsel : ((selections x d Ii.1 Ii.2).card : ℝ) ≤ Λ ^ K :=
       card_piFinset_le hΛ₁ hcard _ fun j => by
-        split_ifs
-        · exact Or.inr rfl
-        · exact Or.inl rfl
+        grind
     have hfresh : ((freshDraws x d Ii.1).card : ℝ) ≤ Λ ^ K :=
       card_piFinset_le hΛ₁ hcard _ fun j => by
-        split_ifs
-        · exact Or.inl rfl
-        · exact Or.inr rfl
+        grind
     refine (Nat.cast_le.2 card_biUnion_le).trans ?_
     push_cast
     calc ∑ T ∈ freshDraws x d Ii.1, ((((univ ×ˢ univ) ×ˢ (selections x d Ii.1 Ii.2 ×ˢ
@@ -1143,7 +1075,7 @@ theorem card_goodAtoms_le {x : ℝ} {d : Data K} {Y : ℝ} {J : ℕ} (p : Lists 
     have h₂ : (2 : ℝ) ^ K ≤ Λ ^ K := pow_le_pow_left₀ (by norm_num) hΛ K
     have hK : (K : ℝ) ≤ 2 ^ K := by exact_mod_cast Nat.lt_two_pow_self.le
     calc (2 : ℝ) ^ K * K ≤ Λ ^ K * Λ ^ K :=
-          mul_le_mul h₂ (hK.trans h₂) (Nat.cast_nonneg _) (by positivity)
+          mul_le_mul h₂ (by linarith) (Nat.cast_nonneg _) (by positivity)
       _ = (Λ ^ K) ^ 2 := by ring
   have h7 : (Λ ^ K) ^ 2 * (Λ ^ K) ^ 5 ≤ (Λ ^ (K * (J + 2))) ^ 7 := by
     rw [← pow_add]
@@ -1161,7 +1093,7 @@ theorem card_goodAtoms_le {x : ℝ} {d : Data K} {Y : ℝ} {J : ℕ} (p : Lists 
   rw [Nat.cast_sum]
   refine (sum_le_sum fun Ii _ => hsecond Ii).trans ?_
   rw [sum_const, nsmul_eq_mul]
-  exact hprod.trans h7
+  linarith
 
 /-- **The weight of the breakpoints**: under the hypotheses of `card_goodAtoms_le` and
 labels and band primes at most `Λ`, `∑_atoms 2 (256 |m| + 1) ≤ 1542 S⁹`, `S = Λ^{K(J+2)}`. -/
@@ -1180,7 +1112,7 @@ theorem sum_goodAtoms_le {x : ℝ} {d : Data K} {Y : ℝ} {J : ℕ} {p : Lists K
         have := abs_le_of_mem_goodAtoms hΛ₁ hp hband hY₁ hY ha
         linarith
     _ = (goodAtoms x d Y p).card * (514 * (Λ ^ (K * (J + 2))) ^ 2) := by
-        rw [sum_const, nsmul_eq_mul]
+        simp
     _ ≤ 3 * (Λ ^ (K * (J + 2))) ^ 7 * (514 * (Λ ^ (K * (J + 2))) ^ 2) :=
         mul_le_mul_of_nonneg_right (card_goodAtoms_le p hΛ hcard hJ hY₁ hY) (by positivity)
     _ = 1542 * (Λ ^ (K * (J + 2))) ^ 9 := by ring
@@ -1206,10 +1138,7 @@ theorem card_filter_visitBad_le_pow {x : ℝ} {d : Data K} {Y U V : ℝ} (hU : 0
   have hsum := sum_goodAtoms_le hΛ hp hband hcard hJ hY₁ hY
   refine (card_filter_visitBad_le (by linarith) hU hV hUV p hn z).trans ?_
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)
-  have hNS : N * (Λ ^ (K * (J + 2))) ^ 2 ≤ N * (Λ ^ (K * (J + 2))) ^ 9 :=
-    mul_le_mul_of_nonneg_left h29 (by linarith)
-  have hN9 : (Λ ^ (K * (J + 2))) ^ 9 ≤ N * (Λ ^ (K * (J + 2))) ^ 9 := by nlinarith
-  nlinarith [abs_nonneg (z.2 : ℝ)]
+  nlinarith
 
 /-- Eventually `(N + 1) 10⁷ N exp(2 L^{1/5})^{9K(J+2)} ≤ exp(L^{1/2})`, `N = 2R`: with
 `t = L^{1/100}`, `N + 1 ≤ t^{50} + 3`, `J ≤ t` and `L^{1/5} = t^{20}`. -/
@@ -1229,7 +1158,6 @@ theorem eventually_visits_le (K : ℕ) :
   -- step: the powers of `L` as powers of `t`
   have hpow : ∀ k : ℕ, Real.log x ^ ((k : ℝ) / 100) = t ^ k := fun k => by
     rw [ht_def, ← Real.rpow_natCast, ← Real.rpow_mul (by linarith)]
-    congr 1
     ring
   have h50 : Real.log x ^ (1 / 2 : ℝ) = t ^ 50 := by
     rw [← hpow]

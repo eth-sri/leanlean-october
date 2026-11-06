@@ -7,13 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCommonActual
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcreteTraceCRT
 
-lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
+lemma supported_bezout_inverse (n m a b : ActualEisensteinCubic.O) (hn : Supported (Ideal.span {n}))
     (hab : a*n+b*m=1) :
     idealRowHom b (Ideal.span {n})=star (idealRowHom m (Ideal.span {n})) := by
   have he : idealRowHom (b*m) (Ideal.span {n})=1 := by
@@ -30,7 +28,7 @@ lemma supported_bezout_inverse (n m a b : O) (hn : Supported (Ideal.span {n}))
   rw [MulChar.star_apply',MulChar.inv_apply_eq_inv']
   exact eq_inv_of_mul_eq_one_left he
 
-theorem actual_common_lift (C n₁ n₂ k : O)
+theorem actual_common_lift (C n₁ n₂ k : ActualEisensteinCubic.O)
     (hC : Supported (Ideal.span {C})) (h₁ : Supported (Ideal.span {n₁}))
     (h₂ : Supported (Ideal.span {n₂}))
     (hp₁ : ConcretePrimeRowBridge.goodLambda^2∣n₁-1)
@@ -42,7 +40,7 @@ theorem actual_common_lift (C n₁ n₂ k : O)
   obtain ⟨a,b,hab⟩ := hn
   rw [actual_common_lift_bezout C n₁ n₂ a b k hC h₁ h₂ hab]
   have h₁b := supported_bezout_inverse n₁ n₂ a b h₁ hab
-  have h₂a := supported_bezout_inverse n₂ n₁ b a h₂ (by simpa only [add_comm] using hab)
+  have h₂a := supported_bezout_inverse n₂ n₁ b a h₂ (by grind)
   have he : idealRowHom (-a*k) (Ideal.span {n₂})=
       idealRowHom a (Ideal.span {n₂})*idealRowHom (-k) (Ideal.span {n₂}) := by
     rw [show -a*k=a*(-k) by ring,idealRowHom_argument_mul]
@@ -50,10 +48,7 @@ theorem actual_common_lift (C n₁ n₂ k : O)
   let := finite_quotient_span (supported_element_ne_zero n₁ h₁)
   let : Fintype (ResidueQ n₁) := Fintype.ofFinite _
   have hphase := supported_opposite_phase n₁ n₂ h₁ h₂ hp₁ hp₂ ⟨a,b,hab⟩
-  calc
-    _ = idealRowHom k (Ideal.span {n₁})*star (idealRowHom (-k) (Ideal.span {n₂}))*
-        (idealRowHom n₁ (Ideal.span {n₂})*star (idealRowHom n₂ (Ideal.span {n₁})))*actualCommon C hC n₁ n₂ k := by ring
-    _ = _ := by rw [hphase]
+  grind
 
 end SevenEighths.ProbeGramCommon
 end

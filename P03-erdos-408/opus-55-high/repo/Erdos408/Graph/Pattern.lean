@@ -76,7 +76,7 @@ lemma edgeProduct_pos {C : Fin G.count → Finset (Fin J)} (a : G.Labels (J + 1)
   refine Finset.prod_pos fun g _ => Finset.prod_pos fun i _ => ?_
   by_cases hi : i ∈ C g
   · simp only [trim, hi, ite_true]
-    exact (G.prime g _ (u g i).property).pos
+    exact (G.prime g _ (by simp)).pos
   · simp only [hi, ite_false]
     exact (G.prime g _ (a g i.castSucc).property).pos
 
@@ -94,8 +94,8 @@ lemma le_groupPrimeCount {ι : Type*} [Fintype ι] {P : ι → Finset ℕ} {n : 
   refine Finset.sum_le_sum fun g _ => ?_
   have := Finset.card_le_card_of_injOn (s := (Finset.univ : Finset (Fin M)))
     (t := (P g).filter (· ∣ n)) (p g)
-    (fun i _ => Finset.mem_filter.mpr ⟨hmem g i, (hp g).2 i⟩) ((hp g).1.injOn)
-  simpa [primeCount] using this
+    (fun i _ => by grind) ((hp g).1.injOn)
+  simpa
 
 /-- On physical states, upstream's damping is `√q₀^{ω(n) - M s}`. -/
 lemma damping_eq {F : FixedData} (hF : F.ell = 1) (A : Model F G J m) (n : ℕ)
@@ -103,8 +103,7 @@ lemma damping_eq {F : FixedData} (hF : F.ell = 1) (A : Model F G J m) (n : ℕ)
     A.damping (n : ℤ) = Real.sqrt F.q ^ (groupPrimeCount G.primes n - (J + 1) * G.count) := by
   rw [Model.damping, omega_eq, Real.sqrt_eq_rpow, ← Real.rpow_natCast,
     ← Real.rpow_mul F.q_pos.le, Nat.cast_sub hn, hF]
-  push_cast
-  ring_nf
+  grind
 
 end Conditions
 
@@ -186,15 +185,15 @@ lemma patternPairing_eq_sum {ι : Type*} [Fintype ι] [DecidableEq ι] (P : ι �
     by_cases hp' : (∀ h, Function.Injective (p' h) ∧ ∀ i, p' h i ∣ n + edgeProduct C p a) ∧
         ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
           ∀ i ∈ C h, ∀ j, a h i ≠ p h j ∧ a h i ≠ p' h j
-    · rw [ite_eq_left hp', ite_eq_left ⟨hp, hp'⟩]
+    · rw [ite_eq_left hp', ite_eq_left (by grind)]
       simp only [Finset.prod_mul_distrib]
       push_cast
       ring
-    · rw [ite_eq_right hp', ite_eq_right fun h => hp' h.2, zero_mul]
+    grind
   · rw [ite_eq_right hp]
     refine (Finset.sum_eq_zero fun a _ => Finset.sum_eq_zero fun p' _ => ?_).symm
     unfold pairTerm
-    rw [ite_eq_right fun h => hp h.1, zero_mul]
+    grind
 
 /-- Summing over upstream labels and auxiliary labels against the auxiliary
 mass is summing over lists and `auxLabels` against the free-slot mass. -/
@@ -235,7 +234,7 @@ lemma imaginaryPower_eq {D : ℕ} (hD : D ≠ 0) (ζ : ℝ) :
 
 /-- The mark mass `∏ V_g^{-M}`. -/
 lemma markMass_eq (M : ℕ) : G.markMass M = ∏ g, (harmonicMass (G.primes g))⁻¹ ^ M := by
-  simp [PrimeGroups.markMass, V_eq_harmonicMass, zpow_neg, inv_pow]
+  simp [PrimeGroups.markMass, V_eq_harmonicMass]
 
 /-- The physical target mass `∏ V_g^{-t_g}`, `t_g = |C g| + 1`. -/
 lemma physicalTargetMass_eq {J m : ℕ} (ν : Pattern G J 1 m) :
@@ -255,7 +254,7 @@ lemma le_groupPrimeCount_of_physical {M n : ℕ} {a : G.Labels M}
     (h : G.physical M (n : ℤ) a) : M * G.count ≤ groupPrimeCount G.primes n := by
   have := le_groupPrimeCount (P := G.primes) (fun g i => (a g i).property)
     ((physical_iff n a).mp h)
-  rwa [Fintype.card_fin] at this
+  simp_all
 
 /-- The pairing of pattern `v`'s term is `patternPairing` with its changed
 slots, for a kernel `K` that agrees with its coefficient on label values, when
@@ -313,7 +312,7 @@ theorem rawPairing_eq (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ 
     by_cases hc : G.physical (J + 1) (n : ℤ) a ∧ G.physical (J + 1) (N : ℤ) b ∧
         (B.pattern v).compatible a b ∧ (B.pattern v).ban a b u
     · rw [ite_eq_left ⟨hc.1, hc.2.1⟩,
-        ite_eq_left ⟨hc.2.2.1, hc.2.2.2, by rw [hE, hN]; push_cast; ring⟩,
+        ite_eq_left ⟨hc.2.2.1, hc.2.2.2, by omega⟩,
         ite_eq_left (hiff.mpr hc), Model.stateMass, ite_eq_left hc.1,
         damping_eq rfl _ n (le_groupPrimeCount_of_physical hc.1),
         damping_eq rfl _ N (le_groupPrimeCount_of_physical hc.2.1), hK,
@@ -322,14 +321,9 @@ theorem rawPairing_eq (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ 
       simp only [Pattern.auxMass, Finset.prod_mul_distrib, starRingEnd_apply]
       push_cast
       ring
-    · rw [ite_eq_right (mt hiff.mp hc), zero_mul]
-      split_ifs with h₁ h₂
-      · exact absurd ⟨h₁.1, h₁.2, h₂.1, h₂.2.1⟩ hc
-      all_goals simp
-  · split_ifs with h₁ h₂
-    · exact absurd h₂.2.2 (by rw [hE]; rw [hN] at hn'; omega)
-    all_goals simp
-  · rw [hg N hN', mul_zero]
+    grind
+  · grind
+  grind
 
 end Identity
 

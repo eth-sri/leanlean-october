@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.CompletedRowsEnergyUniformD
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open CanonicalRowCompletion InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_completed_energy_uniform_degree
@@ -20,22 +19,22 @@ theorem canonical_original_completed_energy_uniform_degree
     (L cstar η : ℝ) (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η)
     (hη1 : η≤1) (hηc : η≤cstar/100000) (rmax : ℕ) :
     ∃ (degree : ℕ), ∀ (q : ℕ) (_hq : q≠0), ∃ (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
-    ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (F : Ideal Eis) (_hF : Squarefree F)
-      (m : Eis) (_hm : m≠0) (Z N V M z₀ margin hhat d : ℝ),
+    ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (F : Ideal ActualEisensteinCubic.O) (_hF : Squarefree F)
+      (m : ActualEisensteinCubic.O) (_hm : m≠0) (Z N V M z₀ margin hhat d : ℝ),
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hhat≤L →
       (Ideal.absNorm F:ℝ)≤Z^V → (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
       CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
-    ∀ (parents : Finset (Ideal Eis)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
-      Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ),
+    ∀ (parents : Finset (Ideal ActualEisensteinCubic.O)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
+      Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (H : σ→ℝ),
       Pairwise (fun i j => Disjoint (lists i) (lists j)) →
       (∀ i,∀ P∈lists i,P.IsMaximal) →
       (∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P) →
       (∀ i,∀ P∈lists i,Prime P) →
-      (∀ i,∀ P∈lists i,ringChar (Eis⧸P)≠2) →
+      (∀ i,∀ P∈lists i,ringChar (ActualEisensteinCubic.O⧸P)≠2) →
       (∀ i,1≤H i) → (∀ i,∀ P∈lists i,(Ideal.absNorm P:ℝ)≤H i) → (∏ i,H i)≤Z^z₀ →
-    ∀ (Ψ : Eis→*ℂ),(∀ n,‖Ψ n‖≤1) → CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) Ψ →
-    ∀ (u : Eisˣ) (θ : ℝ) (w : ∀ i,lists i→ℂ),(∀ i P,‖w i P‖≤1) →
+    ∀ (Ψ : ActualEisensteinCubic.O→*ℂ),(∀ n,‖Ψ n‖≤1) → CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) Ψ →
+    ∀ (u : ActualEisensteinCubic.Oˣ) (θ : ℝ) (w : ∀ i,lists i→ℂ),(∀ i P,‖w i P‖≤1) →
       (∑ I∈parents,
         ‖∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
           (rowTwist Ψ (ActualFiber.maskElement q m) (ConcretePrimeRowBridge.idealGenerator F)

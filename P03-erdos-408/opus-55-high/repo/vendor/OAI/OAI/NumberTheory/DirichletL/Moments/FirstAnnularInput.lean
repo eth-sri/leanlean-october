@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentFirstAnnularInput
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentGaussEnergy
+open CenteredMomentGaussEnergy
 open CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice
 open CenteredMomentOriginalChildEnergy CenteredMomentSecondHeightFamily
 open CenteredMomentHeckeColumnWindow CenteredMomentGaussNormalization
 open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentCommonAllocationSum
 
 variable {ι:Type*}[Fintype ι]
 

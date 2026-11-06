@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def expansionProfileData (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
+def expansionProfileData (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (A₁ A₂ : Finset ι) (x : SecondExpansionData ι) : SecondProfileData ι where
   common := x.sourceCommon
   overlap := x.overlap
@@ -33,7 +32,7 @@ def expansionProfileData (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
   divisor := primeSubsetGenerator (fun i => Ideal.span {p i}) x.divisor
   frequency := x.frequency
 
-def expansionProfileWeight (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
+def expansionProfileWeight (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (Y : ℝ) (x : SecondExpansionData ι) : ℂ :=
   (Y : ℂ) * (‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) x.sourceCommon‖^2 : ℝ) *
     (UniqueFactorizationMonoid.moebius (∏ i ∈ x.divisor, Ideal.span {p i}) : ℂ) *
@@ -43,7 +42,7 @@ def expansionProfileWeight (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex
 theorem secondExpansionSource_marked_profile
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (source : Finset (SecondExpansionData ι))
     (hE : ∀ x ∈ source, x.divisor ⊆ x.sourceCommon)
     (A₁ A₂ : Finset ι) (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι)

@@ -9,10 +9,10 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainSlotProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical ComplexConjugate
 
 namespace SevenEighths.ProbeFinalAssemblyUnconditional
-open ProbeFinalAssembly ProbeFinalAssemblyCertifiedBands
+open ProbeFinalAssemblyCertifiedBands
 open CenteredMomentEnergyCertifiedExistence CenteredMomentDetectorPlainMomentParameters
 open CenteredMomentDetectorPlainSlotProfile
 
@@ -29,11 +29,11 @@ theorem detector_certified_bands:DetectorCertifiedBands:=by
   · norm_num
   · norm_num
   · norm_num
-  · exact hbΦ
+  · omega
   · norm_num
   · norm_num
-  · exact hp.2.2.2.2.1.le
-  · exact hp.2.2.1
+  · linarith
+  · linarith
   · linarith
   · unfold kappaPlain
     linarith

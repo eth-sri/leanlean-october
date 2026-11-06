@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.Probability
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 
 namespace Erdos821.P4Probe
 
@@ -31,6 +30,6 @@ lemma weighted_error_sum_bound {ι : Type*} [Fintype ι]
     _ = ε * ∑ i, w i * Real.sqrt (a i) * Real.sqrt (b i) := (Finset.mul_sum ..).symm
     _ ≤ ε * (Real.sqrt (∑ i, w i * a i) * Real.sqrt (∑ i, w i * b i)) :=
       mul_le_mul_of_nonneg_left (weighted_sqrt_cauchy w a b hw ha hb) hε
-    _ = _ := (mul_assoc ..).symm
+    _ = _ := by linarith
 
 end Erdos821.P4Probe

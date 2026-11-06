@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalLedger
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss UniqueFactorizationMonoid
+open HeckeFamily CanonicalQuadraticSieve UniqueFactorizationMonoid
 open CenteredMomentSecondPhysicalLedger
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
 open CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonExceptionalCost
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentSecondCanonical
+open CenteredMomentCommonExceptionalCost
+open CenteredMomentAllocatedDetectorAmplitude
 open CenteredMomentCanonicalFirst CenteredMomentForcing CenteredMomentSecondCanonicalNonunit
 open CenteredMomentHeckeColumnWindow CenteredMomentLogDyadic CenteredMomentSectorLocalization
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-local notation "O"=>HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
@@ -32,8 +31,7 @@ lemma profileMass_self {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p
     nlinarith [Real.sq_sqrt (volume_pos s.toData).le]
   unfold CenteredMomentFiniteProfileExceptionalCommon.profileMass
   rw [show 2*J=J+J by omega,pow_add]
-  conv_rhs => rw [hs]
-  ring
+  grind
 
 lemma count_power (Z h f e:ℝ)(hZ:1<Z)(hh:0<h)(hf:0<f):
     Z^((Real.logb Z h-4*Real.logb Z f)/6+e)=
@@ -44,19 +42,18 @@ lemma count_power (Z h f e:ℝ)(hZ:1<Z)(hh:0<h)(hf:0<f):
     Real.rpow_add hz,Real.rpow_sub hz,Real.rpow_mul hz.le,Real.rpow_mul hz.le,
     Real.rpow_logb hz (ne_of_gt hZ) hh,Real.rpow_logb hz (ne_of_gt hZ) hf]
 
-def profileFactor {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q:Ideal O)(K:ℝ):ℝ:=
+def profileFactor {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q:Ideal HeckeFamily.O)(K:ℝ):ℝ:=
   K*(768*(6:ℝ)^(normalizedFactors Q).toFinset.card)*(1+2*Real.pi)^(4*J)*
     p.control Sprofile^2*(1+‖s.t‖)^(2*J)*slotControl s.toData^2*frozenProfile s^2*
     (∫u:ℝ,(1+‖u‖)^J*‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth u‖)^2
 
 omit [DecidableEq ι] in
-lemma profileFactor_nonneg {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q:Ideal O)(K:ℝ)(hK:0≤K):
+lemma profileFactor_nonneg {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q:Ideal HeckeFamily.O)(K:ℝ)(hK:0≤K):
     0≤profileFactor Sprofile s p J Q K:=by
   unfold profileFactor
-  have hp:=Profiles.control_nonneg p Sprofile
   positivity
 
-lemma sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)
+lemma sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal HeckeFamily.O)
     (hC:Supported C)(U:Finset (CommonIndex C D))(K Z ε δ θ r h:ℝ)
     (hZ:1<Z)(hh:0<h):
     sourceBudget Sprofile s p J Q C D U K Z ε δ θ r 1 (Real.logb Z h)=
@@ -77,7 +74,7 @@ lemma sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)
   unfold profileFactor
   ring
 
-theorem central_sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal O)
+theorem central_sourceBudget_exact {wlo whi:ℝ} (Sprofile:Finset (ℕ×ℕ)) (s:Input ι)(p:Profiles wlo whi)(J:ℕ)(Q C D:Ideal HeckeFamily.O)
     (hC:Supported C)(_hD:Supported D)(U:Finset (CommonIndex C D))
     (K Z ε δ θ r Kphys:ℝ)(n:Fin 4→ℤ)(hZ:1<Z):
     (1/volume s.toData)*outerScalar C D Kphys n*normalizer C D U*

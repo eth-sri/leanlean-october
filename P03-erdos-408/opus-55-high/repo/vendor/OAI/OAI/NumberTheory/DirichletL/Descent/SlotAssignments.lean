@@ -8,7 +8,7 @@ public import Mathlib.Data.Fintype.EquivFin
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
@@ -26,9 +26,8 @@ theorem slotAssignmentWeight_norm_le_one (I : Finset σ) (L : σ → Finset ι)
     (hq : q ∈ I.pi (fun i => L i ∩ A))
     (ha : ∀ i ∈ I, ∀ p ∈ L i, ‖a i p‖ ≤ 1) : ‖slotAssignmentWeight I a q‖ ≤ 1 := by
   rw [slotAssignmentWeight,norm_prod]
-  apply Finset.prod_le_one₀ (fun _ _ => norm_nonneg _)
-  intro i _
-  exact ha i.val i.property _ (Finset.mem_inter.mp (Finset.mem_pi.mp hq i.val i.property)).1
+  apply Finset.prod_le_one₀ (by simp)
+  simp_all
 
 def indexedSlotAssignment (I : Finset σ) (q : ∀ i ∈ I, ι) : Fin I.card → ι :=
   fun j => q ((I.equivFin).symm j).val ((I.equivFin).symm j).property

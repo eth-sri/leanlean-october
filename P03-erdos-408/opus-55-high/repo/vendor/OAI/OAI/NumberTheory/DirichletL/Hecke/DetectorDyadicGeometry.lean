@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSaturation
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.HeckeDetectorDyadicGeometry
 open HeckeDyadic
@@ -18,8 +18,8 @@ lemma uniform_power_allowance (C p dmin α : ℝ) (hα : 0≤α) (hgap : p<dmin*
   filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hC hZ d hd
   have hZp : 0<Z := by linarith
   calc
-    _ ≤ Z^(dmin*α-p)*Z^p := mul_le_mul_of_nonneg_right hC (Real.rpow_nonneg hZp.le _)
-    _ = Z^(dmin*α) := by rw [←Real.rpow_add hZp]; congr 1; ring
+    _ ≤ Z^(dmin*α-p)*Z^p := mul_le_mul_of_nonneg_right hC (by positivity)
+    _ = Z^(dmin*α) := by rw [←Real.rpow_add hZp]; simp
     _ ≤ Z^(d*α) := Real.rpow_le_rpow_of_exponent_le hZ (mul_le_mul_of_nonneg_right hd hα)
     _ = _ := Real.rpow_mul hZp.le _ _
 
@@ -35,7 +35,7 @@ lemma uniform_zero_height (dmin τ : ℝ) (I : ℕ) (hgap : τ<dmin/2) :
   have hh := uniform_power_allowance (3*I : ℕ) τ dmin (1/2) (by norm_num) (by linarith)
   filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hZ hZ1 d hd i hi
   have hn : (3*i : ℕ)≤3*I := by omega
-  exact (mul_le_mul_of_nonneg_right (by exact_mod_cast hn) (Real.rpow_nonneg (by linarith) _)).trans (hZ d hd)
+  exact (mul_le_mul_of_nonneg_right (by simp_all) (Real.rpow_nonneg (by linarith) _)).trans (hZ d hd)
 
 lemma uniform_height_budget (dmin τ η : ℝ) (I : ℕ) (hτ : 0≤τ)
     (hη : 0≤η) (hgap : 4*τ<dmin*η) :
@@ -43,18 +43,17 @@ lemma uniform_height_budget (dmin τ η : ℝ) (I : ℕ) (hτ : 0≤τ)
       ∀ i : ℕ, i≤I → (3+(3*i+2 : ℕ)*Z^τ)^4≤(Z^d)^η := by
   have hh := uniform_power_allowance ((3*(I : ℝ)+5)^4*16) (4*τ) dmin η hη hgap
   filter_upwards [hh,eventually_ge_atTop (1 : ℝ)] with Z hZ hZ1 d hd i hi
-  have hT : 1≤Z^τ := Real.one_le_rpow hZ1 hτ
+  have hT := Real.one_le_rpow hZ1 hτ
   have hp : (1+Z^τ)^4≤16*Z^(4*τ) := by
     calc
       _ ≤ (2*Z^τ)^4 := pow_le_pow_left₀ (by positivity) (by linarith) _
       _ = _ := by
         have he : (Z^τ)^4=Z^(4*τ) := by
-          rw [←Real.rpow_natCast,←Real.rpow_mul (by linarith : 0≤Z)]
+          rw [←Real.rpow_natCast,←Real.rpow_mul (by positivity)]
           congr 1
           norm_num
           ring
-        rw [mul_pow,he]
-        norm_num
+        linarith
   calc
     _ ≤ (3*(I : ℝ)+5)^4*(1+Z^τ)^4 := indexed_height_bound i I hi (Z^τ) (by linarith)
     _ ≤ (3*(I : ℝ)+5)^4*(16*Z^(4*τ)) := mul_le_mul_of_nonneg_left hp (by positivity)

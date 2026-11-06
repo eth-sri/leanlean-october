@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FixedSquare
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def sourceGridCoefficient (beta : Ideal Eis → Ideal Eis → ℂ)
-    (t c m h : Ideal Eis) : ℂ := beta (c * m) ((c * h) * t ^ 2)
+def sourceGridCoefficient (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
+    (t c m h : Ideal ActualEisensteinCubic.O) : ℂ := beta (c * m) ((c * h) * t ^ 2)
 
 theorem reconstructed_fixed_square_grid
-    (D : Finset HybridColumnData) (t : Ideal Eis) (hD : ∀ d ∈ D, d.square = t)
-    (Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ)
-    (beta : Ideal Eis → Ideal Eis → ℂ) (k : Ideal Eis) :
+    (D : Finset HybridColumnData) (t : Ideal ActualEisensteinCubic.O) (hD : ∀ d ∈ D, d.square = t)
+    (Pset : Finset (Ideal ActualEisensteinCubic.O)) (a : Ideal ActualEisensteinCubic.O → ℂ)
+    (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) (k : Ideal ActualEisensteinCubic.O) :
     (∑ d ∈ D, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d) =
       (if IsCoprime k t then 1 else 0) *
         maskedGridHybridRow (hybridGridSupport D) Pset a (sourceGridCoefficient beta t) t k := by
@@ -33,12 +32,12 @@ theorem reconstructed_fixed_square_grid
       sourceGridCoefficient, hD d hd]
     ac_rfl
   · intro d hd e he hg
-    exact HybridColumnData.gridIndex_injective_on_square t (hD d hd) (hD e he) hg
+    exact HybridColumnData.gridIndex_injective_on_square t (by grind) (by grind) hg
 
 theorem reconstructed_fixed_square_energy_le
-    (D : Finset HybridColumnData) (t : Ideal Eis) (hD : ∀ d ∈ D, d.square = t)
-    (rows Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ)
-    (beta : Ideal Eis → Ideal Eis → ℂ) :
+    (D : Finset HybridColumnData) (t : Ideal ActualEisensteinCubic.O) (hD : ∀ d ∈ D, d.square = t)
+    (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) (a : Ideal ActualEisensteinCubic.O → ℂ)
+    (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ) :
     (∑ k ∈ rows, ‖∑ d ∈ D, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d‖ ^ 2) ≤
       ∑ k ∈ rows,
         ‖maskedGridHybridRow (hybridGridSupport D) Pset a (sourceGridCoefficient beta t) t k‖ ^ 2 := by
@@ -46,16 +45,15 @@ theorem reconstructed_fixed_square_energy_le
   intro k hk
   rw [reconstructed_fixed_square_grid D t hD Pset a beta k]
   by_cases hkt : IsCoprime k t
-  · simp only [hkt, ite_true, one_mul, le_refl]
-  · simp only [hkt, ite_false, zero_mul, norm_zero, zero_pow (by norm_num : 2 ≠ 0)]
-    exact sq_nonneg _
+  · simp_all
+  simp_all
 
 theorem finite_double_row_energy {I J : Type*} [Fintype I] [Fintype J]
-    (rows : Finset (Ideal Eis)) (F : I → J → Ideal Eis → ℂ) (E : ℝ) (_hE : 0 ≤ E)
+    (rows : Finset (Ideal ActualEisensteinCubic.O)) (F : I → J → Ideal ActualEisensteinCubic.O → ℂ) (E : ℝ) (_hE : 0 ≤ E)
     (hF : ∀ i j, (∑ k ∈ rows, ‖F i j k‖ ^ 2) ≤ E) :
     (∑ k ∈ rows, ‖∑ i, ∑ j, F i j k‖ ^ 2) ≤
       ((Fintype.card I : ℝ) * (Fintype.card J : ℝ)) ^ 2 * E := by
-  have hk (k : Ideal Eis) :
+  have hk (k : Ideal ActualEisensteinCubic.O) :
       ‖∑ i, ∑ j, F i j k‖ ^ 2 ≤
         ((Fintype.card I : ℝ) * (Fintype.card J : ℝ)) *
           ∑ i, ∑ j, ‖F i j k‖ ^ 2 := by
@@ -73,13 +71,13 @@ theorem finite_double_row_energy {I J : Type*} [Fintype I] [Fintype J]
       rw [Finset.sum_comm]
     _ ≤ ((Fintype.card I : ℝ) * (Fintype.card J : ℝ)) * ∑ _i : I, ∑ _j : J, E := by
       gcongr with i hi j hj
-      exact hF i j
+      simp_all
     _ = _ := by simp; ring
 
 theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B →
-    ∀ (rows : Finset (Ideal Eis)) (S : Finset (Ideal Eis × Ideal Eis))
-      (Pset : Finset (Ideal Eis)) (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ),
+    ∀ (rows : Finset (Ideal ActualEisensteinCubic.O)) (S : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O))
+      (Pset : Finset (Ideal ActualEisensteinCubic.O)) (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ p ∈ S, Squarefree p.1 ∧ primaryGenerator p.1 ≠ 0 ∧ primaryGenerator p.2 ≠ 0 ∧
         (Ideal.absNorm p.1 : ℝ) ≤ N ∧ (Ideal.absNorm p.2 : ℝ) ≤ B) →
@@ -97,7 +95,7 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
   let E := C₁ * K ^ ε * (K * (N * B) * N) ^ ε * (K + N * B) * B *
     CubicSieve.sieveNorm N (2 * L) * (columnDyadicLength K + 1 : ℝ) ^ 2
   let F (j : Fin (columnDyadicLength B + 1)) (i : Fin (columnDyadicLength N + 1))
-      (k : Ideal Eis) : ℂ :=
+      (k : Ideal ActualEisensteinCubic.O) : ℂ :=
     ∑ t ∈ divisorDyadicBin (hybridSquarePool S) B j,
       ∑ d ∈ hybridCommonBlock S N i t, ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d
   have hs : 0 ≤ CubicSieve.sieveNorm N (2 * L) := sq_nonneg _
@@ -105,16 +103,16 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
   have hnset : ∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N := by
     intro n hn
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hn
-    exact ⟨⟨(hS p hp).1, (hS p hp).2.1⟩, (hS p hp).2.2.2.1⟩
-  have hBsup : ∀ p ∈ S, (Ideal.absNorm p.2 : ℝ) ≤ B := fun p hp => (hS p hp).2.2.2.2
-  have hlen : ∀ p ∈ S, (Ideal.absNorm p.1 : ℝ) ≤ N ∧ (Ideal.absNorm p.2 : ℝ) ≤ B :=
+    exact ⟨⟨(hS p hp).1, (hS p hp).2.1⟩, by grind⟩
+  have hBsup := fun p hp => (hS p hp).2.2.2.2
+  have hlen :=
     fun p hp => (hS p hp).2.2.2
   have hlabel (j : Fin (columnDyadicLength B + 1))
       (i : Fin (columnDyadicLength N + 1)) :
       (∑ k ∈ rows, ‖F j i k‖ ^ 2) ≤ 256 ^ 2 * E := by
     let Td := divisorDyadicScale j.val
     have hTd : 0 < Td := by dsimp only [Td]; linarith [divisorDyadicScale_ge_one j.val]
-    have htEnergy (t : Ideal Eis) (ht : t ∈ divisorDyadicBin (hybridSquarePool S) B j) :
+    have htEnergy (t : Ideal ActualEisensteinCubic.O) (ht : t ∈ divisorDyadicBin (hybridSquarePool S) B j) :
         (∑ k ∈ rows, ‖∑ d ∈ hybridCommonBlock S N i t,
           ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d‖ ^ 2) ≤ E / Td ^ 2 := by
       let D := hybridCommonBlock S N i t
@@ -142,11 +140,11 @@ theorem supportedHybridRow_energy_log (ε : ℝ) (hε : 0 < ε) :
     have he := hybrid_square_dyad_energy S B hBsup j rows
       (fun t k => ∑ d ∈ hybridCommonBlock S N i t,
         ∑ P ∈ Pset, reconstructedHybridTerm a beta k P d)
-      (E / Td ^ 2) (div_nonneg hE (sq_nonneg _)) htEnergy
+      (E / Td ^ 2) (by positivity) htEnergy
     calc
       _ ≤ (256 * Td) ^ 2 * (E / Td ^ 2) := he
       _ = 256 ^ 2 * E := by field_simp
-  have hrow (k : Ideal Eis) (hk : k ∈ rows) :
+  have hrow (k : Ideal ActualEisensteinCubic.O) (hk : k ∈ rows) :
       supportedHybridRow S Pset a beta k = ∑ j, ∑ i, F j i k := by
     rw [supportedHybridRow_reconstruct S Pset
       (fun p hp => ⟨(hS p hp).1,

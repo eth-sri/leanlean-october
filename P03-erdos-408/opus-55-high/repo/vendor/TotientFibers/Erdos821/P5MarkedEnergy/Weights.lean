@@ -8,7 +8,6 @@ integral into a medium time range and a weighted tail. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory
 
 namespace Erdos821.P5Marked
@@ -18,14 +17,14 @@ open Blueprint.Analytic
 def wj (j : ℕ) (h t : ℝ) : ℝ := (1 + |h * t|) ^ (-(j : ℤ))
 
 theorem wj_eq (j : ℕ) (h t : ℝ) : wj j h t = ((1 + |h * t|) ^ j)⁻¹ := by
-  unfold wj; rw [zpow_neg, zpow_natCast]
+  unfold wj; simp
 
 theorem wj_nonneg (j : ℕ) (h t : ℝ) : 0 ≤ wj j h t := by rw [wj_eq]; positivity
 
 theorem wj_le_one (j : ℕ) (h t : ℝ) : wj j h t ≤ 1 := by
   rw [wj_eq]
   apply inv_le_one_of_one_le₀
-  exact one_le_pow₀ (by linarith [abs_nonneg (h * t)])
+  exact one_le_pow₀ (by grind)
 
 /-- Pointwise: beyond `L/h` the weight gains `(1+L)^(4-j)` against the shifted `wt`. -/
 theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 1 ≤ L)
@@ -55,7 +54,7 @@ theorem wj_le_shift {j : ℕ} (hj : 4 ≤ j) {h L c t : ℝ} (hh : 0 < h) (hL : 
       _ = 4 * u ^ 2 := by ring
       _ ≤ u ^ 4 := by
           have h4 : 4 ≤ u ^ 2 := by nlinarith
-          nlinarith [sq_nonneg u]
+          nlinarith
 
 /-- Split of the weighted integral of a shifted continuous function. -/
 theorem wj_integral_split {j : ℕ} (hj : 4 ≤ j) {h L c : ℝ} (hh : 0 < h) (hL : 1 ≤ L)
@@ -81,17 +80,10 @@ theorem wj_integral_split {j : ℕ} (hj : 4 ≤ j) {h L c : ℝ} (hh : 0 < h) (h
     · have hmem : t ∈ I := abs_le.mp ht
       have : g1 t = ‖F (t + c)‖ ^ 2 := Set.indicator_of_mem hmem _
       have hw := wj_le_one j h t
-      have : wj j h t * ‖F (t + c)‖ ^ 2 ≤ ‖F (t + c)‖ ^ 2 := by
-        have := sq_nonneg ‖F (t + c)‖
-        nlinarith [wj_nonneg j h t]
-      linarith
+      nlinarith
     · rw [not_le] at ht
       have hw := wj_le_shift hj hh hL hc ht
-      have : wj j h t * ‖F (t + c)‖ ^ 2 ≤ g2 t := by
-        simp only [g2]
-        rw [← mul_assoc]
-        exact mul_le_mul_of_nonneg_right hw (by positivity)
-      linarith
+      nlinarith
   have hmono : ∫ t, wj j h t * ‖F (t + c)‖ ^ 2 ≤ ∫ t, (g1 t + g2 t) :=
     integral_mono_of_nonneg (Filter.Eventually.of_forall fun t =>
       mul_nonneg (wj_nonneg j h t) (by positivity)) (hg1.add hg2)
@@ -105,7 +97,7 @@ theorem wj_integral_split {j : ℕ} (hj : 4 ≤ j) {h L c : ℝ} (hh : 0 < h) (h
     have hcabs := abs_le.mp hc
     have h2L : 2 * L / h = L / h + L / h := by ring
     apply intervalIntegral.integral_mono_interval (by linarith) (by linarith) (by linarith)
-    · exact Filter.Eventually.of_forall fun s => by positivity
+    · exact Filter.Eventually.of_forall (by simp)
     · exact (hF.norm.pow 2).intervalIntegrable _ _
   · simp only [g2]
     rw [integral_const_mul]

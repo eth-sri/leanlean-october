@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification
 
 theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
     (hδ : 0<δ) (hδ' : δ≤2) (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) :
@@ -32,7 +31,7 @@ theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
   have hQ : (((targetRow η u).excludePrimes S hS).modulus.absNorm:ℝ)≤A*q*N := by
     have hh := targetRow_excluded_conductor S hS η u
     dsimp [A,q,N]
-    exact_mod_cast (by simpa only [mul_assoc,mul_left_comm,mul_comm] using hh)
+    exact_mod_cast (by linarith)
   have hc := HeckeDyadic.presentationComplexity_le_of_modulus_le
     ((targetRow η u).excludePrimes S hS) (A*q*N) x.im hQ
   have ht : 0≤3+|x.im| := by positivity
@@ -52,11 +51,11 @@ theorem targetRow_reciprocal_growth (e δ : ℝ) (he : 0<e) (he' : e<1/1000)
       apply hbase.trans
       apply mul_le_mul_of_nonneg_left _ hD.le
       exact Real.rpow_le_rpow (by unfold HeckeReciprocalGrowth.presentationComplexity HeckeLogarithmic.complexity;positivity) hc (by linarith)
-    _ = D*(2:ℝ)^(δ/2)*A^δ*q^δ*N^δ*(3+|x.im|)^δ := by rw [hpow];ring
+    _ = D*(2:ℝ)^(δ/2)*A^δ*q^δ*N^δ*(3+|x.im|)^δ := by grind
     _ ≤ D*(2:ℝ)^(δ/2)*(1+A^δ)*q^δ*N^δ*(3+|x.im|)^2 := by
       have hh : (3+|x.im|)^δ≤(3+|x.im|)^2 := by
         simpa only [Real.rpow_ofNat] using
-          (Real.rpow_le_rpow_of_exponent_le (by linarith [abs_nonneg x.im] : (1:ℝ)≤3+|x.im|) hδ')
+          (Real.rpow_le_rpow_of_exponent_le (by grind : (1:ℝ)≤3+|x.im|) hδ')
       apply mul_le_mul _ hh (Real.rpow_nonneg ht δ) (by positivity)
       gcongr
       linarith

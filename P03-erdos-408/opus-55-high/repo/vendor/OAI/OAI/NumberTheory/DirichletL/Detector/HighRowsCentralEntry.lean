@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge ProbePrimePower
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 include hc in
 lemma sourceRowTerm_central_strict_norm (eta a rho x w z : ℂ)
@@ -23,8 +22,8 @@ lemma sourceRowTerm_central_strict_norm (eta a rho x w z : ℂ)
   · have hb := squarefree_base_strict_norm p hp hg hc j hj
     have ht : 0≤(Ideal.absNorm (Ideal.span {p}):ℝ)^(3/2:ℝ) := by positivity
     simpa only [sourceScalar,Nat.reduceMul,Nat.reduceAdd,Nat.reduceSub,ite_false,
-      Nat.reduceEqDiff,mul_zero,add_zero] using hb.trans (show _≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(3/2:ℝ) by linarith)
-  · norm_num ; linarith
+      Nat.reduceEqDiff,mul_zero,add_zero] using hb.trans (by linarith)
+  linarith
 
 include hc in
 lemma sourceRowTerm_central_boundary_norm (eta a rho x w z : ℂ)
@@ -37,8 +36,8 @@ lemma sourceRowTerm_central_boundary_norm (eta a rho x w z : ℂ)
     rw [Real.sqrt_eq_rpow] at hb
     have ht : 0≤(Ideal.absNorm (Ideal.span {p}):ℝ)^(1/2:ℝ) := by positivity
     simpa only [sourceScalar,Nat.reduceMul,Nat.reduceAdd,Nat.reduceSub,ite_false,
-      Nat.reduceEqDiff,mul_zero,add_zero] using hb.trans (show _≤2*(Ideal.absNorm (Ideal.span {p}):ℝ)^(1/2:ℝ) by linarith)
-  · norm_num
+      Nat.reduceEqDiff,mul_zero,add_zero] using hb.trans (by linarith)
+  simp
 end SevenEighths.ProbeEuler
 end
 

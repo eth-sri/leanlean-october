@@ -7,22 +7,20 @@ public import OAI.NumberTheory.DirichletL.Descent.ActualChildState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open FirstPassCubeLabels InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def actualCellLabels {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (d : BlockIndex) : Finset (Ideal O) :=
+    (d : BlockIndex) : Finset (Ideal ActualEisensteinCubic.O) :=
   (cell p source d).image (fun x=>(actualSecondChild p 1 1 x).2.1)
 
 lemma actual_cell_labels_cover {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d) :
     (actualSecondChild p 1 1 x).2.1∈actualCellLabels p source d :=
-  Finset.mem_image.mpr ⟨x,hx,rfl⟩
+  Finset.mem_image.mpr (by grind)
 
 theorem actual_cell_labels_bound (hp : ∀i,p i≠0) {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀x∈source,x.second.frequency≠0)

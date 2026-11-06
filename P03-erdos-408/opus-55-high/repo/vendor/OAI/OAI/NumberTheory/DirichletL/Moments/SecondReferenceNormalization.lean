@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondNonexceptionalScalar
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondReferenceNormalization
 open HeckeFamily CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondNonexceptionalScalar CenteredMomentSecondRadicalBudget
 open CenteredMomentSectorLocalization CenteredMomentSecondSourcePowerDescent
 open CenteredMomentSecondSourceSeededPowerDescent
-local notation "O"=>HeckeFamily.O
 
-def referenceEnvelope (qref:ℝ)(C D:Ideal O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
+def referenceEnvelope (qref:ℝ)(C D:Ideal HeckeFamily.O)(U:Finset (CommonIndex C D))(n:Fin 4→ℤ):ℝ:=
   (fixedFactor:ℝ)*qref*(∏P∈U,P.val).absNorm*
     (Ideal.span {nonunitFrequencyGenerator C D U}).absNorm*dyadicScale (n 1)
 
-lemma envelope_rescale (η:Character)(qref E:ℝ)(C D:Ideal O)
+lemma envelope_rescale (η:Character)(qref E:ℝ)(C D:Ideal HeckeFamily.O)
     (U:Finset (CommonIndex C D))(n:Fin 4→ℤ):
     (qref/(η.modulus.absNorm:ℝ)*E)*childEnvelope η C D U n=
       E*referenceEnvelope qref C D U n:=by
@@ -33,7 +32,7 @@ lemma envelope_rescale (η:Character)(qref E:ℝ)(C D:Ideal O)
 lemma paired_rescale (q qref E₁ E₂:ℝ)(hq:0<q)(hr:0≤qref):
     q*Real.sqrt ((qref/q*E₁)*(qref/q*E₂))=qref*Real.sqrt (E₁*E₂):=by
   rw [show (qref/q*E₁)*(qref/q*E₂)=(qref/q)^2*(E₁*E₂) by ring,
-    Real.sqrt_mul (sq_nonneg _),Real.sqrt_sq (div_nonneg hr hq.le)]
+    Real.sqrt_mul (sq_nonneg _),Real.sqrt_sq (by positivity)]
   field_simp
 
 lemma physicalFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q qref E₁ E₂ r
@@ -47,11 +46,7 @@ lemma physicalFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q 
   fin_cases j
   · dsimp [physicalFactors]
     have hh:=paired_rescale q qref E₁ E₂ hq hr
-    calc
-      _=Cmain*Z^(2*δ+ε)*(q*Real.sqrt ((qref/q*E₁)*(qref/q*E₂)))*
-        CenteredMomentSecondWindowBudget.heightEnvelope t^(J₁+J₂)*
-        CenteredMomentSecondWindowBudget.profileMoment J₁*CenteredMomentSecondWindowBudget.profileMoment J₂:=by ring
-      _=_:=by rw [hh];ring
+    grind
   all_goals rfl
 
 lemma seededFactors_rescale (Cmain Cexc Cdiag Ctail Z ε δ θ B saving K t q qref E₁ E₂ r

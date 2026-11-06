@@ -7,21 +7,20 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimePool
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentPrimeElements
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentPrimePool CenteredMomentAmplificationGlobal
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss
+open CenteredMomentPrimePool
 
-def elementPool (P : Finset (Ideal O)) : Finset O := P.image primaryPrime
+def elementPool (P : Finset (Ideal ActualEisensteinCubic.O)) : Finset ActualEisensteinCubic.O := P.image primaryPrime
 
-theorem primaryPrime_data (P : Ideal O) (hp : Prime P) (hbad : P ∉ fixedBadPrimes) :
+theorem primaryPrime_data (P : Ideal ActualEisensteinCubic.O) (hp : Prime P) (hbad : P ∉ fixedBadPrimes) :
     Prime (primaryPrime P) ∧ Ideal.span {primaryPrime P} = P ∧
     ConcretePrimeRowBridge.goodLambda^2 ∣ primaryPrime P - 1 ∧
     Supported (Ideal.span {primaryPrime P}) ∧
     ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {primaryPrime P} ∧
-    ringChar (O ⧸ Ideal.span {primaryPrime P}) ≠ 2 := by
+    ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {primaryPrime P}) ≠ 2 := by
   let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
   have hg := (prime_good_iff_not_bad P).mpr hbad
   have hn := primaryPrime_ne_zero P hg.1
@@ -38,43 +37,42 @@ theorem primaryPrime_data (P : Ideal O) (hp : Prime P) (hbad : P ∉ fixedBadPri
   · apply (Ideal.span_singleton_prime hn).mp
     rw [hs.1]
     infer_instance
-  · rwa [hs.1]
+  · simp_all
   · rw [hs.1]
     exact hg.1
-  · rw [hs.1]
-    exact hg.2
+  grind
 
-theorem elementPool_card (P : Finset (Ideal O))
+theorem elementPool_card (P : Finset (Ideal ActualEisensteinCubic.O))
     (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes) :
     (elementPool P).card = P.card := by
   apply Finset.card_image_of_injOn
   intro Q hQ R hR he
-  rw [← (primaryPrime_data Q (hp Q hQ) (hbad Q hQ)).2.1,
-    ← (primaryPrime_data R (hp R hR) (hbad R hR)).2.1,he]
+  rw [← (primaryPrime_data Q (by grind) (by grind)).2.1,
+    ← (primaryPrime_data R (by grind) (by grind)).2.1,he]
 
-theorem elementPool_data (P : Finset (Ideal O))
+theorem elementPool_data (P : Finset (Ideal ActualEisensteinCubic.O))
     (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
-    (p : O) (hpm : p ∈ elementPool P) :
+    (p : ActualEisensteinCubic.O) (hpm : p ∈ elementPool P) :
     Prime p ∧ Ideal.span {p} ∈ P ∧
     ConcretePrimeRowBridge.goodLambda^2 ∣ p-1 ∧
     Supported (Ideal.span {p}) ∧
     ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p} ∧
-    ringChar (O ⧸ Ideal.span {p}) ≠ 2 := by
+    ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2 := by
   obtain ⟨Q,hQ,rfl⟩ := Finset.mem_image.mp hpm
-  obtain ⟨hpr,hspan,hprim,hs,hg,hc⟩ := primaryPrime_data Q (hp Q hQ) (hbad Q hQ)
-  exact ⟨hpr,hspan.symm ▸ hQ,hprim,hs,hg,hc⟩
+  obtain ⟨hpr,hspan,hprim,hs,hg,hc⟩ := primaryPrime_data Q (by grind) (by grind)
+  simp_all
 
-theorem primePool_data (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (S : Finset (Ideal O)) (hS : fixedBadPrimes ⊆ S) (a b x : ℝ)
-    (Q : Ideal O) (hQ : Q ∈ primePool M H S a b x) :
+theorem primePool_data (M : Ideal ActualEisensteinCubic.O) [NeZero M] (H : Subgroup (ActualEisensteinCubic.O ⧸ M)ˣ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : fixedBadPrimes ⊆ S) (a b x : ℝ)
+    (Q : Ideal ActualEisensteinCubic.O) (hQ : Q ∈ primePool M H S a b x) :
     Prime Q ∧ Q ∉ fixedBadPrimes := by
   obtain ⟨hQ,hQS⟩ := Finset.mem_sdiff.mp hQ
   exact ⟨((PNT.AnnularPrimeMass.mem_annularPrimeIdeals _ _ _ _ _).mp hQ).2.1,
-    fun hbad => hQS (hS hbad)⟩
+    by grind⟩
 
-theorem elementPool_eligible (P : Finset (Ideal O))
+theorem elementPool_eligible (P : Finset (Ideal ActualEisensteinCubic.O))
     (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
-    (R : Ideal O) :
+    (R : Ideal ActualEisensteinCubic.O) :
     (elementPool P).filter (fun p => ¬Ideal.span {p} ∣ R) =
       elementPool (eligiblePool P R) := by
   ext p
@@ -82,14 +80,14 @@ theorem elementPool_eligible (P : Finset (Ideal O))
   constructor
   · rintro ⟨⟨Q,hQ,rfl⟩,hnot⟩
     refine ⟨Q,⟨hQ,?_⟩,rfl⟩
-    rwa [← (primaryPrime_data Q (hp Q hQ) (hbad Q hQ)).2.1]
+    rwa [← (primaryPrime_data Q (by grind) (by grind)).2.1]
   · rintro ⟨Q,⟨hQ,hnot⟩,rfl⟩
-    refine ⟨⟨Q,hQ,rfl⟩,?_⟩
-    rwa [(primaryPrime_data Q (hp Q hQ) (hbad Q hQ)).2.1]
+    refine ⟨by grind,?_⟩
+    rwa [(primaryPrime_data Q (by grind) (by grind)).2.1]
 
-theorem eligible_element_card_half (P : Finset (Ideal O))
+theorem eligible_element_card_half (P : Finset (Ideal ActualEisensteinCubic.O))
     (hp : ∀ Q ∈ P, Prime Q) (hbad : ∀ Q ∈ P, Q ∉ fixedBadPrimes)
-    (R : Ideal O) (hR : R ≠ 0) (Z ell B : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
+    (R : Ideal ActualEisensteinCubic.O) (hR : R ≠ 0) (Z ell B : ℝ) (hZ : 1 < Z) (hell : 0 < ell)
     (hlower : ∀ Q ∈ P, Z^ell ≤ (Ideal.absNorm Q : ℝ))
     (hupper : (Ideal.absNorm R : ℝ) ≤ Z^B) (hsize : 2*(B/ell) ≤ P.card) :
     (P.card : ℝ)/2 ≤ ((elementPool P).filter (fun p => ¬Ideal.span {p} ∣ R)).card := by

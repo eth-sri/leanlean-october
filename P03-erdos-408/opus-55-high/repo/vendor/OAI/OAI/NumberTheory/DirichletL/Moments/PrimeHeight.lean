@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set
 namespace SevenEighths.CenteredMomentPrimeHeight
 open HeckeFamily HeckePrimeRay HeckePrimeAnnular HeckeDyadic HeckeZeroSupremum
-local notation "O" => HeckeFamily.O
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
 theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
@@ -32,8 +31,8 @@ theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
     intro I hI
     have hi := ConcretePrimeRowBridge.mem_idealsUpTo.mp (Finset.mem_filter.mp hI).1
     apply ConcretePrimeRowBridge.mem_idealsUpTo.mpr
-    exact ⟨hi.1,hi.2.trans (Nat.floor_mono (mul_le_mul_of_nonneg_left hPD (le_trans zero_le_one (le_max_left _ _))))⟩
-  have hn (I : Ideal O) : ‖idealCoeff χ I*annularWeight W P σ freq I‖≤Cw := by
+    exact ⟨hi.1,hi.2.trans (Nat.floor_mono (mul_le_mul_of_nonneg_left hPD (by positivity)))⟩
+  have hn (I : Ideal HeckeFamily.O) : ‖idealCoeff χ I*annularWeight W P σ freq I‖≤Cw := by
     have hc := idealCoeff_norm_le_one χ I
     apply (show ‖idealCoeff χ I*annularWeight W P σ freq I‖≤‖annularWeight W P σ freq I‖ by
       rw [norm_mul];exact mul_le_of_le_one_left (norm_nonneg _) hc).trans
@@ -41,7 +40,7 @@ theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
     · simp [annularWeight,hz,hCw.le]
     · have hs := hWs hz
       rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos (hA.trans_le hs.1)]
-      simpa only [Complex.neg_re,shift_re] using hprofile σ ⟨hσ,hσhi⟩ _ hs
+      simp_all
   have hpow : ‖(P:ℂ)^(-(1/2:ℂ))‖≤1 := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hp]
     norm_num only [Complex.neg_re,show ((1/2:ℂ).re)=1/2 by norm_num]
@@ -52,9 +51,9 @@ theorem ray_prime_bounded_scale (W : ℝ→ℂ) (A B lo hi D : ℝ) (hA : 0<A)
     _ ≤ ‖∑ I∈(annulusSet B P).filter (fun I=>Prime I ∧ I∈RayQuotient.identityClass M H),
         idealCoeff χ I*annularWeight W P σ freq I‖ := mul_le_of_le_one_left (norm_nonneg _) hpow
     _ ≤ ∑ I∈(annulusSet B P).filter (fun I=>Prime I ∧ I∈RayQuotient.identityClass M H),Cw :=
-      (norm_sum_le _ _).trans (Finset.sum_le_sum (fun I _=>hn I))
-    _ ≤ ∑ _I∈S,Cw := Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _=>hCw.le)
-    _ ≤ _ := by simp only [Finset.sum_const,nsmul_eq_mul];nlinarith
+      (norm_sum_le _ _).trans (Finset.sum_le_sum (by grind))
+    _ ≤ ∑ _I∈S,Cw := Finset.sum_le_sum_of_subset_of_nonneg hsub (by grind)
+    _ ≤ _ := by simp_all
 
 lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D≠0)
     (hU : 1<(Z*T)^D) (hP : 0<P) :
@@ -64,7 +63,7 @@ lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D�
   rw [Real.rpow_add hu]
   have hs : ((Z*T)^D)^(κ*Real.logb ((Z*T)^D) P)=P^κ := by
     rw [mul_comm κ,Real.rpow_mul hu.le,Real.rpow_logb hu (ne_of_gt hU) hP]
-  rw [hs,←Real.rpow_mul (mul_pos hZ hT).le]
+  rw [hs,←Real.rpow_mul (by positivity)]
   have he : D*(2*(loss/(2*D)))=loss := by field_simp
   rw [he,Real.mul_rpow hZ.le hT.le]
   ring
@@ -87,19 +86,19 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   let eps := loss/(2*d)
   have heps : 0<eps := by dsimp [eps];positivity
   let e := min (eps/32) (1/2000)
-  have he : 0<e := lt_min (by positivity) (by norm_num)
+  have he : 0<e := by positivity
   have he' : e<1/1000 := (min_le_right _ _).trans_lt (by norm_num)
   have hbudget : 8*e*1+eps/2≤eps := by have := min_le_left (eps/32) (1/2000);dsimp [e];linarith
   obtain ⟨C,hC,hbound⟩ := CenteredMomentPrimeGlobal.ray_prime_global_squared M H hH W A B hA hWs hW
     1 d 1 eps e (eps/2) (4/d) lo hi κ (by norm_num) hd.le (by norm_num) heps he he'
     (by positivity) (by positivity) hbudget hbeta hκ
   let Z₀ := max 2 (M.absNorm:ℝ)
-  refine ⟨C,Z₀,hC,lt_of_lt_of_le (by norm_num : (1:ℝ)<2) (le_max_left _ _),?_⟩
+  refine ⟨C,Z₀,hC,by grind,?_⟩
   intro Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi hlarge
   have hz2 : 2≤Z := (le_max_left _ _).trans hZ
   have hz : 0<Z := by linarith
   have hz1 : 1≤Z := by linarith
-  have hMZ : (M.absNorm:ℝ)≤Z := (le_max_right _ _).trans hZ
+  have hMZ : (M.absNorm:ℝ)≤Z := by grind
   let T := 3+|freq|
   let Zt := Z*T
   let U := Zt^d
@@ -119,14 +118,14 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   let r := Real.logb U P
   have hr : 0≤r := Real.logb_nonneg hU hP
   have hr1 : r≤1 := (Real.logb_le_iff_le_rpow hU (zero_lt_one.trans_le hP)).mpr
-    (by simpa only [Real.rpow_one] using hPU)
+    (by simpa using hPU)
   have hPr : U^r=P := Real.rpow_logb hUp (ne_of_gt hU) (zero_lt_one.trans_le hP)
   have hQ (θ : RayQuotient.Characters M H) : ((twistedFamily M H hH χ θ).modulus.absNorm:ℝ)≤U := by
     have ht : ((twistedFamily M H hH χ θ).modulus.absNorm:ℝ)≤(χ.modulus.absNorm:ℝ)*M.absNorm := by
       exact_mod_cast HeckePrimeScale.twisted_modulus_bound M H hH χ θ
     apply ht.trans
     calc
-      _ ≤ Z^Lmod*Z := mul_le_mul hχ hMZ (Nat.cast_nonneg _) (Real.rpow_nonneg hz.le _)
+      _ ≤ Z^Lmod*Z := mul_le_mul hχ hMZ (Nat.cast_nonneg _) (by positivity)
       _ = Z^(Lmod+1) := by rw [Real.rpow_add hz,Real.rpow_one]
       _ ≤ Z^d := Real.rpow_le_rpow_of_exponent_le hz1 hmd
       _ ≤ U := Real.rpow_le_rpow hz.le hZzt hd.le
@@ -141,11 +140,11 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     calc
       _ ≤ (Zt^2)^2 := pow_le_pow_left₀ (by positivity) hb 2
       _ = _ := by ring
-  have hb := hbound Zt d hzt1 hd.le le_rfl (by linarith : 2≤Zt^d)
-    (by simpa only [Real.rpow_one] using (show (2:ℝ)<Zt by linarith)) χ hn 0 r σ freq hr hr1 hσ hσhi
-    (by change _≤Real.log (U^r);rw [hPr];exact hlarge) hQ
-    (by norm_num only [Nat.mul_zero,Nat.zero_add,Nat.cast_ofNat,Real.rpow_one];dsimp [T] at hTzt;linarith)
-    (by simpa only [Nat.mul_zero,Nat.zero_add,Nat.cast_ofNat,Real.rpow_one] using hheight)
+  have hb := hbound Zt d hzt1 hd.le le_rfl (by linarith)
+    (by simpa using (show (2:ℝ)<Zt by linarith)) χ hn 0 r σ freq hr hr1 hσ hσhi
+    (by grind) hQ
+    (by norm_num only [Real.rpow_one];linarith)
+    (by simpa using hheight)
   change ‖rayPrimePolynomial M H χ W B (U^r) σ freq‖^2≤C*U^(κ*r+2*eps) at hb
   rw [hPr] at hb
   apply hb.trans_eq
@@ -173,12 +172,12 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   have hC0 : 0<C0 := by dsimp [C0];positivity
   refine ⟨degree,C0*(3:ℝ)^degree,Z₀,by positivity,hZ₀,?_⟩
   intro Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi
-  have hz1 : 1≤Z := hZ₀.le.trans hZ
+  have hz1 : 1≤Z := by linarith
   have hκ0 : 0≤κ := by linarith
-  have hpκ : 1≤P^κ := Real.one_le_rpow hP hκ0
-  have hzloss : 1≤Z^loss := Real.one_le_rpow hz1 hloss.le
+  have hpκ := Real.one_le_rpow hP hκ0
+  have hzloss := Real.one_le_rpow hz1 hloss.le
   have htbase : 1≤3+|freq| := by linarith [abs_nonneg freq]
-  have htloss : 1≤(3+|freq|)^loss := Real.one_le_rpow htbase hloss.le
+  have htloss := Real.one_le_rpow htbase hloss.le
   have hbase : ‖rayPrimePolynomial M H χ W B P σ freq‖^2≤C0*P^κ*Z^loss*(3+|freq|)^loss := by
     by_cases hlarge : K≤Real.log P
     · exact (hbig Z P hZ hP hPcap χ hχ hn σ freq hσ hσhi hlarge).trans
@@ -189,7 +188,7 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       have hb := pow_le_pow_left₀ (norm_nonneg _) (hsmall χ P σ freq hP hPD hσ hσhi) 2
       apply hb.trans
       calc
-        Csmall^2 ≤ C0 := by dsimp [C0];linarith
+        Csmall^2 ≤ C0 := by linarith
         _ ≤ C0*P^κ := le_mul_of_one_le_right hC0.le hpκ
         _ ≤ C0*P^κ*Z^loss := le_mul_of_one_le_right (by positivity) hzloss
         _ ≤ _ := le_mul_of_one_le_right (by positivity) htloss
@@ -197,7 +196,7 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     calc
       _ ≤ (3+|freq|)^(degree:ℝ) := Real.rpow_le_rpow_of_exponent_le htbase (Nat.le_ceil loss)
       _ = (3+|freq|)^degree := Real.rpow_natCast _ _
-      _ ≤ (3*(1+|freq|))^degree := pow_le_pow_left₀ (by positivity) (by linarith [abs_nonneg freq]) _
+      _ ≤ (3*(1+|freq|))^degree := pow_le_pow_left₀ (by positivity) (by grind) _
       _ = _ := mul_pow _ _ _
   apply hbase.trans
   calc

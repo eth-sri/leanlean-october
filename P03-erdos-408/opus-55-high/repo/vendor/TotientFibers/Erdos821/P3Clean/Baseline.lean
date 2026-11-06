@@ -8,7 +8,6 @@ public import Erdos821.Leaves.Arith
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -23,7 +22,7 @@ theorem visitQ_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < visitQ F.q 
 theorem visitQ_lt_one (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : visitQ F.q n i < 1 := by
   unfold visitQ
   split_ifs
-  · simpa only [Real.sqrt_one] using Real.sqrt_lt_sqrt F.q_pos.le F.q_lt
+  · simpa using Real.sqrt_lt_sqrt F.q_pos.le F.q_lt
   · exact F.q_lt
 
 theorem eta_nonneg (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 ≤ eta F n i :=
@@ -55,14 +54,13 @@ theorem baselinePrime_bounds (F : FixedData) (n p : ℕ) (hp : 0 < p)
     simp only [div_eq_mul_inv, mul_comm]
   rw [heq]
   refine ⟨h.1, h.2.1, h.2.2.trans ?_⟩
-  simpa only [add_comm] using add_le_add_left (div_le_div_of_nonneg_right
+  simpa using add_le_add_left (div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_left he1 (by norm_num : (0 : ℝ) ≤ 2)) hpR.le) 1
 
 theorem tiltedMu_eq_mu_mul (F : FixedData) (P : PrimeGroups) (n : ℕ)
     (g : P.Group) (p : P.Prime g) :
     tiltedMu F P n g p = P.mu g p * (baselinePrime F n p.val)⁻¹ := by
   unfold tiltedMu PrimeGroups.mu
-  rw [mul_inv_rev]
   ring
 
 end Erdos821.P3Clean

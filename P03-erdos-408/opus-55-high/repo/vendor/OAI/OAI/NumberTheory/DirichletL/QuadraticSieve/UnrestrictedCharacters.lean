@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,42 +31,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators Classical
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open ConcretePrimeRowBridge CompletedGauss
 
 def unrestrictedPairCharacter (I J lengthScale : Ideal O) : ℂ :=
   quadraticRow I (idealGenerator lengthScale) * quadraticRow J (idealGenerator lengthScale)
@@ -113,9 +94,8 @@ theorem unrestrictedPairCharacter_eq_primary (I J : Ideal O) (hI : Admissible I)
     (fun P hP => (hL.2 P hP).1)
   have h := unrestrictedPairCharacter_span I J hI hJ hray (primaryGenerator lengthScale)
   rw [(primaryGenerator_spec lengthScale hz).1] at h
-  exact h
+  omega
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
 open EisensteinSchwartzPoisson UnrestrictedIdealReindex GaussGeneratorTransport
 
 theorem idealGenerator_norm_sq (lengthScale : Ideal O) :
@@ -126,7 +106,7 @@ theorem canonical_pair_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (t 
     Summable (fun h : O => (quadraticRow I h * quadraticRow J h) *
       paperRadialFourier W (t * ‖eisEmbedding h‖ ^ 2)) := by
   apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun h => norm_nonneg _) _
+  apply Summable.of_nonneg_of_le (by grind) _
     (paperRadialFourier_lattice_summable_norm W t ht)
   intro h
   simp only [norm_mul]
@@ -160,7 +140,7 @@ theorem canonical_nonprincipal_dual_ideal_reindex
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open ConcretePrimeRowBridge CompletedGauss
 open IdealMobiusDivisorSum
 
 def fixedBadPrimes : Finset (Ideal O) := {Ideal.span {lambda}, Ideal.span {(2 : O)}}
@@ -170,7 +150,7 @@ theorem prime_good_iff_not_bad (P : Ideal O) [P.IsMaximal] :
   constructor
   · rintro ⟨hl, hc⟩ hp
     rcases Finset.mem_insert.mp hp with hp | hp
-    · exact hl (hp ▸ Ideal.subset_span (by simp))
+    · simp_all
     · have he : P = Ideal.span {(2 : O)} := Finset.mem_singleton.mp hp
       exact hc (he ▸ twoIdeal_characteristic)
   · intro hp
@@ -181,7 +161,7 @@ theorem prime_good_iff_not_bad (P : Ideal O) [P.IsMaximal] :
     · intro hc
       have ht : (2 : O) ∈ P := by
         apply Ideal.Quotient.eq_zero_iff_mem.mp
-        have hz : (2 : O ⧸ P) = 0 := (ringChar.spec (O ⧸ P) 2).mpr (by rw [hc])
+        have hz : (2 : O ⧸ P) = 0 := (ringChar.spec (O ⧸ P) 2).mpr (by simp_all)
         simpa only [map_ofNat] using hz
       have he := maximal_ideal_eq_span_of_mem P inferInstance (2 : O) twoIdeal_maximal ht
       exact hp (he ▸ Finset.mem_insert_of_mem (Finset.mem_singleton_self _))
@@ -234,7 +214,7 @@ theorem unrestrictedPairCharacter_squarefree_bad_split
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge
+open ConcretePrimeRowBridge
 
 theorem fixedBadPrimes_card : fixedBadPrimes.card = 2 := by
   have hn : (Ideal.span {lambda} : Ideal O) ≠ Ideal.span {(2 : O)} := by
@@ -245,8 +225,7 @@ theorem fixedBadPrimes_card : fixedBadPrimes.card = 2 := by
   simp [fixedBadPrimes, hn]
 
 theorem fixedBadPrimes_powerset_card : fixedBadPrimes.powerset.card = 4 := by
-  rw [Finset.card_powerset, fixedBadPrimes_card]
-  norm_num
+  simp [Finset.card_powerset, fixedBadPrimes_card]
 
 def badPrimeSector (I : Ideal O) : fixedBadPrimes.powerset :=
   ⟨badPrimeSupport I, Finset.mem_powerset.mpr (badPrimeSupport_subset I)⟩
@@ -256,13 +235,13 @@ theorem goodSquarefreePart_injective_on_sector (I J : Ideal O) (hI : Squarefree 
   have he : badPrimeSupport I = badPrimeSupport J := congrArg Subtype.val hs
   calc
     I = (∏ P ∈ badPrimeSupport I, P) * goodSquarefreePart I := (squarefree_bad_good_product I hI).symm
-    _ = (∏ P ∈ badPrimeSupport J, P) * goodSquarefreePart J := by rw [he, hg]
+    _ = (∏ P ∈ badPrimeSupport J, P) * goodSquarefreePart J := by simp_all
     _ = J := squarefree_bad_good_product J hJ
 
 theorem goodSquarefreePart_norm_le (I : Ideal O) (hI : Squarefree I) :
     Ideal.absNorm (goodSquarefreePart I) ≤ Ideal.absNorm I := by
-  have hd : goodSquarefreePart I ∣ I := by
-    exact ⟨∏ P ∈ badPrimeSupport I, P, (squarefree_bad_good_product I hI).symm.trans (mul_comm _ _)⟩
+  have hd : goodSquarefreePart I ∣ I :=
+    ⟨∏ P ∈ badPrimeSupport I, P, (squarefree_bad_good_product I hI).symm.trans (by ring)⟩
   apply Nat.le_of_dvd
   · exact Nat.pos_iff_ne_zero.mpr (fun hn => hI.ne_zero (Ideal.absNorm_eq_zero_iff.mp hn))
   · exact map_dvd Ideal.absNorm hd
@@ -275,13 +254,12 @@ theorem goodSquarefreePart_mem_idealRange (I : Ideal O) (hI : Squarefree I) (M :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open FiniteSieveOperator
+open ConcretePrimeRowBridge CompletedGauss
 
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
+open ConcretePrimeRowBridge CompletedGauss
 open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
 
 def originalPairIdealDualKernel (D I J : Ideal O) (W : ℝ → ℂ) (M : ℝ) : ℂ :=
@@ -326,7 +304,7 @@ theorem originalPairDualKernel_eq_ideal
     have hd : 0 < ‖eisEmbedding (primeSubsetGenerator R E)‖ :=
       norm_pos_iff.mpr (eisEmbedding_ne_zero (primeSubsetGenerator_ne_zero R E))
     let X := M / (‖eisEmbedding (primeSubsetGenerator R E)‖ ^ 2 * ‖eisEmbedding n‖ ^ 2)
-    have hX : 0 < X := div_pos hM (mul_pos (sq_pos_of_pos hd) (sq_pos_of_pos hn))
+    have hX : 0 < X := by positivity
     have he := canonical_nonprincipal_dual_ideal_reindex Q T hQ hT
       (columnRay_idealQuotient_eq D I J hI hJ hDI hDJ hray)
       (residual_pair_nontrivial D I J hDI hDJ hIJ) W X hX
@@ -346,13 +324,12 @@ theorem originalPairDualKernel_eq_ideal
       (∑ E ∈ (Finset.univ : Finset (gcdMaskPrimes D)).powerset, a E * f E) =
     ((M : ℂ) / (‖eisEmbedding n‖ : ℂ)) *
       (∑ E ∈ (Finset.univ : Finset (gcdMaskPrimes D)).powerset, a E * g E)
-  rw [hs]
-  ring
+  grind
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open QuadraticSquarefreeKernel UnrestrictedIdealReindex
+open ConcretePrimeRowBridge CompletedGauss
+open UnrestrictedIdealReindex
 
 theorem unrestrictedPairCharacter_square
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -368,10 +345,8 @@ theorem unrestrictedPairCharacter_square
 
 end CanonicalQuadraticSieve
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap
 namespace JointLogSeparation
-open FourierBridge FirstPassCubeLabels
 
 end JointLogSeparation
 

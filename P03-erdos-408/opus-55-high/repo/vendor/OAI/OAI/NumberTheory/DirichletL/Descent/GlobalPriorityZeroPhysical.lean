@@ -7,23 +7,22 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityZero
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
+open FirstPassCubeLabels SecondPassArithmetic
 open InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseMomentGlobalPrincipalMass
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(hdsmall:0<dsmall):
     ∃(s:Finset (ℕ×ℕ))(Czero:ℝ),0<Czero ∧
     ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (Jo:ℕ),Jo≤Jmax→∀(extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)
-      (original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)(negative:Bool)(Ψ:O→*ℂ)(m:O)
+      (original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)(negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀k∈lists i,‖a i k‖≤1)→(∀u,‖Ψ u‖≤1)→
       (∀x∈original,‖w x‖≤1)→
@@ -73,7 +72,7 @@ theorem global_priority_zero_physical (ε:ℝ)(hε:0<ε)(Jmax:ℕ)(dsmall:ℝ)(h
       ∑x∈original,(primeProductNorm p (principalSupport extra negative x))^(2*ε)):=by
       dsimp [Q,P,physicalPrincipalFactor];ring
     _≤Q*(Cm*Real.exp (window*(1+ε))*Z^(r+3*ell+V+17*eta+tau+pi)):=mul_le_mul_of_nonneg_left hm hQ
-    _= _:=by dsimp [Q];ring
+    _= _:=by linarith
 end SevenEighths.InverseMoment
 
 end

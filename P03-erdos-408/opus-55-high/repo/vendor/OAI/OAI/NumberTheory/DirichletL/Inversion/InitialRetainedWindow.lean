@@ -12,15 +12,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedWindow
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerSourceMask InverseInitialQuotientGeometry InverseInitialClippedColumns
-open InverseInitialCanonicalState InverseInitialEnergyCallerState FirstPassCubeLabels
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows
+open InverseInitialEnergyCallerSourceMask InverseInitialQuotientGeometry
+open InverseInitialCanonicalState InverseInitialEnergyCallerState
 
 theorem retained_window_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -43,11 +42,11 @@ theorem retained_window_bound
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
     ∀(ψ:Fin 4→ℝ→ℂ),(∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))→
@@ -75,13 +74,13 @@ theorem retained_window_bound
   have hfs':Function.support (fresh:ℝ→ℂ)⊆Set.Icc af (max 1 bf):=by
     intro x hx
     have h:=hfs (subset_closure hx)
-    exact ⟨h.1,h.2.trans (le_max_right _ _)⟩
+    exact by grind
   obtain ⟨J,Btree,hBtree,hbound⟩:=InverseInitialRetainedPhysical.retained_physical_bound
     W₁ W₂ a₀ b₀ ha₀ hs₁ hs₂ hW₁ hW₂ Φ (fun i=>Vlog i) Mlog
     (fun i=>(Vlog i).smooth ⊤) hVc hM (fun i y hy=>abs_le.mpr (hVs i hy))
-    fresh fresh af (max 1 bf) haf (le_max_left _ _) hfs' hfs' (fresh.smooth ⊤) (fresh.smooth ⊤)
+    fresh fresh af (max 1 bf) haf (by simp) hfs' hfs' (fresh.smooth ⊤) (fresh.smooth ⊤)
     cap gap eps U π hcap hgap heps hU hπ K
-  refine ⟨J,Btree,Real.log (max 1 bf),hBtree,Real.log_nonneg (le_max_left _ _),?_⟩
+  refine ⟨J,Btree,Real.log (max 1 bf),hBtree,Real.log_nonneg (by simp),?_⟩
   intro q hq
   obtain ⟨C,Z₀,hC,hZ₀,hbound⟩:=hbound q hq
   refine ⟨C,Z₀,hC,hZ₀,?_⟩
@@ -91,7 +90,7 @@ theorem retained_window_bound
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod S hdiv hf ψ hψ
     D B v θ H m r η τ hη hηsmall hτ hhiZ hloZ hlog hprodj hprod hDeq hmargin₁ hmargin₂ hparent hR hrad
     c₁ c₂ θ₁ θ₂ hc₁ hbc₁ hc₂ hbc₂ w hw
-  have hZp:1<Z:=hZ₀.trans_le hZ
+  have hZp:1<Z:=by linarith
   have hprimary:=InverseInitialRayAttachment.poolPrimary_primary F hFa
   let Sw:=windowSource p S ψ Z D B v θ H
   let Sc:=coprimeSource p Sw
@@ -117,7 +116,7 @@ theorem retained_window_bound
   have hclip:= (InverseInitialEnergyCallerEmpty.physical_nonzero_clipping p hp hcop hg
     hprimary Finset.univ Sc hdivc hfc' (w∘erasePoint) Ψ (assignedElement assigned qelem)
     (primeMark (all\assigned) lists coeff) W₁ W₂ fresh fresh (fun i=>Vlog i) Φ
-    Z D B v θ H m c₁ c₂ θ₁ θ₂ af (max 1 bf) η hZp (le_max_left _ _) hfs' hsupport hlog hempty).2
+    Z D B v θ H m c₁ c₂ θ₁ θ₂ af (max 1 bf) η hZp (by simp) hfs' hsupport hlog hempty).2
   have hqt:quotientSet p Sc⊆quotientSet p Sw:=
     Finset.image_subset_image (Finset.filter_subset _ _)
   have hn:∀t∈quotientSet p Sc,(t.absNorm:ℝ)≤Z^(B-θ+2*η):=by
@@ -138,7 +137,7 @@ theorem retained_window_bound
     intro t ht
     have hs:=actual_window_state p hp hprimary S ψ lo hi hψ Z D B v θ H η hZp hη hhiZ hloZ
       hdiv hf all assigned hassigned qelem z al bl primeW hz hqe hprimeW hprimeLive hprodj (hqt ht)
-      m r τ (2*gap) (2*gap) hDeq hmargin₁ hmargin₂ (by simp;positivity)
+      m r τ (2*gap) (2*gap) hDeq hmargin₁ hmargin₂ (by positivity)
       (by simp only [min_self];linarith) (by simp only [min_self];linarith) hrad hclip
     simp only [min_self] at hs
     obtain ⟨hm,hN,hV,hM,hQ,he,hmargin,hF,hMr,hshift⟩:=hs
@@ -148,7 +147,7 @@ theorem retained_window_bound
     lists Hslot coeff (fun i hi j hj hij=>hdis (Finset.mem_sdiff.mp hi).1 (Finset.mem_sdiff.mp hj).1 hij) hHs hPs hac
     (assignedCenter (all\assigned) z+η) (by apply add_nonneg _ hη;exact Finset.sum_nonneg (fun i hi=>hz i (Finset.mem_sdiff.mp hi).1))
     hprod Ψ hΨ hperiod Sc hdivc hfc' (assignedElement assigned qelem) D B v θ H (B-θ+2*η) m η
-    hR hη c₁ c₂ θ₁ θ₂ (zero_lt_one.trans_le hc₁) (zero_lt_one.trans_le hc₂) hsupport hn w
+    hR hη c₁ c₂ θ₁ θ₂ (by positivity) (by positivity) hsupport hn w
     (fun x hx=>hw x (Finset.mem_filter.mp (Finset.mem_filter.mp hx).1).1)
     (idealRange (Z^(θ+v+2*η))) (nonzeroChildFrequencyBall 1 (Z^(θ+H+2*η)))
     (fun f hf=>mem_idealRange.mp hf) (Finset.Subset.refl _) ?_ ?_ hclip rfl hstates

@@ -12,15 +12,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityRetainedSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseWholePriorityRetainedSource RayFourExpansion
 theorem global_priority_filtered_moving_radius_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -28,19 +27,19 @@ theorem global_priority_filtered_moving_radius_uniform_types
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
-      ∀ J:ℕ, ∃ C Cbin : ℝ,0 ≤ C ∧ 0≤Cbin ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
+      ∀ J:ℕ, ∃ C Cbin : ℝ,0 ≤ C ∧ 0≤Cbin ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (_hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (InverseFirstPriorityParents.Source ι Jo))
     (_hvalid:∀x∈original,InverseFirstPriorityParents.SourceValid p x)
     (_hextra:∀x∈original,extra x.cube⊆x.cube.support)
     (w:InverseFirstPriorityParents.Source ι Jo→ℂ) (_hw:∀x∈original,‖w x‖≤1)
-    (Ψ:Eis→*ℂ) (m:Eis) (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex)
+    (Ψ:ActualEisensteinCubic.O→*ℂ) (m:ActualEisensteinCubic.O) (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex)
     (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
     (cutoff:SecondParentSource ι (Jo+(assigned.card+assigned.card))→Finset ι→Finset ι→ℝ)
 ,
@@ -50,7 +49,7 @@ theorem global_priority_filtered_moving_radius_uniform_types
     ∀(z:SecondRayIndex)
         (Y:ℝ) (R:BlockIndex→ℝ) (L Z X εchild : ℝ) (Vlabel:BlockIndex→ℝ)
         (ell Ractive j tcount eta : ℝ) (M r V delta Acol Bfirst tau pi b : ℝ) (ρ : Fin 6 → ℝ) (t : ℝ)
-        (labels : BlockIndex→Finset (Ideal Eis)) (A : ℝ),
+        (labels : BlockIndex→Finset (Ideal ActualEisensteinCubic.O)) (A : ℝ),
     let source:=InverseMomentGlobalRetainedGates.geometrySource p originalSource b X;
       hi≤b →
       (∀i∈assigned,∀k∈lists i,‖a i k‖≤1) →
@@ -111,12 +110,11 @@ theorem global_priority_filtered_moving_radius_uniform_types
     haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
     ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass hleft hright
   have hsub:source⊆originalSource:=InverseMomentGlobalRetainedGates.geometrySource_subset p originalSource b X
-  have hsource:ActualSecondSourceConditions p source:=
+  have hsource:=
     ActualSecondSourceConditions.mono p (unified_conditions p hp extra original hvalid hextra negative assigned lists pool cutoff) hsub
-  have hd:∀x∈source,∀i∈InverseMomentWholeRetainedSource.deleted p extra negative x,
-      i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient:=
+  have hd:=
     fun x hx=>unified_deleted_support p hinj extra original hvalid hextra negative assigned lists pool cutoff x (hsub hx)
-  have hw:∀x∈source,‖normalizedGlobalPriorityWeight p hg negative Ψ m ray core w assigned a x‖≤1:=
+  have hw:=
     fun x hx=>normalizedGlobalPriorityWeight_norm p hg hinj extra original pool negative Ψ m ray core w hwOriginal hΨ
       assigned lists a haassigned cutoff x (hsub hx)
   have hΨ₀:∀n,‖Ψ₀ n‖≤1:=fun n=>(firstCoreTwist_norm_le negative (if negative then ray.1 else ray.2)

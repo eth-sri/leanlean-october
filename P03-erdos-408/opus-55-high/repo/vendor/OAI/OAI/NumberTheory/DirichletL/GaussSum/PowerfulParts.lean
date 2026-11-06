@@ -9,33 +9,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,42 +31,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel UniqueFactorizationMonoid
+open CanonicalQuadraticSieve
 
 def rowPowerfulPart (I : Ideal O) : Ideal O :=
   ((normalizedFactors I).filter (fun P => 2≤(normalizedFactors I).count P)).prod
@@ -107,9 +86,7 @@ theorem rowPowerfulPart_powerful (I : Ideal O) : PowerfulIdeal (rowPowerfulPart 
   refine ⟨rowPowerfulPart_ne_zero I,?_⟩
   intro P hP
   rw [normalizedFactors_rowPowerfulPart] at hP ⊢
-  have hp := (Multiset.mem_filter.mp hP).2
-  rw [Multiset.count_filter,ite_eq_left hp]
-  exact hp
+  simp_all
 
 theorem rowSimplePart_squarefree (I : Ideal O) : Squarefree (rowSimplePart I) := by
   apply (squarefree_iff_nodup_normalizedFactors (rowSimplePart_ne_zero I)).mpr
@@ -117,7 +94,7 @@ theorem rowSimplePart_squarefree (I : Ideal O) : Squarefree (rowSimplePart I) :=
   apply Multiset.nodup_iff_count_le_one.mpr
   intro P
   rw [Multiset.count_filter]
-  split_ifs <;> omega
+  grind
 
 theorem row_powerful_simple_product (I : Ideal O) (hI : I≠0) :
     rowPowerfulPart I*rowSimplePart I=I := by
@@ -126,7 +103,7 @@ theorem row_powerful_simple_product (I : Ideal O) (hI : I≠0) :
 
 end
 
-open ActualEisensteinCubic CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CanonicalQuadraticSieve
 
 def squarefreeMaskPart (I R : Ideal O) : Ideal O :=
   ((normalizedFactors I).filter (fun P => P∣R)).prod
@@ -164,11 +141,11 @@ theorem squarefreeResidualPart_coprime (I R : Ideal O) : IsCoprime (squarefreeRe
   intro P hp hr hP
   have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero I R)).mpr ⟨hP,hp⟩
   rw [normalizedFactors_squarefreeResidualPart] at hm
-  exact (Multiset.mem_filter.mp hm).2 hr
+  simp_all
 
 theorem squarefreeMaskPart_dvd (I R : Ideal O) (hI : Squarefree I) : squarefreeMaskPart I R∣R := by
   by_cases hR : R=0
-  · rw [hR]; exact dvd_zero _
+  · simp_all
   apply (dvd_iff_normalizedFactors_le_normalizedFactors (squarefreeMaskPart_ne_zero I R) hR).mpr
   rw [normalizedFactors_squarefreeMaskPart]
   apply Multiset.le_iff_count.mpr
@@ -182,7 +159,7 @@ theorem squarefreeMaskPart_dvd (I R : Ideal O) (hI : Squarefree I) : squarefreeM
       have hr := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hR).mpr ⟨prime_of_normalized_factor P hm,hp⟩
       have hc := Multiset.count_pos.mpr hr
       omega
-  · omega
+  omega
 
 def rowMaskPart (I R : Ideal O) : Ideal O := squarefreeMaskPart (rowSimplePart I) R
 def rowResidualPart (I R : Ideal O) : Ideal O := squarefreeResidualPart (rowSimplePart I) R
@@ -219,7 +196,7 @@ theorem rowResidualPart_norm (I R : Ideal O) (hI : I≠0) :
     exact_mod_cast (fun hz => rowPowerfulPart_ne_zero I (Ideal.absNorm_eq_zero_iff.mp hz))
   have ht : (Ideal.absNorm (rowMaskPart I R):ℝ)≠0 := by
     exact_mod_cast (fun hz => squarefreeMaskPart_ne_zero (rowSimplePart I) R (Ideal.absNorm_eq_zero_iff.mp hz))
-  apply (eq_div_iff (mul_ne_zero hp ht)).mpr
+  apply (eq_div_iff (by positivity)).mpr
   have he := congrArg (fun J : Ideal O => (Ideal.absNorm J:ℝ)) (row_powerful_mask_residual_product I R hI)
   simpa only [map_mul,Nat.cast_mul,mul_comm] using he
 
@@ -229,9 +206,7 @@ namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+open scoped Classical
 open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter crossCoeff gCoeff)
@@ -254,7 +229,6 @@ end
 end
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -268,7 +242,6 @@ end
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 

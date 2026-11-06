@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanLifecycle
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -23,13 +22,13 @@ theorem pendingPrimes_enumeration {g : P.Group} (z : P.Memory g) :
 
 theorem memoryEntry_mem {g : P.Group} (z : P.Memory g) (i : Fin z.card) : memoryEntry z i ∈ z := by
   have he : memoryEntry z i ∈ (Finset.univ : Finset (Fin z.card)).val.map (memoryEntry z) :=
-    Multiset.mem_map.mpr ⟨i, Finset.mem_univ i, rfl⟩
+    by simp
   rwa [memoryEntry_enumeration] at he
 
 theorem pendingPrime_mem_iff {g : P.Group} (z : P.Memory g) (p : P.Prime g) :
     p ∈ pendingPrimes z ↔ ∃ i : Fin z.card, (memoryEntry z i).1 = p := by
   rw [pendingPrimes_enumeration]
-  simp only [Multiset.mem_map, Finset.mem_val, Finset.mem_univ, true_and]
+  simp
 
 theorem memoryEntry_prime_injective {g : P.Group} (z : P.Memory g) (hz : (pendingPrimes z).Nodup) :
     Function.Injective (fun i : Fin z.card => (memoryEntry z i).1) := by

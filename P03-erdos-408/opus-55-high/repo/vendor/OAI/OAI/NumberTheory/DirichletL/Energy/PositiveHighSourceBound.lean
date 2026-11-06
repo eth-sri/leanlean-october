@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSourceBound
@@ -20,12 +20,11 @@ open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyRef
 open CenteredMomentFiniteProfileExceptional
 open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveHighSource (balancedInput)
 open CenteredMomentEnergyPositiveHighBound CenteredMomentEnergyBandMonotonicity
@@ -33,7 +32,7 @@ open CenteredMomentEnergyPositiveHighAssembly (low_restrict)
 def PhysicalHighAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (a b bΦ Bmask L Lslot rho Mcap κ ξ e Z:ℝ)(ha:0<a)
-    (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(η₀:Character)(Q:Ideal O)
+    (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(η₀:Character)(Q:Ideal HeckeFamily.O)
     (S:Finset (ℕ×ℕ))(J:ℕ)(C:ℝ):Prop:=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ freq:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→∀hσlo:∀i,lo≤σ i,∀hσhi:∀i,σ i≤hi,
@@ -51,7 +50,7 @@ def PhysicalHighAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
       C*(p.control S)^2*(1+|t|+height)^J*Z^(state.width+e)
 
 def PositiveHighAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi rho Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal HeckeFamily.O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→
@@ -78,7 +77,7 @@ theorem actual_high_stage_from_physical
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∀Jmass:ℕ,∀Smass:Finset (ℕ×ℕ),
     ∃Jout:ℕ,∃U:Finset (ℕ×ℕ),∃Cfixed:ℝ,0<Cfixed ∧
     ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀(L Lslot κ e emass efinal:ℝ)(η₀:Character)(Q:Ideal O)(K Cphysical:ℝ),
+    ∀(L Lslot κ e emass efinal:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K Cphysical:ℝ),
       3/4≤κ→0≤e→0≤K→0≤Cphysical→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       PositiveLowAt (α:=α) M H hH W bslot a b bΦ Bmask (Mcap+Bmask+rho/100)
         Lslot lo hi Mcap e κ Z η₀ Q degree S K→
@@ -104,12 +103,12 @@ theorem actual_high_stage_from_physical
     have hh:=Finset.single_le_sum (fun T (_:T∈(Finset.univ:Finset (Finset α)))=>(hCj T).le)
       (Finset.mem_univ T)
     dsimp [Cfixed];linarith
-  have hJJ (T:Finset α):Jj T≤Jout:=Finset.single_le_sum (fun _ _=>Nat.zero_le _) (Finset.mem_univ T)
+  have hJJ (T:Finset α):Jj T≤Jout:=Finset.single_le_sum (by omega) (Finset.mem_univ T)
   have hUU (T:Finset α):Uj T⊆U:=by
     intro x hx
     exact Finset.mem_biUnion.mpr ⟨T,Finset.mem_univ T,hx⟩
   refine ⟨Jout,U,Cfixed,hCfixed,?_⟩
-  have hevent:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr hbound
+  have hevent:=Filter.eventually_all.mpr hbound
   filter_upwards [hevent,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   refine ⟨hZ1,?_⟩
   intro L Lslot κ e emass efinal η₀ Q K Cphysical hκ he hK hCphysical hefinal hmassFinal
@@ -138,7 +137,7 @@ theorem actual_high_stage_from_physical
 omit [Fintype α] [DecidableEq α] in
 theorem positive_from_stages
     (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi rho Mcap e κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(J:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
+    (η₀:Character)(Q:Ideal HeckeFamily.O)(J:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hold:PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q J S C)
     (hlow:PositiveLowAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap e κ Z η₀ Q J S C)
     (hhigh:PositiveHighAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho Mcap e κ Z η₀ Q J S C):

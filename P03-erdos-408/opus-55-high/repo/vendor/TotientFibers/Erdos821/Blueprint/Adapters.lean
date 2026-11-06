@@ -19,13 +19,13 @@ abbrev PrimeGroups.graph (P : PrimeGroups) : Graph.PrimeGroups where
 
 @[simp] theorem graph_small (P : PrimeGroups) : P.graph.smallGroups = P.small := by
   ext g
-  simp [Graph.PrimeGroups.smallGroups, PrimeGroups.graph]
+  simp [Graph.PrimeGroups.smallGroups]
 
 @[simp] theorem graph_big (P : PrimeGroups) : P.graph.bigGroups = P.big := by
   ext g
-  simp [Graph.PrimeGroups.bigGroups, PrimeGroups.graph, PrimeGroups.big, Finset.mem_filter]
+  simp [Graph.PrimeGroups.bigGroups, PrimeGroups.big]
 
 @[simp] theorem graph_mass (P : PrimeGroups) (g : Fin P.size) : P.graph.V g = mass P g := by
-  simp [Graph.PrimeGroups.V, mass, one_div]
+  simp [Graph.PrimeGroups.V, mass]
 
 end Erdos821.Blueprint.Analytic

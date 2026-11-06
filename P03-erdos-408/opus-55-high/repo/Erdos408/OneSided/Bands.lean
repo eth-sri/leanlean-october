@@ -83,7 +83,7 @@ integer. -/
 theorem eventually_not_dvd_of_isRough {ahi : ℝ} (hahi : ahi < 1 / 5) :
     ∀ᶠ x : ℝ in atTop, ∀ a ≤ ahi, ∀ p ∈ band x a, ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m := by
   filter_upwards [eventually_lt_roughLevel hahi] with x hx a ha p hp m hm hrough hdvd
-  have hpm : p ∈ m.primeFactors :=
+  have hpm :=
     Nat.mem_primeFactors.2 ⟨TypeII.band_prime hp, hdvd, hm⟩
   linarith [hx a ha p hp, hrough p hpm]
 
@@ -99,7 +99,7 @@ theorem eventually_rpow_lt_of_mem_band {alo : ℝ} (halo : 0 < alo) (A : ℝ) :
   -- `(L^{alo})^{A/alo} = L^A`
   rw [← Real.rpow_mul (by linarith), mul_div_cancel₀ _ halo.ne'] at hx'
   rw [one_lt_div (by positivity)] at hx'
-  have hle : Real.exp (Real.log x ^ alo) ≤ Real.exp (Real.log x ^ a) :=
+  have hle :=
     Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL ha)
   linarith [exp_le_of_mem_band hp]
 
@@ -152,7 +152,7 @@ theorem eventually_harmonicMass_band {alo : ℝ} (halo : 1 / 10 ≤ alo) :
 theorem sum_band_inv_sq_le (x a : ℝ) :
     ∑ p ∈ band x a, (1 : ℝ) / (p : ℝ) ^ 2 ≤ 2 * Real.exp (-Real.log x ^ a) := by
   set N := ⌈Real.exp (Real.log x ^ a)⌉₊ with hN
-  have hN1 : 1 ≤ N := Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (Real.exp_pos _)).ne'
+  have hN1 : 1 ≤ N := Nat.one_le_iff_ne_zero.2 (by positivity)
   -- the band lies in `(N - 1, M + 1)`
   have hsub : band x a ⊆ Ioo (N - 1) (⌊Real.exp (2 * Real.log x ^ a)⌋₊ + 1) := by
     intro p hp
@@ -165,7 +165,7 @@ theorem sum_band_inv_sq_le (x a : ℝ) :
   calc ∑ p ∈ band x a, (1 : ℝ) / (p : ℝ) ^ 2
       ≤ ∑ p ∈ Ioo (N - 1) (⌊Real.exp (2 * Real.log x ^ a)⌋₊ + 1), ((p : ℝ) ^ 2)⁻¹ := by
         simp_rw [one_div]
-        exact sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => by positivity
+        exact sum_le_sum_of_subset_of_nonneg hsub (by simp)
     _ ≤ 2 / (((N - 1 : ℕ) : ℝ) + 1) := sum_Ioo_inv_sq_le _ _
     _ ≤ 2 / Real.exp (Real.log x ^ a) := by
         rw [hcast]
@@ -175,15 +175,15 @@ theorem sum_band_inv_sq_le (x a : ℝ) :
 /-- A band has at most `exp(2 L^a)` primes. -/
 theorem card_band_le (x a : ℝ) : ((band x a).card : ℝ) ≤ Real.exp (2 * Real.log x ^ a) := by
   have hN1 : 1 ≤ ⌈Real.exp (Real.log x ^ a)⌉₊ :=
-    Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (Real.exp_pos _)).ne'
+    Nat.one_le_iff_ne_zero.2 (by positivity)
   -- `|band| ≤ M + 1 - N ≤ M`
   have hcard : (band x a).card ≤ ⌊Real.exp (2 * Real.log x ^ a)⌋₊ := by
     unfold band
     refine (card_filter_le _ _).trans ?_
     rw [Nat.card_Icc]
     omega
-  calc ((band x a).card : ℝ) ≤ ⌊Real.exp (2 * Real.log x ^ a)⌋₊ := by exact_mod_cast hcard
-    _ ≤ Real.exp (2 * Real.log x ^ a) := Nat.floor_le (Real.exp_pos _).le
+  calc ((band x a).card : ℝ) ≤ ⌊Real.exp (2 * Real.log x ^ a)⌋₊ := by simp_all
+    _ ≤ Real.exp (2 * Real.log x ^ a) := Nat.floor_le (by positivity)
 
 /-! ### B5: label products -/
 
@@ -194,8 +194,8 @@ theorem labelProduct_bounds {K : ℕ} {x : ℝ} {a : Fin K → ℝ} {p : Fin K �
       ∏ i, (p i : ℝ) ≤ Real.exp (2 * ∑ i, Real.log x ^ a i) := by
   constructor
   · rw [Real.exp_sum]
-    exact prod_le_prod₀ (fun i _ => (Real.exp_pos _).le) fun i _ => exp_le_of_mem_band (hp i)
+    exact prod_le_prod₀ (fun i _ => by positivity) fun i _ => exp_le_of_mem_band (hp i)
   · rw [mul_sum, Real.exp_sum]
-    exact prod_le_prod₀ (fun i _ => Nat.cast_nonneg _) fun i _ => le_exp_of_mem_band (hp i)
+    exact prod_le_prod₀ (by simp) fun i _ => le_exp_of_mem_band (hp i)
 
 end Erdos408.OneSided

@@ -90,8 +90,8 @@ lemma slotProduct_trim_pos (C A : Fin G.count → Finset (Fin J)) (u : G.Aux J) 
   refine Finset.prod_pos fun g _ => Finset.prod_pos fun i _ => ?_
   unfold trim
   split_ifs
-  · exact (G.prime g _ (u g i).property).pos
-  · exact one_pos
+  · exact (G.prime g _ (by simp)).pos
+  omega
 
 /-- A product of two double sums is a sum over the four-fold product. -/
 private lemma sum_mul_sum_four {α β γ δ : Type*} (s : Finset α) (t : Finset β) (s' : Finset γ)
@@ -138,7 +138,7 @@ theorem rawPairing_comparison (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq�
 lemma sSup_norm_nonneg (ν : Pattern G J 1 m) :
     0 ≤ sSup (Set.range fun z : G.BigLabels (J + 1) × G.BigLabels (J + 1) × G.BigAux J =>
       ‖ν.coefficient z.1 z.2.1 z.2.2‖) :=
-  Real.sSup_nonneg fun _ ⟨_, hz⟩ => hz ▸ norm_nonneg _
+  Real.sSup_nonneg (by grind)
 
 /-- The term weights of a comparison pattern sum to at most `ξ⁻² Q⁴` times its
 supremum. -/
@@ -160,7 +160,7 @@ lemma sum_norm_termWeight_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool
         ‖ν.coefficient z.1 z.2.1 z.2.2‖) := by
     intro τ hτ
     simp only [terms, Finset.mem_product] at hτ
-    have hQ : 0 < Q := Fin.pos τ.2.1.1
+    have hQ := Fin.pos τ.2.1.1
     rw [termWeight, norm_mul, norm_neg, norm_pow, norm_neg, norm_one, one_pow, one_mul,
       norm_mul, Complex.norm_real, Complex.norm_real,
       Real.norm_of_nonneg (inv_nonneg.mpr (selectedCellMass_nonneg _ _ _ _ _)),

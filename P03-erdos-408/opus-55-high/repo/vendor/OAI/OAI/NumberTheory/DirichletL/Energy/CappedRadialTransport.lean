@@ -7,17 +7,15 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedRadialTransport
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
+open CenteredMomentEnergyCappedWidthInduction
 open CenteredMomentEnergyBandMonotonicity
-local notation "O" => HeckeFamily.O
 variable {α : Type*}
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 theorem certified_radial_mono (W : ℝ → ℂ)
     (bslot a b radialOld radialNew Bmask L lo hi Mcap κ ε : ℝ) (k : ℕ)
@@ -45,7 +43,7 @@ theorem certified_from_max_two (W : ℝ → ℂ)
       Bmask L lo hi Mcap κ ε k) :
     CertifiedBand (α := α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε k :=
   certified_radial_mono (α := α) M H hH W bslot a b (max 2 radial) radial
-    Bmask L lo hi Mcap κ ε k (le_max_right _ _) h
+    Bmask L lo hi Mcap κ ε k (by simp) h
 
 end SevenEighths.CenteredMomentEnergyCappedRadialTransport
 

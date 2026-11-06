@@ -107,7 +107,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     Real.exp_le_exp.2 (Real.rpow_le_rpow_of_exponent_le hL1 (by norm_num))
   have hbandle : ∀ i, ∀ p ∈ band x (a i), (p : ℝ) ≤ Real.exp (L ^ (0.46 : ℝ)) := by
     intro i p hp
-    have := Real.exp_lt_exp.2 (htwo (a i) 0.27 (by linarith [(ha i).2]))
+    have := Real.exp_lt_exp.2 (htwo (a i) 0.27 (by grind))
     linarith [OneSided.le_exp_of_mem_band hp]
   have h46 : L ^ (0.46 : ℝ) < ε * L := by
     have h₁ : L ^ (0.46 : ℝ) ≤ L ^ (0.47 : ℝ) :=
@@ -160,16 +160,16 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     intro m hm d _ hd
     refine Nat.coprime_of_dvd fun p hp hpd => hkp p ?_
     rcases hp.dvd_mul.1 hpd with h' | h'
-    · exact hm p hp h'
+    · grind
     · have hd0 : d ≠ 0 := (hAs d hd).1.ne_zero
       rcases (hAs d hd).2.2 p (Nat.mem_primeFactors.2 ⟨hp, h', hd0⟩) with hg | ⟨i, hi⟩
       · obtain ⟨g, -, hg⟩ := Finset.mem_biUnion.1 hg
-        linarith [hCm, (hgroup g p hg).2.1]
-      · exact hband (a i) (ha i).1 p hi
+        grind
+      grind
   have hcopQ : ∀ Q ∈ slotTuples x u v, ∀ p : ℕ, p.Prime → p ∣ ∏ i, Q i → L ^ Cm < p := by
     intro Q hQ p hp hdvd
     by_contra hlt
-    exact hnd Q hQ p hp (by linarith [not_lt.1 hlt, hCm]) hdvd
+    exact hnd Q hQ p hp (by linarith) hdvd
   -- steps 2–3 for every modulus
   set τ := σ + t with hτ
   set G := LowFreq.lowWeight ψ₁ Y τ with hG
@@ -190,7 +190,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     intro w
     rw [norm_mul, LowFreq.norm_addTwist, mul_one]
     rcases Nat.eq_zero_or_pos w with rfl | hw
-    · rw [hG0, norm_zero]; exact hM0
+    · rw [hG0, norm_zero]; omega
     · rw [hG, LowFreq.lowWeight, norm_mul, Complex.norm_natCast_cpow_of_pos hw]
       simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero, Complex.ofReal_im,
         Complex.I_im, mul_one, sub_self, Real.rpow_zero, mul_one]
@@ -208,7 +208,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       ‖LowFreq.progSum ψ₁ Y τ h k H m - Θ / (m : ℂ)‖ ≤ α * Y / m + β := by
     intro m hm hmY hHm hmp
     have hR : 1 ≤ Y / m := by
-      rw [le_div_iff₀ (by exact_mod_cast hm), one_mul]; exact hmY
+      rw [le_div_iff₀ (by positivity), one_mul]; exact hmY
     have := LowFreq.norm_sum_dvd_sub_le hAD (fun d hd => (Finset.mem_Icc.1 hd).1) hM0 hρ0 hk0
       hG0 hΦ hΦs hm hmY hHm (hcop m hmp) (hAms (Y / m) hR)
     refine this.trans_eq ?_
@@ -233,11 +233,10 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       _ ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx1 hv1
       _ = x := Real.rpow_one x
       _ ≤ Y := hxY
-  have hΔ : ∀ Q ∈ Ts, ‖LowFreq.progSum ψ₁ Y τ h k H (∏ i, Q i) - Θ / ((∏ i, Q i : ℕ) : ℂ)‖ ≤
-      α * Y / (∏ i, Q i : ℕ) + β := fun Q hQ =>
+  have hΔ := fun Q hQ =>
     hstep _ (hlpos Q hQ) (hlY Q hQ) (hH Q hQ) (hcopQ Q hQ)
   have hΔ₁ : ‖LowFreq.progSum ψ₁ Y τ h k H 1 - Θ‖ ≤ α * Y + β := by
-    have := hstep 1 one_pos (by simpa using hY1) (fun n => by rw [one_mul])
+    have := hstep 1 one_pos (by grind) (fun n => by simp)
       fun p hp hd => absurd (Nat.le_of_dvd one_pos hd) (by have := hp.two_le; omega)
     simpa using this
   have hcomb := LowFreq.norm_combine_le hBc hlpos hΔ hΔ₁
@@ -263,7 +262,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       rw [hρ, Real.sqrt_eq_rpow, ← Real.rpow_mul hL0.le]
       ring_nf
     have hsq2 : Real.sqrt 2 ≤ 3 := by
-      rw [show (3 : ℝ) = Real.sqrt (3 ^ 2) by rw [Real.sqrt_sq (by norm_num)]]
+      rw [show (3 : ℝ) = Real.sqrt (3 ^ 2) by simp]
       exact Real.sqrt_le_sqrt (by norm_num)
     rw [hα, hsqρ]
     have h0 : 0 ≤ M₁ 0 * Real.sqrt CNN * L ^ (-(N : ℝ) / 2) := by positivity
@@ -289,7 +288,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     have hderiv : ∀ y, ‖deriv ψ₁ y‖ ≤ M₁ 1 := fun y => by
       have := hψd 1 y
       rwa [iteratedDeriv_one] at this
-    have hval : ∀ y, ‖ψ₁ y‖ ≤ M₁ 0 := fun y => by
+    have hval := fun y => by
       have := hψd 0 y
       rwa [iteratedDeriv_zero] at this
     have hTVle : TV ≤ 2 * (M₁ 1 + |τ| * M₁ 0) := by
@@ -308,7 +307,7 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       have h₂ : L ^ B' ≤ Lp := Real.rpow_le_rpow_of_exponent_le hL1 (by
         linarith [le_abs_self B', abs_nonneg Cm])
       calc |τ| ≤ |σ| + |t| := abs_add_le σ t
-        _ ≤ 2 * Lp := by linarith only [hσ, ht, h₁, h₂]
+        _ ≤ 2 * Lp := by linarith
     have hM' : M₁ 1 + |τ| * M₁ 0 ≤ (|M₁ 1| + 2 * |M₁ 0|) * Lp := by
       rw [abs_of_nonneg hM0, abs_of_nonneg hM1]
       have h₁ : M₁ 1 ≤ M₁ 1 * Lp := le_mul_of_one_le_right hM1 hLp1
@@ -333,10 +332,9 @@ theorem exists_norm_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
         ring_nf
       calc (Ts.card + Sinv) / Y ≤ 2 * x ^ (1 - ε) / x :=
             div_le_div₀ (by positivity) h₁ hx0 hxY
-        _ = 2 * Real.exp (-(ε * L)) := by rw [mul_div_assoc, h₂]
+        _ = 2 * Real.exp (-(ε * L)) := by grind
     have hεL : ε * L = 2 * (c / 2 * L / T ^ 20) := by rw [hε]; ring
-    have hfin' : K * L ^ Cexp * Real.exp (2 * L ^ (0.47 : ℝ)) ≤
-        Real.exp (c / 2 * L / T ^ 20) := hfin
+    have hfin' := hfin
     have hKL : Real.exp (2 * L ^ (0.47 : ℝ)) * L ^ C₈ *
         (L ^ Cm * (2 * ((|M₁ 1| + 2 * |M₁ 0|) * Lp))) * (2 * Real.exp (-(ε * L))) =
         K * L ^ Cexp * Real.exp (2 * L ^ (0.47 : ℝ)) * Real.exp (-(ε * L)) := by
@@ -425,7 +423,7 @@ theorem exists_integral_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
           rw [← mul_assoc]
           gcongr
       _ ≤ 6 * |M₁ 0| * Real.sqrt CNN * L ^ (-D) + L ^ (-D) := by gcongr
-      _ = K * L ^ (-D) := by rw [hK]; ring
+      _ = K * L ^ (-D) := by linarith
   have hK0 : 0 ≤ K := by positivity
   have hLB : 0 ≤ L ^ B' := by positivity
   calc ∫ t in -(L ^ B')..(L ^ B'),
@@ -446,7 +444,6 @@ theorem exists_integral_lowFrequency_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ)
     _ = 2 * K ^ 2 * L ^ (-A₀) := by
         congr 1
         rw [← Real.rpow_two, ← Real.rpow_mul hL0.le, ← Real.rpow_add hL0, hD]
-        congr 1
-        ring
+        simp
 
 end Erdos408.TwoSided

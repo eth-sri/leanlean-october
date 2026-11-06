@@ -10,18 +10,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerWeights InverseInitialProfile InverseInitialKernelBridge InverseInitialRayAttachment
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def originalCoefficient (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
+def originalCoefficient (Ψ : ActualEisensteinCubic.O→*ℂ) (j : ActualEisensteinCubic.O) (mark : Finset ι→ℂ)
     (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
   (initialBeta p Ψ j x.common * (UniqueFactorizationMonoid.moebius (sourceIdeal p x.divisor):ℂ) *
     supportMobius (fun i=>Ideal.span {p i}) x.overlap * secondRayCoefficient ρ) *
@@ -32,7 +31,7 @@ def originalCoefficient (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
 
 include hp hcop hg in
 theorem physicalTerm_original_coefficient
-    (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (j : ActualEisensteinCubic.O) (mark : Finset ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : SchwartzMap ℝ ℂ) (Z D m : ℝ)
     (x : Point ι) (hx : Valid x) (ρ : SecondRayIndex) :
     physicalTerm p hp hcop hg Ψ j mark W₁ W₂ Φ Z D m x ρ =
@@ -46,8 +45,8 @@ theorem physicalTerm_original_coefficient
 include hp hcop hg in
 theorem originalCoefficient_marked_bound
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-    (Ψ : O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (j : O)
+    (hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (j : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (hdis : (slots:Set σ).PairwiseDisjoint lists)
     (ha : ∀i∈slots,∀k∈lists i,‖a i k‖≤1)

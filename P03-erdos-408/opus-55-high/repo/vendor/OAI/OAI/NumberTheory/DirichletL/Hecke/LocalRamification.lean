@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.ResidueCharacter
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeLocalRamification
 open CenteredMomentCorrelation CenteredMomentCanonical
 open ActualEisensteinCubic
@@ -30,7 +30,7 @@ theorem primePowerCharacter_eq_one_iff (P : Ideal O) [P.IsMaximal]
       exact u.isUnit
     have heq := congrArg (fun f : MulChar (O ⧸ P^c) ℂ => f x) h
     rw [primePowerCharacter_apply, hx, MulChar.one_apply hux] at heq
-    simpa only [MulChar.one_apply u.isUnit] using heq
+    simp_all
   · rintro rfl
     apply MulChar.ext
     intro u

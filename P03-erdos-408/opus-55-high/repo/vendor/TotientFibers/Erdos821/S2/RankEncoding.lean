@@ -8,7 +8,6 @@ public import Mathlib.GroupTheory.Perm.Cycle.Concrete
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
@@ -22,12 +21,12 @@ lemma adjacent_swaps_product {α : Type*} [DecidableEq α] (l : List α) :
     | cons x xs ih =>
       cases l₂ with
       | nil => simp
-      | cons y ys => simp [ih]
-  exact congrArg List.prod (hz l l.tail)
+      | cons y ys => simp_all
+  exact congrArg List.prod (by grind)
 
 lemma adjacent_pairs_length {α : Type*} (l : List α) :
     (l.zip l.tail).length = l.length - 1 := by
-  simp only [List.length_zip, List.length_tail, Nat.min_eq_right (Nat.sub_le _ _)]
+  simp
 
 lemma cycleRank_sum {a : ℕ} (σ : Equiv.Perm (Fin a)) :
     birthRank (cycleBirthBlocks σ) =
@@ -63,7 +62,7 @@ theorem exists_rank_swap_pairs {a : ℕ} (σ : Equiv.Perm (Fin a)) :
     obtain ⟨l', hl', hp'⟩ := ihτ
     refine ⟨l ++ l', ?_, ?_⟩
     · simp only [List.length_append, hl, hl', cycleRank_mul_disjoint hd]
-    · rw [List.map_append, List.prod_append, hp, hp']
+    simp_all
 
 def rankPermutations (a r : ℕ) : Finset (Equiv.Perm (Fin a)) :=
   Finset.univ.filter (fun σ => birthRank (cycleBirthBlocks σ) = r)
@@ -89,23 +88,23 @@ theorem swapPairCode_injective {a r : ℕ} :
     · intro i hi hi'
       have hir : i < r := by rw [← (rankSwapList_properties σ).1]; exact hi
       have he := congrArg (fun f : Fin r → Fin a × Fin a => f ⟨i, hir⟩) h
-      simpa only [swapPairCode, List.get_eq_getElem] using he
+      simpa
   apply Subtype.ext
   calc
     σ.val = ((rankSwapList σ).map (fun p => Equiv.swap p.1 p.2)).prod :=
       (rankSwapList_properties σ).2.symm
-    _ = ((rankSwapList τ).map (fun p => Equiv.swap p.1 p.2)).prod := by rw [hl]
+    _ = ((rankSwapList τ).map (fun p => Equiv.swap p.1 p.2)).prod := by simp_all
     _ = τ.val := (rankSwapList_properties τ).2
 
 /-- At most a^(2r) permutations have equality rank r. -/
 theorem rankPermutations_card_le (a r : ℕ) :
     (rankPermutations a r).card ≤ a ^ (2 * r) := by
   calc
-    (rankPermutations a r).card = Fintype.card (rankPermutations a r) := (Fintype.card_coe _).symm
+    (rankPermutations a r).card = Fintype.card (rankPermutations a r) := by simp
     _ ≤ Fintype.card (Fin r → Fin a × Fin a) := Fintype.card_le_of_injective _ swapPairCode_injective
     _ = a ^ (2 * r) := by
       rw [Fintype.card_pi_const, Fintype.card_prod, Fintype.card_fin]
-      rw [← pow_two, ← pow_mul]
+      ring
 
 
 end Erdos821.S2

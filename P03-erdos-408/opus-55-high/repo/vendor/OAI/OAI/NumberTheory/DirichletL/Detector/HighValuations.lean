@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.IdealUnit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev HighIdeal := (Id×Id)×(Id×Id)
 
@@ -29,20 +28,13 @@ lemma highIdeals_eq_equiv (v : PrimeIdeal→₀HighValuation) :
   apply Prod.ext <;> apply Prod.ext
   all_goals
     apply congrArg idealFromValuations
-    ext P
-    rfl
+    grind
 
 lemma highIdeals_injective : Function.Injective highIdeals := by
   intro v w h
   apply highValuationEquiv.symm.injective
   rw [highIdeals_eq_equiv,highIdeals_eq_equiv] at h
-  apply Prod.ext
-  · apply Prod.ext
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.1.1) h)
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.1.2) h)
-  · apply Prod.ext
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.2.1) h)
-    · exact Subtype.ext (congrArg (fun b : HighIdeal=>b.2.2) h)
+  grind
 
 lemma highIdeals_zero : highIdeals 0=1 := by
   simp only [highIdeals,Finsupp.mapRange_zero,idealFromValuations_zero]
@@ -58,9 +50,9 @@ lemma highIdeals_add (v w : PrimeIdeal→₀HighValuation) :
       (v+w).mapRange f hf0=v.mapRange f hf0+w.mapRange f hf0 := by
     ext P
     simp only [Finsupp.mapRange_apply,Finsupp.add_apply,hf]
-  simp only [highIdeals,hproj (fun b=>b.1.1) rfl (fun _ _=>rfl),
-    hproj (fun b=>b.1.2) rfl (fun _ _=>rfl),hproj (fun b=>b.2.1) rfl (fun _ _=>rfl),
-    hproj (fun b=>b.2.2) rfl (fun _ _=>rfl),idealFromValuations_add]
+  simp only [highIdeals,hproj (fun b=>b.1.1) rfl (by simp),
+    hproj (fun b=>b.1.2) rfl (by simp),hproj (fun b=>b.2.1) rfl (by simp),
+    hproj (fun b=>b.2.2) rfl (by simp),idealFromValuations_add]
   rfl
 
 lemma prime_coprime_highIdeals (P : PrimeIdeal) (v : PrimeIdeal→₀HighValuation)

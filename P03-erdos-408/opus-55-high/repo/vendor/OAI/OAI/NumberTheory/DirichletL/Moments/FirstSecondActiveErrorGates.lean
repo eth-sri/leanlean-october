@@ -8,21 +8,20 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularActiveInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondActiveErrorGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open CenteredMomentOriginalCommonHarmonic
 local instance {α : Type*} : DecidableEq α := Classical.decEq _
 variable {ι : Type*} [Fintype ι]
 
-def errorInput (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) (Q : Ideal O) (k : ℕ)
+def errorInput (s : Input ι) (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C)
+    (τ : Character) (t : ℝ) (Q : Ideal HeckeFamily.O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) : Input (liveIndices Bp.val) :=
   child (activeInput (child s C R B τ t)) (Q^k) (R*C) Bp υ v
@@ -32,9 +31,9 @@ lemma active_endpoints (s : Input ι) (b b₁ b₂ : ℝ) (he : Endpoints b b₁
 
 theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂)
     (s : Input ι) (hc : Fintype.card ι≤N) (he : Endpoints b b₁ b₂ s)
-    (C R : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+    (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
     (hne : frozenCoefficient B.val C R s.ν s.W s.P≠0)
-    (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
+    (Q : Ideal HeckeFamily.O) (hQ : Q≠0) (k : ℕ)
     (hslot : ∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) :
@@ -46,7 +45,7 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
   have hC := norm_ge_one C (allocation_ne s C B)
   have hNp : 0<(Q.absNorm:ℝ)^k := pow_pos (zero_lt_one.trans_le (norm_ge_one Q hQ)) k
   have hH : 0<volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k) :=
-    div_pos (volume_pos s) (mul_pos (zero_lt_one.trans_le hC) hNp)
+    div_pos (volume_pos s) (by positivity)
   have hv : volume (errorInput s C R B τ t Q k Bp υ v)≤
       b^N*(volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)) := by
     rw [errorInput,child_volume _ Q hQ k hslot,active_volume]
@@ -65,22 +64,22 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
     have hh : 1≤b₁*b₂ := by nlinarith
     nlinarith
   refine ⟨hH,hr.1,hv.trans (mul_le_mul_of_nonneg_right hpow hH.le),?_⟩
-  exact hr.2.trans ((mul_le_mul_of_nonneg_left hv (show 0≤b^N*b₁*b₂ by positivity)).trans_eq (by
-    unfold geometry;rw [show 2*N=N+N by omega,pow_add];ring))
+  exact hr.2.trans ((mul_le_mul_of_nonneg_left hv (by positivity)).trans_eq (by
+    unfold geometry;ring))
 
 theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     (hb : 1≤b) (h₁ : 1≤b₁) (h₂ : 1≤b₂) (hε : 0<ε) :
     ∀ᶠZ : ℝ in atTop,1<Z ∧ ∀{ι : Type*}[Fintype ι],∀s : Input ι,
     Fintype.card ι≤N → Endpoints b b₁ b₂ s →
-    ∀(C R seed : Ideal O)(B : actualAllocations s.pools C)(τ : Character)(t : ℝ),
+    ∀(C R seed : Ideal HeckeFamily.O)(B : actualAllocations s.pools C)(τ : Character)(t : ℝ),
     R≠0 → frozenCoefficient B.val C R s.ν s.W s.P≠0 →
-    ∀(Q : Ideal O),Q≠0 → ∀k : ℕ,
+    ∀(Q : Ideal HeckeFamily.O),Q≠0 → ∀k : ℕ,
     (∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I) →
     ∀(Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
       (υ : Character)(v K A D P q ξ : ℝ),
     0<K → 0≤ξ → s.W₁ 0=0 → s.W₂ 0=0 →
     volume s≤Z^A → K⁻¹≤Z^D → (R.absNorm:ℝ)≤Z^P → (υ.modulus.absNorm:ℝ)≤Z^q →
-    (∃I : Ideal O,(original (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) seed).beta I≠0) →
+    (∃I : Ideal HeckeFamily.O,(original (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) seed).beta I≠0) →
     Ready (errorInput s C R B τ t Q k Bp υ v) ((R*C)*(Q^k)) K Z ξ
       (exponent A D P q ε ξ) := by
   filter_upwards [eventual_geometry (geometry N b b₁ b₂) ε
@@ -117,10 +116,10 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     calc
       _≤(R.absNorm:ℝ)*(G*volume s) := by nlinarith [mul_le_mul_of_nonneg_left hprod (Nat.cast_nonneg R.absNorm)]
       _≤Z^P*(Z^ε*Z^A) := mul_le_mul hRN
-        (mul_le_mul hZ.2.1 hVp (volume_pos s).le (Real.rpow_nonneg (zero_lt_one.trans hZ.1).le _))
-        (mul_nonneg (zero_le_one.trans hg) (volume_pos s).le)
-        (Real.rpow_nonneg (zero_lt_one.trans hZ.1).le _)
-      _=Z^(A+P+ε) := by rw [←Real.rpow_add (zero_lt_one.trans hZ.1),←Real.rpow_add (zero_lt_one.trans hZ.1)];congr 1;ring
+        (mul_le_mul hZ.2.1 hVp (by grind) (by linarith))
+        (by linarith)
+        (by linarith)
+      _=Z^(A+P+ε) := by rw [←Real.rpow_add (zero_lt_one.trans hZ.1),←Real.rpow_add (zero_lt_one.trans hZ.1)];ring
   have h₁ : A+ε≤exponent A D P q ε ξ := le_max_left _ _
   have h₂ : 2*A+D+ε+ξ/2≤exponent A D P q ε ξ :=
     (le_max_left _ _).trans (le_max_right _ _)
@@ -129,10 +128,10 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
   have h₄ : q≤exponent A D P q ε ξ :=
     (le_max_right _ _).trans ((le_max_right _ _).trans (le_max_right _ _))
   have hpow {x y : ℝ} (h : x≤y) : Z^x≤Z^y := Real.rpow_le_rpow_of_exponent_le hZ.1.le h
-  exact ⟨mul_ne_zero (mul_ne_zero hR (allocation_ne s C B)) (pow_ne_zero k hQ),hK,
+  exact ⟨mul_ne_zero (mul_ne_zero hR (allocation_ne s C B)) (by positivity),hK,
     hpoly.1.trans (hpow h₁),hcap.2.1,hpoly.2.1.trans (hpow h₁),
     hυ.trans (hpow h₄),hpunct.trans (hpow h₃),nominal_pos d K hK,
-    hpoly.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
+    hpoly.2.2.1.trans (hpow (by linarith)),
     hpoly.2.2.2.1,hpoly.2.2.2.2.trans (hpow h₂)⟩
 
 end SevenEighths.CenteredMomentFirstSecondActiveErrorGates

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.IdealOperations
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set
 namespace SevenEighths.HeckePrimeRay
 open HeckeFamily HeckePrimeAnnular
@@ -44,7 +44,7 @@ theorem finite_average (η : Character) (S : Finset (Ideal O)) (f : Ideal O→�
     intro θ _
     ring
   rw [hs,mul_left_comm,HeckeRayQuotient.average_idealCoeff M H hH I]
-  split_ifs <;> simp
+  simp
 
 theorem rayPrimePolynomial_eq_average (η : Character) (W : ℝ→ℂ) (b D σ freq : ℝ) :
     rayPrimePolynomial M H η W b D σ freq =
@@ -76,9 +76,9 @@ theorem rayPrimePolynomial_norm_le (η : Character) (W : ℝ→ℂ) (b D σ freq
   calc
     _ ≤ (RayQuotient.classNumber M H : ℝ)⁻¹ *
         ∑ θ : RayQuotient.Characters M H, C :=
-      mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (Finset.sum_le_sum (fun θ _ => hbound θ)))
+      mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (Finset.sum_le_sum (by grind)))
         (by positivity)
-    _ = C := by simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,heq]; rw [←mul_assoc,inv_mul_cancel₀ hcard.ne',one_mul]
+    _ = C := by simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul,heq]; grind
 
 theorem ray_prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)

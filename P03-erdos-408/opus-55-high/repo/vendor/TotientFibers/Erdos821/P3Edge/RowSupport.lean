@@ -6,7 +6,6 @@ public import Erdos821.S2.EdgeTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -41,7 +40,7 @@ lemma valid_target_small (A : Model F P J m) {n : ℕ} (i : Fin n)
   have ht : ((permuteActive c.2.1 t).1) = t.1 := rfl
   rw [ht] at h3
   unfold targetSmall
-  exact h3
+  omega
 
 lemma valid_target_mem (A : Model F P J m) {n : ℕ} (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)

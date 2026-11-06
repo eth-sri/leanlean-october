@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 lemma rowAmplitudeOnLines_buffered_bound {K : ℕ}
@@ -54,7 +53,7 @@ lemma rowAmplitudeOnLines_buffered_bound {K : ℕ}
 theorem continuedPhysicalRowKernel_buffered_integrable {K : ℕ}
     (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
     (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
@@ -82,19 +81,19 @@ theorem continuedPhysicalRowKernel_buffered_integrable {K : ℕ}
     apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
     have hh : 1≤(3+|t.1.1|)^2 := by nlinarith [abs_nonneg t.1.1]
     exact le_mul_of_one_le_right hC hh
-  have hi := (hprofile σ ⟨le_rfl,le_rfl⟩ r ⟨le_rfl,le_rfl⟩ (1-a-6*e) ⟨le_rfl,le_rfl⟩
-    X Y Z hX hY hZ C hC (fun t=>‖A t‖) hA.norm.aestronglyMeasurable (fun _=>norm_nonneg _) htwo).1
+  have hi := (hprofile σ (by simp) r (by simp) (1-a-6*e) (by simp)
+    X Y Z hX hY hZ C hC (fun t=>‖A t‖) hA.norm.aestronglyMeasurable (by simp) htwo).1
   have hs := sourceMellinWeight_initial_continuous W0 W1 a1 b1 ha1 hW1 X Y Z hX hY hZ σ r (1-a-6*e) (by linarith)
   let F := fun t : HeightSpace => sourceMellinWeight W0 W1 X Y Z ((σ:ℂ)+t.1.1*I)
       ((((1-a-6*e):ℝ):ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)*A t
   have hm : AEStronglyMeasurable F heightMeasure := hs.aestronglyMeasurable.mul hA.aestronglyMeasurable
-  have hf : Integrable F heightMeasure := hi.mono' hm (Filter.Eventually.of_forall fun t=>by dsimp [F];rw [norm_mul])
+  have hf : Integrable F heightMeasure := hi.mono' hm (Filter.Eventually.of_forall fun t=>by dsimp [F];simp)
   have heq : E.indicator (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ (1-a-6*e) r)=F := by
     funext t
     by_cases ht : t∈E
     · simp only [Set.indicator_of_mem ht,F,A,continuedRowOnLines_eq_amplitude]
     · simp only [Set.indicator_of_notMem ht,F,A,mul_zero]
-  exact (integrable_indicator_iff hE).mp (heq ▸ hf)
+  exact (integrable_indicator_iff hE).mp (by grind)
 
 end SevenEighths.ProbeHighRowFamily
 

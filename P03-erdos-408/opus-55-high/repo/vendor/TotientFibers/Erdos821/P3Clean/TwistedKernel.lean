@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.RawNormAssembly
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -19,8 +18,7 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 theorem ite_fintype_sum_zero {α : Type*} [Fintype α] (p : Prop) [Decidable p] (f : α → ℂ) :
     (if p then ∑ a, f a else 0) = ∑ a, if p then f a else 0 := by
-  classical
-  by_cases h : p <;> simp [h]
+  simp
 
 instance pendingCycleFintype (P : PrimeGroups) (B : ℕ) [Fintype (CutPendingState P B)] :
     Fintype (PendingCycle P B) := Fintype.ofFinite _
@@ -50,7 +48,7 @@ theorem regularCycleKernel_fibre (A : Model F P J m) (n B : ℕ)
   apply Finset.sum_congr rfl
   intro u _
   by_cases h : (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u
-  · simp [h, ite_mul]
+  · simp [h]
   · have hf (r : PendingCycle P B) :
         ¬ ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u ∧
           r = cycleDisplacement A B (A.pattern v) forward d a u) := by tauto
@@ -87,12 +85,12 @@ theorem cutoffConditionedKernel_cycle (A : Model F P J m) (n B : ℕ)
     · simp only
       by_cases ht : b.2.val = translatePending (bigStep A (A.pattern v) forward d a.1 u) a.2.val
       · simp only [ite_eq_left ht, ite_eq_left (he.mpr ht), ite_true]
-      · simp only [ite_eq_right ht, ite_eq_right (fun hh => ht (he.mp hh)), ite_true]
+      · simp only [ite_eq_right ht, ite_eq_right (fun hh => ht (he.mp hh))]
     · intro r _ hr
       by_cases ha : cycleAct (pendingTranslationEquiv (P := P) B 1) r a.2 = b.2
       · simp only [ite_eq_left ha, ite_eq_right hr]
       · simp only [ite_eq_right ha]
-    · simp
+    simp
   · have hf (r : PendingCycle P B) :
         ¬ ((A.pattern v).matchesBig a.1 b.1 ∧ bigBan (A.pattern v) a.1 b.1 u ∧
           r = cycleDisplacement A B (A.pattern v) forward d a.1 u) := by tauto

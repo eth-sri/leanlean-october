@@ -7,7 +7,6 @@ public import Mathlib.Analysis.Calculus.Deriv.MeanValue
 
 namespace OAI
 noncomputable section
-open scoped BigOperators
 open Classical
 namespace Problem337
 
@@ -41,7 +40,7 @@ theorem separated_interval_card (s : Finset ℤ) (f : ℤ → ℝ)
       apply (le_div_iff₀ hlam).mpr
       nlinarith
     linarith
-  · have hempty : s = ∅ := Finset.not_nonempty_iff_eq_empty.mp hs
+  · have hempty := Finset.not_nonempty_iff_eq_empty.mp hs
     simp only [hempty, Finset.card_empty, Nat.cast_zero]
     positivity
 
@@ -62,7 +61,7 @@ theorem separated_near_integer_card (s : Finset ℤ) (f : ℤ → ℝ)
     have hq' := abs_le.mp hq
     have hi' := hrange i his
     apply Finset.mem_biUnion.mpr
-    refine ⟨q, ?_, Finset.mem_filter.mpr ⟨his, hq⟩⟩
+    refine ⟨q, ?_, by grind⟩
     apply Finset.mem_Icc.mpr
     constructor
     · apply Int.ceil_le.mpr
@@ -72,14 +71,13 @@ theorem separated_near_integer_card (s : Finset ℤ) (f : ℤ → ℝ)
   have hfiber (q : ℤ) : ((fiber q).card : ℝ) ≤ 2 * β / lam + 1 := by
     have h := separated_interval_card (fiber q) f lam ((q : ℝ) - β) ((q : ℝ) + β)
       hlam (by linarith)
-      (fun i hi j hj hij => hsep i (Finset.mem_filter.mp hi).1 j (Finset.mem_filter.mp hj).1 hij)
+      (by grind)
       (fun i hi => by
-        have h := abs_le.mp (Finset.mem_filter.mp hi).2
-        constructor <;> linarith)
+        grind)
     convert h using 1; ring
   have hcenters : (centers.card : ℝ) ≤ U - L + 2 * β + 1 := by
     have h := separated_interval_card centers (fun q => (q : ℝ)) 1 (L - β) (U + β)
-      (by norm_num) (by linarith) (fun i _ j _ _ => by ring_nf; exact le_rfl)
+      (by norm_num) (by linarith) (fun i _ j _ _ => by simp)
       (fun q hq => by
         have hq' := Finset.mem_Icc.mp hq
         exact ⟨Int.ceil_le.mp hq'.1, Int.le_floor.mp hq'.2⟩)

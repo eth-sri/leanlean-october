@@ -9,32 +9,31 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical ContDiff
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedPhysicalRecursiveUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+local instance inverseSecondDeletedPhysicalRecursiveUnits : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 theorem actual_second_deleted_physical_recursive
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source) :
-    ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+    ∀ (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
         (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
         (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (G E V B Y R L Z N Vlabel εchild : ℝ)
         (U : Fin 6 → ℝ → ℂ) (density : Frequency × (Fin 6 → ℝ) → ℂ)
         (w : MarkedSecondSource ι Jo 0 → ℂ)
-        (labels : Finset (Ideal Eis)) (K J : ℕ) (A : ℝ),
-      (∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
-      (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
+        (labels : Finset (Ideal ActualEisensteinCubic.O)) (K J : ℕ) (A : ℝ),
+      (∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient) →
+      (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient) →
       0 < Z → 0 < G → 0 < E → 0 < V → 0 < B → 0 < (Z^N) → Integrable density →
       (∀ y : Fin 6 → ℝ,(Real.exp (-6*L):ℂ)*secondPoissonProfile (fun x => star (W₁ x)) W₂ Φ U
         (Y*B/(E*V^2*(Z^N)^2)) y = ∫ t : Frequency × (Fin 6 → ℝ),density t*
@@ -87,12 +86,12 @@ theorem actual_second_deleted_physical_recursive
       (A*Z^(2*(max 0 N+Vlabel)+εchild))*H := by
     calc
       _ = A*(Z^(max 0 N+Vlabel)*Z^(max 0 N+Vlabel+εchild))*H := by ring
-      _ = _ := by rw [←Real.rpow_add hZ]; congr 2; ring_nf
+      _ = _ := by rw [←Real.rpow_add hZ]; ring
   apply actual_second_deleted_physical_energy p hp hcop hg hpr hinj hc source hs
     pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂ W₁ W₂ ω₁ ω₂ Φ G E V B (Z^N) Y R L
     U density w labels K J (A*Z^(2*(max 0 N+Vlabel)+εchild))
     hd₁ hd₂ hG hE hV hB hX hDensity hsep hrows hω₁ hω₂ hcut hΨ hw ha₁ ha₂ hlabels
-    ho hslots₁ hslots₂ (mul_nonneg hA (Real.rpow_pos_of_pos hZ _).le) hWeighted
+    ho hslots₁ hslots₂ (by positivity) hWeighted
   · intro t J₁ hJ₁ γ hγ
     rw [second_left_normalized_energy p hp hcop hg K (labels.filter Squarefree)
       (nonzeroChildFrequencyBall 1 R) γ pool Ψ m z (slots₁\J₁) lists₁ a₁ ω₁ Z N Vlabel hZ t]

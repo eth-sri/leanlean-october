@@ -7,7 +7,6 @@ public import Erdos821.Blueprint.ResiduePaths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.Blueprint.Graph

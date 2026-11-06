@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicJoins
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth
@@ -16,7 +16,7 @@ open HeckeFamily HeckeLogarithmic HeckeReciprocalGrowth
 theorem presentationComplexity_mono_height (χ : Character) {t H : ℝ}
     (ht : |t|≤H) : presentationComplexity χ t≤presentationComplexity χ H := by
   unfold presentationComplexity complexity
-  have hH : 0≤H := (abs_nonneg t).trans ht
+  have hH : 0≤H := by grind
   rw [abs_of_nonneg hH]
   gcongr
 
@@ -38,7 +38,7 @@ theorem buffered_rectangle_control (e ε : ℝ)
     rw [mem_closedBall,dist_eq_norm]
     have heq : z-((2 : ℂ)+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
       apply Complex.ext <;> simp
-    rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith : z.re-2≤0)]
+    rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith)]
     linarith
   have hz2 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-2*e) :=
     closedBall_subset_closedBall (by linarith) hz6
@@ -50,7 +50,7 @@ theorem buffered_rectangle_control (e ε : ℝ)
   · unfold presentationComplexity complexity
     positivity
   · exact presentationComplexity_mono_height _ hzi
-  · exact hε.le
+  linarith
 
 theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
     (hl : a+6*e≤l+σ) (hr : r+σ≤2) (hlr : l≤r) (hT : 0≤T)
@@ -63,13 +63,12 @@ theorem translated_rectangle_mem {a e σ freq l r H T : ℝ}
   have hsi : |s.im|≤T := abs_le.mpr hs'.2
   constructor
   · simp only [add_re,shift_re]
-    linarith [hs'.1.1]
+    grind
   constructor
   · simp only [add_re,shift_re]
-    linarith [hs'.1.2]
+    grind
   · have hi : (s+shift σ freq).im=s.im-freq := by simp [shift,sub_eq_add_neg]
-    rw [hi]
-    exact (abs_sub _ _).trans (by linarith)
+    grind
 
 end SevenEighths.HeckeDyadic
 

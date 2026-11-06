@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedChoiceEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformReflectionChoices
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
 open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
@@ -42,8 +42,8 @@ theorem actual_independent_choices (B J : ℕ) :
   have hlx (i : ι) : lx i∈Set.Icc lo hi := by
     dsimp [lx]
     split_ifs with hk
-    · exact (hgeom i (u i) hk).2
-    · exact ⟨le_rfl,hlh⟩
+    · grind
+    · grind
   have he (v : ℝ) (j k : Fin 2) (x : ℝ) (hx : x∈Set.Icc lo hi)
       (y : ℝ) (hy : y∈Set.Icc low high) :
       (∑i,‖polynomial (χ i) false (scaleTest (fun z : ℝ=>(annulus z:ℂ)) j)
@@ -53,18 +53,18 @@ theorem actual_independent_choices (B J : ℕ) :
     apply (Finset.sum_le_sum (fun i _=>?_)).trans (henergy v j k x hx y hy)
     dsimp only [P']
     split_ifs
-    · exact le_rfl
+    · simp
     · simp only [mul_zero,norm_zero,ne_eq,OfNat.ofNat_ne_zero,not_false_eq_true,zero_pow]
-      exact sq_nonneg _
+      positivity
   have hh := hb G χ P' (fun i=>s i (u i)) lx ly omega Wshort c d lo hi low high D E
-    hd hshort hshortsmooth hlh hlw hlx hly (fun i=>hspos i (u i)) hD hE hGD he
+    hd hshort hshortsmooth hlh hlw hlx hly (by grind) hD hE hGD he
   convert hh using 1
   apply Finset.sum_congr rfl
   intro i hi
   dsimp only [lx,P']
   split_ifs with hk
-  · rw [Real.exp_log (hgeom i (u i) hk).1]
-  · simp
+  · rw [Real.exp_log (by grind)]
+  simp
 
 end SevenEighths.CenteredMomentUniformReflectionChoices
 

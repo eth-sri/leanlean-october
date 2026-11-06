@@ -8,13 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
@@ -27,20 +23,19 @@ theorem x_exp_neg_le (x : ℝ) (_hx : 0 ≤ x) :
   have hlin : x / 2 ≤ Real.exp (x / 2) := by
     have h := Real.add_one_le_exp (x / 2)
     linarith
-  have hmul := mul_le_mul_of_nonneg_right hlin (Real.exp_pos (-x)).le
+  have hmul := mul_le_mul_of_nonneg_right hlin (by positivity)
   calc
     x * Real.exp (-x) = 2 * ((x / 2) * Real.exp (-x)) := by ring
     _ ≤ 2 * (Real.exp (x / 2) * Real.exp (-x)) := by
       gcongr
     _ = 2 * Real.exp (-(x / 2)) := by
       rw [← Real.exp_add]
-      congr 1
-      ring_nf
+      ring
 
 theorem gaussian_moment_term_bound (q t : ℝ) (hq : 0 ≤ q) (ht : 0 < t) :
     q * Real.exp (-t * q) ≤
       (2 / t) * Real.exp (-(t * q / 2)) := by
-  have h := x_exp_neg_le (t * q) (mul_nonneg ht.le hq)
+  have h := x_exp_neg_le (t * q) (by positivity)
   have hpos : 0 ≤ t := ht.le
   calc
     q * Real.exp (-t * q) =
@@ -119,7 +114,7 @@ theorem maximal_ideal_eq_span_of_mem
     (Q : Ideal O) (hQ : Q.IsMaximal) (a : O)
     (ha : (Ideal.span {a} : Ideal O).IsMaximal) (hamem : a ∈ Q) :
     Q = Ideal.span {a} := by
-  have hle : (Ideal.span {a} : Ideal O) ≤ Q :=
+  have hle :=
     (Ideal.span_singleton_le_iff_mem _).mpr hamem
   exact (ha.eq_of_le hQ.ne_top hle).symm
 
@@ -131,16 +126,16 @@ theorem rational_prime_ideal_cover (r : ℕ) (hr : r.Prime) :
   rcases rational_prime_factor_cases r hr with hmax |
       ⟨a, b, ha0, hb0, hab, hqa, hqb, hma, hmb⟩
   · have hr0 : (r : O) ≠ 0 := by exact_mod_cast hr.ne_zero
-    have hq : qNat (r : O) = r ^ 2 := rational_qNat r hr.ne_zero
-    have hrle : r ≤ r ^ 2 := by nlinarith [hr.two_le]
+    have hq := rational_qNat r hr.ne_zero
+    have hrle : r ≤ r ^ 2 := by nlinarith
     refine ⟨(r : O), (r : O), hr0, hr0, ?_, ?_, ?_⟩
-    · rw [hq]; exact hrle
-    · rw [hq]; exact hrle
+    · omega
+    · omega
     · intro Q hQ hrQ
       exact Or.inl (maximal_ideal_eq_span_of_mem Q hQ (r : O) hmax hrQ)
   · refine ⟨a, b, ha0, hb0, ?_, ?_, ?_⟩
-    · rw [hqa]
-    · rw [hqb]
+    · omega
+    · omega
     · intro Q hQ hrQ
       rw [hab] at hrQ
       rcases hQ.isPrime.mem_or_mem hrQ with haQ | hbQ
@@ -151,11 +146,10 @@ end
 
 end ActualEisensteinCubic
 
-open ActualEisensteinCubic
 
 namespace RationalPrimeExtraction
 
-noncomputable def selected (Y : ℝ) : Finset ℕ :=
+def selected (Y : ℝ) : Finset ℕ :=
   (Finset.Ioc ⌊Y / 3⌋₊ ⌊Y⌋₊).filter Nat.Prime
 
 end RationalPrimeExtraction
@@ -179,15 +173,14 @@ private theorem real_quadratic_lower {u v w : ℝ}
     linarith
   have h : ((u * v - w ^ 2) * (x ^ 2 + y ^ 2)) / (u + v) ≤
       u * x ^ 2 - 2 * w * x * y + v * y ^ 2 :=
-    (div_le_iff₀ hsum).2 (by simpa only [mul_comm] using hnum)
-  simpa only [div_mul_eq_mul_div] using h
+    (div_le_iff₀ hsum).2 (by linarith)
+  grind
 
 private theorem schur_eq_real_det_div {a b d : ℂ} {R : ℝ}
     (ha : a ≠ 0) (hdet : a * d - b ^ 2 = (R : ℂ)) :
     RankTwoComplex.schur a b d = (R : ℂ) / a := by
   unfold RankTwoComplex.schur
-  rw [← hdet]
-  field_simp [ha]
+  grind
 
 private theorem determinant_real_components {a b d : ℂ} {R : ℝ}
     (hdet : a * d - b ^ 2 = (R : ℂ)) :
@@ -199,14 +192,12 @@ private theorem determinant_real_components {a b d : ℂ} {R : ℝ}
     have hb : (b ^ 2).re = b.re ^ 2 - b.im ^ 2 := by
       rw [pow_two, Complex.mul_re]
       ring
-    rw [hb] at h
     linarith
   · have h := congrArg Complex.im hdet
     simp only [Complex.sub_im, Complex.mul_im, Complex.ofReal_im] at h
     have hb : (b ^ 2).im = 2 * b.re * b.im := by
       rw [pow_two, Complex.mul_im]
       ring
-    rw [hb] at h
     linarith
 
 private theorem first_real_coefficients {a b d : ℂ} {R : ℝ}
@@ -216,12 +207,12 @@ private theorem first_real_coefficients {a b d : ℂ} {R : ℝ}
     (Complex.I * b / a).re =
       (b.re * a.im - b.im * a.re) / Complex.normSq a := by
   constructor
-  · exact Complex.inv_re a
+  · simp
   constructor
   · rw [schur_eq_real_det_div ha hdet]
     simp [Complex.div_re]
   · rw [Complex.div_re]
-    simp [Complex.mul_re, Complex.mul_im]
+    simp
     ring
 
 private theorem first_real_determinant {a b d : ℂ} {R : ℝ}
@@ -229,7 +220,7 @@ private theorem first_real_determinant {a b d : ℂ} {R : ℝ}
     (a.re / Complex.normSq a) * (R * a.re / Complex.normSq a) -
       ((b.re * a.im - b.im * a.re) / Complex.normSq a) ^ 2 =
       (a.re * d.re - b.re ^ 2) / Complex.normSq a := by
-  have hN : Complex.normSq a ≠ 0 := (Complex.normSq_pos.mpr ha).ne'
+  have hN := (Complex.normSq_pos.mpr ha).ne'
   obtain ⟨hr, hi⟩ := determinant_real_components hdet
   have hid :
       R * a.re ^ 2 - (b.re * a.im - b.im * a.re) ^ 2 =
@@ -239,11 +230,9 @@ private theorem first_real_determinant {a b d : ℂ} {R : ℝ}
     ring
   rw [hi, mul_zero, sub_zero] at hid
   simp only [Complex.normSq_apply] at hN ⊢
-  have hN' : a.re ^ 2 + a.im ^ 2 ≠ 0 := by simpa [pow_two] using hN
-  field_simp [hN']
-  nlinarith [hid]
+  grind
 
-private noncomputable def middleForm (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+private def middleForm (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
   a⁻¹ * (z.1 : ℂ) ^ 2 -
     2 * (Complex.I * b / a) * (z.1 : ℂ) * (z.2 : ℂ) +
     RankTwoComplex.schur a b d * (z.2 : ℂ) ^ 2
@@ -253,15 +242,13 @@ private theorem middleForm_real (a b d : ℂ) (z : ℤ × ℤ) :
       (a⁻¹).re * (z.1 : ℝ) ^ 2 -
       2 * (Complex.I * b / a).re * (z.1 : ℝ) * (z.2 : ℝ) +
       (RankTwoComplex.schur a b d).re * (z.2 : ℝ) ^ 2 := by
-  simp [middleForm, Complex.add_re, Complex.sub_re, Complex.mul_re, pow_two]
+  simp [middleForm, pow_two]
 
 private theorem middleForm_exp (a b d : ℂ) (z : ℤ × ℤ) :
     RankTwoComplex.firstGaussian a b d z =
       Complex.exp (-(Real.pi : ℂ) * middleForm a b d z) := by
   simp only [RankTwoComplex.firstGaussian, middleForm]
   rw [← Complex.exp_add]
-  congr 1
-  simp [div_eq_mul_inv]
   ring
 
 private theorem firstGaussian_summable {a b d : ℂ} {R : ℝ}
@@ -272,18 +259,18 @@ private theorem firstGaussian_summable {a b d : ℂ} {R : ℝ}
   have ha0 : a ≠ 0 := by
     intro h
     simp [h] at ha
-  have hN : 0 < Complex.normSq a := Complex.normSq_pos.mpr ha0
+  have hN := Complex.normSq_pos.mpr ha0
   let u : ℝ := a.re / Complex.normSq a
   let v : ℝ := R * a.re / Complex.normSq a
   let w : ℝ := (b.re * a.im - b.im * a.re) / Complex.normSq a
   have hu : 0 < u := div_pos ha hN
-  have hv : 0 < v := div_pos (mul_pos hR ha) hN
+  have hv : 0 < v := by positivity
   have hq : 0 < u * v - w ^ 2 := by
     dsimp [u, v, w]
     rw [first_real_determinant ha0 hdet]
     exact div_pos hpd hN
   let eps : ℝ := (u * v - w ^ 2) / (u + v)
-  have heps : 0 < eps := div_pos hq (add_pos hu hv)
+  have heps : 0 < eps := by positivity
   have hcoeff := first_real_coefficients ha0 hdet
   have hbound (z : ℤ × ℤ) :
       eps * ((z.1 : ℝ) ^ 2 + (z.2 : ℝ) ^ 2) ≤
@@ -293,14 +280,14 @@ private theorem firstGaussian_summable {a b d : ℂ} {R : ℝ}
   exact (RankTwoComplex.lattice_gaussian_summable_of_re_bound
     (middleForm a b d) heps hbound).congr (fun z => (middleForm_exp a b d z).symm)
 
-private noncomputable def originalForm (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+private def originalForm (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
   a * (z.1 : ℂ) ^ 2 + 2 * b * (z.1 : ℂ) * (z.2 : ℂ) + d * (z.2 : ℂ) ^ 2
 
 private theorem originalForm_real (a b d : ℂ) (z : ℤ × ℤ) :
     (originalForm a b d z).re =
       a.re * (z.1 : ℝ) ^ 2 + 2 * b.re * (z.1 : ℝ) * (z.2 : ℝ) +
       d.re * (z.2 : ℝ) ^ 2 := by
-  simp [originalForm, Complex.add_re, Complex.mul_re, pow_two]
+  simp [originalForm, pow_two]
 
 private theorem originalGaussian_summable {a b d : ℂ}
     (ha : 0 < a.re) (hpd : 0 < a.re * d.re - b.re ^ 2) :
@@ -309,20 +296,20 @@ private theorem originalGaussian_summable {a b d : ℂ}
     by_contra h
     have h' : d.re ≤ 0 := le_of_not_gt h
     have hm := mul_nonpos_of_nonneg_of_nonpos ha.le h'
-    nlinarith [sq_nonneg b.re]
+    nlinarith
   let eps : ℝ := (a.re * d.re - b.re ^ 2) / (a.re + d.re)
-  have heps : 0 < eps := div_pos hpd (add_pos ha hd)
+  have heps : 0 < eps := by positivity
   have hbound (z : ℤ × ℤ) :
       eps * ((z.1 : ℝ) ^ 2 + (z.2 : ℝ) ^ 2) ≤
       (originalForm a b d z).re := by
     rw [originalForm_real]
     dsimp [eps]
-    convert real_quadratic_lower (w := -b.re) ha hd (by simpa using hpd)
+    convert real_quadratic_lower (w := -b.re) ha hd (by linarith)
       (z.1 : ℝ) (z.2 : ℝ) using 1 <;> ring
   exact (RankTwoComplex.lattice_gaussian_summable_of_re_bound
     (originalForm a b d) heps hbound).congr (fun z => by rfl)
 
-noncomputable def inverseForm (a b d : ℂ) (R : ℝ) (z : ℤ × ℤ) : ℂ :=
+def inverseForm (a b d : ℂ) (R : ℝ) (z : ℤ × ℤ) : ℂ :=
   (d * (z.1 : ℂ) ^ 2 - 2 * b * (z.1 : ℂ) * (z.2 : ℂ) +
     a * (z.2 : ℂ) ^ 2) / (R : ℂ)
 
@@ -330,9 +317,8 @@ private theorem inverseForm_real (a b d : ℂ) {R : ℝ} (hR : R ≠ 0) (z : ℤ
     (inverseForm a b d R z).re =
       (d.re * (z.1 : ℝ) ^ 2 - 2 * b.re * (z.1 : ℝ) * (z.2 : ℝ) +
         a.re * (z.2 : ℝ) ^ 2) / R := by
-  simp [inverseForm, Complex.div_re, Complex.add_re, Complex.sub_re,
-    Complex.mul_re, Complex.normSq_apply, pow_two]
-  field_simp [hR]
+  simp [inverseForm, Complex.div_re, pow_two]
+  grind
 
 theorem dualGaussian_inverseForm {a b d : ℂ} {R : ℝ}
     (ha : a ≠ 0) (hR : R ≠ 0)
@@ -345,8 +331,7 @@ theorem dualGaussian_inverseForm {a b d : ℂ} {R : ℝ}
   rw [schur_eq_real_det_div ha hdet]
   dsimp [inverseForm]
   have hdet0 : a * d - b ^ 2 ≠ 0 := by rw [hdet]; exact_mod_cast hR
-  rw [← hdet]
-  field_simp [ha, hdet0] ; ring
+  grind
 
 private theorem dualGaussian_summable {a b d : ℂ} {R : ℝ}
     (ha : 0 < a.re) (hR : 0 < R)
@@ -357,15 +342,15 @@ private theorem dualGaussian_summable {a b d : ℂ} {R : ℝ}
     by_contra h
     have h' : d.re ≤ 0 := le_of_not_gt h
     have hm := mul_nonpos_of_nonneg_of_nonpos ha.le h'
-    nlinarith [sq_nonneg b.re]
+    nlinarith
   let eps : ℝ := ((d.re * a.re - b.re ^ 2) / (d.re + a.re)) / R
-  have heps : 0 < eps := div_pos (div_pos (by nlinarith [hpd]) (add_pos hd ha)) hR
+  have heps : 0 < eps := div_pos (div_pos (by linarith) (by positivity)) hR
   have hbound (z : ℤ × ℤ) :
       eps * ((z.1 : ℝ) ^ 2 + (z.2 : ℝ) ^ 2) ≤
       (inverseForm a b d R z).re := by
     rw [inverseForm_real a b d hR.ne']
     have hbase := real_quadratic_lower (u := d.re) (v := a.re) (w := b.re)
-      hd ha (by nlinarith [hpd]) (z.1 : ℝ) (z.2 : ℝ)
+      hd ha (by linarith) (z.1 : ℝ) (z.2 : ℝ)
     have hdivide := div_le_div_of_nonneg_right hbase hR.le
     simpa [eps, div_eq_mul_inv, mul_assoc, mul_comm, mul_left_comm] using hdivide
   have ha0 : a ≠ 0 := by intro h; simp [h] at ha
@@ -381,10 +366,10 @@ theorem binary_gaussian_poisson_real_det {a b d : ℂ} {R : ℝ}
       (1 / ((R : ℂ) ^ (1 / 2 : ℂ))) *
         ∑' z : ℤ × ℤ, RankTwoComplex.dualGaussian a b d z := by
   have ha0 : a ≠ 0 := by intro h; simp [h] at ha
-  have hN : 0 < Complex.normSq a := Complex.normSq_pos.mpr ha0
+  have hN := Complex.normSq_pos.mpr ha0
   have hδ : 0 < (RankTwoComplex.schur a b d).re := by
     rw [schur_eq_real_det_div ha0 hdet]
-    simpa [Complex.div_re] using div_pos (mul_pos hR ha) hN
+    simpa [Complex.div_re] using div_pos (by positivity) hN
   have hO := originalGaussian_summable ha hpd
   have hM := firstGaussian_summable ha hR hdet hpd
   have hD := dualGaussian_summable ha hR hdet hpd
@@ -399,18 +384,18 @@ theorem binary_gaussian_poisson_real_det {a b d : ℂ} {R : ℝ}
       rw [schur_eq_real_det_div ha0 hdet,
         SqrtBranch.prefactor_product ha hR]
 
-noncomputable def q (a b : ℝ) : ℝ := a ^ 2 - a * b + b ^ 2
-noncomputable def A (η a b : ℝ) : ℂ :=
+def q (a b : ℝ) : ℝ := a ^ 2 - a * b + b ^ 2
+def A (η a b : ℝ) : ℂ :=
   (η : ℂ) + 2 * Complex.I * (b : ℂ) / (q a b : ℂ)
-noncomputable def B (η a b : ℝ) : ℂ :=
+def B (η a b : ℝ) : ℂ :=
   -(η : ℂ) / 2 - 2 * Complex.I * (a : ℂ) / (q a b : ℂ)
-noncomputable def D (η a b : ℝ) : ℂ :=
+def D (η a b : ℝ) : ℂ :=
   (η : ℂ) + 2 * Complex.I * ((a-b : ℝ) : ℂ) / (q a b : ℂ)
-noncomputable def R (η a b : ℝ) : ℝ := 4 / q a b + 3 * η ^ 2 / 4
+def R (η a b : ℝ) : ℝ := 4 / q a b + 3 * η ^ 2 / 4
 
 theorem coefficient_re (η a b : ℝ) (_hq : q a b ≠ 0) :
     (A η a b).re = η ∧ (B η a b).re = -η / 2 ∧ (D η a b).re = η := by
-  simp [A, B, D, Complex.div_re, Complex.normSq_apply]
+  simp [A, B, D]
 
 theorem oscillatory_determinant (η a b : ℝ) (hq : q a b ≠ 0) :
     A η a b * D η a b - (B η a b) ^ 2 = (R η a b : ℂ) := by
@@ -421,17 +406,16 @@ theorem oscillatory_determinant (η a b : ℝ) (hq : q a b ≠ 0) :
     simp [R]
   rw [hRcast]
   dsimp [A, B, D]
-  field_simp [hqc]
+  field_simp
   rw [hqexpr]
   ring_nf
-  simp [Complex.I_sq]
+  simp
   ring
 
 theorem real_positive_definite {η a b : ℝ} (hη : 0 < η) (hq : q a b ≠ 0) :
     0 < (A η a b).re * (D η a b).re - (B η a b).re ^ 2 := by
   obtain ⟨hA, hB, hD⟩ := coefficient_re η a b hq
-  rw [hA, hB, hD]
-  nlinarith [sq_pos_of_pos hη]
+  nlinarith
 
 end OscSpecial
 

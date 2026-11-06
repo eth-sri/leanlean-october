@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,50 +33,41 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace SecondPassIntegration
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic SecondPassArithmetic
+open scoped Classical
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 def sourcePrincipalScale (M : ℝ) (I : Ideal O) : ℝ := Real.sqrt (M/(Ideal.absNorm I:ℝ))
@@ -145,10 +126,9 @@ theorem maskedSourcePrincipalTruncation_eq (G : Ideal O) (hG : Squarefree G)
       have hp := principalTruncation_scaled (G*(cols j*cols k)) hprod W 1
         (sourcePrincipalScale M (rows i)) (Z i)
       simp only [Complex.ofReal_one,one_mul,hW,zero_mul,sub_zero] at hp
-      rw [hp]
-      ring
+      grind
     · have hz : originalTerm rows cols cols a a 1 1 i j k=0 := by simp only [originalTerm,hc,ite_false]
-      simp only [hz,zero_mul,mul_zero,sub_zero]
+      simp_all
   unfold maskedSourcePrincipalTruncation
   simp_rw [ht]
   simp only [maskedSourceDensity,maskedPrincipalDivisorCorrection,sourcePrincipalScale,Finset.sum_sub_distrib,Finset.mul_sum]
@@ -181,7 +161,7 @@ theorem maskedPrincipalSourceSum_eq (G : Ideal O) (hG : Squarefree G)
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem maskedSource_error_uniform (l : ℕ) :
@@ -211,22 +191,21 @@ theorem maskedSource_error_uniform (l : ℕ) :
   have herr (i : m) (j k : n) : ‖error i j k‖≤E := by
     have hi : 0<(Ideal.absNorm (rows i):ℝ) := by
       exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun h => (hrows i).1 (Ideal.absNorm_eq_zero_iff.mp h))
-    have hX : 0<sourcePrincipalScale M (rows i) := Real.sqrt_pos.mpr (div_pos hM hi)
+    have hX : 0<sourcePrincipalScale M (rows i) := Real.sqrt_pos.mpr (by positivity)
     have h := hbound ε hε (G*(cols j*cols k))
-      (mul_ne_zero hG (mul_ne_zero (hcols j).1 (hcols k).1)) W
+      (mul_ne_zero hG (mul_ne_zero (by grind) (by grind))) W
       (sourcePrincipalScale M (rows i)) (sourcePrincipalScale M (rows i)) T hX
       (by linarith) (by linarith) hT
     simp only [map_mul,Nat.cast_mul] at h
     apply h.trans
     dsimp only [E]
     gcongr
-    · exact (hcols j).2
-    · exact (hcols k).2
+    · grind
+    · grind
   exact actual_pair_error_ideal_bound rows cols hr hc B N hB hN hrows hcols a E hE error herr
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator IdealMobiusDivisorSum
+open IdealMobiusDivisorSum
 
 def sourcePrincipalMajorant {n : Type} [Fintype n]
     (s : Finset (ℕ×ℕ)) (C : ℝ) (l : ℕ)
@@ -324,8 +303,6 @@ lemma sourcePrincipalMajorant_mono {n : Type} [Fintype n]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 lemma maskedPrincipalSourceDifference_dyadic {n : Type} [Fintype n] [DecidableEq n]
     (G : Ideal O) (W : 𝓢(ℝ,ℂ)) (S : Finset (Ideal O)) (K : ℝ)
@@ -402,7 +379,7 @@ theorem masked_source_principal_global (l : ℕ) :
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
+open ConcretePrimeRowBridge IdealMobiusDivisorSum
 
 theorem primePoolDensity_eq_support (G : Ideal O) :
     primePoolDensity G = ∏ P ∈ primeSupport G, (1-(1:ℂ)/(Ideal.absNorm P:ℂ)) := by
@@ -420,13 +397,11 @@ theorem primePoolDensity_norm_le_one (G : Ideal O) (hG : G ≠ 0) :
     ‖primePoolDensity G‖ ≤ 1 := by
   rw [primePoolDensity_eq_real,Complex.norm_real,Real.norm_eq_abs]
   have hb := idealPrimeDensity_mem_Icc {G}
-    (by intro I hI; simpa only [Finset.mem_singleton.mp hI,Ideal.zero_eq_bot] using hG) G
-  rw [abs_of_nonneg hb.1]
-  exact hb.2
+    (by simp_all) G
+  grind
 
 theorem primePoolDensity_star (G : Ideal O) : star (primePoolDensity G) = primePoolDensity G := by
-  rw [primePoolDensity_eq_real]
-  simp
+  simp [primePoolDensity_eq_real]
 
 theorem primePoolDensity_mul (G H : Ideal O) (hG : G ≠ 0) (hH : H ≠ 0)
     (hcop : IsCoprime G H) : primePoolDensity (G*H) = primePoolDensity G*primePoolDensity H := by
@@ -462,7 +437,6 @@ theorem normalizedPairDensity_eq_primePoolDensity (I J G : Ideal O)
 
 end
 
-open ActualEisensteinCubic
 
 def densityColumn {n : Type*} (cols : n → Ideal O) (a : n → ℂ) : n → ℂ :=
   fun j => primePoolDensity (cols j) * a j
@@ -503,9 +477,9 @@ theorem actualPrincipalDifference_densityColumn {n : Type*} [Fintype n]
       primePoolDensity_mul _ _ (hcols j) (hcols k) hjk,
       normalizedPairDensity_eq_primePoolDensity _ _ _ (hcop j) (hcop k)]
     ring
-  · simp only [hjk,ite_false,mul_zero,sub_self]
+  simp_all
 
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
+open ConcretePrimeRowBridge IdealMobiusDivisorSum
 
 def densityPairSum {n : Type} [Fintype n] (cols : n → Ideal O) (a : n → ℂ)
     (P : Ideal O → Ideal O → ℂ) : ℂ :=
@@ -550,7 +524,7 @@ theorem originalTerm_one_eq_unrestricted {m n : Type} [Fintype m] [Fintype n]
   by_cases hc : IsCoprime (cols j) (cols k)
   · simp only [originalTerm,unrestrictedPairTerm,hc,ite_true,one_dvd,star_mul,
       canonical_quadraticRow_star _ (hcols j),
-      unrestrictedPairCharacter_eq_primary _ _ (hcols j) (hcols k) (hray j k) _ (hrows i)]
+      unrestrictedPairCharacter_eq_primary _ _ (hcols j) (hcols k) (by grind) _ (hrows i)]
     ring
   · simp only [originalTerm,unrestrictedPairTerm,hc,ite_false]
 
@@ -590,9 +564,9 @@ theorem maskedSourceDensity_coprime_squarefree {n : Type} [Fintype n] [Decidable
   · intro I
     exact admissible_supported ((mem_idealRange.mp
       (coprimeSquarefreeRange_subset_idealRange G hbad K I.property)).1)
-  · exact hcols
-  · exact hray
-  · exact hGc
+  · omega
+  · omega
+  omega
 
 end CanonicalQuadraticSieve
 

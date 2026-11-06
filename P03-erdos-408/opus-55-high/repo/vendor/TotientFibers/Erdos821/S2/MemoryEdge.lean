@@ -7,7 +7,6 @@ public import Erdos821.S2.MemoryGhost
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -178,7 +177,7 @@ theorem transferModeAccept_dirty_iff {M : ℕ} {s : P.MemoryState M}
     (c : TransferChoice s) :
     transferModeAccept .dirty c ↔ ¬ transferModeAccept .clean c := by
   change (∃ g, c.1 g ≠ ∅ ∨ c.2.1 g ≠ ∅) ↔ ¬ (∀ g, c.1 g = ∅ ∧ c.2.1 g = ∅)
-  simp only [not_forall, not_and_or]
+  grind
 
 /-- Every individual multiplier is dominated before the edge choices are summed. -/
 theorem memoryEdgeKernel_norm_le (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
@@ -200,7 +199,7 @@ theorem memoryEdgeKernel_norm_le (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
       intro c _
       by_cases hc : edgeChoiceValid A mode i s t c
       · simp only [ite_eq_left hc, norm_mul]
-        simpa only [mul_one] using mul_le_mul_of_nonneg_left (hphi s t c)
+        simpa using mul_le_mul_of_nonneg_left (hphi s t c)
           (norm_nonneg (edgeChoiceCoefficient A n rho theta i s t c))
       · simp only [ite_eq_right hc, norm_zero, le_refl]
 
@@ -216,17 +215,7 @@ theorem memoryEdgeKernel_all (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
   apply Finset.sum_congr rfl
   intro c _
   simp only [edgeChoiceValid, transferModeAccept, and_true]
-  by_cases hv : rawEdgeValid A (A.pattern c.2.2.1) (edgeForward i) c.2.2.2.1
-    (permuteActive c.1 s) (permuteActive c.2.1 t) c.2.2.2.2
-  · have hd := transferModeAccept_dirty_iff c.2.2.2.2
-    change (∃ g, c.2.2.2.2.1 g ≠ ∅ ∨ c.2.2.2.2.2.1 g ≠ ∅) ↔
-      ¬ (∀ g, c.2.2.2.2.1 g = ∅ ∧ c.2.2.2.2.2.1 g = ∅) at hd
-    by_cases hclean : ∀ g, c.2.2.2.2.1 g = ∅ ∧ c.2.2.2.2.2.1 g = ∅
-    · have hdirty := hd.not.mpr (not_not.mpr hclean)
-      simp only [hv, ite_true, true_and, ite_eq_left hclean, ite_eq_right hdirty, add_zero]
-    · have hdirty := hd.mpr hclean
-      simp only [hv, ite_true, true_and, ite_eq_right hclean, ite_eq_left hdirty, zero_add]
-  · simp [hv]
+  grind
 
 
 end Erdos821.S2Core

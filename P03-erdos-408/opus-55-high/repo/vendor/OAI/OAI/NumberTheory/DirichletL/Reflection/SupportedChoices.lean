@@ -7,19 +7,18 @@ public import OAI.NumberTheory.DirichletL.Reflection.TupleMasks
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-def supportedSlotChoices (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :=
+def supportedSlotChoices (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) (K : Ideal ActualEisensteinCubic.O) :=
   {p : ∀ i,L i // IsCoprime K (∏ i,(p i).val) ∧ ∀ j i,(p i).val≠F j}
 
-instance supportedSlotChoices_fintype (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :
+instance supportedSlotChoices_fintype (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) (K : Ideal ActualEisensteinCubic.O) :
     Fintype (supportedSlotChoices L F K) := inferInstanceAs (Fintype {_p : ∀ i,L i // _})
 
-def supportedSlotSplit (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis) (K : Ideal Eis) :
+def supportedSlotSplit (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ) (F : φ→Ideal ActualEisensteinCubic.O) (K : Ideal ActualEisensteinCubic.O) :
     supportedSlotChoices L F K ≃
       supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K ×
         supportedSlotChoices (fun i : T => L i.val) F K where

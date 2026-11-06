@@ -22,7 +22,7 @@ theorem no_slot_inverse_loss (r δ ε εm mesh ν : ℝ)
 theorem no_slot_plain_loss (m δ ε εm mesh ν : ℝ)
     (hε : 0≤ε) (hm : m≤1/2+75*ε) (hmesh : 0≤mesh) (hν : 0≤ν) :
     max 1 (2*m)-2*δ*m+4*ε+εm≤1-2*δ*m+commonLoss ε εm mesh ν := by
-  have hx : max 1 (2*m)≤1+150*ε := max_le (by linarith) (by linarith)
+  have hx : max 1 (2*m)≤1+150*ε := by grind
   unfold commonLoss
   linarith
 
@@ -46,20 +46,13 @@ theorem plain_marked_loss (m δ x Δ ε εm mesh ν : ℝ)
   have hm := mul_le_mul_of_nonneg_right hδ1 hmesh
   have hn := mul_le_mul_of_nonneg_right hq hν
   unfold commonLoss
-  have heq : 2*(δ*x)*((1-2*m)/(9/2+12*Δ)-ν)=
-      2*(δ*x)*(1-2*m)/(9/2+12*Δ)-2*(δ*x)*ν := by ring
-  rw [heq]
-  linarith
+  grind
 
 theorem inverse_requested_capacity (r ν : ℝ) (hr : 23/37≤r) (_hr1 : r<1)
     (hν : 0<ν) (hνcap : ν<(1-r)/2) :
     0≤(1-r)/2-ν ∧ (1-r)/2-ν≤7/37 ∧
       r+2*((1-r)/2-ν)<1 ∧ 2*r+8*((1-r)/2-ν)<3 := by
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor <;> linarith
+  grind
 
 theorem plain_requested_capacity (Δ x t r m ε ν : ℝ)
     (hΔ : 0≤Δ) (hx : 0≤x) (hx1 : x≤1/2) (ht : 1≤t) (ht1 : t≤3/2)
@@ -68,7 +61,7 @@ theorem plain_requested_capacity (Δ x t r m ε ν : ℝ)
     0≤(1-2*m)/(9/2+12*Δ)-ν ∧ (1-2*m)/(9/2+12*Δ)-ν≤7/37 ∧
       2*m+6*(3/4+2*Δ)*((1-2*m)/(9/2+12*Δ)-ν)≤1 := by
   have hcross := crossing_bounds hx hx1 ht ht1
-  have hm : 1/4≤m := by linarith [hcross.2.2.1]
+  have hm : 1/4≤m := by linarith
   have hd : 0<9/2+12*Δ := by linarith
   have hc : (1-2*m)/(9/2+12*Δ)≤7/37 := (div_le_iff₀ hd).mpr (by nlinarith)
   refine ⟨by linarith,by linarith,?_⟩

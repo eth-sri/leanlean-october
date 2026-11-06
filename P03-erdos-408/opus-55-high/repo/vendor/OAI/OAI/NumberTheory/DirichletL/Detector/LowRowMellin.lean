@@ -11,11 +11,10 @@ open scoped Classical ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowAdditiveCoefficient (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
-    (s : {I : Id // Supported I}) (m : O) (v : ℝ) : ℂ :=
+    (s : {I : Id // Supported I}) (m : ActualEisensteinCubic.O) (v : ℝ) : ℂ :=
   if ∀P∈C.excluded,¬P∣s.val then
     let a := primaryGenerator s.val
     let ha := supported_primaryGenerator_ne_zero s.val s.property
@@ -41,10 +40,10 @@ lemma lowPhysicalScale_pos (C : CalibrationData) (X Y : ℝ) (hX : 0<X) (hY : 0<
     0<lowPhysicalScale C X Y := mul_pos (mul_pos (calibration_elementNorm_pos C) hX) hY
 
 lemma lowAdditiveCoefficient_outer_zero (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
-    (s : {I : Id // Supported I}) (m : O) (v : ℝ) (h : W1 ((Ideal.absNorm s.val:ℝ)/Y)=0) :
+    (s : {I : Id // Supported I}) (m : ActualEisensteinCubic.O) (v : ℝ) (h : W1 ((Ideal.absNorm s.val:ℝ)/Y)=0) :
     lowAdditiveCoefficient C W1 Y s m v=0 := by
   unfold lowAdditiveCoefficient
-  split_ifs <;> simp [h]
+  simp_all
 
 lemma lowRowMellinIntegrand_nonzero_form (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (X Y : ℝ) (hY : 0<Y) (r : PhysicalRowIndex) (v : ℝ)
@@ -60,7 +59,7 @@ lemma lowRowMellinIntegrand_nonzero_form (C : CalibrationData) (W0 W1 Ω : ℝ�
           (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)^((v:ℂ)*Complex.I)*mellin W0 ((v:ℂ)*Complex.I)) := by
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
-  have hqc : (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr (div_pos hq hY).ne'
+  have hqc : (((Ideal.absNorm r.1.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr (by positivity)
   unfold lowRowMellinIntegrand lowAdditiveCoefficient
   rw [ite_eq_left hc]
   dsimp only
@@ -75,8 +74,7 @@ lemma lowRowMellinIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→�
   · have he : lowRowMellinIntegrand C W0 W1 Ω X Y r=0 := by
       funext v
       simp [lowRowMellinIntegrand,hm,elementNorm,hΩ]
-    rw [he]
-    exact integrable_zero _ _ _
+    simp_all
   by_cases hc : ∀P∈C.excluded,¬P∣r.1.val
   · have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
@@ -86,12 +84,11 @@ lemma lowRowMellinIntegrand_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→�
     change Integrable (fun v : ℝ=>lowRowMellinIntegrand C W0 W1 Ω X Y r v)
     simp_rw [lowRowMellinIntegrand_nonzero_form C W0 W1 Ω X Y hY r _ hc]
     exact (low_mellin_ratio_integrable W0 a0 b0 ha0 hW0 hWs _ _
-      (div_pos hmpos (lowPhysicalScale_pos C X Y hX hY)) (div_pos hq hY)).const_mul _
+      (div_pos hmpos (lowPhysicalScale_pos C X Y hX hY)) (by positivity)).const_mul _
   · have he : lowRowMellinIntegrand C W0 W1 Ω X Y r=0 := by
       funext v
       simp [lowRowMellinIntegrand,lowAdditiveCoefficient,hc]
-    rw [he]
-    exact integrable_zero _ _ _
+    simp_all
 
 theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -101,7 +98,7 @@ theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
       (Real.sqrt (lowPhysicalScale C X Y):ℂ)⁻¹*(1/(2*Real.pi):ℂ)*
         ∫v : ℝ,lowRowMellinIntegrand C W0 W1 (lowOuterCutoff (a0*a1) (max 1 (b0*b1))) X Y r v := by
   let Ω := lowOuterCutoff (a0*a1) (max 1 (b0*b1))
-  have hΩ : Ω 0=0 := lowOuterCutoff_small _ _ (mul_pos ha0 ha1) 0 (by positivity)
+  have hΩ : Ω 0=0 := lowOuterCutoff_small _ _ (by positivity) 0 (by positivity)
   by_cases hm : r.2=0
   · have hw : W0 0=0 := by
       by_contra hh
@@ -129,12 +126,11 @@ theorem physicalRowWeight_low_mellin (C : CalibrationData) (W0 W1 : ℝ→ℂ)
         (Real.sqrt (Ideal.absNorm r.1.val):ℂ)⁻¹*
         sexticGauss (primaryGenerator r.1.val) (supported_primaryGenerator_ne_zero r.1.val r.1.property) (-r.2))*
         ((Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X):ℂ)⁻¹*
-          W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))) := by dsimp only [Ω]; simp only [div_eq_mul_inv,mul_inv_rev]; ring
+          W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))) := by ring
       _ = _ := by
         rw [hh]
         repeat rw [←integral_const_mul]
-        apply integral_congr_ae
-        exact Filter.Eventually.of_forall (fun v=>by dsimp only [Ω]; ring)
+        grind
   · simp [physicalRowWeight,lowRowMellinIntegrand,lowAdditiveCoefficient,hc]
 
 def lowArithmeticCoefficient (C : CalibrationData) (s : {I : Id // Supported I}) : ℂ :=
@@ -142,10 +138,10 @@ def lowArithmeticCoefficient (C : CalibrationData) (s : {I : Id // Supported I})
     idealRowHom C.generator s.val/(C.tau*C.residueMonoid (primaryGenerator s.val))
   else 0
 
-lemma calibration_residue_inverse_norm (C : CalibrationData) (a : O) : ‖(C.residueMonoid a)⁻¹‖≤1 := by
-  let : Finite (O ⧸ Ideal.span {C.generator}) := Ring.HasFiniteQuotients.finiteQuotient
+lemma calibration_residue_inverse_norm (C : CalibrationData) (a : ActualEisensteinCubic.O) : ‖(C.residueMonoid a)⁻¹‖≤1 := by
+  let : Finite (ActualEisensteinCubic.O ⧸ Ideal.span {C.generator}) := Ring.HasFiniteQuotients.finiteQuotient
     (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero)
-  let : Fintype (O ⧸ Ideal.span {C.generator}) := Fintype.ofFinite _
+  let : Fintype (ActualEisensteinCubic.O ⧸ Ideal.span {C.generator}) := Fintype.ofFinite _
   change ‖(C.residue (Ideal.Quotient.mk (Ideal.span {C.generator}) a))⁻¹‖≤1
   simpa only [MulChar.inv_apply_eq_inv'] using
     FiniteRayExpansion.norm_char_le_one C.residue⁻¹ (Ideal.Quotient.mk (Ideal.span {C.generator}) a)
@@ -157,24 +153,23 @@ lemma lowArithmeticCoefficient_norm (C : CalibrationData) (s : {I : Id // Suppor
   · simp only [div_eq_mul_inv,mul_inv_rev,norm_mul,norm_inv]
     have hi := calibration_residue_inverse_norm C (primaryGenerator s.val)
     rw [norm_inv] at hi
-    have hh := (mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg _)) (idealRowHom_norm C.generator s.val)).trans hi
-    simpa only [mul_assoc] using mul_le_of_le_one_left (inv_nonneg.mpr (norm_nonneg C.tau)) hh
-  · simp
+    have hh := (mul_le_of_le_one_left (by positivity) (idealRowHom_norm C.generator s.val)).trans hi
+    simpa only [mul_assoc] using mul_le_of_le_one_left (by positivity) hh
+  simp
 
 lemma lowArithmeticCoefficient_source_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (s : {I : Id // Supported I}) : ‖lowArithmeticCoefficient (calibrationForSet S hS) s‖≤1 := by
   simpa only [calibrationForSet_tau_norm,inv_one] using lowArithmeticCoefficient_norm (calibrationForSet S hS) s
 
 lemma lowAdditiveCoefficient_eq (C : CalibrationData) (W1 : ℝ→ℂ) (Y : ℝ)
-    (s : {I : Id // Supported I}) (m : O) (v : ℝ) :
+    (s : {I : Id // Supported I}) (m : ActualEisensteinCubic.O) (v : ℝ) :
     lowAdditiveCoefficient C W1 Y s m v=
       (Y:ℂ)⁻¹*W1 ((Ideal.absNorm s.val:ℝ)/Y)*lowArithmeticCoefficient C s*
         (((Ideal.absNorm s.val:ℝ)/Y:ℝ):ℂ)^(-(1/2:ℂ)+(v:ℂ)*Complex.I)*
           (Real.sqrt (Ideal.absNorm s.val):ℂ)⁻¹*
             sexticGauss (primaryGenerator s.val) (supported_primaryGenerator_ne_zero s.val s.property) (-m) := by
   unfold lowAdditiveCoefficient lowArithmeticCoefficient
-  split_ifs <;> simp only [mul_zero,zero_mul]
-  ring
+  grind
 
 end SevenEighths.ProbePhysical
 end

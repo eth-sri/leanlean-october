@@ -135,15 +135,15 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
       ConstHigh.exp_le_of_mem_active_or_band hadm hin halo.le hL1 (hpr p hp)⟩
   have hCNN : 0 ≤ CNN := by
     have h1 := hA.2.2 1 le_rfl
-    have h2 := (Finset.sum_nonneg fun _ _ => sq_nonneg _).trans h1
+    have h2 := (Finset.sum_nonneg (by simp)).trans h1
     rw [mul_one] at h2
-    exact nonneg_of_mul_nonneg_left h2 (Real.rpow_pos_of_pos hL0 _)
+    exact nonneg_of_mul_nonneg_left h2 (by positivity)
   have hcB : 4 ≤ Real.log x ^ B' := by
     calc (4 : ℝ) ≤ Real.log x := hL4
-      _ = Real.log x ^ (1 : ℝ) := (Real.rpow_one _).symm
+      _ = Real.log x ^ (1 : ℝ) := by simp
       _ ≤ Real.log x ^ B' := Real.rpow_le_rpow_of_exponent_le hL1 hB'1
   have hσB : |σ| ≤ Real.log x ^ B' / 2 := by
-    have h1 : Real.log x ^ (Cm + 1) ≤ Real.log x ^ B' :=
+    have h1 :=
       Real.rpow_le_rpow_of_exponent_le hL1 hB'Cm
     rw [Real.rpow_add hL0, Real.rpow_one] at h1
     have h2 : 0 ≤ Real.log x ^ Cm := Real.rpow_nonneg hL0.le _
@@ -161,7 +161,7 @@ theorem integral_constCoeff_side_le {q q₀ c₀ C₀ vlo vhi alo ahi : ℝ} {K�
     (ConstHigh.mem_smallGroup_bounds hadm hgs) hk₁ hk₂ hH hYx hYx3 hT₀E hδx hδx'
     (fun R β lo hi t h1 h2 h3 h4 h5 => hE10 A R k β lo hi t hsupp hA.2.1 h1 h2 h3 hk₁ hk₂ h4 h5)
     hA.2.2 (fun s cs N cq _ _ _ hab => TupleHigh.setIntegral_ordinary_le s cs N cq hab)
-    (Real.exp_pos _).le
+    (by positivity)
     (fun Pr s coeff h1 h2 h3 h4 => hS16 Y Pr _ s coeff hxh hYsq hT₀0 hT₀Y h1 h2 h3 h4)
     h2Y hCNN hxC hxD eA eB eC eE eF
 
@@ -239,9 +239,9 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
     linarith
   have eF : -(5 * D) + 2 * ((d : ℝ) + 3) + 2 * (CW + 1) + 1 ≤ -(A₀ + 4 + 4 * D) := by
     rw [hD]
-    linarith [abs_nonneg A₀, abs_nonneg CW]
-  have hB'1 : 1 ≤ B' := by linarith [abs_nonneg Z, abs_nonneg C₈, abs_nonneg Cm]
-  have hB'Cm : Cm + 1 ≤ B' := by linarith [abs_nonneg Z, abs_nonneg C₈]
+    linarith
+  have hB'1 : 1 ≤ B' := by linarith [abs_nonneg C₈, abs_nonneg Cm]
+  have hB'Cm : Cm + 1 ≤ B' := by linarith [abs_nonneg C₈]
   filter_upwards [hE1N, hU9, hS16, ConstHigh.eventually_norm_modelProgression_Ioc_le Cm C₈,
     eventually_markedWeight_band_le q alo ahi K₀ CN hq hq₁ halo,
     ConstHigh.eventually_abs_slotMean_div_le c vlo d hc hvlo, ConstHigh.eventually_coprime Cm,
@@ -259,8 +259,8 @@ theorem exists_integral_const_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
       exact Nat.add_le_add_right (hC g) 1
   obtain ⟨A, hA⟩ := hE1x P big hadm r a hin (J + 1) _ b hS' hb
   have hW := hU9x P big hadm (J + 1) _ b hS' hb
-  have hBT : Real.log x ^ B' ≤ x * Real.log x ^ (Cm + 2) := hsc.2.2.2.2.2.2.2.2
-  have hLB : 0 ≤ Real.log x ^ B' := Real.rpow_nonneg (by linarith [hsc.2.1]) _
+  have hBT := hsc.2.2.2.2.2.2.2.2
+  have hLB : 0 ≤ Real.log x ^ B' := Real.rpow_nonneg (by linarith) _
   constructor
   · refine ConstHigh.integral_constCoeff_side_le halo hD1 hB'1 hB'Cm eA eB eC eE eF hsc hE10x
       h𝒲x hκx hcopx hS16x hadm hgs hin hsl hBc hW hψ hψs hψd hY₁ hY₂ hσ hk₁ hk₂ hA hBT

@@ -10,11 +10,10 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
 lemma radialFourier_vertical_inverse (W : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a)
     (hW : Function.support W⊆Set.Icc a b) (σ r : ℝ) (hσ : 0<σ) (hr : 0<r) :
@@ -62,7 +61,7 @@ lemma frequency_rpow_summable (σ : ℝ) (hσ : 1<σ) :
     simp
   simpa only [he,Complex.ofReal_re] using frequencyWeight_summable_norm (σ:ℂ) hσ
 
-theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
+theorem actualFrequency_moment_summable (C : CalibrationData) (A s : ActualEisensteinCubic.O)
     (hA : A≠0) (hs : s≠0) (K : ℝ) (hK : 0<K) (σ : ℝ) (hσ : 1<σ) :
     Summable (fun H : NonzeroFrequency=>‖actualCongruenceCoefficient C A s hA H.val‖*
       (K*elementNorm H.val/elementNorm ((C.generator*A)*s))^(-σ)) := by
@@ -75,7 +74,7 @@ theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
         (K/elementNorm ((C.generator*A)*s))^(-σ)*(elementNorm H.val)^(-σ) := by
     rw [show K*elementNorm H.val/elementNorm ((C.generator*A)*s)=
       (K/elementNorm ((C.generator*A)*s))*elementNorm H.val by ring]
-    apply Real.mul_rpow (div_pos hK hd).le
+    apply Real.mul_rpow (by positivity)
     unfold elementNorm
     positivity
   simp only [hr]
@@ -83,12 +82,12 @@ theorem actualFrequency_moment_summable (C : CalibrationData) (A s : O)
     (((Ideal.absNorm (Ideal.span {s}):ℝ)*(Ideal.absNorm (Ideal.span {C.generator*A}):ℝ))*
       (K/elementNorm ((C.generator*A)*s))^(-σ))
   apply Summable.of_nonneg_of_le (fun H=>mul_nonneg (norm_nonneg _)
-    (mul_nonneg (Real.rpow_nonneg (div_pos hK hd).le _) (Real.rpow_nonneg (by unfold elementNorm;positivity) _))) _ hb
+    (mul_nonneg (by positivity) (Real.rpow_nonneg (by unfold elementNorm;positivity) _))) _ hb
   intro H
   rw [←mul_assoc]
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (actualCongruenceCoefficient_norm_le C A s hA hs H.val)
-      (Real.rpow_nonneg (div_pos hK hd).le _)) (Real.rpow_nonneg (by unfold elementNorm;positivity) _)
+      (by positivity)) (Real.rpow_nonneg (by unfold elementNorm;positivity) _)
 
 end SevenEighths.ProbePhysical
 end

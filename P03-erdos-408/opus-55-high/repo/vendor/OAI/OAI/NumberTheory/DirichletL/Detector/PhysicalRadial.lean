@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Detector.Transformed
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
 
 def radialMellinPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W0 : SchwartzMap ℝ ℂ) (W1 : ℝ→ℂ) (X Y Z σ : ℝ) : ℂ :=
-  (Y:ℂ)⁻¹*∑'s : {I : Ideal O // Supported I},
+    (D : Ideal ActualEisensteinCubic.O) (W0 : SchwartzMap ℝ ℂ) (W1 : ℝ→ℂ) (X Y Z σ : ℝ) : ℂ :=
+  (Y:ℂ)⁻¹*∑'s : {I : Ideal ActualEisensteinCubic.O // Supported I},
     if ∀P∈C.excluded,¬P∣s.val then
       let a := primaryGenerator s.val
       let has := (supported_span_primaryGenerator_iff s.val).mpr s.property
@@ -23,18 +22,18 @@ def radialMellinPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
       W1 (qs/Y)*CanonicalRowCompletion.idealRowHom C.generator s.val /
         (C.tau*C.residueMonoid a*(Real.sqrt (elementNorm C.generator*qs*X):ℂ))*
       verticalIntegral 4 (fun t=>(Real.sqrt qs:ℂ)⁻¹*((Z:ℂ)^t*Complex.exp (t^2))*
-        ∑'p : Ideal O×Ideal O,radialMellinSpectralTerm η C C.excluded D a has W0
+        ∑'p : Ideal ActualEisensteinCubic.O×Ideal ActualEisensteinCubic.O,radialMellinSpectralTerm η C C.excluded D a has W0
           (elementNorm C.generator*qs*X) σ t p.1 p.2)
     else 0
 
 theorem markedPhysicalProbe_eq_radial_mellin (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty)
-    (D : Ideal O) (W0 : SchwartzMap ℝ ℂ) (W1 : ℝ→ℂ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal) (hSne : S.Nonempty)
+    (D : Ideal ActualEisensteinCubic.O) (W0 : SchwartzMap ℝ ℂ) (W1 : ℝ→ℂ)
     (a b : ℝ) (ha : 0<a) (hW : Function.support W0⊆Set.Icc a b)
     (X Y Z σ : ℝ) (hX : 0<X) (hZ : 0<Z) (hσ : 1<σ) :
     markedPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z=
       radialMellinPhysicalProbe η (calibrationForSet S hS) D W0 W1 X Y Z σ := by
-  have hWc : HasCompactSupport (W0 : ℝ→ℂ) := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW
+  have hWc := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW
   rw [markedPhysicalProbe_eq_poisson η (calibrationForSet S hS) D W0 W1 hWc (W0.smooth (⊤:ℕ∞)) X Y Z hX hZ]
   unfold poissonPhysicalProbe radialMellinPhysicalProbe
   congr 1
@@ -62,7 +61,7 @@ theorem markedPhysicalProbe_eq_radial_mellin (η : HeckeFamily.Character)
     simpa only [calibrationForSet_excluded] using transformedSpectralTerm_radial_mellin η S hS hSne D
       (primaryGenerator s.val) ((supported_span_primaryGenerator_iff s.val).mpr s.property) hcs
       W0 a b ha hW _ σ hK hσ _ p.1 p.2
-  · rfl
+  simp
 
 end SevenEighths.ProbePhysical
 end

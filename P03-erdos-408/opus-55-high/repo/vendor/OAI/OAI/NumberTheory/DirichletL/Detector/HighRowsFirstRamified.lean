@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsRamified
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 lemma first_region_V_half (Q : ℝ) (hQ : 4≤Q) (z : ℂ) (hz : (17/50:ℝ)≤z.re) :
     ‖coordV Q z‖≤1/2 := by
@@ -24,7 +23,7 @@ lemma first_region_R_half (Q : ℝ) (hQ : 4≤Q) (a x z : ℂ) (ha : ‖a‖≤1
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re) :
     ‖evenRatio Q a ((Q:ℂ)^(-x)) (coordV Q z)‖≤1/2 := by
   rw [evenRatio_eq_coordR Q (by linarith)]
-  apply (coordR_norm_le Q (by linarith) (a^2) x z (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha)).trans
+  apply (coordR_norm_le Q (by linarith) (a^2) x z (by simp_all)).trans
   exact rpow_le_half Q _ hQ (by linarith)
 
 include hc in
@@ -96,8 +95,8 @@ theorem ramifiedClosed_first_region_bound (eta a rho x w z : ℂ)
   unfold ramifiedClosed
   apply (norm_add_le _ _).trans
   rw [norm_one,norm_mul]
-  have hm := mul_le_mul (show ‖1-coordV (Ideal.absNorm (Ideal.span {p})) z‖≤3/2 by linarith)
-    hb (norm_nonneg _) (by norm_num : (0:ℝ)≤3/2)
+  have hm := mul_le_mul (by linarith)
+    hb (norm_nonneg _) (by positivity)
   linarith
 
 end SevenEighths.ProbeEuler

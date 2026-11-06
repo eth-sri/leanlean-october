@@ -7,27 +7,26 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Elements
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical
+open CompletedGauss ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def firstImage (R : Finset O) : Finset (Ideal O) :=
+def firstImage (R : Finset ActualEisensteinCubic.O) : Finset (Ideal ActualEisensteinCubic.O) :=
   R.image (fun z => goodPart (firstPart (Ideal.span {z})))
-def secondImage (R : Finset O) : Finset (Ideal O) :=
+def secondImage (R : Finset ActualEisensteinCubic.O) : Finset (Ideal ActualEisensteinCubic.O) :=
   R.image (fun z => goodPart (secondPart (Ideal.span {z})))
-def cubeImage (R : Finset O) : Finset (Ideal O) :=
+def cubeImage (R : Finset ActualEisensteinCubic.O) : Finset (Ideal ActualEisensteinCubic.O) :=
   R.image (fun z => cubePart (Ideal.span {z}))
 
-def sourceFactor (R : Finset O)
-    (d : Oˣ × CanonicalQuadraticSieve.fixedBadPrimes.powerset ×
-      CanonicalQuadraticSieve.fixedBadPrimes.powerset × cubeImage R) : O :=
+def sourceFactor (R : Finset ActualEisensteinCubic.O)
+    (d : ActualEisensteinCubic.Oˣ × CanonicalQuadraticSieve.fixedBadPrimes.powerset ×
+      CanonicalQuadraticSieve.fixedBadPrimes.powerset × cubeImage R) : ActualEisensteinCubic.O :=
   d.1.val * idealGenerator d.2.2.2.val ^ 3 *
     (idealGenerator (∏ P ∈ d.2.1.val, P) * idealGenerator (∏ P ∈ d.2.2.1.val, P) ^ 2)
 
 theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
-    (R : Finset O) (hR : ∀ z ∈ R, z ≠ 0)
-    (cols : n → Ideal O) (hc : ∀ j, primaryGenerator (cols j) ≠ 0) (coef : n → ℂ) :
+    (R : Finset ActualEisensteinCubic.O) (hR : ∀ z ∈ R, z ≠ 0)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, primaryGenerator (cols j) ≠ 0) (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2) ≤
       (96 : ℝ) * (cubeImage R).card *
         min ((secondImage R).card * squaredNorm
@@ -35,23 +34,23 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
           ((firstImage R).card * squaredNorm
             (fun (k : secondImage R) j => idealKernel (cols j) k.val)) *
         ∑ j, ‖coef j‖ ^ 2 := by
-  let : Finite Oˣ := PrimaryIdealUnitReindex.finite_units
-  let : Fintype Oˣ := Fintype.ofFinite _
-  let D := Oˣ × CanonicalQuadraticSieve.fixedBadPrimes.powerset ×
+  let : Finite ActualEisensteinCubic.Oˣ := PrimaryIdealUnitReindex.finite_units
+  let : Fintype ActualEisensteinCubic.Oˣ := Fintype.ofFinite _
+  let D := ActualEisensteinCubic.Oˣ × CanonicalQuadraticSieve.fixedBadPrimes.powerset ×
     CanonicalQuadraticSieve.fixedBadPrimes.powerset × cubeImage R
   let T := D × secondImage R × firstImage R
-  let reconstruct : T → O := fun p => primaryGenerator p.2.2.val *
+  let reconstruct : T → ActualEisensteinCubic.O := fun p => primaryGenerator p.2.2.val *
     primaryGenerator p.2.1.val ^ 2 * sourceFactor R p.1
-  let E : O → ℝ := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2
+  let E : ActualEisensteinCubic.O → ℝ := fun z => ‖∑ j, coef j * elementCharacter (cols j) (hc j) z‖ ^ 2
   have hcover : R ⊆ Finset.univ.image reconstruct := by
     intro z hz
-    let I : Ideal O := Ideal.span {z}
-    obtain ⟨u, hu⟩ := element_cubic_extraction z (hR z hz)
+    let I : Ideal ActualEisensteinCubic.O := Ideal.span {z}
+    obtain ⟨u, hu⟩ := element_cubic_extraction z (by grind)
     obtain ⟨e, he⟩ := badPart_sector (firstPart I)
     obtain ⟨f, hf⟩ := badPart_sector (secondPart I)
-    let a : firstImage R := ⟨goodPart (firstPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
-    let b : secondImage R := ⟨goodPart (secondPart I), Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
-    let c : cubeImage R := ⟨cubePart I, Finset.mem_image.mpr ⟨z, hz, rfl⟩⟩
+    let a : firstImage R := ⟨goodPart (firstPart I), Finset.mem_image.mpr (by grind)⟩
+    let b : secondImage R := ⟨goodPart (secondPart I), Finset.mem_image.mpr (by grind)⟩
+    let c : cubeImage R := ⟨cubePart I, Finset.mem_image.mpr (by grind)⟩
     refine Finset.mem_image.mpr ⟨((u, e, f, c), b, a), Finset.mem_univ _, ?_⟩
     change primaryGenerator (goodPart (firstPart I)) *
       primaryGenerator (goodPart (secondPart I)) ^ 2 *
@@ -71,7 +70,7 @@ theorem full_element_extraction_energy {n : Type*} [Fintype n] [DecidableEq n]
     (fun i : firstImage R => i.val) (fun k : secondImage R => k.val)
     (sourceFactor R) cols hc coef
   have hcard : Fintype.card D = 96 * (cubeImage R).card := by
-    have hu : Fintype.card Oˣ = 6 := by
+    have hu : Fintype.card ActualEisensteinCubic.Oˣ = 6 := by
       simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
     simp only [D, Fintype.card_prod, Fintype.card_coe, hu,
       CanonicalQuadraticSieve.fixedBadPrimes_powerset_card]

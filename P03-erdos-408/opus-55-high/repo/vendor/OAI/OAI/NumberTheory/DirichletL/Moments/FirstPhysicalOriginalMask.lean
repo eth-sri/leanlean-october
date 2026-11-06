@@ -9,21 +9,19 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalOriginalMask
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstMaskedFamily CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentCommonSupport
 open CenteredMomentFirstRetainedNorm CenteredMomentFirstSourceReduction
-open CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-local notation "O" => HeckeFamily.O
+open CenteredMomentCanonicalFirst
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 omit [DecidableEq ι] in
-lemma original_coefficient (s : Input ι) (R seed C I : Ideal O)
+lemma original_coefficient (s : Input ι) (R seed C I : Ideal HeckeFamily.O)
     (hI : Supported I) (t : ℝ) :
     CenteredMomentFirstPhysicalSource.coefficient s.η (fixedBadMask*idealGenerator R) 1 t
       (CenteredMomentOriginalCommonHarmonic.coefficient s R seed) C I =
@@ -31,7 +29,7 @@ lemma original_coefficient (s : Input ι) (R seed C I : Ideal O)
       (CenteredMomentOriginalCommonHarmonic.coefficient s R seed) C I := by
   unfold CenteredMomentFirstPhysicalSource.coefficient
   by_cases h : CenteredMomentOriginalCommonHarmonic.coefficient s R seed (C*I)=0
-  · simp [h]
+  · simp_all
   · have hc : IsCoprime I R :=
       (beta_coprime (original s R seed) (C*I) h).of_mul_left_right
     have hw := rowWeight_mask_factor s.η (idealGenerator R) I hI t
@@ -41,9 +39,9 @@ lemma original_coefficient (s : Input ι) (R seed C I : Ideal O)
     simp only [idealMask, span_idealGenerator, hc, ite_true, one_mul]
 
 omit [DecidableEq ι] in
-theorem original_block (s : Input ι) (R seed : Ideal O) (t : ℝ)
-    (S : Finset (Ideal O)) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (E : Finset (CommonIndex C D)) (rows : Finset O) (W : 𝓢(ℝ,ℂ))
+theorem original_block (s : Input ι) (R seed : Ideal HeckeFamily.O) (t : ℝ)
+    (S : Finset (Ideal HeckeFamily.O)) (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D)
+    (E : Finset (CommonIndex C D)) (rows : Finset HeckeFamily.O) (W : 𝓢(ℝ,ℂ))
     (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ) :
     block s.η (fixedBadMask*idealGenerator R) 1 t S
       (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)
@@ -64,8 +62,8 @@ theorem original_block (s : Input ι) (R seed : Ideal O) (t : ℝ)
     original_coefficient s R seed D b (column_supported C D hD.1 S b) t]
 
 omit [DecidableEq ι] in
-lemma original_sectorMass (s : Input ι) (R seed : Ideal O) (t : ℝ)
-    (S : Finset (Ideal O)) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+lemma original_sectorMass (s : Input ι) (R seed : Ideal HeckeFamily.O) (t : ℝ)
+    (S : Finset (Ideal HeckeFamily.O)) (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D)
     (W : 𝓢(ℝ,ℂ)) (K X Z ξ : ℝ) :
     sectorMass s R seed (fixedBadMask*idealGenerator R) 1 t S C D hC hD W K X Z ξ =
     sectorMass s R seed fixedBadMask 1 t S C D hC hD W K X Z ξ := by
@@ -73,7 +71,7 @@ lemma original_sectorMass (s : Input ι) (R seed : Ideal O) (t : ℝ)
   simp_rw [original_block]
 
 omit [DecidableEq ι] in
-theorem original_physicalMass (s : Input ι) (R seed : Ideal O)
+theorem original_physicalMass (s : Input ι) (R seed : Ideal HeckeFamily.O)
     (W : 𝓢(ℝ,ℂ)) (K Z ξ : ℝ) :
     physicalMass s R seed (fixedBadMask*idealGenerator R) 1 W K Z ξ =
     physicalMass s R seed fixedBadMask 1 W K Z ξ := by

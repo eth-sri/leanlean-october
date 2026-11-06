@@ -6,7 +6,7 @@ public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 open OAI.LargePrimeGaps
 
 namespace Erdos821.S34.Proofs
@@ -38,10 +38,8 @@ theorem sum_interval_extension {E : Type*} [AddCommMonoid E]
       symm
       calc
         _ = ∑ n ∈ s, if n ∈ s then f n else 0 := by
-          apply Finset.sum_congr rfl
-          intro n hn
-          simp [hn]
-        _ = _ := Finset.sum_subset him (fun n _ hn => by simp [hn])
+          simp
+        _ = _ := Finset.sum_subset him (fun n _ hn => by simp_all)
 
 /-- The prebuilt additive large sieve on an arbitrary integer interval, with
 arbitrary holes in the coefficient support. -/
@@ -72,11 +70,8 @@ theorem integer_additive_large_sieve {ι : Type*} (frequencies : Finset ι) (θ 
         ring
   calc
     _ = ∑ i ∈ frequencies, ‖∑ n : Fin N, a' n * bvExp (((n : ℕ) : ℝ) * θ i)‖ ^ 2 := by
-      apply Finset.sum_congr rfl
-      intro i _
-      rw [hsum, norm_mul]
-      simp
+      simp_all
     _ ≤ _ := additive_large_sieve frequencies θ hD hsep N a'
-    _ = _ := by rw [hsq]
+    _ = _ := by simp_all
 
 end Erdos821.S34.Proofs

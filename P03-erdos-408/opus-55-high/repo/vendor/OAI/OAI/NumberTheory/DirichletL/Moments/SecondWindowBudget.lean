@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondWindowBudget
 open CenteredMomentLogDyadic CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open CenteredMomentSecondWindowSource
 
 def profileMoment (J : ℕ) : ℝ :=
   ∫ w : ℝ,(1+‖w‖)^J*‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth w‖
@@ -53,7 +52,7 @@ theorem shifted_window_budget (J : ℕ) (t θ E : ℝ) (hE : 0≤E) :
 theorem conjugate_shifted_window_budget (J : ℕ) (t θ E : ℝ) (hE : 0≤E) :
     (E*heightCost t (-θ)^(2*J))*profileMoment J^2≤
       (windowBudget J t E*(1+‖θ‖)^J)^2 := by
-  simpa only [norm_neg] using shifted_window_budget J t (-θ) E hE
+  simpa using shifted_window_budget J t (-θ) E hE
 
 end SevenEighths.CenteredMomentSecondWindowBudget
 

@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open Filter MeasureTheory
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.RayPrimeNormalizer
 open HeckeFamily
 variable (M : Ideal O) [NeZero M]
@@ -28,7 +28,7 @@ theorem eventually_lower_bound (S : Finset (Ideal O)) (W : ℝ → ℝ)
       c * x ^ (1/6 : ℝ) / Real.log x ≤ normalizer M H S W x := by
   apply PNT.AnnularPrimeMass.weightedPrimeSumDeleted_eventually_lower_bound _ S
     (show 0 < (RayQuotient.classNumber M H : ℝ)⁻¹ from inv_pos.mpr (by
-      exact_mod_cast RayQuotient.classNumber_pos M H))
+      simp))
     (HeckeRayPrimes.quotientClassCoeff_ratio_tendsto M H hH) W hW hc hp hW0 hWne
 
 theorem eventually_pos (S : Finset (Ideal O)) (W : ℝ → ℝ)
@@ -37,7 +37,7 @@ theorem eventually_pos (S : Finset (Ideal O)) (W : ℝ → ℝ)
     ∀ᶠ x : ℝ in atTop, 0 < normalizer M H S W x := by
   apply PNT.AnnularPrimeMass.weightedPrimeSumDeleted_eventually_pos _ S
     (show 0 < (RayQuotient.classNumber M H : ℝ)⁻¹ from inv_pos.mpr (by
-      exact_mod_cast RayQuotient.classNumber_pos M H))
+      simp))
     (HeckeRayPrimes.quotientClassCoeff_ratio_tendsto M H hH) W hW hc hp hW0 hWne
 
 end SevenEighths.RayPrimeNormalizer

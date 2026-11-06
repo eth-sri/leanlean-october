@@ -47,7 +47,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
+open scoped ENNReal MeasureTheory Convolution Pointwise
 open MeasureTheory Set
 
 noncomputable section
@@ -88,7 +88,7 @@ lemma norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZe
     simpa using
       norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_extendByZeroL2
         (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs hψ0 hψint u
-  exact (sq_le_sq₀ (norm_nonneg _) hη).1 hsq
+  nlinarith
 
 theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
     (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
@@ -115,7 +115,7 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
     smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs '' Metric.closedBall (0 : _) R
   have hB_compact : IsCompact (closure B) :=
     smoothL2_image_closedBall_isCompact (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (R := R) hR
-  have hB_tot : TotallyBounded B :=
+  have hB_tot :=
     (totallyBounded_closure).1 hB_compact.totallyBounded
   rcases Metric.finite_approx_of_totallyBounded hB_tot (ε / 2) hε2 with ⟨t, htB, htfin, hBcover⟩
   refine ⟨t, htfin, ?_⟩
@@ -134,10 +134,8 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
   have hdist_smooth_ext :
       dist (extendByZeroL2 (E := E) (K := K) hKm u)
           (smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u) ≤ ε / 2 := by
-    have hη : 0 ≤ ε / 2 := le_of_lt hε2
-    have hnorm :
-        ‖smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u
-            - extendByZeroL2 (E := E) (K := K) hKm u‖ ≤ ε / 2 :=
+    have hη : 0 ≤ ε / 2 := by positivity
+    have hnorm :=
       norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZeroL2_le
         (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs hψ0 hψint (η := ε / 2) hη u (htrans u huA)
     -- Switch to `dist` with the argument order used by `dist_triangle`.
@@ -179,8 +177,7 @@ theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationInteg
                     - extendByZeroL2 (E := E) (K := K) hKm u‖ ^ 2
               ∂kernelMeasure (E := E) ψ ≤ (ε / 2) ^ 2) :
     IsCompact (closure (extendByZeroL2 (E := E) (K := K) hKm '' A)) := by
-  have ht :
-      TotallyBounded (extendByZeroL2 (E := E) (K := K) hKm '' A) :=
+  have ht :=
     totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
       (E := E) (K := K) hK hKm hR hA hApprox
   exact (ht.closure).isCompact_of_isClosed isClosed_closure

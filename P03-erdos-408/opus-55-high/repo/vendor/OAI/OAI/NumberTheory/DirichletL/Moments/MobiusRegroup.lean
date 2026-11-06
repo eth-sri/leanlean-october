@@ -7,21 +7,20 @@ public import OAI.NumberTheory.DirichletL.Moments.SupportedCorrelation
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentMobiusRegroup
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
-local notation "O" => ActualEisensteinCubic.O
 
-def divisorPool {β : Type*} (T : Finset β) (B : β → Ideal O) : Finset (Ideal O) :=
+def divisorPool {β : Type*} (T : Finset β) (B : β → Ideal ActualEisensteinCubic.O) : Finset (Ideal ActualEisensteinCubic.O) :=
   T.biUnion (fun j => idealDivisors (B j))
 
-theorem mobius_on_pool {β : Type*} (T : Finset β) (B : β → Ideal O)
-    (hB : ∀ j ∈ T, B j ≠ 0) (j : β) (hj : j ∈ T) (I : Ideal O) :
+theorem mobius_on_pool {β : Type*} (T : Finset β) (B : β → Ideal ActualEisensteinCubic.O)
+    (hB : ∀ j ∈ T, B j ≠ 0) (j : β) (hj : j ∈ T) (I : Ideal ActualEisensteinCubic.O) :
     (if IsCoprime I (B j) then (1 : ℂ) else 0) =
       ∑ D ∈ divisorPool T B, if D ∣ I ∧ D ∣ B j then (moebius D : ℂ) else 0 := by
-  rw [ideal_coprime_mobius I (B j) (hB j hj)]
+  rw [ideal_coprime_mobius I (B j) (by grind)]
   have hsub : idealDivisors (B j) ⊆ divisorPool T B :=
-    fun D hD => Finset.mem_biUnion.mpr ⟨j,hj,hD⟩
+    fun D hD => Finset.mem_biUnion.mpr (by grind)
   calc
     _ = ∑ D ∈ idealDivisors (B j), if D ∣ I ∧ D ∣ B j then (moebius D : ℂ) else 0 := by
       apply Finset.sum_congr rfl
@@ -30,10 +29,10 @@ theorem mobius_on_pool {β : Type*} (T : Finset β) (B : β → Ideal O)
     _ = _ := Finset.sum_subset hsub (by
       intro D hD hn
       have hnd : ¬ D ∣ B j := fun hd => hn ((mem_idealDivisors (hB j hj)).mpr hd)
-      simp only [hnd, and_false, ite_false])
+      simp_all)
 
 theorem finite_pair_mobius {α β : Type*} (S : Finset α) (T : Finset β)
-    (A : α → Ideal O) (B : β → Ideal O) (hB : ∀ j ∈ T, B j ≠ 0)
+    (A : α → Ideal ActualEisensteinCubic.O) (B : β → Ideal ActualEisensteinCubic.O) (hB : ∀ j ∈ T, B j ≠ 0)
     (F : α → β → ℂ) :
     (∑ i ∈ S, ∑ j ∈ T, if IsCoprime (A i) (B j) then F i j else 0) =
       ∑ D ∈ divisorPool T B, (moebius D : ℂ) *
@@ -50,8 +49,7 @@ theorem finite_pair_mobius {α β : Type*} (S : Finset α) (T : Finset β)
       apply Finset.sum_congr rfl
       intro i hi
       apply Finset.sum_congr rfl
-      intro j hj
-      exact ht i j hj
+      grind
     _ = _ := by
       simp_rw [Finset.sum_comm (s := T) (t := divisorPool T B)]
       rw [Finset.sum_comm]
@@ -62,7 +60,7 @@ theorem finite_pair_mobius {α β : Type*} (S : Finset α) (T : Finset β)
 open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
 
 theorem finite_correlation_mobius {α β : Type*} (S : Finset α) (T : Finset β)
-    (D E : O) (a : α → O) (b : β → O)
+    (D E : ActualEisensteinCubic.O) (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
     (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
     (ha : ∀ i, Supported (Ideal.span {a i})) (hb : ∀ j, Supported (Ideal.span {b j}))
     (hpD : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ D - 1)
@@ -70,7 +68,7 @@ theorem finite_correlation_mobius {α β : Type*} (S : Finset α) (T : Finset β
     (hpa : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a i - 1)
     (hpb : ∀ j, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b j - 1)
     (hcopA : ∀ i, IsCoprime (D * E) (a i)) (hcopB : ∀ j, IsCoprime (D * E) (b j))
-    (h : O) (c : α → ℂ) (d : β → ℂ) (K : α → β → ℂ) :
+    (h : ActualEisensteinCubic.O) (c : α → ℂ) (d : β → ℂ) (K : α → β → ℂ) :
     (∑ i ∈ S, ∑ j ∈ T,
       (if IsCoprime (a i) (b j) then
         actualCorrelation (D * a i) (E * b j)
@@ -92,7 +90,7 @@ theorem finite_correlation_mobius {α β : Type*} (S : Finset α) (T : Finset β
     by_cases hab : IsCoprime (a i) (b j)
     · rw [ite_eq_left hab, ite_eq_left hab, actual_complete_common_support D E (a i) (b j)
         hD hE (ha i) (hb j) hpD hpE (hpa i) (hpb j) (hcopA i) (hcopB j) hab]
-    · simp only [ite_eq_right hab, zero_mul]
+    · simp_all
   simp_rw [he]
   exact finite_pair_mobius S T (fun i => Ideal.span {a i}) (fun j => Ideal.span {b j})
     (fun j _ => (hb j).1) _

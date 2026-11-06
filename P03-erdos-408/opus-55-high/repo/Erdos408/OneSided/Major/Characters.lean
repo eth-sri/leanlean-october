@@ -56,10 +56,9 @@ private theorem norm_sum_mul_dirichletCharacter_le {k : ℕ} [NeZero k] (g : (ZM
   -- each term is at most `B`, and there are `φ(k)` units
   calc ∑ u : (ZMod k)ˣ, ‖g u * χ (↑u)⁻¹‖ ≤ ∑ _u : (ZMod k)ˣ, B := by
         refine sum_le_sum fun u _ => ?_
-        rw [norm_mul]
-        exact (mul_le_of_le_one_right (norm_nonneg _) (χ.norm_le_one _)).trans (hg u)
+        simp_all
     _ = k.totient * B := by
-        rw [sum_const, card_univ, ZMod.card_units_eq_totient, nsmul_eq_mul]
+        simp
 
 /-- A function of three units modulo `k` with `|f| ≤ 1` is a combination of products of
 three characters with coefficients of modulus at most one. -/
@@ -82,7 +81,7 @@ theorem exists_dirichletCharacter_expansion {k : ℕ} [NeZero k]
     rw [norm_mul, norm_pow, norm_inv, Complex.norm_natCast]
     calc (k.totient : ℝ)⁻¹ ^ 3 * _ ≤ (k.totient : ℝ)⁻¹ ^ 3 *
           (k.totient * (k.totient * (k.totient * 1))) := by gcongr
-      _ = 1 := by field_simp [hφ]
+      _ = 1 := by field_simp
   · -- the expansion in `c` collapses the sum over `χ₃`
     have hc' := fun χ₁ χ₂ : DirichletCharacter ℂ k => sum_dirichletCharacter_coeff_mul
       (fun w => ∑ v : (ZMod k)ˣ, (∑ u : (ZMod k)ˣ, f u v w * χ₁ (↑u)⁻¹) * χ₂ (↑v)⁻¹) hc
@@ -110,9 +109,9 @@ theorem exists_dirichletCharacter_expansion {k : ℕ} [NeZero k]
           ∑ χ₁ : DirichletCharacter ℂ k, (∑ u : (ZMod k)ˣ, f u b c * χ₁ (↑u)⁻¹) * χ₁ a := by
           simp_rw [hb']
           rw [mul_sum]
-          exact sum_congr rfl fun χ₁ _ => by ring
+          exact sum_congr rfl (by grind)
       _ = f a b c := by
           rw [ha']
-          field_simp [hφ]
+          field_simp
 
 end Erdos408.OneSided

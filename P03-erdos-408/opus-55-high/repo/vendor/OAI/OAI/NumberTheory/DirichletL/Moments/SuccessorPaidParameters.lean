@@ -10,7 +10,6 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentSuccessorPaidParameters
-open CenteredMomentFirstSecondLossParameters
 
 def edge (epsChild epsRemove delta epsilon delta1 delta2 theta kappa mesh : ℝ) : ℝ :=
   epsChild+epsRemove+2*delta+epsilon+delta2+delta1/6+kappa*mesh+7*theta/3
@@ -24,7 +23,7 @@ def diagonal (sigma delta reserve epsilon A : ℝ) : ℝ :=
 lemma mesh_cost (kappa reserve : ℝ) (hk : 0≤kappa) (hr : 0≤reserve) :
     kappa*(reserve/(kappa+1))≤reserve := by
   rw [←mul_div_assoc]
-  apply (div_le_iff₀ (by positivity : 0<kappa+1)).mpr
+  apply (div_le_iff₀ (by positivity)).mpr
   nlinarith
 
 end SevenEighths.CenteredMomentSuccessorPaidParameters

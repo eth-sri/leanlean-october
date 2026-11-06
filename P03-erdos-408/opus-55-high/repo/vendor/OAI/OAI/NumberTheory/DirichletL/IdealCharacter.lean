@@ -25,7 +25,7 @@ theorem residue_eq_of_associated (M : Ideal A) (χ : MulChar (A ⧸ M) ℂ)
     (hχ : UnitInvariant M χ) {a b : A} (hab : Associated a b) :
     χ (Ideal.Quotient.mk M a) = χ (Ideal.Quotient.mk M b) := by
   obtain ⟨u, rfl⟩ := hab
-  rw [map_mul, map_mul, hχ u, mul_one]
+  simp_all
 
 theorem isUnit_mk_iff_isCoprime (M : Ideal A) (a : A) :
     IsUnit (Ideal.Quotient.mk M a) ↔ IsCoprime (Ideal.span ({a} : Set A)) M := by
@@ -35,7 +35,7 @@ theorem isUnit_mk_iff_isCoprime (M : Ideal A) (a : A) :
     obtain ⟨b, hb⟩ := isUnit_iff_exists_inv'.mp h
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
     have hba : b * a - 1 ∈ M :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hb)
+      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simp_all)
     refine ⟨b, -(b * a - 1), M.neg_mem hba, ?_⟩
     ring
   · rintro ⟨b, c, hc, hbc⟩
@@ -118,18 +118,15 @@ theorem norm_residue_le_one (M : Ideal A) [Finite (A ⧸ M)]
   by_cases ha : IsUnit a
   · obtain ⟨u, rfl⟩ := ha
     have h := Complex.norm_eq_one_of_mem_rootsOfUnity (χ.apply_mem_rootsOfUnity u)
-    have hn : ‖χ (u : A ⧸ M)‖ = 1 := by
-      simpa only [MulChar.coe_equivToUnitHom] using h
-    exact hn.le
+    simp_all
   · rw [MulChar.map_nonunit χ ha, norm_zero]
-    exact zero_le_one
+    simp
 
 theorem norm_ofResidue_le_one (M : Ideal A) [Finite (A ⧸ M)]
     (χ : MulChar (A ⧸ M) ℂ) (hχ : UnitInvariant M χ) (I : Ideal A) :
     ‖ofResidue M χ hχ I‖ ≤ 1 := by
   by_cases hI : I = ⊥
-  · rw [hI, ofResidue_bot, norm_zero]
-    exact zero_le_one
+  · simp_all
   · change ‖value M χ I‖ ≤ 1
     simp only [value, hI, ite_false]
     exact norm_residue_le_one M χ _
@@ -144,7 +141,7 @@ theorem ofResidue_one (M : Ideal A) (I : Ideal A) :
     ofResidue M 1 (one_unitInvariant M) I =
       if I = ⊥ then 0 else if IsCoprime I M then 1 else 0 := by
   by_cases hI : I = ⊥
-  · simp only [hI, ofResidue_bot, ite_true]
+  · simp_all
   · have hg : generator I ≠ 0 := fun h => hI ((eq_bot_iff_generator_eq_zero I).mpr h)
     have heq := ofResidue_span M 1 (one_unitInvariant M) hg
     rw [Ideal.span_singleton_generator] at heq
@@ -166,14 +163,14 @@ theorem ofResidue_source_mask (M K : Ideal A)
     (I : Ideal A) :
     ofResidue M χ hχ I = if IsCoprime I M then ofResidue K φ hφ I else 0 := by
   by_cases hI : I = ⊥
-  · simp only [hI, ofResidue_bot, ite_self]
+  · simp_all
   · have hg : generator I ≠ 0 := fun h => hI ((eq_bot_iff_generator_eq_zero I).mpr h)
     have h := hmask (generator I)
     have hcop : IsUnit (Ideal.Quotient.mk M (generator I)) ↔ IsCoprime I M := by
       simpa only [Ideal.span_singleton_generator] using isUnit_mk_iff_isCoprime M (generator I)
     rw [← ofResidue_span M χ hχ hg, ← ofResidue_span K φ hφ hg,
       Ideal.span_singleton_generator] at h
-    simpa only [hcop] using h
+    simp_all
 
 theorem ofResidue_finite_deletion (M K : Ideal A)
     (χ : MulChar (A ⧸ M) ℂ) (φ : MulChar (A ⧸ K) ℂ)
@@ -184,10 +181,7 @@ theorem ofResidue_finite_deletion (M K : Ideal A)
     ofResidue M χ hχ I =
       ofResidue M 1 (one_unitInvariant M) I * ofResidue K φ hφ I := by
   rw [ofResidue_source_mask M K χ φ hχ hφ hmask, ofResidue_one]
-  by_cases hI : I = ⊥
-  · simp only [hI, ofResidue_bot, ite_true, ite_self, mul_zero]
-  · simp only [hI, ite_false]
-    split_ifs <;> simp only [one_mul, zero_mul]
+  simp_all
 
 theorem ofResidue_product (M N : Ideal A)
     (χ : MulChar (A ⧸ M) ℂ) (ψ : MulChar (A ⧸ N) ℂ)
@@ -196,7 +190,7 @@ theorem ofResidue_product (M N : Ideal A)
         (ResidueCharacter.product_global_units M N χ ψ hχ hψ) I =
       ofResidue M χ hχ I * ofResidue N ψ hψ I := by
   by_cases hI : I = ⊥
-  · simp only [hI, ofResidue_bot, mul_zero]
+  · simp_all
   · have hg : generator I ≠ 0 := fun h => hI ((eq_bot_iff_generator_eq_zero I).mpr h)
     conv_lhs => rw [← Ideal.span_singleton_generator I]
     rw [ofResidue_span _ _ _ hg, ResidueCharacter.product_mk]

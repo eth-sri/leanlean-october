@@ -8,8 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPartition
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
-open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical
 open HeckeFamily HeckeDetectorProfiles
 noncomputable section
 
@@ -23,7 +22,7 @@ def plainCoefficient (χ : Character) (W : ℝ → ℂ) (N : ℝ) (s : ℂ) (I :
 lemma scaled_exp_log_product (x y D N R : ℝ) (hx : 0 < x) (hy : 0 < y)
     (hD : 0 < D) (hN : 0 < N) :
     (D*N/R)*Real.exp (Real.log (x/D)+Real.log (y/N)) = x*y/R := by
-  rw [Real.exp_add, Real.exp_log (div_pos hx hD), Real.exp_log (div_pos hy hN)]
+  rw [Real.exp_add, Real.exp_log (by positivity), Real.exp_log (by positivity)]
   field_simp
 
 theorem actual_pair_profile (χ : Character) (Ω V T W₁ W₂ : ℝ → ℂ)
@@ -51,7 +50,7 @@ theorem actual_pair_profile (χ : Character) (Ω V T W₁ W₂ : ℝ → ℂ)
     calc
       _ = 2*((D*N/Dstar)*Real.exp
         (Real.log ((Ideal.absNorm I : ℝ)/D)+Real.log ((Ideal.absNorm J : ℝ)/N))) := by ring
-      _ = _ := by rw [hscale]; ring
+      _ = _ := by grind
   unfold HeckeDetectorPartition.pairCoefficient inverseCoefficient plainCoefficient logSourceFun
   rw [hΩ hW₁ hW₂, one_mul, htwo, hscale Y, hscale U, map_mul]
   simp only [map_mul, Nat.cast_mul, expNeg]

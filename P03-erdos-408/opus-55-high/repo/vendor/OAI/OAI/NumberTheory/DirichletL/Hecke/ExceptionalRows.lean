@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.RowClosure
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeExceptionalRows
 open HeckeFamily UniqueFactorizationMonoid
 
@@ -25,15 +25,13 @@ theorem row_ideal_dvd (S : Finset (Ideal O)) {u : O} (hu : u ∈ rows S) :
     intro P
     by_cases hP : P ∈ normalizedFactors (Ideal.span {u})
     · have hp := hu.2 P hP
-      have hc : S.val.count P = 1 := Multiset.count_eq_one_of_mem S.nodup hp.1
+      have hc := Multiset.count_eq_one_of_mem S.nodup hp.1
       rw [Multiset.count_nsmul, hc]
       omega
-    · simp only [Multiset.count_eq_zero.mpr hP]
-      exact Nat.zero_le _
+    · simp_all
   have hd := Multiset.prod_dvd_prod_of_le hle
   rw [Ideal.prod_normalizedFactors_eq_self hI, Multiset.prod_nsmul] at hd
-  change (Ideal.span {u} : Ideal O) ∣ (S.prod id)^5
-  simpa only [Finset.prod_val] using hd
+  simp_all
 
 theorem row_norm_bound (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
     {u : O} (hu : u ∈ rows S) : (Ideal.span {u}).absNorm ≤ bound S := by

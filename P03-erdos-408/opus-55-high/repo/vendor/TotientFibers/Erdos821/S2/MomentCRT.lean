@@ -8,7 +8,6 @@ public import Erdos821.Blueprint.Transference
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -41,7 +40,7 @@ theorem averagedMoment_replacement_bound (hPath : PhysicalPathExpansionTask)
     (Complex.ofReal (((dyad X).card : ℝ)⁻¹) *
       (∑ z ∈ dyad X, closedPhysicalExpression A (2 * r) z) -
       closedResidueExpression A (2 * r))
-  simpa only [Complex.sub_re] using hreal.trans hn
+  simpa using hreal.trans hn
 
 
 end Erdos821.S2Core

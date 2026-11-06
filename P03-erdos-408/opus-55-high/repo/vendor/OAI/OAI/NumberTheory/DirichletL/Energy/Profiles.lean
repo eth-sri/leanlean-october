@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Moments.ScaleSupremum
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentEnergyProfiles
-open CenteredMomentFiniteProfileExceptional CenteredMomentAllocatedNaturalSource
 open CenteredMomentScaleSupremum
 
 structure Test (a b:ℝ) where
@@ -23,8 +22,8 @@ def lower (a b:ℝ):ℕ→ℝ
 
 lemma lower_pos (a b:ℝ)(ha:0<a)(n:ℕ):0<lower a b n:=by
   induction n with
-  | zero=>exact ha
-  | succ n ih=>exact div_pos ih (lt_of_lt_of_le zero_lt_one (le_max_left _ _))
+  | zero=>positivity
+  | succ n ih=>exact div_pos ih (by positivity)
 
 def derivativeChoice (W:𝓢(ℝ,ℂ))(j:Fin 2):𝓢(ℝ,ℂ):=
   if j=0 then W else DetectorDictionaryInverseUniform.scaleCLM W
@@ -45,7 +44,7 @@ lemma derivativeChoice_support (a b:ℝ)(W:𝓢(ℝ,ℂ))
 lemma lower_antitone (a b:ℝ)(ha:0<a):Antitone (lower a b):=by
   apply antitone_nat_of_succ_le
   intro n
-  exact div_le_self (lower_pos a b ha n).le (le_max_left _ _)
+  exact div_le_self (lower_pos a b ha n).le (by simp)
 
 open CenteredMomentSectorLocalization in
 lemma annulus_support : Function.support (fun x:ℝ=>(annulus x:ℂ))⊆Set.Icc (1/4:ℝ) 1:=by

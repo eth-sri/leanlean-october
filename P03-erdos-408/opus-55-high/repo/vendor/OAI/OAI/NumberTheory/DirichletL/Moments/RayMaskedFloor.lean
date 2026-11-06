@@ -7,21 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α] (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -33,7 +30,7 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     ∀(θ : α→RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) →
       (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤T → (∀i,|v i|≤T) →
-    ∀(η : Character)(Q : Ideal O)(r : Radial)(R : Ideal O),R≠0 → Q≤M →
+    ∀(η : Character)(Q : Ideal HeckeFamily.O)(r : Radial)(R : Ideal HeckeFamily.O),R≠0 → Q≤M →
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η (internalQ Q η₀) (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 z) →
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ →
@@ -60,8 +57,7 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     apply Nat.mul_pos
     · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Ideal.span_singleton_eq_bot.not.mpr fixedBadMask_ne_zero))
-    · exact Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-        (Ideal.span_singleton_eq_bot.not.mpr (by norm_num : (72:O)≠0)))
+    · simp
   refine ⟨J,S,C*Fc^4,by positivity,?_⟩
   intro η₀
   filter_upwards [hbound η₀,eventually_ge_atTop (Fc*bΦ),eventually_ge_atTop (1:ℝ)] with Z hZ hconst hZ1
@@ -69,7 +65,7 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     m q ρ hm hq hρ hρL hscale hη W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂
   have hZ0 : 0<Z := zero_lt_one.trans_le hZ1
   let r' : Radial := {r with keep := fun z=>r.keep z ∧ r.profile (‖eisEmbedding z‖^2/r.scale)≠0}
-  have hmod (z : O) (hk : r'.keep z) :
+  have hmod (z : HeckeFamily.O) (hk : r'.keep z) :
       ((naturalCharacter η z).modulus.absNorm:ℝ)≤Fc*bΦ*Z^ρ := by
     have hn := hz z hk.1
     rw [naturalCharacter_eq η z hn]
@@ -78,14 +74,14 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
       exact (div_le_iff₀ r.scale_pos).mp (hsΦ hk.2)
     have he := (naturalRow η z hn).modulus_power_bound Z q m bΦ hZ0 hbΦ hη hrow
     apply he.trans
-    apply mul_le_mul_of_nonneg_left _ (mul_nonneg hFc.le hbΦ)
+    apply mul_le_mul_of_nonneg_left _ (by positivity)
     exact Real.rpow_le_rpow_of_exponent_le hZ1 (by linarith)
-  have hcap (z : O) (hk : r'.keep z) :
+  have hcap (z : HeckeFamily.O) (hk : r'.keep z) :
       ((naturalCharacter η z).modulus.absNorm:ℝ)≤Z^(L+1) := by
     apply (hmod z hk).trans
     calc
       _ ≤ Z*Z^L := mul_le_mul hconst (Real.rpow_le_rpow_of_exponent_le hZ1 hρL)
-        (Real.rpow_nonneg hZ0.le _) hZ0.le
+        (by positivity) hZ0.le
       _ = _ := by rw [Real.rpow_add hZ0,Real.rpow_one]; ring
   have he := hZ θ w σ v t T hw hwL hσlo hσhi hT hv η Q r'
     (Fc*bΦ*Z^ρ) R hR hQM (by positivity) (fun z hk=>hz z hk.1)
@@ -107,8 +103,8 @@ theorem natural_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     intro z
     by_cases hk : r.keep z
     · by_cases hp : r.profile (‖eisEmbedding z‖^2/r.scale)=0
-      · simp [r',hk,hp]
-      · simp [r',hk,hp]
+      · simp [r', hp]
+      · simp [r', hp]
     · simp [r',hk]
   rw [hid] at he
   dsimp only [r'] at he

@@ -7,21 +7,16 @@ public import OAI.NumberTheory.DirichletL.Energy.NaturalLowSourceBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalSourceAdmission
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentCommonRadialData CenteredMomentEnergyNaturalInputMatches
+open HeckeFamily
 open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyState
 open CenteredMomentFiniteProfileExceptional CenteredMomentEnergyZeroComparison
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyOriginalProfileControl
 open CenteredMomentEnergyInputParentCapacity CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
-open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-open CenteredMomentInductionEnergy CenteredMomentSourceRow CenteredMomentRetainedEnergy
-open CenteredMomentSourceInputTailUniform CenteredMomentSourceMass
-open CenteredMomentSourceProfileMass CenteredMomentHeckeExpansion CenteredMomentHeckeHeight
+open CenteredMomentEnergyBands
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := energyOriginalSourceDecidableSum
@@ -32,8 +27,8 @@ lemma lowerProduct_pos (N : ℕ) {aslot a : ℝ} (hs : 0 < aslot) (ha : 0 < a) :
     0 < lowerProduct N aslot a := by unfold lowerProduct; positivity
 
 section Source
-variable (Q : Ideal O) [NeZero Q]
-variable (H : Subgroup (O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
+variable (Q : Ideal HeckeFamily.O) [NeZero Q]
+variable (H : Subgroup (HeckeFamily.O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
 variable (η₀ : Character) (θ : ι → RayQuotient.Characters Q H)
 variable (W : ℝ → ℂ) (hW : Continuous W) (aslot bslot lo hi : ℝ)
 variable (haslot : 0 < aslot) (hWs : Function.support W ⊆ Set.Icc aslot bslot)
@@ -68,7 +63,7 @@ theorem low_admission (hZ : 1 < Z)
     w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂ hZ
   have h1 := raw_log_le_length Z X₁ hZ hX₁
   have h2 := raw_log_le_length Z X₂ hZ hX₂
-  constructor <;> linarith [hv.1,hv.2]
+  grind
 
 theorem lower_product_admission (N : ℕ) (hN : Fintype.card ι ≤ N) :
     0 < lowerProduct N aslot a ∧
@@ -95,7 +90,7 @@ theorem original_scale_caps {Z X₁ X₂ M L κ : ℝ} (w : ι → ℝ)
     (hcap : length Z X₁ + length Z X₂ + 6*κ*(∑ i, w i) ≤ M)
     (hM : M ≤ L) : X₁ ≤ Z^L ∧ X₂ ≤ Z^L := by
   have hn : 0 ≤ 6*κ*(∑ i, w i) :=
-    mul_nonneg (by linarith) (Finset.sum_nonneg (fun i _ => hw i))
+    mul_nonneg (by linarith) (Finset.sum_nonneg (by grind))
   have h1 := raw_log_le_length Z X₁ hZ hX₁
   have h2 := raw_log_le_length Z X₂ hZ hX₂
   constructor
@@ -107,7 +102,7 @@ theorem original_scale_caps {Z X₁ X₂ M L κ : ℝ} (w : ι → ℝ)
 theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) :
     ∀ᶠ Z : ℝ in atTop, 1 < Z ∧
     ∀ (ι : Type*) [Fintype ι] [DecidableEq ι],
-    ∀ (Q : Ideal O) [NeZero Q] (H : Subgroup (O ⧸ Q)ˣ)
+    ∀ (Q : Ideal HeckeFamily.O) [NeZero Q] (H : Subgroup (HeckeFamily.O ⧸ Q)ˣ)
       (hH : RayOrthogonality.globalUnits Q ≤ H) (η₀ : Character)
       (θ : ι → RayQuotient.Characters Q H),
     ∀ (W : ℝ → ℂ) (hW : Continuous W) (aslot bslot lo hi : ℝ)
@@ -135,13 +130,13 @@ theorem eventually_scale_admission (b L ε : ℝ) (hL : 0 ≤ L) (hε : 0 < ε) 
   · exact (smallScale_le_one b).trans (Real.one_le_rpow hZ.le (by positivity))
   · change X₁*X₂/smallScale b ≤ _
     have hp : X₁*X₂ ≤ Z^(2*L) := by
-      have hh := mul_le_mul hx.1 hx.2 hX₂.le (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) L).le
+      have hh := mul_le_mul hx.1 hx.2 hX₂.le (by positivity)
       rw [←Real.rpow_add (zero_lt_one.trans hZ)] at hh
       simpa only [two_mul] using hh
     unfold smallScale
     rw [div_div_eq_mul_div,div_one]
     exact (mul_le_mul hp hc (by positivity)
-      (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _).le).trans_eq
+      (by positivity)).trans_eq
         (Real.rpow_add (zero_lt_one.trans hZ) _ _).symm
 
 end SevenEighths.CenteredMomentEnergyNaturalSourceAdmission

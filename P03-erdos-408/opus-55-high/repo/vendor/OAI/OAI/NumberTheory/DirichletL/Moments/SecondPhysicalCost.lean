@@ -7,14 +7,9 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondPhysicalBlock
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondPhysicalCost
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondCanonicalFrequency
-open CenteredMomentCanonicalFirst CenteredMomentLogDyadic CenteredMomentSupport
-open CenteredMomentSecondCanonical CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 lemma logb_sqrt (Z x:ℝ) (hx:0<x) : Real.logb Z (Real.sqrt x)=Real.logb Z x/2 := by

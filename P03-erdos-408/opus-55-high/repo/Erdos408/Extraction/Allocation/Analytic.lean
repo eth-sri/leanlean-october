@@ -48,9 +48,9 @@ theorem exists_failure_mass_le (c Ch Cj κ : ℝ) (hc : 0 < c) (hκ : 1 < κ) :
     eventually_presieveExponent hc Ch, eventually_gt_atTop 1, eventually_le_log 1,
     eventually_le_logLog 1] with x hfree hgroups hγ hx hlog hT j hj hjJ
   obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by omega⟩
-  have hγx : 1 ≤ x ^ presieveExponent c Ch x := Real.one_le_rpow hx.le hγ.1.le
+  have hγx := Real.one_le_rpow hx.le hγ.1.le
   have hred := sum_proxyCoeff_mul_failureProb_le (c₁ := 1 / 4) (c₂ := failureDecay / 4)
-    (κ := κ) (by norm_num) (by norm_num) hγx (fun g hg => (hgroups.1 g hg).1) j'
+    (κ := κ) (by norm_num) (by norm_num) hγx (by grind) j'
   refine hred.trans ?_
   have h1 := hfree j' hjJ (smallGroups x) (by simp)
   have h2 := hfree j' hjJ (bigGroups x) (by simp)

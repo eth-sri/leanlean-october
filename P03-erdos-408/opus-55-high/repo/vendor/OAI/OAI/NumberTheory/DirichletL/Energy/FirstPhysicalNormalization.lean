@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstWindowBudgets
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstPhysicalNormalization
 open HeckeFamily CenteredMomentCommonRadialData
@@ -37,12 +37,11 @@ theorem pairedBudget_le_cap (J₁ J₂ : ℕ) (t H : ℝ) (EL ER : Fin 4 → ℝ
       16 * H * heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ := by
   have hh : pairedBudget J₁ J₂ t EL ER ≤
       ∑ _i : Fin 4, ∑ _j : Fin 4,
-        H * heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ := by
-    exact Finset.sum_le_sum (fun i _ => Finset.sum_le_sum (fun j _ =>
+        H * heightEnvelope t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ :=
+    Finset.sum_le_sum (fun i _ => Finset.sum_le_sum (fun j _ =>
       window_pair_le J₁ J₂ t (EL i) (ER j) H hH (hL i) (hR j)))
   apply hh.trans_eq
   simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-  norm_num
   ring
 
 theorem pairedBudget_le_powers (J₁ J₂ : ℕ) (t Z F Mdecl M₀ ell : ℝ)
@@ -54,12 +53,12 @@ theorem pairedBudget_le_powers (J₁ J₂ : ℕ) (t Z F Mdecl M₀ ell : ℝ)
       16 * F * Z ^ (Mdecl - M₀ + ell) * heightEnvelope t ^ (J₁ + J₂) *
         profileMoment J₁ * profileMoment J₂ := by
   have hcap := pairedBudget_le_cap J₁ J₂ t (F * Z ^ (Mdecl - M₀ + ell)) EL ER
-    (mul_nonneg hF (Real.rpow_nonneg (by linarith) _))
+    (by positivity)
     (fun i => (hL i).trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ (by linarith [hellL i])) hF))
+      (Real.rpow_le_rpow_of_exponent_le hZ (by simp_all)) hF))
     (fun j => (hR j).trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ (by linarith [hellR j])) hF))
-  simpa only [mul_assoc] using hcap
+      (Real.rpow_le_rpow_of_exponent_le hZ (by simp_all)) hF))
+  linarith
 
 theorem physical_power_identity (Z K q Mdecl ell : ℝ) (hZ : 1 < Z)
     (hK : 0 < K) (hq : 0 < q) :
@@ -69,7 +68,6 @@ theorem physical_power_identity (Z K q Mdecl ell : ℝ) (hZ : 1 < Z)
   have hKq : K * q = Z ^ (Real.logb Z K + Real.logb Z q) := by
     rw [Real.rpow_add hz, Real.rpow_logb hz hZ.ne' hK, Real.rpow_logb hz hZ.ne' hq]
   rw [hKq, ← Real.rpow_add hz]
-  congr 1
   ring
 
 lemma character_power_identity (η : Character) (Z K Mdecl ell : ℝ)
@@ -83,7 +81,7 @@ lemma character_power_identity (η : Character) (Z K Mdecl ell : ℝ)
 lemma heightEnvelope_le (t : ℝ) :
     heightEnvelope t ≤ (1 + 2 * Real.pi) ^ 2 * (1 + ‖t‖) := by
   unfold heightEnvelope
-  nlinarith [norm_nonneg t, Real.pi_pos, mul_nonneg (norm_nonneg t) Real.pi_pos.le]
+  nlinarith [Real.pi_pos, mul_nonneg (norm_nonneg t) Real.pi_pos.le]
 
 lemma heightEnvelope_pow_le (J : ℕ) (t : ℝ) :
     heightEnvelope t ^ J ≤ (1 + 2 * Real.pi) ^ (2 * J) * (1 + ‖t‖) ^ J := by
@@ -96,7 +94,7 @@ def normalizationConstant (lowerProduct : ℝ) : ℝ :=
 lemma normalizationConstant_pos (lowerProduct : ℝ) (hlower : 0 < lowerProduct) :
     0 < normalizationConstant lowerProduct := by
   unfold normalizationConstant
-  exact mul_pos (mul_pos (by norm_num) (div_pos (Real.exp_pos _) hlower))
+  exact mul_pos (by positivity)
     fixedPresentationCost_pos
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -135,24 +133,18 @@ theorem sourceFactor_pairedBudget_le (lowerProduct : ℝ) (hlower : 0 < lowerPro
         have hp₁ := profileMoment_nonneg J₁
         have hp₂ := profileMoment_nonneg J₂
         have hh := (heightEnvelope_pos s.t).le
-        have hz := zero_lt_one.trans hZ
         positivity))
   apply hbound.trans_eq
   dsimp [normalizationConstant]
   have hid := character_power_identity s.η Z K Mdecl ell hZ hK
-  calc
-    _ = (16 * (Real.exp (Real.log 4) / lowerProduct) * fixedPresentationCost) * F *
-        (K * (s.η.modulus.absNorm : ℝ) * Z ^
-          (Mdecl - (Real.logb Z K + Real.logb Z (s.η.modulus.absNorm : ℝ)) + ell)) *
-        heightEnvelope s.t ^ (J₁ + J₂) * profileMoment J₁ * profileMoment J₂ := by ring
-    _ = _ := by rw [hid]
+  grind
 
 def polynomialConstant (lowerProduct : ℝ) (J₁ J₂ : ℕ) : ℝ :=
   normalizationConstant lowerProduct * (1 + 2 * Real.pi) ^ (2 * (J₁ + J₂))
 
 lemma polynomialConstant_pos (lowerProduct : ℝ) (J₁ J₂ : ℕ)
-    (hlower : 0 < lowerProduct) : 0 < polynomialConstant lowerProduct J₁ J₂ := by
-  exact mul_pos (normalizationConstant_pos lowerProduct hlower) (pow_pos (by positivity) _)
+    (hlower : 0 < lowerProduct) : 0 < polynomialConstant lowerProduct J₁ J₂ :=
+  mul_pos (normalizationConstant_pos lowerProduct hlower) (by positivity)
 
 omit [DecidableEq ι] in
 theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < lowerProduct)
@@ -184,9 +176,9 @@ theorem sourceFactor_pairedBudget_polynomial (lowerProduct : ℝ) (hlower : 0 < 
           (by positivity)) hm₁) hm₂
     _ = _ := by unfold polynomialConstant; ring
 
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
-open CenteredMomentFirstReferenceSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceMass CenteredMomentFirstNonexceptionalWeightSum
+open Filter CenteredMomentFirstSourceReduction
+open CenteredMomentFirstReferenceSource
+open CenteredMomentFirstNonexceptionalWeightSum
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem actual_physical_mass_of_columnBounds (W : 𝓢(ℝ, ℂ)) (J₁ J₂ : ℕ)

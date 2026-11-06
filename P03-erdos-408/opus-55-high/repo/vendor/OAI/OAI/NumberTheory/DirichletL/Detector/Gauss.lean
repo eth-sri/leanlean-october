@@ -10,7 +10,7 @@ public import Mathlib.Tactic.Ring
 namespace OAI
 
 namespace SevenEighths.ProbeGauss
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 def frequencyGauss {F : Type*} [Field F] [Fintype F]
@@ -19,8 +19,8 @@ def frequencyGauss {F : Type*} [Field F] [Fintype F]
 
 theorem frequencyGauss_nonzero {F : Type*} [Field F] [Fintype F]
     (ξ : MulChar F ℂ) (ψ : AddChar F ℂ) {h : F} (hh : h ≠ 0) :
-    frequencyGauss ξ ψ h = ξ⁻¹ h * gaussSum ξ ψ := by
-  exact gaussSum_mulShift_eq ξ ψ (Units.mk0 h hh)
+    frequencyGauss ξ ψ h = ξ⁻¹ h * gaussSum ξ ψ :=
+  gaussSum_mulShift_eq ξ ψ (Units.mk0 h hh)
 
 theorem frequencyGauss_principal {F : Type*} [Field F] [Fintype F]
     (ψ : AddChar F ℂ) (hψ : ψ ≠ 1) (h : F) :
@@ -49,10 +49,10 @@ theorem normalizedGauss_inverse_pair {F : Type*} [Field F] [Fintype F]
     normalizedGauss χ ψ * normalizedGauss χ⁻¹ ψ = χ (-1) := by
   have hq : (Fintype.card F : ℂ) ≠ 0 := by exact_mod_cast Fintype.card_ne_zero
   have hs : (Real.sqrt (Fintype.card F) : ℂ) ^ 2 = (Fintype.card F : ℂ) := by
-    exact_mod_cast Real.sq_sqrt (Nat.cast_nonneg (Fintype.card F) : (0 : ℝ) ≤ _)
+    exact_mod_cast (by simp)
   unfold normalizedGauss
   rw [div_mul_div_comm, ← pow_two, hs, gauss_inverse_pair χ ψ hχ hψ]
-  exact mul_div_cancel_right₀ _ hq
+  simp
 
 theorem finite_gauss_convolution {F : Type*} [Field F] [Fintype F]
     (χ ξ : MulChar F ℂ) (ψ : AddChar F ℂ) (h : F) :
@@ -73,8 +73,7 @@ theorem finite_gauss_convolution {F : Type*} [Field F] [Fintype F]
       have he' : (∑ d : F, χ d * ψ (-(v * d))) =
           (χ⁻¹ (-1) * χ⁻¹ v) * gaussSum χ ψ := by
         simpa only [neg_mul, gaussSum] using he
-      rw [he']
-      ring
+      grind
   unfold frequencyGauss
   simp_rw [Finset.mul_sum]
   rw [Finset.sum_comm]
@@ -89,7 +88,7 @@ theorem finite_gauss_convolution {F : Type*} [Field F] [Fintype F]
       rw [show (h - d) * v = h * v + -(v * d) by ring, ψ.map_add_eq_mul]
       ring
     _ = ∑ v : F, ψ (h * v) *
-        (χ⁻¹ (-1) * gaussSum χ ψ * (ξ v * χ⁻¹ v)) := by simp_rw [hfreq]
+        (χ⁻¹ (-1) * gaussSum χ ψ * (ξ v * χ⁻¹ v)) := by simp_all
     _ = ∑ v : F, χ⁻¹ (-1) * gaussSum χ ψ * ((ξ * χ⁻¹) v * ψ (h * v)) := by
       apply Finset.sum_congr rfl
       intro v _

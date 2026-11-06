@@ -5,13 +5,11 @@ public import Erdos821.P3Edge.FreshBound
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
 open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
@@ -21,19 +19,16 @@ lemma mu_pos_of_V_pos (g : P.Group) (hV : 0 < P.V g) (p : P.Prime g) :
   have hp : 0 < (p.val : ℝ) := by
     have h := (P.prime g p.val p.property).pos
     exact_mod_cast h
-  exact inv_pos.mpr (mul_pos hV hp)
+  positivity
 
 lemma mu_sum_eq_one (g : P.Group) (hV : P.V g ≠ 0) :
     ∑ p : P.Prime g, P.mu g p = 1 := by
   have h1 : ∑ p : P.Prime g, P.mu g p
       = ∑ p ∈ P.primes g, (P.V g * (p : ℝ))⁻¹ := by
     apply Finset.sum_bij (fun p _ => p.val)
-    · intro p _
-      exact p.property
-    · intro p _ q _ h
-      exact Subtype.ext h
-    · intro n hn
-      exact ⟨⟨n, hn⟩, Finset.mem_univ _, rfl⟩
+    · simp
+    · simp
+    · simp
     · intro p _
       rfl
   rw [h1]
@@ -49,8 +44,7 @@ lemma auxMass_sum_eq_one (ν : Pattern P J F.ell m) (hV : ∀ g, P.V g ≠ 0) :
   classical
   simp only [Pattern.auxMass]
   -- Do it in two stages: groups outer, slots inner via fresh_sum_eq.
-  have hstep : ∀ g : P.Group, ∑ w : Fin J → P.Prime g, ∏ i, P.mu g (w i)
-      = (∑ p : P.Prime g, P.mu g p) ^ J := fun g =>
+  have hstep := fun g =>
     fresh_sum_eq (fun p : P.Prime g => P.mu g p) J
   have h2 : (∑ u : P.Aux J, ∏ g : P.Group, ∏ i : Fin J, P.mu g (u g i))
       = ∏ g : P.Group, ∑ w : Fin J → P.Prime g, ∏ i : Fin J, P.mu g (w i) := by

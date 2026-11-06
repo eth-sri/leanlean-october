@@ -26,7 +26,7 @@ lemma mem_physicalLists_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {M n : �
   simp only [physicalLists, Finset.mem_filter, Fintype.mem_piFinset]
   refine and_congr ?_ ?_
   · exact (e.forall_congr_right (q := fun k => ∀ i, p k i ∈ P (e.symm k))).symm.trans
-      (by simp only [Equiv.symm_apply_apply])
+      (by simp)
   · exact (e.forall_congr_right (q := fun k => Function.Injective (p k) ∧ ∀ i, p k i ∣ n)).symm
 
 /-- Auxiliary labels are those of the original groups, transported. -/
@@ -35,9 +35,7 @@ lemma mem_auxLabels_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) {J : ℕ} (C
     a ∈ auxLabels (fun k => P (e.symm k)) (fun k => C (e.symm k)) ↔
       (fun g => a (e g)) ∈ auxLabels P C := by
   simp only [auxLabels, Fintype.mem_piFinset]
-  exact (e.forall_congr_right (q := fun k => ∀ i, a k i ∈
-    if i ∈ C (e.symm k) then P (e.symm k) else {1})).symm.trans
-      (by simp only [Equiv.symm_apply_apply])
+  grind
 
 omit [DecidableEq ι] [DecidableEq κ] in
 /-- The edge product of transported lists. -/
@@ -47,7 +45,7 @@ lemma edgeProduct_reindex (e : ι ≃ κ) {J : ℕ} (C : ι → Finset (Fin J))
       edgeProduct C (fun g => p (e g)) fun g => a (e g) := by
   unfold edgeProduct
   rw [← Equiv.prod_comp e]
-  simp only [Equiv.symm_apply_apply]
+  simp
 
 omit [DecidableEq ι] [DecidableEq κ] in
 /-- `ω` is unchanged by reindexing. -/
@@ -65,7 +63,7 @@ lemma physicalNormSq_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (M : ℕ) (
   have hcard : (physicalLists (fun k => P (e.symm k)) M n).card = (physicalLists P M n).card :=
     Finset.card_nbij' (fun p g => p (e g)) (fun p k => p (e.symm k))
       (fun p hp => (mem_physicalLists_reindex e P p).mp hp)
-      (fun p hp => (mem_physicalLists_reindex e P _).mpr (by simpa using hp))
+      (fun p hp => (mem_physicalLists_reindex e P _).mpr (by simp_all))
       (fun p _ => by simp) (fun p _ => by simp)
   rw [hcard, Equiv.prod_comp e.symm (fun g => (harmonicMass (P g))⁻¹ ^ M)]
 
@@ -81,11 +79,11 @@ lemma patternPairing_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (q₀ : ℝ
   refine Finset.sum_congr rfl fun n _ => ?_
   refine Finset.sum_nbij' (fun p g => p (e g)) (fun p k => p (e.symm k))
     (fun p hp => (mem_physicalLists_reindex e P p).mp hp)
-    (fun p hp => (mem_physicalLists_reindex e P _).mpr (by simpa using hp))
+    (fun p hp => (mem_physicalLists_reindex e P _).mpr (by simp_all))
     (fun p _ => by simp) (fun p _ => by simp) fun p hp => ?_
   refine Finset.sum_nbij' (fun a g => a (e g)) (fun a k => a (e.symm k))
     (fun a ha => (mem_auxLabels_reindex e P C a).mp ha)
-    (fun a ha => (mem_auxLabels_reindex e P C _).mpr (by simpa using ha))
+    (fun a ha => (mem_auxLabels_reindex e P C _).mpr (by simp_all))
     (fun a _ => by simp) (fun a _ => by simp) fun a ha => ?_
   rw [edgeProduct_reindex]
   refine Finset.sum_nbij' (fun p' g => p' (e g)) (fun p' k => p' (e.symm k))
@@ -93,13 +91,13 @@ lemma patternPairing_reindex (e : ι ≃ κ) (P : ι → Finset ℕ) (q₀ : ℝ
     fun p' hp' => ?_
   · rw [Finset.mem_filter] at hp' ⊢
     refine ⟨(mem_physicalLists_reindex e P p').mp hp'.1, fun h => ?_⟩
-    simpa using hp'.2 (e h)
+    simp_all
   · rw [Finset.mem_filter] at hp' ⊢
-    refine ⟨(mem_physicalLists_reindex e P _).mpr (by simpa using hp'.1), fun k => ?_⟩
-    simpa using hp'.2 (e.symm k)
+    refine ⟨(mem_physicalLists_reindex e P _).mpr (by simp_all), fun k => ?_⟩
+    grind
   · rw [groupPrimeCount_reindex, groupPrimeCount_reindex, Fintype.card_congr e]
     congr 3
     rw [← Equiv.prod_comp e]
-    simp only [Equiv.symm_apply_apply]
+    simp
 
 end Erdos408.Graph

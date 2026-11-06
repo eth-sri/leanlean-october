@@ -8,7 +8,6 @@ public import Erdos821.P3Tail.MemoryTail
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Root
@@ -20,7 +19,7 @@ theorem visitQ_nonneg (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
     0 ≤ visitQ F.q n i := by
   unfold visitQ
   split_ifs
-  · exact Real.sqrt_nonneg _
+  · simp
   · exact F.q_pos.le
 
 theorem residueExpectation_visitQ_nonneg {F : FixedData} {P : PrimeGroups}
@@ -34,21 +33,16 @@ theorem residueExpectation_visitQ_nonneg {F : FixedData} {P : PrimeGroups}
     apply Finset.prod_nonneg
     intro i hi
     by_cases ha : p.val ∈ Q.active i
-    · by_cases hd : (p.val : ℤ) ∣ (y p).val + Q.offset i
-      · simp only [ite_eq_left ha, ite_eq_left hd]
-        norm_num
-      · simp only [ite_eq_left ha, ite_eq_right hd]
-        norm_num
+    · grind
     · simp only [ite_eq_right ha]
       by_cases hd : (p.val : ℤ) ∣ (y p).val + Q.offset i
       · simp only [ite_eq_left hd]
         exact visitQ_nonneg F n i
-      · simp only [ite_eq_right hd]
-        norm_num
+      simp_all
   unfold PrimeGroups.residueExpectation
   apply mul_nonneg
-  · exact inv_nonneg.mpr (Nat.cast_nonneg _)
-  · exact Finset.sum_nonneg fun y _ => hpath y
+  · positivity
+  · exact Finset.sum_nonneg (by grind)
 
 
 end Erdos821.S2Root

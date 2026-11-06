@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge InverseInitialRawDictionary
@@ -82,10 +82,8 @@ theorem polynomial_clipped_fourier (χ : Character) (inv : Bool)
   · subst I
     simp only [coefficient_zero,zero_mul,mul_zero,integral_zero]
   have hIp : 0<(I.absNorm:ℝ)/D:=div_pos (by exact_mod_cast (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hz))) hD
-  rw [clipped_test_fourier W lo hi hlo hs hW Wref c θ _ hc hIp (hagree _ hIp),
+  rw [clipped_test_fourier W lo hi hlo hs hW Wref c θ _ hc hIp (by grind),
     ←integral_const_mul,←integral_const_mul]
-  apply integral_congr_ae
-  filter_upwards with v
   ring
 
 end SevenEighths.DetectorDictionaryInverseRawFourier

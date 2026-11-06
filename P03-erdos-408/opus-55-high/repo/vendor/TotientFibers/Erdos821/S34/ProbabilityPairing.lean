@@ -6,7 +6,7 @@ public import Erdos821.S34.Probability
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -15,8 +15,8 @@ theorem weighted_l1_le_l2 {α : Type*} [Fintype α] (w : α → ℝ)
     (∑ x, w x * ‖f x‖) ≤ Real.sqrt (∑ x, w x * ‖f x‖ ^ 2) := by
   have hc := Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul Finset.univ
     (r := fun x => w x * ‖f x‖) (f := w) (g := fun x => w x * ‖f x‖ ^ 2)
-    (fun x _ => hw x) (fun x _ => mul_nonneg (hw x) (sq_nonneg _))
-    (fun x _ => le_of_eq (by ring))
+    (by grind) (fun x _ => mul_nonneg (hw x) (sq_nonneg _))
+    (by grind)
   rw [hprob, one_mul] at hc
   have hn : 0 ≤ ∑ x, w x * ‖f x‖ := Finset.sum_nonneg fun x _ => mul_nonneg (hw x) (norm_nonneg _)
   have he : 0 ≤ ∑ x, w x * ‖f x‖ ^ 2 := Finset.sum_nonneg fun x _ => mul_nonneg (hw x) (sq_nonneg _)
@@ -44,7 +44,7 @@ theorem independent_pairing_bound {α β : Type*} [Fintype α] [Fintype β]
         abs_of_nonneg (hw x), abs_of_nonneg (hv y)]
       have h := mul_le_mul_of_nonneg_left (hR x y)
         (mul_nonneg (mul_nonneg (mul_nonneg (hw x) (hv y)) (norm_nonneg (f y))) (norm_nonneg (g x)))
-      convert h using 1; ring
+      linarith
     _ = E * (∑ x, w x * ‖g x‖) * (∑ y, v y * ‖f y‖) := by
       simp_rw [Finset.mul_sum, Finset.sum_mul]
       exact Finset.sum_comm

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerCoordinates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge
 
 lemma evenRatio_eq_coordR (Q : ℝ) (hQ : 0<Q) (a x z : ℂ) :
     evenRatio Q a ((Q:ℂ)^(-x)) (coordV Q z) = coordR Q (a^2) x z := by
@@ -23,10 +22,10 @@ lemma evenRatio_eq_coordR (Q : ℝ) (hQ : 0<Q) (a x z : ℂ) :
       rw [Complex.cpow_ofNat]
       have h6 : (Q:ℂ)^((6:ℂ)*(-x)) = ((Q:ℂ)^(-x))^6 := by
         simpa using Complex.cpow_nat_mul (Q:ℂ) 6 (-x)
-      rw [h6]
+      simp_all
     _ = a^2 * (Q:ℂ)^((4:ℂ)+6*(-x)+(-6*z)) := by
       rw [← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn]
-    _ = _ := by congr 2; ring
+    _ = _ := by ring
 
 lemma coordK_eq_geometric (Q : ℝ) (hQ : 0<Q) (eta x w : ℂ) :
     coordK Q eta x w = eta*((Q:ℂ)-1)*((Q:ℂ)^(-x))*((Q:ℂ)^(-w)) := by
@@ -38,11 +37,10 @@ lemma coordK_eq_geometric (Q : ℝ) (hQ : 0<Q) (eta x w : ℂ) :
 lemma one_sub_ne_zero_of_norm_lt_one (a : ℂ) (ha : ‖a‖<1) : 1-a ≠ 0 := by
   intro h
   have he : a=1 := by linear_combination -h
-  rw [he, norm_one] at ha
-  exact lt_irrefl _ ha
+  simp_all
 
-variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
-  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
 
 def principalFullSeries (eta a X W V : ℂ) : ℂ :=
   1/(1-V)+W/(1-W)+principalMarkedSeries p hp hg eta a X W V
@@ -79,15 +77,14 @@ theorem principalFullSeries_euler_identity (eta a x w z : ℂ)
   have hw := one_sub_ne_zero_of_norm_lt_one _ hW
   simp only [coordW, coordD, star_one, mul_one, one_mul, Complex.ofReal_natCast] at hD hw ⊢
   unfold ProbeLocal.continuedCorrection
-  field_simp [hD, hv, hw]
-  ring
+  grind
 
 omit hc
 
-def actualACube (eta : HeckeFamily.Character) (p : O) : ℂ :=
+def actualACube (eta : HeckeFamily.Character) (p : ActualEisensteinCubic.O) : ℂ :=
   star (FiniteGaussPhase.angularFactor p)^3 * HeckeFamily.elementCoeff eta p^3
 
-lemma actualACube_sq (eta : HeckeFamily.Character) (p : O) :
+lemma actualACube_sq (eta : HeckeFamily.Character) (p : ActualEisensteinCubic.O) :
     actualACube eta p ^ 2 = actualAPhase eta p := by
   unfold actualACube actualAPhase
   ring

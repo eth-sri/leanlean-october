@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.BandSubtypeTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalNestedReference
 open HeckeFamily ConcreteTraceCRT
@@ -16,7 +16,6 @@ open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
 open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
@@ -36,9 +35,9 @@ open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
     (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
@@ -47,7 +46,7 @@ theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Ls
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∃Z₀:ℝ,1<Z₀ ∧
     ∀Jparent:Finset α,∀Jorig:Finset Jparent,∀θ:Jorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
-    ∀εchild:ℝ,∀(Q:Ideal O),Q≤M →
+    ∀εchild:ℝ,∀(Q:Ideal HeckeFamily.O),Q≤M →
     ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
@@ -57,7 +56,7 @@ theorem nested_original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Ls
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input Jorig,Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
-    ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
+    ∀(C R:Ideal HeckeFamily.O)(B:actualAllocations src.pools C)(D:Ideal HeckeFamily.O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),R≠0 →
     ∀(τ:Character)(dyad:Fin 4→ℤ),∀_hn:1≤CenteredMomentSectorLocalization.dyadicScale (dyad 1),
     Real.logb Z (CenteredMomentSectorLocalization.dyadicScale (dyad 1))+

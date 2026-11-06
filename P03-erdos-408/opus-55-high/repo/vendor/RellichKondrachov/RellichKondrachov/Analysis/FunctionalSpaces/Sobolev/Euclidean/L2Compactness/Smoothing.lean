@@ -33,7 +33,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
+open scoped ENNReal MeasureTheory Convolution Pointwise
 open MeasureTheory Set
 
 noncomputable section
@@ -55,16 +55,16 @@ private lemma tsupport_indicator_subset_closure (s : Set E) (f : E → ℝ) :
     tsupport (s.indicator f) ⊆ closure s := by
   -- `Function.support (s.indicator f) ⊆ s`, hence the topological support is contained in
   -- `closure s`.
-  simpa [tsupport] using closure_mono (Set.support_indicator_subset (s := s) (f := f))
+  simpa [tsupport] using closure_mono (by simp)
 
 omit [InnerProductSpace ℝ E] [CompleteSpace E] in
 private lemma hasCompactSupport_indicator_of_isCompact (s : Set E) (hs : IsCompact s) (f : E → ℝ) :
     HasCompactSupport (s.indicator f) := by
-  have hs_closed : IsClosed s := hs.isClosed
+  have hs_closed := hs.isClosed
   -- `tsupport (s.indicator f)` is closed and contained in the compact set `s`.
   refine hs.of_isClosed_subset (isClosed_tsupport _) ?_
-  have : tsupport (s.indicator f) ⊆ closure s := tsupport_indicator_subset_closure (E := E) s f
-  simpa [hs_closed.closure_eq] using this
+  have  := tsupport_indicator_subset_closure (E := E) s f
+  simp_all
 
 end
 
@@ -96,7 +96,7 @@ lemma hasCompactSupport_extendByZeroFun (hK : IsCompact K)
     (hasCompactSupport_indicator_of_isCompact (E := E) (s := K) hK (f := fun x => u x))
 
 /-- `extendByZeroFun` packaged as an element of `L²(volume)`. -/
-noncomputable def extendByZeroL2 (hKm : MeasurableSet K)
+def extendByZeroL2 (hKm : MeasurableSet K)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
     (E →₂[(volume : Measure E)] ℝ) := by
   classical
@@ -124,9 +124,7 @@ lemma extendByZeroL2_eq_extendByZeroₗᵢ (hKm : MeasurableSet K)
   classical
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   refine MeasureTheory.Lp.ext ?_
-  have h1 :
-      (extendByZeroL2 (E := E) (K := K) hKm u : E → ℝ) =ᵐ[(volume : Measure E)]
-        extendByZeroFun (E := E) (K := K) u :=
+  have h1 :=
     extendByZeroL2_ae_eq (E := E) (K := K) hKm u
   have h2 :
       ((MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
@@ -148,8 +146,7 @@ lemma norm_extendByZeroL2 (hKm : MeasurableSet K)
           (s := K) hKm) u‖ := by
           simp [extendByZeroL2_eq_extendByZeroₗᵢ (E := E) (K := K) hKm u]
     _ = ‖u‖ :=
-      (MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
-        (s := K) hKm).norm_map u
+      by simp
 variable (ψ : E → ℝ)
 
 /-- Smoothing by convolution with a fixed kernel `ψ`, applied to the zero-extension from `K`. -/
@@ -183,7 +180,7 @@ lemma continuous_smoothFun
 lemma hasCompactSupport_smoothFun (hK : IsCompact K) (hψcs : HasCompactSupport ψ)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
     HasCompactSupport (smoothFun (K := K) ψ u) := by
-  have hf : HasCompactSupport (extendByZeroFun (K := K) u) :=
+  have hf :=
     hasCompactSupport_extendByZeroFun (K := K) hK u
   simpa [smoothFun] using
     (hf.convolution («L» := ContinuousLinearMap.lsmul ℝ ℝ)
@@ -206,7 +203,7 @@ lemma support_smoothFun_subset_add_tsupport
   exact hsupp.trans (add_subset_add h1 h2)
 
 /-- `smoothFun` packaged as an element of `L²(volume)`. -/
-noncomputable def smoothL2 (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
+def smoothL2 (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ)
     (hψcs : HasCompactSupport ψ)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) : (E →₂[(volume : Measure E)] ℝ) :=
   let hs : HasCompactSupport (smoothFun (K := K) ψ u) :=

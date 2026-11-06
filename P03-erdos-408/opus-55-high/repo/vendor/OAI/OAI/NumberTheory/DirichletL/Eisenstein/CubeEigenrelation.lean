@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,46 +33,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
 
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open scoped Classical MatrixGroups
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma positive_cube_cpow_third (r:ℝ) (hr:0<r) :
@@ -90,11 +70,10 @@ lemma positive_cube_cpow_third (r:ℝ) (hr:0<r) :
   calc
     _=(((r^3)^(1/3:ℝ):ℝ):ℂ):=by
       simpa only [Complex.ofReal_div,Complex.ofReal_one,Complex.ofReal_ofNat] using
-        (Complex.ofReal_cpow (pow_nonneg hr.le 3) (1/3)).symm
+        (Complex.ofReal_cpow (by positivity) (1/3)).symm
     _=_:=by
       congr 1
-      rw [←Real.rpow_natCast_mul hr.le 3]
-      norm_num
+      simp [←Real.rpow_natCast_mul hr.le 3]
 
 lemma cubicBesselNormalizer_mul_cube (h p:Eis) (hp:p≠0) :
     cubicBesselNormalizer (h*p^3)=(‖eisEmbedding p‖:ℂ)*cubicBesselNormalizer h := by
@@ -108,7 +87,7 @@ lemma cubicBesselNormalizer_mul_cube (h p:Eis) (hp:p≠0) :
     push_cast
     ring
   unfold cubicBesselNormalizer
-  rw [he,Complex.mul_cpow_ofReal_nonneg (pow_nonneg hr.le 3) ha,
+  rw [he,Complex.mul_cpow_ofReal_nonneg (by positivity) ha,
     positive_cube_cpow_third _ hr]
   push_cast
   ring
@@ -122,13 +101,12 @@ theorem sourceArithmeticResidue_cube_of_eigenrelation (p:Eis) (hp:p≠0)
   rw [cubicBesselNormalizer_mul_cube h p hp] at ht
   have hr:(‖eisEmbedding p‖:ℂ)≠0:=Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp))
   apply mul_left_cancel₀ (mul_ne_zero hr (cubicBesselNormalizer_ne_zero h hh))
-  simpa only [mul_assoc] using ht
+  grind
 
 end
 
-open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
+open scoped Classical MatrixGroups
+open EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubeSourceDifference (p:Eis) (hp:p≠0) (w:HyperbolicSpace) : ℂ :=
@@ -194,12 +172,11 @@ lemma toSource_range (K R : Subgroup G) (a : ι → G ≃* G) (i : ι) :
   ext r
   constructor
   · rintro ⟨h,rfl⟩
-    change (a i).symm (a i (h : G)) ∈ common K R a
-    simpa only [MulEquiv.symm_apply_apply] using h.property
+    simp
   · intro hr
     refine ⟨⟨(a i).symm (r : G),hr⟩,?_⟩
     apply Subtype.ext
-    exact (a i).apply_symm_apply (r : G)
+    simp
 
 instance toSource_range_finiteIndex [Finite ι] (K R : Subgroup G) (a : ι → G ≃* G)
     [K.FiniteIndex] [R.FiniteIndex] (i : ι) : (toSource K R a i).range.FiniteIndex := by
@@ -224,7 +201,7 @@ def target (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* leng
 lemma target_le (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengthScale) (i : ι) :
     target K R lengthScale a e i ≤ lengthScale := by
   rintro x ⟨h,rfl⟩
-  exact (e (toSource K R a i h)).property
+  simp
 
 lemma target_le_common_ambient (K R lengthScale : Subgroup G) (a : ι → G ≃* G)
     (e : R ≃* lengthScale) (hLK : lengthScale ≤ K) (i : ι) : target K R lengthScale a e i ≤ K :=
@@ -254,9 +231,9 @@ def equiv (K R lengthScale : Subgroup G) (a : ι → G ≃* G) (e : R ≃* lengt
 end FiniteAutomorphismCover
 
 namespace CubicKubota
-open scoped BigOperators Classical MatrixGroups
+open scoped Classical MatrixGroups
 
-open CubicEisenstein ConcreteTraceCRT
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 lemma literalCube_zero_pair (p : ActualEisensteinCubic.O) (hp : p≠0) (x : cubeKernelCorrespondence p) :
@@ -270,7 +247,7 @@ lemma literalCube_zero_pair (p : ActualEisensteinCubic.O) (hp : p≠0) (x : cube
   have he := cubeCorrespondence_entries p x.1
   change p^3*M 0 0=N 0 0*p^3 ∧ p^3*M 0 1=N 0 1 ∧
     M 1 0=N 1 0*p^3 ∧ M 1 1=N 1 1 at he
-  have h00 : eisEmbedding (M 0 0)=eisEmbedding (N 0 0) :=
+  have h00 :=
     congrArg eisEmbedding (mul_left_cancel₀ (pow_ne_zero 3 hp) (he.1.trans (mul_comm _ _)))
   have h01 := congrArg eisEmbedding he.2.1
   have h10 := congrArg eisEmbedding he.2.2.1
@@ -283,29 +260,23 @@ lemma literalCube_zero_pair (p : ActualEisensteinCubic.O) (hp : p≠0) (x : cube
       cubeAverageMatrix_entries,integralComplexMatrix_apply]
   · change z⁻¹*eisEmbedding (N 0 0)+(z⁻¹*(3*eisEmbedding 0))*eisEmbedding (N 1 0)=
       eisEmbedding (M 0 0)*z⁻¹+eisEmbedding (M 0 1)*0
-    rw [h00,map_zero]
-    ring
+    grind
   · change z⁻¹*eisEmbedding (N 0 1)+(z⁻¹*(3*eisEmbedding 0))*eisEmbedding (N 1 1)=
       eisEmbedding (M 0 0)*(z⁻¹*(3*eisEmbedding 0))+eisEmbedding (M 0 1)*z
-    rw [←h01,←hz,map_zero]
-    field_simp [hz0]
-    ; ring
+    grind
   · change 0*eisEmbedding (N 0 0)+z*eisEmbedding (N 1 0)=
       eisEmbedding (M 1 0)*z⁻¹+eisEmbedding (M 1 1)*0
-    rw [h10,←hz]
-    field_simp [hz0]
-    ; ring
+    grind
   · change 0*eisEmbedding (N 0 1)+z*eisEmbedding (N 1 1)=
       eisEmbedding (M 1 0)*(z⁻¹*(3*eisEmbedding 0))+eisEmbedding (M 1 1)*z
-    rw [h11,map_zero]
-    ring
+    grind
 
 theorem literalCube_zero_intertwines (p : ActualEisensteinCubic.O) (hp : p≠0) :
     IntegralCoverIntertwines (cubeKernelRangeEquiv p hp).symm (cubeAverageMatrix p hp 0) := by
   intro r
   let x := (MonoidHom.ofInjective (cubeKernelRightGlobal_injective p hp)).symm r
   have hr : cubeKernelRightGlobal p hp x=(r:SL(2,ActualEisensteinCubic.O)) :=
-    MonoidHom.apply_ofInjective_symm (cubeKernelRightGlobal_injective p hp) r
+    MonoidHom.apply_ofInjective_symm (by grind) r
   change cubeAverageMatrix p hp 0*integralComplexMatrix (r:SL(2,ActualEisensteinCubic.O))=
     integralComplexMatrix (cubeKernelLeftGlobal p x)*cubeAverageMatrix p hp 0
   rw [←hr]
@@ -342,8 +313,7 @@ end CubicKubota
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical MatrixGroups
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -452,10 +422,10 @@ theorem kernelCoverLeg_adjoint_comp {H Ji Jj : Subgroup (SL(2,ActualEisensteinCu
 
 end CubicEisenstein
 
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 
 namespace CubicKubota
-open CubicEisenstein ConcreteTraceCRT
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CubeResidues (p : ActualEisensteinCubic.O) := ActualEisensteinCubic.O ⧸ Ideal.span {p^3}
@@ -472,7 +442,7 @@ lemma cubeCommonCover_le (p : ActualEisensteinCubic.O) (hp : p≠0) : cubeCommon
 
 lemma cubeCommonCover_finiteIndex (p : ActualEisensteinCubic.O) (hp : p≠0) : (cubeCommonCover p hp).FiniteIndex := by
   let : globalKubotaKernel.FiniteIndex := globalKubotaKernel_finiteIndex
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  let : Finite (CubeResidues p) := finite_quotient_span (by positivity)
   let := (cubeKernelGlobal_finite_covers p hp).2
   exact FiniteAutomorphismCover.common_finiteIndex _ _ _
 
@@ -488,7 +458,7 @@ lemma cubeCommonTarget_le (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeRe
 lemma cubeCommonTarget_finiteIndex (p : ActualEisensteinCubic.O) (hp : p≠0) (r : CubeResidues p) :
     (cubeCommonTarget p hp r).FiniteIndex := by
   let : globalKubotaKernel.FiniteIndex := globalKubotaKernel_finiteIndex
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  let : Finite (CubeResidues p) := finite_quotient_span (by positivity)
   let := (cubeKernelGlobal_finite_covers p hp).1
   let := (cubeKernelGlobal_finite_covers p hp).2
   exact FiniteAutomorphismCover.target_finiteIndex _ _ _ _ _ r

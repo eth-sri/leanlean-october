@@ -10,21 +10,20 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
+local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+local instance : Countable (Ideal ActualEisensteinCubic.O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
-abbrev SourceOuter (S : Finset (Ideal O)) := {K : Ideal O // Supported K ∧ ∀P∈S,¬P∣K}
-abbrev CompletedPair := Ideal O×Ideal O
+abbrev SourceOuter (S : Finset (Ideal ActualEisensteinCubic.O)) := {K : Ideal ActualEisensteinCubic.O // Supported K ∧ ∀P∈S,¬P∣K}
+abbrev CompletedPair := Ideal ActualEisensteinCubic.O×Ideal ActualEisensteinCubic.O
 
-def sourceRawGrouping (S : Finset (Ideal O)) :
+def sourceRawGrouping (S : Finset (Ideal ActualEisensteinCubic.O)) :
     SourceRawIndex S ≃ SourceOuter S×(CompletedPair×NonzeroFrequency) where
   toFun i := (⟨i.val.2.2,i.property⟩,(i.val.2.1,i.val.1))
   invFun i := ⟨(i.2.2,(i.2.1,i.1.val)),i.1.property⟩
   left_inv _i := rfl
   right_inv _i := rfl
 
-def sourceRawGroupingMeasurable (S : Finset (Ideal O))
+def sourceRawGroupingMeasurable (S : Finset (Ideal ActualEisensteinCubic.O))
     [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
     [MeasurableSpace (SourceOuter S)] [MeasurableSingletonClass (SourceOuter S)]
     [MeasurableSpace CompletedPair] [MeasurableSingletonClass CompletedPair]
@@ -34,7 +33,7 @@ def sourceRawGroupingMeasurable (S : Finset (Ideal O))
   measurable_toFun := measurable_of_countable _
   measurable_invFun := measurable_of_countable _
 
-lemma sourceRawGrouping_preserving (S : Finset (Ideal O))
+lemma sourceRawGrouping_preserving (S : Finset (Ideal ActualEisensteinCubic.O))
     [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
     [MeasurableSpace (SourceOuter S)] [MeasurableSingletonClass (SourceOuter S)]
     [MeasurableSpace CompletedPair] [MeasurableSingletonClass CompletedPair]

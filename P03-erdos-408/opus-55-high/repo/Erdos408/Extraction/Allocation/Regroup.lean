@@ -34,9 +34,9 @@ theorem proxySum_eq_sum (q cw : ℝ) (K : ℕ) (CN : ℝ) {x : ℝ} (γ : ℝ) {
     intro m _ hm
     have hΦ : Φ (((∏ i, m i : ℕ) - 1 : ℝ) / x) ≠ 0 := by
       intro h
-      exact hm (by simp only [G, h, zero_mul])
+      exact hm (by grind)
     obtain ⟨h1, h2⟩ := hsupp _ hΦ
-    have hpos : 0 < (((∏ i, m i : ℕ) - 1 : ℝ) / x) := lt_of_lt_of_le (inv_pos.2 hκ) h1
+    have hpos : 0 < (((∏ i, m i : ℕ) - 1 : ℝ) / x) := lt_of_lt_of_le (by positivity) h1
     have hgt : (1 : ℝ) < (∏ i, m i : ℕ) := by
       have := (div_pos_iff_of_pos_right hx).1 hpos
       linarith
@@ -46,27 +46,25 @@ theorem proxySum_eq_sum (q cw : ℝ) (K : ℕ) (CN : ℝ) {x : ℝ} (γ : ℝ) {
     rw [Nat.cast_sub hgt'.le, Nat.cast_one]
     rwa [div_le_iff₀ hx] at h2
   rw [proxySum, ← sum_filter_of_ne hrange, ← sum_fiberwise_of_maps_to (t := Icc 1 ⌊κ * x⌋₊)
-    (g := fun m => (∏ i, m i) - 1) (f := G) fun m hm => (mem_filter.1 hm).2]
+    (g := fun m => (∏ i, m i) - 1) (f := G) (by simp)]
   refine sum_congr rfl fun w hw => ?_
-  have hw1 : 1 ≤ w := (mem_Icc.1 hw).1
+  have hw1 : 1 ≤ w := by grind
   have hwN : w + 1 ≤ ⌊κ * x + 1⌋₊ := by
     rw [Nat.floor_add_one hκx]
-    exact Nat.succ_le_succ (mem_Icc.1 hw).2
+    exact by grind
   -- the fiber over `w` is the set of factorizations of `w + 1`
   have hfiber : (box.filter fun m => (∏ i, m i) - 1 ∈ Icc 1 ⌊κ * x⌋₊).filter
       (fun m => (∏ i, m i) - 1 = w) = Nat.finMulAntidiag j (w + 1) := by
     ext m
     simp only [mem_filter, Nat.mem_finMulAntidiag, box, Fintype.mem_piFinset]
     constructor
-    · rintro ⟨⟨-, -⟩, h⟩
-      exact ⟨by omega, by omega⟩
+    · omega
     · rintro ⟨h, -⟩
-      have hm : m ∈ Nat.finMulAntidiag j (w + 1) := Nat.mem_finMulAntidiag.2 ⟨h, by omega⟩
+      have hm := Nat.mem_finMulAntidiag.2 ⟨h, by omega⟩
       refine ⟨⟨fun i => mem_Icc.2 ⟨Nat.pos_of_ne_zero (Nat.ne_zero_of_mem_finMulAntidiag hm i),
         (Nat.le_of_dvd (by omega) (Nat.dvd_of_mem_finMulAntidiag hm i)).trans hwN⟩, ?_⟩, ?_⟩
-      · rw [h]
-        simpa using hw
-      · omega
+      · simp_all
+      omega
   rw [hfiber, proxyCoeff, mul_sum]
   refine sum_congr rfl fun m hm => ?_
   have hprod := Nat.prod_eq_of_mem_finMulAntidiag hm

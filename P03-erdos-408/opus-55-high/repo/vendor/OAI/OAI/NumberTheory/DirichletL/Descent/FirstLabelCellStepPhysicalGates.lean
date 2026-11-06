@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondUniformCutoff InversePrioritySecondSource
+open InverseMoment FirstPassCubeLabels SecondPassArithmetic
+open InverseMomentFirstChildWindows InverseFirstPriorityParents
+open InverseInitialArithmetic
+open InverseSecondUniformCutoff
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0)
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
 
 def parentWeight (l : ℕ) (x : Source ι 0) : ℂ :=
   (‖commonSelector p (fun _=>1) l x.quotientSupport‖:ℂ)
@@ -31,7 +30,7 @@ lemma secondCutoff_nonneg (Z M r ell V eta tau window : ℝ) (k : SourceIndex) (
   apply uniformSecondRadius_nonneg _ _ _ _ _ _ _ _ _ hZ.le
   · unfold firstCellRadius
     positivity
-  · exact Real.rpow_nonneg hZ.le _
+  positivity
 
 include hp in
 theorem secondCutoff_dominates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -44,8 +43,8 @@ theorem secondCutoff_dominates (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k 
   have hd := (InverseFirstGlobalCaps.parentCell_ideal_bounds p hp pool Q (fun _ _=>1) k l
     Z eta hZ hbin y (Finset.mem_filter.mp hy).1).2.1.2
   apply correlated_le_uniform p Z (exponent Z (k 3)) eta _ G E _ _ _
-    (by unfold firstCellRadius;exact Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _)
-    (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
+    (by unfold firstCellRadius;positivity)
+    (by positivity)
   simpa [secondParentDivisor,parent,InverseFirstGlobalCaps.sourceIdeal_norm,
     primeSubsetGenerator_norm_eq_productNorm] using hd
 
@@ -64,8 +63,8 @@ theorem parent_tail_caps (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : Sour
   intro y hy
   have hb := label_parent_bounds p hp pool Q k l j Z ell eta hZ heta hbin hQ y hy
   have hpw {a : ℝ} (ha : a≤Lcap) : Z^a≤Z^Lcap := Real.rpow_le_rpow_of_exponent_le hZ.le ha
-  refine ⟨hb.1.trans (hpw hell),hb.2.1.trans (hpw hell),?_,
-    hb.2.2.2.1.trans (hpw hcommon),hb.2.2.2.2.1.trans (hpw hquot)⟩
+  refine ⟨by grind,by grind,?_,
+    by grind,by grind⟩
   have he := hb.2.2.1.trans (hpw hactive)
   have hone := Real.one_le_rpow hZ.le hcap
   change ‖eisEmbedding (∏i∈_,p i)‖^2≤Z^Lcap at he

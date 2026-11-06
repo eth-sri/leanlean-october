@@ -62,11 +62,11 @@ theorem twistedPoly_eq (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : F
         Complex.exp (2 * Real.pi * Complex.I * (h * w / k : ℝ)) *
         (w : ℂ) ^ ((t : ℂ) * Complex.I) := by
     refine sum_subset (Icc_subset_Icc_left (Nat.one_le_iff_ne_zero.2
-      (Nat.ceil_pos.2 hY0).ne')) fun w hw hw' => ?_
+      (by positivity))) fun w hw hw' => ?_
     have hwY : (w : ℝ) < Y := by
       have : w < ⌈Y⌉₊ := by
         by_contra h'
-        exact hw' (mem_Icc.2 ⟨not_lt.1 h', (mem_Icc.1 hw).2⟩)
+        exact by grind
       exact Nat.lt_ceil.1 this
     have hψ : ψ₁ (w / Y) = 0 := by
       by_contra h'
@@ -101,10 +101,9 @@ theorem twistedPoly_eq (x q q₀ : ℝ) {r d : ℕ} (a : Fin r → ℝ) (u v : F
     rw [sum_comm]
     refine sum_congr rfl fun Q _ => ?_
     rw [progSum, mul_sum, sum_filter]
-    refine sum_congr rfl fun w _ => ?_
-    split_ifs <;> simp [Φ, mul_comm]
-  · rw [progSum, filter_true_of_mem fun w _ => one_dvd w, mul_sum]
-    exact sum_congr rfl fun w _ => mul_comm _ _
+    grind
+  · rw [progSum, filter_true_of_mem (by omega), mul_sum]
+    grind
 
 /-! ### Step 5: the cancellation -/
 
@@ -124,7 +123,7 @@ theorem norm_combine_le {d : ℕ} {Ts : Finset (Fin (d + 1) → ℕ)} {Bc : (Fin
   set Sinv := ∑ Q ∈ Ts, 1 / ∏ i, (Q i : ℝ)
   set CB := ∑ Q ∈ Ts, Bc (Fin.init Q) / ∏ i, (Q i : ℝ)
   have hcast : ∀ Q : Fin (d + 1) → ℕ, ((∏ i, Q i : ℕ) : ℝ) = ∏ i, (Q i : ℝ) := fun Q => by
-    push_cast; rfl
+    simp
   have hCB : |CB| ≤ Sinv := by
     refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun Q hQ => ?_)
     have hpos : (0 : ℝ) < ∏ i, (Q i : ℝ) := by rw [← hcast]; exact_mod_cast hl Q hQ
@@ -161,9 +160,8 @@ theorem norm_combine_le {d : ℕ} {Ts : Finset (Fin (d + 1) → ℕ)} {Bc : (Fin
           rw [sum_add_distrib, ← mul_sum, sum_const, nsmul_eq_mul, mul_comm β]
   have h₂ : ‖(CB : ℂ) * (Pm 1 - Θ)‖ ≤ Sinv * (α * Y + β) := by
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-    exact mul_le_mul hCB hΔ₁ (norm_nonneg _) ((abs_nonneg _).trans hCB)
-  calc _ ≤ α * Y * Sinv + β * #Ts + Sinv * (α * Y + β) := add_le_add h₁ h₂
-    _ = _ := by ring
+    exact mul_le_mul hCB hΔ₁ (norm_nonneg _) (by positivity)
+  linarith
 
 /-! ### The cutoff piece -/
 
@@ -174,13 +172,12 @@ theorem one_lt_of_ne_zero {ψ₁ : ℝ → ℂ} (hc : Continuous ψ₁)
   have hsub : Set.Iio (1 : ℝ) ⊆ {y | ψ₁ y = 0} := by
     intro z hz
     by_contra h
-    exact absurd (hs z h).1 (not_le.2 hz)
-  have hcl : closure (Set.Iio (1 : ℝ)) ⊆ {y | ψ₁ y = 0} :=
+    exact by grind
+  have hcl :=
     (IsClosed.closure_subset_iff (isClosed_eq hc continuous_const)).2 hsub
   rw [closure_Iio] at hcl
   have h1 : ψ₁ 1 = 0 := hcl (Set.mem_Iic.2 le_rfl)
-  refine lt_of_le_of_ne (hs y hy).1 fun h => hy ?_
-  rw [← h, h1]
+  grind
 
 /-! ### Growth facts (O2) -/
 
@@ -195,7 +192,7 @@ theorem eventually_mul_log_rpow_le (K : ℝ) {a b : ℝ} (hab : a < b) :
     rw [← Real.rpow_add hL]
     ring_nf
   rw [this]
-  exact mul_le_mul_of_nonneg_right hK (Real.rpow_nonneg hL.le a)
+  exact mul_le_mul_of_nonneg_right hK (by positivity)
 
 /-- `L^A < exp(L^g)` eventually, for `g > 0`. -/
 theorem eventually_rpow_lt_exp_rpow (A : ℝ) {g : ℝ} (hg : 0 < g) :
@@ -226,9 +223,9 @@ theorem eventually_three_rpow_le {c : ℝ} (hc : 0 < c) :
   have hhalf : L / L ^ (1 / 2 : ℝ) = L ^ (1 / 2 : ℝ) := by
     rw [div_eq_iff (by positivity), ← Real.rpow_add hL]
     norm_num
-  calc 3 * L ^ (0.47 : ℝ) = c / 2 * (6 / c * L ^ (0.47 : ℝ)) := by field_simp; ring
+  calc 3 * L ^ (0.47 : ℝ) = c / 2 * (6 / c * L ^ (0.47 : ℝ)) := by grind
     _ ≤ c / 2 * L ^ (1 / 2 : ℝ) := by gcongr
-    _ = c / 2 * L / L ^ (1 / 2 : ℝ) := by rw [mul_div_assoc, hhalf]
+    _ = c / 2 * L / L ^ (1 / 2 : ℝ) := by grind
     _ ≤ c / 2 * L / T ^ 20 := div_le_div_of_nonneg_left (by positivity) hTpos hT20'
 
 /-- `K L^C e^{2 L^{0.47}} ≤ exp((c/2) L / T²⁰)` eventually: the slot margin `x^{-ε/2}`
@@ -247,13 +244,13 @@ theorem eventually_mul_exp_le {c : ℝ} (hc : 0 < c) (K C : ℝ) :
   have hK1 : 0 < |K| + 1 := by positivity
   have hLC : K * L ^ C ≤ Real.exp (L ^ (0.47 : ℝ)) := by
     calc K * L ^ C ≤ (|K| + 1) * L ^ C :=
-          mul_le_mul_of_nonneg_right (by linarith [le_abs_self K]) (by positivity)
+          mul_le_mul_of_nonneg_right (by grind) (by positivity)
       _ = Real.exp (Real.log (|K| + 1) + C * T) := by
           rw [Real.exp_add, Real.exp_log hK1, Real.rpow_def_of_pos hL, mul_comm C]
       _ ≤ Real.exp (L ^ (0.47 : ℝ)) := by
           refine Real.exp_le_exp.2 (le_trans ?_ hK)
           have : C * T ≤ |C| * T := mul_le_mul_of_nonneg_right (le_abs_self C) (by linarith)
-          have h0 : 0 ≤ Real.log (|K| + 1) := Real.log_nonneg (by linarith [abs_nonneg K])
+          have h0 : 0 ≤ Real.log (|K| + 1) := Real.log_nonneg (by simp)
           nlinarith
   calc K * L ^ C * Real.exp (2 * L ^ (0.47 : ℝ))
       ≤ Real.exp (L ^ (0.47 : ℝ)) * Real.exp (2 * L ^ (0.47 : ℝ)) :=

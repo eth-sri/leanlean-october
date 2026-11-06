@@ -74,7 +74,7 @@ theorem mem_cell {x : ℝ} (_hx : 0 ≤ x) {j q : ℕ} :
 theorem mem_cell_iff_log {x : ℝ} (hx : 1 < x) {j q : ℕ} :
     q ∈ cell x j ↔ q.Prime ∧ margin x + j * mesh x < Real.log q / Real.log x ∧
       Real.log q / Real.log x ≤ margin x + (j + 1) * mesh x := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   rw [mem_cell (by linarith)]
   refine and_congr_right fun hq => ?_
   have hq0 : (0 : ℝ) < q := by exact_mod_cast hq.pos
@@ -92,9 +92,9 @@ theorem eq_of_mem_cell {x : ℝ} (hx : 1 ≤ x) {i j q : ℕ} (hi : q ∈ cell x
     rpow_le_rpow_of_exponent_le hx
       (by linarith [mul_le_mul_of_nonneg_right (show (k : ℝ) + 1 ≤ l by exact_mod_cast h) hm])
   rcases lt_trichotomy i j with h | h | h
-  · linarith [key h]
-  · exact h
-  · linarith [key h]
+  · grind
+  · omega
+  grind
 
 /-- For `x ≥ 1`, distinct cells are disjoint. -/
 theorem disjoint_cell {x : ℝ} (hx : 1 ≤ x) {i j : ℕ} (hij : i ≠ j) :
@@ -104,43 +104,41 @@ theorem disjoint_cell {x : ℝ} (hx : 1 ≤ x) {i j : ℕ} (hij : i ≠ j) :
 /-- For `x > 1` and `m > 0`, every prime above `x^a` lies in some cell. -/
 theorem exists_mem_cell {x : ℝ} (hx : 1 < x) (hm : 0 < mesh x) {q : ℕ} (hq : q.Prime)
     (hxq : x ^ margin x < q) : ∃ j : ℕ, q ∈ cell x j := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hq0 : (0 : ℝ) < q := by exact_mod_cast hq.pos
   have ht : margin x < Real.log q / Real.log x := by
     rwa [rpow_lt_iff_lt_log (by linarith) hq0, ← lt_div_iff₀ hL] at hxq
   -- `j = ⌈(t_q - a) / m⌉ - 1`
   set u := (Real.log q / Real.log x - margin x) / mesh x
-  have hu : 0 < u := div_pos (by linarith) hm
-  have hum : u * mesh x = Real.log q / Real.log x - margin x := div_mul_cancel₀ _ hm.ne'
+  have hu : 0 < u := by positivity
+  have hum : u * mesh x = Real.log q / Real.log x - margin x := by grind
   have hc : 1 ≤ ⌈u⌉₊ := Nat.ceil_pos.2 hu
   have hcast : ((⌈u⌉₊ - 1 : ℕ) : ℝ) = ⌈u⌉₊ - 1 := by rw [Nat.cast_sub hc, Nat.cast_one]
   refine ⟨⌈u⌉₊ - 1, (mem_cell_iff_log hx).2 ⟨hq, ?_, ?_⟩⟩
   · have h := mul_lt_mul_of_pos_right (show (⌈u⌉₊ : ℝ) - 1 < u by
       linarith [Nat.ceil_lt_add_one hu.le]) hm
-    rw [hcast]
-    linarith
+    nlinarith
   · have h := mul_le_mul_of_nonneg_right (Nat.le_ceil u) hm.le
-    rw [hcast, sub_add_cancel]
-    linarith
+    nlinarith
 
 /-- Mertens' first theorem on a cell: `∑_{q ∈ J_j} (log q / L) / q = m + O(1 / L)`. -/
 theorem exists_abs_sum_cell_sub_mesh_le : ∃ E : ℝ, 0 ≤ E ∧ ∀ x : ℝ, 1 < x → ∀ j : ℕ,
     |∑ q ∈ cell x j, Real.log q / Real.log x / q - mesh x| ≤ E / Real.log x := by
   obtain ⟨E, hE, hmert⟩ := mertens_first
   refine ⟨E, hE, fun x hx j => ?_⟩
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hx0 : 0 < x := by linarith
   have ha : 0 ≤ margin x := by unfold margin; positivity
   have hm : 0 ≤ mesh x := by unfold mesh; positivity
   have h := hmert (x ^ (margin x + j * mesh x)) (x ^ (margin x + (j + 1) * mesh x))
-    (one_le_rpow hx.le (add_nonneg ha (mul_nonneg (Nat.cast_nonneg _) hm)))
+    (one_le_rpow hx.le (by positivity))
     (rpow_le_rpow_of_exponent_le hx.le (by nlinarith))
   rw [← rpow_sub hx0, log_rpow hx0,
     show margin x + (j + 1) * mesh x - (margin x + j * mesh x) = mesh x by ring] at h
   have hsum : ∑ q ∈ cell x j, Real.log q / Real.log x / q - mesh x =
       (∑ p ∈ cell x j, Real.log p / p - mesh x * Real.log x) / Real.log x := by
     rw [sub_div, sum_div, mul_div_cancel_right₀ _ hL.ne']
-    exact congrArg (· - _) (sum_congr rfl fun q _ => div_right_comm _ _ _)
+    exact congrArg (· - _) (sum_congr rfl (by grind))
   rw [hsum, abs_div, abs_of_pos hL]
   exact div_le_div_of_nonneg_right h hL.le
 
@@ -159,7 +157,7 @@ theorem region₁_eq_primesIoc {x : ℝ} (hx : 1 ≤ x) :
   have hm : 0 ≤ mesh x := by unfold mesh; positivity
   let f : ℕ → ℕ := fun j => ⌊x ^ (margin x + j * mesh x)⌋₊
   have hf : Monotone f := monotone_nat_of_le_succ fun j =>
-    Nat.floor_le_floor (rpow_le_rpow_of_exponent_le hx (by push_cast; nlinarith))
+    Nat.floor_le_floor (rpow_le_rpow_of_exponent_le hx (by grind))
   have hcell : cell x = fun j => (Ioc (f j) (f (j + 1))).filter Nat.Prime := by
     ext j : 1
     simp only [cell, primesIoc, f, Nat.cast_succ]
@@ -170,7 +168,7 @@ theorem region₁_eq_primesIoc {x : ℝ} (hx : 1 ≤ x) :
 private lemma sum_range_cast (n : ℕ) : ∑ j ∈ range n, (j : ℝ) = n * (n - 1) / 2 := by
   induction n with
   | zero => simp
-  | succ n ih => rw [sum_range_succ, ih]; push_cast; ring
+  | succ n ih => rw [sum_range_succ, ih]; grind
 
 /-- `∑_{j < n} ((a + j m) m - c) = a (n m) + ((n m)² - (n m) m) / 2 - n c`. -/
 private lemma sum_range_affine (a m c : ℝ) (n : ℕ) :
@@ -178,7 +176,7 @@ private lemma sum_range_affine (a m c : ℝ) (n : ℕ) :
       a * (n * m) + ((n * m) ^ 2 - n * m * m) / 2 - n * c := by
   induction n with
   | zero => simp
-  | succ n ih => rw [sum_range_succ, ih]; push_cast; ring
+  | succ n ih => rw [sum_range_succ, ih]; grind
 
 /-- The number of admissible cell pairs is `J₂ (J₂ - 1) / 2`. -/
 private lemma card_cellPairs₂ (x : ℝ) :
@@ -214,7 +212,7 @@ private lemma eventually_mul_loglog_pow_le_log (C : ℝ) (n : ℕ) :
   filter_upwards [tendsto_loglog.eventually ((tendsto_exp_div_pow_atTop n).eventually_ge_atTop C),
     tendsto_loglog.eventually_gt_atTop 0, tendsto_log_atTop.eventually_gt_atTop 0]
     with x hC hT hL
-  rwa [le_div_iff₀ (pow_pos hT n), exp_log hL] at hC
+  rwa [le_div_iff₀ (by positivity), exp_log hL] at hC
 
 /-- The eventual size conditions on the grid: `a, m ≤ 1 / 10`, `E ≤ m² L` and `2 ≤ m² x^a`. -/
 private lemma eventually_grid (E : ℝ) : ∀ᶠ x : ℝ in atTop, 1 < x ∧ 0 < mesh x ∧
@@ -223,7 +221,7 @@ private lemma eventually_grid (E : ℝ) : ∀ᶠ x : ℝ in atTop, 1 < x ∧ 0 <
   filter_upwards [eventually_gt_atTop 1, mesh_le_margin_pow, tendsto_loglog.eventually_ge_atTop 10,
     eventually_mul_loglog_pow_le_log (8 * (|E| + 1)) 46] with x hx ⟨hm₁, hm₂⟩ hT hC
   set T := Real.log (Real.log x)
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hT0 : 0 < T := by linarith
   have hT20 : T ≤ T ^ 20 := le_self_pow₀ (by linarith) (by norm_num)
   have hT6 : T ≤ T ^ 6 := le_self_pow₀ (by linarith) (by norm_num)
@@ -246,7 +244,7 @@ private lemma eventually_grid (E : ℝ) : ∀ᶠ x : ℝ in atTop, 1 < x ∧ 0 <
   · calc mesh x ≤ 1 / T ^ 20 := hm₁
       _ ≤ 1 / 10 := by rw [div_le_div_iff₀ (by positivity) (by norm_num)]; linarith
   · have h := mul_le_mul_of_nonneg_left hT46 (by linarith : 0 ≤ 8 * (|E| + 1))
-    calc E ≤ 2 * (|E| + 1) := by linarith [le_abs_self E]
+    calc E ≤ 2 * (|E| + 1) := by grind
       _ ≤ Real.log x / (4 * T ^ 40) := by rw [le_div_iff₀ (by positivity)]; linarith
       _ = 1 / (4 * T ^ 40) * Real.log x := by ring
       _ ≤ mesh x ^ 2 * Real.log x := mul_le_mul_of_nonneg_right hmsq hL.le
@@ -290,9 +288,9 @@ theorem mem_region₂ : ∀ᶠ x : ℝ in Filter.atTop, ∀ Q ∈ region₂ x,
   -- the bottom of every cell is at least `x^a`
   have hbot : ∀ j : ℕ, x ^ margin x ≤ x ^ (margin x + j * mesh x) := fun j =>
     rpow_le_rpow_of_exponent_le hx.le (le_add_of_nonneg_right (by positivity))
-  refine ⟨mem_biUnion.2 ⟨j₁, mem_range.2 (by omega), hq⟩,
-    mem_biUnion.2 ⟨j₂, mem_range.2 (by omega), hr⟩, hqr, (hbot j₁).trans_lt hq'.2.1,
-    (hbot j₂).trans_lt hr'.2.1, ?_⟩
+  refine ⟨mem_biUnion.2 (by grind),
+    mem_biUnion.2 (by grind), hqr, by grind,
+    by grind, ?_⟩
   push_cast
   calc (q : ℝ) * r ≤ x ^ (margin x + (j₁ + 1) * mesh x) * x ^ (margin x + (j₂ + 1) * mesh x) :=
         mul_le_mul hq'.2.2 hr'.2.2 (Nat.cast_nonneg _) (by positivity)
@@ -309,7 +307,7 @@ theorem mem_region₂_of_mul_le : ∀ᶠ x : ℝ in Filter.atTop, ∀ q r : ℕ,
       ((q * r : ℕ) : ℝ) ≤ x ^ (1 - margin x - 3 * mesh x) → (q, r) ∈ region₂ x := by
   filter_upwards [eventually_grid 0] with x ⟨hx, hm, ha, _, _, _⟩
   intro q r hq hr hqr hxq hxr hmul
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hq0 : (0 : ℝ) < q := by exact_mod_cast hq.pos
   have hr0 : (0 : ℝ) < r := by exact_mod_cast hr.pos
   obtain ⟨j₁, hj₁⟩ := exists_mem_cell hx hm hq hxq
@@ -328,7 +326,7 @@ theorem mem_region₂_of_mul_le : ∀ᶠ x : ℝ in Filter.atTop, ∀ q r : ℕ,
     push_cast
     nlinarith
   simp only [region₂, cellPairs₂, mem_biUnion, mem_filter, mem_product, mem_range]
-  exact ⟨(j₁, j₂), ⟨⟨by omega, by omega⟩, hj⟩, ⟨hj₁, hj₂⟩, hqr⟩
+  exact ⟨(j₁, j₂), by omega, by grind, hqr⟩
 
 /-- The model second moment of `region₁`:
 `∑ (log q / L)² / q ≥ ((1 - a)² - a²) / 2 - O(m)`. -/
@@ -338,7 +336,7 @@ theorem region₁_square_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
   obtain ⟨E, hE, hcell⟩ := exists_abs_sum_cell_sub_mesh_le
   refine ⟨3, ?_⟩
   filter_upwards [eventually_grid E] with x ⟨hx, hm, ha, hm', hEm, _⟩
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have ha0 : 0 ≤ margin x := by unfold margin; positivity
   have hJ : (cellCount₁ x : ℝ) * mesh x ≤ 1 - 2 * margin x :=
     (le_div_iff₀ hm).1 (Nat.floor_le (div_nonneg (by linarith) hm.le))
@@ -349,7 +347,7 @@ theorem region₁_square_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
   have hEL : E / Real.log x ≤ mesh x ^ 2 := by rwa [div_le_iff₀ hL]
   have hEL0 : 0 ≤ E / Real.log x := div_nonneg hE hL.le
   have hJE : cellCount₁ x * (E / Real.log x) ≤ mesh x := by
-    have h := mul_le_mul_of_nonneg_left hEL (Nat.cast_nonneg (cellCount₁ x))
+    have h := mul_le_mul_of_nonneg_left hEL (by positivity)
     nlinarith
   -- on `J_j`, `t_q > a + j m`, so `∑ t_q² / q ≥ (a + j m) ∑ t_q / q ≥ (a + j m) m - E / L`
   have hcellj : ∀ j ∈ range (cellCount₁ x), (margin x + j * mesh x) * mesh x - E / Real.log x ≤
@@ -370,7 +368,6 @@ theorem region₁_square_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
           rw [show (Real.log q / Real.log x) ^ 2 / q =
             Real.log q / Real.log x * (Real.log q / Real.log x / q) by ring]
           exact mul_le_mul_of_nonneg_right ht.le (by
-            have := ((mem_cell_iff_log hx).1 hq).1.one_lt
             positivity)
   rw [region₁, sum_biUnion fun i _ j _ hij => disjoint_cell hx.le hij]
   refine le_trans ?_ (sum_le_sum hcellj)
@@ -378,7 +375,7 @@ theorem region₁_square_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
   -- with `V = J₁ m ∈ (1 - 2a - m, 1 - 2a]`, use `(V + a)² ≥ (1 - a - m)²`
   have hV := pow_le_pow_left₀ (by linarith) (show 1 - margin x - mesh x ≤
     cellCount₁ x * mesh x + margin x by linarith) 2
-  nlinarith [mul_le_mul_of_nonneg_right (show (cellCount₁ x : ℝ) * mesh x ≤ 1 by linarith) hm.le,
+  nlinarith [mul_le_mul_of_nonneg_right (by linarith) hm.le,
     sq_nonneg (mesh x), mul_nonneg ha0 hm.le]
 
 /-- The model mass of `region₂`:
@@ -390,7 +387,7 @@ theorem region₂_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
   obtain ⟨E, hE, hcell⟩ := exists_abs_sum_cell_sub_mesh_le
   refine ⟨4, ?_⟩
   filter_upwards [eventually_grid (2 * E)] with x ⟨hx, hm, ha, hm', hEm, hxa⟩
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hx0 : 0 < x := by linarith
   have ha0 : 0 ≤ margin x := by unfold margin; positivity
   have hJ : (cellCount₂ x : ℝ) * mesh x ≤ 1 - 3 * margin x :=
@@ -406,8 +403,7 @@ theorem region₂_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
   have hxa' : 1 / x ^ margin x ≤ mesh x ^ 2 / 2 := by rw [div_le_iff₀ hxa0]; linarith
   have hS : ∀ j : ℕ, mesh x - E / Real.log x ≤ ∑ q ∈ cell x j, Real.log q / Real.log x / q ∧
       ∑ q ∈ cell x j, Real.log q / Real.log x / q ≤ mesh x + E / Real.log x := fun j => by
-    have h := abs_le.1 (hcell x hx j)
-    constructor <;> linarith
+    grind
   -- on `J_j` with `j < J₂`, `0 ≤ t_q / q ≤ 1 / x^a`
   have hu : ∀ j : ℕ, j + 1 ≤ cellCount₂ x → ∀ q ∈ cell x j,
       0 ≤ Real.log q / Real.log x / q ∧ Real.log q / Real.log x / q ≤ 1 / x ^ margin x := by
@@ -457,7 +453,7 @@ theorem region₂_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
             sum_le_sum_of_subset_of_nonneg hsub fun Q _ _ => hF0 Q
         _ = ∑ q ∈ cell x j₁, Real.log q / Real.log x / q * (Real.log q / Real.log x / q) := by
             rw [sum_image fun a _ b _ h => congrArg Prod.fst h]
-            exact sum_congr rfl fun q _ => (div_mul_div_comm _ _ _ _).symm
+            grind
         _ ≤ ∑ q ∈ cell x j₁, Real.log q / Real.log x / q * (1 / x ^ margin x) :=
             sum_le_sum fun q hq => mul_le_mul_of_nonneg_left (hu j₁ (by omega) q hq).2
               (hu j₁ (by omega) q hq).1
@@ -465,7 +461,7 @@ theorem region₂_model : ∃ K : ℝ, ∀ᶠ x : ℝ in Filter.atTop,
             (sum_mul _ _ _).symm
         _ ≤ (mesh x + E / Real.log x) * (1 / x ^ margin x) :=
             mul_le_mul_of_nonneg_right (hS j₁).2 (by positivity)
-    have hrect := mul_le_mul (hS j₁).1 (hS j₂).1 (by linarith) (by linarith [(hS j₁).1])
+    have hrect := mul_le_mul (hS j₁).1 (hS j₂).1 (by linarith) (by positivity)
     have hA : 2 * mesh x * (E / Real.log x) ≤ mesh x ^ 3 := by nlinarith
     have hB : (mesh x + E / Real.log x) * (1 / x ^ margin x) ≤ mesh x ^ 3 :=
       calc _ ≤ (2 * mesh x) * (mesh x ^ 2 / 2) :=

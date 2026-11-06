@@ -9,11 +9,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic FirstPassCubeLabels
 open InverseSecondSourceBlocks (dyadScale dyadScale_pos)
-local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.InverseMomentFirstChildWindows
 end

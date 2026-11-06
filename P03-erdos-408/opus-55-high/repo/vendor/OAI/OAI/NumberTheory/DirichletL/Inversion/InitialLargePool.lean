@@ -8,19 +8,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
+open scoped Classical
+open CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
 namespace SevenEighths.InverseInitialLargePool
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
+open InverseInitialRayAttachment InverseInitialArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
-local notation "O"=>ActualEisensteinCubic.O
-theorem selected_conjugate_row_supported (F : Finset (Ideal O))
-    (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
-    (η : Ideal O →* ℂ) (H : Ideal O → ℂ)
-    (hcop : ∀ I ∈ F,H I≠0→IsCoprime I j) (u : O) :
+theorem selected_conjugate_row_supported (F : Finset (Ideal ActualEisensteinCubic.O))
+    (hF : ∀ I ∈ F,Admissible I) (j : Ideal ActualEisensteinCubic.O) (hj : Admissible j)
+    (η : Ideal ActualEisensteinCubic.O →* ℂ) (H : Ideal ActualEisensteinCubic.O → ℂ)
+    (hcop : ∀ I ∈ F,H I≠0→IsCoprime I j) (u : ActualEisensteinCubic.O) :
     let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i => by rw [poolPrimary_span F hF i]; infer_instance
     (∑ I ∈ F,(moebius I : ℂ)*η I*H I*star (idealRowHom u I)) =
@@ -43,19 +41,19 @@ theorem selected_conjugate_row_supported (F : Finset (Ideal O))
   by_cases hAF : (∏ i ∈ A,i.val)∈F
   · simp only [hAF,ite_true]
     by_cases hh:H (∏i∈A,i.val)=0
-    · simp only [hh,mul_zero,zero_mul]
-    rw [selected_mask F j hj A (hcop _ hAF hh),mul_one]
+    · simp_all
+    rw [selected_mask F j hj A (by grind),mul_one]
     rw [idealRowHom_eq_idealSexticRow F hF hAF]
     simp only [supportMobius,idealSexticRow,InitialMeanSquare.pool_support_product]
     ring
-  · simp only [hAF,ite_false,mul_zero,zero_mul]
+  simp_all
 
 theorem residual_eq_large_input
-    (S F : Finset (Ideal Eis)) {P j : Ideal Eis}
+    (S F : Finset (Ideal ActualEisensteinCubic.O)) {P j : Ideal ActualEisensteinCubic.O}
     (hP : Admissible P) (hj : j∣P) (hF : ∀I∈F,Admissible I)
     (hsub : columns S P j⊆F)
-    (η : Ideal Eis→*ℂ) (a : Ideal Eis→ℂ) (W : ℝ→ℂ)
-    (Z r z G : ℝ) (u : Eis) :
+    (η : Ideal ActualEisensteinCubic.O→*ℂ) (a : Ideal ActualEisensteinCubic.O→ℂ) (W : ℝ→ℂ)
+    (Z r z G : ℝ) (u : ActualEisensteinCubic.O) :
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     residualNormalizedPolynomial S P j η a W Z r z G u =
@@ -67,13 +65,13 @@ theorem residual_eq_large_input
             (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0) u := by
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
-  let H : Ideal Eis→ℂ := fun c=>if c∈columns S P j then
+  let H : Ideal ActualEisensteinCubic.O→ℂ := fun c=>if c∈columns S P j then
     a (reconstruct P j c)*residualOverlapWindow P j W Z z G
       ((c.absNorm:ℝ)/Z^(r+z-2*G)) else 0
   have hfilter : F.filter (fun c=>c∈columns S P j)=columns S P j := by
     ext c
     simp only [Finset.mem_filter]
-    exact and_iff_right_of_imp (fun h=>hsub h)
+    exact by grind
   have he : (∑c∈columns S P j,
       overlapResidualCoefficient P j η a W Z r z G c*star (CanonicalRowCompletion.idealRowHom u c))=
       ∑c∈F,(moebius c:ℂ)*η c*H c*star (CanonicalRowCompletion.idealRowHom u c) := by
@@ -89,15 +87,9 @@ theorem residual_eq_large_input
     intro I hIF hHI
     by_cases hi:I∈columns S P j
     · exact ((mem_columns hP.2.1 hj).mp hi).2.1
-    · exact False.elim (hHI (by simp [H,hi]))
+    · grind
   rw [he,selected_conjugate_row_supported F hF j (admissible_of_dvd hP hj) η H hcH u]
-  apply congrArg (fun v:ℂ=>((Z^(-(r+z-2*G)/2):ℝ):ℂ)*v)
-  congr 1
-  funext A
-  dsimp [H]
-  by_cases hc : (∏i∈A,i.val)∈columns S P j
-  · simp only [hc,hsub hc,ite_true]
-  · simp only [hc,ite_false,ite_self]
+  grind
 
 variable {κ:Type*}
 

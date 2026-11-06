@@ -9,14 +9,14 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedPadding
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical
 open MeasureTheory
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedUniform
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
 open DetectorDictionaryInverseUniform DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseRawFourier InverseInitialClippedColumns
-open InverseInitialOverlapFourier FourierBridge HeckeDetectorRawFiber
+open FourierBridge HeckeDetectorRawFiber
 
 private theorem clipped_one_zero (W : ℝ→ℂ) : clippedTest W 1 0=W := by
   funext x
@@ -49,8 +49,8 @@ theorem moving_finite_energy (J : ℕ) :
   apply hb.trans
   calc
     _≤E*(B*(1+‖t‖)^K)^2:=mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hE
-    _= _:=by rw [mul_pow,←pow_mul];ring_nf
+      (pow_le_pow_left₀ (by positivity) hm 2) hE
+    _= _:=by ring
 
 theorem logTest_eq_iterate (W : ℝ→ℂ) (n : ℕ) :
     logTest W n=(HeckeDetectorRowwisePolynomial.logProfile^[n]) W := by
@@ -99,7 +99,7 @@ theorem fiber_inverse_energy_uniform (J : ℕ) :
   refine ⟨K,C,hC,?_⟩
   intro M H Label Slot U a ε tstar T allowance i F selected hU E hE href n hn σ hσ t
   have hh:=hb F.rows (fun u=>F.family u F.label) (F.physicalProduct selected)
-    (U^F.r) E (Real.rpow_pos_of_pos hU _) hE href false false n hn U hU tstar F.r σ hσ t
+    (U^F.r) E (by positivity) hE href false false n hn U hU tstar F.r σ hσ t
   simpa only [fiber_inverse_polynomial] using hh
 
 theorem fiber_inverse_height_uniform (J : ℕ) :

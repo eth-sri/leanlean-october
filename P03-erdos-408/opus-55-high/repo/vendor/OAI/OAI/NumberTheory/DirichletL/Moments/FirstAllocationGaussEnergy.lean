@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAllocationGaussEnergy
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice
@@ -17,44 +17,43 @@ open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
 open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
 open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-def commonEnergy (D : OriginalData ι) (C : Ideal O) (hC : Supported C)
-    (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
-  ∑' z : O, ‖commonGauss D C hC τ t L z‖^2 *
+def commonEnergy (D : OriginalData ι) (C : Ideal ActualEisensteinCubic.O) (hC : Supported C)
+    (τ : Character) (t : ℝ) (L : Ideal ActualEisensteinCubic.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
+  ∑' z : ActualEisensteinCubic.O, ‖commonGauss D C hC τ t L z‖^2 *
     (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re
 
-def allocatedEnergy (D : OriginalData ι) (C L : Ideal O)
+def allocatedEnergy (D : OriginalData ι) (C L : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℝ :=
   (sourceGaussEnergy (allocatedData D C L B).columns
     (allocatedData D C L B).beta (heightCoeff τ t) W K).re
 
-lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal O)
+lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
-    HasSum (fun z : O =>
+    HasSum (fun z : ActualEisensteinCubic.O =>
       ‖gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
         (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
       (W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
       (allocatedEnergy D C L B τ t W K) :=
   gaussEnergy_hasSum_re _ _ _ _ W K hK
 
-lemma allocated_nonneg (D : OriginalData ι) (C L : Ideal O)
+lemma allocated_nonneg (D : OriginalData ι) (C L : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (hW : ∀ z : ActualEisensteinCubic.O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     0≤allocatedEnergy D C L B τ t W K := by
   rw [← (allocated_hasSum D C L B τ t W K hK).tsum_eq]
   exact tsum_nonneg (fun z => mul_nonneg (sq_nonneg _) (hW z))
 
 theorem common_energy_allocation (D : OriginalData ι)
     (hS : ∀ i, ∀ I∈D.S i, I≠0) (hp : ∀ i, ∀ I∈D.S (Sum.inl i), Prime I)
-    (C : Ideal O) (hC : Supported C) (hseed : D.s∣C)
-    (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (C : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hseed : D.s∣C)
+    (τ : Character) (t : ℝ) (L : Ideal ActualEisensteinCubic.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     commonEnergy D C hC τ t L W K ≤
       ((actualAllocations D.S C).card:ℝ) * ∑ B : actualAllocations D.S C,
         ‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖^2 * allocatedEnergy D C L B τ t W K := by
@@ -98,11 +97,11 @@ def rawVolume (D : OriginalData ι) : ℝ :=
 
 lemma rawVolume_pos (D : OriginalData ι) (hX₁ : 0<D.X₁) (hX₂ : 0<D.X₂)
     (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) (hP : ∀ i,0<D.lengths i) : 0<rawVolume D := by
-  apply mul_pos (div_pos (mul_pos hX₁ hX₂) _)
-    (Finset.prod_pos (fun i _ => hP i))
+  apply mul_pos (div_pos (by positivity) _)
+    (Finset.prod_pos (by grind))
   exact mul_pos (CenteredMomentFirstScale.norm_pos _ hB₁) (CenteredMomentFirstScale.norm_pos _ hB₂)
 
-lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
+lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0) :
     rawVolume (allocatedData D C L B) * rawReduction B.val D.lengths = rawVolume D := by
   have hB := (allocation_data D.S C B.val (Finset.mem_filter.mp B.property).1).1
@@ -111,7 +110,7 @@ lemma allocated_rawVolume_mul (D : OriginalData ι) (C L : Ideal O)
   rw [← hv]
   exact raw_scale_identity B.val hB _ D.lengths
 
-lemma allocated_rawVolume (D : OriginalData ι) (C L : Ideal O)
+lemma allocated_rawVolume (D : OriginalData ι) (C L : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations D.S C) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0)
     (hP : ∀ i,0<D.lengths i) :
     rawVolume (allocatedData D C L B) = rawVolume D / rawReduction B.val D.lengths := by
@@ -122,7 +121,7 @@ lemma allocated_rawVolume (D : OriginalData ι) (C L : Ideal O)
 def frozenControl (B : Tuple ι) (M : ι → ℝ) : ℝ :=
   ∏ i∈Finset.univ.filter (fun i => B (Sum.inl i)≠1),M i
 
-lemma frozen_norm_bound (D : OriginalData ι) (C : Ideal O)
+lemma frozen_norm_bound (D : OriginalData ι) (C : Ideal ActualEisensteinCubic.O)
     (B : actualAllocations D.S C) (M : ι → ℝ) (_hM : ∀ i,0≤M i)
     (hν : ∀ i I,‖D.nu i I‖≤1) (hW : ∀ i x,‖D.slot i x‖≤M i) :
     ‖frozenCoefficient B.val C D.R D.nu D.slot D.lengths‖≤frozenControl B.val M := by
@@ -131,14 +130,14 @@ lemma frozen_norm_bound (D : OriginalData ι) (C : Ideal O)
   have hc : ‖(if IsCoprime C D.R then (1:ℂ) else 0)‖≤1 := by split_ifs <;> simp
   apply (mul_le_of_le_one_right (norm_nonneg _) hc).trans
   rw [norm_prod]
-  apply Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
+  apply Finset.prod_le_prod₀ (by grind)
   intro i hi
   rw [norm_mul]
-  exact (mul_le_of_le_one_left (norm_nonneg _) (hν i _)).trans (hW i _)
+  exact (mul_le_of_le_one_left (norm_nonneg _) (by grind)).trans (by grind)
 
 theorem frozen_normalized_bound (N : ℕ) (a b : ℝ) (ha : 0<a)
     (D : OriginalData ι) (hcard : Fintype.card ι≤N)
-    (C : Ideal O) (hC : C≠0) (B : actualAllocations D.S C)
+    (C : Ideal ActualEisensteinCubic.O) (hC : C≠0) (B : actualAllocations D.S C)
     (M : ι → ℝ) (hM : ∀ i,0≤M i) (hP : ∀ i,0<D.lengths i)
     (hν : ∀ i I,‖D.nu i I‖≤1) (hWnorm : ∀ i x,‖D.slot i x‖≤M i)
     (hW : ∀ i,Function.support (D.slot i)⊆Set.Icc a b) :
@@ -148,13 +147,13 @@ theorem frozen_normalized_bound (N : ℕ) (a b : ℝ) (ha : 0<a)
   have hR := rawReduction_pos B.val hB D.lengths hP
   have hN := CenteredMomentFirstScale.norm_pos C hC
   by_cases hz : frozenCoefficient B.val C D.R D.nu D.slot D.lengths=0
-  · rw [hz,norm_zero,zero_pow (by decide : 2≠0),zero_div]
+  · rw [hz,norm_zero,zero_pow (by positivity),zero_div]
     positivity
   · have hm := frozen_norm_bound D C B M hM hν hWnorm
     have hh := (actual_reduction_norm B.val hB C D.R
       (Finset.mem_filter.mp B.property).2 D.nu D.slot D.lengths hP a b ha hW hz).2
     have he : (max 1 b)^Fintype.card ι≤(max 1 b)^N :=
-      pow_le_pow_right₀ (le_max_left _ _) hcard
+      pow_le_pow_right₀ (by simp) hcard
     have hi : (1:ℝ)/rawReduction B.val D.lengths ≤ (max 1 b)^N/(Ideal.absNorm C:ℝ) := by
       apply (div_le_div_iff₀ hR hN).mpr
       simpa only [one_mul] using hh.trans (mul_le_mul_of_nonneg_right he hR.le)
@@ -168,9 +167,9 @@ theorem frozen_normalized_bound (N : ℕ) (a b : ℝ) (ha : 0<a)
 
 theorem normalized_common_energy_allocation (D : OriginalData ι)
     (hS : ∀ i,∀ I∈D.S i,I≠0) (hp : ∀ i,∀ I∈D.S (Sum.inl i),Prime I)
-    (C : Ideal O) (hC : Supported C) (hseed : D.s∣C)
-    (τ : Character) (t : ℝ) (L : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
+    (C : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hseed : D.s∣C)
+    (τ : Character) (t : ℝ) (L : Ideal ActualEisensteinCubic.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
     (hX₁ : 0<D.X₁) (hX₂ : 0<D.X₂) (hB₁ : D.B₁≠0) (hB₂ : D.B₂≠0)
     (hP : ∀ i,0<D.lengths i) :
     commonEnergy D C hC τ t L W K / rawVolume D ≤

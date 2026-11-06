@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Truncation
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -63,8 +62,7 @@ theorem translateSmallResidues_add (a b : ℤ) (y : P.SmallResidues) :
     translateSmallResidues a (translateSmallResidues b y) = translateSmallResidues (a + b) y := by
   funext g p
   simp only [translateSmallResidues]
-  push_cast
-  abel
+  grind
 
 theorem translateSmallResidues_zero (y : P.SmallResidues) : translateSmallResidues 0 y = y := by
   funext g p

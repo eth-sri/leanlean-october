@@ -8,13 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.Primitive
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped Classical
 namespace SevenEighths.CenteredMomentBridge
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
+open CenteredMomentCommonSupport CenteredMomentFourier
 
-def productCharacter (a b : O) (hcop : IsCoprime a b)
+def productCharacter (a b : ActualEisensteinCubic.O) (hcop : IsCoprime a b)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) :
     MulChar (Residue (a * b)) ℂ where
   toFun x := χa ((principalCRT a b hcop x).1) * χb ((principalCRT a b hcop x).2)
@@ -29,7 +27,7 @@ def productCharacter (a b : O) (hcop : IsCoprime a b)
     · rw [χb.map_nonunit (fun hb => hn ⟨h, hb⟩), mul_zero]
     · rw [χa.map_nonunit h, zero_mul]
 
-theorem productCharacter_apply (a b : O) (hcop : IsCoprime a b)
+theorem productCharacter_apply (a b : ActualEisensteinCubic.O) (hcop : IsCoprime a b)
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (x : Residue (a * b)) :
     productCharacter a b hcop χa χb x =
       χa (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
@@ -38,8 +36,8 @@ theorem productCharacter_apply (a b : O) (hcop : IsCoprime a b)
   simp only [productCharacter, MulChar.coe_mk, MonoidHom.coe_mk, OneHom.coe_mk,
     principalCRT_mk, frequencyReduction_mk]
 
-@[simp] theorem productCharacter_mk (a b : O) (hcop : IsCoprime a b)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (x : O) :
+@[simp] theorem productCharacter_mk (a b : ActualEisensteinCubic.O) (hcop : IsCoprime a b)
+    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (x : ActualEisensteinCubic.O) :
     productCharacter a b hcop χa χb (Ideal.Quotient.mk _ x) =
       χa (Ideal.Quotient.mk _ x) * χb (Ideal.Quotient.mk _ x) := by
   rw [productCharacter_apply, frequencyReduction_mk, frequencyReduction_mk]

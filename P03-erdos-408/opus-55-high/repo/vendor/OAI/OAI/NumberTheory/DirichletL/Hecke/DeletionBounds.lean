@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.FiniteDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDeletionBounds
 open HeckeFamily
 
@@ -20,16 +20,16 @@ theorem constant_pow_primeSupport_bound (K ε : ℝ) (hK : 0 ≤ K) (hε : 0 < �
     have hn2 : (n : ℝ) ≤ (2 : ℝ)^n := by exact_mod_cast (show n < 2^n from Nat.lt_two_pow_self).le
     linarith [le_max_left K 1]
   obtain ⟨C, hC, hbound⟩ := SquarefreeDivisorBound.prime_support_subsets_bound
-    (ε/(n : ℝ)) (div_pos hε hn0)
+    (ε/(n : ℝ)) (by positivity)
   refine ⟨C^n, by positivity, ?_⟩
   intro M hM
   calc
     _ ≤ ((2 : ℝ)^n)^(IdealMobiusDivisorSum.primeSupport M).card :=
       pow_le_pow_left₀ hK hKpow _
     _ = ((2 : ℝ)^(IdealMobiusDivisorSum.primeSupport M).card)^n := by
-      rw [← pow_mul, ← pow_mul, Nat.mul_comm]
+      ring
     _ ≤ (C*(M.absNorm : ℝ)^(ε/(n : ℝ)))^n :=
-      pow_le_pow_left₀ (by positivity) (hbound M hM) n
+      pow_le_pow_left₀ (by positivity) (by grind) n
     _ = C^n*(M.absNorm : ℝ)^ε := by
       rw [mul_pow, ← Real.rpow_mul_natCast (by positivity), div_mul_cancel₀ _ hn0.ne']
 
@@ -52,7 +52,7 @@ theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
     ‖EulerFactors.factor N a s‖ ≤ localBound σ ∧
       ‖(EulerFactors.factor N a s)⁻¹‖ ≤ localBound σ := by
   have hδ : (2 : ℝ)^(-σ) < 1 := Real.rpow_lt_one_of_one_lt_of_neg (by norm_num) (by linarith)
-  have hδ0 : 0 ≤ (2 : ℝ)^(-σ) := Real.rpow_nonneg (by norm_num) _
+  have hδ0 : 0 ≤ (2 : ℝ)^(-σ) := by positivity
   have ht := term_bound hσ hN ha hs
   have hl : 1-(2 : ℝ)^(-σ) ≤ ‖EulerFactors.factor N a s‖ := by
     have hh := norm_sub_le (1-a*(N : ℂ)^(-s)) (-a*(N : ℂ)^(-s))
@@ -66,11 +66,11 @@ theorem factor_bounds {σ N : ℝ} (hσ : 0 < σ) (hN : 2 ≤ N)
     apply (add_le_add (le_refl 1) ht).trans
     unfold localBound
     rw [inv_eq_one_div]
-    apply (le_div_iff₀ (by linarith : 0 < 1-(2 : ℝ)^(-σ))).mpr
-    nlinarith [sq_nonneg ((2 : ℝ)^(-σ))]
+    apply (le_div_iff₀ (by positivity)).mpr
+    nlinarith
   · rw [norm_inv]
-    exact (inv_le_inv₀ (by linarith : 0 < ‖EulerFactors.factor N a s‖)
-      (by linarith : 0 < 1-(2 : ℝ)^(-σ))).mpr hl
+    exact (inv_le_inv₀ (by linarith)
+      (by positivity)).mpr hl
 
 theorem factors_bound_pow (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
     (ψ : Character) {s : ℂ} (hs : σ ≤ s.re) :
@@ -90,10 +90,10 @@ theorem factors_bound_pow (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
   constructor
   · unfold HeckeFiniteDeletion.factors EulerFactors.deletedProduct
     rw [norm_prod, ← he]
-    exact Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _) (fun P _ => (hfactor P).1)
+    exact Finset.prod_le_prod₀ (by simp) (fun P _ => by grind)
   · unfold HeckeFiniteDeletion.factors EulerFactors.deletedProduct
     rw [← Finset.prod_inv_distrib, norm_prod, ← he]
-    exact Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _) (fun P _ => (hfactor P).2)
+    exact Finset.prod_le_prod₀ (by simp) (fun P _ => by grind)
 
 theorem factors_subpower_bound (σ ε : ℝ) (hσ : 0 < σ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (M : Ideal O), M ≠ ⊥ → ∀ (ψ : Character) (s : ℂ),
@@ -104,8 +104,7 @@ theorem factors_subpower_bound (σ ε : ℝ) (hσ : 0 < σ) (hε : 0 < ε) :
   refine ⟨2*C, by positivity, ?_⟩
   intro M hM ψ s hs
   obtain ⟨h1, h2⟩ := factors_bound_pow σ hσ M ψ hs
-  have h := hb M hM
-  nlinarith
+  grind
 
 def radical (M : Ideal O) : Ideal O :=
   SmoothMobiusCorrection.primeProduct (SmoothMobiusCorrection.primeSet M)
@@ -131,11 +130,11 @@ theorem factor_bound_any_re {N : ℝ} (hN : 2 ≤ N) {a s : ℂ} (ha : ‖a‖ �
     ‖EulerFactors.factor N a s‖ ≤ 2*N^(max (-s.re) 0) := by
   have hn : 1 ≤ N := by linarith
   have ht : ‖a*(N : ℂ)^(-s)‖ ≤ N^(-s.re) := by
-    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N), Complex.neg_re]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg (by linarith) _) ha
+    rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by positivity), Complex.neg_re]
+    exact mul_le_of_le_one_left (by positivity) ha
   have hpow : N^(-s.re) ≤ N^(max (-s.re) 0) :=
-    Real.rpow_le_rpow_of_exponent_le hn (le_max_left _ _)
-  have h1 : 1 ≤ N^(max (-s.re) 0) := Real.one_le_rpow hn (le_max_right _ _)
+    Real.rpow_le_rpow_of_exponent_le hn (by simp)
+  have h1 : 1 ≤ N^(max (-s.re) 0) := Real.one_le_rpow hn (by positivity)
   have hb := norm_sub_le (1 : ℂ) (a*(N : ℂ)^(-s))
   rw [norm_one] at hb
   change ‖1-a*(N : ℂ)^(-s)‖ ≤ _
@@ -150,13 +149,13 @@ theorem factors_bound_any_re (M : Ideal O) (ψ : Character) (s : ℂ) :
   calc
     _ ≤ ∏ P ∈ SmoothMobiusCorrection.primeSet M,
         2*(P.val.absNorm : ℝ)^(max (-s.re) 0) := by
-      apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
+      apply Finset.prod_le_prod₀ (by simp)
       intro P _
       exact factor_bound_any_re (show (2 : ℝ) ≤ (P.val.absNorm : ℝ) by exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P)
         (idealCoeff_norm_le_one ψ P.val)
     _ = _ := by
       rw [Finset.prod_mul_distrib, Finset.prod_const,
-        Real.finsetProd_rpow _ _ (fun _ _ => by positivity)]
+        Real.finsetProd_rpow _ _ (by simp)]
       simp only [radical, SmoothMobiusCorrection.primeProduct, map_prod, Nat.cast_prod]
 
 theorem primeSet_card (M : Ideal O) :
@@ -165,7 +164,7 @@ theorem primeSet_card (M : Ideal O) :
   unfold SmoothMobiusCorrection.primeSet
   rw [Finset.card_image_iff.mpr ?_, Finset.card_attach]
   intro P hP Q hQ h
-  exact Subtype.ext (congrArg (fun R : SmoothMobiusCorrection.PrimeIdeal => R.val) h)
+  simp_all
 
 theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (M : Ideal O) (ψ : Character) (s : ℂ),
@@ -183,7 +182,7 @@ theorem factors_any_re_subpower_bound (ε : ℝ) (hε : 0 < ε) :
   apply (factors_bound_any_re M ψ s).trans
   calc
     _ ≤ (C*((radical M).absNorm : ℝ)^ε)*((radical M).absNorm : ℝ)^(max (-s.re) 0) :=
-      mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hR.le _)
+      mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by rw [Real.rpow_add hR]; ring
 
 end SevenEighths.HeckeDeletionBounds

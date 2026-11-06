@@ -9,14 +9,13 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile CompletedHeight
+open InverseSecondSourceBlocks
+open InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem first_profile_live_products (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fin 9→ℝ)
     (hq:∀i,1≤q i)(hW:∀x,W x≠0→x≤L)
@@ -25,8 +24,8 @@ theorem first_profile_live_products (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:F
   have h₁:W (q 0*q 2*q 5*q 7)≠0:=by intro h;apply hn;simp [firstNormProfile,h]
   have h₂:W (q 1*q 2*q 5*q 8)≠0:=by intro h;apply hn;simp [firstNormProfile,h]
   constructor
-  · exact (le_mul_of_one_le_right (mul_nonneg (mul_nonneg (zero_le_one.trans (hq 0)) (zero_le_one.trans (hq 2))) (zero_le_one.trans (hq 5))) (hq 7)).trans (hW _ h₁)
-  · exact (le_mul_of_one_le_right (mul_nonneg (mul_nonneg (zero_le_one.trans (hq 1)) (zero_le_one.trans (hq 2))) (zero_le_one.trans (hq 5))) (hq 8)).trans (hW _ h₂)
+  · exact (le_mul_of_one_le_right (mul_nonneg (mul_nonneg (by grind) (by grind)) (by grind)) (hq 7)).trans (by grind)
+  · exact (le_mul_of_one_le_right (mul_nonneg (mul_nonneg (by grind) (by grind)) (by grind)) (hq 8)).trans (by grind)
 
 private theorem dyadic_column_scale {a c z X b : ℝ}
     (ha : 1 ≤ a) (hc : 1 ≤ c) (hz : 1 ≤ z) (hprod : a * c * z ≤ b * X) :
@@ -38,19 +37,19 @@ private theorem dyadic_column_scale {a c z X b : ℝ}
       (mul_le_mul (dyadIndex_bounds a ha).1 (dyadIndex_bounds c hc).1
         (dyadScale_pos _).le (zero_le_one.trans ha))
       (dyadIndex_bounds z hz).1 (dyadScale_pos _).le
-      (mul_nonneg (zero_le_one.trans ha) (zero_le_one.trans hc))
+      (by positivity)
   rw [div_mul_eq_mul_div,
     le_div_iff₀ (mul_pos (mul_pos (dyadScale_pos _) (dyadScale_pos _)) (dyadScale_pos _)),
     one_mul, mul_comm X b]
-  exact hscale.trans hprod
+  linarith
 
 theorem original_live_column_scale {ι:Type}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K X b:ℝ)
+    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(Y:ℝ)
+    (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K X b:ℝ)
     (_hX:0<X)(hW:∀y,W y≠0→y≤b*X)
     (k:JointKey)(hk:k∈liveJointKeys p
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) pool
@@ -77,7 +76,7 @@ theorem original_live_column_scale {ι:Type}[DecidableEq ι]
       (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
         (divisorElement p x.1) x.2.2 j)≠0:=by
     intro hzero
-    exact hnon (by unfold sourceSummand;rw [hzero,mul_zero])
+    exact hnon (by unfold sourceSummand;simp_all)
   have hb:=first_profile_live_products W Φ K (b*X) _ hq hW hprof
   constructor
   · change 1 ≤ X / (dyadScale (dyadIndex (leftNorm p x)) *

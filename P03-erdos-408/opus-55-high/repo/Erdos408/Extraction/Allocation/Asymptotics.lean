@@ -40,7 +40,7 @@ lemma eventually_mul_logLogLog_le (D : ℝ) {ε : ℝ} (hε : 0 < ε) :
     exact hx
   calc D * logLogLog x ≤ |D| * |logLogLog x| := by
         rw [← abs_mul]
-        exact le_abs_self _
+        grind
     _ ≤ (|D| + 1) * (ε / (|D| + 1) * logLog x) := by
         gcongr
         linarith
@@ -108,9 +108,9 @@ lemma eventually_mul_logLogLog_cube_le (D : ℝ) :
           pow_le_pow_left₀ (by linarith) (by linarith) 3
         have h2 : D * (logLogLog x + 1) ^ 3 ≤ |D| * (logLogLog x + 1) ^ 3 :=
           mul_le_mul_of_nonneg_right (le_abs_self D) (by positivity)
-        exact h2.trans (mul_le_mul_of_nonneg_left h1 (abs_nonneg D))
+        nlinarith
     _ = 125 * |D| * q ^ 3 := by ring
-    _ ≤ q * q ^ 3 := by gcongr; linarith
-    _ = T := by rw [← hq4]; ring
+    _ ≤ q * q ^ 3 := by nlinarith
+    _ = T := by linarith
 
 end Erdos408

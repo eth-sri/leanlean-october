@@ -7,19 +7,18 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.QuotientColumns
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FiniteSieveRestriction
+open scoped Classical
+open CompletedGauss
+open CanonicalQuadraticSieve
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-def cubicColumnLabel {n : Type*} (cols : n → Ideal O) (N : ℝ) (j : n) :
+def cubicColumnLabel {n : Type*} (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ) (j : n) :
     Fin (columnDyadicLength N + 1) := divisorDyadicLabel N (cols j)
 
-abbrev CubicColumnShell {n : Type*} (cols : n → Ideal O) (N : ℝ)
+abbrev CubicColumnShell {n : Type*} (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ)
     (l : Fin (columnDyadicLength N + 1)) := {j : n // cubicColumnLabel cols N j = l}
 
-lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
+lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ)
     (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l) :
     (2 : ℝ)^l.val/2 ≤ (Ideal.absNorm (cols j.val) : ℝ) ∧
@@ -30,28 +29,27 @@ lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
   have hb := divisorDyadicLabel_bounds N (cols j.val) hp (hn j.val)
   have hj := j.property
   change divisorDyadicLabel N (cols j.val) = l at hj
-  rw [hj] at hb
-  exact ⟨hb.1.le,hb.2⟩
+  grind
 
-lemma cubicColumnShell_scale_le {n : Type*} (cols : n → Ideal O) (N : ℝ)
+lemma cubicColumnShell_scale_le {n : Type*} (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ)
     (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l) :
     (2 : ℝ)^l.val ≤ 2*N := by
   have hh := (cubicColumnShell_bounds cols N hc hn l j).1
-  linarith [hn j.val]
+  grind
 
 lemma cubicColumnShell_energy {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (N : ℝ) (a : n → ℂ) :
+    (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ) (a : n → ℂ) :
     (∑ l : Fin (columnDyadicLength N + 1), ∑ j : CubicColumnShell cols N l, ‖a j.val‖^2) =
       ∑ j, ‖a j‖^2 := Fintype.sum_fiberwise (cubicColumnLabel cols N) (fun j => ‖a j‖^2)
 
 theorem cubic_energy_column_shells {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (N : ℝ) (a : n → ℂ) (R : Finset O) :
+    (cols : n → Ideal ActualEisensteinCubic.O) (N : ℝ) (a : n → ℂ) (R : Finset ActualEisensteinCubic.O) :
     (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z * a j‖^2) ≤
       (columnDyadicLength N + 1 : ℝ) *
         ∑ l : Fin (columnDyadicLength N + 1), ∑ z ∈ R,
           ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z * a j.val‖^2 := by
-  have hp (z : O) : ‖∑ j, cubicRow (cols j) z*a j‖^2 ≤
+  have hp (z : ActualEisensteinCubic.O) : ‖∑ j, cubicRow (cols j) z*a j‖^2 ≤
       (columnDyadicLength N + 1 : ℝ)*∑ l : Fin (columnDyadicLength N + 1),
         ‖∑ j : CubicColumnShell cols N l, cubicRow (cols j.val) z*a j.val‖^2 := by
     rw [← Fintype.sum_fiberwise (cubicColumnLabel cols N) (fun j => cubicRow (cols j) z*a j)]

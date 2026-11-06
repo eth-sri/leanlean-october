@@ -19,7 +19,7 @@ lemma logb_square_div_rpow_tendsto (a : ℝ) (ha : 0 < a) :
   · ext U
     rw [Real.rpow_two,Real.logb]
     ring
-  · ring_nf
+  simp
 
 theorem exists_frequency_tail_order (τ : ℝ) (hτ : 0 < τ) :
     ∃ n : ℕ, ∀ C : ℝ, ∃ U₀ : ℝ, ∀ U : ℝ, U₀ ≤ U → 1 ≤ U →
@@ -35,13 +35,13 @@ theorem exists_frequency_tail_order (τ : ℝ) (hτ : 0 < τ) :
       (fun U : ℝ => (625*(Real.logb 2 U)^2)*((67108864*U^42)*C/(U^τ)^n))
       atTop (𝓝 0) := by
     apply (show Tendsto (fun U : ℝ => (625*67108864*C)*
-      ((Real.logb 2 U)^2/U^(τ*(n : ℝ)-42))) atTop (𝓝 0) by simpa using ht).congr'
+      ((Real.logb 2 U)^2/U^(τ*(n : ℝ)-42))) atTop (𝓝 0) by simp_all).congr'
     filter_upwards [eventually_gt_atTop (0 : ℝ)] with U hU
     rw [Real.rpow_sub hU,Real.rpow_mul_natCast hU.le,
       show (42 : ℝ)=((42 : ℕ) : ℝ) by norm_num,Real.rpow_natCast]
     field_simp
   obtain ⟨U₀,hU₀⟩ := Filter.eventually_atTop.mp ((tendsto_order.mp ht').2 (1/4) (by norm_num))
-  exact ⟨U₀,fun U hU hU1 => (hU₀ U hU).le⟩
+  exact ⟨U₀,by grind⟩
 
 end SevenEighths.HeckeDetectorFrequency
 

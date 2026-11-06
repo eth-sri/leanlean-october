@@ -8,21 +8,18 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstHighNormalizedGaussianPowe
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyFirstHighGaussianUniformPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
+open CenteredMomentCanonicalFirst
+open CenteredMomentSecondHeightFamily
+open CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondChildPowerBudget
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFiniteProfileExceptional
-open QuadraticInitialBound
+open CenteredMomentSecondChildPowerBudget
 local notation "O"=>HeckeFamily.O
-local notation "Ray"=>RayFourExpansion.RayCharacter
 
 lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ)
     (N:ℕ)(hupper:1≤upper)(hnc:0≤nc)(hZ:1<Z)(heps:0≤eps)(heps1:eps≤1)
@@ -50,7 +47,7 @@ lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ
     _≤Z^(eps*Bcommon)*(upper^N*(G*(F*Z^(srcLoss j)/seed)*Z^(deficit+actualLoss j+primeLoss))):=by
       apply mul_le_mul hncPow _ (by positivity) (by positivity)
       apply mul_le_mul (hup j) _ (by positivity) (by positivity)
-      apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hz.le _)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact mul_le_mul_of_nonneg_left (hbound j) hG
     _=(upper^N*G*F/seed)*Z^(deficit+eps*Bcommon+primeLoss)*Z^(srcLoss j+actualLoss j):=by
       calc
@@ -63,16 +60,16 @@ lemma finite_power_budget (upper nc Z eps Bcommon deficit primeLoss G F seed:ℝ
           ring
 
 theorem actual_high_homogeneous_four_powers
-    (M:Ideal O)[NeZero M](Hray:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))
+    (M:Ideal HeckeFamily.O)[NeZero M](Hray:Subgroup (HeckeFamily.O⧸M)ˣ)(Sbad:Finset (Ideal HeckeFamily.O))
     (hbad:fixedBadPrimes⊆Sbad)
-    (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+    (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve paid eps saving Mdecl Mwidth Mcap Mamp primeLoss:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0<sigma)(heps:0≤eps)(hM:0≤Mdecl)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mwidth)(hwidth:Mwidth≤Mdecl)
     (hlow:Real.logb Z V≤Mdecl)(hloss:0≤primeLoss)(hMamp:0≤Mamp)
     (hcard:Z^(sigma/3-primeLoss)≤(primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))).card)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (upper:ℝ)(N:ℕ)(hupper:1≤upper)
     (H:Fin 4→ℝ)(hH:∀j,0≤H j)
@@ -84,19 +81,19 @@ theorem actual_high_homogeneous_four_powers
     let K0:=nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z;
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve;
-    let Kerror:=fun (p:elementPool P)(i:Fin 3)(_:Ray)=>
+    let Kerror:=fun (p:elementPool P)(i:Fin 3)(_:RayFourExpansion.RayCharacter)=>
       errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0
         (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p (errorIndex i+1);
     let alpha:=CenteredMomentSecondChildPowerBudget.powers eps;
     let amain:=fun j=>H j*mainPowers (τ.modulus.absNorm:ℝ) Z Kmain (sigma/3)
       (Mdecl-M0) paid saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)) j;
-    let aerror:=fun (p:elementPool P)(i:Fin 3)(χ:Ray)(j:Fin 4)=>
+    let aerror:=fun (p:elementPool P)(i:Fin 3)(χ:RayFourExpansion.RayCharacter)(j:Fin 4)=>
       H j*errorPowers p (errorIndex i+1) (τ.modulus.absNorm:ℝ) Z (Kerror p i χ)
         (Mdecl-M0) paid saving (Mwidth/4-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z (errorIndex i+1)) j;
     (∑j:Fin 4,normalizedPower upper V (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ) Z
       (allowance C D Z) eps
       (sourceCoefficients P ((Mamp+2*sigma)/(sigma/6)) amain aerror alpha j) N (alpha j))≤
-      (upper^N*(56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ)))*F/seed)*
+      (upper^N*(56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ)))*F/seed)*
         Z^(Mdecl-M0+eps*Bcommon+primeLoss)*
         ∑j:Fin 4,Z^(srcLoss j+lossVector sigma delta reserve paid eps Mcap saving j) := by
   have ha:=CenteredMomentEnergyFirstHighNormalizedGaussianPowers.actual_high_normalized_four_powers
@@ -108,7 +105,7 @@ theorem actual_high_homogeneous_four_powers
   apply ha.trans
   exact finite_power_budget upper (C.absNorm:ℝ) Z eps Bcommon
     (Mdecl-(Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ))) primeLoss
-    (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ))) F seed N
+    (56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ))) F seed N
     hupper (Nat.cast_nonneg _) hZ heps heps1 hncap (by positivity) hF hseed H
     srcLoss (lossVector sigma delta reserve paid eps Mcap saving) hH hbound
 

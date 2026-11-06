@@ -8,12 +8,12 @@ public import OAI.NumberTheory.DirichletL.Detector.FiniteProductBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalResidueActual
 open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
-open ProbeFiniteProductBounds ProbeEuler ProbeLocal HeckeSignal ProbePhysical Continuation
-open ActualEisensteinCubic CompletedGauss
+open ProbeFiniteProductBounds ProbeEuler HeckeSignal ProbePhysical
+open CompletedGauss
 
 def residueWeights {κ : Type*} (W : κ → ℝ → ℝ) (scale : κ → ℝ)
     (j : κ) (p : PrimeIdeal) : ℝ :=
@@ -24,8 +24,8 @@ theorem actual_window_residue {κ : Type*} (η : Character) (S : Finset κ)
     windowMultiplier η S T (fun j t => (W j t : ℂ)) scale s 1 (1/6) =
       slotProduct S T (residueWeights W scale) (fun _ p => Ideal.absNorm p.val)
         (fun _ p => actualAPhase η (primaryGenerator p.val))
-        (fun _ p => idealCoeff η p.val) s := by
-  exact window_at_residue η S T W scale s
+        (fun _ p => idealCoeff η p.val) s :=
+  window_at_residue η S T W scale s
 
 theorem normalized_actual_window_residue {κ : Type*}
     (E : Finset (Ideal HeckeFamily.O)) (hE : SourceExclusions E) (η : Character)
@@ -64,7 +64,7 @@ theorem normalized_actual_window_residue {κ : Type*}
     (windowMultiplier η S T (fun j t => (W j t : ℂ)) scale)
     hP hsmall ?_ hnorm hcop hmass hZ ?_ ?_
   · intro j hj p hp
-    exact mul_nonneg (hW j hj p hp) (Real.rpow_nonneg (by positivity) _)
+    exact mul_nonneg (by grind) (by positivity)
   · exact ProbePrincipalNormalizer.sourceResidueConstant_ne_zero (∏p∈E,p)
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1
   · intro t

@@ -9,17 +9,16 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff FourierTransform
+open scoped FourierTransform
 open MeasureTheory
 
 namespace Erdos821.P5Energy
-open Blueprint.Analytic
 
 /-- `e^{i x}`. -/
 def phase (x : ℝ) : ℂ := Complex.exp ((x : ℂ) * Complex.I)
 
 @[simp] theorem norm_phase (x : ℝ) : ‖phase x‖ = 1 := by
-  simp [phase, Complex.norm_exp_ofReal_mul_I]
+  simp [phase]
 
 theorem continuous_phase : Continuous phase := by
   unfold phase; fun_prop
@@ -39,7 +38,7 @@ theorem omega_nonneg (h : ℝ) (N : ℕ) (t : ℝ) : 0 ≤ omega h N t := by
 theorem omega_le_one (h : ℝ) (N : ℕ) (t : ℝ) : omega h N t ≤ 1 := by
   unfold omega
   apply inv_le_one_of_one_le₀
-  exact one_le_pow₀ (by linarith [abs_nonneg (h * t)])
+  exact one_le_pow₀ (by grind)
 
 theorem continuous_omega (h : ℝ) (N : ℕ) : Continuous (omega h N) := by
   unfold omega
@@ -57,7 +56,7 @@ theorem integrable_omega {h : ℝ} (hh : h ≠ 0) {N : ℕ} (hN : 2 ≤ N) :
   apply inv_anti₀ (by positivity)
   have h1 : 1 ≤ 1 + |h * t| := by linarith [abs_nonneg (h * t)]
   calc 1 + (h * t) ^ 2 ≤ (1 + |h * t|) ^ 2 := by
-        nlinarith [sq_abs (h * t), abs_nonneg (h * t)]
+        nlinarith [sq_abs (h * t)]
     _ ≤ (1 + |h * t|) ^ N := pow_le_pow_right₀ h1 hN
 
 theorem kern_nonneg (ξ : ℝ) : 0 ≤ kern ξ := by unfold kern; positivity
@@ -94,8 +93,7 @@ theorem Mker_eq_fourier (h t t' : ℝ) :
     ring
   rw [smul_eq_mul, ← he]
   unfold ampE gfun
-  rw [map_mul]
-  ring
+  grind
 
 theorem Mker_bound (N : ℕ) : ∃ Cm : ℝ, 0 < Cm ∧ ∀ h t t' : ℝ,
     ‖Mker h t t'‖ ≤ Cm * (omega h N t * omega h N t') * kern (t - t') := by
@@ -107,7 +105,7 @@ theorem Mker_bound (N : ℕ) : ∃ Cm : ℝ, 0 < Cm ∧ ∀ h t t' : ℝ,
   have hpc : 0 < (1 + |c|) ^ N := by positivity
   have hpc' : 0 < (1 + |c'|) ^ N := by positivity
   have hdec := fourier_decay_of_compact (gfun_contDiff c c') (gfun_support c c')
-    (A := A / ((1 + |c|) ^ N * (1 + |c'|) ^ N)) (fun i hi u => hg c c' i hi u)
+    (A := A / ((1 + |c|) ^ N * (1 + |c'|) ^ N)) (by grind)
     ((t - t') / (2 * Real.pi))
   have h2pi : 2 * Real.pi * ((t - t') / (2 * Real.pi)) = t - t' := by
     field_simp
@@ -123,7 +121,7 @@ theorem Mker_bound (N : ℕ) : ∃ Cm : ℝ, 0 < Cm ∧ ∀ h t t' : ℝ,
       rw [abs_div, abs_of_pos (by positivity : (0:ℝ) < 2 * Real.pi)]
       field_simp
     rw [this]
-    nlinarith [abs_nonneg (h * x / (2 * Real.pi))]
+    nlinarith
   have hw : ∀ x : ℝ, ((1 + |h * x / (2 * Real.pi)|) ^ N)⁻¹ ≤
       (2 * Real.pi) ^ N * omega h N x := by
     intro x

@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstCanonicalFamily
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentFirstCanonicalAllowance
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcreteTraceCRT
+open ActualEisensteinCubic CanonicalQuadraticSieve
 open CenteredMomentActive CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentSecondCanonical CenteredMomentFirstCanonicalFamily
+open CenteredMomentSecondCanonical
 open CenteredMomentRankinRadical CenteredMomentCommonAllowance
-local notation "O" => ActualEisensteinCubic.O
 
-theorem activeConductor_span_product (I J : Ideal O) :
+theorem activeConductor_span_product (I J : Ideal ActualEisensteinCubic.O) :
     Ideal.span {activeConductor I J} =
       ∏ P ∈ activeSupport (Finset.univ : Finset (CommonIndex I J))
         (leftExponent I J) (rightExponent I J), P.val := by
@@ -25,24 +24,24 @@ theorem activeConductor_span_product (I J : Ideal O) :
   exact Finset.prod_coe_sort (s := ActiveIndex I J)
     (f := fun P : CommonIndex I J => P.val)
 
-theorem active_generator_ideal_product (I J : Ideal O) (hI : Supported I) :
+theorem active_generator_ideal_product (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     (∏ P ∈ activeSupport (Finset.univ : Finset (CommonIndex I J))
       (leftExponent I J) (rightExponent I J), Ideal.span {commonPrime I J P}) =
       Ideal.span {activeConductor I J} := by
   simp_rw [commonPrime_span I J hI]
   exact (activeConductor_span_product I J).symm
 
-theorem common_ideal_product (I J : Ideal O) :
-    (∏ P : CommonIndex I J, P.val) = commonRadical I J := by
-  exact Finset.prod_coe_sort (s := commonSupport I J) (f := fun P : Ideal O => P)
+theorem common_ideal_product (I J : Ideal ActualEisensteinCubic.O) :
+    (∏ P : CommonIndex I J, P.val) = commonRadical I J :=
+  Finset.prod_coe_sort (s := commonSupport I J) (f := fun P : Ideal ActualEisensteinCubic.O => P)
 
-theorem common_generator_ideal_product (I J : Ideal O) (hI : Supported I) :
+theorem common_generator_ideal_product (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     (∏ P : CommonIndex I J, Ideal.span {commonPrime I J P}) = commonRadical I J := by
   simp_rw [commonPrime_span I J hI]
   exact common_ideal_product I J
 
 theorem actual_canonical_common_support_allowance
-    (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+    (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C = CompletedGauss.primeSupport D)
     (Z : ℝ) (hZ : 1 < Z) :
     let c := Real.logb Z (C.absNorm : ℝ)
@@ -56,9 +55,9 @@ theorem actual_canonical_common_support_allowance
   dsimp only at h ⊢
   rw [left_ideal_product C D hC hCD, right_ideal_product C D hC hD hCD,
     common_generator_ideal_product C D hC, active_generator_ideal_product C D hC] at h
-  exact h
+  omega
 
-theorem activeConductor_span_filter (I J : Ideal O) :
+theorem activeConductor_span_filter (I J : Ideal ActualEisensteinCubic.O) :
     Ideal.span {activeConductor I J} =
       ∏ P ∈ (commonSupport I J).filter (fun P =>
         netExponent (CenteredExceptionalCount.valuation I P)
@@ -66,7 +65,7 @@ theorem activeConductor_span_filter (I J : Ideal O) :
   rw [activeConductor_span_product]
   simp only [CenteredMomentActive.activeSupport, Finset.prod_filter]
   exact Finset.prod_coe_sort (s := commonSupport I J)
-    (f := fun P : Ideal O => if netExponent (CenteredExceptionalCount.valuation I P)
+    (f := fun P : Ideal ActualEisensteinCubic.O => if netExponent (CenteredExceptionalCount.valuation I P)
       (CenteredExceptionalCount.valuation J P) ≠ 0 then P else 1)
 
 end SevenEighths.CenteredMomentFirstCanonicalAllowance

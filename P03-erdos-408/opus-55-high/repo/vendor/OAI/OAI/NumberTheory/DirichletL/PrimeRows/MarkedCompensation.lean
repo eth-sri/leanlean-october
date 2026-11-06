@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FiniteNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def compensatedLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (x w z B q : ℂ) : ℂ :=
@@ -26,7 +25,7 @@ theorem compensatedLocalCorrection_eq_raw (η : Character) (u : FreeRow) (P : Pr
   ring
 
 theorem spectralCompensatedRow_original_L_factorization
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : Character) (u : FreeRow)
     (x w z : ℂ) (B q : PrimeIdeal→ℂ)
@@ -38,7 +37,7 @@ theorem spectralCompensatedRow_original_L_factorization
         ∏P∈T,compensatedLocalCorrection η u P x w z (B P) (q P)) := by
   have hx1 : 1<x.re := by linarith
   have hw1 : 1<w.re := by linarith
-  have hz1 : 1<(6*z).re := by norm_num [Complex.mul_re];linarith
+  have hz1 : 1<(6*z).re := by norm_num;linarith
   have hZ := LFunction_ne_zero_of_one_lt_re (fixedSourcePrincipal S hS) hz1
   have hW := LFunction_ne_zero_of_one_lt_re (rowCharacter S hS u) hw1
   have hD := LFunction_ne_zero_of_one_lt_re ((targetRow η u).excludePrimes S hS) hx1

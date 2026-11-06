@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.ZeroIndex
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
-  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+open CompletedGauss ConcretePrimeRowBridge ProbePrimePower
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
 
 def sourceScalar (t k j : ℕ) : ℂ :=
   if t=0 then
@@ -72,7 +71,7 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
     rw [he]
     exact hR
   have hW' : ‖W‖<1 := by simpa only [W, coordW, one_mul, Complex.ofReal_natCast] using hW
-  have he : Summable (fun l => principalInner p hp hg eta a X W V 0 l) :=
+  have he :=
     (principalInner_even_hasSum p hp hg hc eta a X W V hV hr).summable
   have h0 : (fun l => ∑' k, ∑' m, sourcePrincipalTerm p hp hg eta a x w z 0 l k m) =
       (fun l => principalInner p hp hg eta a X W V 0 l +
@@ -100,8 +99,6 @@ lemma sourcePrincipalSeries_eq (eta a x w z : ℂ)
   simp only [Fin.sum_univ_two, Fin.val_zero, Fin.val_one]
   rw [h0, h1, he.tsum_add (hasSum_ite_eq 0 _).summable, tsum_ite_eq]
   rw [zeroIndexSeries_eq p hp _ W V hW' hV]
-  change _ = 1/(1-V)+W/(1-W)+((∑' l, principalInner p hp hg eta a X W V 0 l)+
-    ∑' l, principalInner p hp hg eta a X W V 1 l)
   ring
 
 include hc in

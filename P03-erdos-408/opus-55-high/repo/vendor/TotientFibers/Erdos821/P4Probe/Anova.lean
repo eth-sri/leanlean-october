@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.FullProjection
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -27,13 +26,12 @@ lemma productAnova_insert_unselected (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
     (hi : i ∉ I) (hS : S ⊆ I) (f : ProductSample α → ℂ) :
     productAnova w (insert i I) S f = productAverage w {i} (productAnova w I S f) := by
-  have hiS : i ∉ S := fun h => hi (hS h)
+  have hiS : i ∉ S := by grind
   have hdiff : insert i I \ S = {i} ∪ (I \ S) := by
     ext j
     by_cases hj : j = i
-    · subst j
-      simp [hi, hiS]
-    · simp [hj]
+    · simp_all
+    · simp_all
   have havg : productAverage w (insert i I \ S) f =
       productAverage w {i} (productAverage w (I \ S) f) := by
     funext x
@@ -46,13 +44,12 @@ lemma productAnova_insert_selected (w : ∀ i, α i → ℝ)
     (hi : i ∉ I) (hS : S ⊆ I) (f : ProductSample α → ℂ) :
     productAnova w (insert i I) (insert i S) f =
       fun x => productAnova w I S f x - productAverage w {i} (productAnova w I S f) x := by
-  have hiS : i ∉ S := fun h => hi (hS h)
+  have hiS : i ∉ S := by grind
   have hdiff : insert i I \ insert i S = I \ S := by
     ext j
     by_cases hj : j = i
-    · subst j
-      simp [hi, hiS]
-    · simp [hj]
+    · simp_all
+    · simp_all
   unfold productAnova
   rw [hdiff, productFull_insert w hsum S i hiS]
 
@@ -71,7 +68,7 @@ lemma productAnova_energy (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a 
           productAnova_insert_selected w hsum I S i hi (Finset.mem_powerset.mp hS)]
         have he := productAverage_energy_split w hsum {i} (productAnova w I S f)
         linarith
-      · exact hI
+      omega
 
 lemma productAnova_mean_zero (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
@@ -83,7 +80,7 @@ lemma productAnova_independent (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (i : ι)
     (hi : i ∈ I) (hiS : i ∉ S) (f : ProductSample α → ℂ) :
     productAverage w {i} (productAnova w I S f) = productAnova w I S f := by
-  have hin : i ∈ I \ S := Finset.mem_sdiff.mpr ⟨hi, hiS⟩
+  have hin := Finset.mem_sdiff.mpr ⟨hi, hiS⟩
   have hu : {i} ∪ (I \ S) = I \ S := by
     apply Finset.union_eq_right.mpr
     simpa only [Finset.singleton_subset_iff] using hin

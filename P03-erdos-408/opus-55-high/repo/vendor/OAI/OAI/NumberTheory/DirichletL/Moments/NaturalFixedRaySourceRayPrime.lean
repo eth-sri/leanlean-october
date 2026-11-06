@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceNaturalPr
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
 open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalRowSource
 open CenteredExceptionalProfile CenteredMomentSecondHeightFamily
 open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_ray_slots_uniform (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -25,9 +24,9 @@ theorem natural_ray_slots_uniform (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀η₀ : Character,∀ᶠZ : ℝ in atTop,
       ∀θ : RayQuotient.Characters M H,
-      ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : O,z≠0 →
+      ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : HeckeFamily.O,z≠0 →
       ∀F : NaturalRow η z,(F.character.modulus.absNorm:ℝ)≤Z^Lmod →
-      ∀Q : Ideal O,Q≤M → ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z →
+      ∀Q : Ideal HeckeFamily.O,Q≤M → ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z →
       ∀σ t v : ℝ,lo≤σ → σ≤hi →
       ‖normalizedSlot η fixedBadMask 1 z (primePool M H b P)
         (fun I=>idealCoeff (relativeCharacter M H hH η₀ θ) I*

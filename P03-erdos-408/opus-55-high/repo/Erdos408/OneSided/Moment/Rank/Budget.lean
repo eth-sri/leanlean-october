@@ -24,7 +24,7 @@ and `r₀ L^{1/10} ≥ L^{11/20}` beats `N log L`.
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 /-! ### Growth facts -/
 
@@ -33,7 +33,7 @@ theorem eventually_mul_rpow_add_one_le (c : ℝ) {a b : ℝ} (ha : 0 ≤ a) (hab
     ∀ᶠ L : ℝ in atTop, c * (L ^ a + 1) ≤ L ^ b := by
   filter_upwards [eventually_ge_atTop 1,
     (tendsto_rpow_atTop (sub_pos.2 hab)).eventually_ge_atTop (2 * |c|)] with L hL h
-  have hLa : 1 ≤ L ^ a := Real.one_le_rpow hL ha
+  have hLa := Real.one_le_rpow hL ha
   calc c * (L ^ a + 1) ≤ |c| * (L ^ a + 1) :=
         mul_le_mul_of_nonneg_right (le_abs_self c) (by positivity)
     _ ≤ |c| * (2 * L ^ a) := by gcongr; linarith
@@ -46,13 +46,12 @@ theorem eventually_log_le_const_mul_rpow {c ε : ℝ} (hc : 0 < c) (hε : 0 < ε
     ∀ᶠ L : ℝ in atTop, Real.log L ≤ c * L ^ ε := by
   filter_upwards [(isLittleO_log_rpow_atTop hε).bound hc, eventually_ge_atTop 0] with L h hL
   rw [Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (by positivity : 0 ≤ L ^ ε)] at h
-  exact (le_abs_self _).trans h
+  grind
 
 /-- For `L ≥ 16`, `4 ≤ L^{1/2}`. -/
 theorem four_le_rpow_half {L : ℝ} (hL : 16 ≤ L) : 4 ≤ L ^ (1 / 2 : ℝ) := by
   calc (4 : ℝ) = (16 : ℝ) ^ (1 / 2 : ℝ) := by
-        rw [show (16 : ℝ) = 4 ^ (2 : ℝ) by norm_num, ← Real.rpow_mul (by norm_num)]
-        norm_num
+        linarith
     _ ≤ L ^ (1 / 2 : ℝ) := Real.rpow_le_rpow (by norm_num) hL (by norm_num)
 
 /-- The cut `r₀ = ⌈L^{9/20}⌉` is between `L^{9/20}` and `L^{9/20} + 1`. -/
@@ -87,13 +86,13 @@ theorem eventually_addrCount_le (K : ℕ) :
     have b : (N : ℝ) * K ≤ (L + 2) * K := mul_le_mul_of_nonneg_right (by linarith) hK
     have c : (K : ℝ) * (2 * L + 3) ≤ K * (5 * L) := mul_le_mul_of_nonneg_left (by linarith) hK
     linarith
-  have h₂ : ((N : ℝ) + 1) * B ≤ 8 * L ^ 3 :=
+  have h₂ :=
     calc ((N : ℝ) + 1) * B ≤ (4 * L) * (2 * L ^ 2) :=
           mul_le_mul hN' hB' (Nat.cast_nonneg _) (by positivity)
       _ = 8 * L ^ 3 := by ring
   have h₃ : 5 * K * L ≤ 5 * K * L ^ 3 := by
-    have : L ≤ L ^ 3 :=
-      calc L = L * 1 := (mul_one L).symm
+    have  :=
+      calc L = L * 1 := by simp
         _ ≤ L * L ^ 2 := mul_le_mul_of_nonneg_left hL2 hL0
         _ = L ^ 3 := by ring
     exact mul_le_mul_of_nonneg_left this (by positivity)
@@ -122,7 +121,7 @@ theorem eventually_highRank_sum_le {C₁ E alo : ℝ} (hC₁ : 0 ≤ C₁) (hE :
       (show (0 : ℝ) < 1 / 20 by norm_num)] with L hL16 hlog₁ hC hlog₂ N Q hN hQ
   have hL0 : 0 < L := by linarith
   have hL1 : 1 ≤ L := by linarith
-  have hlogL : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hlogL := Real.log_nonneg hL1
   set u := L ^ (1 / 10 : ℝ) with hu
   set s := L ^ (1 / 2 : ℝ) with hs
   have hs4 : 4 ≤ s := four_le_rpow_half hL16
@@ -169,7 +168,7 @@ theorem eventually_highRank_sum_le {C₁ E alo : ℝ} (hC₁ : 0 ≤ C₁) (hE :
     intro r hr
     have hr' : r₀ ≤ r := (mem_Ico.1 hr).1
     calc (Q : ℝ) ^ (2 * r) * (L ^ (C₁ * (N + 1)) * (C₁ * Real.exp (-L ^ alo)) ^ r)
-        = L ^ (C₁ * (N + 1)) * ρ ^ r := by rw [hρ, mul_pow, pow_mul]; ring
+        = L ^ (C₁ * (N + 1)) * ρ ^ r := by ring
       _ ≤ L ^ (C₁ * (N + 1)) * ρ ^ r₀ :=
           mul_le_mul_of_nonneg_left (pow_le_pow_of_le_one hρ0 hρ1' hr') (by positivity)
       _ ≤ L ^ (C₁ * (N + 1)) * Real.exp (-(L ^ (11 / 20 : ℝ) / 2)) := by gcongr
@@ -177,7 +176,7 @@ theorem eventually_highRank_sum_le {C₁ E alo : ℝ} (hC₁ : 0 ≤ C₁) (hE :
   have hcard : ((Ico r₀ (Q + 1)).card : ℝ) ≤ L ^ 4 + 1 := by
     rw [Nat.card_Ico]
     calc ((Q + 1 - r₀ : ℕ) : ℝ) ≤ ((Q + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.sub_le _ _
-      _ ≤ L ^ 4 + 1 := by push_cast; linarith
+      _ ≤ L ^ 4 + 1 := by simp_all
   have hL5 : L ^ 4 + 1 ≤ Real.exp (5 * Real.log L) := by
     have : L ^ 5 = Real.exp (5 * Real.log L) := by
       rw [← Real.log_rpow hL0, Real.exp_log (by positivity)]
@@ -188,7 +187,7 @@ theorem eventually_highRank_sum_le {C₁ E alo : ℝ} (hC₁ : 0 ≤ C₁) (hE :
           have := mul_le_mul_of_nonneg_right (show (2 : ℝ) ≤ L by linarith) (by positivity :
             (0 : ℝ) ≤ L ^ 4)
           linarith
-      _ = Real.exp (5 * Real.log L) := by rw [← this]; ring
+      _ = Real.exp (5 * Real.log L) := by linarith
   have hexpo : 5 * Real.log L + Real.log L * (C₁ * (N + 1)) - L ^ (11 / 20 : ℝ) / 2 ≤
       Real.log L * (-((E + 2) * N)) := by
     have hN₂ : (N : ℝ) ≤ 2 * s := by linarith
@@ -200,7 +199,7 @@ theorem eventually_highRank_sum_le {C₁ E alo : ℝ} (hC₁ : 0 ≤ C₁) (hE :
       rw [hA]
       linarith
     -- `log L ⋅ A L^{1/2} ≤ L^{1/20} L^{1/2} / 2 = L^{11/20} / 2`
-    have hmain : Real.log L * (A * s) ≤ L ^ (11 / 20 : ℝ) / 2 :=
+    have hmain :=
       calc Real.log L * (A * s) ≤ ((2 * A)⁻¹ * L ^ (1 / 20 : ℝ)) * (A * s) :=
             mul_le_mul_of_nonneg_right hlog₂ (by positivity)
         _ = L ^ (1 / 20 : ℝ) * s / 2 := by field_simp
@@ -214,11 +213,11 @@ theorem eventually_highRank_sum_le {C₁ E alo : ℝ} (hC₁ : 0 ≤ C₁) (hE :
       ≤ ∑ _r ∈ Ico r₀ (Q + 1), L ^ (C₁ * (N + 1)) * Real.exp (-(L ^ (11 / 20 : ℝ) / 2)) :=
         sum_le_sum hterm
     _ = (Ico r₀ (Q + 1)).card * (L ^ (C₁ * (N + 1)) * Real.exp (-(L ^ (11 / 20 : ℝ) / 2))) := by
-        rw [sum_const, nsmul_eq_mul]
+        simp
     _ ≤ Real.exp (5 * Real.log L) *
           (L ^ (C₁ * (N + 1)) * Real.exp (-(L ^ (11 / 20 : ℝ) / 2))) := by
         gcongr
-        exact hcard.trans hL5
+        linarith
     _ = Real.exp (5 * Real.log L + Real.log L * (C₁ * (N + 1)) - L ^ (11 / 20 : ℝ) / 2) := by
         rw [Real.rpow_def_of_pos hL0, Real.exp_sub, Real.exp_add, Real.exp_neg]
         ring
@@ -269,7 +268,7 @@ theorem eventually_lowRank_sum_le (K : ℕ) {C₀ Ce G E : ℝ} (hC₀ : 1 ≤ C
     have hQr : (Q : ℝ) ^ (2 * r) ≤ L ^ ((8 * r : ℕ) : ℝ) := by
       rw [Real.rpow_natCast]
       calc (Q : ℝ) ^ (2 * r) ≤ (L ^ 4) ^ (2 * r) := pow_le_pow_left₀ (Nat.cast_nonneg _) hQ _
-        _ = L ^ (8 * r) := by rw [← pow_mul]; ring_nf
+        _ = L ^ (8 * r) := by ring
     have hcomb : L ^ ((8 * r : ℕ) : ℝ) * L ^ (-G * n + (Ce + G) * ((2 * r : ℕ) : ℝ)) =
         L ^ (-G * n + A * r) := by
       rw [← Real.rpow_add hL0, hA]
@@ -290,7 +289,7 @@ theorem eventually_lowRank_sum_le (K : ℕ) {C₀ Ce G E : ℝ} (hC₀ : 1 ≤ C
           rw [hcomb, hT]
           gcongr
   -- the logarithm of `r₀ C₀^{N+1} 2^{K(J+1)} L^{A r₀}` is at most `2 n log L`
-  have hlogC : 0 ≤ Real.log C₀ := Real.log_nonneg hC₀
+  have hlogC := Real.log_nonneg hC₀
   have e₁ : Real.log r₀ ≤ n / 2 * Real.log L := by
     have : Real.log r₀ ≤ r₀ := (Real.log_le_sub_one_of_pos hr₀pos).trans (by linarith)
     have : (r₀ : ℝ) ≤ n / 2 := by linarith
@@ -344,7 +343,7 @@ theorem eventually_lowRank_sum_le (K : ℕ) {C₀ Ce G E : ℝ} (hC₀ : 1 ≤ C
   calc ∑ r ∈ range r₀, (Q : ℝ) ^ (2 * r) *
         (C₀ ^ (N + 1) * L ^ (-G * n + (Ce + G) * ((2 * r : ℕ) : ℝ)) * 2 ^ (K * (J + 1)))
       ≤ ∑ _r ∈ range r₀, T := sum_le_sum hterm
-    _ = r₀ * T := by rw [sum_const, card_range, nsmul_eq_mul]
+    _ = r₀ * T := by simp
     _ ≤ L ^ (-((E + 2) * n)) := hfinal
 
 end Erdos408.OneSided

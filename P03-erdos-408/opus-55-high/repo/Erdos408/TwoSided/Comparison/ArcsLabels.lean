@@ -44,48 +44,28 @@ theorem sum_auxLabels_union (P : ι → Finset ℕ) {J : ℕ} {A B : ι → Fins
   · intro p hp
     obtain ⟨h₁, h₂⟩ := Finset.mem_product.1 hp
     rw [mem_auxLabels] at h₁ h₂ ⊢
-    intro g i
-    by_cases hA : i ∈ A g
-    · simpa [hA] using h₁ g i
-    · simpa [hA] using h₂ g i
+    grind
   · intro l hl
     rw [mem_auxLabels] at hl
     refine Finset.mem_product.2 ⟨mem_auxLabels.2 fun g i => ?_, mem_auxLabels.2 fun g i => ?_⟩
-    · by_cases hA : i ∈ A g
-      · simpa [hA] using hl g i
-      · simp [hA]
-    · by_cases hB : i ∈ B g
-      · simpa [hB] using hl g i
-      · simp [hB]
+    · grind
+    grind
   · intro p hp
     obtain ⟨h₁, h₂⟩ := Finset.mem_product.1 hp
     rw [mem_auxLabels] at h₁ h₂
     refine Prod.ext (funext fun g => funext fun i => ?_) (funext fun g => funext fun i => ?_)
-    · by_cases hA : i ∈ A g
-      · simp [hA]
-      · have h := h₁ g i
-        rw [ite_eq_right hA, Finset.mem_singleton] at h
-        simp [hA, h]
+    · grind
     · by_cases hB : i ∈ B g
-      · have hA : i ∉ A g := Finset.disjoint_right.1 (hAB g) hB
-        simp [hA, hB]
-      · have h := h₂ g i
-        rw [ite_eq_right hB, Finset.mem_singleton] at h
-        simp [hB, h]
+      · have hA := Finset.disjoint_right.1 (hAB g) hB
+        simp_all
+      grind
   · intro l hl
     rw [mem_auxLabels] at hl
-    refine funext fun g => funext fun i => ?_
-    by_cases hA : i ∈ A g
-    · simp [hA]
-    · by_cases hB : i ∈ B g
-      · simp [hA, hB]
-      · have h := hl g i
-        rw [ite_eq_right (by simp [hA, hB] : i ∉ A g ∪ B g), Finset.mem_singleton] at h
-        simp [hA, hB, h]
+    grind
   · intro p _
     have hA : slotProduct A (fun g i => if i ∈ A g then p.1 g i else p.2 g i) =
         slotProduct A p.1 :=
-      Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i hi => by simp [hi]
+      Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i hi => by simp_all
     have hB : slotProduct B (fun g i => if i ∈ A g then p.1 g i else p.2 g i) =
         slotProduct B p.2 :=
       Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i hi => by
@@ -97,11 +77,9 @@ theorem sum_auxLabels_union (P : ι → Finset ℕ) {J : ℕ} {A B : ι → Fins
       refine Finset.prod_congr rfl fun g _ => ?_
       rw [Finset.prod_union (hAB g)]
       congr 1
-      · exact Finset.prod_congr rfl fun i hi => by simp [hi]
+      · simp_all
       · exact Finset.prod_congr rfl fun i hi => by simp [Finset.disjoint_right.1 (hAB g) hi]
-    rw [hA, hB, hw]
-    push_cast
-    ring
+    simp_all
 
 /-- Grouping a weighted sum by an integer key. -/
 private theorem sum_mul_eq_sum_image {Λ : Type*} (S : Finset Λ) (w : Λ → ℂ) (key : Λ → ℤ)
@@ -113,7 +91,7 @@ private theorem sum_mul_eq_sum_image {Λ : Type*} (S : Finset Λ) (w : Λ → �
   refine Finset.sum_congr rfl fun z _ => ?_
   rw [Finset.sum_mul]
   refine Finset.sum_congr rfl fun l hl => ?_
-  rw [(Finset.mem_filter.1 hl).2]
+  simp_all
 
 /-- **Two boxes.** A sum over integers whose nonzero terms lie in `[U, 4U]` is the sum over
 `[U, 2U]` plus the sum over `(2U, 4U]`. -/
@@ -126,18 +104,9 @@ private theorem sum_eq_add_filter_of_support (s : Finset ℤ) (f : ℤ → ℂ) 
     Finset.filter_filter]
   congr 1
   · refine Finset.sum_congr (Finset.filter_congr fun z _ => ?_) fun _ _ => rfl
-    constructor
-    · rintro ⟨⟨h₁, -⟩, h₂⟩
-      exact ⟨h₁, h₂⟩
-    · rintro ⟨h₁, h₂⟩
-      exact ⟨⟨h₁, by linarith⟩, h₂⟩
+    grind
   · refine Finset.sum_congr (Finset.filter_congr fun z _ => ?_) fun _ _ => rfl
-    constructor
-    · rintro ⟨⟨-, h₁⟩, h₂⟩
-      exact ⟨lt_of_not_ge h₂, h₁⟩
-    · rintro ⟨h₁, h₂⟩
-      have : 0 ≤ U := by linarith
-      exact ⟨⟨by linarith, h₂⟩, not_le.2 h₁⟩
+    grind
 
 /-- **Lower scale.** For a free label of `C` and slots `S ⊆ C` with a slot in a big group,
 `D_S ≥ exp(L^{0.39})`. -/
@@ -157,11 +126,11 @@ theorem le_slotProduct {c₀ C₀ vlo vhi x : ℝ} {P : ι → Finset ℕ} {big 
   simp only [primesIcc, Finset.mem_filter, Finset.mem_Icc] at hp
   have hdvd : l g i ∣ slotProduct S l :=
     (Finset.dvd_prod_of_mem _ hi).trans (Finset.dvd_prod_of_mem _ (Finset.mem_univ g))
-  have hle : l g i ≤ slotProduct S l := Nat.le_of_dvd (slotProduct_pos hadm hl S) hdvd
+  have hle := Nat.le_of_dvd (slotProduct_pos hadm hl S) hdvd
   calc Real.exp (Real.log x ^ (0.39 : ℝ)) ≤ ⌈Real.exp (Real.log x ^ (0.39 : ℝ))⌉₊ :=
         Nat.le_ceil _
-    _ ≤ l g i := by exact_mod_cast hp.1.1
-    _ ≤ slotProduct S l := by exact_mod_cast hle
+    _ ≤ l g i := by simp_all
+    _ ≤ slotProduct S l := by simp_all
 
 /-- **Upper scale.** Eventually, for a free label of `C` and slots `S ⊆ C`, at most `m₀` in
 each big group and none in the small groups, `D_S ≤ exp(L^{0.465})`:
@@ -272,12 +241,12 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
     have hα : ∀ z, ‖α z‖ ≤ ∑ l ∈ S.filter (fun l => ((key l : ℕ) : ℤ) = z), μ l := by
       intro z
       refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun l hl => ?_)
-      rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (hμ l (Finset.mem_filter.1 hl).1)]
-      exact mul_le_of_le_one_right (hμ l (Finset.mem_filter.1 hl).1) (hb _)
+      rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (by grind)]
+      exact mul_le_of_le_one_right (by grind) (hb _)
     refine ⟨fun z hz hαz => ?_, fun U₀ hU₀ s hs₀ hsU => ?_⟩
     · obtain ⟨l, hl, hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hαz
-      have hbl : b (key l) ≠ 0 := fun h => hne (by rw [h, mul_zero])
-      have hz : ((key l : ℕ) : ℤ) = z := (Finset.mem_filter.1 hl).2
+      have hbl : b (key l) ≠ 0 := fun h => hne (by grind)
+      have hz := (Finset.mem_filter.1 hl).2
       rw [← hz]
       exact_mod_cast hs _ hbl
     have hU₀ : 0 < U₀ := by rcases hU₀ with h | h <;> rw [h] <;> positivity
@@ -287,26 +256,26 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
       obtain ⟨l, -, rfl⟩ := Finset.mem_image.1 (hs₀ hz)
       have hn : U₀ ≤ (key l : ℝ) := by exact_mod_cast hsU _ hz
       have hn1 : 1 ≤ key l := by
-        have : (0 : ℝ) < key l := lt_of_lt_of_le hU₀ hn
+        have : (0 : ℝ) < key l := by linarith
         exact_mod_cast this
       refine (hα _).trans ?_
       have hf : S.filter (fun l' => ((key l' : ℕ) : ℤ) = ((key l : ℕ) : ℤ)) =
           S.filter (fun l' => key l' = key l) :=
-        Finset.filter_congr fun l' _ => Nat.cast_inj
+        by simp
       rw [hf]
       exact (hρ _ hn1).trans (div_le_div_of_nonneg_left hW hU₀ hn)
     have hsum : ∑ z ∈ s, ‖α z‖ ≤ 1 := by
       calc ∑ z ∈ s, ‖α z‖ ≤ ∑ z ∈ S.image (fun l => ((key l : ℕ) : ℤ)), ‖α z‖ :=
-            Finset.sum_le_sum_of_subset_of_nonneg hs₀ fun _ _ _ => norm_nonneg _
+            Finset.sum_le_sum_of_subset_of_nonneg hs₀ (by simp)
         _ ≤ ∑ z ∈ S.image (fun l => ((key l : ℕ) : ℤ)),
               ∑ l ∈ S.filter (fun l => ((key l : ℕ) : ℤ) = z), μ l :=
             Finset.sum_le_sum fun z _ => hα z
         _ = 1 := by
-            rw [Finset.sum_fiberwise_of_maps_to fun l hl => Finset.mem_image_of_mem _ hl, hm]
+            rw [Finset.sum_fiberwise_of_maps_to (by grind), hm]
     calc ∑ z ∈ s, ‖α z‖ ^ 2 ≤ ∑ z ∈ s, W / U₀ * ‖α z‖ :=
           Finset.sum_le_sum fun z hz => by
             rw [sq]
-            exact mul_le_mul_of_nonneg_right (hpt z hz) (norm_nonneg _)
+            exact mul_le_mul_of_nonneg_right (by grind) (norm_nonneg _)
       _ = W / U₀ * ∑ z ∈ s, ‖α z‖ := by rw [Finset.mul_sum]
       _ ≤ W / U₀ * 1 := mul_le_mul_of_nonneg_left hsum (by positivity)
       _ = W / U₀ := mul_one _
@@ -329,13 +298,13 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
       intro l₁ _
       rw [hs₂def, hβ, ← sum_mul_eq_sum_image S₂ (fun l₂ => (μ₂ l₂ : ℂ) * b₂ (key₂ l₂))
         (fun l₂ => ((key₂ l₂ : ℕ) : ℤ)) (bilinearPhase θ (key₁ l₁)), Finset.mul_sum]
-      exact Finset.sum_congr rfl fun l₂ _ => by ring
+      exact by grind
     rw [Finset.sum_congr rfl h₁, hs₁def, hα, sum_mul_eq_sum_image S₁
       (fun l₁ => (μ₁ l₁ : ℂ) * b₁ (key₁ l₁)) (fun l₁ => ((key₁ l₁ : ℕ) : ℤ))
       (fun z => ∑ y ∈ s₂, β y * bilinearPhase θ z y)]
     refine Finset.sum_congr rfl fun z _ => ?_
     rw [Finset.mul_sum]
-    exact Finset.sum_congr rfl fun y _ => by ring
+    exact by ring
   -- the four boxes
   set B₁ := s₁.filter (fun z : ℤ => U ≤ (z : ℝ) ∧ (z : ℝ) ≤ 2 * U)
   set B₂ := s₁.filter (fun z : ℤ => 2 * U < (z : ℝ) ∧ (z : ℝ) ≤ 4 * U)
@@ -344,7 +313,7 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
   have hinner : ∀ z, ∑ y ∈ s₂, α z * β y * bilinearPhase θ z y =
       ∑ y ∈ C₁, α z * β y * bilinearPhase θ z y + ∑ y ∈ C₂, α z * β y * bilinearPhase θ z y :=
     fun z => sum_eq_add_filter_of_support s₂ _ V fun y hy hne =>
-      hsupp₂ y hy fun h => hne (by rw [h, mul_zero, zero_mul])
+      hsupp₂ y hy fun h => hne (by grind)
   have houter : ∑ z ∈ s₁, ∑ y ∈ s₂, α z * β y * bilinearPhase θ z y =
       ∑ z ∈ B₁, ∑ y ∈ s₂, α z * β y * bilinearPhase θ z y +
         ∑ z ∈ B₂, ∑ y ∈ s₂, α z * β y * bilinearPhase θ z y :=
@@ -352,10 +321,7 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
       hsupp₁ z hz fun h => hne (Finset.sum_eq_zero fun y _ => by rw [h, zero_mul, zero_mul])
   rw [hcol, houter]
   simp_rw [hinner, Finset.sum_add_distrib]
-  have hb : ∀ (U₀ V₀ : ℝ) (B : Finset ℤ) (C : Finset ℤ), (U₀ = U ∨ U₀ = 2 * U) →
-      (V₀ = V ∨ V₀ = 2 * V) → B ⊆ s₁ → C ⊆ s₂ → (∀ n ∈ B, U₀ ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * U₀) →
-      (∀ n ∈ C, V₀ ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * V₀) →
-      ‖∑ z ∈ B, ∑ y ∈ C, α z * β y * bilinearPhase θ z y‖ ≤ K :=
+  have hb :=
     fun U₀ V₀ B C hU₀ hV₀ hB hC hBs hCs => hbox U₀ V₀ B C α β hU₀ hV₀ hBs hCs
       (hbox₁ U₀ hU₀ B hB fun n hn => (hBs n hn).1) (hbox₂ V₀ hV₀ C hC fun n hn => (hCs n hn).1)
   have hB₁ : ∀ n ∈ B₁, U ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * U := fun n hn => (Finset.mem_filter.1 hn).2
@@ -379,7 +345,7 @@ theorem norm_sum_bilinear_le {Λ₁ Λ₂ : Type} (S₁ : Finset Λ₁) (S₂ : 
         (‖∑ z ∈ B₂, ∑ y ∈ C₁, α z * β y * bilinearPhase θ z y‖ +
           ‖∑ z ∈ B₂, ∑ y ∈ C₂, α z * β y * bilinearPhase θ z y‖) :=
         (norm_add_le _ _).trans (add_le_add (norm_add_le _ _) (norm_add_le _ _))
-    _ ≤ K + K + (K + K) := add_le_add (add_le_add e₁ e₂) (add_le_add e₃ e₄)
+    _ ≤ K + K + (K + K) := by linarith
     _ = 4 * K := by ring
 
 end Erdos408.TwoSided.Arcs

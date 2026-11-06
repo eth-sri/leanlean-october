@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseFirstPriorityParents InverseFirstGlobalParents
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 
 def originalSubsetSource (outer:Finset (FirstOriginalOuter ι)):Finset (Source ι 0):=
   outer.image ofOriginal
 
 theorem original_subset_canonical_priority
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (outer:Finset (FirstOriginalOuter ι))(pool:Finset ι)
     (selector:FirstOriginalOuter ι→Finset ι→ℂ)(extra:CubeCoordinates ι→Finset ι)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (om:ℝ→ℂ)(X t Y:ℝ)(hY:0<Y):
     (∑k∈outer,firstCanonicalSecondEnergy p hp hg hinj pool k.1 k.2.1
       negative Ψ m (primeSubsetGenerator (fun i=>Ideal.span {p i}) k.2.2)
@@ -47,7 +46,7 @@ theorem original_subset_canonical_priority
   have hs (k:FirstOriginalOuter ι): originalSelector selector (ofOriginal k)=selector k :=
     originalSelector_ofOriginal_fun selector k
   simp_rw [hs] at he
-  simpa only [originalSubsetSource,ofOriginal,originalSelector,toOriginal,eraseFirstQuotient] using he
+  simpa
 
 end SevenEighths.InverseMoment
 

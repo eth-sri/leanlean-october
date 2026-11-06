@@ -8,17 +8,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalRows
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment
+open InverseInitialQuotientGeometry
+open Filter
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
+open SecondPassArithmetic InverseInitialRayAttachment
 theorem original_input_rows_fourier_bound
     (W:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
     (hs:Function.support W⊆Set.Icc a₀ b₀)
@@ -42,11 +40,11 @@ theorem original_input_rows_fourier_bound
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
@@ -54,7 +52,7 @@ theorem original_input_rows_fourier_bound
       r+2*assignedCenter all z≤m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
-    ∀(rows:Finset O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
+    ∀(rows:Finset ActualEisensteinCubic.O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
     ∀(y:σ→primePool F→ℝ)(θ:ℝ),
       (∑u∈rows,‖((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
           (assignedElement assigned qelem) 1 1
@@ -74,7 +72,7 @@ theorem original_input_rows_fourier_bound
   intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows y θ
-  have hZp:1<Z:=hZ₀.trans_le hZ
+  have hZp:1<Z:=by linarith
   have he:=henergy Z hZ Dpool hD all assigned hassigned hK lists Hslot
     (fun i P=>coeff i P*FourierBridge.logPhase (-θ) (y i P)) hdis hHs hPs
     (by intro i hi P hP;simpa only [norm_mul,FourierBridge.logPhase_norm,mul_one] using hac i hi P hP)
@@ -84,7 +82,7 @@ theorem original_input_rows_fourier_bound
     (assignedElement assigned qelem)
     (initialTest p (primeMark (all\assigned) lists
       (fun i P=>coeff i P*FourierBridge.logPhase (-θ) (y i P))) (childLogTest W θ) Z D)
-    ((Z^(-D/2):ℝ):ℂ) Φ hΦ hone (Z^m) (Real.rpow_pos_of_pos (by linarith) _) rows hrows
+    ((Z^(-D/2):ℝ):ℂ) Φ hΦ hone (Z^m) (by positivity) rows hrows
   apply hr.trans
   simpa only [InverseInitialProfileBounds.childLogTest_eq_clipped,pow_mul,pow_two,mul_pow] using he
 

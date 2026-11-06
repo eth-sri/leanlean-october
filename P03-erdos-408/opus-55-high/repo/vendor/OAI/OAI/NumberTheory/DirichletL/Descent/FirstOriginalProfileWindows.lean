@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment FirstPassCubeLabels
 open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-local notation "O" => ActualEisensteinCubic.O
 theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (Bρ : Fin 9→ℝ)
     (hm₁ : 0≤m₁) (hm₂ : 0≤m₂)
@@ -24,9 +23,9 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
       (∀i,0≤M₀ i) ∧ (∀i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀{ι : Type*}[DecidableEq ι]
-      (p : ι→O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (Y : ℝ)
+      (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ)
       (C₁ C₂ : OriginalIndex ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ)
       (ρ : Fin 9→ℝ)(c₁ c₂ θ₁ θ₂ : ℝ),
       0<T₁ → 0<T₂ → (∀i,|ρ i|≤Bρ i) →
@@ -56,7 +55,7 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
         ∀i,U₀ i (firstRelativeLog (firstCommonNorms p (A₁ x) (A₂ x) (C x) (R x) (d x) (h x) j) s i+ρ i)=1) := by
   obtain ⟨w₁,w₂,U,M,a,b,ha,hab,hwc₁,hwc₂,hws₁,hws₂,hM,hUc,hUs,he⟩ :=
     actual_first_child_windows g₁ g₂ m₁ m₂ bcap (fun _=>1) (fun _=>2) Bρ
-      hm₁ hm₂ hg₁ hg₂ (by intro i;norm_num) (by intro i;norm_num) hBρ
+      hm₁ hm₂ hg₁ hg₂ (by simp) (by simp) hBρ
   refine ⟨w₁,w₂,U,M,a,b,ha,hab,hwc₁,hwc₂,hws₁,hws₂,hM,hUc,hUs,?_⟩
   intro ι _ p hp _ hg pool Q labels Y C₁ C₂ k l T₁ T₂ ρ c₁ c₂ θ₁ θ₂
     hT₁ hT₂ hρ hc₁ hcb₁ hc₂ hcb₂ source F selector A₁ A₂ C R d h s

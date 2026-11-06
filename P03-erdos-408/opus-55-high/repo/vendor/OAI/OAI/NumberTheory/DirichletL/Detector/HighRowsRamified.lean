@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 def ramifiedClosed (eta a rho x w z : ℂ) (j : ℕ) : ℂ :=
   1+(1-coordV (Ideal.absNorm (Ideal.span {p})) z)*

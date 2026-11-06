@@ -8,20 +8,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 open InverseInitialProfile
-local notation "O" => ActualEisensteinCubic.O
 
-private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)
-    (hF : ∀ h ∈ F, P h) (b : O → ℝ) (hb : ∀ h, 0 ≤ b h)
+private theorem finite_sum_le_tsum_subtype (F : Finset ActualEisensteinCubic.O) (P : ActualEisensteinCubic.O → Prop)
+    (hF : ∀ h ∈ F, P h) (b : ActualEisensteinCubic.O → ℝ) (hb : ∀ h, 0 ≤ b h)
     (hs : Summable (fun h : {h // P h} => b h.val)) :
     (∑ h ∈ F, b h) ≤ ∑' h : {h // P h}, b h.val := by
   let f : F → {h // P h} := fun h => ⟨h.val, hF h.val h.property⟩
   have hf : Function.Injective f := by
     intro x y h
-    exact Subtype.ext (congrArg (fun z : {h // P h} => z.val) h)
+    exact by grind
   rw [← Finset.sum_coe_sort F]
   have ht : Summable (fun h : F => b h.val) := (hasSum_fintype _).summable
   simpa only [tsum_fintype] using
@@ -30,7 +29,7 @@ private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)
 theorem finite_radial_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (Φ : 𝓢(ℝ,ℂ)) (K T Γ : ℝ), 0<K → 0≤T → 0≤Γ →
-    ∀ (F : Finset O) (a : O→ℂ),
+    ∀ (F : Finset ActualEisensteinCubic.O) (a : ActualEisensteinCubic.O→ℂ),
     (∀h∈F,T≤K*‖eisEmbedding h‖^2) →
     (∀h∈F,‖a h‖≤Γ) →
     ‖∑h∈F,a h*paperRadialFourier Φ (K*‖eisEmbedding h‖^2)‖ ≤
@@ -42,7 +41,7 @@ theorem finite_radial_tail (A : ℕ) :
   have hsum := finite_sum_le_tsum_subtype F
     (fun h => T ≤ K * ‖eisEmbedding h‖^2) hF
     (fun h => ‖paperRadialFourier Φ (K * ‖eisEmbedding h‖^2)‖)
-    (fun _ => norm_nonneg _)
+    (by simp)
     ((paperRadialFourier_lattice_summable_norm Φ K hK).subtype
       (fun h => T ≤ K * ‖eisEmbedding h‖^2))
   calc
@@ -51,15 +50,15 @@ theorem finite_radial_tail (A : ℕ) :
       apply Finset.sum_le_sum
       intro h hh
       rw [norm_mul]
-      exact mul_le_mul_of_nonneg_right (ha h hh) (norm_nonneg _)
+      exact mul_le_mul_of_nonneg_right (by grind) (norm_nonneg _)
     _ = Γ*∑h∈F,‖paperRadialFourier Φ (K*‖eisEmbedding h‖^2)‖ := by rw [Finset.mul_sum]
     _ ≤ Γ*(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ /
         ((min 1 K)^2*(1+T)^A)) :=
-      mul_le_mul_of_nonneg_left (hsum.trans (hbound Φ K T hK hT)) hΓ
+      mul_le_mul_of_nonneg_left (hsum.trans (by grind)) hΓ
     _ = _ := by ring
 
 theorem physicalKernel_frequency (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
-    (Z D m C d v n₁ n₂ : ℝ) (h : O) :
+    (Z D m C d v n₁ n₂ : ℝ) (h : ActualEisensteinCubic.O) :
     physicalKernel W₁ W₂ Φ Z D m ![C,d,v,‖eisEmbedding h‖^2,n₁,n₂] =
       ((Z^(-D)*Z^m/(d*v*Real.sqrt (n₁*n₂)):ℝ):ℂ)*
       W₁ (C*v*n₁/Z^D)*W₂ (C*v*n₂/Z^D)*
@@ -71,7 +70,7 @@ theorem physical_frequency_tail (A : ℕ) :
     ∀ (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ))
       (Z D m C d v n₁ n₂ T Γ : ℝ),
     0<Z → 0<d → 0<v → 0<n₁ → 0<n₂ → 0≤T → 0≤Γ →
-    ∀ (F : Finset O) (a : O→ℂ),
+    ∀ (F : Finset ActualEisensteinCubic.O) (a : ActualEisensteinCubic.O→ℂ),
     (∀h∈F,T≤(Z^m/(d*v^2*n₁*n₂))*‖eisEmbedding h‖^2) →
     (∀h∈F,‖a h‖≤Γ) →
     ‖∑h∈F,a h*physicalKernel W₁ W₂ Φ Z D m
@@ -89,7 +88,7 @@ theorem physical_frequency_tail (A : ℕ) :
   simpa only [b,←mul_assoc] using hbound Φ (Z^m/(d*v^2*n₁*n₂)) T (Γ*‖b‖) (by positivity) hT
     (by positivity) F (fun h=>a h*b) hF (by
       intro h hh
-      exact (norm_mul _ _).trans_le (mul_le_mul_of_nonneg_right (ha h hh) (norm_nonneg _)))
+      exact (norm_mul _ _).trans_le (mul_le_mul_of_nonneg_right (by grind) (norm_nonneg _)))
 
 theorem correlated_scale_lower (Y C d v n₁ n₂ L : ℝ)
     (hY : 0<Y) (hC : 0<C) (hd : 0<d) (hv : 0<v)
@@ -98,7 +97,7 @@ theorem correlated_scale_lower (Y C d v n₁ n₂ L : ℝ)
     Y*C^2/(d*L^2) ≤ Y/(d*v^2*n₁*n₂) := by
   apply (div_le_div_iff₀ (by positivity) (by positivity)).mpr
   have hh := mul_le_mul h₁ h₂ (by positivity) hL.le
-  nlinarith [mul_le_mul_of_nonneg_left hh (show 0≤Y*d by positivity)]
+  nlinarith [mul_le_mul_of_nonneg_left hh (by positivity)]
 
 end SevenEighths.InverseInitialHighFrequencyTail
 

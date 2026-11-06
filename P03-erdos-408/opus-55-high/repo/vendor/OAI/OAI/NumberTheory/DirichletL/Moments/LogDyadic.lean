@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWholeKernel
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentLogDyadic
 open CenteredMomentSectorLocalization CenteredMomentFirstWholeKernel
@@ -24,10 +24,10 @@ theorem logAnnulus_support : Function.support logAnnulus ⊆ Set.Icc (-Real.log 
   have hlo : 1/4<Real.exp x := lt_of_not_ge (fun h=>hn (annulus_zero_low _ h))
   have hhi : Real.exp x<1 := lt_of_not_ge (fun h=>hn (annulus_zero_high _ h))
   constructor
-  · have hh := Real.strictMonoOn_log (show 1/4∈Set.Ioi (0:ℝ) by norm_num)
+  · have hh := Real.strictMonoOn_log (by simp)
       (Real.exp_pos x) hlo
     rw [Real.log_exp,Real.log_div (by norm_num) (by norm_num),Real.log_one,zero_sub] at hh
-    exact hh.le
+    linarith
   · exact (Real.exp_lt_one_iff.mp hhi).le
 
 theorem logAnnulus_compact : HasCompactSupport logAnnulus :=
@@ -41,7 +41,7 @@ theorem logAnnulus_norm (x : ℝ) : ‖logAnnulus x‖≤1 := by
 
 theorem logAnnulus_log (q H : ℝ) (hq : 0<q) (hH : 0<H) :
     logAnnulus (Real.log (q/H))=(annulus (q/H):ℂ) := by
-  rw [logAnnulus,Real.exp_log (div_pos hq hH)]
+  rw [logAnnulus,Real.exp_log (by positivity)]
 
 theorem actual_dyadic_log_window (n : ℤ) (q : ℝ) (hq : 0<q) :
     (dyadicWeight n q:ℂ)=logAnnulus (Real.log (q/dyadicScale n)) := by

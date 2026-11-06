@@ -36,7 +36,6 @@ theorem sum_piFinset_succ_eq {M : Type*} [AddCommMonoid M] (S : Finset ℕ) {r :
 /-- The product of `i.insertNth m₀ m'` is `m₀ ∏ m'`. -/
 theorem prod_insertNth {r : ℕ} (i : Fin (r + 1)) (m₀ : ℕ) (m' : Fin r → ℕ) :
     ∏ k, (i.insertNth m₀ m' : Fin (r + 1) → ℕ) k = m₀ * ∏ k, m' k := by
-  rw [Fin.prod_univ_succAbove _ i]
   simp
 
 /-- Telescoping a difference of products over tuples. -/
@@ -56,7 +55,7 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
     simp only [hH]
     refine sum_congr rfl fun m _ => ?_
     congr 1
-    exact prod_congr rfl fun k _ => by simp [k.isLt]
+    exact prod_congr rfl fun k _ => by grind
   have hstep : ∀ i : Fin (r + 1), H i - H (i + 1) =
       ∑ m₀ ∈ S, ∑ m' ∈ Fintype.piFinset (fun _ : Fin r => S),
         Ψ (m₀ * ∏ k, m' k) * (A m₀ - B m₀) *
@@ -72,14 +71,12 @@ theorem sum_prod_sub_prod_eq (S : Finset ℕ) (Ψ : ℕ → ℝ) (A B : ℕ → 
         (if ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) + 1 then B else A) =
           (if i.succAbove k < i then B else A) := by
       intro k
-      have hne : i.succAbove k ≠ i := Fin.succAbove_ne i k
+      have hne := Fin.succAbove_ne i k
       have : ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) + 1 ↔ i.succAbove k < i := by
         rw [Fin.lt_def]
         constructor
-        · intro h
-          have : ((i.succAbove k : Fin (r + 1)) : ℕ) ≠ i := fun h' => hne (Fin.ext h')
-          omega
-        · intro h; omega
+        · omega
+        · omega
       simp only [this]
     have hsame' : ∀ k : Fin r,
         (if ((i.succAbove k : Fin (r + 1)) : ℕ) < (i : ℕ) then B else A) =
@@ -107,9 +104,9 @@ theorem sum_prod_le_mass_count {S : Finset ℕ} (hS : ∀ a ∈ S, 1 ≤ a) {r :
   rw [sum_piFinset_succ_eq S 0, sum_comm, prod_univ_sum, mul_sum]
   refine sum_le_sum fun m' hm' => ?_
   have hpos : ∀ k, (1 : ℝ) ≤ m' k := fun k => by
-    exact_mod_cast hS _ (Fintype.mem_piFinset.1 hm' k)
-  have hprodpos : (0 : ℝ) < ∏ k, (m' k : ℝ) := prod_pos fun k _ => by linarith [hpos k]
-  have hV : 0 ≤ ∏ k : Fin r, v k.succ (m' k) := prod_nonneg fun k _ => hv _ _
+    simp_all
+  have hprodpos : (0 : ℝ) < ∏ k, (m' k : ℝ) := prod_pos fun k _ => by grind
+  have hV : 0 ≤ ∏ k : Fin r, v k.succ (m' k) := prod_nonneg (by grind)
   have hterm : ∀ m₀ ∈ S,
       (if ((∏ k, (Fin.insertNth (0 : Fin (r + 1)) m₀ m' : Fin (r + 1) → ℕ) k : ℕ) : ℝ) ≤ X
         then ∏ k, v k ((Fin.insertNth (0 : Fin (r + 1)) m₀ m' : Fin (r + 1) → ℕ) k) else 0) =
@@ -123,14 +120,14 @@ theorem sum_prod_le_mass_count {S : Finset ℕ} (hS : ∀ a ∈ S, 1 ≤ a) {r :
       (le_div_iff₀ hprodpos).symm
     split_ifs with h1 h2 h2
     · ring
-    · exact absurd (hiff.1 h1) h2
-    · exact absurd (hiff.2 h2) h1
+    · simp_all
+    · simp_all
     · ring
   rw [sum_congr rfl hterm, ← mul_sum]
   calc (∏ k : Fin r, v k.succ (m' k)) *
         ∑ m₀ ∈ S, (if (m₀ : ℝ) ≤ X / ∏ k, (m' k : ℝ) then v 0 m₀ else 0)
       ≤ (∏ k : Fin r, v k.succ (m' k)) * (c * (X / ∏ k, (m' k : ℝ))) :=
-        mul_le_mul_of_nonneg_left (hc _ (div_nonneg hX hprodpos.le)) hV
+        mul_le_mul_of_nonneg_left (hc _ (by positivity)) hV
     _ = c * X * ∏ k, v k.succ (m' k) / m' k := by
         rw [prod_div_distrib]
         field_simp
@@ -142,7 +139,7 @@ theorem sum_piFinset_eq_sum_fiber {M : Type*} [AddCommMonoid M] (S : Finset ℕ)
     ∑ m ∈ Fintype.piFinset (fun _ : Fin r => S), G (∏ k, m k) m =
       ∑ n ∈ T, ∑ m ∈ Fintype.piFinset (fun _ : Fin r => S) with ∏ k, m k = n, G n m := by
   rw [← sum_fiberwise_of_maps_to hT]
-  exact sum_congr rfl fun n _ => sum_congr rfl fun m hm => by rw [(mem_filter.1 hm).2]
+  exact sum_congr rfl fun n _ => sum_congr rfl fun m hm => by simp_all
 
 /-- The ordered factorizations of `n` into `r` factors. -/
 def factorizationTuples (r n : ℕ) : Finset (Fin r → ℕ) :=
@@ -170,8 +167,7 @@ theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
       refine filter_eq_empty_iff.2 fun m _ hm => h1 ?_
       rw [← hm]
       simp
-    rw [this, card_empty, Nat.cast_zero]
-    exact cmul_nonneg (fun _ _ => le_rfl) n
+    simp_all
   have hp := Nat.minFac_prime h1
   set p := n.minFac with hpdef
   have hpn : p ∣ n := Nat.minFac_dvd n
@@ -188,7 +184,7 @@ theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
   have hidx : ∀ m ∈ factorizationTuples r n, p ∣ m (idx m) := by
     intro m hm
     have hprod := (mem_filter.1 hm).2
-    have : p ∣ ∏ k, m k := hprod ▸ hpn
+    have  := hprod ▸ hpn
     obtain ⟨k, -, hk⟩ := (Prime.dvd_finsetProd_iff hp.prime _).1 this
     have hne : (univ.filter fun k => p ∣ m k).Nonempty := ⟨k, mem_filter.2 ⟨mem_univ _, hk⟩⟩
     simp only [idx, hne, dite_true]
@@ -226,9 +222,7 @@ theorem card_factorizationTuples_le (r : ℕ) {n : ℕ} (hn : n ≠ 0) :
       have hk'' : p ∣ m' (idx m) := by rw [hidx']; exact hk'
       rw [← Nat.div_mul_cancel hk, ← Nat.div_mul_cancel hk'', this]
     · have := congrFun hupd k
-      have hkk' : k ≠ idx m' := hidx' ▸ hkk
-      rw [Function.update_of_ne hkk, Function.update_of_ne hkk'] at this
-      exact this
+      grind
   have hcard := card_le_card_of_injOn φ (fun m hm => hmaps m hm) hinj
   rw [card_product, card_univ, Fintype.card_fin] at hcard
   have hih := ih n' hn'lt hn'0

@@ -12,7 +12,7 @@ namespace SevenEighths.InverseMoment
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic UniqueFactorizationMonoid IdealMobiusDivisorSum
 
 theorem ideal_coprime_mobius (K P : Ideal ActualEisensteinCubic.O) (hK : K ≠ 0) :
@@ -63,15 +63,13 @@ theorem hybrid_double_mask_mobius
   have hsplit : (if IsCoprime k (P * c) then (1 : ℂ) else 0) =
       (if IsCoprime k P then 1 else 0) * (if IsCoprime k c then 1 else 0) := by
     simp only [IsCoprime.mul_right_iff]
-    by_cases hP : IsCoprime k P <;> by_cases hc : IsCoprime k c <;> simp [hP, hc]
+    by_cases hP : IsCoprime k P <;> by_cases hc : IsCoprime k c <;> simp [hc]
   rw [hsplit, ideal_coprime_mobius k P hk, ideal_coprime_mobius k c hk,
     Finset.sum_mul]
   apply Finset.sum_congr rfl
   intro R hR
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro r hr
-  by_cases hP : R ∣ P <;> by_cases hc : r ∣ c <;> simp [hP, hc]
+  grind
 
 theorem hybrid_column_decomposition
     (n b : Ideal ActualEisensteinCubic.O) (hn : Squarefree n) (hb : b ≠ 0) :
@@ -97,7 +95,7 @@ theorem hybrid_column_decomposition
   obtain ⟨hch, _, hhs⟩ := squarefree_mul_iff.mp (hgh ▸ hg)
   have hmh : IsCoprime m h :=
     (CanonicalQuadraticSieve.gcd_eq_iff_quotient_coprime c n g hc hcn hcg).mp rfl
-  exact ⟨c, m, h, t, hnm, by rw [hbgt, hgh], hcs, hms, hhs, hcm, hch, hmh,
+  exact ⟨c, m, h, t, hnm, by simp_all, hcs, hms, hhs, hcm, hch, hmh,
     QuadraticSquarefreeKernel.squarePart_ne_zero hb⟩
 
 theorem scaled_product_fiber_card
@@ -108,8 +106,7 @@ theorem scaled_product_fiber_card
   · intro p hp
     apply (mem_idealDivisors hJ).mpr
     refine ⟨p.2 * B, ?_⟩
-    rw [← (Finset.mem_filter.mp hp).2]
-    ring
+    grind
   · intro p hp q hq hpq
     have hep := (Finset.mem_filter.mp hp).2
     have heq := (Finset.mem_filter.mp hq).2
@@ -119,7 +116,7 @@ theorem scaled_product_fiber_card
       rw [← hep, hz, mul_zero]
     apply Prod.ext hpq
     apply mul_right_cancel₀ hBm
-    rw [hep, hpq, heq]
+    simp_all
 
 end
 

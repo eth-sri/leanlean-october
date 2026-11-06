@@ -10,7 +10,6 @@ namespace OAI
 
 noncomputable section
 open Filter Asymptotics Set MeasureTheory
-open scoped Topology
 
 namespace SevenEighths.ThetaProduct
 

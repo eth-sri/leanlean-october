@@ -67,7 +67,7 @@ lemma PrimeTwistBound.mono {x A E Cm κ κ' : ℝ} (h : PrimeTwistBound x A E Cm
     (hx : 0 ≤ Real.log x) : PrimeTwistBound x A E Cm κ' :=
   fun H lo hi h1 h2 h3 h4 k hk1 hk2 χ u hu1 hu2 =>
     (h H lo hi h1 h2 h3 h4 k hk1 hk2 χ u hu1 hu2).trans
-      (mul_le_mul_of_nonneg_right hκ (rpow_nonneg hx _))
+      (mul_le_mul_of_nonneg_right hκ (by positivity))
 
 /-- `IntegerKernelBound` is monotone in its constant. -/
 lemma IntegerKernelBound.mono {x Cm κ κ' : ℝ} (h : IntegerKernelBound x Cm κ) (hκ : κ ≤ κ') :
@@ -91,7 +91,7 @@ theorem exists_twoSidedBody (h₂ : TwoSidedCorrelation) (q q₀ c₀ C₀ vlo v
   obtain ⟨Cstar, hC⟩ := h E (max κ₁ κ₂)
   refine ⟨Cstar, ?_⟩
   filter_upwards [hC, hP, hI, eventually_le_log 0] with x hC hP hI hx
-  exact hC (hP.mono (le_max_left _ _) hx) (hI.mono (le_max_right _ _))
+  exact hC (hP.mono (by simp) hx) (hI.mono (by simp))
 
 /-! ### The terms of the signed expansion -/
 
@@ -141,7 +141,7 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
   have hsub : Act ∩ smallGroups x ∪ Act ∩ bigGroups x ⊆ candidateGroups x := by
     rw [hunion]
     exact hAct
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hL1 : 1 ≤ Real.log x := by
     have := Real.log_le_sub_one_of_pos hL
     rw [logLog] at hT
@@ -152,22 +152,22 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
     (disjoint_of_subset_left inter_subset_right (disjoint_of_subset_right inter_subset_right hdisj))
     (by
       exact (pairwiseDisjoint_candidateGroups hL1).subset
-        (by rw [← coe_union]; exact coe_subset.2 hsub))
-    (by simpa [logLog] using hS₁)
+        (by grind))
+    (by simpa)
     (by
       have := (card_le_card (inter_subset_right (s₁ := Act) (s₂ := smallGroups x)))
       have : ((Act ∩ smallGroups x).card : ℝ) ≤ (smallGroups x).card := by exact_mod_cast this
       simp only [one_mul]
       exact this.trans hcs)
-    (by simpa [logLog] using hS₂)
+    (by simpa)
     (by
       have := (card_le_card (inter_subset_right (s₁ := Act) (s₂ := bigGroups x)))
       have : ((Act ∩ bigGroups x).card : ℝ) ≤ (bigGroups x).card := by exact_mod_cast this
       simp only [one_mul]
       exact this.trans hcb)
-    (fun P hP => hmass P (hsub hP))
-    (fun P hP => hsmall P (mem_inter.1 hP).2)
-    (fun P hP => hbig P (mem_inter.1 hP).2)
+    (by grind)
+    (by grind)
+    (by grind)
     (fun P hP => exists_eq_primesIcc_of_mem_bigGroups (mem_inter.1 hP).2)
     (by
       have h1 : (S.card : ℝ) ≤ ((K * inertPerCluster K CN x : ℕ) : ℝ) := by
@@ -175,16 +175,16 @@ theorem abs_twoSidedSum_le {q c₂ c B₀ κ CΦ A Cstar x γ CN : ℝ} {K d j :
         rw [card_product, card_range, card_range] at this
         exact_mod_cast this
       exact h1.trans hcount)
-    (fun i => hexp _ (hS (S.equivFin.symm i).2))
-    (fun i i' hii' => hbdisj _ (hS (S.equivFin.symm i).2) _ (hS (S.equivFin.symm i').2)
+    (fun i => hexp _ (by grind))
+    (fun i i' hii' => hbdisj _ (by grind) _ (by grind)
       fun h => hii' (S.equivFin.symm.injective (Subtype.ext h)))
-    hadm.1 hadm.2 (fun Q => abs_le.2 ⟨by linarith [(hB Q).1], (hB Q).2⟩)
+    hadm.1 hadm.2 (fun Q => abs_le.2 ⟨by grind, (hB Q).2⟩)
     (fun n => by
       rw [proxyCore_stripPrimes]
       intro p hp
       obtain ⟨g, hg, hpg⟩ := mem_biUnion.1 hp
-      exact mem_biUnion.2 ⟨g, hsub hg, hpg⟩)
-    (fun n => ⟨le_min (proxyCore_nonneg hj hγ n) (rpow_nonneg hL.le _), min_le_right _ _⟩)
+      exact mem_biUnion.2 (by grind))
+    (fun n => ⟨le_min (proxyCore_nonneg hj hγ n) (by positivity), min_le_right _ _⟩)
     hcut.1 hcut.2.1 hcut.2.2
   rw [hunion] at h
   exact h

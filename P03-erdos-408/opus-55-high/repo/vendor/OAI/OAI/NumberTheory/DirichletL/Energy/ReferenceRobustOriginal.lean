@@ -8,24 +8,21 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceRobustOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily HeckeDyadic
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError
-open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
+open CenteredMomentEnergyReferenceChild
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
+open CenteredMomentCommonMaskEnergy
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyReferenceRobustDeletedEnergy CenteredMomentEnergyReferenceDeletionEnergy
 open CenteredMomentInductionEnergy
@@ -40,7 +37,7 @@ theorem original_reference_from_low_robust
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D Cweight:ℝ,0<C ∧ 0<D ∧ 0<Cweight ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(Lslot ε κ:ℝ)(η₀:Character)(Q:Ideal O)(K:ℝ),0≤K →
+      ∀(Lslot ε κ:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤K →
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap ε κ Z η₀ Q degree S K →
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
@@ -75,7 +72,7 @@ theorem original_reference_from_low_robust
   obtain ⟨Bslot,hBslot,hslot⟩:=CenteredMomentRayMaskedFloor.slot_coefficient_bounds
     Wslot aslot bslot lo hi haslot hsSlot hcSlot
   obtain ⟨Cweight,hCweight,hweight⟩:=original_energy_weighted_deletion (α:=α)
-    (fun _=>bslot) (fun _=>Bslot) (fun _=>hBslot.le) epsilonDelete hepsilonDelete
+    (fun _=>bslot) (fun _=>Bslot) (by grind) epsilonDelete hepsilonDelete
   obtain ⟨n,T,Dchild,hDc,nlong,Slong,C,D,hC,hD,href⟩:=deleted_energy_from_low_robust (α:=α) M H hH
     Wslot aslot bslot lo hi haslot hsSlot hcSlot
     a b bΦ epsilon xi defect saving Mcap Bmask L ha hlo hhi hbΦ hepsilon hxi hdefect hBmask hL B hB degree S
@@ -94,27 +91,27 @@ theorem original_reference_from_low_robust
   · intro i I hI
     exact (Finset.mem_filter.mp hI).2.1
   · intro i
-    exact Real.rpow_pos_of_pos hZpos _
+    positivity
   · intro i I hI
-    have hpI:Prime I:=(Finset.mem_filter.mp hI).2.1
+    have hpI:=(Finset.mem_filter.mp hI).2.1
     have hh:=(hslot (relativeCharacter M H hH η₀ (θ i)) (Z^(w i)) (σ i) (freq i) 0
-      (Real.rpow_pos_of_pos hZpos _) (hσlo i) (hσhi i) I hpI.ne_zero).1
+      (by positivity) (hσlo i) (hσhi i) I hpI.ne_zero).1
     simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hh
   · intro i I hI hn
-    have hpI:Prime I:=(Finset.mem_filter.mp hI).2.1
+    have hpI:=(Finset.mem_filter.mp hI).2.1
     have hh:=(hslot (relativeCharacter M H hH η₀ (θ i)) (Z^(w i)) (σ i) (freq i) 0
-      (Real.rpow_pos_of_pos hZpos _) (hσlo i) (hσhi i) I hpI.ne_zero).2
+      (by positivity) (hσlo i) (hσhi i) I hpI.ne_zero).2
     apply hh
     simpa only [heightCoefficient,Complex.ofReal_zero,mul_zero,Complex.cpow_zero,mul_one] using hn
-  · exact hp.1
-  · exact hp.2
+  · linarith
+  · linarith
   · have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
-    have hLpos:0≤L:=by linarith [s.width_nonneg]
+    have hLpos:0≤L:=by linarith
     have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
     positivity
   · norm_num
   · intro D₁ hD₁ D₂ hD₂ J hJ
-    simpa only [Real.rpow_zero,mul_one] using hZ.2 Lslot ε κ η₀ Q K hK hlow
+    simpa using hZ.2 Lslot ε κ η₀ Q K hK hlow
       θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ s hQ hs hxiM
       W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hlarge hcap D₁ hD₁ D₂ hD₂ (Finset.univ\J)
 

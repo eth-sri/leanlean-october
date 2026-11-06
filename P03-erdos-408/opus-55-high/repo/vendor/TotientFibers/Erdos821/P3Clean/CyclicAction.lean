@@ -33,7 +33,7 @@ theorem cycleAct_add (e : Equiv.Perm V) (r d : TranslationCycle e) (v : V) :
 theorem cycleAct_step_zsmul (e : Equiv.Perm V) (n : ℤ) :
     cycleAct e (n • cycleStep e) = e ^ n := by
   change ((Additive.toMul (n • cycleStep e)).val : Equiv.Perm V) = e ^ n
-  simp [cycleStep, toMul_zsmul]
+  simp [cycleStep]
 
 theorem weight_perm_zpow (e : Equiv.Perm V) (weight : V → ℝ)
     (h : ∀ v, weight (e v) = weight v) (n : ℤ) (v : V) : weight ((e ^ n) v) = weight v := by
@@ -42,7 +42,7 @@ theorem weight_perm_zpow (e : Equiv.Perm V) (weight : V → ℝ)
     | zero => rfl
     | succ n hn =>
       rw [pow_succ']
-      exact (h _).trans hn
+      simp_all
   have hi (v : V) : weight (e.symm v) = weight v := by
     simpa only [Equiv.apply_symm_apply] using (h (e.symm v)).symm
   have hpi (n : ℕ) (v : V) : weight ((e.symm ^ n) v) = weight v := by
@@ -50,9 +50,9 @@ theorem weight_perm_zpow (e : Equiv.Perm V) (weight : V → ℝ)
     | zero => rfl
     | succ n hn =>
       rw [pow_succ']
-      exact (hi _).trans hn
+      simp_all
   cases n with
-  | ofNat n => change weight ((e ^ n) v) = weight v; exact hp n v
+  | ofNat n => simp_all
   | negSucc n => simpa only [zpow_negSucc, ← inv_pow, Equiv.Perm.inv_def] using hpi (n + 1) v
 
 theorem cycleAct_preserves_weight (e : Equiv.Perm V) (weight : V → ℝ)

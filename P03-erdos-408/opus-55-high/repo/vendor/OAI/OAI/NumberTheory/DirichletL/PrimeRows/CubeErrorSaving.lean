@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralCube
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
@@ -34,7 +33,7 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
         centralCubeIntegral S hS hmax P hPS η u W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a e H‖≤
         C*(η.modulus.absNorm:ℝ)^2*Z^(-saving) := by
   obtain ⟨N,hN⟩ := exists_nat_gt (((17/2:ℝ)+saving)/τ)
-  have hN' : (17/2:ℝ)+saving<τ*N := by exact (div_lt_iff₀ hτ).mp hN |>.trans_eq (mul_comm _ _)
+  have hN' : (17/2:ℝ)+saving<τ*N := (div_lt_iff₀ hτ).mp hN |>.trans_eq (mul_comm _ _)
   obtain ⟨C,hC,hbound⟩ := uniform_original_row_cube_error (ι:=ι) K e he he' S hS hmax hfirst
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N
   refine ⟨C*(b^K)^3,mul_nonneg hC (pow_nonneg (pow_nonneg hb.le _) _),?_⟩
@@ -60,8 +59,7 @@ theorem original_row_cube_arbitrary_saving (K : ℕ) (τ saving b ζ : ℝ)
       exact mul_le_mul (mul_le_mul_of_nonneg_left hcost hC) hscale (by positivity) (by positivity)
     _ = (C*(b^K)^3*(η.modulus.absNorm:ℝ)^2)*(Z^(17/2:ℝ)/height H^N) := by
       have hh : Z^(13/2:ℝ)*Z^(2:ℝ)=Z^(17/2:ℝ) := by rw [←Real.rpow_add hZ0];norm_num
-      rw [←hh]
-      ring
+      grind
     _ ≤ (C*(b^K)^3*(η.modulus.absNorm:ℝ)^2)*(Z^(17/2:ℝ)/Z^(τ*N)) := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       exact div_le_div_of_nonneg_left (Real.rpow_nonneg hZ0.le _) (Real.rpow_pos_of_pos hZ0 _) hden

@@ -7,10 +7,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.InactiveAggregation
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma weighted_finite_row_energy {ι κ : Type*} (L : Finset ι) (rows : Finset κ)
     (w : ι→ℂ) (f : ι→κ→ℂ) :
@@ -34,8 +32,8 @@ lemma weighted_finite_row_energy_uniform {ι κ : Type*} (L : Finset ι) (rows :
   apply (weighted_finite_row_energy L rows w f).trans
   calc
     _ ≤ (∑ i∈L, ‖w i‖)*∑ i∈L, ‖w i‖*B := by
-      apply mul_le_mul_of_nonneg_left _ (Finset.sum_nonneg (fun i hi => norm_nonneg _))
-      exact Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (hf i hi) (norm_nonneg _))
+      apply mul_le_mul_of_nonneg_left _ (by positivity)
+      exact Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (by grind) (norm_nonneg _))
     _ = _ := by rw [← Finset.sum_mul]; ring
 
 end

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogarithmicInput
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.HeckeLogarithmic
 open HeckeFamily HeckeLogarithmicInput
@@ -47,7 +47,7 @@ theorem exists_uniform_polynomial_exponent :
       gcongr
       exact mul_nonneg (by norm_num) uniformConstant_nonneg
     _ = (2*uniformConstant)*complexity η t := by unfold complexity; ring
-    _ ≤ (complexity η t)^M := by simpa only [Real.rpow_one] using hb _ (complexity_ge_exp η t)
+    _ ≤ (complexity η t)^M := by simpa using hb _ (complexity_ge_exp η t)
 
 theorem disk_control_of_euler_log (e A ε : ℝ)
     (he : 0 < e) (he' : e < 1/1000) (hA : 1 ≤ A) (hε : 0 < ε) :
@@ -70,7 +70,7 @@ theorem disk_control_of_euler_log (e A ε : ℝ)
   · intro η hp a t E ha ha' hzero hE hEL hEb
     exact hb a (complexity η t) (regular η) E ((2 : ℂ)+t*Complex.I) ha ha'
       (complexity_ge_exp η t) (regular_disk_differentiable η ha he) hzero
-      (hpoly η hp a e t ha he) hE hEL hEb
+      (by grind) hE hEL hEb
 
 end SevenEighths.HeckeLogarithmic
 

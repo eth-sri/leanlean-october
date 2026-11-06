@@ -11,26 +11,20 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighSource
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open HeckeFamily
+open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentEnergyReferenceState
+open CenteredMomentCommonRadialData
+open CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable (η₀:Character)(θ:α→ RayQuotient.Characters M H)
 variable (W:ℝ→ ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)(haslot:0<aslot)
 variable (hWs:Function.support W⊆Set.Icc aslot bslot)
@@ -63,14 +57,14 @@ lemma balanced_volume_bound (κ Mcap:ℝ)(hZ:1<Z)(hw:∀i,0≤w i)(hκ:3/4≤κ)
     CenteredMomentAmplificationChildInput.volume balancedSource≤Z^Mcap:=by
   rw [balanced_volume]
   have hz:=zero_lt_one.trans hZ
-  have hw0:0≤∑i,w i:=Finset.sum_nonneg (fun i _=>hw i)
+  have hw0:0≤∑i,w i:=Finset.sum_nonneg (by grind)
   have hx (X:ℝ):X≤Z^(length Z X):=by
-    rw [length,Real.rpow_logb hz hZ.ne' (lt_of_lt_of_le zero_lt_one (le_max_left _ _))]
+    rw [length,Real.rpow_logb hz hZ.ne' (by positivity)]
     exact le_max_right _ _
   calc
     _≤(Z^(length Z X₁)*Z^(length Z X₂))*(∏i,Z^(w i)):=by
-      apply mul_le_mul_of_nonneg_right _ (Finset.prod_nonneg (fun _ _=>Real.rpow_nonneg hz.le _))
-      exact mul_le_mul (hx X₁) (hx X₂) hX₂.le (Real.rpow_nonneg hz.le _)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
+      exact mul_le_mul (by grind) (by grind) hX₂.le (by positivity)
     _=Z^(length Z X₁+length Z X₂+∑i,w i):=by
       rw [←Real.rpow_add hz,←Real.rpow_sum_of_pos hz,←Real.rpow_add hz]
     _≤Z^Mcap:=Real.rpow_le_rpow_of_exponent_le hZ.le (by nlinarith)

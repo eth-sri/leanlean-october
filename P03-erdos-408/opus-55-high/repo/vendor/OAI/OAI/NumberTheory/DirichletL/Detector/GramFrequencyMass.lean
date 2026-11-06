@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GramFrequencySummation
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open RayFourExpansion
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-lemma gramFrequency_image_sum (E : Finset GramFrequency) (f : O→ℝ) :
+lemma gramFrequency_image_sum (E : Finset GramFrequency) (f : ActualEisensteinCubic.O→ℝ) :
     (∑k∈E.image Subtype.val,f k)=∑k∈E,f k.val :=
-  Finset.sum_image (fun _ _ _ _ h=>Subtype.val_injective h)
+  by simp
 
 theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
@@ -26,7 +25,7 @@ theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ :
       ∃K : ℝ,0<K ∧ ∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C : SupportedIdeal)(E : Finset GramFrequency),
       (∀k∈E,¬ExceptionalFrequency S hS C k)→
-      ∀(d : O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
+      ∀(d : ActualEisensteinCubic.O)(U : SchwartzMap ℝ ℂ)(v H N : ℝ),0<H→0<N→
         ‖∑k∈E,canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*
           (Ideal.absNorm C.val:ℝ)*N^2*H*
@@ -39,7 +38,7 @@ theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ :
   refine ⟨K*L,mul_pos hK hL,?_⟩
   intro S hS σ C E hE d U v H N hH hN
   have hc := hcount (E.image Subtype.val) H hH (by
-    intro k hk;obtain ⟨j,hj,rfl⟩ := Finset.mem_image.mp hk;exact j.property)
+    intro k hk;obtain ⟨j,hj,rfl⟩ := Finset.mem_image.mp hk;grind)
   rw [gramFrequency_image_sum] at hc
   let V := K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J*(Ideal.absNorm C.val:ℝ)*N^2*
     min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val*H/N)^A)
@@ -50,7 +49,7 @@ theorem canonical_nonexceptional_frequency_sum (A : ℕ) (hA : 2<A) (a₀ b₀ :
       Finset.sum_le_sum (fun k hk=>hblock S hS σ C k (hE k hk) d U v H N hH hN)
     _=V*(∑k∈E,(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ)) := (Finset.mul_sum ..).symm
     _≤V*(L*H) := mul_le_mul_of_nonneg_left hc hV
-    _=_ := by dsimp [V];ring
+    _=_ := by linarith
 
 theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0≤b)
     (hM : 0≤M) (hε : 0<ε) :
@@ -60,7 +59,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
       ∀(U : SchwartzMap ℝ ℂ)(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
       (C : SupportedIdeal)(E : Finset GramFrequency),
       (∀k∈E,ExceptionalFrequency S hS C k)→
-      ∀(d : O)(v H N : ℝ),0<H→0<N→
+      ∀(d : ActualEisensteinCubic.O)(v H N : ℝ),0<H→0<N→
         ‖∑k∈E,canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖≤
         K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2*
           ((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val)^ε*H^(1/6:ℝ) := by
@@ -70,7 +69,7 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
   intro W hcompact hs hW U S hS σ C E hE d v H N hH hN
   have hc := hcount (exceptionalModulus S hS C) (exceptionalModulus_nonzero S hS C)
     (E.image Subtype.val) H hH
-    (by intro k hk;obtain ⟨j,hj,rfl⟩ := Finset.mem_image.mp hk;exact j.property)
+    (by grind)
     (by intro k hk;obtain ⟨j,hj,rfl⟩ := Finset.mem_image.mp hk;exact hE j hj)
   rw [gramFrequency_image_sum,exceptionalModulus_norm,Nat.cast_mul] at hc
   let V := K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(Ideal.absNorm C.val:ℝ)*N^2
@@ -83,13 +82,13 @@ theorem canonical_exceptional_frequency_sum (a b M ε : ℝ) (ha : 0<a) (hb : 0�
     have hpos : 0<1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H := by positivity
     rw [Real.rpow_neg hpos.le,Real.rpow_two,←div_eq_mul_inv]
     apply (le_div_iff₀ (sq_pos_of_pos hpos)).mpr
-    convert hb using 1 ; dsimp [V] ; ring
+    convert hb using 1 ; dsimp ; ring
   calc
     _≤∑k∈E,‖canonicalLatticeBlock S hS σ C k d W U v ((Ideal.absNorm (Ideal.span {k.val}):ℝ)/H) N‖ := norm_sum_le _ _
     _≤∑k∈E,V*(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ) := Finset.sum_le_sum (fun k _=>hp k)
     _=V*(∑k∈E,(1+(Ideal.absNorm (Ideal.span {k.val}):ℝ)/H)^(-2:ℝ)) := (Finset.mul_sum ..).symm
     _≤V*(L*((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm C.val)^ε*H^(1/6:ℝ)) := mul_le_mul_of_nonneg_left hc hV
-    _=_ := by dsimp [V];ring
+    _=_ := by linarith
 
 end SevenEighths.ProbeGramCommon
 end

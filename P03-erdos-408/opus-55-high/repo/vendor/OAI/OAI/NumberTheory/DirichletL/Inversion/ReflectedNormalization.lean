@@ -23,14 +23,14 @@ theorem smallScalar_rpow {Z : ℝ} (hZ : 1 ≤ Z) (d : ℝ) :
   rw [← Real.rpow_mul hZ0.le]
   by_cases hd : 0 ≤ d
   · rw [max_eq_right hd, min_eq_right]
-    · congr 1; ring
+    · ring
     · calc
         Z ^ (-d * (1/4:ℝ)) ≤ Z ^ (0:ℝ) := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
         _ = 1 := Real.rpow_zero _
   · have hd' : d ≤ 0 := le_of_not_ge hd
     rw [max_eq_left hd', neg_zero, zero_div, Real.rpow_zero, min_eq_left]
     calc
-      1 = Z ^ (0:ℝ) := (Real.rpow_zero _).symm
+      1 = Z ^ (0:ℝ) := by simp
       _ ≤ Z ^ (-d*(1/4:ℝ)) := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
 theorem outsideScalar_square {Z : ℝ} (hZ : 1 ≤ Z) (v ell el S₀ B₀ Td : ℝ) :
@@ -40,7 +40,6 @@ theorem outsideScalar_square {Z : ℝ} (hZ : 1 ≤ Z) (v ell el S₀ B₀ Td : �
   unfold outsideScalar
   rw [show v+3*ell+el-Td = -(Td-v-3*ell-el) by ring, smallScalar_rpow hZ,
     ← Real.rpow_add hZ0, ← Real.rpow_mul_natCast hZ0.le]
-  congr 1
   ring
 
 theorem row_shape {Z : ℝ} (hZ : 1 ≤ Z) (H v ell : ℝ) :
@@ -89,7 +88,7 @@ theorem normalized_hybrid_shape {Z : ℝ} (hZ : 1 ≤ Z)
     _ ≤ (outsideScalar Z v ell el S₀ B₀ Td)^2 *
         (Z^H*Z^v*Z^ell*Z^za)^ε * Z^ell *
         ((2*Z^(max H (v+ell)))*(3*Z^(v+za-hybridSaving v za))) := by
-      nlinarith only [hh]
+      linarith
     _ = 6*Z^(reflectedExponent 0 H S₀ B₀ za v ell el Td + ε*(H+v+ell+za)) := by
       rw [outsideScalar_square hZ,hp]
       calc

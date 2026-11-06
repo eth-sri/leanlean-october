@@ -9,19 +9,18 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalRowCompletion CanonicalQuadraticSieve
+open ConcretePrimeRowBridge ProbePhase
 
-def reciprocityCoefficient (A s : O) (hA : A≠0) (H : O) : ℂ :=
+def reciprocityCoefficient (A s : ActualEisensteinCubic.O) (hA : A≠0) (H : ActualEisensteinCubic.O) : ℂ :=
   reciprocitySign A s * bareCongruenceCoefficient A s hA H
 
-theorem reciprocityCoefficient_product (A B s r : O)
+theorem reciprocityCoefficient_product (A B s r : ActualEisensteinCubic.O)
     (hA : Supported (Ideal.span {A})) (hB : Supported (Ideal.span {B}))
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
     (hpA : goodLambda^2∣A-1) (hpB : goodLambda^2∣B-1)
     (hps : goodLambda^2∣s-1) (hpr : goodLambda^2∣r-1)
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+    (hcop : IsCoprime (A*s) (B*r)) (H : ActualEisensteinCubic.O) :
     reciprocityCoefficient (A*B) (s*r)
       (mul_ne_zero (supportedElement_ne_zero A hA) (supportedElement_ne_zero B hB)) H =
       (idealRowHom B (Ideal.span {A}) * idealRowHom A (Ideal.span {B})) *
@@ -55,12 +54,7 @@ theorem reciprocityCoefficient_product (A B s r : O)
   unfold reciprocityCoefficient
   rw [bareCongruenceCoefficient_product_reduced A B s r (supportedElement_ne_zero A hA)
     (supportedElement_ne_zero B hB) hs hr hcop H, hratio]
-  calc
-    _ = (reciprocitySign (A*B) (s*r) * reciprocitySign A r * reciprocitySign B s) *
-        (idealRowHom B (Ideal.span {A}) * idealRowHom A (Ideal.span {B})) *
-        bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H *
-        bareCongruenceCoefficient B r (supportedElement_ne_zero B hB) H := by ring
-    _ = _ := by rw [hsign]; ring
+  grind
 
 end SevenEighths.ProbePhysical
 end

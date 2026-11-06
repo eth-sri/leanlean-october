@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.CleanCoefficients
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -79,21 +78,15 @@ theorem rawClean_summand_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forw
       rw [ite_eq_left hs, ite_eq_left hb, ite_eq_left hv, rawCleanCoefficient_join A n theta forward ν a c b d v u s t hV]
       unfold bigCleanCoefficient
       ring
-    · have hv : ¬ rawEdgeValid A ν forward (joinLabels v u)
-          (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
-          (emptyTransfer (s.1, joinLabels a b, s.2)) := fun h => hb (hr.mp h).2
-      simp only [ite_eq_left hs, ite_eq_right hb, ite_eq_right hv, mul_zero]
-  · have hv : ¬ rawEdgeValid A ν forward (joinLabels v u)
-        (s.1, joinLabels a b, s.2) (t.1, joinLabels c d, t.2)
-        (emptyTransfer (s.1, joinLabels a b, s.2)) := fun h => hs (hr.mp h).1
-    simp only [ite_eq_right hs, ite_eq_right hv, mul_zero]
+    simp_all
+  simp_all
 
 theorem sum_aux_split (f : P.Aux J → ℂ) :
     (∑ u : P.Aux J, f u) = ∑ v : SmallLabels P J, ∑ u : P.BigAux J, f (joinLabels v u) := by
   have h := Equiv.sum_comp (splitLabels P J).symm f
   change (∑ w : SmallLabels P J × P.BigAux J, f (joinLabels w.1 w.2)) = ∑ u : P.Aux J, f u at h
   rw [Fintype.sum_prod_type] at h
-  exact h.symm
+  grind
 
 theorem rawCleanPattern_sum_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
     (ν : Pattern P J F.ell m) (a c : SmallLabels P (J + F.ell))
@@ -110,7 +103,7 @@ theorem rawCleanPattern_sum_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (f
           conditionedPatternEntry A n theta forward ν (smallArrayPrefix J F.ell a) b d s t
       else 0 := by
   rw [Finset.mul_sum, sum_aux_split]
-  simp_rw [rawClean_summand_split A n theta forward ν a c b d _ _ s t (fun g => (hV g).le)]
+  simp_rw [rawClean_summand_split A n theta forward ν a c b d _ _ s t (fun g => by grind)]
   by_cases hs : smallCleanGate J F.ell a c s t
   · simp only [ite_eq_left hs]
     rw [Finset.sum_comm]
@@ -119,17 +112,15 @@ theorem rawCleanPattern_sum_split (A : Model F P J m) (n : ℕ) (theta : ℝ) (f
     apply Finset.sum_congr rfl
     intro u _
     have hsmall : (∑ v : SmallLabels P J, (smallAuxMass v : ℂ)) = 1 := by
-      exact_mod_cast smallAuxMass_sum J (fun g => (hV g).ne')
+      exact_mod_cast smallAuxMass_sum J (fun g => by grind)
     calc
       _ = (∑ v : SmallLabels P J, (smallAuxMass v : ℂ)) *
           ((star (physicalSmallCoefficient F P J s.1) * physicalSmallCoefficient F P J t.1) *
             (if bigCleanGate A ν forward (smallArrayPrefix J F.ell a) b d u s t then
               bigCleanCoefficient A n theta forward ν (smallArrayPrefix J F.ell a) b d u else 0)) := by
         rw [Finset.sum_mul]
-        apply Finset.sum_congr rfl
-        intro v _
-        ring
-      _ = _ := by rw [hsmall, one_mul]
+        grind
+      _ = _ := by grind
   · simp only [ite_eq_right hs, Finset.sum_const_zero]
 
 theorem rawCleanKernel_coordinates (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
@@ -149,7 +140,7 @@ theorem rawCleanKernel_coordinates (A : Model F P J m) (n : ℕ) (theta : ℝ) (
   · simp only [ite_eq_left hs]
     rw [← Finset.mul_sum]
     rfl
-  · simp only [ite_eq_right hs, Finset.sum_const_zero]
+  simp_all
 
 
 end Erdos821.P3Clean

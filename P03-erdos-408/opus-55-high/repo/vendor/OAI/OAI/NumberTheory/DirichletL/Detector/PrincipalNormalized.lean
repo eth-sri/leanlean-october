@@ -9,10 +9,10 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolThresholds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Complex Filter
 namespace SevenEighths.ProbePrincipalNormalized
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
+open HeckeFamily ProbePhysical CompletedGauss
 open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
 local notation "Id" => Ideal HeckeFamily.O
 
@@ -20,7 +20,7 @@ lemma normalized_error (A R F N : ℂ) (c d v : ℝ)
     (hc : 0≤c) (hA : ‖A-R‖≤c) (hN : ‖N⁻¹‖≤v)
     (hR : ‖R/N-F‖≤d) : ‖A/N-F‖≤c*v+d := by
   calc
-    _ = ‖(A-R)*N⁻¹+(R/N-F)‖ := by congr 1; simp only [div_eq_mul_inv];ring
+    _ = ‖(A-R)*N⁻¹+(R/N-F)‖ := by ring
     _ ≤ ‖(A-R)*N⁻¹‖+‖R/N-F‖ := norm_add_le _ _
     _ ≤ c*v+d := by rw [norm_mul];gcongr
 
@@ -60,7 +60,7 @@ theorem actual_ray_principal_comparison {K : ℕ}
   obtain ⟨D,hD,hres⟩ := normalized_actual_window_residue S hS η ha ha2 (by linarith) (Finset.univ : Finset (Fin K))
   let cs := sourceResidueConstant W0 W1 (∏p∈S,p)
   let C := C0/e*‖cs⁻¹‖+D*c^(-(7/8:ℝ))+1
-  refine ⟨C,by dsimp [C];positivity,?_⟩
+  refine ⟨C,by positivity,?_⟩
   have hpos (j : Fin K) : tsupport (W j)⊆Set.Ioi 0 := by
     apply subset_trans (closure_minimal (Set.Subset.trans (hsupp j) Set.Ioo_subset_Icc_self) isClosed_Icc)
     intro y hy; exact lt_of_lt_of_le hc hy.1
@@ -88,7 +88,7 @@ theorem actual_ray_principal_comparison {K : ℕ}
     simpa only [hsum,Real.norm_eq_abs,mul_comm] using mul_le_mul_of_nonneg_left hmass.2 (norm_nonneg cs⁻¹)
   have hh := normalized_error _ _ _ normer _ _ _ (by positivity) hraw hinv hr.2.2
   have hpw : (c*Z^ellMin)^(-(7/8:ℝ))=c^(-(7/8:ℝ))*Z^(-(7/8:ℝ)*ellMin) := by
-    rw [Real.mul_rpow hc.le (Real.rpow_nonneg hZ0.le _),←Real.rpow_mul hZ0.le]
+    rw [Real.mul_rpow hc.le (by positivity),←Real.rpow_mul hZ0.le]
     congr 2;ring
   have heq1 : (C0/e*Z^(HeckeZeroSupremum.beta-11/16-17/48000))*(‖cs⁻¹‖*Z^nu)=
       (C0/e*‖cs⁻¹‖)*Z^(HeckeZeroSupremum.beta-11/16-17/48000+nu) := by

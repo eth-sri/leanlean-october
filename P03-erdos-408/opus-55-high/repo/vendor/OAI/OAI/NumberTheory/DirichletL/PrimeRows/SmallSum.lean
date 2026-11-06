@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 
 lemma small_dyadic_square_sum : ∃C : ℝ,0<C ∧ ∀H : ℝ,0<H → ∀F : Finset ℕ,

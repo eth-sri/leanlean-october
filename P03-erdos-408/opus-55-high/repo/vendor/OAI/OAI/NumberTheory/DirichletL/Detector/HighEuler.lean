@@ -9,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.Detector.IdealLocalEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-lemma bareIdealHighSummand_support (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+lemma bareIdealHighSummand_support (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ)
     (I J K L : Id) (h : bareIdealHighSummand η u x w z I J K L≠0) :
     highSupport I J K L := by
   by_contra hn

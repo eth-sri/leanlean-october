@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.GramTruncation
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve RayFourExpansion
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem original_source_truncation_bound (δ ε : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     (hε : 0<ε) (hε1 : ε<1/6) (a b M₀ : ℝ) (ha : 0<a) (hab : a<b) (hM₀ : 0≤M₀)
@@ -42,7 +41,7 @@ theorem original_source_truncation_bound (δ ε : ℝ) (hδ : 0<δ) (hδ1 : δ<1
     (by intro C hC D hD k hk;exact (Finset.mem_filter.mp hk).2)
     U v (Y^2/Q) Y Q (by positivity) hY hQ.le
   rw [sourceTruncation_eq_canonical S hS hbad σ F E W hcompact Y Q hY hQ U v,sourceCanonicalSum_split]
-  exact (norm_add_le _ _).trans ((add_le_add hb hg).trans_eq (add_comm _ _))
+  exact (norm_add_le _ _).trans ((add_le_add hb hg).trans_eq (by linarith))
 
 end SevenEighths.ProbeGramCommon
 end

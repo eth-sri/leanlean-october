@@ -9,19 +9,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstSectorTailAggr
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
-open CenteredMomentSourceZeroEnergy CenteredMomentSourceLiveColumn CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceProfileMassUniform CenteredMomentSourceProfileMass
-open CenteredMomentSupportedTailAggregate CenteredMomentSectorLocalization
-open CenteredMomentExceptionalAmplitudePair CenteredMomentNaturalRadialCutoff
-open CenteredMomentSourceInputTailUniform CenteredMomentFirstTailAggregate
+open HeckeFamily CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+open CenteredMomentSectorLocalization
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSourceInputTailUniform
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -32,7 +29,7 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K Tsec:ℝ),
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K Tsec:ℝ),
       0<K→volume s.toData≤Z^B→Tsec≤Z^B→(volume s.toData)^2/K≤Tsec→
       ‖CenteredMomentFirstSectorLocalization.discardedEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K (volume s.toData) Z ξ‖/volume s.toData≤
@@ -40,15 +37,15 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
   obtain ⟨Adec,hdecay⟩:=choose_first_tail_order B ξ saving hB hξ
   obtain ⟨SΦ,Ctail,hCtail,htail⟩:=local_discarded_energy_bound Adec 1 zero_lt_one
   let Cmass:=1+2*128^(Fintype.card ι+2)*(∏i,hi i)*whi^2
-  have hprodhi:0≤∏i,hi i:=Finset.prod_nonneg (fun i _=>hhi i)
+  have hprodhi:0≤∏i,hi i:=Finset.prod_nonneg (by grind)
   have hCmass:0<Cmass:=by dsimp [Cmass];positivity
   let HN:=Real.log (max 1 ((∏i,hi i)*whi^2))
   have hexp:(∏i,hi i)*whi^2≤Real.exp HN:=by
     dsimp [HN]
-    rw [Real.exp_log (zero_lt_one.trans_le (le_max_left _ _))]
+    rw [Real.exp_log (by positivity)]
     exact le_max_right _ _
   let C:=Cmass^2*Ctail*(Real.exp HN)*(1+Real.exp (2*HN))^2
-  refine ⟨SΦ,C,by dsimp [C];positivity,?_⟩
+  refine ⟨SΦ,C,by positivity,?_⟩
   filter_upwards [eventually_tail_threshold HN ξ hξ] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K Tsec hK hVcap hTcap hnom
@@ -64,15 +61,15 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
     apply mul_le_mul_of_nonneg_right _ hcontrol
     dsimp [Cmass]
     linarith
-  have hn (I:Ideal O)(_hI:I∈finiteColumns (Fintype.piFinset s.pools))
+  have hn (I:Ideal HeckeFamily.O)(_hI:I∈finiteColumns (Fintype.piFinset s.pools))
       (hI:coefficient s R seed I≠0):(Ideal.absNorm I:ℝ)≤Real.exp HN*V:=
     (input_column_bound hi whi s W₁ W₂ wlo hwlo he₁ he₂ hs₁ hs₂ hshi R seed I hI).trans
       (mul_le_mul_of_nonneg_right hexp hV.le)
   have ht:=htail s.η m A s.t (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed)
     Φ K V HN Tsec Z 1 ξ hK hV hZ.1 le_rfl hn
-    hnom (by simpa using hZ.2)
+    hnom (by linarith)
   simp only [Real.rpow_one] at ht
-  have hsquare:=pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _=>norm_nonneg _)) hm 2
+  have hsquare:=pow_le_pow_left₀ (by positivity) hm 2
   have hp:0<min 1 (kernelReference Tsec HN):=lt_min zero_lt_one (kernelReference_pos _ _ hT)
   have hzpos:0<Z:=zero_lt_one.trans hZ.1
   have hzpower:0<Z^(ξ/4):=Real.rpow_pos_of_pos hzpos _
@@ -87,17 +84,17 @@ theorem local_input_tail_arbitrary_saving (hi:ι→ℝ)(wlo whi B ξ saving:ℝ)
       apply div_le_div_of_nonneg_right _ hden.le
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact (mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_right hsquare (mul_nonneg (Real.exp_pos HN).le hV.le)) hK.le).trans_eq
+        (mul_le_mul_of_nonneg_right hsquare (by positivity)) hK.le).trans_eq
         (by ring)
     _=(Cmass^2*Ctail*(Real.exp HN)*(plainControl s W₁ W₂)^2*
         SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K)*
         (V^2*((min 1 (kernelReference Tsec HN))^2)⁻¹*((1+Z^(ξ/4))^Adec)⁻¹):=by
-      field_simp [ne_of_gt hV,ne_of_gt hp]
+      field_simp
     _≤(Cmass^2*Ctail*(Real.exp HN)*(plainControl s W₁ W₂)^2*
         SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K)*
         ((1+Real.exp (2*HN))^2*Z^(-saving)):=
       mul_le_mul_of_nonneg_left hb (by positivity)
-    _=_:=by dsimp [C];ring
+    _=_:=by linarith
 
 end SevenEighths.CenteredMomentSourceInputFirstSectorTail
 

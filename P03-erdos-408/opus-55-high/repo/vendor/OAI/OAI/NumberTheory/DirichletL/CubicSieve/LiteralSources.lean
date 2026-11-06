@@ -8,33 +8,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,40 +29,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open JointLogSeparation (frequencyTwist)
 
 section
@@ -91,14 +69,14 @@ end SecondPassArithmetic
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+open scoped Classical MatrixGroups Matrix Pointwise
 
 local notation "O" => ActualEisensteinCubic.O
 
 lemma complex_norm_mul_add_sq (a b c d : ℂ) :
     ‖a*c+b*d‖^2≤(‖a‖^2+‖b‖^2)*(‖c‖^2+‖d‖^2) := by
   have ht : ‖a*c+b*d‖≤‖a‖*‖c‖+‖b‖*‖d‖ := by simpa only [norm_mul] using norm_add_le (a*c) (b*d)
-  have hs := pow_le_pow_left₀ (norm_nonneg (a*c+b*d)) ht 2
+  have hs := pow_le_pow_left₀ (by positivity) ht 2
   nlinarith only [hs,sq_nonneg (‖a‖*‖d‖-‖b‖*‖c‖)]
 
 lemma matrixFrobenius_nonneg (g : SL(2,ℂ)) : 0≤matrixFrobenius g := by
@@ -110,7 +88,7 @@ lemma matrixFrobenius_mul_le (g h : SL(2,ℂ)) :
   have hb (i j : Fin 2) := complex_norm_mul_add_sq (g i 0) (g i 1) (h 0 j) (h 1 j)
   simp only [matrixFrobenius,rowEnergy,complexMatrixRow,Matrix.SpecialLinearGroup.coe_mul,
     Matrix.mul_apply,Fin.sum_univ_two]
-  nlinarith only [hb 0 0,hb 0 1,hb 1 0,hb 1 1]
+  grind
 
 lemma matrixFrobenius_inv (g : SL(2,ℂ)) : matrixFrobenius g⁻¹=matrixFrobenius g := by
   rw [Matrix.SpecialLinearGroup.SL2_inv_expl]
@@ -159,7 +137,7 @@ instance integralSubgroupProperlyDiscontinuous (H : Subgroup (SL(2,O))) :
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise
+open scoped Classical MatrixGroups Pointwise
 
 namespace CubicEisenstein
 
@@ -238,7 +216,7 @@ lemma kernelQuotient_localHomeomorph : IsLocalHomeomorph (integralOrbitProjectio
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal
+open scoped Classical MatrixGroups Pointwise ENNReal
 
 lemma integralOrbitProjection_preimage_image (H : Subgroup (SL(2,ActualEisensteinCubic.O)))
     (S : Set HyperbolicSpace) :
@@ -260,7 +238,7 @@ lemma kernelProjection_translates_disjoint (S : Set HyperbolicSpace)
   intro M N hMN
   apply Set.disjoint_left.mpr
   rintro _ ⟨w,hw,rfl⟩ ⟨u,hu,he⟩
-  have hwu : w=u := hS hw hu (by
+  have hwu := hS hw hu (by
     calc
       integralOrbitProjection globalKubotaKernel w=
           integralOrbitProjection globalKubotaKernel (M • w) := (integralOrbitProjection_eq _ M w).symm
@@ -299,26 +277,23 @@ theorem kernelProjection_measurePreserving_on (U : Set HyperbolicSpace) (hU : Me
       integralOrbitProjection globalKubotaKernel '' (integralOrbitProjection globalKubotaKernel ⁻¹' B∩U) := by
     ext q
     constructor
-    · rintro ⟨hq,w,hw,rfl⟩
-      exact ⟨w,⟨hq,hw⟩,rfl⟩
-    · rintro ⟨w,⟨hw,hu⟩,rfl⟩
-      exact ⟨hw,⟨w,hu,rfl⟩⟩
+    · grind
+    · grind
   rw [hset,kernelProjection_measure_image _ (((measurable_integralOrbitProjection _) hB).inter hU)
     (hinj.mono Set.inter_subset_right)]
 
 theorem kernelL2_continuous_compact_approx (f : KernelQuotientL2) (ε : ℝ≥0∞) (hε : ε≠0) :
     ∃g : IntegralOrbitQuotient globalKubotaKernel → ℂ,
       HasCompactSupport g ∧ eLpNorm ((f : _ → ℂ)-g) 2 (integralQuotientVolume globalKubotaKernel)≤ε ∧
-      Continuous g ∧ MemLp g 2 (integralQuotientVolume globalKubotaKernel) := by
-  exact (Lp.memLp f).exists_hasCompactSupport_eLpNorm_sub_le (by norm_num) hε
+      Continuous g ∧ MemLp g 2 (integralQuotientVolume globalKubotaKernel) :=
+  (Lp.memLp f).exists_hasCompactSupport_eLpNorm_sub_le (by norm_num) hε
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog b0Label)
 
 @[ext] structure GlobalFirstData (ι : Type*) where
@@ -354,7 +329,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)

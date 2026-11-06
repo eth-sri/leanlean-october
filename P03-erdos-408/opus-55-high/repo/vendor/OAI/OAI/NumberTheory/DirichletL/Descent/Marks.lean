@@ -10,7 +10,6 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-open scoped BigOperators
 
 noncomputable section
 
@@ -30,16 +29,14 @@ omit [DecidableEq σ] in
 theorem primeMark_eq_tuple_sum (I : Finset σ) (L : σ → Finset ι)
     (a : σ → ι → ℂ) (A : Finset ι) :
     primeMark I L a A = ∑ p ∈ I.pi L,
-      ∏ i ∈ I.attach, if p i.1 i.2 ∈ A then a i.1 (p i.1 i.2) else 0 := by
-  exact Finset.prod_sum I L (fun i p => if p ∈ A then a i p else 0)
+      ∏ i ∈ I.attach, if p i.1 i.2 ∈ A then a i.1 (p i.1 i.2) else 0 :=
+  Finset.prod_sum I L (fun i p => if p ∈ A then a i p else 0)
 
 theorem primeSlot_priority (L A B : Finset ι) (a : ι → ℂ) :
     primeSlot L a (A ∪ B) = primeSlot L a A + primeSlot L a (B \ A) := by
   unfold primeSlot
   rw [← Finset.sum_add_distrib]
-  apply Finset.sum_congr rfl
-  intro p hp
-  by_cases hA : p ∈ A <;> by_cases hB : p ∈ B <;> simp [hA, hB]
+  grind
 
 theorem primeMark_priority (I : Finset σ) (L : σ → Finset ι)
     (a : σ → ι → ℂ) (A B : Finset ι) :
@@ -53,9 +50,7 @@ theorem primeSlot_residual_list (L A B : Finset ι) (a : ι → ℂ) :
     primeSlot L a (B \ A) = primeSlot (L \ A) a B := by
   simp only [primeSlot, Finset.sum_ite_mem]
   congr 1
-  ext p
-  simp only [Finset.mem_inter, Finset.mem_sdiff]
-  tauto
+  grind
 
 omit [DecidableEq σ] in
 theorem primeMark_residual_lists (I : Finset σ) (L : σ → Finset ι)
@@ -73,7 +68,7 @@ theorem primeSlot_norm_le (L A : Finset ι) (a : ι → ℂ)
   apply (norm_sum_le _ _).trans
   calc
     ∑ p ∈ L ∩ A, ‖a p‖ ≤ ∑ p ∈ L ∩ A, (1 : ℝ) :=
-      Finset.sum_le_sum fun p hp => ha p (Finset.mem_inter.mp hp).1
+      Finset.sum_le_sum (by grind)
     _ = _ := by simp
 
 omit [DecidableEq σ] in
@@ -90,15 +85,15 @@ theorem primeMark_norm_le_divisor_count (I : Finset σ) (L : σ → Finset ι)
     apply Finset.card_le_card
     intro p hp
     obtain ⟨i, hi, hp⟩ := Finset.mem_biUnion.mp hp
-    exact (Finset.mem_inter.mp hp).2
+    exact by grind
   calc
-    ‖primeMark I L a A‖ = ∏ i ∈ I, ‖primeSlot (L i) (a i) A‖ := by
-      exact norm_prod _ _
-    _ ≤ ∏ i ∈ I, ((L i ∩ A).card : ℝ) := by
-      exact Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
-        (fun i hi => primeSlot_norm_le _ _ _ (ha i hi))
+    ‖primeMark I L a A‖ = ∏ i ∈ I, ‖primeSlot (L i) (a i) A‖ :=
+      norm_prod _ _
+    _ ≤ ∏ i ∈ I, ((L i ∩ A).card : ℝ) :=
+      Finset.prod_le_prod₀ (by simp)
+        (fun i hi => primeSlot_norm_le _ _ _ (by grind))
     _ ≤ ∏ i ∈ I, (2 : ℝ) ^ (L i ∩ A).card := by
-      apply Finset.prod_le_prod₀ (fun i _ => Nat.cast_nonneg _)
+      apply Finset.prod_le_prod₀ (by simp)
       intro i hi
       exact_mod_cast (Nat.le_of_lt (L i ∩ A).card.lt_two_pow_self)
     _ = (2 : ℝ) ^ (∑ i ∈ I, (L i ∩ A).card) :=

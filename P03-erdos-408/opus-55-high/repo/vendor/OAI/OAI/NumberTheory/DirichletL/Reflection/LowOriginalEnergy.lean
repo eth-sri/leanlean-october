@@ -13,32 +13,31 @@ public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCellArithmetic
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
-theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
-    (F : Ideal Eis) (hF : Squarefree F) (m : Eis) (hm : m≠0)
-    (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:Eis)∣m)
-    (hperiod : Q*Ideal.span {(72:Eis)}∣Ideal.span {m})
+theorem low_original_completed_energy (Q : Ideal ActualEisensteinCubic.O) (hQ : Q≠0)
+    (F : Ideal ActualEisensteinCubic.O) (hF : Squarefree F) (m : ActualEisensteinCubic.O) (hm : m≠0)
+    (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+    (hperiod : Q*Ideal.span {(72:ActualEisensteinCubic.O)}∣Ideal.span {m})
     (hbad : ∀ P∈fixedBadPrimes,P∣Ideal.span {m}*F)
     (lo hi : ℝ) (hlo : 0<lo)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) (rmax : ℕ) :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (Z d ell0 shift : ℝ), Z₀≤Z → 0≤d → d≤1/6 → 0≤ell0 → ell0≤1/6-d+η → |shift|≤η →
-    ∀ (parents : Finset (Ideal Eis)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d)) →
-      Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ),
+    ∀ (parents : Finset (Ideal ActualEisensteinCubic.O)),(∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d)) →
+      Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (H : σ→ℝ),
       Pairwise (fun i j => Disjoint (lists i) (lists j)) →
       (∀ i,∀ P∈lists i,P.IsMaximal) →
       (∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P) →
       (∀ i,∀ P∈lists i,Prime P) →
-      (∀ i,∀ P∈lists i,ringChar (Eis⧸P)≠2) →
+      (∀ i,∀ P∈lists i,ringChar (ActualEisensteinCubic.O⧸P)≠2) →
       (∀ i,1≤H i) → (∀ i,∀ P∈lists i,(Ideal.absNorm P:ℝ)≤H i) → (∏ i,H i)≤Z^ell0 →
-    ∀ (Ψ : Eis→*ℂ),(∀ n,‖Ψ n‖≤1) → CanonicalCoefficientClass.FactorsModulo Q Ψ →
-    ∀ (u : Eisˣ) (θ : ℝ) (w : ∀ i,lists i→ℂ),(∀ i P,‖w i P‖≤1) →
+    ∀ (Ψ : ActualEisensteinCubic.O→*ℂ),(∀ n,‖Ψ n‖≤1) → CanonicalCoefficientClass.FactorsModulo Q Ψ →
+    ∀ (u : ActualEisensteinCubic.Oˣ) (θ : ℝ) (w : ∀ i,lists i→ℂ),(∀ i P,‖w i P‖≤1) →
       (∑ I∈parents,
         ‖∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
           (rowTwist Ψ m (ConcretePrimeRowBridge.idealGenerator F)
@@ -54,7 +53,7 @@ theorem low_original_completed_energy (Q : Ideal Eis) (hQ : Q≠0)
   let lists' := punctureLists lists S
   have hsub (i : σ) : lists' i⊆lists i := Finset.filter_subset _ _
   let w' : ∀ i,lists' i→ℂ := fun i P => w i ⟨P.val,hsub i P.property⟩
-  have hLP (i : σ) (P : Ideal Eis) (hP : P∈lists' i) : IsCoprime (Q*Ideal.span {(72:Eis)}) P := by
+  have hLP (i : σ) (P : Ideal ActualEisensteinCubic.O) (hP : P∈lists' i) : IsCoprime (Q*Ideal.span {(72:ActualEisensteinCubic.O)}) P := by
     apply puncture_period_coprime _ m hperiod P (hmax i P (hsub i hP))
     intro hmP
     exact (Finset.mem_filter.mp hP).2 ((actualPuncturePrimes_mem lists m i P (hsub i hP)).mpr hmP)

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open scoped Classical
+open SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 omit [DecidableEq ι] in
@@ -54,7 +53,7 @@ theorem sum_attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSourc
     obtain ⟨z,hz,he⟩ := Finset.mem_image.mp hy
     exact hab (congrArg secondParentOf he).symm
 
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -72,13 +71,13 @@ theorem attached_family_conditions {Jo : ℕ} (parents : Finset (SecondParentSou
   have h (x : MarkedSecondSource ι Jo 0) (hx : x∈attachedSecondFamily parents source) :=
     (mem_attachedSecondFamily parents source x).mp hx
   constructor
-  · intro x hx; exact ha (secondParentOf x) (h x hx).1
-  · intro x hx; exact hC (secondParentOf x) (h x hx).1
-  · intro x hx; exact hD (secondParentOf x) (h x hx).1
-  · intro x hx; exact hE (secondParentOf x) (h x hx).1 x.second (h x hx).2
-  · intro x hx i; exact hold (secondParentOf x) (h x hx).1 i
-  · intro x hx i; exact Fin.elim0 i
-  · intro x hx; exact hq (secondParentOf x) (h x hx).1
+  · intro x hx; exact ha (secondParentOf x) (by grind)
+  · intro x hx; exact hC (secondParentOf x) (by grind)
+  · intro x hx; exact hD (secondParentOf x) (by grind)
+  · grind
+  · intro x hx i; exact hold (secondParentOf x) (by grind) i
+  · simp
+  · intro x hx; exact hq (secondParentOf x) (by grind)
 
 end
 end SevenEighths.InverseMoment

@@ -8,76 +8,74 @@ public import OAI.NumberTheory.DirichletL.Moments.RankinRadical
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFixedQForcingCount
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
 open CenteredMomentForcing CenteredMomentChildRows CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCount CenteredMomentCanonicalFirst
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSupport
 open CenteredMomentSourceRow
-open UniqueFactorizationMonoid IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
+open UniqueFactorizationMonoid
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-def goodSet (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
+def goodSet (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
   (forcingSet c d V).filter (fun i => IsCoprime Q (P i))
 
-def excludedSet (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
+def excludedSet (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (c d : ι → ℕ) (V : Finset ι) : Finset ι :=
   (forcingSet c d V).filter (fun i => ¬IsCoprime Q (P i))
 
-def goodIdeal (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Ideal O :=
+def goodIdeal (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (c d : ι → ℕ) (V : Finset ι) : Ideal ActualEisensteinCubic.O :=
   ∏ i ∈ goodSet Q P c d V, P i
 
-def excludedIdeal (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) : Ideal O :=
+def excludedIdeal (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (c d : ι → ℕ) (V : Finset ι) : Ideal ActualEisensteinCubic.O :=
   ∏ i ∈ excludedSet Q P c d V, P i
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma prime_product_squarefree (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+lemma prime_product_squarefree (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i))
     (hinj : Function.Injective P) (S : Finset ι) : Squarefree (∏ i ∈ S, P i) := by
   simpa [forcingIdeal, forcingSet] using
     forcingIdeal_squarefree P hp hinj (fun _ => 1) (fun _ => 1) S
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma prime_product_mem (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
-    (S : Finset ι) (R : Ideal O) (hR : R ∈ normalizedFactors (∏ i ∈ S, P i)) :
+lemma prime_product_mem (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i))
+    (S : Finset ι) (R : Ideal ActualEisensteinCubic.O) (hR : R ∈ normalizedFactors (∏ i ∈ S, P i)) :
     ∃ i ∈ S, R = P i := by
   simpa [forcingIdeal, forcingSet] using
     forcing_prime_mem P hp (fun _ => 1) (fun _ => 1) S R (by
       simpa [forcingIdeal, forcingSet] using hR)
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma goodIdeal_squarefree (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+lemma goodIdeal_squarefree (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i))
     (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) :
     Squarefree (goodIdeal Q P c d V) :=
   prime_product_squarefree P hp hinj _
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma goodIdeal_ne_zero (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+lemma goodIdeal_ne_zero (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i))
     (c d : ι → ℕ) (V : Finset ι) : goodIdeal Q P c d V ≠ 0 :=
   Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
 
-lemma good_valuation_two (Q : Ideal O) (P : ι → Ideal O) (hp : ∀ i, Prime (P i))
+lemma good_valuation_two (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i))
     (hinj : Function.Injective P) (c d : ι → ℕ) (V : Finset ι) (i : ι)
     (hi : i ∈ goodSet Q P c d V) :
     CenteredExceptionalCount.valuation (movingIdeal P c d V) (P i) = 2 :=
   forcing_valuation_two P hp hinj c d V i (Finset.mem_filter.mp hi).1
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma forcing_split (Q : Ideal O) (P : ι → Ideal O) (c d : ι → ℕ) (V : Finset ι) :
-    goodIdeal Q P c d V * excludedIdeal Q P c d V = forcingIdeal P c d V := by
-  exact Finset.prod_filter_mul_prod_filter_not _ _ _
+lemma forcing_split (Q : Ideal ActualEisensteinCubic.O) (P : ι → Ideal ActualEisensteinCubic.O) (c d : ι → ℕ) (V : Finset ι) :
+    goodIdeal Q P c d V * excludedIdeal Q P c d V = forcingIdeal P c d V :=
+  Finset.prod_filter_mul_prod_filter_not _ _ _
 
-lemma prime_dvd_of_not_coprime (Q P : Ideal O) (hP : Prime P) (h : ¬IsCoprime Q P) : P ∣ Q := by
+lemma prime_dvd_of_not_coprime (Q P : Ideal ActualEisensteinCubic.O) (hP : Prime P) (h : ¬IsCoprime Q P) : P ∣ Q := by
   let : P.IsMaximal := (Ideal.isPrime_of_prime hP).isMaximal hP.ne_zero
   have hs : Q ⊔ P ≠ ⊤ := by simpa only [Ideal.isCoprime_iff_sup_eq] using h
-  have he : P = Q ⊔ P := Ideal.IsMaximal.eq_of_le inferInstance hs le_sup_right
+  have he := Ideal.IsMaximal.eq_of_le inferInstance hs le_sup_right
   exact Ideal.dvd_iff_le.mpr (le_sup_left.trans_eq he.symm)
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma excludedIdeal_dvd_radical (Q : Ideal O) (hQ : Q ≠ 0)
-    (P : ι → Ideal O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
+lemma excludedIdeal_dvd_radical (Q : Ideal ActualEisensteinCubic.O) (hQ : Q ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
     (c d : ι → ℕ) (V : Finset ι) : excludedIdeal Q P c d V ∣ commonRadical Q Q := by
   apply (CenteredMomentDivisorAllocation.squarefree_dvd_iff _ _
     (prime_product_squarefree P hp hinj _)).mpr
@@ -87,28 +85,28 @@ lemma excludedIdeal_dvd_radical (Q : Ideal O) (hQ : Q ≠ 0)
   have hm : P i ∈ IdealMobiusDivisorSum.primeSupport Q := by
     simpa only [IdealMobiusDivisorSum.primeSupport, Multiset.mem_toFinset, mem_normalizedFactors_iff hQ,
       hp i, true_and] using hd
-  exact Finset.dvd_prod_of_mem id (Finset.mem_inter.mpr ⟨hm,hm⟩)
+  exact Finset.dvd_prod_of_mem id (by grind)
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma forcing_dvd_good_mul_radical (Q : Ideal O) (hQ : Q ≠ 0)
-    (P : ι → Ideal O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
+lemma forcing_dvd_good_mul_radical (Q : Ideal ActualEisensteinCubic.O) (hQ : Q ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
     (c d : ι → ℕ) (V : Finset ι) :
     forcingIdeal P c d V ∣ goodIdeal Q P c d V * commonRadical Q Q := by
   rw [←forcing_split Q P c d V]
   exact mul_dvd_mul_left _ (excludedIdeal_dvd_radical Q hQ P hp hinj c d V)
 
 omit [Fintype ι] [DecidableEq ι] in
-lemma forcing_norm_le (Q : Ideal O) (hQ : Q ≠ 0)
-    (P : ι → Ideal O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
+lemma forcing_norm_le (Q : Ideal ActualEisensteinCubic.O) (hQ : Q ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) (hp : ∀ i, Prime (P i)) (hinj : Function.Injective P)
     (c d : ι → ℕ) (V : Finset ι) :
     (Ideal.absNorm (forcingIdeal P c d V) : ℝ) ≤
       (Ideal.absNorm (goodIdeal Q P c d V) : ℝ) * Ideal.absNorm (commonRadical Q Q) := by
   have hd := map_dvd Ideal.absNorm (forcing_dvd_good_mul_radical Q hQ P hp hinj c d V)
-  have hn : (goodIdeal Q P c d V) * commonRadical Q Q ≠ 0 :=
+  have hn :=
     mul_ne_zero (goodIdeal_ne_zero Q P hp c d V) (commonRadical_ne_zero Q Q)
   have hh := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) hd
   exact_mod_cast (show Ideal.absNorm (forcingIdeal P c d V) ≤
-    Ideal.absNorm (goodIdeal Q P c d V) * Ideal.absNorm (commonRadical Q Q) by simpa using hh)
+    Ideal.absNorm (goodIdeal Q P c d V) * Ideal.absNorm (commonRadical Q Q) by simp_all)
 
 lemma fixed_radical_power_loss (Z M f g r : ℝ) (hZ : 1 < Z)
     (hf : 0 < f) (hg : 0 < g) (hr : 0 < r) (hfg : f ≤ g*r) :
@@ -123,17 +121,17 @@ lemma fixed_radical_power_loss (Z M f g r : ℝ) (hZ : 1 < Z)
     _ = _ := by
       rw [Real.rpow_add hz,Real.rpow_mul hz.le,Real.rpow_logb hz hZ.ne' hr]
 
-theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
+theorem actual_forcing_exceptional_count_fixedQ (p : ι → ActualEisensteinCubic.O)
     (hp : ∀ i, Prime (Ideal.span {p i})) (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (c d : ι → ℕ) (V : Finset ι)
     (η : Character) (χ : RayFourExpansion.RayCharacter)
-    (Q : Ideal O) (hQ0 : Q ≠ 0) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)})
-    (m e : O) (hm : m ≠ 0) (hmLam : goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
-    (he : elementCoeff η e ≠ 0) (rows : Finset O) (hrows : ∀ z ∈ rows, z ≠ 0)
+    (Q : Ideal ActualEisensteinCubic.O) (hQ0 : Q ≠ 0) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : ActualEisensteinCubic.O)})
+    (m e : ActualEisensteinCubic.O) (hm : m ≠ 0) (hmLam : goodLambda ∣ m) (hm2 : (2 : ActualEisensteinCubic.O) ∣ m)
+    (he : elementCoeff η e ≠ 0) (rows : Finset ActualEisensteinCubic.O) (hrows : ∀ z ∈ rows, z ≠ 0)
     (hex : ∀ z ∈ rows, CenteredExceptionalProfile.FixedInducingRow
       (childCharacter η χ) Q m (movingElement p c d V) z)
     (hgood : ∀ i ∈ forcingSet c d V,
-      goodLambda ∉ Ideal.span {p i} ∧ (2 : O) ∉ Ideal.span {p i} ∧
+      goodLambda ∉ Ideal.span {p i} ∧ (2 : ActualEisensteinCubic.O) ∉ Ideal.span {p i} ∧
       Ideal.span {p i} ∣ Ideal.span {e})
     (Z Cr M : ℝ) (hZ : 1 < Z) (hCr : 0 ≤ Cr)
     (hN : ∀ z ∈ rows, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ Cr * Z ^ M) :
@@ -141,14 +139,14 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
       (768 * (6 : ℝ) ^ (normalizedFactors Q).toFinset.card * Cr^(1/6:ℝ) *
         Z^((M-4*Real.logb Z (Ideal.absNorm
           (forcingIdeal (fun i => Ideal.span {p i}) c d V):ℝ))/6)) := by
-  let P : ι → Ideal O := fun i => Ideal.span {p i}
+  let P : ι → Ideal ActualEisensteinCubic.O := fun i => Ideal.span {p i}
   let G := goodIdeal Q P c d V
   have hA : movingElement p c d V ≠ 0 := by
     apply Ideal.span_singleton_eq_bot.not.mp
     rw [movingElement_span]
     exact movingIdeal_ne_zero _ hp c d V
   have hG0 : G ≠ 0 := goodIdeal_ne_zero Q P hp c d V
-  have hGn : (0:ℝ) < Ideal.absNorm G := CenteredExceptionalCount.norm_pos hG0
+  have hGn := CenteredExceptionalCount.norm_pos hG0
   have hb := separated_exceptional_count η χ Q hQ0 hQ hQ72
     m (movingElement p c d V) e hm hA hmLam hm2 he rows hrows hex G
     (goodIdeal_squarefree Q P hp hinj c d V) (by
@@ -169,7 +167,7 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
   have hf : (0:ℝ) < Ideal.absNorm (forcingIdeal P c d V) := by
     apply CenteredExceptionalCount.norm_pos
     exact Finset.prod_ne_zero_iff.mpr (fun i _ => (hp i).ne_zero)
-  have hr : (0:ℝ) < Ideal.absNorm (commonRadical Q Q) :=
+  have hr :=
     CenteredExceptionalCount.norm_pos (commonRadical_ne_zero Q Q)
   have hs := fixed_radical_power_loss Z M _ _ _ hZ hf hGn hr
     (forcing_norm_le Q hQ0 P hp hinj c d V)
@@ -182,11 +180,11 @@ theorem actual_forcing_exceptional_count_fixedQ (p : ι → O)
     _ = _ := by ring
 
 theorem actual_canonical_exceptional_count_fixedQ (η : Character) (χ : RayFourExpansion.RayCharacter)
-    (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D))
-    (Q : Ideal O) (hQ0 : Q ≠ 0) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : O)})
+    (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (U : Finset (CommonIndex C D))
+    (Q : Ideal ActualEisensteinCubic.O) (hQ0 : Q ≠ 0) (hQ : Q ≠ ⊤) (hQ72 : Q ≤ Ideal.span {(72 : ActualEisensteinCubic.O)})
     (hη : idealCoeff η C ≠ 0)
-    (m : O) (hm : m ≠ 0) (hmLam : goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
-    (rows : Finset O) (hrows : ∀ z ∈ rows, z ≠ 0)
+    (m : ActualEisensteinCubic.O) (hm : m ≠ 0) (hmLam : goodLambda ∣ m) (hm2 : (2 : ActualEisensteinCubic.O) ∣ m)
+    (rows : Finset ActualEisensteinCubic.O) (hrows : ∀ z ∈ rows, z ≠ 0)
     (hex : ∀ z ∈ rows, CenteredExceptionalProfile.FixedInducingRow (childCharacter η χ) Q m
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z)
     (Z Cr M : ℝ) (hZ : 1 < Z) (hCr : 0 ≤ Cr)

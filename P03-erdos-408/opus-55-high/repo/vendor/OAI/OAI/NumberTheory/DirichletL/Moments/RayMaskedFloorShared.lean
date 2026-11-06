@@ -10,21 +10,20 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalRadial
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
 open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open CenteredMomentOriginalRadialComparison
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem masked_natural_pair_slots {α : Type*} [DecidableEq α]
     (F : Finset α) (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -37,7 +36,7 @@ theorem masked_natural_pair_slots {α : Type*} [DecidableEq α]
     ∀(θ : α→RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
       (∀i∈F,0≤w i) → (∀i∈F,w i≤Lslot) →
       (∀i∈F,lo≤σ i) → (∀i∈F,σ i≤hi) → 0≤T → (∀i∈F,|v i|≤T) →
-    ∀(η : Character)(Q : Ideal O)(r : Radial)(Qbound : ℝ)(R : Ideal O),R≠0 → Q≤M → 0≤Qbound →
+    ∀(η : Character)(Q : Ideal HeckeFamily.O)(r : Radial)(Qbound : ℝ)(R : Ideal HeckeFamily.O),R≠0 → Q≤M → 0≤Qbound →
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z) →
       (∀z,r.keep z→((naturalCharacter η z).modulus.absNorm:ℝ)≤Z^Lmod) →
@@ -71,11 +70,11 @@ theorem masked_natural_pair_slots {α : Type*} [DecidableEq α]
       (1+|t|+T)^J*Z^(loss+κ*(∑i∈F,w i))
   have hd := diagonalControl_nonneg r.profile
   have hE : 0≤E := by dsimp [E]; positivity
-  have hp (i : α) (hi : i∈F) (I : Ideal O) (hI : I∈primePool M H b (Z^(w i))) : Prime I :=
+  have hp (i : α) (hi : i∈F) (I : Ideal HeckeFamily.O) (hI : I∈primePool M H b (Z^(w i))) : Prime I :=
     (Finset.mem_filter.mp hI).2.1
-  have hc (i : α) (hi : i∈F) (I : Ideal O) (hI : I∈primePool M H b (Z^(w i))) :=
+  have hc (i : α) (hi : i∈F) (I : Ideal HeckeFamily.O) (hI : I∈primePool M H b (Z^(w i))) :=
     hcoeff (relativeCharacter M H hH η₀ (θ i)) (Z^(w i)) (σ i) (v i) t
-      (Real.rpow_pos_of_pos hZ0 _) (hσlo i hi) (hσhi i hi) I (hp i hi I hI).ne_zero
+      (by positivity) (hσlo i hi) (hσhi i hi) I (hp i hi I hI).ne_zero
   have he := hdelete (CompletedGauss.primeSupport R) (support_prime R) (naturalCharacter η)
     W₁ W₂ X₁ X₂ a₀ b₀ a₀ b₀ (fun i=>primePool M H b (Z^(w i)))
     (fun i=>heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
@@ -84,9 +83,9 @@ theorem masked_natural_pair_slots {α : Type*} [DecidableEq α]
     (fun _ _=>Real.rpow_pos_of_pos hZ0 _) (fun i hi I hI=>(hc i hi I hI).1)
     (fun i hi I hI=>(hc i hi I hI).2) r.scale_pos r.nonneg hE ?_
   · rw [primeSupport_product_radical R hR] at he
-    exact he.trans_eq (by dsimp [E]; ring)
+    exact he.trans_eq (by linarith)
   · intro D₁ hD₁ D₂ hD₂ A hA
-    have hn (D : Finset (Ideal O)) (hD : D∈(CompletedGauss.primeSupport R).powerset) :
+    have hn (D : Finset (Ideal HeckeFamily.O)) (hD : D∈(CompletedGauss.primeSupport R).powerset) :
         0<(Ideal.absNorm (∏I∈D,I):ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
         (Finset.prod_ne_zero_iff.mpr (fun I hi=>(support_prime R I (Finset.mem_powerset.mp hD hi)).ne_zero)))

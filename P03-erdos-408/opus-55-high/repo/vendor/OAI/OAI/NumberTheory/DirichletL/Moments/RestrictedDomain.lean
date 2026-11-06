@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.RestrictedWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
+open CenteredMomentSourceLiveColumn CenteredMomentSourceMass
+open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
 open CenteredMomentRowNorm CenteredMomentRestrictedEnergy CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
 
-theorem source_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O) :
+theorem source_rowPolynomial (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ) (z : ActualEisensteinCubic.O) :
     rowPolynomial Finset.univ (sourceGenerator S)
       (fun I : supportedColumns S => c I) z=
       ∑ I∈supportedColumns S,c I*CanonicalRowCompletion.idealRowHom z I := by
@@ -30,12 +29,12 @@ theorem source_rowPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem live_rowPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem live_rowPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
+    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (z : O) :
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O → ℂ) (z : ActualEisensteinCubic.O) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
@@ -55,12 +54,12 @@ theorem live_rowPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   simpa only [mul_assoc] using live_column_sum S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
     X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => f I*CanonicalRowCompletion.idealRowHom z I)
 
-theorem live_restrictedEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem live_restrictedEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
+    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O → ℂ) (keep : ActualEisensteinCubic.O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -30,9 +30,7 @@ theorem prime_reciprocal_identity (χ ψ : Character) (P : SmoothMobiusCorrectio
     HeckeReciprocal.reciprocal_eq_inv ψ h0 h1]
   have hχ := LFunction_ne_zero_of_one_lt_re χ hs
   have hψ := LFunction_ne_zero_of_one_lt_re ψ hs
-  apply (mul_right_cancel₀ hψ)
-  rw [mul_assoc,inv_mul_cancel₀ hψ,mul_one,hL]
-  rw [←mul_assoc,inv_mul_cancel₀ hχ,one_mul]
+  simp_all
 
 lemma rescaled_power (D N : ℝ) (hD : 0<D) (hN : 0<N) (w : ℂ) :
     (D : ℂ)^(w-(1/2 : ℂ))*(N : ℂ)^(-w)=
@@ -40,9 +38,9 @@ lemma rescaled_power (D N : ℝ) (hD : 0<D) (hN : 0<N) (w : ℂ) :
   rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hD.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hN.ne'),
     Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hN.ne'),
-    Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (div_pos hD hN).ne')]
+    Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (by positivity))]
   rw [←Complex.ofReal_log hD.le,←Complex.ofReal_log hN.le,
-    ←Complex.ofReal_log (div_pos hD hN).le,Real.log_div hD.ne' hN.ne']
+    ←Complex.ofReal_log (by positivity),Real.log_div hD.ne' hN.ne']
   rw [←Complex.exp_add,←Complex.exp_add]
   congr 1
   push_cast
@@ -76,12 +74,12 @@ theorem prime_column_identity (χ ψ : Character) (P : SmoothMobiusCorrection.Pr
     calc
       _ = mellin W _*(D : ℂ)^(w-(1/2 : ℂ))*series ψ true w-
           idealCoeff χ P.val*mellin W _*((D : ℂ)^(w-(1/2 : ℂ))*(N : ℂ)^(-w))*series ψ true w := by ring
-      _ = _ := by rw [hp]; ring
+      _ = _ := by grind
   have hI := integrand_vertical_integrable ψ true W a b ha hWs hW D (2-σ) σ freq hD hc
-  have hJ := integrand_vertical_integrable ψ true W a b ha hWs hW (D/N) (2-σ) σ freq (div_pos hD hN) hc
+  have hJ := integrand_vertical_integrable ψ true W a b ha hWs hW (D/N) (2-σ) σ freq (by positivity) hc
   rw [polynomial_mellin χ true W a b ha hWs hW D (2-σ) σ freq hD hc,
     polynomial_mellin ψ true W a b ha hWs hW D (2-σ) σ freq hD hc,
-    polynomial_mellin ψ true W a b ha hWs hW (D/(P.val.absNorm : ℝ)) (2-σ) σ freq (div_pos hD hN) hc]
+    polynomial_mellin ψ true W a b ha hWs hW (D/(P.val.absNorm : ℝ)) (2-σ) σ freq (by positivity) hc]
   change (1/(2*Real.pi) : ℂ)*(∫ t : ℝ, integrand χ true W D σ freq (((2-σ : ℝ) : ℂ)+t*I))=_
   simp_rw [he]
   rw [integral_sub hI (hJ.const_mul _),integral_const_mul]

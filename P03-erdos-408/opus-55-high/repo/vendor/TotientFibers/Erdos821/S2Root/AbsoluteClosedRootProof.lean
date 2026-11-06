@@ -6,7 +6,6 @@ public import Erdos821.S2.RootMemoryBound
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Root
@@ -22,7 +21,7 @@ private theorem memoryHistory_norm_le_doubledWeight
     ‖H.Weight rho theta‖ ≤ Erdos821.P3Tail.doubledWeight H rho theta := by
   have hp : 1 ≤ (2 : ℝ) ^ H.totalGhostBirths := one_le_pow₀ (by norm_num)
   calc
-    ‖H.Weight rho theta‖ = ‖H.Weight rho theta‖ * 1 := (mul_one _).symm
+    ‖H.Weight rho theta‖ = ‖H.Weight rho theta‖ * 1 := by simp
     _ ≤ ‖H.Weight rho theta‖ * (2 : ℝ) ^ H.totalGhostBirths :=
       mul_le_mul_of_nonneg_left hp (norm_nonneg _)
     _ = Erdos821.P3Tail.doubledWeight H rho theta :=
@@ -76,12 +75,11 @@ private theorem path_norm_le_configuration_fiber
           ∑ sigma : (Q.val.reconstructedHistory S.val S.property y.val).BatchOrders,
             ‖((Q.val.reconstructedHistory S.val S.property y.val).reorderBatches sigma).Weight
               rho 0‖ := by
-  have hbpne : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
-      baselinePrime F n p.val ≠ 0 := fun g p => (hbp g p).ne'
+  have hbpne := fun g p => (hbp g p).ne'
   have hId := Q.val.memory_fiber_sum hGhost hMark hSpan hRes hn Q.property hk hV hbpne
     rho 0 hrho
-  have hbase : ‖(bigBaseline F P n : ℂ)‖ ≤ 1 :=
-    bigBaseline_norm_le_one F P n (fun g p => (hbp g p).le)
+  have hbase :=
+    bigBaseline_norm_le_one F P n (fun g p => by grind)
   have htriangle :
       ‖∑ S : {S : LifespanAssignment P n // Q.val.lifespanValid S},
           ∑ y : {y : P.SmallResidues // Q.val.SmallCompatible y},
@@ -107,13 +105,7 @@ private theorem path_norm_le_configuration_fiber
                 (Q.val.reconstructedHistory S.val S.property y.val).Weight rho 0‖ :=
           Finset.sum_le_sum fun S _ => norm_sum_le _ _
       _ = _ := by
-          apply Finset.sum_congr rfl
-          intro S hS
-          apply Finset.sum_congr rfl
-          intro y hy
-          rw [norm_mul, Complex.norm_natCast]
-          push_cast
-          rfl
+          simp
   have hsigma :
       ∑ S : {S : LifespanAssignment P n // Q.val.lifespanValid S},
         ∑ y : {y : P.SmallResidues // Q.val.SmallCompatible y},
@@ -138,7 +130,7 @@ private theorem path_norm_le_configuration_fiber
               ((∏ i : Fin (n + 1), ∏ g : P.BigGroup,
                 (Q.val.ghostBirthPrimes S.val i g).card.factorial : ℕ) : ℂ) *
                 (Q.val.reconstructedHistory S.val S.property y.val).Weight rho 0)‖ := by
-          rw [← hId]
+          grind
     _ = ‖(bigBaseline F P n : ℂ)‖ *
           ‖∑ S : {S : LifespanAssignment P n // Q.val.lifespanValid S},
             ∑ y : {y : P.SmallResidues // Q.val.SmallCompatible y},
@@ -181,7 +173,7 @@ private theorem validHistory_norm_sum_le_doubled_bound
       ∑ H ∈ S, Erdos821.P3Tail.doubledWeight H rho 0 := by
     unfold S
     symm
-    rw [Finset.sum_image (fun H _ K _ h => Subtype.ext h)]
+    rw [Finset.sum_image (by simp)]
   calc
     _ ≤ ∑ H : ValidDistinctHistory A n,
           Erdos821.P3Tail.doubledWeight H.val rho 0 :=
@@ -208,7 +200,7 @@ theorem AbsoluteClosedRootTask_proof : AbsoluteClosedRootTask := by
         rw [hW]
         simp only [ite_eq_left hQ, ite_eq_left hc, norm_mul, Complex.norm_real, Real.norm_eq_abs,
           abs_of_nonneg (residueExpectation_visitQ_nonneg Q)]
-      · simp [closedPathCoefficient, hQ, hc]
+      · simp [closedPathCoefficient, hc]
     · simp [closedPathCoefficient, hQ]
   have hClosedSum :
       closedAbsoluteResidueExpression A n =
@@ -219,7 +211,7 @@ theorem AbsoluteClosedRootTask_proof : AbsoluteClosedRootTask := by
       _ = ∑ Q : ResiduePath A n,
             if Q.Valid then
               if Q.offset (Fin.last n) = 0 then ‖Q.Weight 0‖ else 0
-            else 0 := Finset.sum_congr rfl (fun Q _ => hClosedTerm Q)
+            else 0 := by grind
       _ = _ := by
         rw [← Finset.sum_filter]
         exact Finset.sum_subtype (Finset.univ.filter (fun Q : ResiduePath A n => Q.Valid))
@@ -232,11 +224,11 @@ theorem AbsoluteClosedRootTask_proof : AbsoluteClosedRootTask := by
               ‖((Q.val.reconstructedHistory S.val S.property y.val).reorderBatches sigma).Weight
                 rho 0‖) =
       ∑ c : SpanConfiguration A n, ‖c.history.Weight rho 0‖ := by
-    simp only [SpanConfiguration, Fintype.sum_sigma, SpanConfiguration.history]
+    simp only [Fintype.sum_sigma, SpanConfiguration.history]
   have hconfigHistory :
       (∑ c : SpanConfiguration A n, ‖c.history.Weight rho 0‖) =
-        ∑ H : ValidDistinctHistory A n, ‖H.val.Weight rho 0‖ := by
-    exact Fintype.sum_equiv (SpanConfiguration.historyEquiv hStructure hn hk)
+        ∑ H : ValidDistinctHistory A n, ‖H.val.Weight rho 0‖ :=
+    Fintype.sum_equiv (SpanConfiguration.historyEquiv hStructure hn hk)
       (fun c => ‖c.history.Weight rho 0‖)
       (fun H => ‖H.val.Weight rho 0‖) (fun _ => rfl)
   calc
@@ -260,8 +252,7 @@ theorem AbsoluteClosedRootTask_proof : AbsoluteClosedRootTask := by
           apply Finset.sum_nonneg
           intro y hy
           apply Finset.sum_nonneg
-          intro sigma hsigma
-          exact norm_nonneg _
+          simp
     _ = ∑ c : SpanConfiguration A n, ‖c.history.Weight rho 0‖ := hconfigs
     _ = ∑ H : ValidDistinctHistory A n, ‖H.val.Weight rho 0‖ := hconfigHistory
     _ ≤ CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n :=

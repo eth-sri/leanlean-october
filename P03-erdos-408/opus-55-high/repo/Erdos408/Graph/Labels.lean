@@ -41,9 +41,9 @@ lemma sum_vals {M : ℕ} {R : Type*} [AddCommMonoid R] (Φ : (Fin G.count → Fi
     ∑ a : G.Labels M, Φ (vals a) =
       ∑ p ∈ Fintype.piFinset (fun g => Fintype.piFinset fun _ : Fin M => G.primes g), Φ p := by
   refine Finset.sum_bij' (fun a _ => vals a)
-    (fun p hp g i => ⟨p g i, Fintype.mem_piFinset.mp (Fintype.mem_piFinset.mp hp g) i⟩)
-    (fun a _ => ?_) (fun _ _ => Finset.mem_univ _) (fun _ _ => rfl) (fun _ _ => rfl)
-    (fun _ _ => rfl)
+    (fun p hp g i => ⟨p g i, by grind⟩)
+    (fun a _ => ?_) (by grind) (fun _ _ => rfl) (fun _ _ => rfl)
+    (by grind)
   simp only [Fintype.mem_piFinset]
   exact fun g i => (a g i).property
 
@@ -53,7 +53,7 @@ lemma sum_mass_trim_eq {J : ℕ} (C : Fin G.count → Finset (Fin J))
     (hV : ∀ g, G.V g ≠ 0) {w : Fin G.count → Fin J → ℕ} (hw : w ∈ auxLabels G.primes C) :
     ∑ u : G.Aux J, (if trim C u = w then ∏ g, ∏ i, G.mu g (u g i) else 0) =
       ∏ g, ∏ i ∈ C g, (harmonicMass (G.primes g) * w g i)⁻¹ := by
-  have hw' : ∀ g i, w g i ∈ if i ∈ C g then G.primes g else {1} := fun g i =>
+  have hw' := fun g i =>
     Fintype.mem_piFinset.mp (Fintype.mem_piFinset.mp hw g) i
   -- the indicator of `trim C u = w` is a product over the slots
   have hsplit : ∀ u : G.Aux J, (if trim C u = w then ∏ g, ∏ i, G.mu g (u g i) else 0) =
@@ -66,7 +66,7 @@ lemma sum_mass_trim_eq {J : ℕ} (C : Fin G.count → Finset (Fin J))
       exact (ite_eq_left (congrFun (congrFun h g) i)).symm
     · rw [ite_eq_right h]
       obtain ⟨g, i, hgi⟩ : ∃ g i, trim C u g i ≠ w g i := by
-        simpa only [funext_iff, not_forall] using h
+        grind
       exact (Finset.prod_eq_zero (Finset.mem_univ g)
         (Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hgi))).symm
   simp_rw [hsplit]
@@ -84,7 +84,7 @@ lemma sum_mass_trim_eq {J : ℕ} (C : Fin G.count → Finset (Fin J))
     · have hwi : w g i ∈ G.primes g := by simpa [hi] using hw' g i
       rw [ite_eq_left hi]
       simp only [ite_eq_left hi]
-      rw [Fintype.sum_eq_single ⟨w g i, hwi⟩ fun x hx => ite_eq_right fun h => hx (Subtype.ext h)]
+      rw [Fintype.sum_eq_single ⟨w g i, hwi⟩ (by grind)]
       simp [PrimeGroups.mu, V_eq_harmonicMass]
     · have hwi : w g i = 1 := by simpa [hi] using hw' g i
       rw [ite_eq_right hi]

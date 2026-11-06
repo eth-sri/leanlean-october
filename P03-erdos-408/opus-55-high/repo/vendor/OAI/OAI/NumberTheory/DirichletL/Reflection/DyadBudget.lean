@@ -7,21 +7,21 @@ public import OAI.NumberTheory.DirichletL.Reflection.SourceBudget
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped Classical
+open CanonicalQuadraticSieve
 noncomputable section
 
 lemma columnDyadicLength_mono_pos {A B : ℝ} (hA : 0<A) (hAB : A≤B) :
     columnDyadicLength A≤columnDyadicLength B := by
   apply Nat.ceil_mono
-  exact div_le_div_of_nonneg_right (Real.log_le_log hA hAB) (Real.log_nonneg (by norm_num))
+  exact div_le_div_of_nonneg_right (Real.log_le_log hA hAB) (by positivity)
 
 theorem actual_dyad_count_budget (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ Z Hrow Hslot : ℝ,1≤Z → 0<Hrow → 0<Hslot →
       Hrow≤Z^L → Hslot≤Z^L →
       (columnDyadicLength Hrow+1:ℝ)*(columnDyadicLength Hslot+1:ℝ)^2≤C*Z^ε := by
   let a := ε/(3*(L+1))
-  have ha : 0<a := div_pos hε (by positivity)
+  have ha : 0<a := by positivity
   let B := 2+1/(a*Real.log 2)
   have hB : 0<B := by dsimp only [B];have := Real.log_pos (by norm_num : (1:ℝ)<2);positivity
   refine ⟨B^3,by positivity,?_⟩
@@ -47,8 +47,7 @@ theorem actual_dyad_count_budget (L ε : ℝ) (hL : 0≤L) (hε : 0<ε) :
     _ = B^3*Z^(L*a*3) := by
       rw [←Real.rpow_mul hz.le]
       have he := Real.rpow_mul_natCast hz.le (L*a) 3
-      norm_num only [Nat.cast_ofNat] at he
-      rw [he]
+      simp_all
     _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ hexp) (by positivity)
 end
 end SevenEighths.InverseReflectedPhase

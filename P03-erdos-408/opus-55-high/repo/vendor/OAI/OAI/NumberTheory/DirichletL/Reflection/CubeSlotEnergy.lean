@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Reflection.InactiveEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem original_cube_shifted_tuple_energy (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {σ κ : Type*} [Fintype σ] [DecidableEq σ]
-      (H : Ideal Eis),H≠0 → ∀ (L : σ→Finset (Ideal Eis))
+      (H : Ideal ActualEisensteinCubic.O),H≠0 → ∀ (L : σ→Finset (Ideal ActualEisensteinCubic.O))
       (_hmax : ∀ i,∀ P∈L i,P.IsMaximal)
       (_hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
       (w : ∀ i,L i→ℂ), (∀ i P,‖w i P‖≤1) → Fintype.card σ≤rmax →
-    ∀ (rows : Finset κ) (Ψ : κ→(Eis→*ℂ)) (W : ℝ→ℂ) (X E : ℝ),0≤E →
+    ∀ (rows : Finset κ) (Ψ : κ→(ActualEisensteinCubic.O→*ℂ)) (W : ℝ→ℂ) (X E : ℝ),0≤E →
       (∀ T : Finset σ,
         (∑ k∈rows,‖∑ a : ∀ i : T,cubeAwayList H (L i.val),
           (∏ i : T,w i.val ⟨(a i).val,(Finset.mem_filter.mp (a i).property).1⟩)*

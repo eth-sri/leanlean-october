@@ -38,7 +38,7 @@ See `blueprint/rectangle_input.md` §4 (E4–E5) and §6.3 of the paper
 
 namespace Erdos408
 
-open Filter Real
+open Filter
 
 /-- E4–E5: the composite sum and the proxy sum differ by `O(x L^{-1-c'})`,
 uniformly in `2 ≤ j ≤ J_c`, the admissible slots, coefficients `0 ≤ 𝔟 ≤ 1`,

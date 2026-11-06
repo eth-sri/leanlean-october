@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open ProbeMellinBoundary
 
 lemma height_slab_integral_wzx (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
     (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :

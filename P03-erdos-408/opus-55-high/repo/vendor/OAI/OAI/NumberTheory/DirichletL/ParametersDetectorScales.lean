@@ -21,34 +21,34 @@ theorem exists_detector_scales (R rmin mesh dmin loss ellMin allowance J : ℝ)
       0<τ ∧ τ<dmin/2 ∧ 4*τ<dmin*cost ∧
       2*τ*(1+J)≤loss ∧ ∀eps : ℝ,0≤eps → eps≤1 → τ*(2+4*eps)<loss := by
   let ε := min (allowance/2) (min (rmin*mesh/2) (1/2000))
-  have hε : 0<ε := lt_min (by positivity) (lt_min (by positivity) (by norm_num))
+  have hε : 0<ε := by positivity
   have hεa : ε≤allowance/2 := min_le_left _ _
-  have hεr : ε≤rmin*mesh/2 := (min_le_right _ _).trans (min_le_left _ _)
-  have hε1 : ε≤1/2000 := (min_le_right _ _).trans (min_le_right _ _)
+  have hεr : ε≤rmin*mesh/2 := by grind
+  have hε1 : ε≤1/2000 := by grind
   let e := min (ε/(10000*(1+R))) (min (ellMin/4) (allowance/2))
-  have he : 0<e := lt_min (div_pos hε (by positivity)) (lt_min (by positivity) (by positivity))
+  have he : 0<e := by positivity
   have heb : e≤ε/(10000*(1+R)) := min_le_left _ _
   have hep : e*(10000*(1+R))≤ε := (le_div_iff₀ (by positivity)).mp heb
   have heR : 0≤e*R := mul_nonneg he.le hR
-  have hel : e≤ellMin/4 := (min_le_right _ _).trans (min_le_left _ _)
-  have hea : e≤allowance/2 := (min_le_right _ _).trans (min_le_right _ _)
+  have hel : e≤ellMin/4 := by grind
+  have hea : e≤allowance/2 := by linarith
   let κ := ε/1000
   let cost := ε/1000
   have hk : 0<κ := by dsimp [κ]; positivity
   have hc : 0<cost := by dsimp [cost]; positivity
   let τ := min (dmin*cost/16) (min (dmin/4) (loss/(4*(1+J+6))))
-  have ht : 0<τ := lt_min (by positivity) (lt_min (by positivity) (by positivity))
+  have ht : 0<τ := by positivity
   have htc : τ≤dmin*cost/16 := min_le_left _ _
-  have htd : τ≤dmin/4 := (min_le_right _ _).trans (min_le_left _ _)
-  have htl : τ≤loss/(4*(1+J+6)) := (min_le_right _ _).trans (min_le_right _ _)
+  have htd : τ≤dmin/4 := by grind
+  have htl : τ≤loss/(4*(1+J+6)) := by grind
   have htJ : τ*(4*(1+J+6))≤loss := (le_div_iff₀ (by positivity)).mp htl
   have hprod : 0≤τ*J := mul_nonneg ht.le hJ
-  refine ⟨ε,e,κ,cost,τ,hε,by linarith,by nlinarith [mul_pos hr hm],by linarith,
+  refine ⟨ε,e,κ,cost,τ,hε,by linarith,by linarith,by linarith,
     he,by nlinarith,hel,by linarith,hk,?_,hc,?_,?_,ht,by linarith,?_,?_,?_⟩
-  · dsimp [κ];linarith
-  · dsimp [κ,cost];nlinarith
-  · dsimp [κ];nlinarith
-  · have hp := mul_pos hd hc;linarith
+  · grind
+  · grind
+  · grind
+  · linarith
   · nlinarith
   · intro eps heps heps1
     have hp := mul_le_mul_of_nonneg_left heps1 ht.le

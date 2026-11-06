@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,41 +31,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace CompletedGauss
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
 
 def completedResidualScale (K : ℝ) (I Q : Ideal O) : ℝ :=
   K/((Ideal.absNorm (rowPowerfulPart I):ℝ)*(Ideal.absNorm (rowMaskPart I Q):ℝ))
@@ -90,7 +69,7 @@ def completedBranchScale {ι : Type*} [Fintype ι]
 
 end CompletedGauss
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace LocalReflectionBrackets
 variable {F : Type*} [Field F] [Fintype F]
 
@@ -117,7 +96,7 @@ theorem unitArgumentFactor_norm (χ : MulChar F ℂ) (j : ℕ) (z : F) (hz : z�
 
 end LocalReflectionBrackets
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
 theorem unit_ramified_quotient_ne_zero (P : Ideal O) [P.IsMaximal]
     (hg : lambda∉P) (u : Oˣ) (m : ℕ) :
@@ -154,11 +133,10 @@ end CompletedGauss
 
 namespace InitialMeanSquare
 
-open MeasureTheory
-open scoped BigOperators Classical
+open scoped Classical
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic
 open ConcretePrimeRowBridge (idealGenerator)
 
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -179,16 +157,14 @@ end
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FirstPassCubeLabels
+open SecondPassArithmetic
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace FirstPassCubeLabels
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -198,7 +174,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -212,9 +187,7 @@ lemma blockRow_at_zero (S:Finset ι) (e:ι→ℕ) :
   by_cases hS:S=∅
   · simp [hS,blockRow_eq_product]
   · rw [ite_eq_right hS,blockRow_eq_product]
-    obtain ⟨i,hi⟩:=Finset.nonempty_iff_ne_empty.mpr hS
-    apply Finset.prod_eq_zero hi
-    simp only [map_zero,MulChar.map_zero]
+    simp_all
 
 lemma threeGaussRowFactor_zero_nonempty
     (N P B:Finset ι) (v:ι→ℕ) (ε₁ ε₂:ι→Bool)
@@ -235,23 +208,20 @@ theorem actualFirstKernel_zero
   by_cases hB:cubeActiveSupport B v ε₁ ε₂=∅
   · rw [ite_eq_left hB,Finset.sum_eq_single ∅]
     · rw [Finset.sum_eq_single ∅]
-      · simp only [Finset.disjoint_empty_left,ite_true,Finset.empty_union,hB,
-          Finset.prod_empty,map_one,norm_one,Complex.ofReal_one,div_one,map_zero,norm_zero,
-          zero_pow (by decide:2≠0),mul_zero,zero_div]
+      · simp_all
       · intro P hP hP0
         have hn:(∅∪P)∪cubeActiveSupport B v ε₁ ε₂≠∅ := by simpa only [Finset.empty_union,hB,Finset.union_empty] using hP0
         simp only [threeGaussRowFactor_zero_nonempty p hp hcop hg ∅ P B v ε₁ ε₂ C₁ C₂ d hn,mul_zero,ite_self]
-      · simp
+      simp
     · intro N hN hN0
       apply Finset.sum_eq_zero
       intro P hP
       have hn:(N∪P)∪cubeActiveSupport B v ε₁ ε₂≠∅ := by
         intro he
         exact hN0 (Finset.eq_empty_iff_forall_notMem.mpr (fun i hi=>by
-          have : i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂:=Finset.mem_union_left _ (Finset.mem_union_left _ hi)
-          simp only [he, Finset.notMem_empty] at this))
+          simp_all))
       simp only [threeGaussRowFactor_zero_nonempty p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d hn,mul_zero,ite_self]
-    · simp
+    simp
   · rw [ite_eq_right hB]
     apply Finset.sum_eq_zero
     intro N hN
@@ -260,8 +230,7 @@ theorem actualFirstKernel_zero
     have hn:(N∪P)∪cubeActiveSupport B v ε₁ ε₂≠∅ := by
       intro he
       exact hB (Finset.eq_empty_iff_forall_notMem.mpr (fun i hi=>by
-        have : i∈(N∪P)∪cubeActiveSupport B v ε₁ ε₂:=Finset.mem_union_right _ hi
-        simp only [he, Finset.notMem_empty] at this))
+        simp_all))
     simp only [threeGaussRowFactor_zero_nonempty p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ d hn,mul_zero,ite_self]
 
 theorem actualFirstKernel_truncate
@@ -270,8 +239,8 @@ theorem actualFirstKernel_truncate
     (X₁ X₂ K:ℝ) (hK:0<K) (d:O) (hd:d≠0) (T:Finset O) :
     (∑'h:O,actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h)=
       (∑h∈T,actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h)+
-      ∑'h:{h:O//h∉T},actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val := by
-  exact (actualFirstKernel_summable p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d hd).sum_add_tsum_subtype_compl T |>.symm
+      ∑'h:{h:O//h∉T},actualFirstKernel p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val :=
+  (actualFirstKernel_summable p hp hcop hg F B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d hd).sum_add_tsum_subtype_compl T |>.symm
 
 end FirstPassCubeLabels
 

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianCentral
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff SchwartzMap
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
     (hc : Summable (fun j=>if p j then 0 else ‖f j‖))
@@ -19,7 +18,7 @@ lemma low_dyad_norm_split (f : ℕ→ℂ) (p : ℕ→Prop) [DecidablePred p]
     Summable f ∧ ‖∑'j,f j‖≤(∑'j,if p j then 0 else ‖f j‖)+(∑'j,if p j then ‖f j‖ else 0) := by
   have he (j : ℕ) : ‖f j‖=(if p j then 0 else ‖f j‖)+(if p j then ‖f j‖ else 0) := by
     split_ifs <;>ring
-  have hn : Summable (fun j=>‖f j‖) := (hc.add hr).congr (fun j=>(he j).symm)
+  have hn := (hc.add hr).congr (fun j=>(he j).symm)
   refine ⟨hn.of_norm,?_⟩
   apply (norm_tsum_le_tsum_norm hn).trans_eq
   exact (tsum_congr he).trans (hc.tsum_add hr)
@@ -52,7 +51,7 @@ theorem low_all_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
   refine ⟨hc.1,?_⟩
   intro T hT hout hdis hnorm J W hW
   have hc' := hc.2 T hT hout hdis hnorm J W hW
-  have hr' := hr.2 η T hT (fun i P hP=>(hnorm i P hP).2) J W hW
+  have hr' := hr.2 η T hT (by grind) J W hW
   dsimp only at hc' hr' ⊢
   have hh := low_dyad_norm_split _ (fun j=>lowRemote Z (lowSelectedLength ell J) ε ((2:ℝ)^j)) hc'.1 hr'.1
   refine ⟨hh.1,hh.2.trans ?_⟩

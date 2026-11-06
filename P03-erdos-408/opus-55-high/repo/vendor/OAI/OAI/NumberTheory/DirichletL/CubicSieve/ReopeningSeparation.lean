@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
-open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +30,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstPassCubeLabels (columnLog primeProductNorm)
 open FourierBridge (logPhase)
@@ -114,9 +92,8 @@ end SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FourierBridge (logPhase)
 open FirstPassCubeLabels (columnLog)
 
@@ -129,7 +106,6 @@ variable [∀i,(Ideal.span {p i}).IsMaximal]
 end SecondPassArithmetic
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -138,15 +114,12 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical
-open MeasureTheory
+open scoped Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 
 end SecondPassArithmetic
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -156,11 +129,10 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 end SecondPassIntegration
 end
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog)
 open FourierBridge (logPhase)
 open JointLogSeparation (frequencyTwist)
@@ -172,17 +144,15 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp 
 
 end
 
-open ActualEisensteinCubic FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 
 namespace CanonicalCubeSeparation
-open FourierBridge JointLogSeparation FirstPassCubeLabels
+open FourierBridge JointLogSeparation
 
 def columnWindowRadius (a b : ℝ) : ℝ := |Real.log a| + |Real.log b| + 3
 
@@ -233,9 +203,7 @@ lemma active_column_window (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   have hhi : u+3*t ≤ Real.log b := by
     simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos _) hab.2
   unfold columnWindowRadius
-  rw [abs_le]
-  constructor <;> linarith [neg_abs_le (Real.log a), le_abs_self (Real.log b),
-    abs_nonneg (Real.log a), abs_nonneg (Real.log b), ht.1, ht.2]
+  grind
 
 lemma reopening_integrable (b V : 𝓢(ℝ,ℂ)) (t u : ℝ) :
     Integrable (fun ξ : ℝ => b ξ * cubeFrequencyFactor t ξ * frequencyTwist V ξ u) := by
@@ -262,7 +230,7 @@ theorem reopening_separation_with_window (W : ℝ → ℂ) (a b : ℝ) (ha : 0 <
         cubeFrequencyFactor t ξ * frequencyTwist V ξ u := by
   have hwindow : V u * W (Real.exp (u+3*t)) = W (Real.exp (u+3*t)) := by
     by_cases hz : W (Real.exp (u+3*t)) = 0
-    · simp [hz]
+    · simp_all
     · rw [hV u (active_column_window W a b ha hs t u ht hz), one_mul]
   have hinv := schwartz_phase_inversion
     (sourceLogProfile W a b ha hs hW) (u+3*t)
@@ -270,7 +238,7 @@ theorem reopening_separation_with_window (W : ℝ → ℂ) (a b : ℝ) (ha : 0 <
     ∫ ξ : ℝ, logPhase ξ (u+3*t) * reopeningCoefficient W a b ha hs hW ξ at hinv
   calc
     _ = ((Real.exp (t/2) : ℂ) * V u) * W (Real.exp (u+3*t)) := by
-      rw [mul_assoc, hwindow]
+      grind
     _ = ∫ ξ : ℝ, ((Real.exp (t/2) : ℂ) * V u) *
         (logPhase ξ (u+3*t) * reopeningCoefficient W a b ha hs hW ξ) := by
       rw [hinv, integral_const_mul]

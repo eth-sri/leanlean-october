@@ -6,7 +6,7 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34.Core
 

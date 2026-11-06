@@ -9,21 +9,20 @@ public import OAI.NumberTheory.DirichletL.Moments.InductionEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
-open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound ConcreteTraceCRT
+open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskExpansion CenteredMomentCommonMaskEnergy
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
-open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
-open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
+open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
+open CenteredMomentOriginalRadialComparison
+open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α] (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -35,7 +34,7 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
     ∀(θ : α→RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) →
       (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤T → (∀i,|v i|≤T) →
-    ∀(η : Character)(Q : Ideal O)(r : Radial)(Qbound : ℝ)(R : Ideal O),R≠0 → Q≤M → 0≤Qbound →
+    ∀(η : Character)(Q : Ideal HeckeFamily.O)(r : Radial)(Qbound : ℝ)(R : Ideal HeckeFamily.O),R≠0 → Q≤M → 0≤Qbound →
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η (internalQ Q η₀) (fixedBadMask*ConcretePrimeRowBridge.idealGenerator R) 1 z) →
       (∀z,r.keep z→((naturalCharacter η z).modulus.absNorm:ℝ)≤Z^Lmod) →
@@ -61,7 +60,7 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
   filter_upwards [hbound η₀,eventually_gt_atTop (0:ℝ)] with Z hZ hZ0
   intro θ w σ v t T hw hwL hσlo hσhi hT hv η Q r Qbound R hR hQM hQbound hz hex hmod hQ
     W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂
-  have hexbase (z : O) (hk : r.keep z) :
+  have hexbase (z : HeckeFamily.O) (hk : r.keep z) :
       ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z := by
     intro hh
     apply hex z hk
@@ -109,8 +108,8 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
       S.sup (schwartzSeminormFamily ℝ ℝ ℂ) V₂)^2 ≤
       (Ct^4*(T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*
         T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2)*(1+|t|+T)^(4*n) := by
-    have hh := pow_le_pow_left₀ (mul_nonneg (apply_nonneg _ _) (apply_nonneg _ _))
-      (mul_le_mul hB₁ hB₂ (apply_nonneg _ _) (by positivity)) 2
+    have hh := pow_le_pow_left₀ (by positivity)
+      (mul_le_mul hB₁ hB₂ (by positivity) (by positivity)) 2
     have hheight : (1+‖t‖)^(4*n)≤(1+|t|+T)^(4*n) := by
       apply pow_le_pow_left₀ (by positivity)
       rw [Real.norm_eq_abs]
@@ -120,7 +119,6 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
         (Ct*(T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)*(1+‖t‖)^n))^2 := hh
       _ = (Ct^4*(T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*
         T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2)*(1+‖t‖)^(4*n) := by
-          rw [Nat.mul_comm 4 n,pow_mul]
           ring
       _ ≤ _ := mul_le_mul_of_nonneg_left hheight (by positivity)
   have hd := diagonalControl_nonneg r.profile
@@ -129,7 +127,7 @@ theorem original_masked_positive_floor {α : Type*} [Fintype α] [DecidableEq α
       ((Ct^4*(T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₁*
         T₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) W₂)^2)*(1+|t|+T)^(4*n))*Qbound^4*
       (1+|t|+T)^J*Z^(loss+κ*(∑i,w i)) := by gcongr
-    _ = _ := by rw [pow_add]; ring
+    _ = _ := by ring
 
 end SevenEighths.CenteredMomentRayMaskedFloor
 

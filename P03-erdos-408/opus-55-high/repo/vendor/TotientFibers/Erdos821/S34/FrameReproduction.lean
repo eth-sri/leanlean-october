@@ -5,7 +5,7 @@ public import Erdos821.S34.FrameBridge
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -25,9 +25,7 @@ theorem frame_apply_expansion {α κ γ : Type} [Fintype α] [Fintype γ]
       by_cases hD : c D = c X
       · simp only [frameCellKernel, hD, hret, and_self, ite_true,
           Finset.mul_sum, Finset.sum_mul]
-        apply Finset.sum_congr rfl
-        intro a _
-        ring
+        grind
       · simp [frameCellKernel, hD]
     _ = _ := by
       rw [Finset.sum_comm]
@@ -46,7 +44,7 @@ theorem frame_reproduction {α κ γ : Type} [Fintype α] [Fintype γ]
   let ν := frameCellMass w c (c X)
   let F := fun a : γ => (ν : ℂ)⁻¹ * χ a X *
     (∑ D, if c D = c X then (w D : ℂ) * star (χ a D) * χ b D else 0)
-  have hν : 0 < ν := hξ.trans_le hret
+  have hν : 0 < ν := by linarith
   have hνC : (ν : ℂ) ≠ 0 := by exact_mod_cast hν.ne'
   have hb : F b = χ b X := by
     change (ν : ℂ)⁻¹ * χ b X *
@@ -69,19 +67,19 @@ theorem frame_reproduction {α κ γ : Type} [Fintype α] [Fintype γ]
       rw [norm_mul, norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hν]
       calc
         _ ≤ ν⁻¹ * 1 * δ := mul_le_mul
-          (mul_le_mul_of_nonneg_left (hχ a X) (inv_nonneg.mpr hν.le)) (hgram a hab)
+          (mul_le_mul_of_nonneg_left (by grind) (by positivity)) (hgram a hab)
           (norm_nonneg _) (by positivity)
         _ ≤ ξ⁻¹ * δ := by
           rw [mul_one]
           exact mul_le_mul_of_nonneg_right (by
-            simpa only [one_div] using one_div_le_one_div_of_le hξ hret) hδ
+            simpa using one_div_le_one_div_of_le hξ hret) hδ
         _ = _ := by ring
     _ ≤ (Fintype.card γ : ℝ) * δ / ξ := by
       rw [Finset.sum_const, nsmul_eq_mul]
       have hc : ((Finset.univ.erase b).card : ℝ) ≤ (Fintype.card γ : ℝ) := by
-        exact_mod_cast (Finset.card_erase_le (s := Finset.univ) (a := b))
+        exact_mod_cast (by simp)
       calc
-        _ ≤ (Fintype.card γ : ℝ) * (δ / ξ) := mul_le_mul_of_nonneg_right hc (div_nonneg hδ hξ.le)
+        _ ≤ (Fintype.card γ : ℝ) * (δ / ξ) := mul_le_mul_of_nonneg_right hc (by positivity)
         _ = _ := by ring
 
 end

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedUnramified
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 def finiteLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z : ℂ) : ℂ :=
@@ -36,7 +35,7 @@ theorem ramifiedCorrection_eq_marked (η : Character) (u : FreeRow) (P : PrimeId
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := (supported_prime_data p hp hsp).1
   have hnorm : Ideal.absNorm (Ideal.span {p})=P.val.absNorm := congrArg Ideal.absNorm hspan
@@ -46,7 +45,7 @@ theorem ramifiedCorrection_eq_marked (η : Character) (u : FreeRow) (P : PrimeId
       ((P.val.absNorm:ℂ)^(-x)) ((P.val.absNorm:ℂ)^(-w)) (coordV P.val.absNorm z)
       (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ (unitPart u p hp))) (multiplicity p u.val)
   unfold ramifiedClosed
-  rw [hnorm]
+  simp_all
 
 theorem finiteLocalCorrection_ramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (x w z : ℂ) :
@@ -70,7 +69,7 @@ theorem initial_marked_geometry (η : Character) (P : PrimeIdeal) (x z : ℂ)
     ‖coordV P.val.absNorm z‖<1 ∧
       ‖coordR P.val.absNorm (actualAPhase η (primaryGenerator P.val)) x z‖<1 := by
   have hQ : (1:ℝ)<P.val.absNorm := by
-    exact_mod_cast (lt_of_lt_of_le (by norm_num : (1:ℕ)<2) (SmoothMobiusCorrection.prime_norm_two_le P))
+    exact_mod_cast (lt_of_lt_of_le (by omega) (SmoothMobiusCorrection.prime_norm_two_le P))
   have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
   constructor
   · rw [coordV_norm _ hQ0]

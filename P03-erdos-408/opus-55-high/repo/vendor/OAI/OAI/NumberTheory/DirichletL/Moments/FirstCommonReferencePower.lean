@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedAllowance
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonReferencePower
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
-open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
+open CenteredMomentCommonAllocationSum
+open CenteredMomentSourceLiveColumn
 open CenteredMomentFirstCommonSourcePowerBudget
-local notation "O"=>HeckeFamily.O
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 def normalizedPower (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ):ℝ:=
@@ -33,17 +32,14 @@ lemma reference_power_identity (b V C q Z allowance ε E:ℝ)(N:ℕ)(α:ℝ)
   unfold normalizedPower
   rw [Real.rpow_sub hx,Real.rpow_one,Real.rpow_sub hC,Real.rpow_one,
     show b^N*V/C=b^N*(V/C) by ring,Real.mul_rpow hbN.le hx.le]
-  field_simp
-  calc
-    _ = E*(Z^allowance*Z^(-allowance)):=by ring
-    _ = E:=by rw [hprod,mul_one]
+  grind
 
 theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
     Fintype.card ι≤N→a≤s.lower→s.upper≤b→
-    ∀(C R seed:Ideal O)(hC:Supported C),seed∣C→
-    ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K Z allowance:ℝ),0<K→0<Z→
-    (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
+    ∀(C R seed:Ideal HeckeFamily.O)(hC:Supported C),seed∣C→
+    ∀(τ:Character)(t:ℝ)(L:Ideal HeckeFamily.O)(W:𝓢(ℝ,ℂ))(K Z allowance:ℝ),0<K→0<Z→
+    (∀z:HeckeFamily.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
     ∀(n:ℕ)(E α:Fin n→ℝ),(∀j,0≤E j)→(∀j,0≤α j)→
     (∀B:actualAllocations s.pools C,frozenCoefficient B.val C R s.ν s.W s.P≠0→
       childNormalizedGaussSource s C R L B τ t W K≤
@@ -65,9 +61,7 @@ theorem common_energy_reference_powers (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε
     _ = Cb*(∏i,s.M i)^2*∑j,(C.absNorm:ℝ)^(ε-1)*volume s*E j*
         (b^N*volume s/(C.absNorm:ℝ))^(α j):=by
       simp only [Finset.mul_sum,Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro j hj
-      ring
+      grind
     _ = Cb*(∏i,s.M i)^2*∑j,
         ((τ.modulus.absNorm:ℝ)*(volume s/(C.absNorm:ℝ))^2*Z^allowance)*
           normalizedPower b (volume s) (C.absNorm:ℝ) (τ.modulus.absNorm:ℝ)

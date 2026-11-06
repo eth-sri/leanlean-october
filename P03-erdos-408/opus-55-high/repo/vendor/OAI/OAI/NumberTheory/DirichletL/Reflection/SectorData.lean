@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Reflection.SourceSectors
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
-variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
+variable {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
-structure SectorArithmetic (F : PrimeFamily φ) (rows Pset : Finset (Ideal Eis))
-    (S : Ideal Eis→PrimeFamily σ) (hrows : ∀ K∈rows, Admissible K)
+structure SectorArithmetic (F : PrimeFamily φ) (rows Pset : Finset (Ideal ActualEisensteinCubic.O))
+    (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (hrows : ∀ K∈rows, Admissible K)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0) where
   referenceIndex : Type (max u v)
   [referenceFintype : Fintype referenceIndex]

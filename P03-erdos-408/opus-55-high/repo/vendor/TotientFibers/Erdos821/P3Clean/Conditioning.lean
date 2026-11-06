@@ -9,7 +9,6 @@ public import Erdos821.Leaves.Damped
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -20,7 +19,7 @@ theorem norm_sum_sq_le_card {α : Type*} (s : Finset α) (f : α → ℂ) :
     ‖∑ a ∈ s, f a‖ ^ 2 ≤ (s.card : ℝ) * ∑ a ∈ s, ‖f a‖ ^ 2 := by
   calc
     _ ≤ (∑ a ∈ s, ‖f a‖) ^ 2 := (sq_le_sq₀ (norm_nonneg _)
-      (Finset.sum_nonneg (fun _ _ => norm_nonneg _))).mpr (norm_sum_le _ _)
+      (by positivity)).mpr (norm_sum_le _ _)
     _ ≤ _ := by
       simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _ => (1 : ℝ)) (fun a => ‖f a‖)
 
@@ -44,7 +43,7 @@ theorem conditioning_normSq_bound {α β : Type*} [Fintype β]
         _ = (‖u d‖ ^ 2 * ((s.filter (fun a => projection a = d)).card : ℝ)) *
             ∑ a ∈ s.filter (fun a => projection a = d), ‖f a‖ ^ 2 := by ring
         _ ≤ _ := mul_le_mul_of_nonneg_right (hC d)
-          (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
+          (by positivity)
     _ = _ := by
       rw [← Finset.mul_sum]
       congr 1
@@ -66,8 +65,8 @@ theorem small_conditioning_multiplier_uniform (F : FixedData) :
   have hVpos : 0 < V := F.vMin_pos.trans_le hV
   rw [← Nat.cast_sub hMz]
   exact (mul_le_mul_of_nonneg_left hq
-    (mul_nonneg (zpow_nonneg hVpos.le _) (Nat.cast_nonneg _))).trans
-    (hbound F.ell (z - M) V le_rfl hV)
+    (by positivity)).trans
+    (by grind)
 
 theorem small_prefix_multiplier_uniform (F : FixedData) :
     ∃ C : ℝ, 0 < C ∧ ∀ (P : PrimeGroups) (g : P.Group) (J : ℕ)
@@ -92,7 +91,7 @@ theorem small_prefix_multiplier_uniform (F : FixedData) :
           (J + F.ell) + F.ell).descFactorial F.ell : ℝ) := by exact_mod_cast hc
     exact (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hcast (zpow_nonneg (F.vMin_pos.trans_le hV).le _))
-      (Real.rpow_nonneg F.q_pos.le _)).trans (hbound _ _ _ hz hV)
+      (Real.rpow_nonneg F.q_pos.le _)).trans (by grind)
   · have hzero := Finset.not_nonempty_iff_eq_empty.mp hs
     simpa only [hzero, Finset.card_empty, Nat.cast_zero, mul_zero, zero_mul] using hC.le
 

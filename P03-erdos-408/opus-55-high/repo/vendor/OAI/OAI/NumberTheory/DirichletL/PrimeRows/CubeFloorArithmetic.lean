@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralCubeNorm
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots HeckeDetectorPhysicalSelection
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem floorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
+theorem floorPoolOutside (S : Finset (Ideal HeckeFamily.O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
     ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+  by simp
 
 theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -29,7 +28,7 @@ theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
     (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
@@ -68,7 +67,7 @@ theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
   let T : Fin N→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S c b (Y j)
   let z : ℂ := (17/50:ℂ)+t.1.2*Complex.I
   let F : FreeRow→ℝ := fun u=>‖∑P:(∀j,T j),calibratedTupleValue S hS hmax η u (fun j=>(P j).val)
-    (fun j=>floorPoolOutside M H S N c b Y j _ (P j).property) W Y
+    (fun j=>floorPoolOutside M H S N c b Y j _ (by simp)) W Y
     (((51/100+16*e:ℝ):ℂ)+t.1.1*Complex.I) (((1-51/100-6*e:ℝ):ℂ)+t.2*Complex.I) z‖
   let D : ℝ := C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^loss*Z^(-1/40+mesh/6)
   have hD : 0≤D := by dsimp [D];positivity
@@ -78,21 +77,21 @@ theorem actual_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin �
     dsimp only at hh
     let g : Fin N→ℝ := fun j=>HeckePrimeAmplitudeBins.amplitude (Y j) ((51/100:ℝ)-1/2) mesh
       (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Y j) z)
-    have hellpos (j : Fin N) : 0≤ell j := by
-      exact (mul_nonneg hdmax hrmin.le).trans (hello j)
+    have hellpos (j : Fin N) : 0≤ell j :=
+      (mul_nonneg hdmax hrmin.le).trans (hello j)
     have hq := weightedMean_bounds Finset.univ (fun j=>ell j/d) g (1/50)
       (fun j _=>div_nonneg (hellpos j) hd0.le)
       (by rw [source_slot_length_sum _ _ _ hellsum];positivity)
-      (fun j _=>⟨(hh.1 j).1,by have hhj := (hh.1 j).2.1;dsimp [g,Y,z];norm_num at hhj ⊢;exact hhj⟩)
+      (fun j _=>⟨(hh.1 j).1,by have hhj := (hh.1 j).2.1;dsimp [g,Y,z];linarith⟩)
     have hp : (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh))≤Z^(-1/40+mesh/6) := by
       rw [show (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh))=
         Z^(-(2/75:ℝ)+weightedMean Finset.univ (fun j=>ell j/d) g/6+mesh/6) from
         source_slot_product Finset.univ ell g Z d mesh hZp hd0.ne' hellsum]
       apply Real.rpow_le_rpow_of_exponent_le hZ
-      linarith [hq.2]
+      linarith
     have hN : 0≤rowNorm u := (rowNorm_ge_one u).trans' (by norm_num)
     have h := hh.2.trans (mul_le_mul_of_nonneg_left hp (by positivity))
-    convert h using 1 ; dsimp [F,D,α,Y,z,g] ; norm_num ; ring
+    convert h using 1 ; dsimp [D, α] ; norm_num ; ring
   have hh := dyadic_weighted_rows α (17/50) D (Z^v) hD (Real.one_le_rpow hZ hv) rows hnorm
     F hF z (by simp [z])
   have hsum : ‖cubeArithmeticSum S hS hmax η rows T (floorPoolOutside M H S N c b Y) W Y (51/100) e t‖≤

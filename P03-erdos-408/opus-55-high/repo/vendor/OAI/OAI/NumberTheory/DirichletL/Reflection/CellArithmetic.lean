@@ -11,14 +11,13 @@ public import OAI.NumberTheory.DirichletL.Reflection.TupleSectors
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma residual_level_coprime (K Q₀ : Ideal Eis) (hK : Admissible K)
-    (c : Eis) (hc : Ideal.span {c}=Ideal.span {(9:Eis)}*Q₀) (hcop : IsCoprime Q₀ K) :
-    IsCoprime (Ideal.span {(9:Eis)*c}) K := by
+lemma residual_level_coprime (K Q₀ : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
+    (c : ActualEisensteinCubic.O) (hc : Ideal.span {c}=Ideal.span {(9:ActualEisensteinCubic.O)}*Q₀) (hcop : IsCoprime Q₀ K) :
+    IsCoprime (Ideal.span {(9:ActualEisensteinCubic.O)*c}) K := by
   rw [←PrimeFamily.residual_product K hK]
   apply IsCoprime.prod_right_iff.mpr
   intro i hi

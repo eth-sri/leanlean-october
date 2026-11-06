@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRealRadial
 open InverseInitialConjugateEnergy ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
 
 theorem exists_real_raw_radial_majorant:
     ∃Φ:𝓢(ℝ,ℂ),HasCompactSupport (Φ:ℝ→ℂ) ∧
@@ -24,14 +23,14 @@ theorem exists_real_raw_radial_majorant:
     (n:=⊤) isOpen_Ioo isClosed_Icc hsub
   let v:ℝ→ℂ:=fun x=>((f x)^2:ℝ)
   have hv:ContDiff ℝ ∞ v:=Complex.ofRealCLM.contDiff.comp
-    ((by simpa using hf:ContDiff ℝ ∞ f).pow 2)
+    ((by omega:ContDiff ℝ ∞ f).pow 2)
   have hsupp:Function.support v⊆Set.Icc (-1) 2:=by
     intro x hx
     have hn:x∈Function.support f:=by
       intro hz
       exact hx (by simp [v,hz])
     rw [hs] at hn
-    exact ⟨hn.1.le,hn.2.le⟩
+    exact by grind
   have hvc:=HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   refine ⟨hvc.toSchwartzMap hv,hvc,?_,?_,?_⟩
   · intro x
@@ -41,17 +40,16 @@ theorem exists_real_raw_radial_majorant:
     exact Complex.ofReal_im _
   · intro x hx
     change (((f x)^2:ℝ):ℂ)=1
-    rw [(hone x).mp hx]
-    norm_num
+    simp_all
 
 theorem smoothedEnergy_eq_complex_norm (Φ:𝓢(ℝ,ℂ))
     (hΦ:∀x,0≤(Φ x).re)(hreal:∀x,(Φ x).im=0)
-    (H:ℝ)(hH:0<H)(f:O→ℂ):
+    (H:ℝ)(hH:0<H)(f:HeckeFamily.O→ℂ):
     smoothedEnergy Φ H f=
-      ‖∑'u:O,Φ (‖eisEmbedding u‖^2/H)*(‖f u‖^2:ℝ)‖:=by
-  rw [real_smoothed_sum_eq Φ (fun x _=>hreal x) hH,
+      ‖∑'u:HeckeFamily.O,Φ (‖eisEmbedding u‖^2/H)*(‖f u‖^2:ℝ)‖:=by
+  rw [real_smoothed_sum_eq Φ (by grind) hH,
     Complex.norm_real,Real.norm_eq_abs,
-    abs_of_nonneg (smoothedEnergy_nonneg Φ (fun x _=>hΦ x) hH f)]
+    abs_of_nonneg (smoothedEnergy_nonneg Φ (by grind) hH f)]
 
 end SevenEighths.DetectorDictionaryInverseRawRealRadial
 

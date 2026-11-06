@@ -5,7 +5,6 @@ public import Erdos821.S2High.PivotAssignments
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2High
 
@@ -38,7 +37,7 @@ theorem blockContaining_eq (pi : Finset (Finset PivotAddrFin)) (hpi : BirthColle
     blockContaining pi j hj = ⟨C, hC⟩ := by
   apply Subtype.ext
   by_contra hne
-  have hdis := hpi.2 (blockContaining pi j hj).property hC hne
+  have hdis := hpi.2 (by simp) hC hne
   exact (Finset.disjoint_left.mp hdis (blockContaining_mem pi j hj)) hjC
 
 end Erdos821.S2High

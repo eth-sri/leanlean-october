@@ -75,7 +75,7 @@ theorem pathLines_of_mem_pathsFrom {N : ℕ} {π₀ π : Fin (N + 1) → FreeSta
     pathLines p π t = lineOf p a.1.1.1 := by
   have := pathLines_val p π ⟨t, Nat.lt_succ_of_le ht⟩
   rw [apply_of_mem_pathsFrom hπ ht] at this
-  exact this
+  omega
 
 /-- The activity of a path through `a` at `t`. -/
 theorem mem_activeSet_of_mem_pathsFrom {N : ℕ} {π₀ π : Fin (N + 1) → FreeState x d Y d₀ u v r}
@@ -83,7 +83,7 @@ theorem mem_activeSet_of_mem_pathsFrom {N : ℕ} {π₀ π : Fin (N + 1) → Fre
     t ∈ activeSet p π ↔ ∃ i h, a.1.2 i h = p := by
   have := mem_activeSet p π ⟨t, Nat.lt_succ_of_le ht⟩
   rw [apply_of_mem_pathsFrom hπ ht] at this
-  exact this
+  omega
 
 /-- At the last visit only one path is left. -/
 theorem sum_pathsFrom_last {N : ℕ} (π₀ : Fin (N + 1) → FreeState x d Y d₀ u v r)
@@ -93,7 +93,7 @@ theorem sum_pathsFrom_last {N : ℕ} (π₀ : Fin (N + 1) → FreeState x d Y d�
   refine sum_eq_single_of_mem _ ?_ fun π hπ hne => absurd ?_ hne
   · refine mem_pathsFrom.2 ⟨fun j hj => ?_, fun j hj => ?_⟩
     · simp [hj.ne]
-    · simp [hj]
+    simp_all
   · funext j
     by_cases hj : (j : ℕ) = N
     · simp [hj, (mem_pathsFrom.1 hπ).2 j hj]
@@ -102,7 +102,7 @@ theorem sum_pathsFrom_last {N : ℕ} (π₀ : Fin (N + 1) → FreeState x d Y d�
 /-- Past the last edge the weight is `1`. -/
 theorem weightFrom_last {N : ℕ} (π : Fin (N + 1) → FreeState x d Y d₀ u v r) :
     weightFrom A₀ π N = 1 := by
-  rw [weightFrom, filter_false_of_mem fun j _ => not_le.2 j.2, prod_empty]
+  rw [weightFrom, filter_false_of_mem (by omega), prod_empty]
 
 /-- Splitting a path at its visit `t < N`: the first edge, and the paths through the next
 state. -/
@@ -126,15 +126,14 @@ theorem sum_pathsFrom_succ {N : ℕ} (π₀ : Fin (N + 1) → FreeState x d Y d�
     · rintro ⟨⟨h₁, h₂⟩, h₃⟩
       refine ⟨fun j hj => ?_, fun j hj => ?_⟩
       · by_cases hjt : (j : ℕ) = t
-        · simp [hjt, h₂ j hjt]
+        · simp_all
         · simp [hjt, h₁ j (by omega)]
       · rw [show j = t₁ from Fin.ext hj, h₃]
     · rintro ⟨h₁, h₂⟩
       refine ⟨⟨fun j hj => ?_, fun j hj => ?_⟩, h₂ t₁ rfl⟩
       · have := h₁ j (by omega)
         simpa [hj.ne] using this
-      · have := h₁ j (by omega)
-        simpa [hj] using this
+      simp_all
   rw [hset, mul_sum]
   refine sum_congr rfl fun π hπ => ?_
   -- step: the weight from `t` is the first edge times the weight from `t + 1`
@@ -170,7 +169,6 @@ theorem baseline_mul_pos (hq : 0 < q) {N p : ℕ} (hp : N < p) :
   have h : ((p : ℝ) + 1) * baseline q N p =
       (p : ℝ) + 1 - ∑ j ∈ range (N + 1), dampDefect q N j := by
     rw [baseline, mul_sub, mul_one, ← mul_assoc, mul_inv_cancel₀ (by positivity), one_mul]
-  rw [h]
   linarith
 
 variable {q} in
@@ -193,7 +191,7 @@ theorem postProd_last (hq : 0 < q) {N : ℕ} (hbig : ∀ p ∈ bandPrimes x d, N
   have hval : ∀ p ∈ bandPrimes x d, primePost q N π p N (statusOf act S Bn p) =
       if ∃ ℓ, statusOf act S Bn p = .pending ℓ then 0 else 1 := by
     intro p hp
-    rw [primePost, postValue_last (activeSet_subset p π) (birthConst_mul hq (hbig p hp))]
+    rw [primePost, postValue_last (activeSet_subset p π) (birthConst_mul hq (by grind))]
     cases statusOf act S Bn p <;> simp
   rw [postProd, prod_congr rfl hval]
   by_cases hm : memSize S = 0
@@ -205,8 +203,8 @@ theorem postProd_last (hq : 0 < q) {N : ℕ} (hbig : ∀ p ∈ bandPrimes x d, N
     obtain ⟨xp, hxp⟩ : ∃ xp, S xp ≠ 0 := by
       by_contra h
       push Not at h
-      exact hm (sum_eq_zero fun xp _ => h xp)
-    have hp : xp.1.1 ∈ bandPrimes x d :=
+      exact hm (sum_eq_zero (by grind))
+    have hp :=
       (mem_particles.1 (show (xp.1.1, xp.1.2) ∈ particles x d from xp.2)).1
     exact prod_eq_zero hp (ite_eq_left ⟨_, statusOf_of_pend hS hxp⟩)
 
@@ -215,7 +213,7 @@ theorem pendingHits_of_memSize_eq_zero {z : ℤ × ℤ} {S : Particle x d → �
     pendingHits x d z S = 0 :=
   sum_eq_zero fun xp _ => by
     have := Nat.eq_zero_of_le_zero (h ▸ le_memSize S xp)
-    simp [this]
+    simp_all
 
 /-- The position of `chainFree s` is the position of `s`. -/
 theorem chainFree_pos (s : ChainState x d Y d₀ u v r B) : (chainFree s).1.1.1 = s.1.1 := rfl
@@ -254,14 +252,12 @@ theorem distinctFold_zero_eq (hq : 0 < q)
       by_cases hm : memSize (chainGhostOut x d Y d₀ u v r B s g).2.2.1 = 0
       · rw [ite_eq_left hm, pendingHits_of_memSize_eq_zero hm]
         have : (chainGhostOut x d Y d₀ u v r B s g).1.1 = s.1.1 := rfl
-        simp only [this, hm, and_true]
-        split_ifs <;> push_cast <;> ring
-      · simp [hm]
-    · simp [hnd]
+        simp_all
+      simp_all
+    simp_all
   · have h0 : chainGhostCoef q x d Y d₀ u v r B N N s g = 0 := by
       rw [chainGhostCoef, ghostCoef, ite_eq_right hv]
-    rw [visitWeight, ite_eq_right hv, h0]
-    simp
+    simp [visitWeight, ite_eq_right hv, h0]
 
 /-! ### An earlier visit -/
 
@@ -295,7 +291,7 @@ theorem edgeGood_of_valid {s : ChainState x d Y d₀ u v r B} {c₀ : FreeChoice
   · obtain ⟨xp, hxp, h1⟩ := hm.1 i hfi
     have : promPart hc₀ i = xp := (Subtype.ext hxp).symm
     rw [this]
-    exact Nat.one_le_iff_ne_zero.1 h1
+    omega
   · have h₁ := Multiset.nodup_iff_count_le_one.1 hnd (c₀.2.2.1 i)
     rw [Multiset.count_add, count_freshBirths] at h₁
     have h₂ := Multiset.count_pos.2 hB'
@@ -317,8 +313,7 @@ theorem sum_comm_four {α β γ δ : Type*} (sa : Finset α) (sb : Finset β) (s
   calc ∑ a ∈ sa, ∑ b ∈ sb, ∑ c ∈ sc, ∑ e ∈ sd, F a b c e =
       ∑ a ∈ sa, ∑ e ∈ sd, ∑ b ∈ sb, ∑ c ∈ sc, F a b c e := by
         refine sum_congr rfl fun a _ => ?_
-        rw [sum_comm (s := sd)]
-        exact sum_congr rfl fun b _ => sum_comm
+        simp [sum_comm (s := sd)]
     _ = _ := sum_comm
 
 open scoped Classical in
@@ -365,32 +360,32 @@ theorem distinctFold_term_eq
   · have h0 : chainGhostCoef q x d Y d₀ u v r B N t s g = 0 := by
       rw [chainGhostCoef, ghostCoef, ite_eq_right hv]
     rw [h0, visitWeight, ite_eq_right hv]
-    simp only [zero_mul, mul_zero, Complex.ofReal_zero, sum_const_zero]
+    simp
   by_cases hnd : (Bn + batchBirths g.2).Nodup
   swap
   · have hnd' : ¬(Bn + batchBirths g.2 + freshBirths (toEdge c₀ St fl)).Nodup := fun h =>
       hnd (Multiset.nodup_add.1 h).1
     rw [ite_eq_right hnd', ite_eq_right hnd]
-    simp only [zero_mul, mul_zero, Complex.ofReal_zero, sum_const_zero]
+    simp
   by_cases hf : FreeValid x d Y d₀ u v r B s (toEdge₀ c₀)
   swap
   · rw [freeCoef, ite_eq_right hf]
-    simp only [zero_mul, mul_zero]
+    simp
   by_cases hm : MemValid x d Y d₀ u v r B sg (toEdge c₀ St fl)
   swap
   · rw [memEdgeCoef, ite_eq_right hm, ite_eq_right hm]
-    simp only [zero_mul, mul_zero, Complex.ofReal_zero, sum_const_zero]
+    simp
   by_cases hnd' : (Bn + batchBirths g.2 + freshBirths (toEdge c₀ St fl)).Nodup
   swap
   · rw [ite_eq_right hnd', ite_eq_right hnd']
-    simp only [zero_mul, mul_zero, Complex.ofReal_zero, sum_const_zero]
+    simp
   -- all restrictions hold: apply the induction hypothesis after the edge
   have hS' : Consistent sg.2.1.1 sg.2.2.1 (Bn + batchBirths g.2) := by
     rw [show sg.2.2.1 = ghostMem s.2.2.1 g from chainGhostOut_mem hv]
     exact consistent_ghostMem hS (ghostOK_of_valid hv hnd)
-  have hg : EdgeGood (s := sg) hc₀ (Bn + batchBirths g.2) fl := edgeGood_of_valid hc₀ hm hnd'
+  have hg := edgeGood_of_valid hc₀ hm hnd'
   have hf' : FreeValid x d Y d₀ u v r B sg (toEdge₀ c₀) := (freeValid_congr rfl rfl _).2 hf
-  have hev : EdgeValid x d Y d₀ u v r B sg (toEdge c₀ St fl) :=
+  have hev :=
     (edgeValid_iff sg (toEdge c₀ St fl)).2 ⟨(freeValid_toEdge sg c₀ St fl).2 hf', hm⟩
   have hc' := consistent_edgeMem hdisj hc₀ hf' hS' St hg
   set out := chainEdgeOut x d Y d₀ u v r B sg (toEdge c₀ St fl) with hout
@@ -410,13 +405,7 @@ theorem distinctFold_term_eq
     ite_eq_left hnd]
   -- collect the pending factors into the visit weight
   have hvw := visitWeight_eq q N t s g
-  have hρ : (pendingWeight q : ℂ) ^ pendingHits x d c₀.2.1.1 (edgeMem sg (toEdge c₀ St fl)) *
-      distinctFold q A₀ Y d₀ u v r B N n (t + 1) out
-        (Bn + batchBirths g.2 + freshBirths (toEdge c₀ St fl)) =
-      ∑ π ∈ pathsFrom π₁ (t + 1) (freeOut s (toEdge₀ c₀)),
-        weightFrom A₀ π (t + 1) * endInd π *
-          (lifeProd q N π (t + 1) (edgeTgt s (toEdge c₀ St fl)) (edgeMem sg (toEdge c₀ St fl))
-            (Bn + batchBirths g.2 + freshBirths (toEdge c₀ St fl)) : ℂ) := hih
+  have hρ := hih
   calc (pendingWeight q : ℂ) ^ pendingHits x d s.1.1 s.2.2.1 *
         (chainGhostCoef q x d Y d₀ u v r B N t s g *
           (freeCoef A₀ s (toEdge₀ c₀) *

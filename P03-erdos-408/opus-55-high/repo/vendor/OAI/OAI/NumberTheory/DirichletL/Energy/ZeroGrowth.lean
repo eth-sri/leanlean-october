@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowBands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowth
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceLowBands QuadraticInitialBound
-local notation "O" => HeckeFamily.O
+open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
+open QuadraticInitialBound
 
-def ZeroGrowthAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
+def ZeroGrowthAt (Q : Ideal HeckeFamily.O) (a b bΦ Bmask L M ε Z : ℝ)
     (degree : ℕ) (S : Finset (ℕ × ℕ)) (C : ℝ) : Prop :=
   ∀ s : NaturalState Z Bmask bΦ, s.fixedModulus = Q → s.width ≤ M →
   ∀ p : Profiles a b, ∀ t X₁ X₂ : ℝ,
@@ -26,7 +25,7 @@ def ZeroGrowthAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
         (1 + ‖t‖) ^ degree *
         Z ^ (max s.width (length Z X₁ + length Z X₂) + ε)
 
-lemma zeroGrowth_of_zeroAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
+lemma zeroGrowth_of_zeroAt (Q : Ideal HeckeFamily.O) (a b bΦ Bmask L M ε Z : ℝ)
     (degree : ℕ) (S : Finset (ℕ × ℕ)) (C : ℝ) (hC : 0 ≤ C)
     (h : ZeroAt Q a b bΦ Bmask L M ε Z degree S C) :
     ZeroGrowthAt Q a b bΦ Bmask L M ε Z degree S C := by
@@ -37,7 +36,7 @@ lemma zeroGrowth_of_zeroAt (Q : Ideal O) (a b bΦ Bmask L M ε Z : ℝ)
   apply mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le s.base_ge_one he)
   exact mul_nonneg (mul_nonneg (mul_nonneg hC
-    (diagonalControl_nonneg _)) (sq_nonneg _)) (pow_nonneg (by positivity) _)
+    (diagonalControl_nonneg _)) (sq_nonneg _)) (by positivity)
 
 end SevenEighths.CenteredMomentEnergyZeroGrowth
 

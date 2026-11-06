@@ -12,7 +12,6 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.ProbeHighRowFamily

@@ -12,19 +12,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawReference
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve
+open ConcreteTraceCRT ConcretePrimeRowBridge
+open CanonicalRowCompletion CanonicalQuadraticSieve
 open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod
-open InverseInitialRayAttachment InverseInitialProfileBounds
+open InverseInitialRayAttachment
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy
 open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
 open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
 open DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
-local notation "O"=>HeckeFamily.O
 
 theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
@@ -37,7 +36,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
   obtain ⟨η,τ,π,eps,hη,hτ,hπ,heps,hηone,hηgap,hτgap,hcost⟩:=
     raw_fixed_reserves c (κ/2) hc (by positivity)
   let gap:=capacityGap c/4
-  have hgap:0<gap:=by dsimp [gap];exact div_pos (capacityGap_pos c hc) (by norm_num)
+  have hgap:0<gap:=by dsimp [gap];exact by linarith
   have hηsmall:η≤gap/50:=by dsimp [gap];nlinarith
   have hτsmall:τ≤gap/50:=by dsimp [gap];nlinarith
   let Wbar:=SecondPassIntegration.conjugateProfile W
@@ -63,7 +62,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     exact (hs ((mul_ne_zero_iff.mp hx).1)).2
   have hraw:=raw_rows_le_initial Φ hΦ hone data (childLogTest W t) H D c b Btree 2 0 0
     hHp hD hc hcapacity hb.le hWt rows hrows
-  have hterm (j:Ideal O)(hj:j∈T):
+  have hterm (j:Ideal HeckeFamily.O)(hj:j∈T):
       smoothedEnergy Φ H (initialFunction data (childLogTest W t) H b Btree 2 D 0 0 j)≤
         C*H^(1+15*η+π+eps+κ/4)*(1+‖t‖)^(2*J):=by
     obtain ⟨hrlo,hr₁,hr₂,hex,hrcap,hDH⟩:=hgeom D hD hcapacity j hj
@@ -73,14 +72,14 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       convert completeCutoff_tree H b Btree 2 using 1 ; norm_num
     have hbcover:b*H^r≤(Dpool:ℝ):=by
       rw [hex]
-      exact completeCutoff_columns H b Btree 2 D _ hb.le (zero_lt_one.trans_le hD).le hDH
+      exact completeCutoff_columns H b Btree 2 D _ hb.le (by positivity) hDH
         (excluded_divisor_norm data j hj).1
     have hbound:=hinput H hHq' Dpool hpool
       (elementCharacter (conjugateIdealCharacter (idealCoeff (deletedBase data)).toMonoidHom))
-      hn hperiod r (-t) (by dsimp [r];linarith)
-      (by dsimp [gap] at *;linarith [(capacityGap_pos c hc).le])
-      (by dsimp [gap] at *;linarith [(capacityGap_pos c hc).le])
-      (by have hh:=capacityGap_lt_one c hc;linarith)
+      hn hperiod r (-t) (by linarith)
+      (by dsimp [gap] at *;linarith)
+      (by dsimp [gap] at *;linarith)
+      (by linarith)
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
       (reflectionExcludedPrimes_bad (deletedPeriod (basePeriod data)))
@@ -96,14 +95,12 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       funext x
       simp [twistedProfile,HeckeDyadic.shift]
     rw [hf,smoothedEnergy_eq_complex_norm Φ hΦ hreal H hHpos]
-    have he: (∑'u:O,Φ (‖eisEmbedding u‖^2/H)*
+    have he: (∑'u:HeckeFamily.O,Φ (‖eisEmbedding u‖^2/H)*
         (‖originalTotalPolynomial F 1 (idealCoeff (deletedBase data)).toMonoidHom
           (fun _=>1) (childLogTest W t) H r 0 u‖^2:ℝ))=
-        (∑'u:O,Φ (‖eisEmbedding u‖^2/H)*
+        (∑'u:HeckeFamily.O,Φ (‖eisEmbedding u‖^2/H)*
         (‖((H^(-r/2):ℝ):ℂ)*SecondPassArithmetic.inputConjugateRow
-          (poolPrimary F) (poolPrimary_good F (InitialMeanSquare.outsideSquarefree_admissible
-            (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
-            (reflectionExcludedPrimes_bad (deletedPeriod (basePeriod data)))))
+          (poolPrimary F) (poolPrimary_good F (by omega))
           Finset.univ (elementCharacter (conjugateIdealCharacter
             (idealCoeff (deletedBase data)).toMonoidHom)) 1 1 1
           (initialTest (poolPrimary F) (fun _=>1) (childLogTest Wbar (-t)) H r) u‖^2:ℝ)):=by
@@ -125,7 +122,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     _≤Ctotal*H^(1+15*η+π+eps+κ/4)*(1+‖t‖)^(2*J):=by
       dsimp [Ctotal]
       gcongr
-      nlinarith [Nat.cast_nonneg (α:=ℝ) T.card]
+      simp
     _≤(Ctotal*(1+‖t‖)^(2*J))*H*(H*max 1 D)^κ:=by
       have he:15*η+π+eps+κ/4≤κ:=by linarith
       have hh:=raw_output_budget H D κ (15*η+π+eps+κ/4) hHp.le hκ.le he
@@ -143,8 +140,8 @@ theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
   obtain ⟨C,H₀,hC,hH₀,hlarge⟩:=hlarge data
   obtain ⟨C₀,hC₀,hcomplete⟩:=DetectorDictionaryInverseRawCompact.rawMoment_of_large_rows_ge_one
     W a b ha hs H₀ hH₀.le
-  refine ⟨C+C₀,add_pos hC hC₀,?_⟩
-  exact hcomplete data c κ C J hc.le hκ.le hC.le hlarge
+  refine ⟨C+C₀,by positivity,?_⟩
+  grind
 
 end SevenEighths.DetectorDictionaryInverseRawReference
 

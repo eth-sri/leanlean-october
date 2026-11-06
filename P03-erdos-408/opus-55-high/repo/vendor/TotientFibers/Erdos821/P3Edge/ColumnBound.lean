@@ -7,7 +7,6 @@ public import Erdos821.P3Edge.ColSummable
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -31,15 +30,14 @@ lemma smallPhysical_permuteActive_iff {M : ℕ} (π : P.Permutations M)
         dsimp
         rw [(π g.val).apply_symm_apply, (π g.val).apply_symm_apply]
         exact hij
-      exact (π g.val).symm.injective h'
+      simp_all
     · intro h i j hij
       exact (π g.val).injective (h hij)
   · constructor
     · intro h i
       have h' := h ((π g.val).symm i)
-      rwa [(π g.val).apply_symm_apply] at h'
-    · intro h i
-      exact h (π g.val i)
+      grind
+    simp_all
 
 /-- Small-group baseline factor in `memoryMass`. -/
 def smallBaseMass (F : FixedData) (P : PrimeGroups) (J : ℕ) : ℝ :=
@@ -50,8 +48,8 @@ lemma smallBaseMass_nonneg (F : FixedData) (P : PrimeGroups) (J : ℕ)
     (hV : ∀ g : P.Group, 0 < P.V g) :
     0 ≤ smallBaseMass F P J := by
   unfold smallBaseMass
-  apply mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg _))
-  exact Finset.prod_nonneg (fun g _ => zpow_nonneg (hV g.val).le _)
+  apply mul_nonneg (by positivity)
+  exact Finset.prod_nonneg (fun g _ => zpow_nonneg (by grind) _)
 
 lemma memoryMass_eq_of_smallPhysical (F : FixedData) (J n : ℕ)
     (π : P.Permutations (J + F.ell)) (z : P.MemoryState (J + F.ell))
@@ -61,7 +59,7 @@ lemma memoryMass_eq_of_smallPhysical (F : FixedData) (J n : ℕ)
         ∏ g : P.BigGroup,
           ((∏ idx : Fin (J + F.ell), tiltedMu F P n g.val ((P.act π z.2.1) g.val idx)) *
             P.groupMemoryMass F n g.val (z.2.2 g)) := by
-  have hphys0 : P.smallPhysical z.1 z.2.1 :=
+  have hphys0 :=
     (smallPhysical_permuteActive_iff π z.1 z.2.1).mp hphys
   unfold PrimeGroups.memoryMass smallBaseMass
   rw [ite_eq_left hphys0, Finset.prod_mul_distrib, ← mul_assoc]
@@ -80,11 +78,11 @@ lemma memoryMass_nonneg (F : FixedData) (J n : ℕ)
   split_ifs
   · apply mul_nonneg
     · apply mul_nonneg
-      · apply mul_nonneg (inv_nonneg.mpr (Nat.cast_nonneg _))
-        exact Finset.prod_nonneg (fun g _ => zpow_nonneg (hV g.val).le _)
-      · exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ => htilted g _))
+      · apply mul_nonneg (by positivity)
+        exact Finset.prod_nonneg (fun g _ => zpow_nonneg (by grind) _)
+      · exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (by grind))
     · exact Finset.prod_nonneg (fun g _ => groupMemoryMass_nonneg F n (htilted g) (z.2.2 g))
-  · exact le_refl 0
+  simp
 
 lemma edgeDelta_eq_of_compatible (A : Model F P J m) (ν : Pattern P J F.ell m)
     (forward : Bool) (a b : P.Labels (J + F.ell)) (u : P.Aux J)
@@ -97,18 +95,17 @@ lemma edgeDelta_eq_of_compatible (A : Model F P J m) (ν : Pattern P J F.ell m)
     apply Finset.prod_congr rfl
     intro i _
     by_cases hi : i ∈ ν.changed g
-    · simp [hi]
+    · simp_all
     · have hsh : ν.shared g (ν.slot i) := ⟨i, rfl, hi⟩
       rw [ite_eq_right hi, ite_eq_right hi, hcomp g (ν.slot i) hsh]
   unfold edgeDelta
-  rw [hD]
+  simp_all
 
 lemma translateSmallResidues_neg_cancel (d : ℤ) (y : P.SmallResidues) :
     translateSmallResidues (-d) (translateSmallResidues d y) = y := by
   funext g p
   unfold translateSmallResidues
-  push_cast
-  exact add_neg_cancel_right (y g p) (d : ZMod p.val)
+  simp
 
 lemma edgeChoiceCoefficient_indep_f (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
     (i : Fin n) (s t : P.MemoryState (J + F.ell))
@@ -142,7 +139,7 @@ lemma colBigMapSum_nonneg (F : FixedData) (r : MemoryParameters F) (n : ℕ)
   intro f'_g _
   split_ifs
   · exact bigGroupWeight_nonneg F r n ν delta' g hV htilted _ _ _ _ _ _
-  · exact le_refl 0
+  simp
 
 /-- Product of `colBigMapSum` over big groups and `smallPrefixFibre` indicator over small groups. -/
 def colLabelTerm (F : FixedData) (r : MemoryParameters F) (n : ℕ)
@@ -171,7 +168,7 @@ lemma colLabelTerm_nonneg (F : FixedData) (r : MemoryParameters F) (n : ℕ)
   · apply Finset.prod_nonneg (fun g _ => ?_)
     split_ifs
     · exact smallGroupWeight_nonneg F J g (hV g.val) _
-    · exact le_refl 0
+    simp
 
 /-- Summing `colLabelTerm` over `(B, A_retr, a)` is bounded by the product of big and small group constants. -/
 lemma sum_colLabelTerm_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
@@ -215,7 +212,7 @@ lemma sum_colLabelTerm_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
     congr 1
     apply Finset.prod_congr rfl
     intro g _
-    exact hmap_eq g (A_retr g) (B g)
+    exact by grind
   simp_rw [ha_sum, ← Finset.sum_mul]
   rw [Finset.sum_comm]
   have hB_sum : ∀ A_retr : (g : P.BigGroup) → Finset (Fin (J + F.ell)),
@@ -242,7 +239,7 @@ lemma sum_colLabelTerm_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
         Finset.sum_nonneg (fun f_g _ => Finset.sum_nonneg (fun b_g _ => ?_))))
       split_ifs
       · exact bigGroupWeight_nonneg F r n ν delta' g (hVpos g.val) (htilted_nn g) _ _ _ _ _ _
-      · exact le_refl 0
+      simp
     · intro g
       unfold bigChoiceRetrSum bigChoiceMapSum bigChoiceLabelSum
       exact bigGroup_sum_le F r n Cprom hCprom ν delta' g (hVlo g.val)
@@ -256,7 +253,7 @@ lemma sum_colLabelTerm_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
       dsimp [F_small]
       split_ifs
       · exact smallGroupWeight_nonneg F J g (hVpos g.val) _
-      · exact le_refl 0
+      simp
     · intro g
       exact smallPrefixFibre_sum_le F J m Csmall0 hCsmall0 g (hVlo g.val) _ _
   apply mul_le_mul hbig_prod_le hsmall_prod_le
@@ -264,7 +261,7 @@ lemma sum_colLabelTerm_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
     dsimp [F_small]
     split_ifs
     · exact smallGroupWeight_nonneg F J g (hVpos g.val) _
-    · exact le_refl 0
+    simp
   · exact pow_nonneg (bigGroupConst_pos F r m Cprom).le _
 
 /-! ### Reversal bound at a single source `s` -/
@@ -410,14 +407,14 @@ lemma col_rawEdge_reversal_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
     have hle : (A_retr g).card ≤ (s.2.2 g).card := by
       have hc := Fintype.card_le_of_injective (f₀ g) hinj
       simpa using hc
-    have hvne : r.v ≠ 0 := ne_of_gt (lt_trans zero_lt_one r.v_gt)
+    have hvne := ne_of_gt (lt_trans zero_lt_one r.v_gt)
     change r.v ^ (s.2.2 g).card =
       r.v ^ (t.2.2 g).card * (r.v ^ (A_retr g).card / r.v ^ (B g).card)
     have hcard' : (t.2.2 g).card = (s.2.2 g).card - (A_retr g).card + (B g).card := hcard
     rw [hcard', pow_add]
     have hsub : r.v ^ ((s.2.2 g).card - (A_retr g).card) =
         r.v ^ (s.2.2 g).card / r.v ^ (A_retr g).card := by
-      rw [eq_div_iff (pow_ne_zero _ hvne), ← pow_add, Nat.sub_add_cancel hle]
+      rw [eq_div_iff (by positivity), ← pow_add, Nat.sub_add_cancel hle]
     have hA_ne : r.v ^ (A_retr g).card ≠ 0 := pow_ne_zero _ hvne
     have hB_ne : r.v ^ (B g).card ≠ 0 := pow_ne_zero _ hvne
     rw [hsub]
@@ -477,16 +474,16 @@ lemma col_rawEdge_reversal_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
         if ν.shared g.val idx ∨ idx ∈ A_retr g then 1 else tiltedMu F P n g.val (tt.2.1 g.val idx) := by
       apply Finset.prod_nonneg (fun idx _ => ?_)
       split_ifs
-      · exact zero_le_one
+      · simp
       · exact htilted_nn g _
     have hact_nn : 0 ≤ ∏ idx : Fin (J + F.ell), tiltedMu F P n g.val (ss.2.1 g.val idx) :=
       Finset.prod_nonneg (fun idx _ => htilted_nn g _)
-    have hgm_nn : 0 ≤ P.groupMemoryMass F n g.val (s.2.2 g) :=
+    have hgm_nn :=
       groupMemoryMass_nonneg F n (htilted_nn g) (s.2.2 g)
     have hV_nn : 0 ≤ (P.V g.val) ^ (-((A_retr g).card : ℤ)) := zpow_nonneg (hVpos g.val).le _
     have hrho_nn : 0 ≤ r.rho ^ (zeroMemoryIndices (s.2.2 g)).card := pow_nonneg r.rho_pos.le _
     have hv_nn : 0 ≤ r.v ^ (A_retr g).card / r.v ^ (B g).card :=
-      div_nonneg (pow_nonneg hvpos.le _) (pow_nonneg hvpos.le _)
+      by positivity
     exact mul_nonneg
       (mul_nonneg
         (mul_nonneg
@@ -542,9 +539,9 @@ lemma col_rawEdge_reversal_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
     apply Finset.prod_nonneg (fun g _ => ?_)
     split_ifs
     · exact smallGroupWeight_nonneg F J g (hVpos g.val) _
-    · exact le_refl 0
-  have hbase_nn : 0 ≤ smallBaseMass F P J := smallBaseMass_nonneg F P J hVpos
-  have hwt_t_nn : 0 ≤ P.memoryWeight r.v t := memoryWeight_nonneg r t
+    · simp
+  have hbase_nn := smallBaseMass_nonneg F P J hVpos
+  have hwt_t_nn := memoryWeight_nonneg r t
   have hfactor_lhs :
       (∏ g : P.BigGroup,
         ((retrievalFibre (s.2.2 g) (A_retr g)
@@ -576,14 +573,14 @@ lemma col_rawEdge_reversal_le (F : FixedData) (r : MemoryParameters F) (n : ℕ)
       ≤ (ν.auxMass u * smallBaseMass F P J * P.memoryWeight r.v t * S_prod *
           (∏ g : P.BigGroup, LHS_g g)) * 1 := by
         apply mul_le_mul_of_nonneg_left hdamp_t
-        exact mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg haux_nn hbase_nn) hwt_t_nn) hS_nn)
+        exact mul_nonneg (mul_nonneg (by positivity) hS_nn)
           (Finset.prod_nonneg (fun g _ => hLHS_g_nn g))
     _ = (ν.auxMass u * smallBaseMass F P J * P.memoryWeight r.v t * S_prod) *
           (∏ g : P.BigGroup, LHS_g g) := mul_one _
     _ ≤ (ν.auxMass u * smallBaseMass F P J * P.memoryWeight r.v t * S_prod) *
           (∏ g : P.BigGroup, RHS_g g) := by
         apply mul_le_mul_of_nonneg_left hprod_le
-        exact mul_nonneg (mul_nonneg (mul_nonneg haux_nn hbase_nn) hwt_t_nn) hS_nn
+        exact mul_nonneg (by positivity) hS_nn
     _ = ν.auxMass u * P.memoryMass F J n t * P.memoryWeight r.v t *
           (colRevConst F m ^ Fintype.card P.BigGroup) *
           colLabelTerm F r n ν (-delta) tt A_retr B ss.2.1 := by
@@ -691,8 +688,7 @@ lemma colSourceMapSum_le_of_valid (F : FixedData) (r : MemoryParameters F) (n : 
           apply mul_le_mul_of_nonneg_right _ (memoryWeight_nonneg r s)
           exact mul_le_mul_of_nonneg_left hcoeff (memoryMass_nonneg F J n hVpos htilted_nn s)
       _ = patternSup A v * K₀ := by
-          dsimp [K₀]
-          ring
+          linarith
   have hrev := col_rawEdge_reversal_le F r n i A hVlo hVhi htilted_nn π τ v u B A_retr s t f₀ hval₀
   calc colSourceMapSum F r n theta i A t π τ v u B A_retr s
       = ∑ f ∈ Finset.univ.filter (fun f =>
@@ -819,7 +815,7 @@ lemma sum_source_colSourceMapSum_le (F : FixedData) (r : MemoryParameters F) (n 
     obtain ⟨f₂, hv₂⟩ := (Finset.mem_filter.mp (Finset.mem_coe.mp hs₂)).2
     obtain ⟨hs₁_sm, hs₁_mem⟩ := valid_source_small_and_mem A i π τ v u B A_retr s₁ t f₁ hv₁
     obtain ⟨hs₂_sm, hs₂_mem⟩ := valid_source_small_and_mem A i π τ v u B A_retr s₂ t f₂ hv₂
-    have h1 : s₁.1 = s₂.1 := hs₁_sm.trans hs₂_sm.symm
+    have h1 := hs₁_sm.trans hs₂_sm.symm
     have h2 : s₁.2.1 = s₂.2.1 := by
       funext g j
       have hj := congrArg (fun a : P.Labels (J + F.ell) => a g ((π g).symm j)) heq
@@ -832,15 +828,7 @@ lemma sum_source_colSourceMapSum_le (F : FixedData) (r : MemoryParameters F) (n 
       exact hm₁.trans hm₂.symm
     cases s₁ with
     | mk y₁ p₁ =>
-      cases p₁ with
-      | mk a₁ m₁ =>
-        cases s₂ with
-        | mk y₂ p₂ =>
-          cases p₂ with
-          | mk a₂ m₂ =>
-            dsimp at h1 h2 h3
-            subst h1 h2 h3
-            rfl
+      grind
   let C_pref : ℝ := patternSup A v * ν.auxMass u * P.memoryMass F J n t * P.memoryWeight r.v t *
     (colRevConst F m ^ Fintype.card P.BigGroup)
   have hC_pref_nn : 0 ≤ C_pref := by
@@ -887,7 +875,7 @@ theorem col_tsum_le (F : FixedData) (r : MemoryParameters F) (m : ℕ) (C₁ : �
     small_count_damp F.q F.q_pos F.q_lt F.ell
   let Cbig := colRevConst F m * bigGroupConst F r m Cprom
   have hCbig_ge : 1 ≤ Cbig := by
-    calc (1 : ℝ) = 1 * 1 := (mul_one 1).symm
+    calc (1 : ℝ) = 1 * 1 := by simp
       _ ≤ colRevConst F m * bigGroupConst F r m Cprom :=
         mul_le_mul (colRevConst_ge_one F m) (bigGroupConst_ge_one F r m Cprom)
           zero_le_one (colRevConst_pos F m).le
@@ -902,45 +890,44 @@ theorem col_tsum_le (F : FixedData) (r : MemoryParameters F) (m : ℕ) (C₁ : �
   refine ⟨C₁ + Kbig + Ksmall, fun J => ?_⟩
   let xfact : ℝ := 10 * ((taylorTerms F).factorial : ℝ)
   refine ⟨max 3 (Real.exp xfact), fun x hx P hP A hA theta i t => ?_⟩
-  have hx3 : 3 ≤ x := le_trans (le_max_left _ _) hx
-  have hxexp : Real.exp xfact ≤ x := le_trans (le_max_right _ _) hx
-  have hL1 : 1 < L x := one_lt_L hx3
+  have hx3 : 3 ≤ x := by grind
+  have hxexp : Real.exp xfact ≤ x := by grind
+  have hL1 := one_lt_L hx3
   have hLpos : 0 < L x := lt_trans zero_lt_one hL1
   have hLfact : xfact ≤ L x := by
     have hlog := Real.log_le_log (Real.exp_pos _) hxexp
     rwa [Real.log_exp] at hlog
   have hx1 : 1 ≤ L x := hL1.le
   have hL10 : 10 * ((taylorTerms F).factorial : ℝ) ≤ L x := hLfact
-  have hVlo : ∀ g : P.Group, F.vMin ≤ P.V g := fun g => (hP.2.2.2.2.1 g).1
-  have hVhi : ∀ g : P.Group, P.V g ≤ F.vMax := fun g => (hP.2.2.2.2.1 g).2
-  have hVpos : ∀ g : P.Group, 0 < P.V g := fun g => V_pos_of_adm hP g
-  have hVne : ∀ g : P.Group, P.V g ≠ 0 := fun g => ne_of_gt (hVpos g)
+  have hVlo := fun g => (hP.2.2.2.2.1 g).1
+  have hVhi := fun g => (hP.2.2.2.2.1 g).2
+  have hVpos := fun g => V_pos_of_adm hP g
+  have hVne := fun g => ne_of_gt (hVpos g)
   have htilted_nn : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P (N x) g.val p :=
     fun g p => (tiltedMu_pos hx1 hP (N x) rfl hL10 g p).le
-  have htilted_sum : ∀ g : P.BigGroup, ∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p ≤ 2 :=
+  have htilted_sum :=
     fun g => tiltedMu_sum_le_two hx1 hP (N x) rfl hL10 g
   have hcard_big : ((Fintype.card P.BigGroup : ℕ) : ℝ) ≤ F.C₀ * Real.log (L x) := by
-    have hle : (P.bigGroups.card : ℝ) ≤ F.C₀ * T x := hP.2.2.2.1
+    have hle := hP.2.2.2.1
     have hcard_eq : (Fintype.card P.BigGroup : ℝ) = (P.bigGroups.card : ℝ) := by
       rw [PrimeGroups.bigGroups]
       simp [Fintype.card_subtype]
     rw [hcard_eq]
     exact hle
   have hcard_small : ((Fintype.card P.SmallGroup : ℕ) : ℝ) ≤ F.C₀ * Real.log (L x) := by
-    have hle : (P.smallGroups.card : ℝ) ≤ F.C₀ * T x := hP.2.1
+    have hle := hP.2.1
     have hcard_eq : (Fintype.card P.SmallGroup : ℝ) = (P.smallGroups.card : ℝ) := by
       rw [PrimeGroups.smallGroups]
       simp [Fintype.card_subtype]
     rw [hcard_eq]
     exact hle
-  have hbig_pow : Cbig ^ Fintype.card P.BigGroup ≤ (L x) ^ Kbig :=
+  have hbig_pow :=
     pow_groups_le_rpow Cbig hCbig_pos _ F.C₀ (L x) Kbig
       F.C₀_pos hL1 hKbig_nn (le_refl _) hcard_big
-  have hsmall_pow : Csmall ^ Fintype.card P.SmallGroup ≤ (L x) ^ Ksmall :=
+  have hsmall_pow :=
     pow_groups_le_rpow Csmall hCsmall_pos _ F.C₀ (L x) Ksmall
       F.C₀_pos hL1 hKsmall_nn (le_refl _) hcard_small
-  have hfin : Set.Finite {s : P.MemoryState (J + F.ell) |
-      absoluteMemoryEdgeKernel A (N x) r.rho theta i .all s t ≠ 0} :=
+  have hfin :=
     col_kernel_set_finite A r.rho theta i t
   have htsum_eq : (∑' s, P.memoryMass F J (N x) s *
         ‖((absoluteMemoryEdgeKernel A (N x) r.rho theta i .all s t : ℝ) : ℂ)‖ *
@@ -957,7 +944,7 @@ theorem col_tsum_le (F : FixedData) (r : MemoryParameters F) (m : ℕ) (C₁ : �
       have hnot : s ∉ {s : P.MemoryState (J + F.ell) |
           absoluteMemoryEdgeKernel A (N x) r.rho theta i .all s t ≠ 0} :=
         fun hcon => hs (hfin.mem_toFinset.mpr hcon)
-      simp only [Set.mem_ofPred_eq, ne_eq, not_not] at hnot
+      simp only [Set.mem_ofPred_eq, not_not] at hnot
       rw [norm_cast_absolute, hnot, mul_zero, zero_mul]
   let P_base : ℝ := (bigGroupConst F r m Cprom) ^ Fintype.card P.BigGroup *
     Csmall ^ Fintype.card P.SmallGroup
@@ -1024,8 +1011,7 @@ theorem col_tsum_le (F : FixedData) (r : MemoryParameters F) (m : ℕ) (C₁ : �
             apply Finset.sum_le_sum (fun B _ => Finset.sum_le_sum (fun A_retr _ => ?_))
             have h := sum_source_colSourceMapSum_le F r (N x) theta i A hVlo hVhi htilted_nn
               π τ v u B A_retr t hfin.toFinset
-            dsimp [MW_t]
-            linarith [h]
+            linarith
         _ = (patternSup A v * (A.pattern v).auxMass u * MW_t) *
               ∑ B : (g : P.BigGroup) → Finset (Fin (J + F.ell)),
                 ∑ A_retr : (g : P.BigGroup) → Finset (Fin (J + F.ell)),
@@ -1099,8 +1085,6 @@ theorem col_tsum_le (F : FixedData) (r : MemoryParameters F) (m : ℕ) (C₁ : �
           have hcard_pos : (0 : ℝ) < (Fintype.card (P.Permutations (J + F.ell)) : ℝ) ^ (2 : ℕ) := by
             positivity
           rw [← mul_assoc, inv_mul_cancel₀ (ne_of_gt hcard_pos), one_mul]
-          dsimp [MW_t, P_base, Cbig]
-          rw [mul_pow]
           ring
   rw [htsum_eq]
   calc ∑ s ∈ hfin.toFinset,
@@ -1120,12 +1104,12 @@ theorem col_tsum_le (F : FixedData) (r : MemoryParameters F) (m : ℕ) (C₁ : �
         have hmid : A.patternMass * (Cbig ^ Fintype.card P.BigGroup) *
             (Csmall ^ Fintype.card P.SmallGroup) ≤
             ((L x) ^ C₁) * ((L x) ^ Kbig) * ((L x) ^ Ksmall) := by
-          apply mul_le_mul _ hsmall_pow hCs0 (mul_nonneg hL10' hL20)
+          apply mul_le_mul _ hsmall_pow hCs0 (by positivity)
           exact mul_le_mul hA hbig_pow hCb0 hL10'
         have hmw_nn : 0 ≤ P.memoryMass F J (N x) t * P.memoryWeight r.v t :=
           mul_nonneg (memoryMass_nonneg F J (N x) hVpos htilted_nn t) (memoryWeight_nonneg r t)
         have h1 := mul_le_mul_of_nonneg_right hmid hmw_nn
-        linarith [h1]
+        linarith
     _ = (L x) ^ (C₁ + Kbig + Ksmall) * P.memoryMass F J (N x) t * P.memoryWeight r.v t := by
         rw [← Real.rpow_add hLpos, ← Real.rpow_add hLpos]
 

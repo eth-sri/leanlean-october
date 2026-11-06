@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseClippedUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical FourierTransform
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawUniform
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
@@ -50,8 +50,8 @@ theorem raw_family_uniform (J : ℕ) :
   change A*(∫v:ℝ,(1+‖v‖)^J*‖(𝓕 g) v‖)^2≤_
   calc
     _≤A*(B*(1+‖t‖)^K)^2:=mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (integral_nonneg (fun _=>by positivity)) hm 2) hA
-    _= _:=by simp only [mul_pow,←pow_mul,Nat.mul_comm];ring
+      (pow_le_pow_left₀ (by positivity) hm 2) hA
+    _= _:=by ring
 
 theorem raw_pair_uniform (J : ℕ) :
     ∃K : ℕ,∃C : ℝ,0<C ∧ ∀(data : RowData)(c κ A : ℝ),0≤A →
@@ -77,8 +77,7 @@ theorem raw_pair_uniform (J : ℕ) :
         (HeckeDetectorInverseFiberCount.inverseTest U tstar r)) n) σ t) := by
     funext x
     simpa only [Bool.true_eq,ite_true] using inverseSourceSchwartz_apply true reverse n U tstar r σ t x
-  exact ⟨hefalse ▸ hb data c κ A hA href false reverse n hn U hU tstar r σ hσ t,
-    hetrue ▸ hb data c κ A hA href true reverse n hn U hU tstar r σ hσ t⟩
+  grind
 
 theorem raw_pair_height_uniform (J : ℕ) :
     ∃K : ℕ,∃C : ℝ,0<C ∧ ∀(data : RowData)(c κ A : ℝ),0≤A →

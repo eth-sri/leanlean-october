@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,47 +33,39 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise ENNReal
+open scoped Classical MatrixGroups Matrix Pointwise
 
 lemma cosetHeight_continuous (r : CuspCosets) : Continuous (cosetHeight r) := by
   induction r using Quotient.inductionOn with
   | _ M =>
-    have heq : cosetHeight (cosetOf M)=(fun w => hyperbolicHeight (complexMatrix M • w)) :=
+    have heq :=
       funext (cosetHeight_cosetOf M)
     change Continuous (cosetHeight (cosetOf M))
     rw [heq]
@@ -97,7 +79,7 @@ lemma cuspCutoffCorrection_measurable (Y : ℝ) (F : ℝ → ℂ) (hF : Measurab
   apply Measurable.ite
   · exact (isOpen_lt continuous_const (cosetHeight_continuous r)).measurableSet
   · exact measurable_const.mul (hF.comp (cosetHeight_continuous r).measurable)
-  · exact measurable_const
+  simp
 
 lemma cuspCutoffCorrection_norm_le (F : ℝ → ℂ) (C : ℝ) (hC : 0≤C)
     (hF : ∀v,‖F v‖≤C) (w : HyperbolicSpace) : ‖cuspCutoffCorrection 1 F w‖≤C := by
@@ -105,15 +87,14 @@ lemma cuspCutoffCorrection_norm_le (F : ℝ → ℂ) (C : ℝ) (hC : 0≤C)
   · obtain ⟨r,hr⟩ := hh
     rw [cuspCutoffCorrection_eq 1 le_rfl F w r hr,norm_mul,norm_inv,
       norm_cosetCharacter,inv_one,one_mul]
-    exact hF _
+    simp_all
   · have hz : cuspCutoffCorrection 1 F w=0 := by
       unfold cuspCutoffCorrection
       have hz : (fun r => cuspCutoffTerm 1 F r w)=(fun _ : CuspCosets => (0:ℂ)) := by
         funext r
-        simp [cuspCutoffTerm,show ¬1<cosetHeight r w from fun h => hh ⟨r,h⟩]
+        simp [cuspCutoffTerm,show ¬1<cosetHeight r w from by grind]
       rw [hz,tsum_zero]
-    rw [hz,norm_zero]
-    exact hC
+    simp_all
 
 lemma smoothCuspSeedDefect_measurable (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
     Measurable (smoothCuspSeedDefect a b s) :=
@@ -124,7 +105,7 @@ lemma smoothCuspSeedDefect_bounded (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) 
   obtain ⟨C,hC⟩ := (cuspSeedDefectProfile_hasCompactSupport a b s hab).exists_bound_of_continuous
     (cuspSeedDefectProfile_continuous a b s ha hab)
   refine ⟨max C 0,le_max_right _ _,fun w => ?_⟩
-  exact cuspCutoffCorrection_norm_le _ _ (le_max_right _ _) (fun v => (hC v).trans (le_max_left _ _)) w
+  exact cuspCutoffCorrection_norm_le _ _ (by positivity) (by grind) w
 
 lemma kernelQuotientDefect_measurable (a b : ℝ) (s : ℂ) (ha : 0<a) (hab : a<b) :
     Measurable (kernelQuotientDefect a b s) :=
@@ -150,7 +131,7 @@ lemma kernelL2Defect_ae_eq (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal
+open scoped Classical MatrixGroups Pointwise
 
 lemma cuspCutoffCorrection_add (F G : ℝ → ℂ) (w : HyperbolicSpace) :
     cuspCutoffCorrection 1 (F+G) w=cuspCutoffCorrection 1 F w+cuspCutoffCorrection 1 G w := by
@@ -159,7 +140,7 @@ lemma cuspCutoffCorrection_add (F G : ℝ → ℂ) (w : HyperbolicSpace) :
   apply tsum_congr
   intro r
   simp only [cuspCutoffTerm,Pi.add_apply]
-  split_ifs <;> simp [mul_add]
+  grind
 
 lemma cuspCutoffCorrection_smul (c : ℂ) (F : ℝ → ℂ) (w : HyperbolicSpace) :
     cuspCutoffCorrection 1 (c • F) w=c • cuspCutoffCorrection 1 F w := by
@@ -168,7 +149,7 @@ lemma cuspCutoffCorrection_smul (c : ℂ) (F : ℝ → ℂ) (w : HyperbolicSpace
   apply tsum_congr
   intro r
   simp only [cuspCutoffTerm,Pi.smul_apply,smul_eq_mul]
-  split_ifs <;> ring
+  grind
 
 def compactHeightProfile (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,ℂ)) : ℝ → ℂ :=
   (Set.Icc a b).indicator (fun v => F (Set.projIcc a b hab v))
@@ -183,8 +164,7 @@ lemma compactHeightProfile_norm_le (a b : ℝ) (hab : a≤b) (F : C(Set.Icc a b,
   by_cases hv : v∈Set.Icc a b
   · rw [Set.indicator_of_mem hv]
     exact F.norm_coe_le_norm _
-  · rw [Set.indicator_of_notMem hv,norm_zero]
-    exact norm_nonneg _
+  simp_all
 
 lemma compactHeightProfile_add (a b : ℝ) (hab : a≤b) (F G : C(Set.Icc a b,ℂ)) :
     compactHeightProfile a b hab (F+G)=compactHeightProfile a b hab F+compactHeightProfile a b hab G := by
@@ -315,7 +295,7 @@ lemma compactDefectProfile_entire (a b : ℝ) (ha : 0<a) :
   have he := differentiable_exp_smul_const ℂ (compactLogProfile a b ha)
   exact he.mul ((differentiable_const _).add
     (((differentiable_const (2:ℂ)).mul differentiable_id |>.sub (differentiable_const 1)).smul
-      (differentiable_const (compactDefectFirst a b))))
+      (by simp)))
 
 lemma compactHeightProfile_actual_defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
     compactHeightProfile a b hab.le (compactDefectProfile a b ha s)=cuspSeedDefectProfile a b s := by
@@ -341,24 +321,21 @@ lemma compactProfileL2_actual_defect (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ
 
 theorem kernelL2Defect_entire (a b : ℝ) (ha : 0<a) (hab : a<b) :
     Differentiable ℂ (kernelL2Defect a b ha hab) := by
-  have heq : kernelL2Defect a b ha hab=
-      fun s => compactProfileL2 a b hab.le (compactDefectProfile a b ha s) :=
+  have heq :=
     funext (fun s => (compactProfileL2_actual_defect a b ha hab s).symm)
   rw [heq]
   exact (compactProfileL2 a b hab.le).differentiable.comp (compactDefectProfile_entire a b ha)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 
 end SecondPassIntegration
 
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog b0Label)
 open SecondPassFiber (newRow)
 
@@ -372,7 +349,6 @@ end
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog b0Label)
 open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 open SecondPassFiber (newRow)

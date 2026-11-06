@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalCellPriority
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-local notation "O" => ActualEisensteinCubic.O
+open InverseMoment
+open InverseMomentFirstChildWindows InverseFirstGlobalParents
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 
-lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+lemma refined_parent_source (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
     (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l j : ℕ) :
     globalParentSource (originalSubsetSource (refinedOuter p pool Q k (labelGate p j)))
@@ -27,22 +26,22 @@ lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
   constructor
   · rintro ⟨y,⟨o,ho,rfl⟩,D,⟨hD,hs⟩,rfl⟩
     have ho' := Finset.mem_filter.mp ho
-    refine ⟨⟨o,?_,D,hD,by simpa using hs,rfl⟩,?_⟩
+    refine ⟨⟨o,?_,D,hD,by positivity,rfl⟩,?_⟩
     · simpa only [originalOuterCell_eq_caps] using ho'.1
     · simpa [labelGate,fillFirstQuotient,toOriginal,ofOriginal] using ho'.2
   · rintro ⟨⟨o,ho,D,hD,hs,rfl⟩,hj⟩
-    refine ⟨ofOriginal o,⟨o,?_,rfl⟩,D,⟨hD,by simpa using hs⟩,rfl⟩
+    refine ⟨ofOriginal o,⟨o,?_,rfl⟩,D,⟨hD,by positivity⟩,rfl⟩
     apply Finset.mem_filter.mpr
     refine ⟨?_,?_⟩
     · simpa only [originalOuterCell_eq_caps] using ho
-    · simpa [labelGate,fillFirstQuotient,toOriginal,ofOriginal] using hj
+    · simpa
 
-theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+theorem refined_child_priority (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : ℝ→ℂ) (X t Y : ℝ) (hY : 0<Y) :
     refinedChildEnergy p hp hg hinj pool Q k l (labelGate p j) negative Ψ m
       (fun v U=>primeMark slots lists a (v.support∪U)) om X t Y ≤

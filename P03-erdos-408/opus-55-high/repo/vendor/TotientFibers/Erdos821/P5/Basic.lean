@@ -5,7 +5,6 @@ public import Erdos821.Blueprint.Classical
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P5Core
 open Blueprint.Analytic
@@ -27,9 +26,9 @@ theorem mellin_prod {ι : Type*} (s : Finset ι) (f : ι → ℝ) (t : ℝ)
   | empty => simp
   | @insert a s ha ih =>
     rw [Finset.prod_insert ha, Finset.prod_insert ha,
-      mellin_mul _ _ _ (hf a (Finset.mem_insert_self _ _))
-        (Finset.prod_pos (fun i hi => hf i (Finset.mem_insert_of_mem hi))),
-      ih (fun i hi => hf i (Finset.mem_insert_of_mem hi))]
+      mellin_mul _ _ _ (by grind)
+        (Finset.prod_pos (by grind)),
+      ih (by grind)]
 
 theorem continuous_mellin (n : ℝ) : Continuous (mellin n) := by
   unfold Blueprint.Analytic.mellin

@@ -10,7 +10,7 @@ public import Mathlib.Algebra.Order.Star.Real
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators Classical ComplexConjugate
+open scoped Classical ComplexConjugate
 open MeasureTheory
 
 namespace Erdos821.P5FourierArcProof
@@ -26,11 +26,9 @@ lemma integral_e_int (q : ℤ) :
   · have hcoef : ((2 * Real.pi * (q : ℝ)) * Complex.I : ℂ) ≠ 0 := by
       have hreal : 2 * Real.pi * (q : ℝ) ≠ 0 := by
         apply mul_ne_zero
-        · apply mul_ne_zero
-          · norm_num
-          · exact Real.pi_ne_zero
-        · exact_mod_cast hq
-      exact mul_ne_zero (by exact_mod_cast hreal) Complex.I_ne_zero
+        · simp
+        · positivity
+      exact mul_ne_zero (by simp_all) Complex.I_ne_zero
     have hperiod : Complex.exp (2 * (Real.pi : ℂ) * (q : ℂ) * Complex.I) = 1 := by
       have hcast : 2 * (Real.pi : ℂ) * (q : ℂ) * Complex.I =
           (q : ℂ) * (2 * Real.pi * Complex.I) := by ring
@@ -44,13 +42,12 @@ lemma integral_e_int (q : ℤ) :
           push_cast
           ring]
     rw [integral_exp_mul_complex hcoef]
-    simp [hq, hperiod]
+    simp_all
 
 lemma e_add (x y : ℝ) : e (x + y) = e x * e y := by
   simp only [Blueprint.Analytic.e]
   push_cast
   rw [← Complex.exp_add]
-  congr 1
   ring
 
 @[simp] lemma e_zero : e 0 = 1 := by
@@ -59,9 +56,7 @@ lemma e_add (x y : ℝ) : e (x + y) = e x * e y := by
 lemma star_e (x : ℝ) : star (e x) = e (-x) := by
   simp only [Blueprint.Analytic.e]
   rw [Complex.exp_eq_exp_ℂ, NormedSpace.star_exp]
-  congr 1
-  simp [star_mul]
-  ring
+  simp
 
 @[fun_prop] lemma continuous_e : Continuous e := by
   unfold Blueprint.Analytic.e
@@ -126,9 +121,7 @@ lemma shift_correlation_proof (s t : Finset ℤ) (a b : ℤ → ℂ) (d : ℤ) :
           apply Continuous.intervalIntegrable
           fun_prop
         rw [intervalIntegral.integral_finsetSum hin]
-        apply Finset.sum_congr rfl
-        intro m _hm
-        rw [intervalIntegral.integral_const_mul]
+        simp
     _ = ∑ n ∈ s, ∑ m ∈ t,
           if m = n + d then star (a n) * b m else 0 := by
         apply Finset.sum_congr rfl
@@ -136,10 +129,7 @@ lemma shift_correlation_proof (s t : Finset ℤ) (a b : ℤ → ℂ) (d : ℤ) :
         apply Finset.sum_congr rfl
         intro m _hm
         rw [integral_e_int]
-        by_cases hmn : m = n + d
-        · simp [hmn]
-        · have hzero : m - n - d ≠ 0 := by omega
-          simp [hmn, hzero]
+        grind
 
 lemma re_star_mul_self (z : ℂ) : (star z * z).re = ‖z‖ ^ 2 := by
   rw [← starRingEnd_apply, ← Complex.normSq_eq_conj_mul_self]
@@ -153,7 +143,7 @@ lemma sum_re_star_mul_self (s : Finset ℤ) (a : ℤ → ℂ) :
   | empty => simp
   | @insert n s hn ih =>
       simp only [Finset.sum_insert hn, Complex.add_re, re_star_mul_self]
-      rw [ih]
+      linarith
 
 lemma parseval_proof (s : Finset ℤ) (a : ℤ → ℂ) :
     (∫ θ in (0 : ℝ)..1, ‖integerAdditivePolynomial s a θ‖ ^ 2) =
@@ -169,7 +159,7 @@ lemma parseval_proof (s : Finset ℤ) (a : ℤ → ℂ) :
   simp only [add_zero] at hshift
   rw [hdiag] at hshift
   simp only [Int.cast_zero, mul_zero, e_zero, mul_one] at hshift
-  have hP : Continuous (integerAdditivePolynomial s a) :=
+  have hP :=
     continuous_integerAdditivePolynomial s a
   have hcont : Continuous (fun θ =>
       star (integerAdditivePolynomial s a θ) * integerAdditivePolynomial s a θ) := by
@@ -179,12 +169,12 @@ lemma parseval_proof (s : Finset ℤ) (a : ℤ → ℂ) :
   have hRe :
       (∫ θ in (0 : ℝ)..1, (star (P θ) * P θ).re) =
         (∫ θ in (0 : ℝ)..1, star (P θ) * P θ).re := by
-    rw [intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
-    rw [intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+    rw [intervalIntegral.integral_of_le (by positivity)]
+    rw [intervalIntegral.integral_of_le (by positivity)]
     exact integral_re hInt.1
   have hsumRe :
-      (∑ n ∈ s, star (a n) * a n).re = ∑ n ∈ s, ‖a n‖ ^ 2 := by
-    exact sum_re_star_mul_self s a
+      (∑ n ∈ s, star (a n) * a n).re = ∑ n ∈ s, ‖a n‖ ^ 2 :=
+    sum_re_star_mul_self s a
   calc
     ∫ θ in (0 : ℝ)..1, ‖P θ‖ ^ 2 =
       ∫ θ in (0 : ℝ)..1, (star (P θ) * P θ).re := by
@@ -192,7 +182,7 @@ lemma parseval_proof (s : Finset ℤ) (a : ℤ → ℂ) :
         intro θ _hθ
         exact (re_star_mul_self (integerAdditivePolynomial s a θ)).symm
     _ = (∫ θ in (0 : ℝ)..1, star (P θ) * P θ).re := hRe
-    _ = (∑ n ∈ s, star (a n) * a n).re := congrArg Complex.re hshift |>.symm
+    _ = (∑ n ∈ s, star (a n) * a n).re := by grind
     _ = ∑ n ∈ s, ‖a n‖ ^ 2 := hsumRe
 
 lemma integral_mul_le_sqrt_mul_sqrt {α : Type*} [MeasurableSpace α]
@@ -210,7 +200,7 @@ lemma integral_mul_le_sqrt_mul_sqrt {α : Type*} [MeasurableSpace α]
   have hquad : ∀ t : ℝ, 0 ≤ t → 2 * t * I ≤ A + t ^ 2 * B := by
     intro t _ht
     have hnonneg : 0 ≤ ∫ x, (f x - t * g x) ^ 2 ∂μ :=
-      integral_nonneg (fun x => sq_nonneg _)
+      by positivity
     have hexp : (fun x => (f x - t * g x) ^ 2) =
         fun x => (f x ^ 2 - 2 * t * (f x * g x)) + t ^ 2 * g x ^ 2 := by
       funext x
@@ -229,17 +219,17 @@ lemma integral_mul_le_sqrt_mul_sqrt {α : Type*} [MeasurableSpace α]
     · subst hBpos
       have hIzero : I = 0 := by
         by_contra hIne
-        have hq := hquad ((A + 1) / I) (div_nonneg (by linarith) hI0)
+        have hq := hquad ((A + 1) / I) (by positivity)
         have hcancel : 2 * ((A + 1) / I) * I = 2 * A + 2 := by
-          field_simp [hIne]
+          field_simp
         linarith
-      simp [hIzero]
-    · have hq := hquad (I / B) (div_nonneg hI0 hB)
+      simp_all
+    · have hq := hquad (I / B) (by positivity)
       have hmul := mul_le_mul_of_nonneg_left hq hB
       have hleft : B * (2 * (I / B) * I) = 2 * I ^ 2 := by
-        field_simp [hBpos]
+        field_simp
       have hright : B * (A + (I / B) ^ 2 * B) = A * B + I ^ 2 := by
-        field_simp [hBpos]
+        field_simp
       linarith
   calc
     I = Real.sqrt (I ^ 2) := (Real.sqrt_sq hI0).symm
@@ -268,8 +258,8 @@ lemma arc_local_cs (F G : ℝ → ℂ) (c Δ B E : ℝ)
   let μ : Measure ℝ := volume.restrict (Set.Ioc (0 : ℝ) 1)
   let f : ℝ → ℝ := S.indicator (fun x => ‖F x‖)
   let g : ℝ → ℝ := fun x => ‖G x‖
-  have hf0 : ∀ x, 0 ≤ f x := fun x => Set.indicator_nonneg (fun _ _ => norm_nonneg _) x
-  have hg0 : ∀ x, 0 ≤ g x := fun x => norm_nonneg _
+  have hf0 : ∀ x, 0 ≤ f x := fun x => Set.indicator_nonneg (by simp) x
+  have hg0 : ∀ x, 0 ≤ g x := by grind
   have hF2_cont : Continuous (fun x => ‖F x‖ ^ 2) := by fun_prop
   have hG2_cont : Continuous (fun x => ‖G x‖ ^ 2) := by fun_prop
   have hFG_cont : Continuous (fun x => ‖F x‖ * ‖G x‖) := by fun_prop
@@ -294,11 +284,11 @@ lemma arc_local_cs (F G : ℝ → ℂ) (c Δ B E : ℝ)
   have hIntF : (∫ x, f x ^ 2 ∂μ) ≤ E := by
     calc
       (∫ x, f x ^ 2 ∂μ) = ∫ x in Set.Ioc (0 : ℝ) 1, S.indicator (fun y => ‖F y‖ ^ 2) x := by
-        rw [hf2_eq]
+        grind
       _ ≤ ∫ x, S.indicator (fun y => ‖F y‖ ^ 2) x := by
         refine setIntegral_le_integral hF2_ind_int ?_
         filter_upwards with x
-        exact Set.indicator_nonneg (fun _ _ => sq_nonneg _) x
+        exact Set.indicator_nonneg (by simp) x
       _ = ∫ x in S, ‖F x‖ ^ 2 := integral_indicator hS
       _ = ∫ x in Set.Ioc (c - Δ) (c + Δ), ‖F x‖ ^ 2 := by
         dsimp [S]
@@ -310,7 +300,7 @@ lemma arc_local_cs (F G : ℝ → ℂ) (c Δ B E : ℝ)
     have hle : (0 : ℝ) ≤ 1 := by norm_num
     simpa [μ, g, intervalIntegral.integral_of_le hle] using hIntB
   have hcs := integral_mul_le_sqrt_mul_sqrt μ f g E B hE hB hf0 hg0 hf2 hg2 hfg hIntF hIntG
-  simpa [μ, hfg_eq] using hcs
+  grind
 
 lemma major_minor_pointwise_bound (F G M : ℝ → ℂ) (centers : Finset ℝ) (Δ ε θ : ℝ)
     (hε : 0 ≤ ε)
@@ -334,20 +324,15 @@ lemma major_minor_pointwise_bound (F G M : ℝ → ℂ) (centers : Finset ℝ) (
     intro c _hc
     exact hInd0 c
   by_cases hminor : ∀ c ∈ centers, Δ < |θ - c|
-  · have hMle : ‖M θ‖ ≤ ε := hMε θ hθ hminor
-    have h1 : ‖F θ‖ * ‖G θ‖ * ‖M θ‖ ≤ ε * (‖F θ‖ * ‖G θ‖) := by
-      calc
-        ‖F θ‖ * ‖G θ‖ * ‖M θ‖ ≤ ‖F θ‖ * ‖G θ‖ * ε :=
-          mul_le_mul_of_nonneg_left hMle hFG0
-        _ = ε * (‖F θ‖ * ‖G θ‖) := by ring
-    linarith
+  · have hMle := hMε θ hθ hminor
+    nlinarith
   · simp only [not_forall, not_lt] at hminor
     rcases hminor with ⟨c₀, hc₀, hdist⟩
     have hmem : θ ∈ Set.Icc (c₀ - Δ) (c₀ + Δ) := by
       rw [Set.mem_Icc]
       rcases abs_le.1 hdist with ⟨h1, h2⟩
       constructor <;> linarith
-    have hMle : ‖M θ‖ ≤ 1 := hM1 θ hθ
+    have hMle := hM1 θ hθ
     have h1 : ‖F θ‖ * ‖G θ‖ * ‖M θ‖ ≤ ‖F θ‖ * ‖G θ‖ := by
       calc
         ‖F θ‖ * ‖G θ‖ * ‖M θ‖ ≤ ‖F θ‖ * ‖G θ‖ * 1 :=
@@ -359,8 +344,7 @@ lemma major_minor_pointwise_bound (F G M : ℝ → ℂ) (centers : Finset ℝ) (
         (Set.Icc (c - Δ) (c + Δ)).indicator (fun x => ‖F x‖ * ‖G x‖) θ := by
       rw [← hind]
       exact Finset.single_le_sum (fun c _ => hInd0 c) hc₀
-    have hε0 : 0 ≤ ε * (‖F θ‖ * ‖G θ‖) := mul_nonneg hε hFG0
-    linarith
+    nlinarith
 
 lemma arc_bound_proof
     (F G M : ℝ → ℂ) (centers : Finset ℝ) (Δ A B E ε : ℝ)
@@ -400,10 +384,10 @@ lemma arc_bound_proof
       fun θ => ε * (‖F θ‖ * ‖G θ‖) + ∑ c ∈ centers,
         (Set.Icc (c - Δ) (c + Δ)).indicator (fun x => ‖F x‖ * ‖G x‖) θ := by
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with θ hθ
-    exact major_minor_pointwise_bound F G M centers Δ ε θ hε (Set.Ioc_subset_Icc_self hθ) hM1 hMε
+    exact major_minor_pointwise_bound F G M centers Δ ε θ hε (by grind) hM1 hMε
   have hGlobalCS : (∫ θ, ‖F θ‖ * ‖G θ‖ ∂μ) ≤ Real.sqrt A * Real.sqrt B := by
     refine integral_mul_le_sqrt_mul_sqrt μ (fun θ => ‖F θ‖) (fun θ => ‖G θ‖) A B
-      hA hB (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)
+      hA hB (by simp) (by simp)
       hF2_cont.integrableOn_Ioc hG2_cont.integrableOn_Ioc hFG_int ?_ ?_
     · simpa [μ, intervalIntegral.integral_of_le hle01] using hIntA
     · simpa [μ, intervalIntegral.integral_of_le hle01] using hIntB
@@ -416,7 +400,7 @@ lemma arc_bound_proof
         ∑ _c ∈ centers, Real.sqrt E * Real.sqrt B := by
           apply Finset.sum_le_sum
           intro c hc
-          exact arc_local_cs F G c Δ B E hF hG hΔ hB hE hIntB (hIntE c hc)
+          exact arc_local_cs F G c Δ B E hF hG hΔ hB hE hIntB (by grind)
       _ = (centers.card : ℝ) * Real.sqrt E * Real.sqrt B := by
           simp [mul_assoc]
   calc
@@ -433,7 +417,7 @@ lemma arc_bound_proof
       rw [integral_add (hFG_int.const_mul ε) hSum_int, integral_const_mul]
     _ ≤ ε * (Real.sqrt A * Real.sqrt B) +
         (centers.card : ℝ) * Real.sqrt E * Real.sqrt B := by
-      exact add_le_add (mul_le_mul_of_nonneg_left hGlobalCS hε) hSumBound
+      nlinarith
     _ = ε * Real.sqrt A * Real.sqrt B +
         (centers.card : ℝ) * Real.sqrt E * Real.sqrt B := by ring
 

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstTail
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open CanonicalRowCompletion
 
 theorem unramifiedFactor_first_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hP : 4≤P.val.absNorm) (x w z : ℂ) (eps : ℝ) (heps : 0<eps)
@@ -22,17 +21,17 @@ theorem unramifiedFactor_first_defect (η : Character) (u : FreeRow) (P : PrimeI
   split_ifs
   · simpa using firstPrimeDefectBound_nonneg eps P
   · apply unramifiedClosed_first_region_bound
-    · exact_mod_cast hP
+    · simp_all
     · exact actualAPhase_norm_le_one η _
     · exact idealCoeff_norm_le_one η _
     · exact idealRowHom_norm u.val _
-    · exact heps
-    · exact hx
-    · exact hz
-    · exact hw
-    · exact hxw
+    · omega
+    · omega
+    · omega
+    · omega
+    omega
 
-theorem unramifiedProduct_first_defect (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S)
+theorem unramifiedProduct_first_defect (eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) (hS : FirstTail eps S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
     (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
@@ -41,7 +40,7 @@ theorem unramifiedProduct_first_defect (eps : ℝ) (S : Finset (Ideal O)) (hS : 
     (fun P => unramifiedFactor_first_defect η u P.val (hS.norm_four P.val P.property)
       x w z eps hS.positive hx hz hw hxw) hS.half hS.small
 
-theorem unramifiedProduct_first_multipliable (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S)
+theorem unramifiedProduct_first_multipliable (eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) (hS : FirstTail eps S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
     (hw : -(1/100:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :

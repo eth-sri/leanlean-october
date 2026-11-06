@@ -9,18 +9,17 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ProfileIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0<C ∧ ∀{K : ℕ} {ι : Type*} [Fintype ι]
       (e a B H : ℝ) (i : ℕ),0<e → e<1/1000 → 51/100≤a → a≤1 → 2<B → H≤(3*i+2:ℕ)*B →
-    ∀(S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal),
+    ∀(S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal),
     FirstTail (4*e) S → ∀(η : Character) (R : Finset FreeRow), (∀u∈R,u.val≠1) →
     ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀j P,P∈T j→P.val∉S)
       (ψ : FreeRow→ι→Character),
@@ -35,8 +34,7 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
   obtain ⟨D,hD,hprofile⟩ := profile_uniform_moments W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     0 2 (17/50) (17/50) (-1) 1 (by norm_num) 0
   refine ⟨‖((1/(2*Real.pi):ℝ):ℂ)^3‖*D,mul_pos (norm_pos_iff.mpr (by
-    apply pow_ne_zero
-    exact_mod_cast (div_ne_zero one_ne_zero (mul_ne_zero (by norm_num) Real.pi_ne_zero)))) hD,?_⟩
+    simp)) hD,?_⟩
   intro K ι _ e a B H i he he' ha ha' hB hH S hS hmax hfirst η R hR T hT ψ hbin W Yp X Y Z hX hY hZ A hA hb
   let E : Set HeightSpace := {t | (|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H}
   let V : HeightSpace→ℂ := fun t=>sourceMellinWeight W0 W1 X Y Z
@@ -59,8 +57,8 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
         show (1-a-6*e)-1=-a-6*e by ring]
     rw [hs0]
     simp [onLines]
-  have hp := hprofile (a+16*e) (by constructor <;> linarith) (17/50) ⟨le_rfl,le_rfl⟩
-    (1-a-6*e) (by constructor <;> linarith)
+  have hp := hprofile (a+16*e) (by grind) (17/50) (by simp)
+    (1-a-6*e) (by grind)
   simp only [pow_zero,one_mul] at hp
   have hg : Integrable (fun t=>scale*‖onLines W0 W1 (a+16*e) (17/50) (1-a-6*e) t‖*mass) heightMeasure :=
     (hp.1.const_mul scale).mul_const mass
@@ -71,7 +69,7 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
     by_cases ht : t∈E
     · dsimp only [F]
       rw [Set.indicator_of_mem ht,norm_mul,hv]
-      exact mul_le_mul_of_nonneg_left (hb t ht) (by positivity)
+      exact mul_le_mul_of_nonneg_left (by grind) (by positivity)
     · dsimp only [F]
       rw [Set.indicator_of_notMem ht,norm_zero]
       positivity
@@ -81,8 +79,8 @@ theorem actual_common_cube_aggregate_norm (W0 W1 : SchwartzMap ℝ ℂ)
       mul_le_mul_of_nonneg_left ((norm_integral_le_integral_norm _).trans (integral_mono hf.1.norm hg hb')) (norm_nonneg _)
     _ = ‖((1/(2*Real.pi):ℝ):ℂ)^3‖*(scale*(∫t,‖onLines W0 W1 (a+16*e) (17/50) (1-a-6*e) t‖ ∂heightMeasure)*mass) := by
       rw [integral_mul_const,integral_const_mul]
-    _ ≤ ‖((1/(2*Real.pi):ℝ):ℂ)^3‖*(scale*D*mass) := by gcongr;exact hp.2
-    _ = _ := by dsimp [scale,mass];ring
+    _ ≤ ‖((1/(2*Real.pi):ℝ):ℂ)^3‖*(scale*D*mass) := by gcongr;linarith
+    _ = _ := by linarith
 end SevenEighths.ProbeHighRowFamily
 
 end

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.CanonicalInactiveEnergyUnif
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
 theorem canonical_original_frozen_energy_uniform_degree
@@ -19,16 +18,16 @@ theorem canonical_original_frozen_energy_uniform_degree
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (L cstar η : ℝ)
     (hL : 0≤L) (hcstar : 0<cstar) (hη : 0<η) (hη1 : η≤1) (hηc : η≤cstar/100000) (rmax : ℕ) :
-    ∃ (degree : ℕ), ∀ {Nlevel : Eis}, ∀
-    {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
-    [Fintype (Eis⧸Ideal.span {Nlevel^2})]
+    ∃ (degree : ℕ), ∀ {Nlevel : ActualEisensteinCubic.O}, ∀
+    {γ : Type*} [Fintype γ] (a c₀ : γ→ActualEisensteinCubic.O) (mode : γ→Bool)
+    [Fintype (ActualEisensteinCubic.O⧸Ideal.span {Nlevel^2})]
     (s : ∀ i,FixedCuspShape (ControlledStratumArithmetic.fixedCusp (a i) (c₀ i) (mode i))) (hc₀ : ∀ i,c₀ i≠0)
-    (_hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
+    (_hNlevel : ∀ i,(9:ActualEisensteinCubic.O)*c₀ i∣Nlevel)
     (_hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (_hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (B : Ideal Eis) (_hB : B≠0),
+    (B : Ideal ActualEisensteinCubic.O) (_hB : B≠0),
     ∃ (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
-    ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F R Q₀ : Ideal Eis)
+    ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F R Q₀ : Ideal ActualEisensteinCubic.O)
       (_hJ : J≠0) (_hF : F≠0) (_hR : R≠0),
     ∀ (Z N V M z₀ margin O₀ hhat d : ℝ),
       Z₀≤Z → 0≤N → 0≤M → M≤L → V≤L → z₀≤L → hhat≤L →
@@ -36,11 +35,11 @@ theorem canonical_original_frozen_energy_uniform_degree
       0≤O₀ → O₀≤M → Z^O₀≤(Ideal.absNorm (rowPowerfulPart J):ℝ) →
       CanonicalMargins (N+V) M (normWidth Z R) z₀ margin → cstar/2≤margin →
       V≤d → hhat≤d+η → d≤cstar/200 →
-    ∀ (parents rows : Finset (Ideal Eis)),
+    ∀ (parents rows : Finset (Ideal ActualEisensteinCubic.O)),
       (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Z^M) →
       rows⊆originalResidualRows parents J (B*F*R) →
       (∀ P∈fixedBadPrimes,P∣B*F*R) →
-    Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ)
+    Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (H : σ→ℝ)
       (_hdis : Pairwise (fun i j => Disjoint (lists i) (lists j)))
       (hmax : ∀ i,∀ P∈lists i,P.IsMaximal)
       (hgood : ∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P)
@@ -48,10 +47,10 @@ theorem canonical_original_frozen_energy_uniform_degree
       (hrows : ∀ K∈rows,Admissible K),
       (∀ i,1≤H i) → (∀ i,∀ P∈lists i,(Ideal.absNorm P:ℝ)≤H i) → (∏ i,H i)≤Z^z₀ →
       (∀ f,IsCoprime (Ideal.span {Nlevel}) ((poolPrimeFamily J (B*F*R) Q₀).ideal f)) →
-      (∀ f,ringChar (Eis⧸(poolPrimeFamily J (B*F*R) Q₀).ideal f)≠2) →
+      (∀ f,ringChar (ActualEisensteinCubic.O⧸(poolPrimeFamily J (B*F*R) Q₀).ideal f)≠2) →
       (∀ K∈rows,(∀ f,IsCoprime ((poolPrimeFamily J (B*F*R) Q₀).ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
       (∀ i,∀ P∈lists i,IsCoprime (Ideal.span {Nlevel}) P) →
-      (∀ i,∀ P∈lists i,ringChar (Eis⧸P)≠2) →
+      (∀ i,∀ P∈lists i,ringChar (ActualEisensteinCubic.O⧸P)≠2) →
     ∃ D : ∀ g : γ,∀ A : Finset (FreeReflection.pool J (B*F*R) Q₀),∀ T : Finset σ,
       OriginalSplitCompletion (N:=Nlevel) (a:=a g) (c:=c₀ g) (mode:=mode g)
         ((poolPrimeFamily J (B*F*R) Q₀).restrict A) (poolPrimeFamily J (B*F*R) Q₀).ideal
@@ -71,7 +70,7 @@ theorem canonical_original_frozen_energy_uniform_degree
   intro Nlevel γ _ a c₀ mode _ s hc₀ hNlevel hbase hac B hB
   obtain ⟨C,Z₁,hC,hZ₁,he⟩ := hu a c₀ mode s hc₀ hNlevel hbase hac B hB
   let ε := cstar/(32*(4*L+2))
-  have hε : 0<ε := div_pos hcstar (by positivity)
+  have hε : 0<ε := by positivity
   obtain ⟨Cb,hCb,hcost⟩ := original_source_cost_budget (χ:=γ) rmax ε hε
   let Z₀ := max Z₁ (Ideal.absNorm B:ℝ)
   refine ⟨(‖thetaDerivativeScalar⁻¹‖^2+1)*Cb*C,Z₀,by positivity,hZ₁.trans_le (le_max_left _ _),?_⟩
@@ -79,7 +78,7 @@ theorem canonical_original_frozen_energy_uniform_degree
     hJn hFn hRn hO hOM hOn hinv hmargin hVd hhd hd parents rows hparents hsub hbad
     hcard lists H hdis hmax hgood hprime hrows hH1 hH hprod hGN hGchar hrowcop hLN hLchar
   have hz1 : Z₁≤Z := (le_max_left _ _).trans hZ
-  have hz : 1<Z := lt_of_lt_of_le hZ₁ hz1
+  have hz : 1<Z := by linarith
   have hzp : 0<Z := lt_trans zero_lt_one hz
   let FF := (poolPrimeFamily J (B*F*R) Q₀).ideal
   have hall := fun (g : γ) (A : Finset (FreeReflection.pool J (B*F*R) Q₀)) (T : Finset σ) =>
@@ -100,9 +99,9 @@ theorem canonical_original_frozen_energy_uniform_degree
   have hs (g : γ) (A : Finset (FreeReflection.pool J (B*F*R) Q₀)) (T : Finset σ) :
       (∑ K : rows,‖source g A T K‖^2)≤harm*energy := by
     apply (hD g A T θ w hw).trans
-    apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
+    apply mul_le_mul_of_nonneg_right _ (by positivity)
     apply pow_le_pow_left₀ (by positivity)
-    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by have hn : (0:ℝ)≤columnDyadicLength (H i) := Nat.cast_nonneg _; linarith)
+    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by linarith)
   let Labels := γ×(Finset (FreeReflection.pool J (B*F*R) Q₀)×Finset σ)
   let f := fun (b : Labels) (K : rows) => (scalar b.1 K*frozenInactiveWeight J F (B*F*R) Q₀ b.2.1)*source b.1 b.2.1 b.2.2 K
   have hf (b : Labels) : (∑ K : rows,‖f b K‖^2)≤harm*energy := by
@@ -131,20 +130,20 @@ theorem canonical_original_frozen_energy_uniform_degree
   have hpool : (Ideal.absNorm (J*(B*F*R)):ℝ)≤Z^(3*L+1) := by
     rw [map_mul,Nat.cast_mul]
     calc
-      _ ≤ Z^L*Z^(2*L+1) := mul_le_mul hJn' hmaskn (Nat.cast_nonneg _) (Real.rpow_nonneg hzp.le _)
-      _ = _ := by rw [←Real.rpow_add hzp];congr 1;ring
+      _ ≤ Z^L*Z^(2*L+1) := mul_le_mul hJn' hmaskn (Nat.cast_nonneg _) (by positivity)
+      _ = _ := by rw [←Real.rpow_add hzp];ring
   have hbudget : ε*((3*L+1)+L)≤cstar/32 := by
     have heq : ε*(4*L+2)=cstar/32 := by dsimp [ε];field_simp
     have hh := mul_le_mul_of_nonneg_left (show (3*L+1)+L≤4*L+2 by linarith) hε.le
     rwa [heq] at hh
-  have hcst := hcost H hcard hH1 J (B*F*R) Q₀ hJ (mul_ne_zero (mul_ne_zero hB hF) hR)
+  have hcst := hcost H hcard hH1 J (B*F*R) Q₀ hJ (by positivity)
     Z (3*L+1) L (cstar/32) hz hpool
     (hprod.trans (Real.rpow_le_rpow_of_exponent_le hz.le hzc)) hbudget
   calc
     _ = ‖thetaDerivativeScalar⁻¹‖^2*((Fintype.card Labels:ℝ)^2*harm)*energy := by ring
     _ ≤ (‖thetaDerivativeScalar⁻¹‖^2+1)*(Cb*Z^(cstar/32))*energy := by
-      apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
-      exact mul_le_mul (by linarith) hcst (by dsimp [harm];positivity) (by positivity)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
+      exact mul_le_mul (by linarith) hcst (by positivity) (by positivity)
     _ = ((‖thetaDerivativeScalar⁻¹‖^2+1)*Cb*C)*(1+‖θ‖)^degree*
         Z^(cstar/32+(N+V-cstar/8-O₀/2)) := by
       dsimp only [energy]

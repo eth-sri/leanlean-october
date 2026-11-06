@@ -9,11 +9,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
@@ -22,20 +19,14 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,32 +35,27 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
 
 namespace EisensteinSchwartzPoisson
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
+open scoped FourierTransform SchwartzMap ContDiff
 
 def radialTestCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℂ, ℂ) :=
   SchwartzMap.compCLM ℝ (Function.hasTemperateGrowth_norm_sq ℂ)
@@ -97,8 +83,7 @@ theorem paperRadialFourier_eq_plane (W : 𝓢(ℝ, ℂ)) (t : ℝ) :
 theorem paperFrequency_sqrt_norm_sq (t : ℝ) (ht : 0 ≤ t) :
     ‖paperFrequency (Real.sqrt t : ℂ)‖ ^ 2 = (4 / 3 : ℝ) * t := by
   rw [paperFrequency_norm_sq]
-  simp only [Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (Real.sqrt_nonneg t), Real.sq_sqrt ht]
+  simp_all
 
 theorem paperRadialFourier_weighted_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ)
     (t : ℝ) (ht : 0 ≤ t) :
@@ -143,7 +128,7 @@ theorem schwartzCLM_finite_seminorm_control
   obtain ⟨s, C, hC, hbound⟩ :=
     Seminorm.bound_of_continuous (schwartz_withSeminorms ℝ ℝ ℂ) q hq
   refine ⟨s, C, ?_, ?_⟩
-  · exact_mod_cast (pos_iff_ne_zero.mpr hC : 0 < C)
+  · positivity
   · intro W
     exact Seminorm.le_def.mp hbound W
 
@@ -164,7 +149,6 @@ theorem paperRadialFourier_source_weighted_bound (A : ℕ) :
 end
 
 section
-open MeasureTheory
 open scoped SchwartzMap ContDiff
 
 def halfEulerCLM : 𝓢(ℝ, ℂ) →L[ℂ] 𝓢(ℝ, ℂ) :=
@@ -203,9 +187,8 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
       Function.iterate_succ_apply]
 
  theorem sqrt_exp_half (t : ℝ) : Real.sqrt (Real.exp t) = Real.exp (t / 2) := by
-  rw [Real.sqrt_eq_iff_eq_sq (le_of_lt (Real.exp_pos _)) (le_of_lt (Real.exp_pos _))]
+  rw [Real.sqrt_eq_iff_eq_sq (by positivity) (by positivity)]
   rw [← Real.exp_nat_mul]
-  congr 1
   ring
 
  theorem eulerDeriv_sqrt_profile (g : 𝓢(ℝ, ℂ)) (j : ℕ) (x : ℝ) (hx : 0 ≤ x) :
@@ -216,8 +199,7 @@ theorem iteratedDeriv_halfFlow (g : 𝓢(ℝ, ℂ)) (a : ℝ) (j : ℕ) (t : ℝ
       fun t : ℝ => g (Real.sqrt x * Real.exp (t / 2)) := by
     funext t
     rw [Real.sqrt_mul hx, sqrt_exp_half]
-  rw [hflow, iteratedDeriv_halfFlow]
-  simp
+  simp [hflow, iteratedDeriv_halfFlow]
 
 theorem contDiffOn_sqrt_profile (g : 𝓢(ℝ, ℂ)) :
     ContDiffOn ℝ ∞ (fun x : ℝ => g (Real.sqrt x)) (Set.Ioi 0) := by
@@ -242,13 +224,13 @@ theorem sqrt_profile_rapid_bound (g : 𝓢(ℝ, ℂ)) (A : ℕ) (x : ℝ) (hx : 
     calc
       _ ≤ 2 ^ A * ‖g (Real.sqrt x)‖ := mul_le_mul_of_nonneg_right hp (norm_nonneg _)
       _ ≤ 2 ^ A * SchwartzMap.seminorm ℝ 0 0 g := by gcongr
-      _ ≤ _ := by gcongr; linarith
+      _ ≤ _ := by simp
   · have hp : (1 + x) ^ A ≤ (2 * x) ^ A := by gcongr; linarith
     calc
       _ ≤ (2 * x) ^ A * ‖g (Real.sqrt x)‖ := mul_le_mul_of_nonneg_right hp (norm_nonneg _)
-      _ = 2 ^ A * (x ^ A * ‖g (Real.sqrt x)‖) := by rw [mul_pow]; ring
+      _ = 2 ^ A * (x ^ A * ‖g (Real.sqrt x)‖) := by ring
       _ ≤ 2 ^ A * SchwartzMap.seminorm ℝ (2 * A) 0 g := by gcongr
-      _ ≤ _ := by gcongr; linarith
+      _ ≤ _ := by simp
 
 theorem paperFrequency_real_temperate :
     (fun s : ℝ => paperFrequency (s : ℂ)).HasTemperateGrowth := by
@@ -266,7 +248,7 @@ theorem paperFrequency_real_growth (s : ℝ) :
   rw [heq] at hn
   have hns := norm_nonneg s
   have hnf := norm_nonneg (paperFrequency (s : ℂ))
-  nlinarith [sq_nonneg (‖s‖ - ‖paperFrequency (s : ℂ)‖)]
+  nlinarith
 
 def paperRealRayCLM : 𝓢(ℂ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLM ℝ paperFrequency_real_temperate
@@ -351,14 +333,14 @@ theorem schwartzCLM_family_finite_seminorm_control
   obtain ⟨s, C, hC, hbound⟩ :=
     Seminorm.bound_of_continuous (schwartz_withSeminorms ℝ ℝ ℂ) q hq
   refine ⟨s, C, ?_, ?_⟩
-  · exact_mod_cast (pos_iff_ne_zero.mpr hC : 0 < C)
+  · positivity
   · intro W j hj
     apply le_trans ?_ (Seminorm.le_def.mp hbound W)
     rw [hqfun]
     exact Finset.single_le_sum (f := fun i =>
       SchwartzMap.seminorm ℝ 0 0 (T i W) +
         SchwartzMap.seminorm ℝ (2 * A) 0 (T i W))
-      (by intro i hi; positivity) (Finset.mem_range.mpr (Nat.lt_succ_of_le hj))
+      (by intro i hi; positivity) (by grind)
 
 theorem paperRadialFourier_euler_source_weighted_bound (A K : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -371,19 +353,17 @@ theorem paperRadialFourier_euler_source_weighted_bound (A K : ℕ) :
   intro W j hj x hx
   apply (paperRadialFourier_euler_weighted_bound W A j x hx).trans
   simpa only [mul_assoc] using
-    mul_le_mul_of_nonneg_left (hbound W j hj) (show 0 ≤ (2 : ℝ) ^ A by positivity)
+    mul_le_mul_of_nonneg_left (by grind) (by positivity)
 
 theorem paperRadialFourier_euler_bound (W : 𝓢(ℝ, ℂ)) (A K : ℕ) :
     ∃ CF : ℝ, 0 ≤ CF ∧ ∀ j ≤ K, ∀ x : ℝ, 0 < x →
       (1 + x) ^ A * ‖LocalLogFourier.eulerDeriv (paperRadialFourier W) j x‖ ≤ CF := by
   obtain ⟨s, C, hC, hbound⟩ := paperRadialFourier_euler_source_weighted_bound A K
   refine ⟨C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, by positivity, ?_⟩
-  intro j hj x hx
-  exact hbound W j hj x hx.le
+  grind
 
 end
 
-open ConcreteTraceCRT ActualEisensteinCubic
 open scoped SchwartzMap
 
 theorem inverse_square_le_cauchy_product (a b q : ℝ) (hq : 0 ≤ q)
@@ -394,20 +374,19 @@ theorem inverse_square_le_cauchy_product (a b q : ℝ) (hq : 0 ≤ q)
   have hsquare : (1 + a ^ 2 + b ^ 2) ^ 2 ≤ (2 * (1 + q)) ^ 2 := by
     apply pow_le_pow_left₀ (by positivity) hsum
   have hden : (1 + a ^ 2) * (1 + b ^ 2) ≤ 4 * (1 + q) ^ 2 := by
-    nlinarith [sq_nonneg (a ^ 2), sq_nonneg (b ^ 2),
-      mul_nonneg (sq_nonneg a) (sq_nonneg b)]
+    nlinarith
   calc
-    _ = 1 / (1 + q) ^ 2 := by simp only [one_div]
+    _ = 1 / (1 + q) ^ 2 := by simp
     _ ≤ 4 / ((1 + a ^ 2) * (1 + b ^ 2)) :=
-      (div_le_div_iff₀ (by positivity) (by positivity)).mpr (by simpa using hden)
-    _ = _ := by simp only [div_eq_mul_inv, mul_inv_rev]; ring
+      (div_le_div_iff₀ (by positivity) (by positivity)).mpr (by linarith)
+    _ = _ := by grind
 
 theorem eisenstein_cauchy_summable :
     Summable (fun h : O => ((1 + ‖eisEmbedding h‖ ^ 2) ^ 2)⁻¹) := by
   apply (latticeCoordEquiv.symm.summable_iff).mp
   change Summable (fun p : ℤ × ℤ =>
     ((1 + ‖eisEmbedding (latticeCoordEquiv.symm p)‖ ^ 2) ^ 2)⁻¹)
-  apply Summable.of_nonneg_of_le (fun _ => inv_nonneg.mpr (sq_nonneg _)) _
+  apply Summable.of_nonneg_of_le (fun _ => by positivity) _
     (summable_int_cauchy_product.mul_left 4)
   intro p
   apply inverse_square_le_cauchy_product (p.1 : ℝ) (p.2 : ℝ)
@@ -425,20 +404,20 @@ theorem eisensteinCauchyMass_nonneg : 0 ≤ eisensteinCauchyMass :=
   tsum_nonneg (fun _ => by positivity)
 
 theorem eisensteinCauchyMass_subtype (S : Set O) :
-    (∑' h : S, ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹) ≤ eisensteinCauchyMass := by
-  exact (eisenstein_cauchy_summable.subtype S).tsum_le_tsum_of_inj
-    Subtype.val Subtype.val_injective (fun _ _ => by positivity) (fun _ => le_rfl)
+    (∑' h : S, ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹) ≤ eisensteinCauchyMass :=
+  (eisenstein_cauchy_summable.subtype S).tsum_le_tsum_of_inj
+    Subtype.val Subtype.val_injective (fun _ _ => by positivity) (by simp)
     eisenstein_cauchy_summable
 
 theorem polynomial_tail_majorant (A : ℕ) (K T q B f : ℝ)
     (hK : 0 < K) (hT : 0 ≤ T) (hq : 0 ≤ q) (hf : 0 ≤ f)
     (htail : T ≤ K * q) (hbound : (1 + K * q) ^ (A + 2) * f ≤ B) :
     f ≤ (B / ((min 1 K) ^ 2 * (1 + T) ^ A)) * ((1 + q) ^ 2)⁻¹ := by
-  have hm : 0 < min 1 K := lt_min (by norm_num) hK
+  have hm : 0 < min 1 K := by positivity
   have hm1 : min 1 K ≤ 1 := min_le_left _ _
   have hmK : min 1 K ≤ K := min_le_right _ _
   have hbase : min 1 K * (1 + q) ≤ 1 + K * q := by
-    nlinarith [mul_le_mul_of_nonneg_right hmK hq]
+    nlinarith
   have htwo : (min 1 K) ^ 2 * (1 + q) ^ 2 ≤ (1 + K * q) ^ 2 := by
     rw [← mul_pow]
     exact pow_le_pow_left₀ (by positivity) hbase _
@@ -454,8 +433,7 @@ theorem polynomial_tail_majorant (A : ℕ) (K T q B f : ℝ)
       _ = (((min 1 K) ^ 2 * (1 + T) ^ A) * (1 + q) ^ 2) * f := mul_comm _ _
       _ ≤ (1 + K * q) ^ (A + 2) * f := mul_le_mul_of_nonneg_right hden hf
       _ ≤ B := hbound
-  have hraw := (le_div_iff₀ (show 0 < ((min 1 K) ^ 2 * (1 + T) ^ A) * (1 + q) ^ 2
-      by positivity)).mpr hprod
+  have hraw := (le_div_iff₀ (by positivity)).mpr hprod
   simpa only [div_eq_mul_inv, mul_inv_rev, mul_comm, mul_left_comm, mul_assoc] using hraw
 
 theorem paperRadialFourier_lattice_summable_norm (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
@@ -463,7 +441,7 @@ theorem paperRadialFourier_lattice_summable_norm (W : 𝓢(ℝ, ℂ)) (K : ℝ) 
   obtain ⟨s, C, hC, hb⟩ := paperRadialFourier_source_weighted_bound 2
   let B := C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   let D := (min 1 K) ^ 2 * (1 + (0 : ℝ)) ^ (0 : ℕ)
-  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _
+  apply Summable.of_nonneg_of_le (by simp) _
     (eisenstein_cauchy_summable.mul_left (B / D))
   intro h
   exact polynomial_tail_majorant 0 K 0 _ B _ hK (by norm_num)
@@ -484,37 +462,36 @@ theorem paperRadialFourier_lattice_tail (A : ℕ) :
   let B := C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W
   let D := (min 1 K) ^ 2 * (1 + T) ^ A
   have hB : 0 ≤ B := by dsimp [B]; positivity
-  have hm : 0 < min 1 K := lt_min (by norm_num) hK
+  have hm : 0 < min 1 K := by positivity
   have hD : 0 < D := by dsimp [D]; positivity
   let S := {h : O | T ≤ K * ‖eisEmbedding h‖ ^ 2}
   have hp (h : S) :
       ‖paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖ ≤
-        (B / D) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ := by
-    exact polynomial_tail_majorant A K T _ B _ hK hT (sq_nonneg _)
-      (norm_nonneg _) h.property (hb W _ (by positivity))
+        (B / D) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ :=
+    polynomial_tail_majorant A K T _ B _ hK hT (sq_nonneg _)
+      (norm_nonneg _) h.property (by grind)
   have hmajor : Summable (fun h : S => (B / D) *
       ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹) :=
     (eisenstein_cauchy_summable.subtype S).mul_left (B / D)
   have hs : Summable (fun h : S =>
       ‖paperRadialFourier W (K * ‖eisEmbedding h.val‖ ^ 2)‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp hmajor
+    Summable.of_nonneg_of_le (by simp) hp hmajor
   calc
     _ ≤ ∑' h : S, (B / D) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ :=
       hs.tsum_le_tsum hp hmajor
     _ = (B / D) * ∑' h : S, ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ := tsum_mul_left
     _ ≤ (B / D) * eisensteinCauchyMass :=
-      mul_le_mul_of_nonneg_left (eisensteinCauchyMass_subtype S) (div_nonneg hB hD.le)
+      mul_le_mul_of_nonneg_left (eisensteinCauchyMass_subtype S) (by positivity)
     _ ≤ (B / D) * (eisensteinCauchyMass + 1) := by
       gcongr
       linarith
-    _ = _ := by dsimp [B, D]; ring
+    _ = _ := by ring
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
 
 theorem idealSupport_injective_on_squarefree
     (F : Finset (Ideal O)) {I J : Ideal O} (hI : I ∈ F) (hJ : J ∈ F)
@@ -528,13 +505,13 @@ theorem idealSupport_injective_on_squarefree
     intro P
     constructor
     · intro hP
-      let p : primePool F := ⟨P, mem_primePool_iff.mpr ⟨I, hI, hP⟩⟩
-      have hp : p ∈ idealSupport F I := (mem_idealSupport_iff F I p).mpr hP
+      let p : primePool F := ⟨P, mem_primePool_iff.mpr (by grind)⟩
+      have hp := (mem_idealSupport_iff F I p).mpr hP
       rw [h] at hp
       exact (mem_idealSupport_iff F J p).mp hp
     · intro hP
-      let p : primePool F := ⟨P, mem_primePool_iff.mpr ⟨J, hJ, hP⟩⟩
-      have hp : p ∈ idealSupport F J := (mem_idealSupport_iff F J p).mpr hP
+      let p : primePool F := ⟨P, mem_primePool_iff.mpr (by grind)⟩
+      have hp := (mem_idealSupport_iff F J p).mpr hP
       rw [← h] at hp
       exact (mem_idealSupport_iff F I p).mp hp
   rw [← Ideal.prod_normalizedFactors_eq_self hsI.ne_zero,

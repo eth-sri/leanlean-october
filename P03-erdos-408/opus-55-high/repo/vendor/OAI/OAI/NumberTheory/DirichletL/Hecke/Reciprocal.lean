@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ZeroSupremum
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeReciprocal
 open HeckeFamily HeckeCharacterAnalytic HeckeCoordinates
 
@@ -34,14 +34,14 @@ theorem coefficients_sum_ne_zero_of_principal (χ : Character) (hχ : χ.residue
   rw [heq]
   apply mul_ne_zero
   · exact_mod_cast (Nat.card_pos (α := (coordinateQuotientHom χ).ker)).ne'
-  · exact_mod_cast (Fintype.card_pos (α := (O ⧸ χ.modulus)ˣ)).ne'
+  simp
 
 theorem dualScalar_ne_zero (N : ℕ) [NeZero N] : HeckeTheta.dualScalar N ≠ 0 := by
   have hN : (0 : ℝ) < N := Nat.cast_pos.mpr (NeZero.pos N)
   unfold HeckeTheta.dualScalar
   apply mul_ne_zero <;> apply Complex.ofReal_ne_zero.mpr
-  · exact (Real.rpow_pos_of_pos (sq_pos_of_pos hN) _).ne'
-  · exact (Real.rpow_pos_of_pos (mul_pos (by norm_num) (sq_pos_of_pos hN)) _).ne'
+  · positivity
+  positivity
 
 theorem principal_dual_constant_ne_zero (χ : Character) (hχ : χ.residue = 1) :
     (HeckeTheta.pair (coefficients χ)).g₀ ≠ 0 := by
@@ -94,7 +94,7 @@ theorem reciprocal_eq_inv (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 
   split_ifs
   · rw [regularizedL_eq χ h0 h1, div_mul_eq_div_div,
       div_self (sub_ne_zero.mpr h1), one_div]
-  · rfl
+  simp
 
 theorem reciprocal_principal_one (χ : Character) (hχ : χ.residue = 1) :
     reciprocal χ 1 = 0 := by simp [reciprocal, hχ]
@@ -116,8 +116,8 @@ theorem reciprocal_differentiableAt (χ : Character) {s : ℂ}
       funext z
       simp [reciprocal, hχ]
     rw [heq]
-    exact (LFunction_differentiableAt χ h0 (Or.inr hχ)).inv
-      (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt χ hs (Or.inr hχ))
+    exact (LFunction_differentiableAt χ h0 (by grind)).inv
+      (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt χ hs (by grind))
 
 end SevenEighths.HeckeReciprocal
 

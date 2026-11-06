@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorTail
 open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss
 open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
 
 lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :
     x * Real.exp (-x/Y) ≤ 6*Y^3/x^2 := by
@@ -25,12 +24,11 @@ lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :
   have hb : (x/Y)^3*Real.exp (-(x/Y)) ≤ 6 := by nlinarith
   calc
     _ = (Y^3/x^2)*((x/Y)^3*Real.exp (-(x/Y))) := by
-      rw [neg_div]
-      field_simp
+      grind
     _ ≤ (Y^3/x^2)*6 := mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by ring
 
-lemma divisor_count (I : Ideal O) (hI : I ≠ 0) :
+lemma divisor_count (I : Ideal HeckeFamily.O) (hI : I ≠ 0) :
     ((idealDivisors I).card : ℝ) ≤ 128*(Ideal.absNorm I : ℝ) := by
   apply DescentFiberCost.finite_ideal_count_real
   · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
@@ -42,21 +40,21 @@ lemma divisor_count (I : Ideal O) (hI : I ≠ 0) :
       (map_dvd Ideal.absNorm ((mem_idealDivisors hI).mp hJ))
 
 theorem cutoffCoefficient_bound (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B)
-    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (D : ℝ) (I : Ideal O) :
+    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (D : ℝ) (I : Ideal HeckeFamily.O) :
     ‖cutoffCoefficient V D I‖ ≤ 128*B*(Ideal.absNorm I : ℝ) := by
   by_cases hI : I = 0
   · simp [cutoffCoefficient,hI]
   rw [cutoffCoefficient,ite_eq_right hI]
   let e := mulFiberDivisorEquiv I hI
   have he : (∑' p : MulFiber I, (moebius p.val.1 : ℂ)*V ((Ideal.absNorm p.val.1 : ℝ)/D)) =
-      ∑' J : {J : Ideal O // J ∈ idealDivisors I},
+      ∑' J : {J : Ideal HeckeFamily.O // J ∈ idealDivisors I},
         (moebius J.val : ℂ)*V ((Ideal.absNorm J.val : ℝ)/D) :=
     e.tsum_eq (fun J => (moebius J.val : ℂ)*V ((Ideal.absNorm J.val : ℝ)/D))
   rw [he,tsum_fintype]
   calc
-    _ ≤ ∑ J : {J : Ideal O // J ∈ idealDivisors I},
+    _ ≤ ∑ J : {J : Ideal HeckeFamily.O // J ∈ idealDivisors I},
         ‖(moebius J.val : ℂ)*V ((Ideal.absNorm J.val : ℝ)/D)‖ := norm_sum_le _ _
-    _ ≤ ∑ J : {J : Ideal O // J ∈ idealDivisors I}, B := by
+    _ ≤ ∑ J : {J : Ideal HeckeFamily.O // J ∈ idealDivisors I}, B := by
       apply Finset.sum_le_sum
       intro J hJ
       rw [norm_mul]
@@ -64,13 +62,13 @@ theorem cutoffCoefficient_bound (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B)
     _ = ((idealDivisors I).card : ℝ)*B := by simp
     _ ≤ _ := by nlinarith [mul_le_mul_of_nonneg_right (divisor_count I hI) hB]
 
-lemma norm_weight_two (I : Ideal O) (hI : I ≠ 0) :
+lemma norm_weight_two (I : Ideal HeckeFamily.O) (hI : I ≠ 0) :
     ‖CubicEisenstein.fullIdealWeight 2 I‖ = 1/(Ideal.absNorm I : ℝ)^2 := by
   rw [CubicEisenstein.fullIdealWeight,ite_eq_right hI,Complex.cpow_neg,Complex.cpow_ofNat,
     norm_inv,norm_pow,Complex.norm_natCast]
-  simp [one_div]
+  simp
 
-lemma weighted_norm_le_one (χ : Character) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+lemma weighted_norm_le_one (χ : Character) (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal HeckeFamily.O) :
     ‖IdealEuler.weighted (idealCoeff χ) s I‖ ≤ 1 := by
   by_cases hI : I = 0
   · subst I
@@ -81,16 +79,16 @@ lemma weighted_norm_le_one (χ : Character) (s : ℂ) (hs : 0 ≤ s.re) (I : Ide
   change ‖idealCoeff χ I*CubicEisenstein.fullIdealWeight s I‖ ≤ 1
   rw [norm_mul,CubicEisenstein.fullIdealWeight,ite_eq_right hI]
   have hc : (Ideal.absNorm I : ℂ) = ((Ideal.absNorm I : ℝ) : ℂ) := by norm_cast
-  rw [hc,Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : (0 : ℝ)<Ideal.absNorm I)]
+  rw [hc,Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
   calc
-    _ ≤ (1 : ℝ)*(Ideal.absNorm I : ℝ)^(-s.re) := by
-      exact mul_le_mul_of_nonneg_right (idealCoeff_norm_le_one χ I) (by positivity)
+    _ ≤ (1 : ℝ)*(Ideal.absNorm I : ℝ)^(-s.re) :=
+      mul_le_mul_of_nonneg_right (idealCoeff_norm_le_one χ I) (by positivity)
     _ ≤ 1 := by
       simpa using Real.rpow_le_one_of_one_le_of_nonpos hN (neg_nonpos.mpr hs)
 
 theorem exponentialTerm_bound (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (D Y : ℝ) (hY : 0 < Y)
-    (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+    (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal HeckeFamily.O) :
     ‖exponentialTerm χ V D s Y I‖ ≤
       (768*B*Y^3)*‖CubicEisenstein.fullIdealWeight 2 I‖ := by
   by_cases hI : I = 0
@@ -105,7 +103,7 @@ theorem exponentialTerm_bound (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB :
   rw [exponentialTerm,norm_mul,norm_mul,he,norm_weight_two I hI]
   calc
     _ ≤ (128*B*(Ideal.absNorm I : ℝ))*Real.exp (-(Ideal.absNorm I : ℝ)/Y) := by
-      apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact (mul_le_mul (cutoffCoefficient_bound V B hB hV D I)
         (weighted_norm_le_one χ s hs I) (norm_nonneg _) (by positivity)).trans_eq (mul_one _)
     _ ≤ (128*B)*(6*Y^3/(Ideal.absNorm I : ℝ)^2) := by
@@ -121,14 +119,14 @@ theorem exponentialTerm_summable (χ : Character) (V : ℝ → ℂ) (B : ℝ) (h
 
 lemma cutoff_defect_bound (V : ℝ → ℂ) (B : ℝ)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (x : ℝ) : ‖1-V x‖ ≤ 1+B :=
-  (norm_sub_le _ _).trans (by simpa using add_le_add_left (hV x) 1)
+  (norm_sub_le _ _).trans (by simp_all)
 
-def terminalRemainder (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal O) : ℂ :=
+def terminalRemainder (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal HeckeFamily.O) : ℂ :=
   exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D)) *
     (1-T ((Ideal.absNorm I : ℝ)/U))
 
 lemma exponentialTerm_half (χ : Character) (V : ℝ → ℂ) (D Y : ℝ)
-    (_hY : 0 < Y) (s : ℂ) (I : Ideal O) :
+    (_hY : 0 < Y) (s : ℂ) (I : Ideal HeckeFamily.O) :
     exponentialTerm χ V D s Y I = exponentialTerm χ V D s (2*Y) I *
       Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ)/(2*(Y : ℂ))) := by
   unfold exponentialTerm
@@ -143,7 +141,7 @@ theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ
     (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (hT : ∀ x : ℝ, ‖T x‖ ≤ BT)
     (hTone : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1)
     (D Y U : ℝ) (hY : 0 < Y) (hU : 0 < U) (s : ℂ) (hs : 0 ≤ s.re)
-    (I : Ideal O) :
+    (I : Ideal HeckeFamily.O) :
     ‖terminalRemainder χ V T D Y U s I‖ ≤
       (6144*B*Y^3*(1+B)*(1+BT)*Real.exp (-U/(2*Y)))*
         ‖CubicEisenstein.fullIdealWeight 2 I‖ := by
@@ -157,10 +155,10 @@ theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ
     apply Real.exp_le_exp.mpr
     have hc : (-((Ideal.absNorm I : ℝ) : ℂ)/(2*(Y : ℂ))).re =
         -(Ideal.absNorm I : ℝ)/(2*Y) := by
-      rw [show (2 : ℂ)*(Y : ℂ) = ((2*Y : ℝ) : ℂ) by push_cast; rfl,
+      rw [show (2 : ℂ)*(Y : ℂ) = ((2*Y : ℝ) : ℂ) by simp,
         ←Complex.ofReal_neg,←Complex.ofReal_div,Complex.ofReal_re]
     rw [hc]
-    exact div_le_div_of_nonneg_right (by linarith [lt_of_not_ge hI]) (by positivity)
+    exact div_le_div_of_nonneg_right (by linarith) (by positivity)
   rw [terminalRemainder,exponentialTerm_half χ V D Y hY s I]
   simp only [norm_mul]
   have h1 := mul_le_mul
@@ -170,8 +168,7 @@ theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ
     (norm_nonneg _) (by positivity)
   have h3 := mul_le_mul h2 (cutoff_defect_bound T BT hT ((Ideal.absNorm I : ℝ)/U))
     (norm_nonneg _) (by positivity)
-  apply h3.trans_eq
-  ring
+  linarith
 
 theorem terminalRemainder_summable (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ)
     (hB : 0 ≤ B) (hBT : 0 ≤ BT)
@@ -190,7 +187,7 @@ theorem terminalRemainder_tsum_bound (χ : Character) (V T : ℝ → ℂ) (B BT 
     (D Y U : ℝ) (hY : 0 < Y) (hU : 0 < U) (s : ℂ) (hs : 0 ≤ s.re) :
     ‖∑' I, terminalRemainder χ V T D Y U s I‖ ≤
       (6144*B*Y^3*(1+B)*(1+BT)*Real.exp (-U/(2*Y)))*
-        ∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖ := by
+        ∑' I : Ideal HeckeFamily.O, ‖CubicEisenstein.fullIdealWeight 2 I‖ := by
   have hsum := terminalRemainder_summable χ V T B BT hB hBT hV hT hTone D Y U hY hU s hs
   apply (norm_tsum_le_tsum_norm hsum.norm).trans
   rw [←tsum_mul_left]
@@ -206,14 +203,13 @@ theorem terminalRemainder_uniform_small (B BT ε : ℝ)
       (∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1) →
       ∀ (D : ℝ) (s : ℂ), 0 ≤ s.re →
       ‖∑' I, terminalRemainder χ V T D (U^20) (U^21) s I‖ < ε := by
-  let C : ℝ := 6144*B*(1+B)*(1+BT)*(∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖)
+  let C : ℝ := 6144*B*(1+B)*(1+BT)*(∑' I : Ideal HeckeFamily.O, ‖CubicEisenstein.fullIdealWeight 2 I‖)
   have ht : Tendsto (fun U : ℝ => C*(U^60*Real.exp (-U/2))) atTop (𝓝 0) := by
     have h := (tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero 60 (1/2) (by norm_num)).const_mul C
     convert h using 1
     · ext U
       rw [show (60 : ℝ) = ((60 : ℕ) : ℝ) by norm_num,Real.rpow_natCast]
-      congr 2
-      ring_nf
+      ring
     · ring_nf
   obtain ⟨U₀,hU₀⟩ := Filter.eventually_atTop.mp ((tendsto_order.mp ht).2 ε hε)
   refine ⟨U₀,?_⟩
@@ -221,29 +217,19 @@ theorem terminalRemainder_uniform_small (B BT ε : ℝ)
   have hUpos : 0 < U := by linarith
   have hb := terminalRemainder_tsum_bound χ V T B BT hB hBT hV hT hTone
     D (U^20) (U^21) (by positivity) (by positivity) s hs
-  have he : -(U^21)/(2*U^20) = -U/2 := by
-    rw [show U^21 = U^20*U by ring]
-    field_simp
-  have hp : (U^20)^3 = U^60 := by ring
-  rw [he,hp] at hb
-  have hC : (6144*B*U^60*(1+B)*(1+BT)*Real.exp (-U/2))*
-      (∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖) = C*(U^60*Real.exp (-U/2)) := by
-    dsimp [C]
-    ring
-  rw [hC] at hb
-  exact hb.trans_lt (hU₀ U hU₀')
+  grind
 
 theorem exponential_sum_tail_unconditional (χ : Character) (V : ℝ → ℂ)
     (B D Y : ℝ) (hB : 0 ≤ B) (hVbound : ∀ x : ℝ, ‖V x‖ ≤ B)
     (hD : 2 ≤ D) (hY : 0 < Y)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
     (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (hs : 0 ≤ s.re) :
-    (∑' I : Ideal O, exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D))) =
-      (∑' I : Ideal O, exponentialTerm χ V D s Y I) - Complex.exp (-1/(Y : ℂ)) :=
+    (∑' I : Ideal HeckeFamily.O, exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D))) =
+      (∑' I : Ideal HeckeFamily.O, exponentialTerm χ V D s Y I) - Complex.exp (-1/(Y : ℂ)) :=
   exponential_sum_tail χ V D hD hV hVzero s Y
     (exponentialTerm_summable χ V B hB hVbound D Y hY s hs)
 
-def terminalTerm (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal O) : ℂ :=
+def terminalTerm (χ : Character) (V T : ℝ → ℂ) (D Y U : ℝ) (s : ℂ) (I : Ideal HeckeFamily.O) : ℂ :=
   exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D)) *
     T ((Ideal.absNorm I : ℝ)/U)
 
@@ -260,10 +246,10 @@ theorem terminal_sum_identity (χ : Character) (V T : ℝ → ℂ)
     (hD : 2 ≤ D) (hY : 0 < Y)
     (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
     (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (hs : 0 ≤ s.re) :
-    (∑' I : Ideal O, terminalTerm χ V T D Y U s I) =
-      (∑' I : Ideal O, exponentialTerm χ V D s Y I) - Complex.exp (-1/(Y : ℂ)) -
-        ∑' I : Ideal O, terminalRemainder χ V T D Y U s I := by
-  let f := fun I : Ideal O => exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D))
+    (∑' I : Ideal HeckeFamily.O, terminalTerm χ V T D Y U s I) =
+      (∑' I : Ideal HeckeFamily.O, exponentialTerm χ V D s Y I) - Complex.exp (-1/(Y : ℂ)) -
+        ∑' I : Ideal HeckeFamily.O, terminalRemainder χ V T D Y U s I := by
+  let f := fun I : Ideal HeckeFamily.O => exponentialTerm χ V D s Y I * (1-V (2*(Ideal.absNorm I : ℝ)/D))
   have hf : Summable f := summable_mul_bounded _ _
     (exponentialTerm_summable χ V B hB hVbound D Y hY s hs) (1+B)
     (fun I => cutoff_defect_bound V B hVbound _)

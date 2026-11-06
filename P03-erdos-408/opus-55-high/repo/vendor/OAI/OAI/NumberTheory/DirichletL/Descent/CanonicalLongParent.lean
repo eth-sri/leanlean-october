@@ -14,16 +14,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
+open InverseSecondSourceBlocks
+open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell
 open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_long_parent_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
@@ -39,14 +38,14 @@ theorem actual_long_parent_energy
       1≤bw ∧ b≤bw ∧ bw=Real.exp window ∧
     ∀epsFirst epsSecond:ℝ,0<epsFirst→0<epsSecond→∀degree:ℕ,
       ∃Ccoef C:ℝ,0<Ccoef ∧ 0≤C ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-      (Ψ:O→*ℂ)(m mCoef:O)
+      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+      (Ψ:ActualEisensteinCubic.O→*ℂ)(m mCoef:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
       (Z M r ell V H₀ ξ pi epschild A loss lossFinal:ℝ)
       (_hZ:2≤Z)(_hbin:2≤Z^eta)(_hbinExp:Real.exp 1≤Z^eta)(_hM:0≤M)(_hF:r+3*ell+V≤Lcap)(_hMcap:M≤Lcap)(_hell:0≤ell)(_hV:0≤V)(_hr: -eta≤r)
@@ -69,7 +68,7 @@ theorem actual_long_parent_energy
       (_hslots:(slots:Set σ).PairwiseDisjoint lists)(_hweights:∀i∈slots,∀q∈lists i,‖weights i q‖≤1),
       let mark:=fun v U=>primeMark slots lists weights (v.support∪U);
       let Y:=Z^(2*Lcap+15*eta+tau);
-      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal ActualEisensteinCubic.O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
       let W:=fun y=>normTwistedSource om ξ (y/Z^r);
       let source:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y;
       let keys:=liveJointKeys p source pool (sourceSummand p hp hcop hg (actualLongCoefficient p Ψ mCoef H₀ (Z^ell) ξ) cutoff Ψ m mark W rowMajorant (Z^M));
@@ -100,12 +99,12 @@ theorem actual_long_parent_energy
     intro v hv
     apply (hQhi v hv).trans
     calc
-      Real.exp 1*Z^ell≤Z^eta*Z^ell:=mul_le_mul_of_nonneg_right hbinExp (Real.rpow_nonneg hz.le _)
+      Real.exp 1*Z^ell≤Z^eta*Z^ell:=mul_le_mul_of_nonneg_right hbinExp (by positivity)
       _=Z^(ell+eta):=by rw [Real.rpow_add hz];ring
   have hβ:∀I∈labels,∀v∈Q,
       ‖actualLongCoefficient p Ψ mCoef H₀ (Z^ell) ξ I v‖≤Ccoef*(Real.exp 1*Z^ell)^epsFirst := by
     intro I hI v hv
-    exact hcoef p hp Ψ hΨ mCoef H₀ (Z^ell) ξ I v (Real.rpow_pos_of_pos hz _) (hQlo v hv) (hQhi v hv)
+    exact hcoef p hp Ψ hΨ mCoef H₀ (Z^ell) ξ I v (by positivity) (hQlo v hv) (hQhi v hv)
   exact hfull p hp hg hinj hcop hc hpr pool Q labels
     (actualLongCoefficient p Ψ mCoef H₀ (Z^ell) ξ) Ψ m slots lists weights
     Z M r ell V (Ccoef*(Real.exp 1*Z^ell)^epsFirst) ξ pi epschild A loss lossFinal hZ hbin hM hF hMcap hell hV hr hbZ

@@ -10,7 +10,7 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (hQ : (4:ℝ)≤P.val.absNorm)
@@ -34,17 +34,17 @@ theorem actual_central_ramified_normalized (η : Character) (u : FreeRow) (P : P
   have ha : ‖actualACube η p‖≤1 := by
     have h := actualAPhase_norm_le_one η p
     rw [←actualACube_sq,norm_pow] at h
-    nlinarith [norm_nonneg (actualACube η p)]
+    nlinarith
   have hρ := actualSextic_unit_six p (unitPart u p hp) hg.1 hg.2 (unitPart_coprime u p hp)
   have hnorm : Ideal.absNorm (Ideal.span {p})=P.val.absNorm := congrArg Ideal.absNorm hspan
   constructor
   · have hb := ramifiedClosed_central_lower p hp hg.1 hg.2 _ _ _ x w z alpha eps
-      (hspan.symm ▸ hQ) (by simpa only [hnorm] using hsmall) (targetMonoid_norm_le_one η p) ha hρ
+      (by grind) (by simp_all) (targetMonoid_norm_le_one η p) ha hρ
       halpha halpha1 heps heps1 hx hw hz (multiplicity p u.val) (multiplicity_lt_six u p hp)
     exact hb
   · rw [continuedCompensatedLocal_ramified η u P hs hP x w z]
     have hb := ramifiedSelected_central_quotient p hp hg.1 hg.2 _ _ _ x w z alpha eps
-      (hspan.symm ▸ hQ) (by simpa only [hnorm] using hsmall) (targetMonoid_norm_le_one η p) ha hρ
+      (by grind) (by simp_all) (targetMonoid_norm_le_one η p) ha hρ
       halpha halpha1 heps heps1 hx hw hz (multiplicity p u.val) (multiplicity_lt_six u p hp)
     dsimp only at hb
     simpa only [ramifiedCorrection,p,hnorm] using hb

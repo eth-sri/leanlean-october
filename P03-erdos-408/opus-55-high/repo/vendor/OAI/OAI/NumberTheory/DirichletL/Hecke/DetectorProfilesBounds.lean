@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfiles
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff
 noncomputable section
 
 theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
@@ -25,18 +25,18 @@ theorem scaled_derivatives_of_decay (F : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
   refine ⟨S/m^K,by positivity,?_⟩
   intro R hR j hj y hy
   have hh := FourierBridge.coupled_factor_uniform_derivative F R 1 y m H CF 0 K j hF
-    hR hm (Real.exp_le_one_iff.mpr (by linarith)) hH (by simpa using hH)
-    (Real.exp_le_exp.mpr (by simpa using (abs_le.mp hy).1))
-    (Real.exp_le_exp.mpr (by simpa using (abs_le.mp hy).2))
-    hj hCF (by simpa using hdecay)
+    hR hm (Real.exp_le_one_iff.mpr (by linarith)) hH (by simp_all)
+    (Real.exp_le_exp.mpr (by grind))
+    (Real.exp_le_exp.mpr (by grind))
+    hj hCF (by simp_all)
   simp only [zero_add, pow_zero, mul_one, one_mul] at hh
   have hs : (j.factorial : ℝ)*CF*(H^2)^j ≤ S := by
     dsimp only [S]
     apply Finset.single_le_sum (s := Finset.range (K+1))
       (f := fun i => (i.factorial : ℝ)*CF*(H^2)^i) (a := j)
     · intro i hi; positivity
-    · exact Finset.mem_range.mpr (by omega)
-  exact (le_div_iff₀ (pow_pos hm K)).mpr (by simpa [mul_comm] using hh.trans hs)
+    · simp_all
+  exact (le_div_iff₀ (by positivity)).mpr (by linarith)
 
 theorem scaled_schwartz_derivatives (F : SchwartzMap ℝ ℂ)
     (L : ℝ) (hL : 0 ≤ L) (K : ℕ) :
@@ -81,8 +81,8 @@ lemma product_derivative_bound (F G : ℝ → ℂ) (hF : ContDiff ℝ ∞ F)
       apply Finset.sum_le_sum
       intro i hi
       have hi' : i ≤ j := by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hi)
-      exact mul_le_mul (mul_le_mul_of_nonneg_left (hFb i (hi'.trans hj)) (by positivity))
-        (hGb (j-i) ((Nat.sub_le j i).trans hj)) (norm_nonneg _) (by positivity)
+      exact mul_le_mul (mul_le_mul_of_nonneg_left (by grind) (by positivity))
+        (by grind) (norm_nonneg _) (by positivity)
     _ = (2 : ℝ)^j*CF*CG := by
       rw [← Finset.sum_mul, ← Finset.sum_mul]
       congr 2

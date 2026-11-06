@@ -47,7 +47,7 @@ theorem abs_sum_le_of_decomp {W : Finset ℕ} {F Aw Gt S Fl : ℕ → ℝ} {Λ B
     rw [abs_of_nonneg (hS w hw).1]
     have := hF w hw
     have := hS w hw
-    nlinarith [abs_nonneg (F w)]
+    nlinarith
   -- the clipping error: `G - min(G, Λ) ≤ G² / Λ`
   have h1 : |∑ w ∈ W, F w * (Gt w - min (Gt w) Λ) * S w| ≤ Bd * (∑ w ∈ W, Gt w ^ 2) / Λ := by
     rw [mul_div_assoc, sum_div, mul_sum]
@@ -58,7 +58,7 @@ theorem abs_sum_le_of_decomp {W : Finset ℕ} {F Aw Gt S Fl : ℕ → ℝ} {Λ B
       · rw [min_eq_left h, sub_self]
         positivity
       · rw [min_eq_right h, le_div_iff₀ hΛ]
-        nlinarith [hG w hw]
+        nlinarith
     rw [abs_mul, abs_mul, abs_of_nonneg hm]
     calc |F w| * (Gt w - min (Gt w) Λ) * |S w| = |F w| * |S w| * (Gt w - min (Gt w) Λ) := by
           ring
@@ -71,10 +71,9 @@ theorem abs_sum_le_of_decomp {W : Finset ℕ} {F Aw Gt S Fl : ℕ → ℝ} {Λ B
     · simp only [hb, ↓reduceIte]
       rw [abs_mul, abs_mul, abs_of_nonneg (sub_nonneg.2 (hA w hw).2)]
       calc |F w| * (Gt w - Aw w) * |S w| = |F w| * |S w| * (Gt w - Aw w) := by ring
-        _ ≤ Bd * Gt w := mul_le_mul (hBd' w hw) (by linarith [(hA w hw).1])
+        _ ≤ Bd * Gt w := mul_le_mul (hBd' w hw) (by simp_all)
             (sub_nonneg.2 (hA w hw).2) hBd
-    · simp only [hb, ↓reduceIte]
-      rw [hAeq w hw hb, sub_self, mul_zero, zero_mul, abs_zero, mul_zero]
+    · simp_all
   -- the failure term vanishes off the cutoff support
   have h3 : |∑ w ∈ W, F w * Aw w * Fl w| ≤ Bd * ∑ w ∈ W with Pnear w, Aw w * Fl w := by
     rw [sum_filter, mul_sum]
@@ -83,8 +82,7 @@ theorem abs_sum_le_of_decomp {W : Finset ℕ} {F Aw Gt S Fl : ℕ → ℝ} {Λ B
     · simp only [hb, ↓reduceIte]
       rw [abs_mul, abs_mul, abs_of_nonneg (hA w hw).1, abs_of_nonneg (hFl w hw), mul_assoc]
       exact mul_le_mul_of_nonneg_right (hF w hw) (mul_nonneg (hA w hw).1 (hFl w hw))
-    · simp only [hb, ↓reduceIte]
-      rw [hFz w hw hb, zero_mul, zero_mul, abs_zero, mul_zero]
+    · simp_all
   rw [hsplit]
   calc _ ≤ |∑ w ∈ W, F w * min (Gt w) Λ * S w| +
         (|∑ w ∈ W, F w * (Gt w - min (Gt w) Λ) * S w| +
@@ -102,7 +100,7 @@ lemma sum_filter_le_sqrt {s : Finset ℕ} {f : ℕ → ℝ} (P : ℕ → Prop) [
         sum_mul_sq_le_sq_mul_sq _ _ _
     _ ≤ (s.filter P).card * ∑ w ∈ s, f w ^ 2 := by
         rw [one_pow, sum_const, nsmul_eq_mul, mul_one]
-        exact mul_le_mul_of_nonneg_left (sum_le_sum_of_subset_of_nonneg (filter_subset _ _)
+        exact mul_le_mul_of_nonneg_left (sum_le_sum_of_subset_of_nonneg (by simp)
           fun w _ _ => sq_nonneg _) (Nat.cast_nonneg _)
 
 /-- The number of `w ∈ [1, M]` with `p² ∣ w + 1` for some `p ∈ S` is at most
@@ -114,22 +112,21 @@ lemma card_filter_sq_dvd_le (S : Finset ℕ) (M : ℕ) :
       S.biUnion fun p => (Icc 1 M).filter fun w => p * p ∣ w + 1 := by
     intro w hw
     obtain ⟨hw, p, hp, hdvd⟩ := mem_filter.1 hw
-    exact mem_biUnion.2 ⟨p, hp, mem_filter.2 ⟨hw, hdvd⟩⟩
+    exact by grind
   refine (Nat.cast_le.2 ((card_le_card hsub).trans card_biUnion_le)).trans ?_
   push_cast
   refine sum_le_sum fun p _ => ?_
   -- shift `w ↦ w + 1` into `(0, M + 1]`
   have hcard : ((Icc 1 M).filter fun w => p * p ∣ w + 1).card ≤ (M + 1) / (p * p) := by
     rw [← Nat.Ioc_filter_dvd_card_eq_div]
-    refine card_le_card_of_injOn (· + 1) (fun w hw => ?_) fun a _ b _ h => by simpa using h
+    refine card_le_card_of_injOn (· + 1) (fun w hw => ?_) fun a _ b _ h => by linarith
     obtain ⟨hw, hdvd⟩ := mem_filter.1 (mem_coe.1 hw)
     rw [mem_Icc] at hw
-    exact mem_coe.2 (mem_filter.2 ⟨mem_Ioc.2 ⟨Nat.succ_pos w, Nat.succ_le_succ hw.2⟩, hdvd⟩)
+    exact by grind
   calc (((Icc 1 M).filter fun w => p * p ∣ w + 1).card : ℝ) ≤ ((M + 1) / (p * p) : ℕ) := by
-        exact_mod_cast hcard
+        simp_all
     _ ≤ ((M : ℝ) + 1) / (p * p) := by
         have := Nat.cast_div_le (α := ℝ) (m := M + 1) (n := p * p)
-        push_cast at this
-        exact this
+        simp_all
 
 end Erdos408

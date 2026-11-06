@@ -14,7 +14,6 @@ values multiplies the constrained mass by the total value mass. -/
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3High
 
@@ -37,7 +36,7 @@ theorem relabel_sum_le {X Q : Type*} [DecidableEq X] (f : X → ℝ) (T S : Fins
     intro y hy
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.1 hy
     rw [Finset.mem_product] at hz
-    exact hmaps z.1 hz.1 z.2 hz.2
+    exact by grind
   have key : (∑ x ∈ T, f x) * c ≤ μ0 * ∑ x ∈ S, f x := by
     calc (∑ x ∈ T, f x) * c ≤ (∑ x ∈ T, f x) * ∑ p ∈ Q', μ p :=
           mul_le_mul_of_nonneg_left hmass hT0
@@ -45,15 +44,13 @@ theorem relabel_sum_le {X Q : Type*} [DecidableEq X] (f : X → ℝ) (T S : Fins
           rw [Finset.sum_mul_sum, Finset.sum_product]
       _ = ∑ z ∈ T ×ˢ Q', f (Φ z.1 z.2) * μ0 := by
           apply Finset.sum_congr rfl
-          intro z hz
-          rw [Finset.mem_product] at hz
-          exact hscale z.1 hz.1 z.2 hz.2
+          simp_all
       _ = μ0 * ∑ y ∈ (T ×ˢ Q').image (fun z : X × Q => Φ z.1 z.2), f y := by
           rw [Finset.sum_image hinjOn, Finset.mul_sum]
-          exact Finset.sum_congr rfl fun _ _ => by ring
+          grind
       _ ≤ μ0 * ∑ x ∈ S, f x := by
           apply mul_le_mul_of_nonneg_left _ hμ0
-          exact Finset.sum_le_sum_of_subset_of_nonneg hsub fun x hx _ => hfS x hx
+          exact Finset.sum_le_sum_of_subset_of_nonneg hsub (by grind)
   rw [div_mul_eq_mul_div, le_div_iff₀ hc]
   linarith
 

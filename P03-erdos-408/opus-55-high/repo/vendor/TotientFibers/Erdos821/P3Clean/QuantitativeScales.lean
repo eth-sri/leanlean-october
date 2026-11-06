@@ -8,7 +8,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P3Clean
@@ -22,8 +21,7 @@ theorem N_add_one_le (x : ℝ) (hL : 1 ≤ L x) : (N x : ℝ) + 1 ≤ 5 * L x :=
   have hc := (Nat.ceil_lt_add_one (Real.rpow_nonneg (zero_le_one.trans hL) ((52 : ℝ) / 100))).le
   change (⌈(L x) ^ ((52 : ℝ) / 100)⌉₊ : ℝ) ≤ (L x) ^ ((52 : ℝ) / 100) + 1 at hc
   unfold N R
-  push_cast
-  linarith
+  grind
 
 theorem bigGroup_card (P : PrimeGroups) : Fintype.card P.BigGroup = P.bigGroups.card := by
   rw [Fintype.card_subtype]
@@ -38,10 +36,7 @@ theorem bigGroup_card_le (F : FixedData) (x : ℝ) (P : PrimeGroups)
 theorem bigPrime_lower (F : FixedData) (x : ℝ) (P : PrimeGroups) (hP : P.Admissible F x)
     (g : P.BigGroup) (p : P.Prime g.val) : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := by
   have h := hP.2.2.2.2.2 g.val p.val p.property
-  have hh : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) ∧
-      (p.val : ℝ) ≤ Real.exp ((L x) ^ F.d) := by
-    simpa [g.property] using h
-  exact hh.1
+  grind
 
 theorem density_power_error (eps : ℝ) (he : 0 ≤ eps) (q : ℕ) (ht : (q : ℝ) * eps ≤ 1) :
     1 ≤ (1 + eps) ^ q ∧ (1 + eps) ^ q - 1 ≤ 2 * q * eps ∧ (1 + eps) ^ q ≤ 3 := by
@@ -49,13 +44,10 @@ theorem density_power_error (eps : ℝ) (he : 0 ≤ eps) (q : ℕ) (ht : (q : �
   have hpow : (1 + eps) ^ q ≤ Real.exp ((q : ℝ) * eps) := by
     rw [Real.exp_nat_mul]
     exact pow_le_pow_left₀ (by linarith) (by simpa only [add_comm] using Real.add_one_le_exp eps) q
-  have ht0 : 0 ≤ (q : ℝ) * eps := mul_nonneg (Nat.cast_nonneg _) he
+  have ht0 : 0 ≤ (q : ℝ) * eps := by positivity
   have herr := Real.abs_exp_sub_one_le (x := (q : ℝ) * eps)
-    (by simpa only [abs_of_nonneg ht0] using ht)
-  have hexp : 0 ≤ Real.exp ((q : ℝ) * eps) - 1 := by
-    exact sub_nonneg.mpr (Real.one_le_exp_iff.mpr ht0)
-  rw [abs_of_nonneg hexp, abs_of_nonneg ht0] at herr
-  refine ⟨hlo, ?_, ?_⟩ <;> nlinarith
+    (by grind)
+  grind
 
 theorem eventually_polynomial_exp (c : ℝ) (hc : 0 < c) (K s E : ℝ) :
     ∀ᶠ x : ℝ in atTop, K * (L x) ^ s / Real.exp ((L x) ^ c) ≤ (L x) ^ (-E) := by
@@ -68,14 +60,14 @@ theorem eventually_polynomial_exp (c : ℝ) (hc : 0 < c) (K s E : ℝ) :
   have heq : ((L x) ^ c) ^ ((s + E) / c) = (L x) ^ (s + E) := by
     rw [← Real.rpow_mul hpc]
     congr 1
-    field_simp [hc.ne']
+    field_simp
   change K ≤ Real.exp ((L x) ^ c) / ((L x) ^ c) ^ ((s + E) / c) at hx
   rw [heq] at hx
-  have h := (le_div_iff₀ (Real.rpow_pos_of_pos hp (s + E))).mp hx
+  have h := (le_div_iff₀ (by positivity)).mp hx
   rw [Real.rpow_add hp] at h
   apply (div_le_iff₀ (Real.exp_pos _)).mpr
   rw [Real.rpow_neg hp.le, mul_comm ((L x) ^ E)⁻¹]
-  exact (le_mul_inv_iff₀ (Real.rpow_pos_of_pos hp E)).mpr (by simpa only [mul_assoc] using h)
+  exact (le_mul_inv_iff₀ (by positivity)).mpr (by linarith)
 
 
 end Erdos821.P3Clean

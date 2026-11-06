@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.ActualSizeCaps
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+open scoped Classical
+open CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma low_actual_scale_caps (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
+lemma low_actual_scale_caps (J I Q Q₀ : Ideal ActualEisensteinCubic.O) (hJ : J≠0) (hI : I≠0) (hQ : Q≠0)
     (hpower : rowPowerfulPart J=rowPowerfulPart I) (hmask : rowMaskPart J Q=rowMaskPart I Q)
     (A : Finset (FreeReflection.pool J Q Q₀))
     (Z Ck d ell0 shift η QK QP : ℝ) (hZ : 2≤Z) (hCkp : 0<Ck) (hCk : Ck≤Z)
@@ -28,7 +27,7 @@ lemma low_actual_scale_caps (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (
   have hz1 : 1≤Z := by linarith
   have hcp : Ck*Z^(5/6-2*d)≤Z^2 := by
     calc
-      _ ≤ Z*Z^(5/6-2*d) := mul_le_mul_of_nonneg_right hCk (Real.rpow_nonneg hz.le _)
+      _ ≤ Z*Z^(5/6-2*d) := mul_le_mul_of_nonneg_right hCk (by positivity)
       _ = Z^(1+(5/6-2*d)) := by rw [Real.rpow_add hz,Real.rpow_one]
       _ ≤ _ := by
         rw [←Real.rpow_natCast]
@@ -47,11 +46,11 @@ lemma low_actual_scale_caps (J I Q Q₀ : Ideal Eis) (hJ : J≠0) (hI : I≠0) (
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hz1 (by norm_num)
   · calc
       QP ≤ 2*Z^ell0 := by linarith
-      _ ≤ Z*Z^ell0 := mul_le_mul_of_nonneg_right hZ (Real.rpow_nonneg hz.le _)
+      _ ≤ Z*Z^ell0 := mul_le_mul_of_nonneg_right hZ (by positivity)
       _ = Z^(1+ell0) := by rw [Real.rpow_add hz,Real.rpow_one]
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hz1 (by linarith)
   · rw [←Real.rpow_neg hz.le]
-    exact Real.rpow_le_rpow_of_exponent_le hz1 (by have hs := (abs_le.mp hshift).1;linarith)
+    exact Real.rpow_le_rpow_of_exponent_le hz1 (by grind)
 
 lemma low_reflection_parameters (η : ℝ) (hη : 0<η) :
     0<η/(200*(1+η)) ∧
@@ -61,7 +60,7 @@ lemma low_reflection_parameters (η : ℝ) (hη : 0<η) :
   · positivity
   · apply (mul_le_mul_iff_left₀ hp).mp
     field_simp
-    nlinarith [sq_nonneg η]
+    linarith
 end
 end SevenEighths.InverseReflectedPhase
 

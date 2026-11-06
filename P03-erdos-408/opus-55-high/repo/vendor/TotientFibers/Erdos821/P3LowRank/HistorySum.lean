@@ -13,7 +13,6 @@ finite bounded state type, which the finite operator-norm composition controls. 
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Lowrank
@@ -57,7 +56,7 @@ theorem tsum_trunc (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → �
   have hs : Function.support f ⊆ {H : MemoryHistory A n | H.Truncated B} := by
     intro H hH
     by_contra h
-    exact hH (hf H h)
+    exact hH (by grind)
   rw [← tsum_subtype_eq_of_support_subset hs, ← (truncEquiv A n B).tsum_eq, tsum_fintype]
   rfl
 
@@ -112,11 +111,11 @@ theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
             rw [ite_eq_left hV, hX0, hY0, ite_eq_left h0, ite_eq_left hn]
             have hgT : ∀ i, gT i (c1 i) =
                 (ghostChoiceWeight F n rho i (c1 i) : ℂ) * φG i (bf i) (af i) (c1 i) :=
-              fun i => ite_eq_left (hg i)
+              by grind
             have heT : ∀ i, eT i (c2 i) = (edgeSymmetryFactor P (J + F.ell) : ℂ) *
                 edgeChoiceCoefficient A n rho theta i (af i.castSucc) (bf i.succ) (c2 i) *
                   φE i (af i.castSucc) (bf i.succ) (c2 i) :=
-              fun i => ite_eq_left (he i)
+              by grind
             simp only [hgT, heT, MemoryHistory.Weight, localFactor, Finset.prod_mul_distrib]
             ring
           · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => he hV.2.2.2
@@ -128,27 +127,17 @@ theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
           rw [ite_eq_right hV, Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)]
           ring
       · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => hn hV.2.1
-        rw [ite_eq_right hV, hY0, ite_eq_right hn]
-        ring
+        grind
     · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => h0 hV.1
-      rw [ite_eq_right hV, hX0, ite_eq_right h0]
-      ring
+      grind
   have hG : ∀ i, ∑ c, gT i c = memoryGhostKernel F J n rho i (φG i) (bf i) (af i) := by
     intro i
     unfold memoryGhostKernel
     by_cases hag : (bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1
-    · rw [ite_eq_left hag]
-      apply Finset.sum_congr rfl
-      intro c _
-      by_cases hc : ghostChoiceValid c
-      · rw [ite_eq_left hc]
-        exact ite_eq_left ⟨hag.1, hag.2, hc⟩
-      · rw [ite_eq_right hc]
-        exact ite_eq_right (fun h => hc h.2.2)
+    · grind
     · rw [ite_eq_right hag]
       apply Finset.sum_eq_zero
-      intro c _
-      exact ite_eq_right (fun h => hag ⟨h.1, h.2.1⟩)
+      grind
   have hE : ∀ i, ∑ c, eT i c =
       memoryEdgeKernel A n rho theta i .all (φE i) (af i.castSucc) (bf i.succ) := by
     intro i
@@ -157,11 +146,8 @@ theorem choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
     apply Finset.sum_congr rfl
     intro c _
     by_cases hc : edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) c
-    · rw [ite_eq_left hc]
-      simp only [eT, ite_eq_left hc]
-      ring
-    · rw [ite_eq_right hc]
-      simp only [eT, ite_eq_right hc, mul_zero]
+    · grind
+    · grind
   have hsplit : ∀ c1 : (i : Fin (n + 1)) → GhostChoice (bf i) (af i),
       ∑ c2 : (i : Fin n) → EdgeChoice A (af i.castSucc),
         X0 * (∏ i, gT i (c1 i)) * (∏ i, eT i (c2 i)) * Y0 =
@@ -187,10 +173,10 @@ theorem finNormBound_of_normBound {α : Type*} (keep : α → Prop) [Fintype {x 
   let f' : α → ℂ := fun x => if hx : keep x then f ⟨x, hx⟩ else 0
   let g' : α → ℂ := fun x => if hx : keep x then g ⟨x, hx⟩ else 0
   have h1 := h S S f' g'
-  have hf' : ∀ s : {x // keep x}, f' s.val = f s := fun s => dite_eq_left s.property
-  have hg' : ∀ s : {x // keep x}, g' s.val = g s := fun s => dite_eq_left s.property
+  have hf' : ∀ s : {x // keep x}, f' s.val = f s := by grind
+  have hg' : ∀ s : {x // keep x}, g' s.val = g s := by grind
   have hp : ∀ s t : {x // keep x}, projectKernel keep K s.val t.val = K s.val t.val :=
-    fun s t => ite_eq_left ⟨s.property, t.property⟩
+    fun s t => ite_eq_left (by grind)
   simp only [S, Finset.sum_map, Function.Embedding.coe_subtype, hf', hg', hp] at h1
   exact h1
 
@@ -205,14 +191,14 @@ theorem boundary_sum_le (A : Model F P J m) (n B : ℕ) :
         ∀ g, s.val.2.2 g = 0), P.memoryMass F J n s.val
       = ∑ x ∈ T, P.memoryMass F J n x := by
         simp only [T, Finset.sum_map, Function.Embedding.coe_subtype]
-    _ ≤ ∑ x ∈ T, |P.memoryMass F J n x| := Finset.sum_le_sum fun x _ => le_abs_self _
+    _ ≤ ∑ x ∈ T, |P.memoryMass F J n x| := Finset.sum_le_sum (by grind)
     _ ≤ _ := by
         apply Erdos821.P3Tail.start_sum_le A n T
         intro x hx
         simp only [T, Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
           Function.Embedding.coe_subtype] at hx
         obtain ⟨s, hs, rfl⟩ := hx
-        exact hs
+        omega
 
 theorem star_ite_mul (p : Prop) [Decidable p] (x : ℝ) (z : ℂ) :
     (x : ℂ) * star (if p then star z else 0) = if p then (x : ℂ) * z else 0 := by
@@ -260,13 +246,13 @@ theorem local_history_bound (A : Model F P J m) (n B : ℕ) (rho theta CG : ℝ)
     simp only [mass', f, star_ite_mul]
     rfl
   rw [hsum]
-  have hmass' : ∀ s, 0 ≤ mass' s := fun s => hmass s.val
+  have hmass' : ∀ s, 0 ≤ mass' s := by grind
   have hfin := pathSum_bound mass' hmass' CG hCG n Gk Ek c hc
     (fun i => finNormBound_of_normBound (fun s => P.memorySize s ≤ B) _ _ CG (hG i))
     (fun i => finNormBound_of_normBound (fun s => P.memorySize s ≤ B) _ _ (c i) (hE i)) f v
   set M := initialMemoryBoundaryMass A n with hMdef
   have hbd := boundary_sum_le A n B
-  have hM : 0 ≤ M := Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
+  have hM : 0 ≤ M := Finset.sum_nonneg fun _ _ => Finset.sum_nonneg (by grind)
   have hf : wnorm mass' f ≤ Real.sqrt M := by
     apply Real.sqrt_le_sqrt
     refine le_trans (Finset.sum_le_sum fun s _ => ?_) hbd
@@ -286,17 +272,16 @@ theorem local_history_bound (A : Model F P J m) (n B : ℕ) (rho theta CG : ℝ)
     refine le_trans (le_of_eq (Finset.sum_congr rfl fun s _ => ?_)) hbd
     by_cases hs : ∀ g, s.val.2.2 g = 0
     · simp only [v, ite_eq_left hs, norm_one]
-      simp [mass']
+      linarith
     · simp only [v, ite_eq_right hs, norm_zero]
       simp
   have hK : 0 ≤ CG ^ (n + 1) * ∏ i, c i :=
-    mul_nonneg (pow_nonneg hCG _) (Finset.prod_nonneg fun i _ => hc i)
+    mul_nonneg (by positivity) (Finset.prod_nonneg (by grind))
   calc _ ≤ CG ^ (n + 1) * (∏ i, c i) * wnorm mass' f * wnorm mass' v := hfin
     _ ≤ CG ^ (n + 1) * (∏ i, c i) * Real.sqrt M * Real.sqrt M := by
         apply mul_le_mul (mul_le_mul_of_nonneg_left hf hK) hv (wnorm_nonneg _ _)
-        exact mul_nonneg hK (Real.sqrt_nonneg _)
+        positivity
     _ = M * CG ^ (n + 1) * ∏ i, c i := by
-        rw [mul_assoc (CG ^ (n + 1) * ∏ i, c i), Real.mul_self_sqrt hM]
-        ring
+        grind
 
 end Erdos821.P3Lowrank

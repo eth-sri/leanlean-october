@@ -32,8 +32,7 @@ theorem actual_annulus_radial_lower
     ring
   calc
     _ = Z^m*(Z^B/4)^2*(Z^H/4)/(Z^θ*(b*Z^D)^2) := by
-      rw [←he]
-      ring
+      grind
     _ ≤ Z^m*C^2*hnorm/(d*(b*Z^D)^2) := by gcongr
     _ = (Z^m*C^2/(d*(b*Z^D)^2))*hnorm := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_right hscale hh

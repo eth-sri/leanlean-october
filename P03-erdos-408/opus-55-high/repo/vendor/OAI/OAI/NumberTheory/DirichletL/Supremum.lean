@@ -15,8 +15,8 @@ def continuationMargin (β ω σ : ℝ) : ℝ := min (β - 7 / 8 - ω) σ
 
 theorem continuationMargin_pos {β ω σ : ℝ}
     (hω : ω < β - 7 / 8) (hσ : 0 < σ) :
-    0 < continuationMargin β ω σ := by
-  exact lt_min (sub_pos.mpr hω) hσ
+    0 < continuationMargin β ω σ :=
+  lt_min (by positivity) hσ
 
 theorem continuationMargin_le_gap (β ω σ : ℝ) :
     continuationMargin β ω σ ≤ β - 7 / 8 - ω :=
@@ -31,10 +31,7 @@ theorem max_signal_exponents (β ω σ c : ℝ) :
     max (7 / 8 + c + ω) (β + c - σ) =
       β + c - continuationMargin β ω σ := by
   unfold continuationMargin
-  rcases le_total (β - 7 / 8 - ω) σ with h | h
-  · rw [min_eq_left h, max_eq_left (by linarith)]
-    linarith
-  · rw [min_eq_right h, max_eq_right (by linarith)]
+  grind
 
 theorem exists_gt_supremum_sub {S : Set ℝ} (hne : S.Nonempty)
     (hbounded : BddAbove S) {ε : ℝ} (hε : 0 < ε) :
@@ -47,11 +44,8 @@ theorem exists_gt_supremum_sub_of_insert {S : Set ℝ} {a ε : ℝ}
     (ha : a ≤ sSup (insert a S) - ε) :
     ∃ x ∈ S, sSup (insert a S) - ε < x := by
   obtain ⟨x, hx, hlt⟩ :=
-    exists_gt_supremum_sub (Set.insert_nonempty a S) hbounded hε
-  rcases Set.mem_insert_iff.mp hx with hxa | hxS
-  · subst x
-    exact False.elim ((not_lt_of_ge ha) hlt)
-  · exact ⟨x, hxS, hlt⟩
+    exists_gt_supremum_sub (by simp) hbounded hε
+  grind
 
 end
 

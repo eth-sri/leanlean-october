@@ -22,9 +22,9 @@ theorem coefficientSup_nonneg (ν : Pattern P J ell m) : 0 ≤ coefficientSup ν
   by_cases hα : Nonempty α
   · obtain ⟨z⟩ := hα
     have hbdd : BddAbove (Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖)) :=
-      (Set.finite_range _).bddAbove
+      by simp
     have hz : ‖ν.coefficient z.1 z.2.1 z.2.2‖ ∈
-        Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖) := ⟨z, rfl⟩
+        Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖) := by grind
     exact (norm_nonneg _).trans (le_csSup hbdd hz)
   · have hRange : Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖) = ∅ := by
       apply Set.eq_empty_of_forall_notMem
@@ -58,15 +58,10 @@ theorem majorantPattern_sup (ν : Pattern P J ell m) :
       intro y
       simp only [Set.mem_range, Set.mem_singleton_iff]
       constructor
-      · rintro ⟨z, rfl⟩
-        exact hnorm
-      · intro hy
-        subst y
-        obtain ⟨z⟩ := hα
-        exact ⟨z, hnorm⟩
+      · grind
+      · simp_all
     change sSup (Set.range (fun z : α => ‖(coefficientSup ν : ℂ)‖)) = coefficientSup ν
-    rw [hRange]
-    simp
+    simp_all
   · have hRange : Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖) = ∅ := by
       apply Set.eq_empty_of_forall_notMem
       intro y hy
@@ -79,7 +74,7 @@ theorem majorantPattern_sup (ν : Pattern P J ell m) :
       exact hα ⟨z⟩
     change sSup (Set.range (fun z : α => ‖(coefficientSup ν : ℂ)‖)) =
       sSup (Set.range (fun z : α => ‖ν.coefficient z.1 z.2.1 z.2.2‖))
-    rw [hMajRange, hRange]
+    grind
 
 def majorantModel {F : FixedData} (A : Model F P J m) : Model F P J m :=
   { A with pattern := fun i => majorantPattern (A.pattern i) }

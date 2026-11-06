@@ -69,9 +69,9 @@ theorem mul_apply_eq_restrict [DecidableEq β] {X Y : Matrix α α ℂ} {X' Y' :
     (X * Y) i j = (X' * Matrix.diagonal v * Y') (ι i) (ι j) := by
   rw [Matrix.mul_apply, Matrix.mul_apply]
   simp only [Matrix.mul_diagonal]
-  refine Fintype.sum_of_injective ι hι _ _ (fun k hk => by rw [hv₀ k hk, mul_zero, zero_mul])
+  refine Fintype.sum_of_injective ι hι _ _ (fun k hk => by simp_all)
     fun k => ?_
-  rw [hX, hY, hv, mul_one]
+  simp_all
 
 /-- Powers of the restriction of `B` along `ι` are the restrictions of the powers of `B` when
 the columns of `B` off the image of `ι` vanish. -/
@@ -83,8 +83,8 @@ theorem pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Matrix α �
   | zero => simp only [pow_zero, Matrix.one_apply, hι.eq_iff]
   | succ n ih =>
     simp only [pow_succ', Matrix.mul_apply]
-    exact Fintype.sum_of_injective ι hι _ _ (fun k hk => by rw [hB k hk, zero_mul])
-      fun k => by rw [hA, ih]
+    exact Fintype.sum_of_injective ι hι _ _ (fun k hk => by simp_all)
+      fun k => by simp_all
 
 /-- With `n ≥ 1` and `B` vanishing off the image of `ι` in both indices, the endpoint sums of
 `A^n` and `B^n` agree, for the restriction `A` of `B` along `ι`. -/
@@ -97,13 +97,13 @@ theorem sum_mul_pow_apply_eq_restrict [DecidableEq α] [DecidableEq β] {A : Mat
   -- step: the rows and columns of `B^n` off the image vanish
   have hrow' : ∀ k ∉ Set.range ι, ∀ l, (B ^ (0 + n + 1)) k l = 0 := fun k hk l => by
     rw [zero_add, pow_succ', Matrix.mul_apply]
-    exact sum_eq_zero fun m _ => by rw [hrow k hk, zero_mul]
+    simp_all
   have hcol' : ∀ l ∉ Set.range ι, ∀ k, (B ^ (0 + n + 1)) k l = 0 := fun l hl k => by
     rw [zero_add, pow_succ, Matrix.mul_apply]
-    exact sum_eq_zero fun m _ => by rw [hcol l hl, mul_zero]
+    simp_all
   refine Fintype.sum_of_injective ι hι _ _ (fun k hk => sum_eq_zero fun l _ => by
-    rw [hrow' k hk, mul_zero]) fun i => ?_
-  refine Fintype.sum_of_injective ι hι _ _ (fun l hl => by rw [hcol' l hl, mul_zero])
+    simp_all) fun i => ?_
+  refine Fintype.sum_of_injective ι hι _ _ (fun l hl => by simp_all)
     fun j => ?_
   rw [pow_apply_eq_restrict hι hA hcol]
 

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+open ProbeRaySlots
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_normalized_nonfloor_cube (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -25,7 +24,7 @@ theorem actual_normalized_nonfloor_cube (N n : ℕ) (e eps c b A R dmin dmax rmi
     (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
@@ -85,7 +84,7 @@ theorem actual_normalized_nonfloor_cube (N n : ℕ) (e eps c b A R dmin dmax rmi
     intro y hy
     apply hWs j
     intro hh
-    exact hy (by dsimp [WC];rw [hh];simp)
+    exact hy (by dsimp [WC];simp [hh])
   have hWCB (j : Fin N) (y : ℝ) : ‖WC j y‖≤A := by
     simpa only [WC,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hWB j y).1] using (hWB j y).2
   obtain ⟨C,hC,hbound⟩ :=

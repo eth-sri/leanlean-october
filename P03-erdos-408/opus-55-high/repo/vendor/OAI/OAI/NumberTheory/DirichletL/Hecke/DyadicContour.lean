@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicMellin
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
@@ -28,7 +28,7 @@ theorem series_differentiableAt_right (χ : Character) (inverse : Bool) {s : ℂ
     (hs : 1<s.re) : DifferentiableAt ℂ (series χ inverse) s := by
   cases inverse
   · exact LFunction_differentiableAt χ
-      (by intro h; norm_num [h] at hs) (Or.inl (by intro h; norm_num [h] at hs))
+      (by intro h; norm_num [h] at hs) (Or.inl (by intro h; simp_all))
   · exact HeckeReciprocal.reciprocal_differentiableAt χ
       (lt_of_le_of_lt HeckeZeroSupremum.beta_le_one hs)
 
@@ -60,8 +60,7 @@ theorem integrand_norm (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     ‖integrand χ inverse W D σ freq s‖ =
       ‖mellin W s‖*D^(s.re+σ-1/2)*‖series χ inverse (s+shift σ freq)‖ := by
   unfold integrand
-  rw [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hD]
-  simp
+  simp [norm_mul, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hD]
 
 theorem integrand_vertical_integrable (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0<a) (hWs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
@@ -71,7 +70,7 @@ theorem integrand_vertical_integrable (χ : Character) (inverse : Bool) (W : ℝ
     apply continuous_iff_continuousAt.mpr
     intro t
     apply (integrand_differentiableAt χ inverse W a b ha hWs hW D σ freq hD
-      (series_differentiableAt_right χ inverse (by simpa using hc))).continuousAt.comp
+      (series_differentiableAt_right χ inverse (by simp_all))).continuousAt.comp
     fun_prop
   have hm := (CompletedGauss.compactMellin_vertical_integrable W a b ha hWs hW c).norm
   apply (hm.mul_const (D^(c+σ-1/2)*HeckeReciprocalBound.bound (c+σ))).mono'
@@ -79,8 +78,7 @@ theorem integrand_vertical_integrable (χ : Character) (inverse : Bool) (W : ℝ
   apply ae_of_all
   intro t
   rw [integrand_norm χ inverse W D σ freq hD]
-  simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, I_im, zero_mul,
-    sub_self, add_zero]
+  simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, zero_mul, sub_self, add_zero]
   rw [← mul_assoc]
   apply mul_le_mul_of_nonneg_left
     (series_norm_le χ inverse hc (by simp))
@@ -103,7 +101,7 @@ theorem finite_rectangle (χ : Character) (hχ : χ.residue≠1) (inverse : Bool
       (series_differentiableAt_nonprincipal χ hχ inverse (hz s hs))).differentiableWithinAt
   have h := Complex.integral_boundary_rect_eq_zero_of_differentiableOn
     (integrand χ inverse W D σ freq) ((l : ℂ)+(-T)*I) ((r : ℂ)+T*I)
-    (by simpa using hhol)
+    (by simp_all)
   have hr :
       (∫ x : ℝ in l..r, integrand χ inverse W D σ freq ((x : ℂ)+(-T)*I)) -
       (∫ x : ℝ in l..r, integrand χ inverse W D σ freq ((x : ℂ)+T*I)) +
@@ -113,7 +111,7 @@ theorem finite_rectangle (χ : Character) (hχ : χ.residue≠1) (inverse : Bool
   have hh := congrArg (fun z : ℂ => -I*z) hr
   ring_nf at hh ⊢
   simp only [I_sq] at hh
-  linear_combination hh
+  grind
 
 theorem polynomial_finite_shift (χ : Character) (hχ : χ.residue≠1) (inverse : Bool)
     (W : ℝ → ℂ) (a b : ℝ) (ha : 0<a)

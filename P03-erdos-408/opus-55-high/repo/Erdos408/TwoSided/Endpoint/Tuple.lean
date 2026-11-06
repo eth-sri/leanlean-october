@@ -83,7 +83,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
     hψs hψd Y σ k h hY₁ hY₂ hσ hk₁ hk₂
   simp only [Function.comp_apply] at hT
   set L := Real.log x with hLdef
-  have hL1 : 1 ≤ L := le_trans (by linarith [pow_pos (by norm_num : (0 : ℝ) < 4) d]) hL
+  have hL1 : 1 ≤ L := le_trans (by simp) hL
   have hL0 : 0 < L := by linarith
   have hx0 : 0 < x := by linarith
   have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hY₁
@@ -107,7 +107,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
     · rw [intervalIntegral.integral_symm, intervalIntegral.integral_of_le h₁₂.le]
       have : 0 ≤ ∫ t in Set.Ioc t₂ t₁,
           ‖twistedPoly Y (tupleCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ) h k t‖ ^ 2 :=
-        MeasureTheory.setIntegral_nonneg measurableSet_Ioc fun t _ => by positivity
+        by positivity
       have : 0 ≤ CT * L ^ (-A₀) := by positivity
       linarith
     -- an empty weighted slot makes `𝒜_B` vanish
@@ -123,7 +123,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
         have h₁ : (Q i : ℝ) ≤ x ^ v i.castSucc := by
           have hle := Finset.mem_Iic.1 hQ₁
           exact (Nat.cast_le.2 hle).trans (Nat.floor_le (by positivity))
-        have h₂ : x ^ v i.castSucc ≤ x ^ u i.castSucc := Real.rpow_le_rpow_of_exponent_le hx1 hi
+        have h₂ := Real.rpow_le_rpow_of_exponent_le hx1 hi
         linarith
       have h0 : ∀ t, twistedPoly Y (tupleCoeff x q q₀ a u v Bc P C b gs ψ₁ Y σ) h k t = 0 := by
         intro t
@@ -150,7 +150,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
       linarith
     have hA : Real.exp (c * L / Real.log L ^ 20) ≤ x ^ u (Fin.last d) := by
       rw [Real.rpow_def_of_pos hx0, Real.exp_le_exp, ← hLdef]
-      calc c * L / Real.log L ^ 20 = L * ε := by rw [hε]; ring
+      calc c * L / Real.log L ^ 20 = L * ε := by ring
         _ ≤ L * u (Fin.last d) := mul_le_mul_of_nonneg_left hu hL0.le
     have hB : x ^ v (Fin.last d) ≤ x * Real.exp (-(c * L / Real.log L ^ 20)) := by
       rw [Real.rpow_def_of_pos hx0, ← hLdef]
@@ -177,11 +177,11 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
           (Finset.mem_filter.1 hp).2.1) Bc hBc hn1).trans ?_
         have hω := TupleHigh.card_primeFactors_le hn1
         have hlog : Real.log n ≤ 2 * L := by
-          rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; push_cast; ring]
-          exact Real.log_le_log (by exact_mod_cast hn1) hnx
+          rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; ring]
+          exact Real.log_le_log (by positivity) hnx
         calc (n.primeFactors.card : ℝ) ^ d ≤ (4 * L) ^ d :=
               pow_le_pow_left₀ (Nat.cast_nonneg _) (by linarith) d
-          _ = 4 ^ d * L ^ d := mul_pow _ _ _
+          _ = 4 ^ d * L ^ d := by ring
           _ ≤ L * L ^ d := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
           _ = L ^ ((d : ℝ) + 1) := by
               rw [Real.rpow_add hL0, Real.rpow_natCast, Real.rpow_one]
@@ -189,8 +189,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
       have hW := hCW P big hadm (J + 1) (Function.update (unsharedSlots C) gs ∅) b
         (fun g => by
           rcases eq_or_ne g gs with rfl | hg
-          · rw [Function.update_self, Finset.card_empty]
-            omega
+          · simp
           · rw [Function.update_of_ne hg]
             refine (Finset.card_insert_le _ _).trans ?_
             rw [Finset.card_map]
@@ -210,7 +209,7 @@ theorem exists_integral_tuple_high_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (
     exact ⟨ht.1, ht.2⟩
   · refine hboth _ _ fun t ht => ?_
     have h₁ : 0 < L ^ B' := by positivity
-    rw [abs_of_neg (lt_of_le_of_lt ht.2 (neg_lt_zero.2 h₁))]
+    rw [abs_of_neg (lt_of_le_of_lt ht.2 (by linarith))]
     exact ⟨by linarith [ht.2], by linarith [ht.1]⟩
 
 end Erdos408.TwoSided

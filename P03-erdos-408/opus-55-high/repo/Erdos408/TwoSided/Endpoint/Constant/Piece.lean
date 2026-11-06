@@ -48,15 +48,13 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
     (measurableSet_lt measurable_const continuous_abs.measurable)
   have hAm0 : 0 ≤ Amax := (norm_nonneg _).trans (hAmax 0)
   have hne : ∀ t ∈ Set.Icc a b, t ≠ 0 := fun t ht h0 => by
-    have := hca t ht
-    rw [h0, abs_zero] at this
-    linarith
+    grind
   -- the pointwise bound
   have hpt : ∀ t ∈ Set.Ioc a b, f t ≤ O.indicator f t + 2 * Amax ^ 2 *
       (1152 * Λ ^ 2 * (t ^ 2)⁻¹ + Ms.indicator (fun _ => 2 * Λ ^ 2 * ε ^ 2) t +
         BH.indicator (fun _ => G) t + ‖B₁ t‖ ^ 2) := by
     intro t ht
-    have htI : t ∈ Set.Icc a b := Set.Ioc_subset_Icc_self ht
+    have htI := Set.Ioc_subset_Icc_self ht
     have ht0 := hne t htI
     have hct := hca t htI
     have hat : 0 < |t| := abs_pos.2 ht0
@@ -146,7 +144,7 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
   have hMvol : volume.real (Set.Ioc a b ∩ Ms) ≤ 2 * X := by
     calc volume.real (Set.Ioc a b ∩ Ms) ≤ volume.real (Set.Icc (-X) X) :=
           measureReal_mono (fun t ht => abs_le.1 ht.2)
-            (by rw [Real.volume_Icc]; exact ENNReal.ofReal_ne_top)
+            (by simp)
       _ = 2 * X := by rw [Real.volume_real_Icc_of_le (by linarith)]; ring
   have hBHvol : volume.real (Set.Ioc a b ∩ BH) ≤ 𝒥.card := by
     have hsub : Set.Ioc a b ∩ BH ⊆ ⋃ j ∈ 𝒥, Set.Icc (j : ℝ) (j + 1) := by
@@ -157,7 +155,7 @@ theorem integral_piece_le {a b c θ X Λ ε Amax Ord ME : ℝ} (hab : a ≤ b) (
       calc volume (Set.Ioc a b ∩ BH) ≤ volume (⋃ j ∈ 𝒥, Set.Icc (j : ℝ) (j + 1)) :=
             measure_mono hsub
         _ ≤ ∑ j ∈ 𝒥, volume (Set.Icc (j : ℝ) (j + 1)) := measure_biUnion_finset_le _ _
-        _ = 𝒥.card := by simp [Real.volume_Icc]
+        _ = 𝒥.card := by simp
     rw [measureReal_def]
     exact ENNReal.toReal_le_of_le_ofReal (by positivity) (by simpa using hle)
   have hB1' : ∫ t in Set.Ioc a b, ‖B₁ t‖ ^ 2 ≤ ME := by

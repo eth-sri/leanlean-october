@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,47 +30,38 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicKubota
+open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 namespace ControlledStratumArithmetic
 variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis} {mode:Bool}
@@ -96,7 +74,7 @@ lemma relative (D:ControlledStratumArithmetic p N a0 c0 mode)
     (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) :
     D.matrix v*(fixedCusp a0 c0 mode)⁻¹∈levelThree := by
-  have h3N:(3:Eis)∣N:=(show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans
+  have h3N:=(show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans
     ((dvd_mul_right 9 c0).trans hN)
   cases mode
   · exact D.unramified_relative h3N hr hbase a0 (by simp) v
@@ -112,8 +90,8 @@ lemma relativeGamma_mul (D:ControlledStratumArithmetic p N a0 c0 mode)
     (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
     (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) :
-    (D.relativeGamma hN hr hbase v:SL(2,Eis))*fixedCusp a0 c0 mode=D.matrix v := by
-  exact inv_mul_cancel_right (D.matrix v) (fixedCusp a0 c0 mode)
+    (D.relativeGamma hN hr hbase v:SL(2,Eis))*fixedCusp a0 c0 mode=D.matrix v :=
+  inv_mul_cancel_right (D.matrix v) (fixedCusp a0 c0 mode)
 
 def fixedFactor (D:ControlledStratumArithmetic p N a0 c0 mode) : ℂ :=
   if mode then
@@ -136,24 +114,24 @@ theorem relative_character (D:ControlledStratumArithmetic p N a0 c0 mode)
 theorem fixedFactor_norm (D:ControlledStratumArithmetic p N a0 c0 mode)
     (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
     (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1) : ‖D.fixedFactor‖=1 := by
-  have h3N:(3:Eis)∣N:=(show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans
+  have h3N:=(show (3:Eis)∣9 from ⟨3,by norm_num⟩).trans
     ((dvd_mul_right 9 c0).trans hN)
   cases mode
   · exact norm_A3_unramified_fixed_factor _ _ _ _ _ (D.determinant (fun _=>1)) hbase
   · apply norm_A3_ramified_fixed_factor _ _ 1 (∏i,p i) _ c0
-    · simpa only [one_mul] using D.determinant (fun _=>1)
+    · simpa using D.determinant (fun _=>1)
     · exact D.numerator_primary h3N hr hbase (fun _=>1)
     · exact A3_ramified_relative_primary (D.matrix (fun _=>1)) c0
         (D.ramified_relative h3N hr hbase c0 (by simp) (fun _=>1))
 
-noncomputable def fourierWeight [∀i,(Ideal.span {p i}).IsMaximal]
+def fourierWeight [∀i,(Ideal.span {p i}).IsMaximal]
     (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ)
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) : ℂ := by
   letI (i:ι):Fintype (Eis⧸Ideal.span {p i}):=Fintype.ofFinite _
   exact ∏i,finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i))
     (fun t=>(actualSextic (Ideal.span {p i}) (hg i)^j i) t) (v i)
 
-noncomputable def multiplierSum (D:ControlledStratumArithmetic p N a0 c0 mode)
+def multiplierSum (D:ControlledStratumArithmetic p N a0 c0 mode)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
     (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
@@ -164,7 +142,7 @@ noncomputable def multiplierSum (D:ControlledStratumArithmetic p N a0 c0 mode)
       ShortDraftTrace.breveE (-(eisEmbedding (D.matrix v 1 1)*(eisEmbedding x/eisLam^4))/
         (eisEmbedding c0*eisEmbedding (∏i,p i)))
 
-noncomputable def bracketProduct (D:ControlledStratumArithmetic p N a0 c0 mode)
+def bracketProduct (D:ControlledStratumArithmetic p N a0 c0 mode)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (x:Eis) : ℂ := by
   letI (i:ι):Field (Eis⧸Ideal.span {p i}):=Ideal.Quotient.field _
@@ -177,10 +155,10 @@ end ControlledStratumArithmetic
 end
 
 section
-open scoped BigOperators Classical ContDiff MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CompletedDyadic CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicKubota
+open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 namespace ControlledStratumArithmetic
 variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis} {mode:Bool}
@@ -226,7 +204,7 @@ lemma datum_point (D:ControlledStratumArithmetic p N a0 c0 mode)
   simpa only [ramifiedEmbedding_traceLambda] using
     finiteCrossNumerator_fraction a0 c0 ramifiedTraceLambda p (D.lift v) hc0 hp
 
-noncomputable def smoothedValue (D:ControlledStratumArithmetic p N a0 c0 mode)
+def smoothedValue (D:ControlledStratumArithmetic p N a0 c0 mode)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
     (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
@@ -242,9 +220,9 @@ end ControlledStratumArithmetic
 end
 
 section
-open scoped Classical BigOperators MatrixGroups
+open scoped Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss ShortDraftCusp
+open CompletedGauss ShortDraftCusp
 local notation "Eis" => ActualEisensteinCubic.O
 
 structure FixedFourierGeometry (c:Eis) (h:Eis⧸Ideal.span {c}) where
@@ -293,25 +271,25 @@ instance fixedReflectionRay_finite (c:Eis) (hc:c≠0) : Finite (FixedReflectionR
   unfold FixedReflectionRay
   infer_instance
 
-noncomputable instance fixedReflectionRay_fintype (c:Eis) (hc:c≠0) :
+instance fixedReflectionRay_fintype (c:Eis) (hc:c≠0) :
     Fintype (FixedReflectionRay c hc) := Fintype.ofFinite _
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped Classical MatrixGroups
 
-open CompletedGauss ConcreteTraceCRT
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 open CubicEisenstein hiding summand
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -327,7 +305,7 @@ lemma summand_mul_fixed_twist (φ χ:Eis→*ℂ) (W:ℝ→ℂ) (X:ℝ) (I J:Idea
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open CompletedGauss
 open CubicEisenstein hiding summand
 local notation "Eis" => ActualEisensteinCubic.O
 

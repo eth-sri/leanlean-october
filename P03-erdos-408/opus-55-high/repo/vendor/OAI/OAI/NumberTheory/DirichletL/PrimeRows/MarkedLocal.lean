@@ -9,17 +9,16 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open ProbePhysical ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-def idealRowMarkedLocalFactor (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
+def idealRowMarkedLocalFactor (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   ∑e : Fin 2,∑'l,∑'k,∑'m,
     completedValuationMark P ((e.val,l),(k,m))*rowHighPrimeTerm η u x w z P ((e.val,l),(k,m))
 
-lemma markedRowPrimeTerm_summable_norm (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ)
+lemma markedRowPrimeTerm_summable_norm (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (P : PrimeIdeal) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun b : HighValuation=>‖completedValuationMark P b*rowHighPrimeTerm η u x w z P b‖) := by
   apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ (rowHighPrimeTerm_summable_norm η u x w z hx hw hz P)
@@ -27,7 +26,7 @@ lemma markedRowPrimeTerm_summable_norm (η : HeckeFamily.Character) (u : O) (P :
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (completedValuationMark_norm P b)
 
-lemma markedRowPrimeTerm_tsum (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (x w z : ℂ)
+lemma markedRowPrimeTerm_tsum (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (P : PrimeIdeal) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     (∑'b : HighValuation,completedValuationMark P b*rowHighPrimeTerm η u x w z P b)=
       idealRowMarkedLocalFactor η u P x w z := by
@@ -44,7 +43,7 @@ lemma markedRowPrimeTerm_tsum (η : HeckeFamily.Character) (u : O) (P : PrimeIde
   rfl
 
 lemma selectedRowLocal_outside (S : Finset Id) (hS : ∀P∈S,Prime P) (T : Finset PrimeIdeal)
-    (η : HeckeFamily.Character) (u : O) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
+    (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     (∑'b : HighValuation,ProbeEulerFinsupp.markedLocal T completedValuationMark
       (excludedRowPrimeTerm S η u x w z) P b)=

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.LogDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -21,7 +21,7 @@ def coefficient (χ : Character) (I : Ideal O) : ℂ :=
 
 @[simp] theorem coefficient_zero (χ : Character) : coefficient χ 0 = 0 := by
   unfold coefficient
-  rw [IdealMangoldt.value_zero, Complex.ofReal_zero, zero_mul]
+  grind
 
 def series (χ : Character) (s : ℂ) : ℂ := -deriv (LFunction χ) s / LFunction χ s
 
@@ -35,8 +35,7 @@ theorem series_eq_tsum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
     intro I hI hi
     subst I
     exact hI (by
-      change (IdealMangoldt.value 0 : ℂ) * IdealEuler.weighted (idealCoeff χ) s 0 = 0
-      rw [IdealMangoldt.value_zero, Complex.ofReal_zero, zero_mul])
+      grind)
   change -deriv (LFunction χ) s / LFunction χ s = _
   rw [← HeckeLogDerivative.coeff_LSeries_eq χ hs]
   change LSeries (IdealLogDerivative.coeff (idealCoeff χ)) s = _
@@ -45,7 +44,7 @@ theorem series_eq_tsum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
   intro I
   simp only [coefficient, IdealEuler.weighted, IdealEuler.normWeight,
     MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk, CubicEisenstein.fullIdealWeight]
-  rw [ite_eq_right_iff.mpr (fun h => (I.property h).elim)]
+  rw [ite_eq_right_iff.mpr (by grind)]
   simp only [HeckeDyadic.norm, Complex.ofReal_natCast, mul_assoc]
 
 def twistedCoefficient (χ : Character) (σ freq : ℝ) (I : NonzeroIdeal) : ℂ :=
@@ -56,7 +55,7 @@ theorem twisted_coefficient_summable (χ : Character) (c σ freq : ℝ)
     Summable (fun I : NonzeroIdeal => ‖twistedCoefficient χ σ freq I‖*(norm I)^(-c)) := by
   have hf := (IdealLogDerivative.mangoldt_weighted_summable_norm
     (idealCoeff χ) (idealCoeff_norm_le_one χ) ((c+σ : ℝ) : ℂ)
-    (by simpa using hc)).comp_injective (Subtype.val_injective : Function.Injective
+    (by omega)).comp_injective (Subtype.val_injective : Function.Injective
       (fun I : NonzeroIdeal => I.val))
   convert hf using 1
   ext I
@@ -71,8 +70,7 @@ theorem twisted_coefficient_summable (χ : Character) (c σ freq : ℝ)
     Complex.norm_cpow_eq_rpow_re_of_pos (norm_pos I)]
   simp only [Complex.neg_re, shift_re, Complex.ofReal_re]
   rw [mul_assoc, mul_assoc, ← Real.rpow_add (norm_pos I)]
-  congr 3
-  ring
+  simp
 
 def summand (χ : Character) (W : ℝ → ℂ) (D σ freq : ℝ) (I : NonzeroIdeal) : ℂ :=
   coefficient χ I.val * W (norm I/D) * ((norm I/D : ℝ) : ℂ)^(-shift σ freq)
@@ -89,8 +87,7 @@ theorem twisted_series_eq (χ : Character) (σ freq : ℝ)
   intro I
   unfold twistedCoefficient
   rw [mul_assoc, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr (norm_pos I).ne')]
-  congr 2
-  ring
+  simp
 
 theorem polynomial_eq_weighted (χ : Character) (W : ℝ → ℂ)
     (D σ freq : ℝ) (hD : 0 < D) :
@@ -105,8 +102,7 @@ theorem polynomial_eq_weighted (χ : Character) (W : ℝ → ℂ)
   unfold polynomial
   simp_rw [he]
   rw [tsum_mul_left, ← mul_assoc, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
-  congr 2
-  ring
+  grind
 
 theorem polynomial_mellin (χ : Character) (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Icc a b)
@@ -123,17 +119,13 @@ theorem polynomial_mellin (χ : Character) (W : ℝ → ℂ)
   congr 1
   apply integral_congr_ae
   filter_upwards [] with t
-  rw [twisted_series_eq χ σ freq (by simpa using hc)]
+  rw [twisted_series_eq χ σ freq (by simp_all)]
   have he : (D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I) =
       (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2 : ℂ)) := by
     rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
     congr 1
     ring
-  calc
-    _ = mellin W ((c : ℂ)+t*Complex.I) *
-        ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
-          series χ (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
-    _ = _ := by rw [he]
+  grind
 
 end SevenEighths.HeckePrimeDyadic
 

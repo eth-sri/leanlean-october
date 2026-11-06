@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Energy.State
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeZeroSupremum QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
 open CenteredMomentPrimeSlot CenteredMomentInductionEnergy
-local notation "O" => HeckeFamily.O
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -32,7 +31,7 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
     ∀(θ : α→RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤T → (∀i,|v i|≤T) →
-    ∀(Q : Ideal O),Q≤M → ∀s : NaturalState Z Bmask bΦ,
+    ∀(Q : Ideal HeckeFamily.O),Q≤M → ∀s : NaturalState Z Bmask bΦ,
       s.fixedModulus=internalQ Q η₀ → s.width≤ε/16 → 6*κ*(∑i,w i)≤s.width →
     ∀p : Profiles a₀ b₀,∀X₁ X₂ : ℝ,0<X₁ → 0<X₂ →
       energy s.character s.mask 1 t (p.profile 0) (p.profile 1)
@@ -42,7 +41,7 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
         (fun i=>Z^(w i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale ≤
       C*diagonalControl s.radial.profile*(p.control S)^2*(1+|t|+T)^degree*Z^(s.width+ε) := by
   let e : ℝ := ε/(4*(Bmask+1))
-  have he : 0<e := div_pos hε (by positivity)
+  have he : 0<e := by positivity
   have hcost : Bmask*e≤ε/4 := by
     have hh := mul_le_mul_of_nonneg_left (show Bmask≤Bmask+1 by linarith) he.le
     have hid : e*(Bmask+1)=ε/4 := by dsimp [e]; field_simp
@@ -51,7 +50,7 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
   obtain ⟨J,S,C,hC,hfloor⟩ := natural_masked_positive_floor (α:=α) M H hH W a b ha hWs hW
     a₀ b₀ e ha₀ hb₀ he (ε/16) Lslot (ε/4) lo hi κ bΦ (by positivity) hbΦ.le hLs
     (by positivity) hbeta hκ
-  refine ⟨J,S,C*bΦ^4,mul_pos hC (pow_pos hbΦ _),?_⟩
+  refine ⟨J,S,C*bΦ^4,by positivity,?_⟩
   intro η₀
   filter_upwards [hfloor η₀] with Z hZ
   intro θ w σ v t T hw hwL hσlo hσhi hT hv Q hQM s hQ hs hslots p X₁ X₂ hX₁ hX₂
@@ -60,7 +59,7 @@ theorem exists_positive_floor {α : Type*} [Fintype α] [DecidableEq α]
   have hrad : (s.puncture.radical.absNorm:ℝ)^e≤Z^(Bmask*e) := by
     rw [Real.rpow_mul hZ0.le]
     exact Real.rpow_le_rpow (by positivity) s.radical_bound he.le
-  have hex (z : O) (hz : s.radial.keep z) :
+  have hex (z : HeckeFamily.O) (hz : s.radial.keep z) :
       ¬CenteredExceptionalProfile.FixedInducingRow s.character (internalQ Q η₀)
         (fixedBadMask*ConcretePrimeRowBridge.idealGenerator s.puncture) 1 z := by
     rw [←hQ]

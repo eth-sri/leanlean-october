@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralZTail
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
-def centralCubeIntegral {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def centralCubeIntegral {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z a e H : ℝ) : ℂ :=
   ((1/(2*Real.pi):ℝ):ℂ)^3*
@@ -24,7 +23,7 @@ def centralCubeIntegral {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions 
 
 theorem central_rectangle_z_cutoff_error (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -40,7 +39,7 @@ theorem central_rectangle_z_cutoff_error (K : ℕ)
   obtain ⟨C,hC,hbound⟩ := uniform_central_z_height_tail (ι:=ι) K e he he' S hS hmax hfirst
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 N (17/50) le_rfl (by norm_num)
   let n : ℂ := ((1/(2*Real.pi):ℝ):ℂ)^3
-  refine ⟨‖n‖*C,mul_nonneg (norm_nonneg _) hC,?_⟩
+  refine ⟨‖n‖*C,by positivity,?_⟩
   intro η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
   let E : Set HeightSpace := {t | |t.1.1|≤H ∧ |t.2|≤H}
   let T : Set HeightSpace := {t | (|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H}
@@ -57,10 +56,8 @@ theorem central_rectangle_z_cutoff_error (K : ℕ)
     ext t
     change ((|t.1.1|≤H ∧ |t.2|≤H) ∧ ¬((|t.1.1|≤H ∧ |t.2|≤H) ∧ |t.1.2|≤H)) ↔ ((|t.1.1|≤H ∧ |t.2|≤H) ∧ H < |t.1.2|)
     constructor
-    · rintro ⟨hx,hw⟩
-      exact ⟨hx,lt_of_not_ge (fun h=>hw ⟨hx,h⟩)⟩
-    · rintro ⟨hx,hw⟩
-      exact ⟨hx,fun h=>not_le_of_gt hw h.2⟩
+    · grind
+    · grind
   have heq : centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H-
         centralCubeIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H=
       n*(∫t in R,f t ∂heightMeasure) := by
@@ -71,7 +68,7 @@ theorem central_rectangle_z_cutoff_error (K : ℕ)
       C*contourArithmeticCost η u P*(X^(1/2-(17/50:ℝ))*Z^(a+16*e+(17/50:ℝ)-1)*Y^((1-a-6*e)-1))/height H^N := by
     apply le_trans _ (hbound η u hu P hP hPS ψ X Y Z hX hY hZ a B H i ha haTop hB hH0 hH hbin
       (a+16*e) ⟨le_rfl,by linarith⟩)
-    apply setIntegral_mono_set ((show IntegrableOn (fun t=>‖f t‖) {t : HeightSpace | |t.1.1|≤H} heightMeasure from hi0.norm).mono_set (fun t ht=>ht.1)) (Filter.Eventually.of_forall (fun _=>norm_nonneg _))
+    apply setIntegral_mono_set ((show IntegrableOn (fun t=>‖f t‖) {t : HeightSpace | |t.1.1|≤H} heightMeasure from hi0.norm).mono_set (fun t ht=>ht.1)) (Filter.Eventually.of_forall (by simp))
     exact Filter.Eventually.of_forall (fun t ht=>⟨ht.1.1,ht.2⟩)
   rw [heq,norm_mul]
   calc
@@ -82,7 +79,7 @@ theorem central_rectangle_z_cutoff_error (K : ℕ)
 
 theorem uniform_original_row_cube_error (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -113,7 +110,7 @@ theorem uniform_original_row_cube_error (K : ℕ)
     gcongr
     exact pow_nonneg (height_pos _).le _
   apply (norm_sub_le_norm_sub_add_norm_sub _ (centralRectangleIntegral S hS hmax P hPS η u W0 W1 X Y Z a e H) _).trans
-  exact (add_le_add h0' h1'').trans_eq (by ring)
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

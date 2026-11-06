@@ -6,7 +6,7 @@ public import Erdos821.S34.CellCount
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.S34Core
@@ -20,7 +20,7 @@ theorem dyadScale_pos (j : ℤ) : 0 < dyadScale j := Real.exp_pos _
 
 theorem product_in_dyad (n : ℕ) (hn : 0 < n) :
     dyadScale (dyadIndex n) ≤ n ∧ (n : ℝ) < 2 * dyadScale (dyadIndex n) := by
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2 : 0 < Real.log 2 := by positivity
   have hlow := Int.floor_le (Real.log n / Real.log 2)
   have hhigh := Int.lt_floor_add_one (Real.log n / Real.log 2)
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
@@ -42,8 +42,8 @@ theorem eventually_product_cell_count (P : Geometry) (m : ℕ) (hexp : ℝ) (hh 
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ((Finset.univ.image (fun z : Tuple G k => cell (L x ^ (-hexp)) (product G k z))).card : ℝ) ≤
         L x ^ (P.d + 1 + hexp) := by
-  have hC₀ : 0 < P.C₀ := P.positive.2.1
-  have hd : 0 < P.d := by have h := P.ordered; linarith [h.1, h.2.1, h.2.2.1, h.2.2.2.1]
+  have hC₀ := P.positive.2.1
+  have hd : 0 < P.d := by have h := P.ordered; linarith
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   filter_upwards [eventually_log_count_bound ((m : ℝ) * P.C₀) (by positivity),
     hL.eventually_ge_atTop 1] with x hc hL1
@@ -52,27 +52,27 @@ theorem eventually_product_cell_count (P : Geometry) (m : ℕ) (hexp : ℝ) (hh 
   have hp : 1 ≤ L x ^ (P.d + hexp) := Real.one_le_rpow hL1 (by linarith)
   intro G hG k hk
   have hcount := product_cell_count P x G hLpos.le hT hG k m hk
-    (L x ^ (-hexp)) (Real.rpow_pos_of_pos hLpos _)
+    (L x ^ (-hexp)) (by positivity)
   apply hcount.trans
   calc
     _ = ((m : ℝ) * P.C₀ * T x) * L x ^ (P.d + hexp) + 1 := by
       rw [Real.rpow_neg hLpos.le, div_inv_eq_mul, Real.rpow_add hLpos]
       ring
     _ ≤ ((m : ℝ) * P.C₀ * T x + 1) * L x ^ (P.d + hexp) := by nlinarith
-    _ ≤ L x * L x ^ (P.d + hexp) := mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hLpos.le _)
+    _ ≤ L x * L x ^ (P.d + hexp) := mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by
       calc
-        _ = L x ^ (1 : ℝ) * L x ^ (P.d + hexp) := by rw [Real.rpow_one]
+        _ = L x ^ (1 : ℝ) * L x ^ (P.d + hexp) := by simp
         _ = L x ^ (1 + (P.d + hexp)) := (Real.rpow_add hLpos _ _).symm
-        _ = _ := by congr 1; ring
+        _ = _ := by ring
 
 theorem eventually_product_dyad_count (P : Geometry) (m : ℕ) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ((Finset.univ.image (fun z : Tuple G k => dyadIndex (product G k z))).card : ℝ) ≤
         L x ^ (P.d + 1) := by
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
-  have hC₀ : 0 < P.C₀ := P.positive.2.1
-  have hd : 0 < P.d := by have h := P.ordered; linarith [h.1, h.2.1, h.2.2.1, h.2.2.2.1]
+  have hlog2 : 0 < Real.log 2 := by positivity
+  have hC₀ := P.positive.2.1
+  have hd : 0 < P.d := by have h := P.ordered; linarith
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   filter_upwards [eventually_log_count_bound ((m : ℝ) * P.C₀ / Real.log 2) (by positivity),
     hL.eventually_ge_atTop 1] with x hc hL1
@@ -82,21 +82,21 @@ theorem eventually_product_dyad_count (P : Geometry) (m : ℕ) :
   have hcount := product_cell_count P x G hLpos.le hT hG k m hk (Real.log 2) hlog2
   change ((Finset.univ.image (fun z : Tuple G k => dyadIndex (product G k z))).card : ℝ) ≤ _ at hcount
   apply hcount.trans
-  have hp : 1 ≤ L x ^ P.d := Real.one_le_rpow hL1 hd.le
+  have hp := Real.one_le_rpow hL1 hd.le
   calc
     _ = ((m : ℝ) * P.C₀ / Real.log 2 * T x) * L x ^ P.d + 1 := by ring
     _ ≤ ((m : ℝ) * P.C₀ / Real.log 2 * T x + 1) * L x ^ P.d := by nlinarith
-    _ ≤ L x * L x ^ P.d := mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hLpos.le _)
+    _ ≤ L x * L x ^ P.d := mul_le_mul_of_nonneg_right hc (by positivity)
     _ = _ := by
       calc
-        _ = L x ^ (1 : ℝ) * L x ^ P.d := by rw [Real.rpow_one]
+        _ = L x ^ (1 : ℝ) * L x ^ P.d := by simp
         _ = L x ^ (1 + P.d) := (Real.rpow_add hLpos _ _).symm
-        _ = _ := by congr 1; ring
+        _ = _ := by ring
 
 theorem eventually_product_dyad_scale (P : Geometry) (m : ℕ) (A : ℝ) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G → ∀ k, bigSlots G k m →
       ∀ z : Tuple G k, L x ^ A ≤ dyadScale (dyadIndex (product G k z)) := by
-  have hc : 0 < P.c := by have h := P.ordered; linarith [h.1, h.2.1, h.2.2.1]
+  have hc : 0 < P.c := by have h := P.ordered; linarith
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   filter_upwards [eventually_power_le_label_scale A P.c (1 / 2) hc (by norm_num),
     hL.eventually_ge_atTop 0] with x hx hLx

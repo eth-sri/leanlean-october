@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSixthReduction
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondSixthSource
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
 open CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
 
-theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
+theorem sixthFactor_span_dvd (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) :
     Ideal.span {sixthFactor C D U}∣C := by
   conv_rhs => rw [←left_ideal_product C D hC hCD]
@@ -27,37 +26,37 @@ theorem sixthFactor_span_dvd (C D : Ideal O) (hC : Supported C)
   have hc := leftExponent_pos C D P
   have hm : min (leftExponent C D P) (rightExponent C D P)≤leftExponent C D P := min_le_left _ _
   unfold fixedExponent
-  split_ifs <;> omega
+  grind
 
-theorem fixed_sixth_coefficient (C D : Ideal O) (U : Finset (CommonIndex C D))
-    (I : Ideal O) (hI : Supported I) :
+theorem fixed_sixth_coefficient (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D))
+    (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I=
       idealRowHom (reducedNumerator C D U) I*
         (if IsCoprime I (Ideal.span {sixthFactor C D U}) then 1 else 0) := by
   rw [fixed_sixth_factorization,idealRowHom_argument_mul,idealRowHom_sixth_mask _ I hI]
 
-theorem residual_sixth_coefficient (C D : Ideal O) (hC : Supported C)
+theorem residual_sixth_coefficient (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D))
-    (I : Ideal O) (hI : Supported I) (hcop : IsCoprime C I) :
+    (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hcop : IsCoprime C I) :
     idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I=
       idealRowHom (reducedNumerator C D U) I := by
   rw [fixed_sixth_coefficient C D U I hI,ite_eq_left
     (hcop.symm.of_isCoprime_of_dvd_right (sixthFactor_span_dvd C D hC hCD U)),mul_one]
 
-abbrev ActiveIndex (C D : Ideal O) (U : Finset (CommonIndex C D)) := ↥(fixedActiveSet C D U)
+abbrev ActiveIndex (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) := ↥(fixedActiveSet C D U)
 
-def activePrime (C D : Ideal O) (U : Finset (CommonIndex C D))
-    (P : ActiveIndex C D U) : O := commonPrime C D P.val
+def activePrime (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D))
+    (P : ActiveIndex C D U) : ActualEisensteinCubic.O := commonPrime C D P.val
 
-def activeExponent (C D : Ideal O) (U : Finset (CommonIndex C D))
+def activeExponent (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D))
     (P : ActiveIndex C D U) : ℕ := fixedExponent C D U P.val%6
 
-theorem activeExponent_pos (C D : Ideal O) (U : Finset (CommonIndex C D))
+theorem activeExponent_pos (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D))
     (P : ActiveIndex C D U) : 0<activeExponent C D U P := by
-  have hp : ¬6∣fixedExponent C D U P.val := (Finset.mem_filter.mp P.property).2
+  have hp := (Finset.mem_filter.mp P.property).2
   exact Nat.pos_of_ne_zero (fun h=>hp (Nat.dvd_of_mod_eq_zero h))
 
-theorem reducedNumerator_active_product (C D : Ideal O) (U : Finset (CommonIndex C D)) :
+theorem reducedNumerator_active_product (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) :
     reducedNumerator C D U=∏ P : ActiveIndex C D U,activePrime C D U P^activeExponent C D U P := by
   simp only [activePrime,activeExponent]
   rw [Finset.prod_coe_sort (fixedActiveSet C D U)

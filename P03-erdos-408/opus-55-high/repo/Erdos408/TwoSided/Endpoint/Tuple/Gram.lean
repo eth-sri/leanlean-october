@@ -33,15 +33,15 @@ theorem sum_norm_sq_le_of_gram_rowSum {ι : Type*} (I : Finset ι) (S : Finset �
   set G : ι → ι → ℂ := fun i i' => ∑ n ∈ S, e i n * starRingEnd ℂ (e i' n)
   set v : ℕ → ℂ := fun n => ∑ i ∈ I, starRingEnd ℂ (b i) * e i n
   set Q := ∑ i ∈ I, ‖b i‖ ^ 2
-  have hQ0 : 0 ≤ Q := sum_nonneg fun i _ => by positivity
-  have hc0 : 0 ≤ ∑ n ∈ S, ‖c n‖ ^ 2 := sum_nonneg fun n _ => by positivity
+  have hQ0 : 0 ≤ Q := by positivity
+  have hc0 : 0 ≤ ∑ n ∈ S, ‖c n‖ ^ 2 := by positivity
   -- `Q = ∑_n c_n v_n`
   have hQv : (Q : ℂ) = ∑ n ∈ S, c n * v n := by
     simp only [Q, v, Complex.ofReal_sum, Complex.ofReal_pow, ← Complex.conj_mul', mul_sum]
     rw [sum_comm]
     refine sum_congr rfl fun i _ => ?_
     simp only [b, mul_sum]
-    exact sum_congr rfl fun n _ => by ring
+    exact by ring
   -- `∑_n |v_n|² = ∑_{i, i'} \bar b_i b_{i'} G_{ii'}`
   have hvG : ((∑ n ∈ S, ‖v n‖ ^ 2 : ℝ) : ℂ) =
       ∑ i ∈ I, ∑ i' ∈ I, starRingEnd ℂ (b i) * b i' * G i i' := by
@@ -50,20 +50,20 @@ theorem sum_norm_sq_le_of_gram_rowSum {ι : Type*} (I : Finset ι) (S : Finset �
     rw [sum_comm]
     refine sum_congr rfl fun i _ => ?_
     rw [sum_comm]
-    exact sum_congr rfl fun i' _ => sum_congr rfl fun n _ => by ring
+    exact by grind
   -- the Gram matrix is Hermitian
   have hGsymm : ∀ i i', ‖G i' i‖ = ‖G i i'‖ := by
     intro i i'
     have h : G i' i = starRingEnd ℂ (G i i') := by
       simp only [G, map_sum, map_mul, Complex.conj_conj]
-      exact sum_congr rfl fun n _ => mul_comm _ _
+      exact by grind
     rw [h, Complex.norm_conj]
   -- `∑_n |v_n|² ≤ R Q`, by `2|ab| ≤ |a|² + |b|²`
   have hv : ∑ n ∈ S, ‖v n‖ ^ 2 ≤ R * Q := by
     have h₁ : ∑ n ∈ S, ‖v n‖ ^ 2 ≤
         ∑ i ∈ I, ∑ i' ∈ I, (‖b i‖ ^ 2 * ‖G i i'‖ + ‖b i'‖ ^ 2 * ‖G i' i‖) / 2 := by
       have h := congrArg norm hvG
-      rw [Complex.norm_real, Real.norm_of_nonneg (sum_nonneg fun n _ => by positivity)] at h
+      rw [Complex.norm_real, Real.norm_of_nonneg (by positivity)] at h
       rw [h]
       refine (norm_sum_le _ _).trans (sum_le_sum fun i _ => (norm_sum_le _ _).trans
         (sum_le_sum fun i' _ => ?_))
@@ -75,25 +75,24 @@ theorem sum_norm_sq_le_of_gram_rowSum {ι : Type*} (I : Finset ι) (S : Finset �
       rw [sum_comm (f := fun i i' => ‖b i'‖ ^ 2 * ‖G i' i‖ / 2), ← sum_add_distrib]
       refine sum_congr rfl fun i _ => ?_
       rw [← sum_add_distrib, mul_sum]
-      exact sum_congr rfl fun i' _ => by ring
+      exact by simp
     rw [h₂] at h₁
     refine h₁.trans ?_
     rw [mul_comm R, sum_mul]
-    exact sum_le_sum fun i hi => mul_le_mul_of_nonneg_left (hR i hi) (by positivity)
+    exact sum_le_sum fun i hi => mul_le_mul_of_nonneg_left (by grind) (by positivity)
   -- `Q² ≤ (∑ |c_n|²)(∑ |v_n|²)`, by Cauchy–Schwarz
   have hQ : Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * (R * Q) := by
     have h : Q ≤ ∑ n ∈ S, ‖c n‖ * ‖v n‖ := by
       have := congrArg norm hQv
       rw [Complex.norm_real, Real.norm_of_nonneg hQ0] at this
       rw [this]
-      exact (norm_sum_le _ _).trans_eq (sum_congr rfl fun n _ => norm_mul _ _)
+      exact (norm_sum_le _ _).trans_eq (by simp)
     calc Q ^ 2 ≤ (∑ n ∈ S, ‖c n‖ * ‖v n‖) ^ 2 := pow_le_pow_left₀ hQ0 h 2
       _ ≤ (∑ n ∈ S, ‖c n‖ ^ 2) * ∑ n ∈ S, ‖v n‖ ^ 2 := sum_mul_sq_le_sq_mul_sq _ _ _
       _ ≤ _ := mul_le_mul_of_nonneg_left hv hc0
   rcases hQ0.eq_or_lt with h | h
-  · rw [← h]
-    positivity
   · nlinarith
+  nlinarith
 
 /-- `∑_{m' ∈ S} 1/|m - m'| ≤ 2 (1 + log N)` for `S` and `m` in an integer interval of
 length `N`, the term `m' = m` being `0`. -/
@@ -103,7 +102,7 @@ theorem sum_inv_abs_intCast_sub_le {S : Finset ℤ} {lo hi m : ℤ} (hS : S ⊆ 
   -- shift `[lo, hi]` to `[1, N]`
   set f : ℤ → ℕ := fun l => (l - lo + 1).toNat
   have hf : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℤ) = l - lo + 1 := fun l hl =>
-    Int.toNat_of_nonneg (by rw [mem_Icc] at hl; omega)
+    Int.toNat_of_nonneg (by grind)
   have hfmem : ∀ l ∈ Icc lo hi, f l ∈ Icc 1 (hi - lo + 1).toNat := by
     intro l hl
     have h := hf l hl
@@ -112,21 +111,15 @@ theorem sum_inv_abs_intCast_sub_le {S : Finset ℤ} {lo hi m : ℤ} (hS : S ⊆ 
   have hcast : ∀ l ∈ Icc lo hi, ((f l : ℕ) : ℝ) = ((l - lo + 1 : ℤ) : ℝ) := fun l hl => by
     rw [← hf l hl, Int.cast_natCast]
   have hinj : Set.InjOn f S := fun l hl l' hl' h => by
-    have h₁ := hf l (hS hl)
-    have h₂ := hf l' (hS hl')
-    rw [h] at h₁
-    omega
+    grind
   calc ∑ m' ∈ S, |((m - m' : ℤ) : ℝ)|⁻¹ = ∑ m' ∈ S, |((f m : ℕ) : ℝ) - f m'|⁻¹ := by
         refine sum_congr rfl fun m' hm' => ?_
-        rw [hcast m hm, hcast m' (hS hm')]
-        push_cast
-        ring_nf
+        grind
     _ = ∑ n ∈ S.image f, |((f m : ℕ) : ℝ) - n|⁻¹ :=
         (sum_image (f := fun n : ℕ => |((f m : ℕ) : ℝ) - n|⁻¹) hinj).symm
     _ ≤ ∑ n ∈ Icc 1 (hi - lo + 1).toNat, |((f m : ℕ) : ℝ) - n|⁻¹ := by
         refine sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => by positivity
-        obtain ⟨l, hl, rfl⟩ := mem_image.1 hn
-        exact hfmem l (hS hl)
+        grind
     _ ≤ _ := OneSided.sum_inv_abs_sub_le (hfmem m hm)
 
 /-- `n^{ia} \overline{n^{ib}} = n^{i(a - b)}` for `n ≠ 0`. -/
@@ -143,8 +136,7 @@ theorem natCast_cpow_mul_I_mul_conj_cpow {n : ℕ} (hn : n ≠ 0) (a b : ℝ) :
 /-- `|n^{it}| = 1` for `n ≥ 1`. -/
 theorem norm_natCast_cpow_ofReal_mul_I {n : ℕ} (hn : 0 < n) (t : ℝ) :
     ‖(n : ℂ) ^ ((t : ℂ) * Complex.I)‖ = 1 := by
-  rw [Complex.norm_natCast_cpow_of_pos hn]
-  simp
+  simp [Complex.norm_natCast_cpow_of_pos hn]
 
 /-- `|(⌊R⌋, ⌊2R⌋]| ≤ R + 1` for `R ≥ 0`. -/
 theorem card_Ioc_floor_le {R : ℝ} (hR : 0 ≤ R) : (#(Ioc ⌊R⌋₊ ⌊2 * R⌋₊) : ℝ) ≤ R + 1 := by
@@ -179,7 +171,6 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
   have hL0 : 0 < L := by linarith
   have hR0 : 0 < R := lt_of_lt_of_le (Real.exp_pos _) hR₁
   have hR1 : 1 ≤ R := le_trans (Real.one_le_exp (by
-    have : 0 < Real.log L := Real.log_pos (by linarith)
     positivity)) hR₁
   set T₀ := x * L ^ (Cm + 2) with hT₀
   -- `L^{C_m + 2} ≤ x / 9`
@@ -191,8 +182,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
   have hT₀0 : 0 ≤ T₀ := by positivity
   set S := Ioc ⌊R⌋₊ ⌊2 * R⌋₊ with hS
   have hSpos : ∀ u ∈ S, 0 < u := fun u hu => by
-    rw [mem_Ioc] at hu
-    omega
+    grind
   set f : ℝ → ℝ := fun t => ‖(R : ℂ)⁻¹ * ∑ u ∈ S, c u * (u : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2
   have hf : Continuous f := by
     refine ((continuous_const.mul (continuous_finsetSum _ fun u hu =>
@@ -202,9 +192,9 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
   -- the maximizers `τ_j ∈ [j, j + 1]`
   have hmax : ∀ j : ℤ, ∃ τ ∈ Set.Icc (j : ℝ) (j + 1), ∀ t ∈ Set.Icc (j : ℝ) (j + 1),
       f t ≤ f τ := fun j =>
-    isCompact_Icc.exists_isMaxOn (Set.nonempty_Icc.2 (by linarith)) hf.continuousOn
+    isCompact_Icc.exists_isMaxOn (by simp) hf.continuousOn
   choose τ hτ hτmax using hmax
-  refine ⟨fun j => f (τ j), fun j _ t ht => hτmax j t ht, ?_⟩
+  refine ⟨fun j => f (τ j), by grind, ?_⟩
   -- the integer window
   set M := ⌊2 * T₀⌋ with hM
   have h𝒥M : 𝒥 ⊆ Icc (-M) M := by
@@ -212,7 +202,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
     have h := abs_le.1 (h𝒥T j hj)
     rw [mem_Icc]
     constructor
-    · have : -j ≤ M := Int.le_floor.2 (by push_cast; linarith)
+    · have : -j ≤ M := Int.le_floor.2 (by grind)
       omega
     · exact Int.le_floor.2 h.2
   set e : ℤ → ℕ → ℂ := fun j u => (u : ℂ) ^ ((τ j : ℂ) * Complex.I)
@@ -225,7 +215,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
     intro j hj j' hj'
     have hG : ∑ u ∈ S, e j u * starRingEnd ℂ (e j' u) =
         ∑ u ∈ S, (u : ℂ) ^ (((τ j - τ j' : ℝ) : ℂ) * Complex.I) :=
-      sum_congr rfl fun u hu => natCast_cpow_mul_I_mul_conj_cpow (hSpos u hu).ne' _ _
+      sum_congr rfl fun u hu => natCast_cpow_mul_I_mul_conj_cpow (by grind) _ _
     rw [hG]
     have hsecond : 0 ≤ |κ'| * R *
         (2 * |((j - j' : ℤ) : ℝ)|⁻¹ + Real.exp (-L ^ (0.95 : ℝ))) := by positivity
@@ -240,12 +230,12 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
       refine le_add_of_le_of_nonneg ((norm_sum_le _ _).trans ?_) hsecond
       calc ∑ u ∈ S, ‖(u : ℂ) ^ (((τ j - τ j' : ℝ) : ℂ) * Complex.I)‖ = #S := by
             rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one]
-            exact sum_congr rfl fun u hu => norm_natCast_cpow_ofReal_mul_I (hSpos u hu) _
+            exact sum_congr rfl fun u hu => norm_natCast_cpow_ofReal_mul_I (by grind) _
         _ ≤ R + 1 := card_Ioc_floor_le hR0.le
     · rw [ite_eq_right h₁, zero_add]
       have h₂ : (2 : ℝ) ≤ |((j - j' : ℤ) : ℝ)| := by
         rw [← Int.cast_abs]
-        exact_mod_cast (show (2 : ℤ) ≤ |j - j'| by omega)
+        exact_mod_cast (by omega)
       have h : 1 ≤ |τ j - τ j'| := by linarith
       have hΔ : |τ j - τ j'| ≤ x ^ 3 := by
         have h₃ := h𝒥T j hj
@@ -282,7 +272,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
             refine mul_le_mul_of_nonneg_left ?_ hR0.le
             calc κ' * ((1 + |τ j - τ j'|)⁻¹ + Real.exp (-L ^ (0.95 : ℝ)))
                 ≤ |κ'| * ((1 + |τ j - τ j'|)⁻¹ + Real.exp (-L ^ (0.95 : ℝ))) :=
-                  mul_le_mul_of_nonneg_right (le_abs_self κ') (by positivity)
+                  mul_le_mul_of_nonneg_right (by grind) (by positivity)
               _ ≤ _ := by gcongr
         _ = _ := by ring
   -- the Gram rows are at most `Rw`
@@ -303,7 +293,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
     calc ∑ j' ∈ 𝒥, ‖∑ u ∈ S, e j u * starRingEnd ℂ (e j' u)‖
         ≤ ∑ j' ∈ 𝒥, ((if |j - j'| ≤ 1 then R + 1 else 0) +
             |κ'| * R * (2 * |((j - j' : ℤ) : ℝ)|⁻¹ + Real.exp (-L ^ (0.95 : ℝ)))) :=
-          sum_le_sum fun j' hj' => hentry j hj j' hj'
+          sum_le_sum (by grind)
       _ = ∑ j' ∈ 𝒥, (if |j - j'| ≤ 1 then R + 1 else 0) + |κ'| * R *
             (2 * ∑ j' ∈ 𝒥, |((j - j' : ℤ) : ℝ)|⁻¹ + #𝒥 * Real.exp (-L ^ (0.95 : ℝ))) := by
           rw [sum_add_distrib, ← mul_sum, sum_add_distrib, ← mul_sum, sum_const, nsmul_eq_mul]
@@ -312,11 +302,10 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
             #𝒥 * Real.exp (-L ^ (0.95 : ℝ)) ≤
               4 * (1 + Real.log (M - -M + 1).toNat) + 1 by linarith)
             (by positivity : 0 ≤ |κ'| * R)
-          rw [hRw]
           linarith
   -- `log(2M + 1) ≤ 2L`
   have hlogM : Real.log (M - -M + 1).toNat ≤ 2 * L := by
-    have hM0 : 0 ≤ M := Int.floor_nonneg.2 (by positivity)
+    have hM0 : 0 ≤ M := by positivity
     have hcast : (((M - -M + 1).toNat : ℕ) : ℝ) = 2 * M + 1 := by
       rw [← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
       push_cast
@@ -326,7 +315,7 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
     have hpos : (0 : ℝ) < 2 * M + 1 := by
       have : (0 : ℝ) ≤ M := by exact_mod_cast hM0
       linarith
-    rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; push_cast; ring]
+    rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; ring]
     refine Real.log_le_log hpos ?_
     have : 4 * T₀ ≤ x * x / 2 := by
       rw [hT₀]
@@ -349,8 +338,8 @@ theorem eventually_sum_sup_normSq_le (Cm CU : ℝ) (hCm : 0 ≤ Cm) :
         _ = L ^ (2 * CU) := by
             rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
             ring_nf
-    calc ∑ u ∈ S, ‖c u‖ ^ 2 ≤ ∑ _u ∈ S, L ^ (2 * CU) := sum_le_sum fun u _ => hcu u
-      _ = #S * L ^ (2 * CU) := by rw [sum_const, nsmul_eq_mul]
+    calc ∑ u ∈ S, ‖c u‖ ^ 2 ≤ ∑ _u ∈ S, L ^ (2 * CU) := sum_le_sum (by grind)
+      _ = #S * L ^ (2 * CU) := by simp
       _ ≤ (R + 1) * L ^ (2 * CU) := by
           gcongr
           exact card_Ioc_floor_le hR0.le

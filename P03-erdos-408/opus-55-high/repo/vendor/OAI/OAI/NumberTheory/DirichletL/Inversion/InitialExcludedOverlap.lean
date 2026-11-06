@@ -8,14 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
+open scoped Classical
+open CanonicalQuadraticSieve
 namespace SevenEighths.InverseInitialExcludedOverlap
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open HeckeFamily InverseInitialExcludedPolynomial
-local notation "O"=>ActualEisensteinCubic.O
+open HeckeFamily
 
-theorem reconstruct_outside (E:Finset (Ideal O)){P j c:Ideal O}
+theorem reconstruct_outside (E:Finset (Ideal ActualEisensteinCubic.O)){P j c:Ideal ActualEisensteinCubic.O}
     (hE:∀Q∈E,Prime Q)(hj:j∣P)(hP:outside E P)(hc:outside E c)
     (hres:residual P j∣c):outside E (reconstruct P j c) := by
   intro Q hQ hQn
@@ -23,7 +22,7 @@ theorem reconstruct_outside (E:Finset (Ideal O)){P j c:Ideal O}
   · exact hP Q hQ (hQj.trans hj)
   · exact hc Q hQ (hQc.trans (idealQuotient_dvd hres))
 
-theorem columns_filter (A E:Finset (Ideal O)){P j:Ideal O}
+theorem columns_filter (A E:Finset (Ideal ActualEisensteinCubic.O)){P j:Ideal ActualEisensteinCubic.O}
     (hE:∀Q∈E,Prime Q)(hPs:Squarefree P)(hj:j∣P)(hP:outside E P):
     columns (originalOutside A E) P j=(columns A P j).filter (outside E) := by
   ext c
@@ -40,8 +39,8 @@ theorem columns_filter (A E:Finset (Ideal O)){P j:Ideal O}
     exact (mem_columns hPs hj).mpr ⟨hcs,hcj,hres,
       Finset.mem_filter.mpr ⟨hnA,reconstruct_outside E hE hj hP hout hres⟩⟩
 
-theorem deleted_zero_outside (χ:Character)(E:Finset (Ideal O))
-    (hE:∀Q∈E,Prime Q)(I:Ideal O)(hn:¬outside E I):
+theorem deleted_zero_outside (χ:Character)(E:Finset (Ideal ActualEisensteinCubic.O))
+    (hE:∀Q∈E,Prime Q)(I:Ideal ActualEisensteinCubic.O)(hn:¬outside E I):
     idealCoeff (χ.excludePrimes E hE) I=0 := by
   rw [idealCoeff_excludePrimes]
   apply ite_eq_right
@@ -51,10 +50,10 @@ theorem deleted_zero_outside (χ:Character)(E:Finset (Ideal O))
   have hu:IsUnit Q:=(hc Q hQ).isRelPrime hd (dvd_refl Q)
   exact (hE Q hQ).not_isUnit hu
 
-theorem residual_filtered (A E:Finset (Ideal O)){P j:Ideal O}
+theorem residual_filtered (A E:Finset (Ideal ActualEisensteinCubic.O)){P j:Ideal ActualEisensteinCubic.O}
     (hE:∀Q∈E,Prime Q)(hPs:Squarefree P)(hj:j∣P)(hP:outside E P)
-    (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)
-    (a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z G:ℝ)(u:O):
+    (η:Ideal ActualEisensteinCubic.O→*ℂ)(hη:∀I,¬outside E I→η I=0)
+    (a:Ideal ActualEisensteinCubic.O→ℂ)(W:ℝ→ℂ)(Z r z G:ℝ)(u:ActualEisensteinCubic.O):
     residualNormalizedPolynomial A P j η a W Z r z G u=
     residualNormalizedPolynomial (originalOutside A E) P j η a W Z r z G u := by
   unfold residualNormalizedPolynomial
@@ -63,7 +62,7 @@ theorem residual_filtered (A E:Finset (Ideal O)){P j:Ideal O}
   apply Finset.sum_congr rfl
   intro c hc
   by_cases hout:outside E c
-  · rw [ite_eq_left hout]
+  · simp_all
   · rw [ite_eq_right hout]
     simp only [overlapResidualCoefficient,hη c hout,mul_zero,zero_mul]
 

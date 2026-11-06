@@ -9,16 +9,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPhysic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstChildProfileControl
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonProfile
 open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
+open CenteredMomentAmplificationChildInput
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonExceptionalCost
 open CenteredMomentAllocatedDetectorAmplitude CenteredMomentFiniteProfileExceptional
 open CenteredMomentFiniteProfileExceptionalPhysical
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 def mass (s : Input ι) : ℝ := ∏ i,s.M i
@@ -31,7 +30,7 @@ omit [DecidableEq ι] in
 lemma mass_nonneg (s : Input ι) : 0≤mass s := zero_le_one.trans (mass_one s)
 
 omit [DecidableEq ι] in
-lemma child_mass (s : Input ι) (C R : Ideal O) (B : actualAllocations s.pools C)
+lemma child_mass (s : Input ι) (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C)
     (τ : Character) (t : ℝ) : mass (child s C R B τ t)≤mass s := by
   change (∏i:liveIndices B.val,s.M i.val)≤∏i,s.M i
   rw [Finset.prod_coe_sort]
@@ -82,7 +81,7 @@ lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
       ((128*b)^N)^2*(b^N)^2*A^4*mass s^2 := by
   have hb0:0≤b:=zero_le_one.trans hb
   have hp : (max 1 s.upper)^Fintype.card ι≤b^N :=
-    (pow_le_pow_left₀ (by positivity) (max_le hb hu) _).trans (pow_le_pow_right₀ hb hc)
+    (pow_le_pow_left₀ (by positivity) (by grind) _).trans (pow_le_pow_right₀ hb hc)
   have h128 : (1:ℝ)≤128*b := by linarith
   have hs : slotControl s.toData≤(128*b)^N*mass s^2 :=
     (slot_control_bound s b hb hu).trans
@@ -98,7 +97,7 @@ lemma exceptional_slot_bound (s : Input ι) (N : ℕ) (b A : ℝ)
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (mass_nonneg s) hm 4) (by positivity))
       (sq_nonneg _)
 
-def exceptionalConstant (N : ℕ) (b : ℝ) (J : ℕ) (Q : Ideal O) (K : ℝ) : ℝ :=
+def exceptionalConstant (N : ℕ) (b : ℝ) (J : ℕ) (Q : Ideal HeckeFamily.O) (K : ℝ) : ℝ :=
   K*(768*(6:ℝ)^(UniqueFactorizationMonoid.normalizedFactors Q).toFinset.card)*
     (1+2*Real.pi)^(4*J)*
     (∫u:ℝ,(1+‖u‖)^J*‖CenteredMomentHeckeColumnWindow.columnDensity
@@ -108,7 +107,7 @@ def exceptionalConstant (N : ℕ) (b : ℝ) (J : ℕ) (Q : Ideal O) (K : ℝ) : 
 
 omit [DecidableEq ι] in
 lemma exceptional_factor_bound {wlo whi : ℝ}
-    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal O) (K : ℝ)
+    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal HeckeFamily.O) (K : ℝ)
     (hK : 0≤K) (s : Input ι) (N : ℕ) (b A : ℝ)
     (hb : 1≤b) (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hm : mass s≤A) :
     profileFactor S s p J Q K≤exceptionalConstant N b J Q K*

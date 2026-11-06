@@ -9,18 +9,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
-local notation "O"=>HeckeFamily.O
-variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+open HeckeFamily InverseInitialDetectorSource
+open HeckeDetectorBatch
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance:Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem sourceMoment_fiber_large_eventually
-    (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character)
+    (S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)(η:Character)
     {Slot:Type*}[Fintype Slot](ell:Slot→ℝ)(hell:∀s,0<ell s):
     ∀ᶠZ:ℝ in atTop,1≤Z ∧ ∀d:ℝ,0<d→
       ∀(a ε tstar T allowance:ℝ)(i:ℕ)
@@ -34,7 +33,7 @@ theorem sourceMoment_fiber_large_eventually
   intro d hd a ε tstar T allowance i B hdata hw bin j J K hne s
   change ((baseCharacter (B.data j)).modulus.absNorm:ℝ)<1*(Z^d)^(B.widths s)
   rw [hdata,hw,one_mul]
-  exact hZ.2 d hd j s
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

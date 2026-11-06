@@ -9,15 +9,13 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseMarkedReferenceShift
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.DetectorDictionaryInverseMarkedPhysicalRows
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
+open HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
 open HeckeDetectorCoefficientTransfer HeckeDetectorPhysicalSelection
-open InverseInitialPhysicalSlots InverseInitialRawDictionary InverseInitialDetectorSource
 open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseRawInitialGates
-open InverseInitialExcludedPeriod CanonicalRowCompletion IdealMobiusDivisorSum InverseMoment
-local notation "O"=>HeckeFamily.O
+open IdealMobiusDivisorSum InverseMoment
 
  def actualRow (u:FreeRow):NonzeroElement:=⟨u.val,u.property.1⟩
 
@@ -36,7 +34,7 @@ local notation "O"=>HeckeFamily.O
   · rfl
   · exact DetectorDictionaryInverseRawConjugateGates.childLogTest_conjugate W v
 
-variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
+variable {M:Ideal HeckeFamily.O}[NeZero M]{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label Slot:Type*}
   {U a ε tstar T allowance:ℝ}{i:ℕ}
 
 omit [NeZero M] in
@@ -81,13 +79,13 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
     intro u hu
     have hn:=norm_of_oriented_coefficients (F.family u F.label)
       (F.rowData.character (actualRow u)) F.reverse (F.row_coeff u hu)
-      true W (U^F.r) σ freq (Real.rpow_pos_of_pos hU0 _)
+      true W (U^F.r) σ freq (by positivity)
     rw [norm_mul,hn,physicalProduct_eq,norm_mul]
     rfl
   rw [he]
   apply (marked_fixed_deletion F.rowData (F.rows.image actualRow)
     (orientedProfile F.reverse W) (U^F.r) σ (orientedFrequency F.reverse freq) bW
-    (Real.rpow_pos_of_pos hU0 _) hw mark).trans_eq
+    (by positivity) hw mark).trans_eq
   congr 1
   apply Finset.sum_congr rfl
   intro j hj
@@ -101,8 +99,8 @@ theorem physicalProduct_eq (F:Fiber M H Label Slot U a ε tstar T allowance i)
     (orientedProfile F.reverse W) (fun s:selected=>F.profile s)
     U (shiftedExponent F.rowData U F.r j) σ (orientedFrequency F.reverse freq) bW
     (fun s:selected=>lower s) (fun s:selected=>F.upper s) (fun s:selected=>F.widths s)
-    (fun s:selected=>F.external s) hU0 hw (fun s=>hV s s.property)
-    (fun s=>hlarge s s.property)
+    (fun s:selected=>F.external s) hU0 hw (by grind)
+    (by grind)
   rw [hr] at hn
   exact congrArg (fun x:ℝ=>x^2) hn
 

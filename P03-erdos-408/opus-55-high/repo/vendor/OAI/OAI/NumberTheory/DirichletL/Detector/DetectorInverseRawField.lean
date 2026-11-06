@@ -11,10 +11,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeDetectorInverseRawField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
+open HeckeFamily HeckeInverseAmplification
+open HeckeDetectorBatch HeckeDetectorCoefficientTransfer
 open HeckeDetectorInverseFiberCount DetectorDictionaryInverseClippedUniform
 open ProbeHighRowFamily ProbeFinalAssembly
 

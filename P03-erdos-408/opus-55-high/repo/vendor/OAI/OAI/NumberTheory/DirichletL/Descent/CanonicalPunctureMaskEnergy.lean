@@ -9,10 +9,8 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseInitialClippedColumns
 local notation "Eis" => ActualEisensteinCubic.O
 
 end SevenEighths.InverseMoment

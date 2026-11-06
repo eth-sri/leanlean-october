@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Reflection.GlobalEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
-variable {Nlevel a c₀ : Eis} {mode : Bool}
+variable {Nlevel a c₀ : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem original_low_global_full_budget
-    [Fintype (Eis⧸Ideal.span {Nlevel^2})]
+    [Fintype (ActualEisensteinCubic.O⧸Ideal.span {Nlevel^2})]
     (ε : ℝ) (hε : 0<ε) (lo hi : ℝ) (hlo : 0<lo)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
-    (hNlevel : (9:Eis)*c₀∣Nlevel)
+    (hNlevel : (9:ActualEisensteinCubic.O)*c₀∣Nlevel)
     (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀-1)
     (hac : IsCoprime a c₀) (ρ : ℝ) (hρ : 0<ρ) (η : ℝ) (hηpos : 0<η)
     (κ δ Lscale Lpool : ℝ) (hκ : 0<κ) (hδL : 0≤δ+Lscale) (hLpool : 0≤Lpool)
     (Lcap saving : ℝ) (hδ : 0<δ) :
     ∃ (degree : ℕ) (C Z₀ : ℝ), 0<C ∧ 1<Z₀ ∧
-    ∀ {σ : Type v} [Fintype σ], ∀ (J I F Q Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
+    ∀ {σ : Type v} [Fintype σ], ∀ (J I F Q Q₀ : Ideal ActualEisensteinCubic.O) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
     ∀ (A : Finset (FreeReflection.pool J Q Q₀))
       (Z O₀ H za Nstar d ell0 shift π Ck CO CH X QK QP Lrow Lslot : ℝ),
@@ -46,18 +45,18 @@ theorem original_low_global_full_budget
       (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lcap →
       (familyRawScale G s X QK QP)⁻¹≤Z^Lscale →
       (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lpool →
-    ∀ (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)
       (hrows : ∀ K∈rows,Admissible K),
       (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
+      (∀ f,ringChar (ActualEisensteinCubic.O⧸G.ideal f)≠2) →
       (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
       (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
       (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
       (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
+      (∀ P∈Pset,∀ b,ringChar (ActualEisensteinCubic.O⧸(G.sum (S P)).ideal b)≠2) →
     ∃ D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (G.reflected K.val (hrows K.val K.property) (S P.val)).generator Nlevel a c₀ mode,
-    ∀ (θ : ℝ) (r aw : Ideal Eis→ℂ),
+    ∀ (θ : ℝ) (r aw : Ideal ActualEisensteinCubic.O→ℂ),
       1≤QK → 2≤QP →
       (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
       (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
@@ -68,7 +67,7 @@ theorem original_low_global_full_budget
   obtain ⟨degree,C,Z₀,hC,hZ₀,henergy⟩ := original_low_sector_full_budget
     (Nlevel:=Nlevel) ε hε lo hi hlo W hWs hW s hc₀ hNlevel hbase hac ρ hρ η hηpos
     κ δ Lscale Lpool hκ hδL hLpool Lcap saving hδ
-  let q := (Fintype.card (Eis⧸Ideal.span {Nlevel^2}):ℝ)
+  let q := (Fintype.card (ActualEisensteinCubic.O⧸Ideal.span {Nlevel^2}):ℝ)
   have hq : 0≤q := Nat.cast_nonneg _
   refine ⟨degree,q^3*C+1,Z₀,by positivity,hZ₀,?_⟩
   intro σ _ J I F Q Q₀ hJ hI hQ hpower hmask A
@@ -84,7 +83,7 @@ theorem original_low_global_full_budget
     hrowcop hprod hScop (fun P hP b => hSN P hP (Sum.inr b))
   refine ⟨D,?_⟩
   intro θ r aw hqk hqp hKr hPr hr haw
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
+  have hzpos : 0<Z := by linarith
   have hs := literal_global_sector_energy G rows Pset S hrows j D s hc₀ W θ X r aw
     (C*(1+‖θ‖)^degree*Z^((5/6-2*d)+200*η+π+κ+ρ*Lpool-O₀/2)) (by
       intro r₀ p₀

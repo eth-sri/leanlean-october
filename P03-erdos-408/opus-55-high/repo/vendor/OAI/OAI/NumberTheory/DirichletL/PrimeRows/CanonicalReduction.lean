@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalTails
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set
+open scoped Classical
+open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily ProbePhysical CompletedGauss
 
-def principalPhysicalPool {K : ℕ} (η : Character) (S : Finset (Ideal O))
+def principalPhysicalPool {K : ℕ} (η : Character) (S : Finset (Ideal HeckeFamily.O))
     (T : Fin K→Finset PrimeIdeal) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
   ∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
@@ -22,7 +21,7 @@ def principalPhysicalPool {K : ℕ} (η : Character) (S : Finset (Ideal O))
 theorem canonical_probe_minus_central (K : ℕ) (e δ a b B ζ saving : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ)
     (ha : 0<a) (hb : 0<b) (hB : 0≤B) (hβ : (7/8:ℝ)≤HeckeZeroSupremum.beta)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
@@ -45,9 +44,9 @@ theorem canonical_probe_minus_central (K : ℕ) (e δ a b B ζ saving : ℝ)
   intro η Z hZ T hT hdis length hl0 hlength W hWS hWB
   have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
   have hdec := canonical_physical_probe_partition S hS hmax η T
-    (fun i P hP=>outside_prime_supported S hS.bad P (hT i P hP)) W (fun i=>Z^(length i)) W0 W1
+    (fun i P hP=>outside_prime_supported S hS.bad P (by grind)) W (fun i=>Z^(length i)) W0 W1
     a0 b0 a1 b1 ha0 ha1 hW0 hW1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z
-    (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ)) (Real.rpow_pos_of_pos hZ0 _) (Real.rpow_pos_of_pos hZ0 _) hZ0
+    (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ)) (by positivity) (by positivity) hZ0
     (Real.one_le_rpow hZ (by norm_num)) (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
   have hs' := hs η Z hZ T hT hdis length hl0 hlength W hWS hWB
   have hl' := hl η Z hZ T hT hdis length hl0 hlength W hWS hWB
@@ -63,7 +62,7 @@ theorem canonical_probe_minus_central (K : ℕ) (e δ a b B ζ saving : ℝ)
       ∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Z^(length i)))*
         principalRowIntegral η S (fun i=>primaryGenerator (P i).val.val) W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z := rfl
   rw [←heq,add_sub_cancel_left]
-  rw [show ∀a b c : ℂ,a+b+c-b=a+c from fun a b c=>by ring]
+  rw [show ∀a b c : ℂ,a+b+c-b=a+c from by grind]
   apply (norm_add_le _ _).trans
   apply (add_le_add hs' ((norm_tsum_le_tsum_norm hl'.1.norm).trans hl'.2)).trans
   calc

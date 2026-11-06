@@ -7,14 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.Physical
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss
 
 theorem elementWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
     (R : ℝ) (hR : 0 < R) :
-    (Function.support (fun m : O => W (elementNorm m / R))).Finite := by
+    (Function.support (fun m : ActualEisensteinCubic.O => W (elementNorm m / R))).Finite := by
   obtain ⟨B, hB, hbound⟩ := compact_window_bound W hW
   obtain ⟨M, hM⟩ := exists_nat_gt (B * R)
   apply (ShortDraftLatticeCount.rowNormBall M).finite_toSet.subset
@@ -26,7 +24,7 @@ theorem elementWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W
 
 theorem idealWindow_finite_support (W : ℝ → ℂ) (hW : HasCompactSupport W)
     (R : ℝ) (hR : 0 < R) :
-    (Function.support (fun I : Ideal O => W ((Ideal.absNorm I : ℝ) / R))).Finite := by
+    (Function.support (fun I : Ideal ActualEisensteinCubic.O => W ((Ideal.absNorm I : ℝ) / R))).Finite := by
   obtain ⟨B, hB, hbound⟩ := compact_window_bound W hW
   obtain ⟨M, hM⟩ := exists_nat_gt (B * R)
   apply (Ideal.finite_setOfPred_absNorm_le M).subset

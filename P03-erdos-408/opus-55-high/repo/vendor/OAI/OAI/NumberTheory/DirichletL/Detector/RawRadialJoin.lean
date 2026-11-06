@@ -13,7 +13,6 @@ open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion ProbeCompleted ProbeRow CubicEisenstein
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
 lemma verticalIntegral_const_mul (σ : ℝ) (F : ℂ→ℂ) (c : ℂ) :
     verticalIntegral σ (fun z=>c*F z)=c*verticalIntegral σ F := by
@@ -21,7 +20,7 @@ lemma verticalIntegral_const_mul (σ : ℝ) (F : ℂ→ℂ) (c : ℂ) :
   rw [integral_const_mul]
   ring
 
-def rawRadialOuterFactor (C : CalibrationData) (K : Ideal O)
+def rawRadialOuterFactor (C : CalibrationData) (K : Ideal ActualEisensteinCubic.O)
     (W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (t w : ℂ) : ℂ :=
   (Y:ℂ)^(w-1)*fullIdealWeight w K*mellin W1 w*
     (idealRowHom C.generator K /
@@ -29,7 +28,7 @@ def rawRadialOuterFactor (C : CalibrationData) (K : Ideal O)
     (Real.sqrt (Ideal.absNorm K):ℂ)⁻¹*((Z:ℂ)^t*Complex.exp (t^2))
 
 lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : CalibrationData)
-    (S : Finset (Ideal O)) (D I J K : Ideal O) (hK : Supported K)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D I J K : Ideal ActualEisensteinCubic.O) (hK : Supported K)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ : ℝ) (t w : ℂ) :
     verticalIntegral ξ (fun z=>∑'H : NonzeroFrequency,
       rawPhysicalMellinTerm η C S D I J K hK W0 W1 X Y Z H.val t w z)=
@@ -47,7 +46,7 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
     simp only [hn,hgen]
     let c := rawRadialOuterFactor C K W1 X Y Z t w *
       (spectralSummand S D (baseRowCoefficient η C.Xi (primaryGenerator K)
-        ((supported_span_primaryGenerator_iff K).mpr hK)) t I J *
+        (by grind)) t I J *
         ((elementNorm C.generator*(Ideal.absNorm K:ℝ)*X/elementNorm (C.generator*completedIndex I J):ℝ):ℂ))
     have hp (z : ℂ) (H : NonzeroFrequency) :
         idealRowHom C.generator K /
@@ -55,7 +54,7 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
             (Real.sqrt (elementNorm C.generator*(Ideal.absNorm K:ℝ)*X):ℂ)) *
           (Real.sqrt (Ideal.absNorm K):ℂ)⁻¹ *
           spectralSummand S D (baseRowCoefficient η C.Xi (primaryGenerator K)
-            ((supported_span_primaryGenerator_iff K).mpr hK)) t I J *
+            (by grind)) t I J *
           ((elementNorm C.generator*(Ideal.absNorm K:ℝ)*X/elementNorm (C.generator*completedIndex I J):ℝ):ℂ) *
           actualCongruenceCoefficient C (completedIndex I J) (primaryGenerator K) hA H.val *
           ((elementNorm C.generator*(Ideal.absNorm K:ℝ)*X*elementNorm H.val /
@@ -73,13 +72,7 @@ lemma rawPhysicalMellinTerm_radial_join (η : HeckeFamily.Character) (C : Calibr
     rw [verticalIntegral_const_mul]
     dsimp only [c]
     simp only [Complex.ofReal_mul,Complex.ofReal_div]
-    ring_nf
-    congr 1
-    apply congrArg (verticalIntegral ξ)
-    funext z
-    apply tsum_congr
-    intro H
-    congr 1 ; congr 1 ; ring_nf
+    ring
   · simp only [zero_mul,tsum_zero,verticalIntegral,integral_zero,mul_zero]
 
 end SevenEighths.ProbePhysical

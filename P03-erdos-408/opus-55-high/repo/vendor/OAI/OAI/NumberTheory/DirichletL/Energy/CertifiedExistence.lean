@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedRadialTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCertifiedExistence
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
+open CenteredMomentEnergyCappedWidthInduction
 open CenteredMomentEnergyCappedAnalyticSuccessor CenteredMomentEnergyCappedRadialTransport
 open CenteredMomentEnergyWidthSchedule
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem certified_bands (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
@@ -49,7 +48,7 @@ theorem terminal_certificate (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi 
     CertifiedBand (α:=α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε (count Mcap ε):=by
   apply certified_from_max_two (α:=α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε
   exact certified_bands (α:=α) M H hH W aslot bslot a b (max 2 radial) Bmask L lo hi Mcap κ ε
-    haslot hWs hW hbslot ha haUpper hb (le_max_left _ _) hmask hMcap hκ0 hε hbeta hκ _ le_rfl
+    haslot hWs hW hbslot ha haUpper hb (by simp) hmask hMcap hκ0 hε hbeta hκ _ le_rfl
 
 end SevenEighths.CenteredMomentEnergyCertifiedExistence
 

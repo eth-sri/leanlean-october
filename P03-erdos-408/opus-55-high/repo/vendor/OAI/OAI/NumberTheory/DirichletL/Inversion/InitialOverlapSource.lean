@@ -9,9 +9,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.InverseInitialOverlapSource
-open InverseInitialOverlapFresh InverseInitialOverlapInputFourier
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
 def tupleCoordinate (I : Finset σ) (y : σ→ι→ℝ) (q : ∀i∈I,ι) (i : σ) : ℝ :=
@@ -44,23 +43,23 @@ theorem insert_original_fresh
   apply Finset.sum_congr rfl
   intro q hq
   by_cases hz : (∏i∈I.attach,if q i.val i.property∈A then a i.val (q i.val i.property) else 0)=0
-  · simp only [hz,zero_mul,mul_zero]
+  · grind
   by_cases hw : W (yj*yc/(∏i∈I.attach,y i.val (q i.val i.property)))=0
-  · simp only [hw,mul_zero]
+  · grind
   have hcoord : ∀i∈I,tupleCoordinate I y q i∈Set.Icc (lo i) (hi i) := by
     intro i hi
-    have hn := Finset.prod_ne_zero_iff.mp hz ⟨i,hi⟩ (Finset.mem_attach _ _)
+    have hn := Finset.prod_ne_zero_iff.mp hz ⟨i,hi⟩ (by simp)
     have hcoeff : a i (q i hi)≠0 := by
       intro he
       apply hn
       split_ifs
-      · exact he
+      · omega
       · rfl
     simpa only [tupleCoordinate,dite_eq_left hi] using
-      ha i hi (q i hi) ((Finset.mem_pi.mp hq) i hi) hcoeff
+      ha i hi (q i hi) (by grind) hcoeff
   have hf := hFresh (tupleCoordinate I y q) yj yc hcoord hj hc
     (by rwa [tupleCoordinate_product])
-  rw [hf,one_mul]
+  grind
 
 end SevenEighths.InverseInitialOverlapSource
 

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Foundation
 namespace OAI
 
 noncomputable section
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform ContDiff
 open MeasureTheory Filter Set
 namespace SevenEighths.CompactProfileFamily
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -18,13 +18,13 @@ theorem section_deriv_smooth (F : E → ℝ → ℂ)
       (Function.uncurry (fun p : E × ℝ => F p.1)) :=
     hF.comp (contDiff_fst.fst.prodMk contDiff_snd)
   have hd := hFp.fderiv contDiff_snd (by simp : (∞ : ℕ∞ω) + 1 ≤ ∞)
-  simpa only [deriv] using hd.clm_apply (contDiff_const (c := (1 : ℝ)))
+  simpa using hd.clm_apply (contDiff_const (c := (1 : ℝ)))
 
 theorem section_iteratedDeriv_smooth (F : E → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (j : ℕ) :
     ContDiff ℝ ∞ (fun p : E × ℝ => iteratedDeriv j (F p.1) p.2) := by
   induction j with
-  | zero => simpa only [iteratedDeriv_zero, Function.uncurry_def] using hF
+  | zero => simpa
   | succ j ih =>
     simpa only [iteratedDeriv_succ] using
       section_deriv_smooth (fun σ => iteratedDeriv j (F σ)) ih
@@ -56,11 +56,11 @@ theorem compact_family_deriv_L1_bound (F : E → ℝ → ℂ)
   have hc := (section_iteratedDeriv_smooth F hF j).continuous.norm
   obtain ⟨M, hM⟩ := (hJ.prod hK).bddAbove_image hc.continuousOn
   let C : ℝ := (|M| + 1) * (volume.real K + 1)
-  refine ⟨C, by dsimp [C]; positivity, ?_⟩
+  refine ⟨C, by positivity, ?_⟩
   intro σ hσ
   have hbound : ∀ u ∈ K, ‖iteratedDeriv j (F σ) u‖ ≤ |M| + 1 := by
     intro u hu
-    exact (hM (Set.mem_image_of_mem _ (show (σ, u) ∈ J ×ˢ K from ⟨hσ, hu⟩))).trans (by linarith [le_abs_self M])
+    exact (hM (Set.mem_image_of_mem _ (show (σ, u) ∈ J ×ˢ K from ⟨hσ, hu⟩))).trans (by grind)
   have hs : Function.support (iteratedDeriv j (F σ)) ⊆ K :=
     (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset (F σ) j).trans
       (closure_minimal (hsupp σ) hK.isClosed))
@@ -71,10 +71,10 @@ theorem compact_family_deriv_L1_bound (F : E → ℝ → ℂ)
       exact hu (hs hn)
     simp [hz]
   have hi := norm_setIntegral_le_of_norm_le_const («μ» := volume) (f := fun u => ‖iteratedDeriv j (F σ) u‖)
-    hK.measure_lt_top (C := |M| + 1) (fun u hu => by simpa using hbound u hu)
+    hK.measure_lt_top (C := |M| + 1) (fun u hu => by simp_all)
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzero] at hi
-  rw [Real.norm_of_nonneg (integral_nonneg (fun u => norm_nonneg _))] at hi
-  exact hi.trans (by dsimp [C]; nlinarith [abs_nonneg M])
+  rw [Real.norm_of_nonneg (by positivity)] at hi
+  grind
 
 theorem compact_family_fourier_power_bound (F : E → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
@@ -101,10 +101,7 @@ theorem compact_family_fourier_power_bound (F : E → ℝ → ℂ)
       Real.fourierChar volume (innerₗ ℝ) (iteratedDeriv j (F σ)) w).trans
     exact hb σ hσ
   apply (le_div_iff₀ (by positivity : 0 < (2 * Real.pi) ^ j)).mpr
-  rw [← hid] at hn
-  calc
-    _ = (2 * Real.pi) ^ j * (|w| ^ j * ‖𝓕 (F σ) w‖) := mul_comm _ _
-    _ ≤ C := hn
+  linarith
 
 theorem compact_family_fourier_weighted_bound (F : E → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
@@ -123,12 +120,12 @@ theorem compact_family_fourier_weighted_bound (F : E → ℝ → ℂ)
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
       _ ≤ 2 ^ j * C₀ := mul_le_mul_of_nonneg_left hbase (by positivity)
       _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
-  · have hw' : 1 ≤ |w| := le_of_lt (lt_of_not_ge hw)
+  · have hw' : 1 ≤ |w| := by linarith
     calc
       _ ≤ (2 * |w|) ^ j * ‖𝓕 (F σ) w‖ :=
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
-      _ = 2 ^ j * (|w| ^ j * ‖𝓕 (F σ) w‖) := by rw [mul_pow, mul_assoc]
-      _ ≤ 2 ^ j * Cj := mul_le_mul_of_nonneg_left (hj σ hσ w) (by positivity)
+      _ = 2 ^ j * (|w| ^ j * ‖𝓕 (F σ) w‖) := by ring
+      _ ≤ 2 ^ j * Cj := mul_le_mul_of_nonneg_left (by grind) (by positivity)
       _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
 
 end SevenEighths.CompactProfileFamily

@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedPaidAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidReserve
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacitySource
+open HeckeFamily
+open CenteredMomentFirstAmplifiedPaidAdmission
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondCanonicalScalar CenteredMomentFirstScale
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentSecondRadicalBudget
 open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-local notation "O"=>HeckeFamily.O
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
 
 def fixedNumerator (N:ℕ)(lower upper cost0 a0:ℝ):ℝ :=
@@ -93,7 +92,7 @@ theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
     ∃Z0:ℝ,1<Z0 ∧ ∀Z:ℝ,Z0≤Z→
       ∀{ι α:Type*}[Fintype ι][Fintype α],∀(s:Input ι)(input:Input α),
       Fintype.card ι≤N→Fintype.card α≤N→lower≤s.lower→input.upper≤upper→
-      ∀(C D:Ideal O),C≠0→D≠0→∀delta reserve cost a:ℝ,
+      ∀(C D:Ideal HeckeFamily.O),C≠0→D≠0→∀delta reserve cost a:ℝ,
       0≤delta→0≤reserve→cost0≤cost→a0≤a→
       sourceReserve s input C D Z delta reserve cost a≤delta+reserve+theta := by
   let L:=fixedNumerator N lower upper cost0 a0
@@ -113,18 +112,18 @@ theorem eventually_source_reserve (N:ℕ)(lower upper cost0 a0 theta:ℝ)
     linarith
   have hb:=source_reserve_bound N lower upper cost0 a0 hlower hcost0 ha0 s input
     hn hnc hl hu C D hC hD Z delta reserve cost a hZ hd hr hc ha
-  exact hb.trans (by change delta+reserve+L/Real.log Z≤_;linarith)
+  linarith
 
 theorem eventually_actual_amplified_reserves (N:ℕ)(lower upper cost0 a0 theta:ℝ)
     (hlower:0<lower)(hcost0:0<cost0)(ha0:0<a0)(htheta:0<theta):
     ∃Z0:ℝ,1<Z0 ∧ ∀Z:ℝ,Z0≤Z→
       ∀{ι:Type*}[Fintype ι],∀s:Input ι,
       Fintype.card ι≤N→lower≤s.lower→s.upper≤upper→
-      ∀(C D R:Ideal O),C≠0→D≠0→∀B:actualAllocations s.pools C,
+      ∀(C D R:Ideal HeckeFamily.O),C≠0→D≠0→∀B:actualAllocations s.pools C,
       ∀(τ:Character)(t delta reserve cost a:ℝ),
       0≤delta→0≤reserve→cost0≤cost→a0≤a→
       sourceReserve s (child s C R B τ t) C D Z delta reserve cost a≤delta+reserve+theta ∧
-      ∀(Q:Ideal O)(k:ℕ)
+      ∀(Q:Ideal HeckeFamily.O)(k:ℕ)
         (Bp:actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
         (υ:Character)(v:ℝ),
         sourceReserve s (errorInput s C R B τ t Q k Bp υ v) C D Z delta reserve cost a≤

@@ -10,7 +10,6 @@ public import Erdos821.P3Rows.GhostRows
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -29,8 +28,8 @@ theorem actual_projected_ghost_norm (F : FixedData) (J n B : ℕ) (r : MemoryPar
       (projectKernel (fun s => P.memorySize s ≤ B) (memoryGhostKernel F J n r.rho i phi))
       ((Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card) := by
   apply normBound_project
-  · exact (pow_pos (Real.exp_pos _) _).le
-  · exact memoryMass_nonneg F J n (fun g => (hV g).1) hb
+  · positivity
+  · exact memoryMass_nonneg F J n (by grind) hb
   · exact ghost_norm_of_tasks GhostAdjointTask_proof GhostRowsTask_proof F J n r hV hb hmu i phi hphi
 
 end Erdos821.S2Core

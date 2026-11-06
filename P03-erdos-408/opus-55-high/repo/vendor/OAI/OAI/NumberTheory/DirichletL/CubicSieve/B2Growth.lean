@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Growth
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hε : 0 ≤ ε) (hA : 0 ≤ A) (hM : 1 ≤ M) (hN : 1 ≤ N)
@@ -55,7 +54,7 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
     · convert mul_le_mul_of_nonneg_left (hb Y hY hYM) hX0.le using 1; ring
   have hopt := extraction_min_two_power M N X Y ξ hM hN0.le hX hY hXY hξ
   have hH : 0 ≤ (M/(X*Y^2))^(1/3 : ℝ) := Real.rpow_nonneg (by positivity) _
-  have hi (z : O) : (∑ j : idealRange N, a j * elementCharacter j.val (mem_idealRange.mp j.property).1.2 z) =
+  have hi (z : ActualEisensteinCubic.O) : (∑ j : idealRange N, a j * elementCharacter j.val (mem_idealRange.mp j.property).1.2 z) =
       ∑ j : idealRange N, cubicRow j.val z * a j := by
     apply Finset.sum_congr rfl
     intro j hj
@@ -71,8 +70,7 @@ theorem elementSieveNorm_two_power_log (ξ ε A M N : ℝ)
   have he' := he.trans hh
   rw [← Finset.sum_coe_sort] at he'
   change (∑ z : elementRange M, ‖∑ j : idealRange N, cubicRow j.val z.val * a j‖^2) ≤ _
-  apply he'.trans
-  convert hbnd using 1 <;> dsimp only [B] <;> ring
+  linarith
 
 theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (ε : ℝ) (hε : 0 < ε) :
@@ -107,8 +105,7 @@ theorem HasCubicExponent.full_element_bound {ξ : ℝ} (h : HasCubicExponent ξ)
           (Real.rpow_nonneg (by positivity) _)
       _ = _ := by
         rw [mul_assoc, ← Real.rpow_add (mul_pos hM0 hN0)]
-        congr 2
-        ring
+        simp
   have he := elementSieveNorm_two_power_log ξ (ε/2) A M N hξ (by positivity) hA.le hM hN
     (fun X hX => hb X N hX hN)
   calc

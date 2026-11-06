@@ -8,40 +8,39 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
+open scoped Classical ContDiff
+open MeasureTheory FourierBridge CompletedGauss CanonicalQuadraticSieve
+open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialExcludedFourier
 open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
+open InverseInitialCommonTuples InverseInitialOverlapFourier
 open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
 open InverseInitialEnergyCallerWindow
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
-open InverseInitialCommonTransform InverseInitialLargePool
+open InverseInitialCommonTransform
 open InverseInitialExcludedPool InverseInitialExcludedForcing
 theorem original_tuples_excluded_fourier
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
-    (E:Finset (Ideal Eis))(hE:∀Q∈E,Prime Q)
-    (I:Finset σ)(L:σ→Finset (Ideal Eis))(hL:∀i∈I,∀P∈L i,Prime P)
-    (a:σ→Ideal Eis→ℂ)(j:Ideal Eis)(hj0:j≠0)
+    (E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
+    (I:Finset σ)(L:σ→Finset (Ideal ActualEisensteinCubic.O))(hL:∀i∈I,∀P∈L i,Prime P)
+    (a:σ→Ideal ActualEisensteinCubic.O→ℂ)(j:Ideal ActualEisensteinCubic.O)(hj0:j≠0)
     (hP:∀q∈I.pi L,Admissible (j*survivingProduct I q))
     (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime (fun i:I=>q i.val i.property)))
     (hPE:∀q∈I.pi L,outside E (j*survivingProduct I q))
-    (η:Ideal Eis→*ℂ)(hη:∀c,¬outside E c→η c=0)(u:Eis)(Z r z G:ℝ)(hZ:0<Z)(ell lo hi:σ→ℝ)
+    (η:Ideal ActualEisensteinCubic.O→*ℂ)(hη:∀c,¬outside E c→η c=0)(u:ActualEisensteinCubic.O)(Z r z G:ℝ)(hZ:0<Z)(ell lo hi:σ→ℝ)
     (hell:∑i∈I,ell i=z-G)(jlo jhi:ℝ)
     (hj:((j.absNorm:ℝ)/Z^G)∈Set.Icc jlo jhi)
     (ha:∀i∈I,∀q∈L i,a i q≠0→slotRatio Z ell i q∈Set.Icc (lo i) (hi i))
     (hFresh:∀(v:σ→ℝ)(yj yc:ℝ),(∀i∈I,v i∈Set.Icc (lo i) (hi i))→
       yj∈Set.Icc jlo jhi→0<yc→W (yj*yc/(∏i∈I,v i))≠0→wFresh yc=1)
-    (F:Finset (Ideal Eis))(hF:∀c∈F,Admissible c)(hFE:∀c∈F,outside E c)
+    (F:Finset (Ideal ActualEisensteinCubic.O))(hF:∀c∈F,Admissible c)(hFE:∀c∈F,outside E c)
     (hsub:tupleColumns (originalOutside (originalSource Z r b₀) E) (I.pi L)
-      (fun q:∀i∈I,Ideal Eis=>j*survivingProduct I q) j⊆F) :
+      (fun q:∀i∈I,Ideal ActualEisensteinCubic.O=>j*survivingProduct I q) j⊆F) :
     let S := originalSource Z r b₀
-    let P := fun q:∀i∈I,Ideal Eis=>j*survivingProduct I q
+    let P := fun q:∀i∈I,Ideal ActualEisensteinCubic.O=>j*survivingProduct I q
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     (∑q∈I.pi L,(∏i∈I.attach,a i.val (q i.val i.property))*
@@ -59,7 +58,7 @@ theorem original_tuples_excluded_fourier
   let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
   have hjpos : 0<(j.absNorm:ℝ)/Z^G := by
-    apply div_pos _ (Real.rpow_pos_of_pos hZ G)
+    apply div_pos _ (by positivity)
     exact_mod_cast Nat.pos_of_ne_zero (fun h=>hj0 (Ideal.absNorm_eq_zero_iff.mp h))
   let g := CubicReflectionKernel.logSchwartz W a₀ b₀ ha₀ hs hW
   let H : Finset (primePool F)→ℝ→ℂ := fun A t=>density g (Real.log ((j.absNorm:ℝ)/Z^G)) t*
@@ -82,7 +81,7 @@ theorem original_tuples_excluded_fourier
     simp_rw [actual_residual_product I _ j hj0,original_residual_window I _ j hj0 ell W Z r z G hZ hell]
     apply original_profile_point W wFresh a₀ b₀ ha₀ hs hW F I L hL a hcop Z hZ ell lo hi jlo jhi ha hFresh A
       ((j.absNorm:ℝ)/Z^G) (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) hj hjpos
-    apply div_pos _ (Real.rpow_pos_of_pos hZ _)
+    apply div_pos _ (by positivity)
     exact_mod_cast Nat.pos_of_ne_zero (fun h=>(InitialMeanSquare.poolProduct_admissible F hF A).1
       (Ideal.absNorm_eq_zero_iff.mp h))
   rw [original_tuples_excluded_input W Z r z G b₀ hZ (fun x hx=>(hs hx).2) E hE
@@ -108,8 +107,7 @@ theorem original_tuples_excluded_fourier
   unfold supportConjugateSum
   simp only [Finset.mul_sum,initialTest,InitialMeanSquare.poolPrimary_norm F hF]
   apply Finset.sum_congr rfl
-  intro A hA
-  ring
+  grind
 
 end SevenEighths.InverseInitialExcludedFourier
 

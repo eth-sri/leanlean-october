@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.Completion
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   fixedChildRow p hp hcop hg pool Ψ m
@@ -26,7 +25,7 @@ def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_actual_columns
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+    (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ) :
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a W X =
@@ -43,7 +42,7 @@ theorem finiteCanonicalMarkedRow_actual_columns
   convert he using 1 ; simp only [secondChildColumn, canonicalSourceCoefficient] ; ring
 
 theorem secondChildSum_marked_canonical
-    (F V A : Finset ι) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
+    (F V A : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ) :
     secondChildSum p hp hcop hg F V Ψ m r c d e k
@@ -57,7 +56,7 @@ theorem secondChildSum_marked_canonical
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro N hN
-  have hd : Disjoint V N := Finset.disjoint_left.mpr (fun i hi hn =>
+  have hd := Finset.disjoint_left.mpr (fun i hi hn =>
     (Finset.mem_sdiff.mp (Finset.mem_powerset.mp hN hn)).2 hi)
   have hn : primeProductNorm p (V ∪ N) / X = primeProductNorm p N / (X / primeProductNorm p V) := by
     rw [primeProductNorm_union p V N hd]
@@ -68,13 +67,11 @@ theorem secondChildSum_marked_canonical
   simp only [secondChildColumn, ← Finset.union_assoc, hn]
   rw [hmark]
   simp only [Finset.sum_mul, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro J hJ
-  ring
+  grind
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_restore_pool
-    (pool B : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+    (pool B : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ)
     (hB : ∀ i ∈ B, m * f ∈ Ideal.span {p i}) :
@@ -84,7 +81,7 @@ theorem finiteCanonicalMarkedRow_restore_pool
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_restore_lists
-    (pool B : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
+    (pool B : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ)
     (hB : ∀ i ∈ B, m * f ∈ Ideal.span {p i}) :
@@ -94,14 +91,14 @@ theorem finiteCanonicalMarkedRow_restore_lists
   apply Finset.sum_congr rfl
   intro U hU
   by_cases hd : Disjoint B U
-  · have he : U \ B = U := Finset.sdiff_eq_self_of_disjoint hd.symm
+  · have he := Finset.sdiff_eq_self_of_disjoint hd.symm
     simp only [secondChildColumn, ← primeMark_residual_lists, he]
   · obtain ⟨i, hiB, hiU⟩ := Finset.not_disjoint_iff.mp hd
-    rw [secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f k _ U i hiU (hB i hiB),
-      secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f k _ U i hiU (hB i hiB)]
+    rw [secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f k _ U i hiU (by grind),
+      secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f k _ U i hiU (by grind)]
 
 theorem secondChildSum_marked_fixed_pool
-    (F V A : Finset ι) (Ψ : Eis →* ℂ) (m r c d e k : Eis)
+    (F V A : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ) :
     secondChildSum p hp hcop hg F V Ψ m r c d e k

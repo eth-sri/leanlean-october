@@ -9,33 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,42 +33,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open SecondPassFiber (newLabel newRow)
 open ConcretePrimeRowBridge (idealGenerator)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -91,7 +71,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm b0Label jLabel cubeRadical)
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 open SecondPassFiber (newLabel newRow)
@@ -139,19 +118,19 @@ theorem fixedChildRow_restore_killed_pool (F B : Finset ι) (Ψ : O →* ℂ)
     apply hn
     apply Finset.mem_powerset.mpr
     intro i hi
-    exact Finset.mem_sdiff.mpr ⟨(Finset.mem_powerset.mp hS) hi,
+    exact Finset.mem_sdiff.mpr ⟨by grind,
       fun hiB => Finset.disjoint_left.mp hd hiB hi⟩
   obtain ⟨i,hiB,hiS⟩ := Finset.not_disjoint_iff.mp hd
-  exact secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f y H S i hiS (hB i hiB)
+  exact secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f y H S i hiS (by grind)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge
+open IdealMobiusDivisorSum
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -198,7 +177,7 @@ theorem signedProductDivisorSum_le_rectangles (S T : Finset (Ideal O))
     intro j _
     apply Finset.sum_congr rfl
     intro k _
-    rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) (hK j k),
+    rw [← divisorPool_filter K (left j*right k) (mul_ne_zero (hleft j) (hright k)) (by grind),
       Finset.sum_filter, Finset.mul_sum]
     rw [Finset.sum_coe_sort K (fun d => (UniqueFactorizationMonoid.moebius d:ℂ)*
       (if P d i then if d ∣ left j*right k then originalTerm rows left right a b 1 1 i j k * H d i j k else 0 else 0))]
@@ -232,7 +211,7 @@ theorem signedProductDivisorSum_le_rectangles (S T : Finset (Ideal O))
   intro i _
   by_cases hd : D*E ∈ K
   · simp only [hd, ite_true]
-    exact le_rfl
+    simp
   · simp only [hd, ite_false]
     positivity
 
@@ -267,7 +246,7 @@ theorem HasSieveExponent.small_principal_window {α : ℝ} (hexp : HasSieveExpon
       split_ifs <;> first | exact le_rfl | positivity
     · exact hexp.small_principal_correction deltaLoss hδ ε hε S T D₁ D₂ B N M F (2*U)
         hD₁ hD₂ hB hN hM hF hD₁N hD₂N hS hT rows left right hr hl hri
-        (fun i => ⟨(hrows i).1,(hrows i).2.2⟩) hleft hright a b hc
+        (by grind) hleft hright a b hc
   · have hz : correctionRectangleMajorant S T rows left right a b P
         (fun _ _ j k => ((M/(Real.sqrt ((Ideal.absNorm (left j):ℝ)*(Ideal.absNorm (right k):ℝ))*F):ℝ):ℂ)) = 0 := by
       unfold correctionRectangleMajorant
@@ -281,8 +260,8 @@ theorem HasSieveExponent.small_principal_window {α : ℝ} (hexp : HasSieveExpon
         intro hp
         apply hc
         apply dual_middle_rectangle_upper M F B (Ideal.absNorm (rows i)) N D₁ D₂
-          (Ideal.absNorm D) (Ideal.absNorm E) U hM hF (by linarith) (hrows i).2.1
-          (by linarith) hU (by linarith) (by linarith) (hS D hD).1 (hT E hE).1
+          (Ideal.absNorm D) (Ideal.absNorm E) U hM hF (by linarith) (by grind)
+          (by linarith) hU (by linarith) (by linarith) (by grind) (by grind)
         simpa only [map_mul,Nat.cast_mul] using hP D hD E hE i hp
       simp only [hn,ite_false]
     rw [hz]
@@ -308,10 +287,10 @@ theorem HasSieveExponent.small_principal_divisor_sum {α : ℝ} (hexp : HasSieve
   classical
   let S := columnDivisorPool left
   let T := columnDivisorPool right
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
-  have hS := columnDivisorPool_norm_bounds left hl0 N (fun j => (hleft j).2.2)
-  have hT := columnDivisorPool_norm_bounds right hr0 N (fun k => (hright k).2.2)
+  have hl0 := fun j => (hleft j).1.1
+  have hr0 := fun k => (hright k).1.1
+  have hS := columnDivisorPool_norm_bounds left hl0 N (by grind)
+  have hT := columnDivisorPool_norm_bounds right hr0 N (by grind)
   apply (signedProductDivisorSum_le_rectangles S T rows left right a b P _ hl0 hr0
     (mem_columnDivisorPool_of_dvd left hl0) (mem_columnDivisorPool_of_dvd right hr0)).trans
   apply divisor_dyadic_sum_le S T N _ _
@@ -324,12 +303,12 @@ theorem HasSieveExponent.small_principal_divisor_sum {α : ℝ} (hexp : HasSieve
       (divisorDyadicScale_ge_one _) (divisorDyadicScale_ge_one _) hB hN hM hF hU
       (divisorDyadicBin_scale_le S N hS j hj) (divisorDyadicBin_scale_le T N hT k hk)
       (divisorDyadicBin_bounds S N hS j) (divisorDyadicBin_bounds T N hT k)
-      rows left right hr hl hri hrows hleft hright a b P (fun D _ E _ i hp => hP (D*E) i hp)
+      rows left right hr hl hri hrows hleft hright a b P (by grind)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge
+open IdealMobiusDivisorSum
 
 lemma source_large_cut_lower (M B b N T d : ℝ)
     (hM : 0 < M) (_hB : 0 < B) (hb : 0 < b) (hbB : b ≤ B) (hN : 0 ≤ N) (hT : 0 < T)
@@ -380,7 +359,7 @@ theorem HasSieveExponent.source_large_principal_sum {α : ℝ} (hexp : HasSieveE
     rows left right hr hl hri hrows hleft hright a b
   intro d i hd
   exact source_large_cut_lower M B (Ideal.absNorm (rows i)) N T (Ideal.absNorm d) hM (by linarith)
-    (by linarith [(hrows i).2.1]) (hrows i).2.2 (by linarith) hT ((hZ i).trans hd.le)
+    (by grind) (by grind) (by linarith) hT (by grind)
 
 theorem HasSieveExponent.dual_large_principal_sum {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -400,7 +379,7 @@ theorem HasSieveExponent.dual_large_principal_sum {α : ℝ} (hexp : HasSieveExp
     rows left right hr hl hri hrows hleft hright a b
   intro d i hd
   exact dual_large_cut_lower M F B (Ideal.absNorm (rows i)) N T (Ideal.absNorm d) hM hF (by linarith)
-    (by linarith [(hrows i).2.1]) (hrows i).2.2 (by linarith) hT ((hZ i).trans hd.le)
+    (by grind) (by grind) (by linarith) hT (by grind)
 
 end CanonicalQuadraticSieve
 

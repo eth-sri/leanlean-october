@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.UniformComparison
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P3Clean
@@ -45,8 +44,8 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
       (10 * (J + F.ell) * F.C₀) * (L x) ^ (2 : ℕ) / Real.exp ((L x) ^ F.c) ≤ 1 ∧
       comparisonPolynomial F J * (L x) ^ (2 + C₁) / Real.exp ((L x) ^ F.c) ≤ (L x) ^ (-Eid) := by
     filter_upwards [hL, hprime, hsmall, herr] with x hL hp hs he
-    exact ⟨hL, by simpa only [Real.rpow_one, neg_zero, Real.rpow_zero] using hp,
-      by simpa only [Real.rpow_two, neg_zero, Real.rpow_zero] using hs, he⟩
+    exact ⟨hL, by simp_all,
+      by simp_all, he⟩
   obtain ⟨x₀, hx₀⟩ := eventually_atTop.1 hall
   refine ⟨x₀, ?_⟩
   intro x hx P hP
@@ -76,7 +75,7 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
       exact (by simpa only [div_eq_mul_inv] using
         mul_le_mul hnum hinv (inv_nonneg.mpr hpp.le) (by positivity : 0 ≤ 10 * L x))
     exact ⟨hb, h1, h2.trans (by linarith)⟩
-  have hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F (N x) p.val :=
+  have hb :=
     fun g p => (hbase g p).1
   refine ⟨⟨hLpos, hb⟩, ?_⟩
   intro A hpat hideal theta forward
@@ -100,7 +99,7 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
     dsimp [q, eps]
     push_cast at h ⊢
     nlinarith only [h]
-  have hqt : (q : ℝ) * eps ≤ 1 := hqeps.trans (by simpa only [div_eq_mul_inv, t] using hsmall)
+  have hqt : (q : ℝ) * eps ≤ 1 := hqeps.trans (by grind)
   obtain ⟨hD, hDe, hD3⟩ := density_power_error eps heps q hqt
   have hsqrt (v : Fin A.patternCount) (a b : P.BigLabels (J + F.ell)) :
       1 ≤ Real.sqrt (freshDensity F (N x) (A.pattern v) a) * Real.sqrt (freshDensity F (N x) (A.pattern v) b) ∧
@@ -122,7 +121,7 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
   have hdelta : (D - 1) + D * banCost ≤
       comparisonPolynomial F J * (L x) ^ (2 : ℕ) * t := by
     have hfirst : D - 1 ≤ (20 * (J + F.ell) * F.C₀) * (L x) ^ (2 : ℕ) * t :=
-      hDe.trans (by nlinarith only [hqeps])
+      hDe.trans (by linarith)
     have hsecond := (mul_le_mul_of_nonneg_right hD3 hban0).trans hban
     dsimp [comparisonPolynomial]
     nlinarith only [hfirst, hsecond]
@@ -134,12 +133,11 @@ theorem eventually_tiltedBanned_norm (F : FixedData) (J m : ℕ) (C₁ Eid : ℝ
         mul_le_mul hdelta hpat hp0 (by positivity)
       _ = comparisonPolynomial F J * (L x) ^ (2 + C₁) / pstar := by
         rw [Real.rpow_add hLpos, Real.rpow_two]
-        dsimp [t]
         ring
       _ ≤ _ := herr
   have hnorm := normBound_tiltedBannedKernel A (N x) ((L x) ^ (-Eid)) D atom hD hatom0
     (fun g => (hV g.val).ne') hb hatom hsqrt hideal theta forward
-  exact normBound_mono hnorm (by change (L x) ^ (-Eid) + ((D - 1) + D * banCost) * A.patternMass ≤ _; linarith)
+  exact normBound_mono hnorm (by linarith)
 
 
 end Erdos821.P3Clean

@@ -39,14 +39,9 @@ theorem sum_ite_and_three (s sp U : Finset ℕ) (A B C : ℕ → Prop) [Decidabl
     refine sum_congr rfl fun pl _ => ?_
     by_cases hB : B pl
     · rw [ite_eq_left hB, sum_filter]
-      refine sum_congr rfl fun u _ => ?_
-      by_cases hC : C u
-      · rw [ite_eq_left ⟨hA, hB, hC⟩, ite_eq_left hC]
-      · rw [ite_eq_right fun h => hC h.2.2, ite_eq_right hC]
-    · rw [ite_eq_right hB]
-      exact sum_eq_zero fun u _ => ite_eq_right fun h => hB h.2.1
-  · rw [ite_eq_right hA]
-    exact sum_eq_zero fun pl _ => sum_eq_zero fun u _ => ite_eq_right fun h => hA h.1
+      simp_all
+    simp_all
+  simp_all
 
 /-- The term `J_m(t) = (YV)⁻¹ ∑_{(p_s, p_l, u) ∈ m} χ(p_l) ψ₁(p_s p_l u/Y) c_u
 (p_s p_l u)^{i(t + σ)}` of one box, pair of classes and character `m`. -/
@@ -111,11 +106,11 @@ theorem twistedPoly_eq_sum_boxTerm {Y V : ℝ} (hY : 0 < Y) (s sp : Finset ℕ)
         ∑ m ∈ boxSet N₀ k, (if InBox m ps pl u then
           Erdos821.P5Marked.cchi k h m.2.2 (m.2.1.1 * m.2.1.2) * m.2.2 pl else 0) := by
     intro ps hps pl hpl u hu
-    rw [← phase_eq_sum_boxSet hk h (hN₀s ps hps) (hN₀sp pl hpl) (hN₀U u hu) (hcop pl hpl)]
+    rw [← phase_eq_sum_boxSet hk h (by grind) (by grind) (by grind) (by grind)]
     have hn : ((ps * pl * u : ℕ) : ℂ) ≠ 0 := by
-      have h₃ : 1 < u := (mem_Ioc.1 hu).1
-      have : ps * pl * u ≠ 0 := Nat.mul_ne_zero (Nat.mul_ne_zero (hs ps hps).ne'
-        (hsp pl hpl).ne') (by omega)
+      have h₃ : 1 < u := by grind
+      have : ps * pl * u ≠ 0 := Nat.mul_ne_zero (Nat.mul_ne_zero (by grind)
+        (by grind)) (by omega)
       exact_mod_cast this
     simp only [F, Erdos821.Blueprint.Analytic.e]
     rw [show ((t + σ : ℝ) : ℂ) * Complex.I = (σ : ℂ) * Complex.I + (t : ℂ) * Complex.I by
@@ -140,16 +135,15 @@ theorem spareBox_eq {A B : ℝ} (hB : 0 ≤ B) (j : ℕ) :
   · rintro ⟨⟨hpB, hp, hAp⟩, hj⟩
     obtain ⟨h₁, h₂⟩ := (boxIndex_eq_iff hp.two_le).1 hj
     refine ⟨⟨(Nat.floor_lt (by positivity)).2 (max_lt (by exact_mod_cast h₁) hAp),
-      Nat.le_floor (le_min (by rw [pow_succ] at h₂; exact_mod_cast (by linarith : p ≤ 2 * 2 ^ j))
+      Nat.le_floor (le_min (by rw [pow_succ] at h₂; exact_mod_cast (by omega))
         ?_)⟩, hp⟩
     · exact (Nat.le_floor_iff hB).1 hpB
   · rintro ⟨⟨h₁, h₂⟩, hp⟩
     have h₁' := (Nat.floor_lt (by positivity)).1 h₁
-    have h₂' := (Nat.le_floor_iff (le_min (by positivity) hB)).1 h₂
-    refine ⟨⟨Nat.le_floor (h₂'.trans (min_le_right _ _)), hp, lt_of_le_of_lt (le_max_right _ _)
-      h₁'⟩, (boxIndex_eq_iff hp.two_le).2 ⟨?_, ?_⟩⟩
+    have h₂' := (Nat.le_floor_iff (by positivity)).1 h₂
+    refine ⟨⟨Nat.le_floor (by grind), hp, by grind⟩, (boxIndex_eq_iff hp.two_le).2 ⟨?_, ?_⟩⟩
     · exact_mod_cast lt_of_le_of_lt (le_max_left _ _) h₁'
-    · have : (p : ℝ) ≤ 2 * 2 ^ j := h₂'.trans (min_le_left _ _)
+    · have : (p : ℝ) ≤ 2 * 2 ^ j := by grind
       rw [pow_succ]
       exact_mod_cast (by linarith : (p : ℝ) ≤ 2 ^ j * 2)
 
@@ -195,18 +189,18 @@ theorem norm_boxPoly_le {Y P V : ℝ} (hY : 0 < Y) (hP : 0 < P) (hV : 0 < V)
     refine (norm_sum_le _ _).trans (le_of_eq ?_)
     rw [card_eq_sum_ones, Nat.cast_sum, sum_mul]
     refine sum_congr rfl fun p hp => ?_
-    rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (hsP p hp), Complex.norm_real,
+    rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (by grind), Complex.norm_real,
       Real.norm_of_nonneg (by positivity)]
     simp
   have h₂ : ‖∑ p ∈ spN, χ p * (p : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤ #spN := by
     refine (norm_sum_le _ _).trans ?_
     rw [card_eq_sum_ones, Nat.cast_sum]
     refine sum_le_sum fun p hp => ?_
-    rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (hspN p hp), mul_one, Nat.cast_one]
+    rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (by grind), mul_one, Nat.cast_one]
     exact DirichletCharacter.norm_le_one χ _
   have h₃ : ‖∑ u ∈ uR, c u * (u : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤ ∑ u ∈ uR, ‖c u‖ := by
     refine (norm_sum_le _ _).trans (le_of_eq (sum_congr rfl fun u hu => ?_))
-    rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (huR u hu), mul_one]
+    rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (by grind), mul_one]
   gcongr
 
 /-- `⌊2^l⌋ = 2^l` and `⌊2 · 2^l⌋ = 2^{l+1}`. -/
@@ -238,7 +232,7 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
     BoxData x Cm CU vlo Y (2 ^ i) (2 ^ j) (2 ^ l) V (max (2 ^ j) A) (min (2 * 2 ^ j) B)
       (s.filter (fun p => boxIndex p = i ∧ p % k = α))
       ((Ioc 1 ⌊2 * Y⌋₊).filter (fun u => boxIndex u = l ∧ u % k = β)) k cf := by
-  have hL : 28 ≤ Real.log x := hf.big
+  have hL := hf.big
   have hx0 : 0 < x := by linarith [hf.box.2.1]
   set e := Real.exp (c * Real.log x / Real.log (Real.log x) ^ 20) with he
   have he0 : 0 < e := Real.exp_pos _
@@ -254,13 +248,12 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
   obtain ⟨hplB, hplP, hplA⟩ := mem_filter.1 hpl₁
   obtain ⟨hplj₁, hplj₂⟩ := (boxIndex_eq_iff hplP.two_le).1 hpl₂
   obtain ⟨hu₁, hu₂⟩ := mem_filter.1 hu
-  have hu2 : 2 ≤ u := (mem_Ioc.1 hu₁).1
+  have hu2 : 2 ≤ u := by grind
   obtain ⟨hul₁, hul₂⟩ := (boxIndex_eq_iff hu2).1 hu₂.1
   have hBpl : (pl : ℝ) ≤ B := (Nat.le_floor_iff (by
     by_contra h
     push Not at h
     rw [Nat.floor_of_nonpos h.le] at hplB
-    have := hplP.two_le
     simp_all)).1 (mem_Iic.1 hplB)
   -- real versions
   have rps₁ : (2 : ℝ) ^ i < ps := by exact_mod_cast hpsi₁
@@ -295,7 +288,7 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
   refine ⟨hY₁, hY₂, by linarith, by linarith, ?_, ?_, le_max_left _ _, min_le_left _ _, ?_, ?_,
     hPNR, hV, hk₁, hk₂, ?_, ?_, ?_⟩
   · -- `N ≥ exp(L/T²²)`
-    linarith [hf.m22, Real.exp_pos (Real.log x / Real.log (Real.log x) ^ 22)]
+    linarith [hf.m22]
   · -- `N ≤ x`
     have : x / e ≤ x := div_le_self hx0.le (by rw [he]; exact Real.one_le_exp (by positivity))
     linarith
@@ -308,7 +301,7 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
         8 * (Real.exp (Real.log x ^ (0.36 : ℝ)) * (x / e) * 2 ^ l) := by
       calc x * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ x * Real.exp (Real.log x ^ (0.38 : ℝ)) :=
             mul_le_mul_of_nonneg_left h3638 hx0.le
-        _ ≤ 8 * (2 ^ i * 2 ^ j * 2 ^ l) := hY₁.trans hY8
+        _ ≤ 8 * (2 ^ i * 2 ^ j * 2 ^ l) := by linarith
         _ ≤ 8 * (Real.exp (Real.log x ^ (0.36 : ℝ)) * (x / e) * 2 ^ l) := by gcongr
     have h₂ : e ≤ 8 * 2 ^ l := by
       have hpos : 0 < x * Real.exp (Real.log x ^ (0.36 : ℝ)) := by positivity
@@ -318,7 +311,7 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
         field_simp at this ⊢
         linarith
       exact le_of_mul_le_mul_left this hpos
-    linarith [hf.m22, Real.exp_pos (Real.log x / Real.log (Real.log x) ^ 22)]
+    linarith [hf.m22]
   · -- `R ≤ x`: `P N R ≤ 2Y`, `P ≥ 1/2`, `N ≥ e/2`, `Y ≤ x e^{L^{0.47}}`, `8 e^{L^{0.47}} ≤ e`
     have h₁ : (2 : ℝ) ^ l * (e / 4) ≤ 2 * Y := by
       calc (2 : ℝ) ^ l * (e / 4) = (1 / 2) * (e / 2) * 2 ^ l := by ring
@@ -337,19 +330,18 @@ theorem boxData_of_mem {x c Cm CU vlo : ℝ} (hc : 0 < c) (hf : TupleFacts c Cm 
     obtain ⟨h₁, h₂⟩ := (boxIndex_eq_iff hpP.two_le).1 hp₂.1
     refine ⟨hpP, by exact_mod_cast h₁, ?_⟩
     rw [pow_succ] at h₂
-    exact_mod_cast (by omega : p ≤ 2 * 2 ^ i)
+    exact_mod_cast (by omega)
   · intro v hv
     obtain ⟨hv₁, hv₂⟩ := mem_filter.1 hv
-    have hv2 : 2 ≤ v := (mem_Ioc.1 hv₁).1
+    have hv2 : 2 ≤ v := by grind
     obtain ⟨h₁, h₂⟩ := (boxIndex_eq_iff hv2).1 hv₂.1
     rw [(floor_two_pow l).1, (floor_two_pow l).2, mem_Ioc]
-    exact ⟨h₁, h₂⟩
+    omega
   · intro v hv
     obtain ⟨hv₁, -⟩ := mem_filter.1 hv
     obtain ⟨hv₁, hv₂⟩ := mem_Ioc.1 hv₁
     refine hcf v hv₁.le ?_
     have : (v : ℝ) ≤ 2 * Y := (Nat.cast_le.2 hv₂).trans (Nat.floor_le (by linarith))
-    have : 0 ≤ x ^ 2 := by positivity
     linarith
 
 /-- The conclusion of `eventually_integral_boxPoly_le_of_twist` at `x`. -/
@@ -394,28 +386,27 @@ theorem integral_sq_le_of_separated {L K KA At Cf E₁ E₂ Mb Y σ t₁ t₂ : 
     have : Continuous fun p : ℝ × ℝ => p.2 + (σ + 2 * Real.pi * p.1) := by fun_prop
     exact (hGc.comp this).norm
   have hen := integral_sq_le_of_le_integral_split (c := 1) (M := Mb) (R := L ^ Cf)
-    (h := fun ξ τ => ‖G (τ + (σ + 2 * Real.pi * ξ))‖) h₁₂ hai.norm (fun ξ => norm_nonneg _)
-    hh (fun _ _ => norm_nonneg _) (fun ξ τ => hMb _) hE₁0 (E₂ := E₂)
+    (h := fun ξ τ => ‖G (τ + (σ + 2 * Real.pi * ξ))‖) h₁₂ hai.norm (by simp)
+    hh (by simp) (by grind) hE₁0 (E₂ := E₂)
     (fun ξ hξ => by
       rw [intervalIntegral.integral_comp_add_right (fun τ => ‖G τ‖ ^ 2)]
-      exact hE₁ ξ hξ)
+      simp_all)
     (fun ξ => by
       rw [intervalIntegral.integral_comp_add_right (fun τ => ‖G τ‖ ^ 2)]
-      exact hE₂ ξ)
-    (F := fun t => ‖J t‖) (fun _ => norm_nonneg _) (fun t => by
+      simp_all)
+    (F := fun t => ‖J t‖) (by simp) (fun t => by
       rw [hJ, one_mul]
       refine (norm_integral_le_integral_norm _).trans (le_of_eq (integral_congr_ae
         (Filter.Eventually.of_forall fun ξ => ?_)))
       dsimp only
       rw [norm_mul, norm_mul, norm_ofReal_cpow_mul_I hY, mul_one, add_assoc])
   refine hen.trans ?_
-  have hW0 : 0 ≤ ∫ ξ, ‖a ξ‖ := integral_nonneg fun ξ => norm_nonneg _
+  have hW0 : 0 ≤ ∫ ξ, ‖a ξ‖ := by positivity
   have htail0 : 0 ≤ ∫ ξ in {ξ : ℝ | L ^ Cf < |ξ|}, ‖a ξ‖ :=
-    setIntegral_nonneg (measurableSet_lt measurable_const continuous_abs.measurable)
-      fun ξ _ => norm_nonneg _
+    by positivity
   rw [one_pow, one_mul]
   gcongr
-  exact hW0.trans ha₁
+  linarith
 
 /-- Separation of one term: `J_m(t) = ∫ a(ξ) Y^{-2πiξ} G(t + σ + 2πξ) dξ`. -/
 theorem boxTerm_eq_integral {a : ℝ → ℂ} (hai : Integrable a) {ψ₁ : ℝ → ℂ}
@@ -490,14 +481,13 @@ theorem integral_boxTerm_le {x c Cm Cf CU vlo As K KA At : ℝ} (hc : 0 < c) (hv
       rw [Nat.floor_of_nonpos hneg.le] at h
       have := hpl'.2.1.two_le
       omega
-    have hsmpos : ∀ n ∈ s.filter (fun p => boxIndex p = i ∧ p % k = α), 0 < n :=
+    have hsmpos :=
       fun n hn => (hd.hsP n hn).1.pos
     have hspNpos : ∀ n ∈ (Ioc ⌊max ((2 : ℝ) ^ j) A⌋₊ ⌊min (2 * (2 : ℝ) ^ j) B⌋₊).filter
         Nat.Prime, 0 < n := fun n hn => (mem_filter.1 hn).2.pos
     have hUmpos : ∀ n ∈ (Ioc 1 ⌊2 * Y⌋₊).filter (fun u => boxIndex u = l ∧ u % k = β),
         0 < n := fun n hn => by
-      have := (mem_Ioc.1 (mem_filter.1 hn).1).1
-      omega
+      grind
     have hP0 : (0 : ℝ) < 2 ^ i := by positivity
     refine integral_sq_le_of_separated (L := Real.log x) (K := K) (KA := KA) (At := At)
       (Cf := Cf) (Y := Y) (σ := σ) (t₁ := t₁) (t₂ := t₂)
@@ -519,9 +509,8 @@ theorem integral_boxTerm_le {x c Cm Cf CU vlo As K KA At : ℝ} (hc : 0 < c) (hv
     · positivity
     · positivity
     · have ht : τ - (σ + 2 * Real.pi * ξ) ∈ Set.Icc t₁ t₂ :=
-        ⟨by linarith [hτ.1], by linarith [hτ.2]⟩
-      have := hrange _ ht ξ hξ
-      rwa [sub_add_cancel] at this
+        ⟨by grind, by grind⟩
+      grind
   · -- an irrelevant box: `J_m = 0`
     push Not at hrel
     have h0 : ∀ t, boxTerm Y V s ((Iic ⌊B⌋₊).filter fun p : ℕ => p.Prime ∧ A < p) cf ψ₁ σ
@@ -552,16 +541,16 @@ theorem shifted_range {L Cm Cf E B' T₀ t σ ξ : ℝ} (hL : 28 ≤ L) (hCf : 0
   set Mx := max Cm Cf
   have hL0 : 0 < L := by linarith
   have hL1 : 1 ≤ L := by linarith
-  have hCmM : L ^ Cm ≤ L ^ Mx := Real.rpow_le_rpow_of_exponent_le hL1 (le_max_left _ _)
-  have hCfM : L ^ Cf ≤ L ^ Mx := Real.rpow_le_rpow_of_exponent_le hL1 (le_max_right _ _)
-  have hM1 : 1 ≤ L ^ Mx := Real.one_le_rpow hL1 (le_trans hCf.le (le_max_right _ _))
+  have hCmM : L ^ Cm ≤ L ^ Mx := Real.rpow_le_rpow_of_exponent_le hL1 (by grind)
+  have hCfM : L ^ Cf ≤ L ^ Mx := Real.rpow_le_rpow_of_exponent_le hL1 (by grind)
+  have hM1 : 1 ≤ L ^ Mx := Real.one_le_rpow hL1 (by positivity)
   have hpi : |2 * Real.pi * ξ| ≤ 7 * L ^ Mx := by
-    rw [abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 2 * Real.pi)]
+    rw [abs_mul, abs_of_pos (by positivity)]
     have := Real.pi_lt_d2
     have : 0 ≤ |ξ| := abs_nonneg ξ
     nlinarith
   have hs : |σ + 2 * Real.pi * ξ| ≤ 8 * L ^ Mx :=
-    (abs_add_le _ _).trans (by linarith)
+    by grind
   have hL2 : (784 : ℝ) ≤ L ^ (2 : ℝ) := by
     rw [Real.rpow_two]
     nlinarith
@@ -575,12 +564,8 @@ theorem shifted_range {L Cm Cf E B' T₀ t σ ξ : ℝ} (hL : 28 ≤ L) (hCf : 0
       _ = L ^ (E + (Mx + 2)) := by rw [Real.rpow_add hL0, Real.rpow_add hL0]; ring
       _ ≤ L ^ B' := Real.rpow_le_rpow_of_exponent_le hL1 hB₂
   constructor
-  · have h : |t| ≤ |t + (σ + 2 * Real.pi * ξ)| + |σ + 2 * Real.pi * ξ| := by
-      have := abs_add_le (t + (σ + 2 * Real.pi * ξ)) (-(σ + 2 * Real.pi * ξ))
-      rwa [add_neg_cancel_right, abs_neg] at this
-    linarith
-  · have h := abs_add_le t (σ + 2 * Real.pi * ξ)
-    linarith
+  · grind
+  grind
 
 /-- `L^a L^b L^c L^d L^e = L^{a+b+c+d+e}` for `L > 0`. -/
 theorem rpow_mul_five {L : ℝ} (hL : 0 < L) (a b c d e : ℝ) :
@@ -620,7 +605,7 @@ theorem tupleBound_le {L Cm K CU As A' At A₀ KA κ' vlo n : ℝ} (hL : 1 ≤ L
     exact Real.rpow_le_rpow_of_exponent_le hL (by linarith)
   have h₂ : Q * (L ^ K * L ^ (-(2 * A')) * L ^ (2 * CU + 4) * L ^ K) ≤ L ^ (-A₀) := by
     rw [hQ, ← mul_assoc, ← mul_assoc, ← mul_assoc, rpow_mul_five hL0]
-    exact Real.rpow_le_rpow_of_exponent_le hL (by linarith)
+    exact by grind
   have h₃ : Q * (L ^ K * L ^ (2 * CU + 5) * L ^ (-At) * 1) ≤ L ^ (-A₀) := by
     rw [mul_one, hQ, ← mul_assoc, ← mul_assoc, ← Real.rpow_add hL0, ← Real.rpow_add hL0,
       ← Real.rpow_add hL0]
@@ -659,7 +644,7 @@ theorem boxCount_facts {x : ℝ} (hx0 : 0 < x) (hL : 1 ≤ Real.log x) :
     1 ≤ ⌈3 * Real.log x⌉₊ ∧ (⌈3 * Real.log x⌉₊ : ℝ) ≤ 4 * Real.log x ∧
       x ^ 2 ≤ (2 : ℝ) ^ ⌈3 * Real.log x⌉₊ := by
   set L := Real.log x
-  refine ⟨Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne', ?_, ?_⟩
+  refine ⟨Nat.one_le_iff_ne_zero.2 (by positivity), ?_, ?_⟩
   · linarith [Nat.ceil_lt_add_one (show (0 : ℝ) ≤ 3 * L by linarith)]
   · rw [← Real.rpow_natCast (2 : ℝ) ⌈3 * L⌉₊]
     calc x ^ 2 = Real.exp (2 * L) := by

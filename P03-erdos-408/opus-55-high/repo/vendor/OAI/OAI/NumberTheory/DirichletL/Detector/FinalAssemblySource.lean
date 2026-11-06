@@ -14,10 +14,9 @@ open Filter Asymptotics
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues
 open ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
 
-def normalizedProbe {K : ℕ} (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
-    (H : Subgroup (O ⧸ M)ˣ) (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+def normalizedProbe {K : ℕ} (M : Ideal HeckeFamily.O) [NeZero M] [Finite (HeckeFamily.O ⧸ M)]
+    (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     [NeZero (∏P∈S,P)] (ell : Fin K→ℝ) (a b : ℝ) (W : Fin K→ℝ→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (η : Character) (Z : ℝ) : ℂ :=
   let Yp := fun j=>Z^(ell j)
@@ -37,9 +36,9 @@ lemma isBigO_rpow_of_eventual_norm_bound (f : ℝ→ℂ) (r : ℝ)
   simpa only [Real.norm_eq_abs,abs_of_nonneg (Real.rpow_nonneg hZ r)] using hb
 
 theorem normalizedProbe_low {K : ℕ}
-    (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
-    (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (M : Ideal HeckeFamily.O) [NeZero M] [Finite (HeckeFamily.O ⧸ M)]
+    (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (a b B loss : ℝ) (ha : 0<a) (hab : a≤b) (hloss : 0<loss)
     (ell : Fin K→ℝ) (hell : ∀j,0<ell j) (hinj : Function.Injective ell) (hsum : ∑j,ell j=1/6)
     (W : Fin K→ℝ→ℝ) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hcompact : ∀j,HasCompactSupport (W j))
@@ -59,12 +58,12 @@ theorem normalizedProbe_low {K : ℕ}
   apply isBigO_rpow_of_eventual_norm_bound
   exact ⟨C,hC,hb.mono (fun Z h=>h.2)⟩
 
-theorem actual_source_analytic (S : Finset (Ideal O)) (hS : SourceExclusions S) (η : Character) :
+theorem actual_source_analytic (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (η : Character) :
     (∀I,idealCoeff (η.excludePrimes S hS.prime) I=
       if IsCoprime I (η.excludePrimes S hS.prime).modulus then idealCoeff η I else 0) ∧
     AnalyticOnNhd ℂ (sourceCorrection η S) {s : ℂ|7/8<s.re} ∧
-    (∀s : ℂ,7/8<s.re→‖sourceCorrection η S s-1‖≤1/2) := by
-  exact ⟨excludePrimes_mask η S hS.prime,
+    (∀s : ℂ,7/8<s.re→‖sourceCorrection η S s-1‖≤1/2) :=
+  ⟨excludePrimes_mask η S hS.prime,
     (sourceCorrection_differentiable η S hS).analyticOnNhd (Complex.isOpen_re_gt _),
     sourceCorrection_bound η S hS⟩
 

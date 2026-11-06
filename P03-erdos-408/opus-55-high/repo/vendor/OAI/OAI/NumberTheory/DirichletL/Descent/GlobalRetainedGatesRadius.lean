@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
+open InverseMoment InverseFirstPriorityParents
+open InverseWholePriorityRetainedSource InverseInitialArithmetic
 open InverseSecondUniformCutoff
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open SecondPassArithmetic InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def supportedRetainedSource (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
@@ -75,8 +74,7 @@ theorem supported_cell_row_gates (hp : ∀i,p i≠0)
   have hgates := actual_cell_uniform_source_gates p hp source Z M r ell V delta A B j t eta tau L
     hZ heta hbin hL0 hL (supported_uniform_frequency_gate p extra original negative J lists pool Z delta eta L _ tau b X)
   refine ⟨?_,actual_cell_radius_nonnegative_on_keys p source Z M ell A t V j eta hZ hgates⟩
-  intro x hx
-  exact hgates (index p x) x (Finset.mem_filter.mpr ⟨hx,rfl⟩)
+  simp_all
 
 end SevenEighths.InverseMomentGlobalRetainedGates
 end

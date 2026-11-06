@@ -8,7 +8,7 @@ public import Erdos821.S34.RationalPhase
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -49,7 +49,7 @@ theorem dyadic_log_multiplier_error (G : PrimeGroups) (a b : Fin G.size → ℕ)
     have hlB := (kernel_log_localization G b Q h ξ hh _ _ hH).le
     calc
       _ = |(Real.log (product G a D) - Real.log (product G a X)) +
-        (Real.log (product G b E) - Real.log (product G b Y))| := by congr 1; ring
+        (Real.log (product G b E) - Real.log (product G b Y))| := by ring
       _ ≤ _ := abs_add_le _ _
       _ ≤ 2 * h := by linarith
   have hcoeff : |ζ| + 2 * Real.pi * |β| * Real.exp (Real.log (16 * (U * V))) ≤
@@ -59,7 +59,7 @@ theorem dyadic_log_multiplier_error (G : PrimeGroups) (a b : Fin G.size → ℕ)
     nlinarith
   have ht := logMultiplier_difference ζ β _ _ (Real.log (16 * (U * V))) hlogX hlogD
   have he := mul_le_mul hcoeff hlogdist (abs_nonneg _) (by positivity : 0 ≤ |ζ| + 64 * Real.pi * S)
-  exact ht.trans (by convert he using 1; ring)
+  linarith
 
 theorem dyadic_multiplier_freeze (G : PrimeGroups) (a b : Fin G.size → ℕ)
     (Q : ℕ) (h ξ U V S β ζ : ℝ) (u : ℤ) (r : ℕ)
@@ -90,13 +90,8 @@ theorem dyadic_multiplier_freeze (G : PrimeGroups) (a b : Fin G.size → ℕ)
     (fun D E hK hH => dyadic_log_multiplier_error G a b Q h ξ U V S β ζ hh hh2 hU hV hS hβ X D Y E hX hY hK hH)
   convert ht using 1
   · simp only [expect, Finset.mul_sum]
-    congr 1
-    apply Finset.sum_congr rfl
-    intro D _
-    apply Finset.sum_congr rfl
-    intro E _
-    ring
-  · ring
+    grind
+  linarith
 
 end
 end Erdos821.S34Core

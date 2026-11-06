@@ -37,7 +37,7 @@ private theorem card_arcCentres_le (R : ℕ) : ((arcCentres R).card : ℝ) ≤ 4
         push_cast
         nlinarith [show (R : ℝ) ≤ (R : ℝ) ^ 2 by
           rcases Nat.eq_zero_or_pos R with h0 | h0
-          · simp [h0]
+          · simp_all
           · nlinarith [show (1 : ℝ) ≤ R by exact_mod_cast h0]]
 
 /-- **One shifted bilinear form (S8–S10).** For `j ≥ 4` there is `K > 0` such that: for
@@ -72,13 +72,13 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
   have hY0 : 0 < Y := by linarith
   have hH0 : 0 < H := by linarith
   have hsupp : ∀ n ∈ s, Y ≤ (n : ℝ) ∧ (n : ℝ) ≤ 2 * Y := fun n hn =>
-    ⟨Nat.ceil_le.1 (Finset.mem_Icc.1 hn).1,
-      (Nat.le_floor_iff (by positivity)).1 (Finset.mem_Icc.1 hn).2⟩
+    ⟨Nat.ceil_le.1 (by grind),
+      (Nat.le_floor_iff (by positivity)).1 (by grind)⟩
   set F := localAdditivePolynomial s (fun n => star (f n)) with hF
   set G := localAdditivePolynomial s' g with hG
   set M : ℝ → ℂ := fun θ => ∑ l ∈ Ls, c l * e (-θ * D l) with hM
-  have hA0 : 0 ≤ A := (Finset.sum_nonneg fun n _ => by positivity).trans hfA
-  have hB0 : 0 ≤ B := (Finset.sum_nonneg fun n _ => by positivity).trans hgB
+  have hA0 : 0 ≤ A := (Finset.sum_nonneg (by simp)).trans hfA
+  have hB0 : 0 ≤ B := (Finset.sum_nonneg (by simp)).trans hgB
   set Z : ℝ := ((1 + T₀ * H / (2 * Y)) ^ (j - 4))⁻¹ with hZ
   have hZ0 : 0 ≤ Z := by
     have : 0 ≤ T₀ * H / (2 * Y) := div_nonneg (by linarith) (by positivity)
@@ -103,7 +103,7 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
         intervalIntegral.integral_comp_neg (fun t => ‖twistedPoly Y f (-u) r t‖ ^ 2), neg_neg]
       exact mul_le_mul_of_nonneg_left (hΞ₀ r u hr₁ hr₂) (by positivity)
     refine h.trans ?_
-    have hsA : ∑ n ∈ s, ‖f n‖ ^ 2 ≤ A := hfA
+    have hsA := hfA
     calc K / Y * (∫ t in (-T₀)..T₀,
           ‖∑ n ∈ s, star (f n) * e ((u : ℝ) / r * n) * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2) +
           K * Z * (1 / H + 2 * Real.log (4 * Y)) * ∑ n ∈ s, ‖f n‖ ^ 2 +
@@ -111,8 +111,7 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
         ≤ K / Y * (Y ^ 2 * Ξ₀) + K * Z * (1 / H + 2 * Real.log (4 * Y)) * A +
           K * (H / Y) ^ 2 * A := by gcongr
       _ = E := by
-          rw [hE]
-          field_simp
+          grind
   -- the arc split
   have hFA : ∫ θ in (0 : ℝ)..1, ‖F θ‖ ^ 2 ≤ A := by
     rw [hF, integral_norm_localAdditivePolynomial_sq]
@@ -123,7 +122,7 @@ theorem exists_norm_sum_shift_le (j : ℕ) (hj : 4 ≤ j) :
   have hMε' : ∀ θ ∈ Set.Icc (0 : ℝ) 1, (∀ c ∈ arcCentres R, 1 / H < |θ - c|) → ‖M θ‖ ≤ ε := by
     intro θ hθ hc
     refine hMε θ hθ fun r u hr₁ hr₂ hu₁ hu₂ => hc _ (Finset.mem_image.2 ⟨(r, u), ?_, rfl⟩)
-    exact Finset.mem_product.2 ⟨Finset.mem_Icc.2 ⟨hr₁, hr₂⟩, Finset.mem_Icc.2 ⟨hu₁, hu₂⟩⟩
+    exact by grind
   have hMcont : Continuous M := by
     simp only [hM]
     fun_prop

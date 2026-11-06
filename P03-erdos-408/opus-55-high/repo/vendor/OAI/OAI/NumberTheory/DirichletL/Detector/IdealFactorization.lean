@@ -8,11 +8,10 @@ public import Mathlib.RingTheory.UniqueFactorizationDomain.Finsupp
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open UniqueFactorizationMonoid
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev PrimeIdeal := {P : Id // Prime P}
 
@@ -42,24 +41,19 @@ lemma primeValuations_mul (I J : Id) (hI : I≠0) (hJ : J≠0) :
   ext Q
   simp only [primeValuations_apply,normalizedFactors_irreducible P.property.irreducible,
     normalize_eq,Multiset.count_singleton,Finsupp.single_apply]
-  by_cases h : Q=P
-  · subst Q
-    simp
-  · have hv : Q.val≠P.val := fun hh=>h (Subtype.ext hh)
-    simp [Ne.symm h,hv]
+  grind
 
 lemma primeValuations_pow (I : Id) (n : ℕ) :
     primeValuations (I^n)=n • primeValuations I := by
   ext P
-  simp only [primeValuations_apply,normalizedFactors_pow,Multiset.count_nsmul,
-    Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
+  simp
 
 @[simp] lemma idealFromValuations_zero : idealFromValuations 0=1 := by
   simp [idealFromValuations]
 
 lemma idealFromValuations_add (v w : PrimeIdeal →₀ ℕ) :
-    idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w := by
-  exact Finsupp.prod_add_index' (fun _=>pow_zero _) (fun _ _ _=>pow_add _ _ _)
+    idealFromValuations (v+w)=idealFromValuations v*idealFromValuations w :=
+  Finsupp.prod_add_index' (by simp) (by grind)
 
 @[simp] lemma idealFromValuations_single (P : PrimeIdeal) (n : ℕ) :
     idealFromValuations (Finsupp.single P n)=P.val^n := by
@@ -97,7 +91,7 @@ lemma primeIdeal_coprime (P Q : PrimeIdeal) (h : P≠Q) : IsCoprime P.val Q.val 
   let : Q.val.IsPrime := Ideal.isPrime_of_prime Q.property
   let : P.val.IsMaximal := Ideal.IsPrime.isMaximal inferInstance P.property.ne_zero
   let : Q.val.IsMaximal := Ideal.IsPrime.isMaximal inferInstance Q.property.ne_zero
-  exact Ideal.isCoprime_of_isMaximal (fun hh=>h (Subtype.ext hh))
+  exact Ideal.isCoprime_of_isMaximal (by grind)
 
 lemma prime_coprime_idealFromValuations (P : PrimeIdeal) (v : PrimeIdeal →₀ ℕ)
     (hP : v P=0) : IsCoprime P.val (idealFromValuations v) := by
@@ -105,9 +99,7 @@ lemma prime_coprime_idealFromValuations (P : PrimeIdeal) (v : PrimeIdeal →₀ 
   intro Q hQ
   apply IsCoprime.pow_right
   apply primeIdeal_coprime
-  intro hh
-  subst Q
-  exact Finsupp.mem_support_iff.mp hQ hP
+  grind
 
 def finsuppPairEquiv {α β γ : Type*} [Zero β] [Zero γ] :
     ((α→₀β)×(α→₀γ)) ≃ (α→₀(β×γ)) where

@@ -30,15 +30,12 @@ lemma source_length_bound (U : ℝ) (hU : 2 ≤ U) :
       norm_num
     rw [hfour]
     norm_num
-  rw [he] at hm
-  push_cast
-  linarith
+  grind
 
 lemma source_pair_count_bound (U : ℝ) (hU : 2 ≤ U) :
     (((length (⌈2*U^21⌉₊ : ℝ)+1 : ℕ) : ℝ)^2) ≤ 625*(Real.logb 2 U)^2 := by
   have h := source_length_bound U hU
-  have hl : 0 ≤ Real.logb 2 U := Real.logb_nonneg (by norm_num) (by linarith)
-  nlinarith [sq_nonneg (((length (⌈2*U^21⌉₊ : ℝ)+1 : ℕ) : ℝ)-25*Real.logb 2 U)]
+  nlinarith
 
 end SevenEighths.HeckeDetectorBudget
 

@@ -8,7 +8,6 @@ public import Mathlib.Data.Fintype.CardEmbedding
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -31,20 +30,14 @@ theorem smallPrefixFibre_nonempty (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.
   obtain ⟨hinj, hzero, hprefix⟩ := (Finset.mem_filter.mp ha).2
   refine ⟨?_, ?_, ?_⟩
   · intro i j hij
-    apply Fin.ext
-    have hh := congrArg Fin.val (hinj ((hprefix i).trans (hij.trans (hprefix j).symm)))
-    exact hh
-  · intro j
-    rw [← hprefix j]
-    exact hzero _
+    grind
+  · grind
   · have hcard : (Finset.univ.image a).card = J + ell := by
       rw [Finset.card_image_of_injective _ hinj]
       simp
     rw [← hcard]
     apply Finset.card_le_card
-    intro p hp
-    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hp
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hzero _⟩
+    grind
 
 theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
     (d : Fin J → P.Prime g) (hd : Function.Injective d) (hy : ∀ j, y (d j) = 0) :
@@ -71,18 +64,14 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
         refine ⟨Finset.mem_filter.mpr ⟨Finset.mem_univ _, hzero _⟩, ?_⟩
         intro hp
         obtain ⟨j, _, hj⟩ := Finset.mem_image.mp hp
-        have heq : Fin.castAdd ell j = Fin.natAdd J i := ha ((hprefix j).trans hj)
+        have heq := ha ((hprefix j).trans hj)
         have hv := congrArg Fin.val heq
         simp only [Fin.val_castAdd, Fin.val_natAdd] at hv
         omega⟩
       inj' := by
         intro i j hij
         obtain ⟨ha, _, _⟩ := (Finset.mem_filter.mp a.property).2
-        have hh := ha (congrArg Subtype.val hij)
-        apply Fin.ext
-        have hv := congrArg Fin.val hh
-        simp only [Fin.val_natAdd] at hv
-        omega
+        grind
     }
   have hinj : Function.Injective suffix := by
     intro a b hab
@@ -91,7 +80,7 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
     refine Fin.addCases (fun j => ?_) (fun j => ?_) i
     · have ha := ((Finset.mem_filter.mp a.property).2).2.2 j
       have hb := ((Finset.mem_filter.mp b.property).2).2.2 j
-      exact ha.trans hb.symm
+      simp_all
     · exact congrArg Subtype.val (congrArg (fun f : Fin ell ↪ {p // p ∈ B} => f j) hab)
   have hc := Fintype.card_le_of_injective suffix hinj
   simpa only [Fintype.card_coe, Fintype.card_embedding_eq, Fintype.card_fin, hB] using hc

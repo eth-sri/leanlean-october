@@ -28,8 +28,8 @@ theorem sum_Icc_ite_Ioc_real {mu δ : ℝ} (hmu : 0 ≤ mu) (hδ : δ ≤ 1) (f 
     obtain ⟨h1, h2⟩ := mem_Ioc.1 hn
     have : mu < n := (Nat.floor_lt hmu).1 h1
     exact mem_Icc.2 ⟨Nat.ceil_le.2 this.le, h2.trans (Nat.floor_le_floor (by nlinarith))⟩
-  rw [← sum_subset hsub fun n _ hn => by simp only [hn, ↓reduceIte]]
-  exact sum_congr rfl fun n hn => by simp only [hn, ↓reduceIte]
+  rw [← sum_subset hsub fun n _ hn => by simp_all]
+  simp_all
 
 /-- The data of the endpoint expansion at `x`: the cluster layout, the harmonic masses, small
 band primes, and the bound `𝒩` for the remainders on `[1, x²]`. -/
@@ -75,8 +75,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
     obtain ⟨hn1, hn2⟩ := mem_Icc.1 hn
     have hlm : lam < m := (Nat.floor_lt (by linarith)).1 hm1
     have hm2' : (m : ℝ) ≤ lam * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < m := by linarith
-      exact_mod_cast this.ne')).1 hm2
+      omega)).1 hm2
     have hmun : mu ≤ n := Nat.ceil_le.1 hn1
     have hn2' : (n : ℝ) ≤ 2 * mu := (Nat.le_floor_iff (by linarith)).1 hn2
     have hm2 : 2 ≤ m := by
@@ -102,7 +101,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
         markedWeight Finset.univ q (fun i => band x (distExponent K x S i)) (m * n - 1)| ≤
       C₂ * (lam * mu) * Real.log x ^ (-12 : ℝ) := by
     intro S hS
-    have hd : ∀ c, distIndex S c < N' := fun c =>
+    have hd := fun c =>
       mem_range.1 (((mem_clusterSets.1 hS) c).2 (distIndex_mem ((mem_clusterSets.1 hS) c).1))
     have hwin : ∀ i, 11 / 100 ≤ distExponent K x S i ∧ distExponent K x S i ≤ 19 / 100 :=
       fun i => inertExponent_mem hE.one_le_K hE.logLog_pos hE.layout i.isLt (hd i)
@@ -143,7 +142,7 @@ theorem abs_box_main_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ C₂ x 𝒩 : ℝ}
                 ℝ) : ℂ)‖ := by rw [Complex.norm_real, Real.norm_eq_abs]
       _ ≤ _ := by
           push_cast
-          exact hb
+          omega
   -- expand the endpoint and sum over the monomials
   have hexp : ∑ m ∈ Ioc ⌊lam⌋₊ ⌊lam * (1 + δ)⌋₊, ∑ n ∈ Ioc ⌊mu⌋₊ ⌊mu * (1 + δ)⌋₊,
         endpoint q cw K CN x u v B (m * n - 1) * primeProxyDiff x γ j m * βc n =

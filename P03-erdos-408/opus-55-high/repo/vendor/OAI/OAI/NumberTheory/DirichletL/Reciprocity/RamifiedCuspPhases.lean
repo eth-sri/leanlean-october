@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,44 +31,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicKubota
 
-open scoped Classical MatrixGroups BigOperators
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
+open scoped Classical MatrixGroups
+open CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def actualCubeCuspPhaseSum (A:levelTwo) (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
@@ -119,7 +99,7 @@ theorem actualCubeCuspPhaseSum_coprime (A:levelTwo) (p:Eis) (hp:Prime p)
   calc
     actualCubeCuspPhaseSum A p hp hprimary w = ∑' r,phi (e.symm (a r)) := by
       unfold actualCubeCuspPhaseSum
-      exact tsum_congr hpoint
+      grind
     _ = ∑' r,phi (e.symm r) := a.tsum_eq (fun r => phi (e.symm r))
     _ = ∑' s,phi s := e.symm.tsum_eq phi
     _ = ∑j:Fin 4,w j*∑' b:CubicUnitResidue (p^(3-j.val)),cubeStratumSymbol p ((A:SL(2,Eis)) 1 0) j b := by
@@ -139,7 +119,7 @@ theorem actualCubeCuspPhaseSum_dvd (A:levelTwo) (p:Eis) (hp:Prime p)
     (GaussianShiftedPartition.representative (p^3) r) hp hprimary
   have hpoint (r:Eis⧸Ideal.span {p^3}):
       w (d r).exponent*complexCharacter ⟨(d r).matrix*(A:SL(2,Eis))⁻¹,(d r).congruent⟩=w 0 := by
-    have hj:((d r).exponent:ℕ)=0:=cube_exponent_zero_of_lower_divisible
+    have hj:=cube_exponent_zero_of_lower_divisible
       (A:SL(2,Eis)) (d r).matrix p _ _ hp hC (d r).first
     have hj':(d r).exponent=0:=Fin.ext hj
     let N:levelTwo:=⟨(d r).matrix,comparison_levelTwo A (d r).matrix (d r).congruent⟩
@@ -149,14 +129,14 @@ theorem actualCubeCuspPhaseSum_dvd (A:levelTwo) (p:Eis) (hp:Prime p)
       (by simpa only [hj,pow_zero,one_mul] using (d r).first)
       (by simpa only [hj,Nat.sub_zero] using (d r).lower_eq hp.ne_zero)
       (d r).congruent
-    change w (d r).exponent*complexCharacter ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,(d r).congruent⟩=w 0
+    change w (d r).exponent*complexCharacter ⟨(N:SL(2,Eis))*(A:SL(2,Eis))⁻¹,by grind⟩=w 0
     rw [hphase,hj',mul_one]
   calc
     actualCubeCuspPhaseSum A p hp hprimary w = ∑' r:Eis⧸Ideal.span {p^3},w 0 := by
       unfold actualCubeCuspPhaseSum
-      exact tsum_congr hpoint
+      grind
     _ = (Nat.card (Eis⧸Ideal.span {p^3}):ℂ)*w 0 := by
-      rw [tsum_const,nsmul_eq_mul]
+      simp
     _ = _ := by
       change (Ideal.absNorm (Ideal.span {p^3}):ℂ)*w 0 = _
       rw [←Ideal.span_singleton_pow,map_pow,Nat.cast_pow]
@@ -167,10 +147,10 @@ end CubicKubota
 namespace CubicEisenstein
 
 section
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
 section
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "ramLambda" => (omega-1:Eis)
 
@@ -196,8 +176,7 @@ lemma onceCusp_scale_complement (u:Eisˣ) : onceCuspScale u*onceCuspComplement u
 lemma onceCusp_scale_ne_zero (u:Eisˣ) : onceCuspScale u≠0 := by
   intro h
   have hh:=onceCusp_scale_complement u
-  rw [h,zero_mul] at hh
-  exact (by norm_num : (0:Eis)≠3) hh
+  simp_all
 
 lemma onceCusp_scale_lambda (u:Eisˣ) : (3:Eis)∣onceCuspScale u*ramLambda := by
   refine ⟨(u:Eis)*omega^2,?_⟩
@@ -249,18 +228,14 @@ lemma onceRamifiedToPrimitive_bijective (u:Eisˣ) :
       change omega^j.val*a.val=omega^k.val*b.val
       linear_combination hsub
     have hp:=halfPrimaryFromAssociate_injective hassoc
-    have hj:j=k:=congrArg Prod.fst hp
-    have hab:a=b:=congrArg Prod.snd hp
-    subst k
-    subst b
-    rfl
+    grind
   · intro r
     obtain ⟨k,hk⟩:=r.2.2.1
     let d:PrimaryLower:=⟨r.val 1,r.2.2.2⟩
     let b:HalfPrimary:=⟨onceCuspComplement u*k+d.val,by
       have hh:=dvd_add ((onceCusp_complement_lambda u).mul_right k)
         (halfPrimary_lambda_dvd_three.trans d.2)
-      convert hh using 1 ;ring⟩
+      grind⟩
     let p:=halfPrimaryAssociateEquiv.symm b
     have hp:omega^p.1.val*p.2.val=b.val:=
       congrArg Subtype.val (halfPrimaryAssociateEquiv.apply_symm_apply b)
@@ -269,17 +244,17 @@ lemma onceRamifiedToPrimitive_bijective (u:Eisˣ) :
       rw [add_sub_cancel_right,←mul_assoc,onceCusp_scale_complement,hk]
     have hcop:IsCoprime p.2.val d.val:=by
       have h0:IsCoprime (b.val-d.val) d.val:=
-        (hr ▸ r.2.1).of_isCoprime_of_dvd_left (dvd_mul_left _ _)
+        (hr ▸ r.2.1).of_isCoprime_of_dvd_left (by simp)
       have hb:IsCoprime b.val d.val:=by
         apply IsCoprime.symm
-        exact (isCoprime_right_congr_of_dvd d.val (b.val-d.val) b.val ⟨-1,by ring⟩).mp h0.symm
+        exact (isCoprime_right_congr_of_dvd d.val (b.val-d.val) b.val (by simp)).mp h0.symm
       rw [←hp] at hb
-      exact hb.of_isCoprime_of_dvd_left (dvd_mul_left _ _)
+      exact hb.of_isCoprime_of_dvd_left (by simp)
     refine ⟨(p.1,⟨p.2,d,hcop⟩),Subtype.ext ?_⟩
     funext i
     fin_cases i
     · change onceCuspScale u*(omega^p.1.val*p.2.val-d.val)=r.val 0
-      rw [hp,hr]
+      simp_all
     · rfl
 
 def onceRamifiedEquiv (u:Eisˣ) : OnceRamifiedData≃PrimitiveRow :=
@@ -302,7 +277,7 @@ lemma onceRamified_row_phase (u:Eisˣ) (p:OnceRamifiedData) :
 
 end
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def diagonalPrimitiveMap (u:Eisˣ) (v:PrimitiveRow) : PrimitiveRow :=
@@ -349,14 +324,11 @@ lemma rowOperator_unitCuspDiagonal (u:Eisˣ) (v:PrimitiveRow) :
     have hu : eisEmbedding (↑u⁻¹ : Eis) * eisEmbedding (u : Eis) = 1 := by
       rw [← map_mul]
       simp
-    calc
-      _ = (eisEmbedding (↑u⁻¹ : Eis) * eisEmbedding (u : Eis)) *
-          (eisEmbedding (v.val 0) * eisEmbedding (u : Eis)) := by rw [hu, one_mul]
-      _ = _ := by ring
+    grind
   · change eisEmbedding (v.val 0) * eisEmbedding (0 : Eis) +
       eisEmbedding (v.val 1) * eisEmbedding (↑u⁻¹ : Eis) =
       eisEmbedding (↑u⁻¹ : Eis) * eisEmbedding (v.val 1)
-    simp [mul_comm]
+    grind
 
 lemma rowEnergy_unit_smul (u:Eisˣ) (v:Fin 2→ℂ) :
     rowEnergy (eisEmbedding (u:Eis) • v)=rowEnergy v := by
@@ -385,10 +357,9 @@ lemma diagonal_ray_summand (u:Eisˣ) (g:SL(2,ℂ)) (s:ℂ) (v:PrimitiveRow) :
 end
 
 section
-open MeasureTheory
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def affineLowerTerm (q r:Eis) (z:ℂ) (v:ℝ) (s:ℂ) (a d:Eis) : ℂ :=
@@ -415,8 +386,7 @@ lemma onceRamified_summand (u:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OnceRam
     rw [embeddedRow, primitiveRowEquiv_symm_row, rowOperator_lowerCusp]
     funext i
     fin_cases i <;>
-      simp [onceRamifiedEquiv, Equiv.ofBijective_apply, onceRamifiedToPrimitive,
-        r, map_mul, map_sub, mul_sub, mul_assoc]
+      simp [onceRamifiedEquiv, onceRamifiedToPrimitive, r, mul_sub, mul_assoc]
   have hr0:r≠0:=by
     intro hh
     have he:=congrFun hh 1
@@ -427,7 +397,7 @@ lemma onceRamified_summand (u:Eisˣ) (z:ℂ) (v:ℝ) (hv:0<v) (s:ℂ) (p:OnceRam
     eisEmbedding (symbol p.2.2.val.val p.2.1.val))*((v/heightDenominator z v r:ℝ):ℂ)^s
   have hi:((v/heightDenominator z v r:ℝ):ℂ)=(((heightDenominator z v r/v:ℝ):ℂ))⁻¹:=by
     simp only [Complex.ofReal_div,inv_div]
-  rw [hi,Complex.inv_cpow_ofReal_nonneg (div_nonneg hp.le hv.le),Complex.cpow_neg]
+  rw [hi,Complex.inv_cpow_ofReal_nonneg (by positivity),Complex.cpow_neg]
 
 def diagonalOnceCuspIndex (u t:Eisˣ) : OnceRamifiedData≃CuspCosets :=
   (onceRamifiedEquiv t).trans ((diagonalPrimitiveEquiv u).symm.trans primitiveRowEquiv.symm)
@@ -495,9 +465,8 @@ theorem hasSum_diagonal_once_integrals (u t:Eisˣ) (v:ℝ) (hv:0<v) (s freq:ℂ)
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical
 
-open ConcreteTraceCRT EisensteinEmbedding
 local notation "O" => ActualEisensteinCubic.O
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
@@ -577,7 +546,7 @@ lemma periodic_function_periodSection (f : ℂ→ℂ)
     f (periodSection (periodTorus z))=f z := by
   obtain ⟨n,hn⟩ := periodTorus_eq_implies_lattice_difference (periodSection (periodTorus z)) z
     (periodTorus_section (periodTorus z))
-  rw [hn,hp]
+  simp_all
 
 theorem period_integral_eisenstein_mul (f : ℂ→ℂ) (hf : Measurable f)
     (hp : ∀n : ActualEisensteinCubic.O,∀z : ℂ,f (z+3*eisEmbedding n)=f z) (b : ActualEisensteinCubic.O) (hb : b≠0) :
@@ -591,16 +560,14 @@ theorem period_integral_eisenstein_mul (f : ℂ→ℂ) (hf : Measurable f)
     exact hh.symm
   rw [periodTorus_integral,periodTorus_integral] at hi
   simp only [eisensteinTorusMul_periodTorus,F,periodic_function_periodSection f hp] at hi
-  simp only [Complex.real_smul] at hi
-  exact mul_left_cancel₀ (Complex.ofReal_ne_zero.mpr (show (2/(9*Real.sqrt 3):ℝ)≠0 by positivity)) hi
+  simp_all
 
 end CubicEisenstein
 
 open MeasureTheory Filter
-open scoped BigOperators Classical ENNReal
+open scoped Classical ENNReal
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem finite_index_period_unfold_of_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrable f)
@@ -634,7 +601,7 @@ theorem finite_index_period_unfold_of_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) 
   simp only [hinner,tsum_fintype,Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
   congr 1
   change (Fintype.card (Eis⧸Ideal.span {q}):ℂ)=(Nat.card (Eis⧸Ideal.span {q}):ℂ)
-  rw [Nat.card_eq_fintype_card]
+  simp
 
 lemma finite_index_period_lintegral (q:Eis) (hq:q≠0) (f:ℂ→ℝ≥0∞) :
     (∑'n:Eis,∫⁻z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q))=
@@ -664,7 +631,7 @@ lemma finite_index_period_lintegral (q:Eis) (hq:q≠0) (f:ℂ→ℝ≥0∞) :
   simp only [hinner,tsum_fintype,Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
   congr 1
   change (Fintype.card (Eis⧸Ideal.span {q}):ℝ≥0∞)=(Nat.card (Eis⧸Ideal.span {q}):ℝ≥0∞)
-  rw [Nat.card_eq_fintype_card]
+  simp
 
 lemma finite_index_period_integrals_summable (q:Eis) (hq:q≠0) (f:ℂ→ℂ) (hf:Integrable f) :
     Summable (fun n:Eis=>∫z in periodDomain,f (z+3*eisEmbedding n/eisEmbedding q)) := by

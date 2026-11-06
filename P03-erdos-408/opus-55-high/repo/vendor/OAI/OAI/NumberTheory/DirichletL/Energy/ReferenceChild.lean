@@ -10,18 +10,17 @@ public import OAI.NumberTheory.DirichletL.Energy.Profiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily HeckeDyadic ConcretePrimeRowBridge
 open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
-open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
+open CenteredMomentAllocatedNaturalRadial
 open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergySlotHeight
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
-open CenteredMomentEnergyProfiles CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondHeightFamily CenteredMomentLattice CenteredMomentRetainedProfile CenteredMomentTwist
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondHeightFamily CenteredMomentLattice CenteredMomentTwist
 
 def unpuncturedState {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ):NaturalState Z 0 bΦ where
   character:=s.character
@@ -68,7 +67,7 @@ theorem independent_child_energy {α:Type*}[Fintype α][DecidableEq α]
     {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(ha:0<a)
     (W₁ W₂:𝓢(ℝ,ℂ))(hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b)
     (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b)
-    (F:Finset α)(pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
+    (F:Finset α)(pool:α→Finset (Ideal HeckeFamily.O))(β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)
     (t₁ t₂ X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(hP:∀i∈F,0<P i):
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W₁ X₁ 0 t₁ *
       polynomial (naturalCharacter s.character z) false W₂ X₂ 0 t₂ *
@@ -86,14 +85,13 @@ theorem independent_child_energy {α:Type*}[Fintype α][DecidableEq α]
     pool β P X₁ X₂ hX₁ hX₂ hP
   simp only [CenteredMomentNaturalMaskedFloor.twist_polynomial _ W₁ a b ha hs₁ t₁,
     CenteredMomentNaturalMaskedFloor.twist_polynomial _ W₂ a b ha hs₂ t₂] at hh
-  simpa only [independentProfiles,unpuncturedState,NaturalState.mask,
-    show (1:Fin 2)≠0 by decide,ite_false,ite_true,effectiveState,effectiveRadial] using hh
+  simpa
 
 theorem independent_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
     {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(ha:0<a)
     (W₁ W₂:𝓢(ℝ,ℂ))(hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b)
     (hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b)
-    (F:Finset α)(pool:α→Finset (Ideal O))(ν:α→Character)(W:α→ℝ→ℂ)(P σ freq:α→ℝ)
+    (F:Finset α)(pool:α→Finset (Ideal HeckeFamily.O))(ν:α→Character)(W:α→ℝ→ℂ)(P σ freq:α→ℝ)
     (hp:∀i∈F,∀I∈pool i,Prime I)(hP:∀i∈F,0<P i)
     (t t₁ t₂ X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W₁ X₁ 0 t₁ *
@@ -112,7 +110,7 @@ theorem independent_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
   exact inherited_height_energy _ _ _ _ _ (fun i:F=>pool i)
     (fun (i:F) I=>idealCoeff (ν i) I) (fun i:F=>W i)
     (fun i:F=>P i) (fun i:F=>σ i) (fun i:F=>freq i)
-    (fun i=>hP i i.property) (fun i I hI=>(hp i i.property I hI).ne_zero)
+    (by grind) (fun i I hI=>(hp i i.property I hI).ne_zero)
     t 0 X₁ X₂ _ _ _
 
 end SevenEighths.CenteredMomentEnergyReferenceChild

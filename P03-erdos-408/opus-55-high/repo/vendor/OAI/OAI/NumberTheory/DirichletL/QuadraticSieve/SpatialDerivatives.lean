@@ -8,31 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -52,31 +43,27 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem column_sqrt_ratio_bounds (N n : ℝ) (hN : 0 < N) (hn : N / 2 ≤ n ∧ n ≤ N) :
     1 / 4 ≤ Real.sqrt (n / N) ∧ Real.sqrt (n / N) ≤ 2 := by
@@ -110,14 +97,14 @@ theorem dual_middle_argument (M B b N i j F D₁ d D₂ e q : ℝ)
   have hb0 : 0 < b := by linarith
   have hi0 : 0 < i := by linarith
   have hj0 : 0 < j := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd.1
-  have he0 : 0 < e := hD₂.trans_le he.1
+  have hd0 : 0 < d := by linarith
+  have he0 : 0 < e := by linarith
   have hr : 0 < middleRatio B b D₁ d D₂ e := by
     have hh := middleRatio_bounds B b D₁ d D₂ e hB hb hD₁ hd hD₂ he
     linarith
   rw [Real.exp_add, Real.exp_add, Real.exp_log hr,
-    Real.exp_log (Real.sqrt_pos.mpr (div_pos hi0 hN)),
-    Real.exp_log (Real.sqrt_pos.mpr (div_pos hj0 hN))]
+    Real.exp_log (by positivity),
+    Real.exp_log (by positivity)]
   unfold middleRatio
   calc
     _ = (N * Real.sqrt (F / (M * B)) * Real.sqrt (B / b) * Real.sqrt (i / N) * Real.sqrt (j / N)) * q / (d * e) := by
@@ -155,8 +142,8 @@ theorem actual_dual_middle_radial_block_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
   have hB0 : 0 < B := by linarith
   have hN0 : 0 < N := by linarith
   let R := N * Real.sqrt (F / (M * B)) * ‖eisEmbedding h‖ ^ 2 / (D₁ * D₂)
-  have hR : 0 < R := div_pos (mul_pos (mul_pos hN0 (Real.sqrt_pos.mpr (by positivity)))
-    (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hh)))) (mul_pos hD₁0 hD₂0)
+  have hR : 0 < R := div_pos (mul_pos (by positivity)
+    (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hh)))) (by positivity)
   let x : S → T → m → ℝ := fun D E i => Real.log
     (middleRatio B (Ideal.absNorm (rows i)) D₁ (Ideal.absNorm D.val) D₂ (Ideal.absNorm E.val))
   let y : n → ℝ := fun j => Real.log (Real.sqrt ((Ideal.absNorm (left j) : ℝ) / N))
@@ -182,22 +169,22 @@ theorem principal_middle_prefactor_bound (M B b D₁ d D₂ e : ℝ)
     (hD₁ : 0 < D₁) (hd : D₁ ≤ d) (hD₂ : 0 < D₂) (he : D₂ ≤ e) :
     Real.sqrt (M / b) / (d * e) ≤ 2 * Real.sqrt (M / B) / (D₁ * D₂) := by
   have hb0 : 0 < b := by linarith
-  have hd0 : 0 < d := hD₁.trans_le hd
-  have he0 : 0 < e := hD₂.trans_le he
+  have hd0 : 0 < d := by linarith
+  have he0 : 0 < e := by linarith
   have hq : M / b ≤ 4 * (M / B) := by
     calc
-      _ ≤ (4 * M) / B := (div_le_div_iff₀ hb0 hB).mpr (by nlinarith [mul_nonneg hM.le (show 0 ≤ 4 * b - B by linarith)])
+      _ ≤ (4 * M) / B := (div_le_div_iff₀ hb0 hB).mpr (by nlinarith)
       _ = _ := by ring
   have hs : Real.sqrt (M / b) ≤ 2 * Real.sqrt (M / B) := by
     have hh := Real.sqrt_le_sqrt hq
-    rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)] at hh
+    rw [Real.sqrt_mul (by positivity)] at hh
     have hs4 : Real.sqrt (4 : ℝ) = 2 := by
       simpa only [show (2 : ℝ) ^ 2 = 4 by norm_num] using Real.sqrt_sq (show (0 : ℝ) ≤ 2 by norm_num)
     rw [hs4] at hh
     exact hh
   calc
-    _ ≤ (2 * Real.sqrt (M / B)) / (d * e) := div_le_div_of_nonneg_right hs (mul_pos hd0 he0).le
-    _ ≤ _ := div_le_div_of_nonneg_left (by positivity) (mul_pos hD₁ hD₂)
+    _ ≤ (2 * Real.sqrt (M / B)) / (d * e) := div_le_div_of_nonneg_right hs (by positivity)
+    _ ≤ _ := div_le_div_of_nonneg_left (by positivity) (by positivity)
       (mul_le_mul hd he hD₂.le hd0.le)
 
 theorem principal_middle_prefactor_sum {m : Type*} [Fintype m]
@@ -217,9 +204,9 @@ theorem principal_middle_prefactor_sum {m : Type*} [Fintype m]
   intro E _
   apply Finset.sum_le_sum
   intro i _
-  apply mul_le_mul_of_nonneg_right _ (hf D E i)
+  apply mul_le_mul_of_nonneg_right _ (by grind)
   exact principal_middle_prefactor_bound M B _ D₁ _ D₂ _ hM hB (hrows i) hD₁
-    (hS D.val D.property) hD₂ (hT E.val E.property)
+    (by grind) hD₂ (by grind)
 
 theorem dual_principal_prefactor_identity (M F b i j : ℝ)
     (hM : 0 < M) (hF : 0 < F) (hb : 0 < b) (hi : 0 < i) (hj : 0 < j) :
@@ -247,15 +234,15 @@ include hD₁ hD₂ hB hN hM hS hT hr hl hri hrows hh
 end CanonicalQuadraticSieve
 
 open Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
 lemma abs_le_inv_of_mul_sq_le_one {v t : ℝ} (hv : 0<v) (h : v^2*t^2≤1) :
     |t|≤1/v := by
   apply (le_div_iff₀ hv).mpr
-  have he : |v*t|≤1 := (sq_le_one_iff_abs_le_one _).mp (by simpa only [mul_pow] using h)
-  simpa only [abs_mul,abs_of_pos hv,mul_comm] using he
+  have he : |v*t|≤1 := (sq_le_one_iff_abs_le_one _).mp (by linarith)
+  grind
 
 lemma heightLog_first_bounds (A B C D x y v : ℝ)
     (hrel : A*D=B^2+C^2) (hv : 0<v)
@@ -281,7 +268,7 @@ lemma heightLog_second_bounds (A B C D x y v : ℝ)
   let q := quadraticHeightDenominator A B C D x y v
   let r := v^2*A/q
   have hr0 : 0≤r := div_nonneg (mul_nonneg (sq_nonneg v) hA) hq.le
-  have hr1 : r≤1 := (div_le_one hq).mpr (by simpa only [mul_comm] using hAv)
+  have hr1 : r≤1 := (div_le_one hq).mpr (by linarith)
   have he := heightLog_eikonal A B C D x y v hrel hv.ne' hq.ne'
   have hx := mul_nonneg (sq_nonneg v) (sq_nonneg (heightLogDx A B C D x y v))
   have hy := mul_nonneg (sq_nonneg v) (sq_nonneg (heightLogDy A B C D x y v))
@@ -316,10 +303,10 @@ lemma actual_quadraticHeight_nonneg (u : Fin 2 → ℂ) (x y v : ℝ) :
   rw [← heightDenominator_eq_quadratic]
   unfold heightDenominator
   rw [Complex.normSq_eq_norm_sq]
-  exact le_add_of_nonneg_left (sq_nonneg _)
+  simp
 
 open Filter
-open scoped BigOperators Classical Topology Matrix
+open scoped Classical Topology Matrix
 
 abbrev SpatialCoordinates := Fin 3 → ℝ
 
@@ -349,7 +336,7 @@ lemma spatial_axis_hasDerivAt (s : ℂ) (A B C D : ℝ) (p : SpatialCoordinates)
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,heightLogDy] using h
   · have h := hasDerivAt_logRatioPower s (hasDerivAt_id (p 2))
       (quadraticHeightDenominator_hasDerivAt_v A B C D (p 0) (p 1) (p 2)) hv hq
-    simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,heightLogDv] using h
+    simpa
 
 lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordinates) (j : Fin 3)
     (hv : p 2≠0) (hq : quadraticHeightDenominator A B C D (p 0) (p 1) (p 2)≠0) :
@@ -364,7 +351,7 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       (fun t => hasDerivAt_const t (p 2))
       (fun t => quadraticHeightDenominator_hasDerivAt_x A B C D t (p 1) (p 2))
       (hasDerivAt_const (p 0) 0)
-      (by simpa only [id_eq,mul_one] using ((hasDerivAt_id (p 0)).const_mul A |>.add_const B).const_mul 2)
+      (by simpa using ((hasDerivAt_id (p 0)).const_mul A |>.add_const B).const_mul 2)
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDx,heightLogDxx] using h
   · have h := hasDerivAt_deriv_logRatioPower s (fun _ => p 2)
@@ -373,7 +360,7 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       (fun t => hasDerivAt_const t (p 2))
       (fun t => quadraticHeightDenominator_hasDerivAt_y A B C D (p 0) t (p 2))
       (hasDerivAt_const (p 1) 0)
-      (by simpa only [id_eq,mul_one] using ((hasDerivAt_id (p 1)).const_mul A |>.add_const C).const_mul 2)
+      (by simpa using ((hasDerivAt_id (p 1)).const_mul A |>.add_const C).const_mul 2)
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDy,heightLogDyy] using h
   · have h := hasDerivAt_deriv_logRatioPower s (fun t => t)
@@ -382,7 +369,7 @@ lemma spatial_axis_hasDerivAt_deriv (s : ℂ) (A B C D : ℝ) (p : SpatialCoordi
       (fun t => hasDerivAt_id t)
       (fun t => quadraticHeightDenominator_hasDerivAt_v A B C D (p 0) (p 1) t)
       (hasDerivAt_const (p 2) 1)
-      (by simpa only [id_eq,mul_one] using (hasDerivAt_id (p 2)).const_mul (2*A))
+      (by simpa using (hasDerivAt_id (p 2)).const_mul (2*A))
       hv hq
     simpa [axisSlice,Function.update,spatialHeightPower,spatialLogD,spatialLogDD,heightLogDv,heightLogDvv,div_eq_mul_inv] using h
 
@@ -409,9 +396,9 @@ lemma rowLogD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (h
   have h := heightLog_first_bounds _ _ _ _ (p 0) (p 1) (p 2)
     (complex_row_quadratic_relation (u 0) (u 1)) hv (row_denominator_pos u hu p hv).ne'
   fin_cases j <;> simp only [rowLogD,spatialLogD,]
-  · exact h.1
-  · exact h.2.1
-  · exact h.2.2
+  · simp_all
+  · simp_all
+  simp_all
 
 lemma rowLogDD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
     |rowLogDD u p j| ≤ 7/(p 2)^2 := by
@@ -419,9 +406,9 @@ lemma rowLogDD_bound (u : Fin 2 → ℂ) (hu : u≠0) (p : SpatialCoordinates) (
     (complex_row_quadratic_relation (u 0) (u 1)) hv (Complex.normSq_nonneg _)
     (row_denominator_pos u hu p hv) (actual_quadraticHeight_nonneg u (p 0) (p 1) (p 2))
   fin_cases j <;> simp only [rowLogDD,spatialLogDD,]
-  · exact h.1
-  · exact h.2.1
-  · exact h.2.2
+  · simp_all
+  · simp_all
+  simp_all
 
 lemma row_axis_hasDerivAt (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
     (p : SpatialCoordinates) (hv : 0<p 2) (j : Fin 3) :
@@ -438,7 +425,7 @@ lemma row_axis_hasDerivAt_deriv (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
 end CubicEisenstein
 
 open Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
@@ -456,7 +443,7 @@ lemma hasDerivAt_deriv_tsum_of_bounds {ι : Type*} (f : ι → ℝ → ℂ)
     hasDerivAt_tsum_of_isPreconnected hM₁ hU hUc
       (fun i z hz => (hfirst i z hz).hasDerivAt) hbound₁ hx hsum hy
   have hsumFirst : Summable (fun i => deriv (f i) x) :=
-    Summable.of_norm_bounded hM₁ (fun i => hbound₁ i x hx)
+    Summable.of_norm_bounded hM₁ (by grind)
   have hsecondSum := hasDerivAt_tsum_of_isPreconnected hM₂ hU hUc
     (fun i z hz => (hsecond i z hz).hasDerivAt) hbound₂ hx hsumFirst hx
   apply hsecondSum.congr_of_eventuallyEq
@@ -483,7 +470,7 @@ lemma norm_row_axis_deriv2 (s : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
   calc
     _ ≤ ‖s^2*(rowLogD u p j:ℂ)^2‖+‖s*(rowLogDD u p j:ℂ)‖ := norm_add_le _ _
     _ = ‖s‖^2*|rowLogD u p j|^2 + ‖s‖*|rowLogDD u p j| := by
-      simp only [norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs]
+      simp
     _ ≤ _ := by
       have hfirst := rowLogD_bound u hu p hv j
       have hsecond := rowLogDD_bound u hu p hv j
@@ -541,7 +528,7 @@ lemma smoothSummand_axis_update (s : ℂ) (r : CuspCosets) (p : SpatialCoordinat
 end CubicEisenstein
 
 open Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
@@ -568,7 +555,7 @@ lemma continuous_axis_update (p : SpatialCoordinates) (j : Fin 3) :
 lemma smoothSummand_eq_clamped (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates)
     (deltaLoss : ℝ) (hδ : 0<deltaLoss) (hp : deltaLoss≤p 2) :
     smoothSummand s r p = summand (coordinateSection (clampedCoordinates deltaLoss hδ p)) s r := by
-  have hv : 0<p 2 := lt_of_lt_of_le hδ hp
+  have hv : 0<p 2 := by linarith
   simpa only [coordinateSection,clampedCoordinates,max_eq_right hp] using smoothSummand_eq_actual s r p hv
 
 theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
@@ -587,7 +574,7 @@ theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
   let C := rowBound (coordinateSection (path (p j)))+1
   have hC : 0<C := by dsimp [C]; linarith [rowBound_pos (coordinateSection (path (p j)))]
   have hb : ∀ᶠ t in 𝓝 (p j), rowBound (coordinateSection (path t))<C :=
-    (continuous_coordinate_rowBound.comp hpath).continuousAt.eventually_lt_const (by dsimp [C]; linarith)
+    (continuous_coordinate_rowBound.comp hpath).continuousAt.eventually_lt_const (by grind)
   have hh : ∀ᶠ t in 𝓝 (p j), deltaLoss < (Function.update p j t) 2 := by
     apply ((continuous_apply 2).comp (continuous_axis_update p j)).continuousAt.eventually_const_lt
     change deltaLoss < (Function.update p j (p j)) 2
@@ -601,14 +588,14 @@ theorem axis_summable_derivative_bounds (s : ℂ) (hs : 2<s.re)
   refine ⟨ε,hε,M,fun r => M r*c₁,fun r => M r*c₂,hM,hM.mul_right _,hM.mul_right _,?_⟩
   intro t ht
   obtain ⟨hht,hbt⟩ := hball t ht
-  have hpos : 0 < (Function.update p j t) 2 := lt_trans hδ hht
+  have hpos : 0 < (Function.update p j t) 2 := by linarith
   refine ⟨hpos,fun r => ?_⟩
   have hm : ‖smoothSummand s r (Function.update p j t)‖≤M r := by
     rw [smoothSummand_eq_clamped s r _ deltaLoss hδ hht.le]
     exact hbound (path t,s) hbt.le le_rfl le_rfl r
   have hfrac : 1 / (Function.update p j t) 2 ≤ 1/deltaLoss := one_div_le_one_div_of_le hδ hht.le
   have hfrac₂ : 7 / ((Function.update p j t) 2)^2 ≤ 7/deltaLoss^2 := by
-    apply div_le_div_of_nonneg_left (by norm_num) (sq_pos_of_pos hδ)
+    apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
     nlinarith
   have hd₁ := norm_smooth_axis_deriv s r (Function.update p j t) hpos j
   have hd₂ := norm_smooth_axis_deriv2 s r (Function.update p j t) hpos j

@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.InitializationEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CompletedGauss SevenEighths.InverseSecondFibers IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-abbrev SecondChild := OuterTriple × Ideal Eis × Eis
+abbrev SecondChild := OuterTriple × Ideal ActualEisensteinCubic.O × ActualEisensteinCubic.O
 
 def secondChild {Jo Jn : ℕ} (x : SecondTuple Jo Jn) : SecondChild :=
   (x.outer, x.core 0 * x.core 1 * x.core 2 * x.commonResidual,

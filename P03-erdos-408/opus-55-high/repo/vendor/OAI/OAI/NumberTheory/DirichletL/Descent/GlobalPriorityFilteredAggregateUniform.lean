@@ -11,15 +11,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
+open InverseWholePriorityRetainedSource RayFourExpansion
 theorem global_priority_filtered_aggregate_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -27,26 +26,26 @@ theorem global_priority_filtered_aggregate_uniform_types
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
-      ∀ J:ℕ, ∃ C Cbin : ℝ,0 ≤ C ∧ 0≤Cbin ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
+      ∀ J:ℕ, ∃ C Cbin : ℝ,0 ≤ C ∧ 0≤Cbin ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (_hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (InverseFirstPriorityParents.Source ι Jo))
     (_hvalid:∀x∈original,InverseFirstPriorityParents.SourceValid p x)
     (_hextra:∀x∈original,extra x.cube⊆x.cube.support)
     (w:InverseFirstPriorityParents.Source ι Jo→ℂ) (_hw:∀x∈original,‖w x‖≤1)
-    (Ψ:Eis→*ℂ) (m:Eis)
+    (Ψ:ActualEisensteinCubic.O→*ℂ) (m:ActualEisensteinCubic.O)
     (slots:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
     (cutoff:Finset ι→Finset ι→ℝ)
 ,
     ∀
         (Y:ℝ) (R:Finset σ→BlockIndex→ℝ) (L Z X εchild : ℝ) (Vlabel:BlockIndex→ℝ)
         (ell Ractive j tcount eta : ℝ) (M r V delta Acol Bfirst tau pi b : ℝ) (ρ : Fin 6 → ℝ) (t : ℝ)
-        (labels : Finset σ→BlockIndex→Finset (Ideal Eis)) (A : ℝ),
+        (labels : Finset σ→BlockIndex→Finset (Ideal ActualEisensteinCubic.O)) (A : ℝ),
       hi≤b → slots.card≤K → 0≤A → (∀(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)(assigned:Finset σ), assigned⊆slots →
     let source:=InverseMomentGlobalRetainedGates.geometrySource p (unifiedSource p pool
       (InverseMomentWholePriorityParents.wholeAssignedParents p (fun x=>extra x.cube) original negative assigned lists) (fun _=>cutoff)) b X;
@@ -113,7 +112,7 @@ theorem global_priority_filtered_aggregate_uniform_types
   obtain ⟨C,Cbin,hC,hCbin,he⟩:=hordered J
   let Ctot:=(32*512)*(4:ℝ)^K*(Fintype.card (RayCharacter×RayCharacter):ℝ)*
     (Fintype.card FirstCoreIndex:ℝ)*C
-  refine ⟨Ctot,Cbin,by dsimp [Ctot];positivity,hCbin,?_⟩
+  refine ⟨Ctot,Cbin,by positivity,hCbin,?_⟩
   intro ι σ _ _ p hp _ hcop hg hpr hinj hc Jo extra pool original hvalid hextra w hwOriginal
     Ψ m slots lists a cutoff
     Y R L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst tau pi b ρ t labels A hhib hslots hA hdata
@@ -134,7 +133,7 @@ theorem global_priority_filtered_aggregate_uniform_types
       Y (R assigned) L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst tau pi b ρ t (labels assigned) A
       hhib haassigned hρ hL hZ hX hY heta hbin hrows hcube₁ hcube₂ hactive hj hquot hΨ
       ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA' hYe hXe hLe hVe hZ2 hb hthreshold hnorm hgeom hmass hleft hright
-  have hZ:1<Z:=(hdata 1 1 ∅ (Finset.empty_subset _)).2.2.2.1
+  have hZ:=(hdata 1 1 ∅ (Finset.empty_subset _)).2.2.2.1
   have hH:0≤H:=by dsimp [H];positivity
   have hpow:(4:ℝ)^slots.card≤4^K:=pow_le_pow_right₀ (by norm_num) hslots
   let S:(RayCharacter×RayCharacter)→FirstCoreIndex→Finset σ→ℝ:=fun ray core assigned=>‖∑z:SecondRayIndex,(Y:ℂ)*secondRayCoefficient z *
@@ -148,12 +147,6 @@ theorem global_priority_filtered_aggregate_uniform_types
   calc
     _=(32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑assigned∈slots.powerset,P*S ray core assigned:=by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro ray hr
-      apply Finset.sum_congr rfl
-      intro core hc
-      apply Finset.sum_congr rfl
-      intro assigned ha
       ring
     _≤(32*512)*(2:ℝ)^slots.card*∑_ray:RayCharacter×RayCharacter,∑_core:FirstCoreIndex,∑_assigned∈slots.powerset,H:=by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
@@ -163,7 +156,7 @@ theorem global_priority_filtered_aggregate_uniform_types
       rw [show (4:ℝ)^slots.card=(2:ℝ)^slots.card*(2:ℝ)^slots.card by rw [←mul_pow];norm_num]
       ring
     _≤(32*512)*(4:ℝ)^K*(Fintype.card (RayCharacter×RayCharacter):ℝ)*(Fintype.card FirstCoreIndex:ℝ)*H:=by gcongr
-    _= _:=by dsimp [Ctot,H];ring
+    _= _:=by linarith
 end SevenEighths.InverseMoment
 
 end

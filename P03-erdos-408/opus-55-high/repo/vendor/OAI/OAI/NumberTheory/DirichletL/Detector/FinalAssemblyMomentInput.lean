@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyMomentMono
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
@@ -43,7 +43,7 @@ lemma polynomial_height_absorption (C Z τ J t : ℝ)
   calc
     _≤C*(2*Z^(2*τ))^J := by gcongr;linarith
     _=(C*2^J)*Z^(2*τ*J) := by
-      rw [Real.mul_rpow (by norm_num : (0:ℝ)≤2) (Real.rpow_nonneg hZp.le _),←Real.rpow_mul hZp.le]
+      rw [Real.mul_rpow (by positivity) (by positivity),←Real.rpow_mul hZp.le]
       ring
     _≤(C*2^J)*Z^t := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)

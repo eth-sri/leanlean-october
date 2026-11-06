@@ -8,36 +8,34 @@ public import OAI.NumberTheory.DirichletL.Detector.RawMellinTerm
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
+local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+local instance : Countable (Ideal ActualEisensteinCubic.O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
-def SourceRawIndex (S : Finset (Ideal O)) :=
+def SourceRawIndex (S : Finset (Ideal ActualEisensteinCubic.O)) :=
   {p : RawHighIndex // Supported p.2.2 ∧ ∀P∈S,¬P∣p.2.2}
 
-instance (S : Finset (Ideal O)) : Countable (SourceRawIndex S) := inferInstanceAs (Countable {_p : RawHighIndex // _})
+instance (S : Finset (Ideal ActualEisensteinCubic.O)) : Countable (SourceRawIndex S) := inferInstanceAs (Countable {_p : RawHighIndex // _})
 
-def sourceRawEmbedding (S : Finset (Ideal O)) (i : SourceRawIndex S) : FullHighIndex :=
+def sourceRawEmbedding (S : Finset (Ideal ActualEisensteinCubic.O)) (i : SourceRawIndex S) : FullHighIndex :=
   rawHighEmbedding i.val
 
-lemma sourceRawEmbedding_injective (S : Finset (Ideal O)) : Function.Injective (sourceRawEmbedding S) :=
+lemma sourceRawEmbedding_injective (S : Finset (Ideal ActualEisensteinCubic.O)) : Function.Injective (sourceRawEmbedding S) :=
   rawHighEmbedding_injective.comp Subtype.val_injective
 
-def originalRawOnLines (η : HeckeFamily.Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,P.IsMaximal) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
+def originalRawOnLines (η : HeckeFamily.Character) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (hS : ∀P∈S,P.IsMaximal) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
     (i : SourceRawIndex S) (p : HeightSpace) : ℂ :=
   rawPhysicalMellinTerm η (calibrationForSet S hS) S D i.val.2.1.1 i.val.2.1.2 i.val.2.2 i.property.1
     W0 W1 X Y Z i.val.1.val ((4:ℂ)+p.1.1*Complex.I)
       ((3:ℂ)+p.2*Complex.I) ((2:ℂ)+p.1.2*Complex.I)
 
 theorem originalRaw_counting_product_integrable (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) [MeasurableSpace (SourceRawIndex S)] [MeasurableSingletonClass (SourceRawIndex S)]
-    (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
+    (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
     (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Set.Icc a0 b0)
     (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :

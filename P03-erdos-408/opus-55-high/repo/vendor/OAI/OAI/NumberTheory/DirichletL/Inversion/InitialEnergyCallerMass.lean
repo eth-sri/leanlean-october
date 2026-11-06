@@ -8,22 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerMass
 open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerAssigned
-local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem assigned_quotient_subset {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→Eis)(S:Finset (Source (ι:=ι) 0))(J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι) :
+    (p:ι→ActualEisensteinCubic.O)(S:Finset (Source (ι:=ι) 0))(J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι) :
     quotientSet p (assignedSource S J₁ J₂ L₁ L₂)⊆quotientSet p S := by
   intro t ht
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp ht
   obtain ⟨⟨y,q⟩,hy,rfl⟩ := Finset.mem_image.mp hx
   exact Finset.mem_image.mpr ⟨y,(Finset.mem_product.mp (Finset.mem_filter.mp hy).1).1,rfl⟩
 
-theorem divisor_weight_mono {t:Ideal Eis}(ht:t≠0){J K:ℕ}(hJK:J≤K) :
+theorem divisor_weight_mono {t:Ideal ActualEisensteinCubic.O}(ht:t≠0){J K:ℕ}(hJK:J≤K) :
     ((idealDivisors t).card:ℝ)^J≤((idealDivisors t).card:ℝ)^K := by
   have hc : (1:ℝ)≤(idealDivisors t).card := by
     exact_mod_cast Finset.card_pos.mpr ⟨1,(mem_idealDivisors ht).mpr (one_dvd t)⟩
@@ -31,7 +30,7 @@ theorem divisor_weight_mono {t:Ideal Eis}(ht:t≠0){J K:ℕ}(hJK:J≤K) :
 
 theorem assigned_quotient_mass (K:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (S:Finset (Source (ι:=ι) 0))(J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι)
       (_hJ:J₁.card+J₂.card≤K)(Z R:ℝ)(_hZ:1≤Z)(_hR:R≤U)
       (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R),
@@ -60,7 +59,7 @@ theorem assigned_quotient_mass (K:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
   calc
     _≤∑t∈T,((idealDivisors t).card:ℝ)^K :=
       Finset.sum_le_sum fun t hmem=>divisor_weight_mono (ht t hmem) hJ
-    _≤Z^R*(C*Z^π) := by simpa only [mul_assoc] using hs
+    _≤Z^R*(C*Z^π) := by linarith
     _=C*Z^(R+π) := by rw [Real.rpow_add hZp];ring
 
 end SevenEighths.InverseInitialEnergyCallerMass

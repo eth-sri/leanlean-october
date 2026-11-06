@@ -11,23 +11,16 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 @[simp] theorem weightedBlock_zero (X h a m : ℕ)
     (F : (Fin 0 → ℝ) → ℝ) (k : Setoid (Fin 0) → ℝ) :
@@ -60,22 +53,20 @@ noncomputable def matchedPattern {n : ℕ} (e : Equiv.Perm (Fin n)) : Setoid (Fi
 @[simp] theorem cumulativeProfile_fin_zero {tau : ℝ} (f : (Fin 0 → ℝ) → ℝ)
     (hsf : tsupport f⊆positiveSimplex 0 tau) (v : Fin 0 → ℝ) :
     cumulativeProfile tau f v=f 0 := by
-  rw [cumulativeProfile_tail tau f hsf v (fun i => Fin.elim0 i)]
+  rw [cumulativeProfile_tail tau f hsf v (by simp)]
   rw [Measure.volume_pi_eq_dirac (0 : Fin 0 → ℝ)]
   have he : Ici v=(Set.univ : Set (Fin 0 → ℝ)) := by
     ext x
     simp only [Set.mem_Ici,Set.mem_univ,iff_true]
-    exact fun i => Fin.elim0 i
-  rw [he,setIntegral_univ]
-  exact integral_dirac f 0
+    exact by simp
+  simp_all
 
 @[simp] theorem l2Mass_fin_zero (f : (Fin 0 → ℝ) → ℝ) : l2Mass f=f 0^2 := by
   unfold l2Mass
   have he : (fun x => f x^2)=(fun _ : Fin 0 → ℝ => f 0^2) := by
     funext x
     rw [Subsingleton.elim x 0]
-  rw [he,Measure.volume_pi_eq_dirac (0 : Fin 0 → ℝ)]
-  simp
+  simp [he,Measure.volume_pi_eq_dirac (0 : Fin 0 → ℝ)]
 
 end LargePrimeGaps
 

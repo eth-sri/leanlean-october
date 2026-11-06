@@ -46,7 +46,7 @@ theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
     rw [norm_mul]
     apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
     calc
-      _ = ‖B+(vInv-q)‖ := by congr 1;ring
+      _ = ‖B+(vInv-q)‖ := by ring
       _ ≤ ‖B‖+‖vInv-q‖ := norm_add_le _ _
       _ ≤ _ := by linarith
   rw [continued_normalized_cancellation V W D P B q vInv
@@ -54,7 +54,7 @@ theorem central_phase_error_bound (V W D P B q vInv : ℂ) (A T : ℝ)
   calc
     _ ≤ (8*A)*(2*A*(2*‖V‖+‖D‖)+(‖B‖+2*A)*‖P+D‖) := by
       apply mul_le_mul hfac _ (norm_nonneg _) (by positivity)
-      exact (norm_add_le _ _).trans (add_le_add hleft hright)
+      exact (norm_add_le _ _).trans (by linarith)
     _ = 32*(A^2*‖V‖)+16*(A^2*‖D‖)+8*(A*‖B‖*‖P+D‖)+16*(A^2*‖P+D‖) := by ring
     _ ≤ 720*T := by linarith
 

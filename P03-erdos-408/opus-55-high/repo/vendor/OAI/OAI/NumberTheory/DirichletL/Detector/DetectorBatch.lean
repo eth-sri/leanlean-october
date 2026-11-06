@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorBatch
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch HeckeDetectorSupportedWitness ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def retainedProjection (R : Finset FreeRow) (u0 : FreeRow) (u : FreeRow) : FreeRow :=
   if u∈R then u else u0
@@ -22,16 +21,14 @@ def retainedProjection (R : Finset FreeRow) (u0 : FreeRow) (u : FreeRow) : FreeR
 theorem retainedProjection_mem (R : Finset FreeRow) (u0 : FreeRow) (h0 : u0∈R) (u : FreeRow) :
     retainedProjection R u0 u∈R := by
   unfold retainedProjection
-  split_ifs with hu
-  · exact hu
-  · exact h0
+  grind
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def retainedSourceBatch {Slot : Type*}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (η : Character)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (η : Character)
     (R : Finset FreeRow) (u0 : FreeRow) (h0 : u0∈R)
     (U a ε tstar T allowance : ℝ) (i : ℕ)
     (hw : ∀u∈R,SupportedWitness
@@ -89,8 +86,7 @@ lemma physical_slot_widths {N : ℕ} (ell : Fin N→ℝ) (d dmin mesh : ℝ)
 lemma physical_slot_scale {N : ℕ} (ell : Fin N→ℝ) (Z d : ℝ) (hZ : 0<Z) (hd : d≠0) (j : Fin N) :
     (Z^d)^(ell j/d)=Z^(ell j) := by
   rw [←Real.rpow_mul hZ.le]
-  congr 1
-  field_simp
+  grind
 end SevenEighths.ProbeHighRowFamily
 
 end

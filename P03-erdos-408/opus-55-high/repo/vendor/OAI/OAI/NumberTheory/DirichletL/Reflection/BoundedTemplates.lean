@@ -7,34 +7,32 @@ public import OAI.NumberTheory.DirichletL.Reflection.Columns
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open scoped Classical
+open CubicEisenstein CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 def boundedExtension (z : ℂ) : ℂ := if ‖z‖ ≤ 1 then z else 0
 lemma boundedExtension_norm (z : ℂ) : ‖boundedExtension z‖ ≤ 1 := by
   unfold boundedExtension
   split_ifs with h
-  · exact h
-  · simp
+  · omega
+  simp
 lemma boundedExtension_eq (z : ℂ) (hz : ‖z‖ ≤ 1) : boundedExtension z = z := ite_eq_left hz
 
 theorem canonical_bounded_cusp_templates {α : Type*} {ι : α → Type*}
     [∀ x, Fintype (ι x)] (G : ∀ x, PrimeFamily (ι x))
-    (N a c : Eis) (mode : Bool)
+    (N a c : ActualEisensteinCubic.O) (mode : Bool)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+    (hc : c ≠ 0) (hN : (9:ActualEisensteinCubic.O)*c ∣ N)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hcop : ∀ x, Pairwise (Function.onFun IsCoprime (G x).ideal))
     (hNp : ∀ x i, IsCoprime (Ideal.span {N}) ((G x).ideal i))
-    (fixedIdeal : Ideal Eis) (row slot : α → Ideal Eis)
+    (fixedIdeal : Ideal ActualEisensteinCubic.O) (row slot : α → Ideal ActualEisensteinCubic.O)
     (hprod : ∀ x, (∏ i, (G x).ideal i) = fixedIdeal*row x*slot x) :
     ∃ E : ∀ x, ControlledStratumArithmetic (G x).generator N a c mode,
-      ∃ (κ : ((Eis ⧸ Ideal.span {N^2}) × (Eis ⧸ Ideal.span {N^2})) → ℂ)
-        (A : ((Eis ⧸ Ideal.span {N^2}) × (Eis ⧸ Ideal.span {N^2})) →
-          Eisˣ → ℕ → Ideal Eis → Ideal Eis → ℂ),
+      ∃ (κ : ((ActualEisensteinCubic.O ⧸ Ideal.span {N^2}) × (ActualEisensteinCubic.O ⧸ Ideal.span {N^2})) → ℂ)
+        (A : ((ActualEisensteinCubic.O ⧸ Ideal.span {N^2}) × (ActualEisensteinCubic.O ⧸ Ideal.span {N^2})) →
+          ActualEisensteinCubic.Oˣ → ℕ → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
         (∀ q, ‖κ q‖ ≤ 1) ∧ (∀ q u m n b, ‖A q u m n b‖ ≤ 1) ∧
         (∀ x, (E x).fixedFactor = κ (separateSector N (primaryGenerator (row x))
           (primaryGenerator (slot x)))) ∧

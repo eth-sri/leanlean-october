@@ -6,7 +6,7 @@ public import Mathlib.Analysis.Complex.Norm
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 

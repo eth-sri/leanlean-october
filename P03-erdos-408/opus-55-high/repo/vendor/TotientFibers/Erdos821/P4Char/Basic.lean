@@ -9,7 +9,6 @@ public import Mathlib.RingTheory.RootsOfUnity.AlgebraicallyClosed
 
 set_option autoImplicit false
 
-open scoped BigOperators
 
 namespace Erdos821.P4Char
 
@@ -54,8 +53,8 @@ theorem count_part : ∀ Q : ℕ, (primitiveCharacters Q).card ≤ Q ^ 2 := by
         ≤ r.val + 1 := card_dirichlet_le _ (Nat.succ_pos _)
       _ ≤ Q := Nat.succ_le_of_lt r.is_lt
   have hsum : ∑ _r : Fin Q, Q = Q ^ 2 := by
-    simp [Finset.sum_const, Finset.card_univ, pow_two]
-  exact hsub.trans (huniv.trans hsum.le)
+    simp [pow_two]
+  omega
 
 /-- Norm part: every character value has norm at most one. -/
 theorem norm_part :

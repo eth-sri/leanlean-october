@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeCalibration
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 
 def cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (i k : ℕ) : Finset FreeRow :=
   R.filter (fun u=>idx u=i ∧ grid u=k)
@@ -24,12 +23,12 @@ lemma sum_cubeBinRows (R : Finset FreeRow) (idx grid : FreeRow→ℕ) (n m : ℕ
   have hm : ∀u∈R,(idx u,grid u)∈(Finset.range (n+1)).product (Finset.range (m+1)) := by
     intro u hu
     simpa only [Finset.product_eq_sprod,Finset.mem_product,Finset.mem_range] using
-      And.intro (Nat.lt_succ_of_le (hlabel u hu).1) (Nat.lt_succ_of_le (hlabel u hu).2)
+      And.intro (by grind) (by grind)
   have hs := Finset.sum_fiberwise_of_maps_to hm f
   simpa only [Finset.product_eq_sprod,Finset.sum_product,Prod.mk.injEq,cubeBinRows] using hs
 
 theorem finiteCentralCubeRows_bin_partition {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z e B : ℝ) (idx grid : FreeRow→ℕ) (n m : ℕ)
@@ -48,7 +47,7 @@ theorem finiteCentralCubeRows_bin_partition {K : ℕ}
   apply Finset.sum_congr rfl
   intro u hu
   rcases (mem_cubeBinRows R idx grid i k u).mp hu with ⟨hu,hi,hk⟩
-  simp only [hi,hk]
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

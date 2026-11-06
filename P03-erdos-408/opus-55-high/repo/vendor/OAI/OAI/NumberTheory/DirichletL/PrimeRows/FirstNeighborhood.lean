@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsFirstNeighborhood
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open CanonicalRowCompletion
 
 theorem unramifiedFactor_first_neighborhood_defect (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hP : 4≤P.val.absNorm) (x w z : ℂ) (eps : ℝ) (heps : 0<eps)
@@ -23,15 +22,15 @@ theorem unramifiedFactor_first_neighborhood_defect (η : Character) (u : FreeRow
   split_ifs
   · simpa using firstPrimeDefectBound_nonneg eps P
   · apply unramifiedClosed_first_neighborhood_bound
-    · exact_mod_cast hP
+    · simp_all
     · exact actualAPhase_norm_le_one η _
     · exact idealCoeff_norm_le_one η _
     · exact idealRowHom_norm u.val _
-    · exact heps
-    · exact hx
-    · exact hz
-    · exact hw
-    · exact hxw
+    · omega
+    · omega
+    · omega
+    · omega
+    omega
 
 theorem unramifiedProduct_first_neighborhood_analytic_x (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S)
     (η : Character) (u : FreeRow) (w z : ℂ)
@@ -47,11 +46,7 @@ theorem unramifiedProduct_first_neighborhood_analytic_x (eps : ℝ) (S : Finset 
       apply (unramifiedClosed_first_analytic_x _ _ _ _ _ _
         (by exact_mod_cast hS.norm_four P.val P.property) (actualAPhase_norm_le_one η _)
         (idealCoeff_norm_le_one η _) (idealRowHom_norm u.val _) (by linarith)).mono
-      intro x hx
-      change max (101/200:ℝ) (1+eps-w.re)<x.re at hx
-      have hx' := (lt_of_le_of_lt (le_max_left (101/200:ℝ) (1+eps-w.re)) hx)
-      change (1/2:ℝ)<x.re
-      linarith
+      grind
   · intro P x hx
     have hx' := (lt_of_le_of_lt (le_max_left (101/200:ℝ) (1+eps-w.re)) hx)
     have hxw := (lt_of_le_of_lt (le_max_right (101/200:ℝ) (1+eps-w.re)) hx)
@@ -81,7 +76,7 @@ theorem unramifiedProduct_first_neighborhood_analytic_w (eps : ℝ) (S : Finset 
       x w z eps hS.positive hx hz hw'.le (by linarith)
   · exact hS.half
 
-theorem unramifiedProduct_first_neighborhood_analytic_z (eps : ℝ) (S : Finset (Ideal O)) (hS : FirstTail eps S)
+theorem unramifiedProduct_first_neighborhood_analytic_z (eps : ℝ) (S : Finset (Ideal HeckeFamily.O)) (hS : FirstTail eps S)
     (η : Character) (u : FreeRow) (x w : ℂ)
     (hx : (101/200:ℝ)≤x.re) (hw : -(3/200:ℝ)≤w.re) (hxw : 1+eps≤x.re+w.re) :
     AnalyticOnNhd ℂ (fun z=>unramifiedProduct S η u x w z) {z : ℂ | (27/80:ℝ)<z.re} := by
@@ -96,10 +91,7 @@ theorem unramifiedProduct_first_neighborhood_analytic_z (eps : ℝ) (S : Finset 
       apply (unramifiedClosed_first_analytic_z _ _ _ _ _ _
         (by exact_mod_cast hS.norm_four P.val P.property) (actualAPhase_norm_le_one η _)
         (idealCoeff_norm_le_one η _) (idealRowHom_norm u.val _) (by linarith)).mono
-      intro z hz
-      change (27/80:ℝ)<z.re at hz
-      change (1/3:ℝ)<z.re
-      linarith
+      grind
   · intro P z hz
     exact unramifiedFactor_first_neighborhood_defect η u P.val (hS.norm_four P.val P.property)
       x w z eps hS.positive hx hz.le hw hxw

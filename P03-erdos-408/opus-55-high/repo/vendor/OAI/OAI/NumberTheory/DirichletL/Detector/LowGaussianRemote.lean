@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianDyad
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-lemma slotProduct_subtype {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
+lemma slotProduct_subtype {K : ℕ} (p : Fin K→ActualEisensteinCubic.O) (J : Finset (Fin K)) :
     slotProduct p J=∏i : J,p i.val := by rw [Finset.prod_coe_sort];rfl
 
 lemma eventually_low_physical_scales {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
@@ -29,7 +28,7 @@ lemma eventually_low_physical_scales {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,
       (Filter.eventually_ge_atTop ((max 1 b)^K))] with Z hZ hc
   refine ⟨hZ,?_⟩
   intro slots hn hnorm J p
-  have hl : 0<elementNorm (slotProduct (fun i=>(p i).val) J) :=
+  have hl :=
     slotProduct_norm_pos _ (fun i=>hn i _ (p i).property) J
   have hb := lowUnselectedProduct_norm_bound ell hell hsum (max 1 b) Z (le_max_left _ _) hZ.le
     slots (fun i n hm=>(hnorm i n hm).trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity)))
@@ -87,18 +86,18 @@ theorem low_remote_gaussian_dyads (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
   let q := elementNorm (calibrationForSet S hS).generator
   let C0 := Cg*(q*(128*max 1 b)^K)
   have hq : 0<q := calibration_elementNorm_pos _
-  refine ⟨C0,by dsimp [C0];positivity,?_⟩
+  refine ⟨C0,by positivity,?_⟩
   filter_upwards [eventually_low_physical_scales ell hell hsum b] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro η T hT hnorm J W hW
   dsimp only [lowRemote]
   have hz : 0<Z := lt_trans zero_lt_one hZ.1
-  have hslots : ∀i n,n∈canonicalSlotSupport (T i)→n≠0 := fun i=>canonicalSlotSupport_nonzero _ (hT i)
+  have hslots := fun i=>canonicalSlotSupport_nonzero _ (hT i)
   have hnormE : ∀i n,n∈canonicalSlotSupport (T i)→elementNorm n≤b*Z^(ell i) := by
     intro i n hn
     obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hn
-    rw [primaryTuple_norm P (hT i P hP)]
-    exact hnorm i P hP
+    rw [primaryTuple_norm P (by grind)]
+    exact by grind
   have hs := hZ.2 _ hslots hnormE J
   have hh := he η S hS W0 W1
     (HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW0)
@@ -113,20 +112,15 @@ theorem low_remote_gaussian_dyads (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (Z^(1+lowSelectedLength ell J)) (Z^(ε/2)) (by positivity) (Real.one_le_rpow hZ.1.le hep.le)
   simp only [←lowCommonDyad_eq_family] at hh
   refine ⟨?_,?_⟩
-  · convert hh.1 using 1
-    funext j
-    split_ifs with h <;> simp_all only [ite_true, ite_false]
+  · grind
   · have hhFinal := hh.2.trans (show _≤C0*Z^(-1:ℝ) from by
       have hm := compensation_scale_mass_bound η (calibrationForSet S hS) ell hell hsum b Z hZ.1.le T hT hnorm J W hW
       calc
         _≤Cg*((q*(128*max 1 b)^K)*Z)*(Z^(1+lowSelectedLength ell J))^2/(Z^(ε/2))^N := by gcongr
-        _=C0*(Z*(Z^(1+lowSelectedLength ell J))^2/(Z^(ε/2))^N) := by dsimp [C0];ring
+        _=C0*(Z*(Z^(1+lowSelectedLength ell J))^2/(Z^(ε/2))^N) := by ring
         _≤_ := mul_le_mul_of_nonneg_left (low_remote_power Z (lowSelectedLength ell J) ε N hZ.1.le
-          (by have hb := lowLength_bounds ell hell hsum J;linarith) hN') (by dsimp [C0];positivity))
-    convert hhFinal using 1
-    apply tsum_congr
-    intro j
-    split_ifs with h <;> simp_all only [ite_true, ite_false]
+          (by have hb := lowLength_bounds ell hell hsum J;linarith) hN') (by positivity))
+    linarith
 
 end SevenEighths.ProbePhysical
 end

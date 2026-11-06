@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalReopen
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
+open CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
 open CanonicalQuadraticSieve ConcreteTraceCRT
 open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
 
-lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
-    (b h : O) (hcop : IsCoprime b s) :
+lemma sexticGauss_unit_scale (s : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {s}))
+    (b h : ActualEisensteinCubic.O) (hcop : IsCoprime b s) :
     sexticGauss s (supportedElement_ne_zero s hs) (b*h) =
       (idealRowHom b (Ideal.span {s}))⁻¹ * sexticGauss s (supportedElement_ne_zero s hs) h := by
   let := finite_quotient_span (supportedElement_ne_zero s hs)
@@ -31,8 +30,8 @@ lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))
   simp only [residueGauss, tsum_fintype, map_mul]
   simpa only [ψ, mul_assoc, mul_comm, mul_left_comm] using he
 
-lemma movingQuotient_unit_scale (A s : O) (hs : Supported (Ideal.span {s}))
-    (b : O) (hcop : IsCoprime b s) (x : Residue (A*s)) :
+lemma movingQuotient_unit_scale (A s : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {s}))
+    (b : ActualEisensteinCubic.O) (hcop : IsCoprime b s) (x : Residue (A*s)) :
     movingQuotient A s (supportedElement_ne_zero s hs) (Ideal.Quotient.mk _ b*x) =
       idealRowHom b (Ideal.span {A}) * (idealRowHom b (Ideal.span {s}))⁻¹ *
         movingQuotient A s (supportedElement_ne_zero s hs) x := by
@@ -41,14 +40,14 @@ lemma movingQuotient_unit_scale (A s : O) (hs : Supported (Ideal.span {s}))
   rw [show -(b*m)=b*(-m) by ring, sexticGauss_unit_scale s hs b (-m) hcop]
   ring
 
-def barePhysicalFourier (A s : O) (hA : A≠0) (hs : s≠0) (H : O) : ℂ :=
+def barePhysicalFourier (A s : ActualEisensteinCubic.O) (hA : A≠0) (hs : s≠0) (H : ActualEisensteinCubic.O) : ℂ :=
   elementFourier (A*s) (mul_ne_zero hA hs)
     (fun m => idealRowHom m (Ideal.span {A}) * sexticGauss s hs (-m)) H
 
-theorem actualPhysicalFourier_calibration_factor (S : Finset (Ideal O))
-    (hS : ∀ P∈S, P.IsMaximal) (A s : O) (hA : A≠0)
+theorem actualPhysicalFourier_calibration_factor (S : Finset (Ideal ActualEisensteinCubic.O))
+    (hS : ∀ P∈S, P.IsMaximal) (A s : ActualEisensteinCubic.O) (hA : A≠0)
     (hs : Supported (Ideal.span {s}))
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O) :
+    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : ActualEisensteinCubic.O) :
     let C := calibrationForSet S hS
     actualPhysicalFourier C A s hA (supportedElement_ne_zero s hs) H =
       (C.residueMonoid (A*s) * star (C.residueMonoid H) *
@@ -65,10 +64,10 @@ theorem actualPhysicalFourier_calibration_factor (S : Finset (Ideal O))
   simp only [mul_assoc, tsum_mul_left]
   rfl
 
-def bareCongruenceCoefficient (A s : O) (hA : A≠0) (H : O) : ℂ :=
+def bareCongruenceCoefficient (A s : ActualEisensteinCubic.O) (hA : A≠0) (H : ActualEisensteinCubic.O) : ℂ :=
   congruenceCoefficient A s hA (outerQuotient A) (outerQuotient s) H
 
-lemma barePhysicalFourier_eq (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
+lemma barePhysicalFourier_eq (A s : ActualEisensteinCubic.O) (hA : A≠0) (hs : s≠0) (H : ActualEisensteinCubic.O) :
     barePhysicalFourier A s hA hs H =
       (Ideal.absNorm (Ideal.span {s}):ℂ)*bareCongruenceCoefficient A s hA H := by
   unfold bareCongruenceCoefficient
@@ -84,10 +83,10 @@ lemma barePhysicalFourier_eq (A s : O) (hA : A≠0) (hs : s≠0) (H : O) :
   unfold outerQuotient
   rw [sexticGauss_coefficient_mk]
 
-theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal O))
-    (hS : ∀ P∈S, P.IsMaximal) (A s : O) (hA : A≠0)
+theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal ActualEisensteinCubic.O))
+    (hS : ∀ P∈S, P.IsMaximal) (A s : ActualEisensteinCubic.O) (hA : A≠0)
     (hs : Supported (Ideal.span {s}))
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O) :
+    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : ActualEisensteinCubic.O) :
     let C := calibrationForSet S hS
     actualCongruenceCoefficient C A s hA H =
       (C.residueMonoid (A*s) * star (C.residueMonoid H) *
@@ -101,9 +100,7 @@ theorem actualCongruenceCoefficient_calibration_factor (S : Finset (Ideal O))
   have hn : (Ideal.absNorm (Ideal.span {s}):ℂ)≠0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero s hs))
-  apply mul_left_cancel₀ hn
-  rw [he]
-  ring
+  grind
 
 end SevenEighths.ProbePhysical
 end

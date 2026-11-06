@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.RayNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma annular_power_separation (a b r s : ℝ) (ha : 0<a) (hrs : r<s) :
@@ -23,7 +22,7 @@ lemma annular_power_separation (a b r s : ℝ) (ha : 0<a) (hrs : r<s) :
   have hp : 0<Z^r := Real.rpow_pos_of_pos hZ0 _
   calc
     b*Z^r < (a*Z^(s-r))*Z^r := mul_lt_mul_of_pos_right ht hp
-    _=a*Z^s := by rw [mul_assoc,←Real.rpow_add hZ0];congr 1;congr 1;ring
+    _=a*Z^s := by rw [mul_assoc,←Real.rpow_add hZ0];simp
 
 theorem power_pools_eventually_disjoint {ι : Type*} [Fintype ι]
     (C : Set Id) (S : Finset Id) (a b ell : ι→ℝ)
@@ -35,22 +34,22 @@ theorem power_pools_eventually_disjoint {ι : Type*} [Fintype ι]
   apply Filter.eventually_all.mpr
   intro j
   by_cases hij : i=j
-  · exact Filter.Eventually.of_forall (fun Z hn=>(hn hij).elim)
-  have hne : ell i≠ell j := fun h=>hij (hell h)
+  · simp_all
+  have hne : ell i≠ell j := by grind
   rcases lt_or_gt_of_ne hne with hlt|hgt
   · filter_upwards [annular_power_separation (a j) (b i) (ell i) (ell j) (ha j) hlt,
       eventually_gt_atTop (0:ℝ)] with Z hsep hZ _
     apply Finset.disjoint_left.mpr
     intro P hPi hPj
-    have hi := pool_norm_bounds C S (ha i).le (hab i) (Real.rpow_pos_of_pos hZ _) P hPi
-    have hj := pool_norm_bounds C S (ha j).le (hab j) (Real.rpow_pos_of_pos hZ _) P hPj
+    have hi := pool_norm_bounds C S (by grind) (hab i) (by positivity) P hPi
+    have hj := pool_norm_bounds C S (by grind) (hab j) (by positivity) P hPj
     nlinarith
   · filter_upwards [annular_power_separation (a i) (b j) (ell j) (ell i) (ha i) hgt,
       eventually_gt_atTop (0:ℝ)] with Z hsep hZ _
     apply Finset.disjoint_left.mpr
     intro P hPi hPj
-    have hi := pool_norm_bounds C S (ha i).le (hab i) (Real.rpow_pos_of_pos hZ _) P hPi
-    have hj := pool_norm_bounds C S (ha j).le (hab j) (Real.rpow_pos_of_pos hZ _) P hPj
+    have hi := pool_norm_bounds C S (by grind) (hab i) (by positivity) P hPi
+    have hj := pool_norm_bounds C S (by grind) (hab j) (by positivity) P hPj
     nlinarith
 
 theorem power_pool_tuples_eventually_injective {ι : Type*} [Fintype ι]
@@ -62,7 +61,7 @@ theorem power_pool_tuples_eventually_injective {ι : Type*} [Fintype ι]
   intro i j heq
   by_contra hn
   have hq : (P i).val=(P j).val := heq
-  exact Finset.disjoint_left.mp (hZ i j hn) (P i).property (by rw [hq];exact (P j).property)
+  exact Finset.disjoint_left.mp (hZ i j hn) (P i).property (by simp_all)
 end SevenEighths.ProbeRaySlots
 end
 

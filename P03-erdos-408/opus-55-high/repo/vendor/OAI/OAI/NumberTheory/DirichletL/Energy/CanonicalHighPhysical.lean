@@ -40,75 +40,43 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalHighPhysical
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
+open HeckeFamily
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
+open CenteredMomentAllocatedRayDictionary
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+open CenteredMomentSectorLocalization
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentAmplificationChildInput
+open CenteredMomentCanonicalFirst
+open CanonicalQuadraticSieve
+open ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
 
-open RayFourExpansion CenteredMomentSourceMass CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondEnergySplit CenteredMomentGaussNormalization
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentActiveSource
-open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondWindowSource
-open CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondReferenceNormalization
-open CenteredMomentFirstSeededGaussianPower CenteredMomentFirstSecondInputGates
+open Filter
+open CenteredMomentSecondChildPowerBudget
 
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentFirstAmplifiedFourCoefficients
 
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentFirstAmplificationChoice (errorMoving errorRemoval)
 
-open CenteredMomentEnergyAmplifiedChildWidth
-open CenteredMomentEnergyCanonicalAmplifiedUniform CenteredMomentEnergyAmplifierFamilyAdmission
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyFirstAnnularAdmission
-open CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyInputParentCapacity
-open CenteredMomentFirstReferenceSource CenteredMomentFirstNonexceptionalWeightSum
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationEligibility
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedPowerBudget CenteredMomentFirstAmplificationChoice
-open CenteredMomentSecondRetainedRows CenteredMomentLogDyadic
+open CenteredMomentEnergyFirstLiveAdmission
+open CenteredMomentEnergyInputParentCapacity
+open CenteredMomentFirstReferenceSource
+open CenteredMomentFirstPhysicalSource
 
-open CenteredMomentEnergyCanonicalAnnularPower CenteredMomentEnergyCanonicalAmplifiedColumn
-open CenteredMomentFirstCommonReferencePower CenteredMomentEnergyFirstLowHomogeneousPowers
-open CenteredMomentEnergyCanonicalLowColumn CenteredMomentFirstNonexceptionalLocalWeightSum
 
 theorem actual_high_physical
     (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
@@ -130,8 +98,8 @@ theorem actual_high_physical
     (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(εphysical lowerProduct:ℝ)
     (hεphysical:0<εphysical)(hlowerProduct:0<lowerProduct):
     ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M →
-      internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
+    ∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M →
+      internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)} →
     ∃Cphysical:ℝ,0<Cphysical ∧ ∃Z₀:ℝ,1<Z₀ ∧
     ∀Aorig:Finset α,∀θ:Aorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
@@ -146,7 +114,7 @@ theorem actual_high_physical
     Fintype.card Aorig≤N → lower≤src.lower → src.upper≤upper →
     0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
     lowerProduct≤(∏i,src.lo i)*a*a →
-    ∀(R0 seed0:Ideal O),R0≠0 → (R0.absNorm:ℝ)≤Z^Pcap → Squarefree seed0 → seed0≠0 →
+    ∀(R0 seed0:Ideal HeckeFamily.O),R0≠0 → (R0.absNorm:ℝ)≤Z^Pcap → Squarefree seed0 → seed0≠0 →
     ∀K:ℝ,1≤K →
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
     src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
@@ -202,10 +170,10 @@ theorem actual_high_physical
   let Cm:ℝ:=Cmass*(CL+CR)*(1+CenteredMomentSecondWindowBudget.profileMoment JL)*
     (1+CenteredMomentSecondWindowBudget.profileMoment JR)
   have hCm:0<Cm:=by dsimp [Cm];positivity
-  have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr hp
+  have hall:=Filter.eventually_all.mpr hp
   obtain ⟨Zp,hZp⟩:=Filter.eventually_atTop.mp hall
   refine ⟨Cm,hCm,max Zp (max ZL ZR),lt_of_lt_of_le hZL
-    ((le_max_left _ _).trans (le_max_right _ _)),?_⟩
+    (by simp),?_⟩
   intro T θ Z hZZ εchild C₀ C₁ hC₀ hC₁ hzero hpos w σ freq height mesh hmesh hw hwm hweta hwL
     hσlo hσhi hheight hfreq src hmatch hhi hMs hloSrc hhiSrc hcard hlowerSrc hupperSrc
     hb1 hb2 hb1max hb2max hprod R0 seed0 hR0 hRcap hseed0 hseed00 K hK1 p hp₁ hp₂
@@ -218,7 +186,7 @@ theorem actual_high_physical
   have hK:0<K:=zero_lt_one.trans_le hK1
   have hPs:∀i,1≤src.P i:=by
     intro i;rw [hmatch.scale];exact Real.one_le_rpow hZ.le (hw i)
-  have hV:volume src≤Z^A:=original_volume_cap src Z κ A hZ hκsmall hPs (by
+  have hV:=original_volume_cap src Z κ A hZ hκsmall hPs (by
     have hh:=hcap.trans hMA
     simpa only [hmatch.scale,Real.logb_rpow hz hZ.ne'] using hh)
   have hKi:K⁻¹≤Z^A:=(inv_le_one_of_one_le₀ hK1).trans (Real.one_le_rpow hZ.le hA)
@@ -267,7 +235,7 @@ theorem actual_high_physical
   have hcoeff (F:ℝ)(hF:F≤Fcap)(j:Fin 4):
       (F*Z^(deficit+base))*Z^(powers j)≤Fcap*Z^(deficit+ell):=by
     rw [mul_assoc,←Real.rpow_add hz]
-    apply mul_le_mul hF (Real.rpow_le_rpow_of_exponent_le hZ.le ?_) (Real.rpow_nonneg hz.le _) hFcap
+    apply mul_le_mul hF (Real.rpow_le_rpow_of_exponent_le hZ.le ?_) (by positivity) hFcap
     have hh:powers j+base≤ell:=by
       dsimp [powers,base,paid,delta]
       linarith [hfit j]
@@ -305,10 +273,10 @@ theorem actual_high_physical
     (fun i=>by rw [hhiSrc]) (by rwa [abs_of_nonneg hb1]) (by rwa [abs_of_nonneg hb2])
     a a K haPlain haPlain hK hprod hs₁ hs₂ hV hKi Fcap Mdecl ell (fun _=>ell) (fun _=>ell)
     (fun j=>frontL*Z^(powers j)) (fun j=>frontR*Z^(powers j)) hFcap
-    (fun j=>mul_nonneg hfrontL (Real.rpow_nonneg hz.le _))
-    (fun j=>mul_nonneg hfrontR (Real.rpow_nonneg hz.le _))
-    (hcoeff FL hFL) (hcoeff FR hFR) (fun _=>le_rfl)
-    (fun _=>le_rfl) (fun lab E _ n hne=>hcols lab E n hne)
+    (fun j=>by positivity)
+    (fun j=>by positivity)
+    (hcoeff FL hFL) (hcoeff FR hFR) (by simp)
+    (by simp) (fun lab E _ n hne=>hcols lab E n hne)
   have hconst:Cp T*(CL+CR)*CenteredMomentSecondWindowBudget.profileMoment JL*
       CenteredMomentSecondWindowBudget.profileMoment JR≤Cm:=by
     dsimp [Cm]
@@ -321,10 +289,10 @@ theorem actual_high_physical
     have heq:(1+|src.t|+height)^(2*(JL+JR))=
         (1+|src.t|+height)^(JL+JR)*(1+|src.t|+height)^(JL+JR):=by
       rw [show 2*(JL+JR)=(JL+JR)+(JL+JR) by omega]
-      exact pow_add _ _ _
+      exact by ring
     rw [heq]
     apply mul_le_mul
-      (pow_le_pow_left₀ (by linarith) (by linarith [abs_nonneg src.t]) _)
+      (pow_le_pow_left₀ (by linarith) (by simp) _)
       (pow_le_pow_left₀ (by positivity) (by linarith) _)
       (by positivity) (by positivity)
   calc

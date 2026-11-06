@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalCubeReduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open MeasureTheory Set Filter
+open scoped Classical
+open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification
 variable {ι : Type*} [Fintype ι]
 
 theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
     (n : ℕ) (hn : 0<n) (hwidth : (49/100:ℝ)≤n*e)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (ψ : FreeRow→ι→Character) :
+    (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P) (η : Character) (ψ : FreeRow→ι→Character) :
     ∃idx grid : FreeRow→ℕ,∀u : FreeRow,
       1 ≤ idx u ∧ idx u ≤ n ∧ grid u ≤ ⌊(49/100:ℝ)/e⌋₊ ∧
       let a : ℝ := 51/100+e*grid u
@@ -37,9 +36,9 @@ theorem exists_source_cube_bins (e B : ℝ) (he : 0<e) (hB : 2<B)
   · apply Nat.le_floor
     apply (le_div_iff₀ he).mpr
     nlinarith
-  · nlinarith [Nat.cast_nonneg (α:=ℝ) (grid u)]
+  · nlinarith
   · push_cast
-    nlinarith [Nat.cast_nonneg (α:=ℝ) (idx u)]
+    nlinarith
   · push_cast
     linarith
 
@@ -48,14 +47,13 @@ theorem exists_source_cube_bin_number (e : ℝ) (he : 0<e) :
   refine ⟨⌈(49/100:ℝ)/e⌉₊+1,by omega,?_⟩
   have hh := Nat.le_ceil ((49/100:ℝ)/e)
   have hmul := (div_le_iff₀ he).mp hh
-  push_cast
-  nlinarith
+  grind
 
 theorem source_cube_height_eventually (τ : ℝ) (hτ : 0<τ) :
     ∀ᶠ Z : ℝ in atTop,1≤Z ∧ 2<Z^τ := by
   filter_upwards [eventually_ge_atTop (1:ℝ),
     (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop (2:ℝ))] with Z hZ hpow
-  exact ⟨hZ,hpow⟩
+  simp_all
 
 end SevenEighths.ProbeHighRowFamily
 

@@ -8,7 +8,6 @@ public import Mathlib.Data.List.FinRange
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -51,7 +50,7 @@ theorem reorderGhostChoice_injective {M : ℕ} {s t : P.MemoryState M}
   have hbatch : (fun g i => c.2.2 g (sigma g i)) =
       (fun g i => c.2.2 g (tau g i)) := by
     have hs := (Prod.mk.inj he).2
-    exact eq_of_heq (Sigma.mk.inj_iff.mp hs).2
+    exact by grind
   funext g
   apply Equiv.ext
   intro i

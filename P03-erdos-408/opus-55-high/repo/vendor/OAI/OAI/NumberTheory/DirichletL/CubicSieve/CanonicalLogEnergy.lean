@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +30,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic ConcreteTraceCRT
+open SecondPassArithmetic
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
@@ -92,14 +70,11 @@ namespace CanonicalRowCompletion
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 
 section
-open ActualEisensteinCubic
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
-open CanonicalCubeSeparation JointLogSeparation
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -120,13 +95,11 @@ theorem fixedChildRow_coefficient_expansion
 
 end
 
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
-open CanonicalCubeSeparation JointLogSeparation
 
 theorem cube_coefficient_restore (H₀ : ℝ) (Ψ : ActualEisensteinCubic.O →* ℂ) (I : Ideal ActualEisensteinCubic.O)
     (hI : I ≠ 0) :
@@ -165,7 +138,6 @@ def outsideCanonicalBin (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (
 end
 
 section
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -189,11 +161,10 @@ theorem activeCubeExponents_norm_bound
   have hone : 1 ≤ n := hN
   have hnn : n ≤ n^3 := by
     nlinarith [mul_nonneg (sub_nonneg.mpr hone) (show 0 ≤ n^2+n by positivity)]
-  exact (hnn.trans hcube).trans (le_max_right _ _)
+  grind
 
 end
 
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -232,8 +203,8 @@ theorem activeCubeLogBin_norms (S : Finset (Ideal ActualEisensteinCubic.O)) (D :
   exact ⟨hh.1,by simpa only [mul_comm,cubeLogIndex] using hh.2⟩
 
 theorem cubeLogRange_card (b X : ℝ) :
-    (cubeLogRange b X).card = normLogBin (max 1 (b*X)) + 1 := by
-  exact Finset.card_range _
+    (cubeLogRange b X).card = normLogBin (max 1 (b*X)) + 1 :=
+  Finset.card_range _
 
 theorem sum_activeCubeLogBins {M : Type*} [AddCommMonoid M]
     (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (b X : ℝ)
@@ -246,9 +217,8 @@ theorem sum_activeCubeLogBins {M : Type*} [AddCommMonoid M]
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FirstPassCubeLabels
 
@@ -260,17 +230,16 @@ theorem nonzeroRowMajorantSum_exact_disk (P : ActualEisensteinCubic.O → ℂ) (
   have hz (z : ActualEisensteinCubic.O) (hz : z∉(firstFrequencyDisk (2*K)).erase 0) :
       (if z=0 then 0 else rowMajorant (‖eisEmbedding z‖^2/K)*(‖P z‖^2:ℝ))=0 := by
     by_cases hzero : z=0
-    · simp [hzero]
+    · simp_all
     have hn : z∉firstFrequencyDisk (2*K) := by
       intro hm
-      exact hz (Finset.mem_erase.mpr ⟨hzero,hm⟩)
+      exact by grind
     have hlarge : 2<‖eisEmbedding z‖^2/K :=
       (lt_div_iff₀ hK).mpr (outside_firstFrequencyDisk (2*K) z hn)
     rw [ite_eq_right hzero,rowMajorant_zero _ hlarge,zero_mul]
   rw [tsum_eq_sum hz]
   apply Finset.sum_congr rfl
-  intro z hz
-  rw [ite_eq_right (Finset.mem_erase.mp hz).1]
+  simp_all
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]

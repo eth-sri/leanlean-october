@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped ContDiff
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic HeckeRowClosure
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 abbrev NonzeroElement := UnrestrictedIdealReindex.NonzeroElement
 
 structure RowData where
@@ -19,7 +18,7 @@ structure RowData where
   f : O
   m_ne_zero : m≠0
   f_ne_zero : f≠0
-  lambda_dvd : λ₀∣m
+  lambda_dvd : ConcretePrimeRowBridge.goodLambda∣m
   two_dvd : (2 : O)∣m
 
 def RowData.character (data : RowData) (u : NonzeroElement) : Character :=
@@ -39,8 +38,8 @@ def amplifiedElement (u : NonzeroElement) (A : NonzeroIdeal) : NonzeroElement :=
 theorem RowData.amplified_prime_mask (data : RowData) (u : NonzeroElement)
     (P : SmoothMobiusCorrection.PrimeIdeal) :
     idealCoeff (data.character (amplifiedElement u ⟨P.val,P.property.ne_zero⟩))=
-      IdealEuler.deletePrimes {P} (idealCoeff (data.character u)) := by
-  exact amplified_row_prime_mask data.η (data.character u)
+      IdealEuler.deletePrimes {P} (idealCoeff (data.character u)) :=
+  amplified_row_prime_mask data.η (data.character u)
     (data.character (amplifiedElement u ⟨P.val,P.property.ne_zero⟩)) data.m data.f u.val
     (ConcretePrimeRowBridge.idealGenerator P.val) P
     (ConcretePrimeRowBridge.span_idealGenerator P.val)

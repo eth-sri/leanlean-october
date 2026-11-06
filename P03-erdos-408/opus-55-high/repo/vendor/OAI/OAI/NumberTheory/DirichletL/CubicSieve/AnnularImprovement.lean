@@ -8,21 +8,20 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ColumnShells
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
 open IdealMobiusDivisorSum SecondPassArithmetic EisensteinSchwartzPoisson
 open SevenEighths.CubicDyadicDecay
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     (hξ : (4/3 : ℝ) ≤ ξ) (hξ2 : ξ ≤ 2)
     (θ : ℝ) (hθ : 0 < θ) (hθsmall : θ < 1/2) :
     ∃ K : ℝ, 0 < K ∧ ∀ {n : Type} [Fintype n] [DecidableEq n]
-      (M N : ℝ), 1 ≤ M → 1 ≤ N → ∀ (cols : n → Ideal O), Function.Injective cols →
+      (M N : ℝ), 1 ≤ M → 1 ≤ N → ∀ (cols : n → Ideal ActualEisensteinCubic.O), Function.Injective cols →
       (∀ j, Admissible (cols j)) →
       (∀ j, N/2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) →
-      ∀ (a : n → ℂ) (R : Finset O),
+      ∀ (a : n → ℂ) (R : Finset ActualEisensteinCubic.O),
         (∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M) →
         (∑ z ∈ R, ‖∑ j, cubicRow (cols j) z*a j‖^2) ≤
           K*N^(6*θ)*(M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1))*∑ j, ‖a j‖^2 := by
@@ -51,7 +50,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   have hS : 0 ≤ S := by dsimp [S]; positivity
   let U := V*N^(4*θ)*S
   have hU : 0 ≤ U := by dsimp [U]; positivity
-  have hcost (D : Ideal O) (hD : D ∈ gcdPool cols) (E : Ideal O) (hE : E ∈ idealDivisors D) :
+  have hcost (D : Ideal ActualEisensteinCubic.O) (hD : D ∈ gcdPool cols) (E : Ideal ActualEisensteinCubic.O) (hE : E ∈ idealDivisors D) :
       frequencyCost C θ hθ (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ)) ≤ U := by
     have hc0 (j : n) : cols j ≠ 0 := primaryGenerator_ne_zero_ideal _ (hc j).2
     have hD0 := gcdPool_ne_zero cols hc0 D hD
@@ -67,7 +66,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     have hd0 : 0 < (Ideal.absNorm D : ℝ) := by linarith
     have he0 : 0 < (Ideal.absNorm E : ℝ) := by linarith
     have hh := hfb C θ hC hθ (M/(Ideal.absNorm E : ℝ)) (N/(Ideal.absNorm D : ℝ))
-      (div_pos hM0 he0) ((one_le_div hd0).mpr hdN)
+      (by positivity) ((one_le_div hd0).mpr hdN)
     have hd := frequencyCost_descendant_of_bound C θ A θ ξ M N
       (Ideal.absNorm D) (Ideal.absNorm E) hC hθ hA.le hθ.le (by linarith)
       (by linarith) (by linarith) hM0 hN0 he1 hed hdN hh
@@ -77,7 +76,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     apply (hd.trans hb).trans
     change (2*Z+H*(P+Q))*N^(4*θ)*S ≤ V*N^(4*θ)*S
     exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right (by dsimp [V]; linarith) (Real.rpow_nonneg hN0.le _)) hS
+      (mul_le_mul_of_nonneg_right (by linarith) (by positivity)) hS
   have henergy := (hcf θ hθ M N hM0 cols hinj hc hcols a R hR).trans
     (common_factor_uniform_cost C θ U M N hθ hU hN0.le cols hc (fun j => (hcols j).2) a hcost)
   have hp : N^(4*θ)*(N^θ)^2 = N^(6*θ) := by
@@ -87,7 +86,7 @@ theorem HasCubicExponent.annular_improved {ξ : ℝ} (h : HasCubicExponent ξ)
     ring
   calc
     _ ≤ U*(Dv*N^θ)^2*∑ j, ‖a j‖^2 := henergy
-    _ = (V*Dv^2)*(N^(4*θ)*(N^θ)^2)*S*∑ j, ‖a j‖^2 := by dsimp [U]; ring
+    _ = (V*Dv^2)*(N^(4*θ)*(N^θ)^2)*S*∑ j, ‖a j‖^2 := by linarith
     _ = _ := by rw [hp]
 
 end

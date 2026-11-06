@@ -6,7 +6,6 @@ public import Erdos821.P4Independent.DisjointMarginal
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -40,7 +39,7 @@ lemma auxSideSets_disjoint (ν : Pattern P J ell m) (block : P.BigGroup → Bool
     change z.2 ∈ (if block z.1 = true then ν.changed z.1.val else ∅) at hz
     rw [ite_eq_right hh] at hz
     exact Finset.notMem_empty _ hz
-  cases hF.symm.trans hT
+  simp_all
 
 lemma bigAux_selected_pair_expect (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (hV : ∀ g, 0 < P.V g)
@@ -89,8 +88,7 @@ lemma bigAux_selected_pair_expect (ν : Pattern P J ell m) (block : P.BigGroup �
   have hwT : partialProductWeight (bigFlatWeight P J) (bigFlatSet P J ST) b =
       Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts ST) (eT b) :=
     (partialProductWeight_rows ST b).trans (rowPartialTuple_weight ST (flatPartialRows ST b)).symm
-  exact congrArg (fun r : ℝ => (r : ℂ) * H (eF a) (eT b))
-    (congrArg₂ (fun r s : ℝ => r * s) hwF hwT)
+  grind
 
 end
 end Erdos821.P4Probe

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyNormalized
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+open ProbeRaySlots
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -25,7 +24,7 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
     (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
@@ -128,13 +127,13 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
     let Rk := rows∩dyadicRows 1 k
     let Rij := cubeBinRows Rk idx grid i j
     have hsubk : Rij⊆Rk := Finset.filter_subset _ _
-    have hsub : Rij⊆rows := hsubk.trans Finset.inter_subset_left
+    have hsub := hsubk.trans Finset.inter_subset_left
     by_cases hne' : Rij.Nonempty
     · have hgeo := hg rows (fun u hu=>⟨(hrows u hu).1,(hrows u hu).2.1,(hrows u hu).2.2.2⟩) k
         (hne'.mono hsubk)
       obtain ⟨u,hu⟩ := hne'
-      have huj : grid u=j := ((mem_cubeBinRows Rk idx grid i j u).mp hu).2.2
-      have hju : j≠0 := huj ▸ (hlabels u (hsub hu)).2.2.1
+      have huj := ((mem_cubeBinRows Rk idx grid i j u).mp hu).2.2
+      have hju := huj ▸ (hlabels u (hsub hu)).2.2.1
       have ha : 51/100<51/100+e*j := by
         have hjp : (0:ℝ)<j := by exact_mod_cast Nat.pos_of_ne_zero hju
         nlinarith
@@ -159,7 +158,7 @@ theorem actual_nonfloor_rows_saving (N n : ℕ) (e eps c b A R dmin dmax rmin τ
         (fun u hu=>hgeo.2.2.2.2.1 u (hsubk hu)) i (by simpa using Nat.le_of_lt_succ (Finset.mem_range.mp hi))
         hnext' hcurrent' (fun t ht=>hmom k hk i hi j hj ⟨u,hu⟩ t ht)
       exact hbounded.2
-    · have he : Rij=∅ := Finset.not_nonempty_iff_eq_empty.mp hne'
+    · have he := Finset.not_nonempty_iff_eq_empty.mp hne'
       simpa only [F,show cubeBinRows (rows∩dyadicRows 1 k) idx grid i j=∅ from he,
         finiteCentralCubeRows,Finset.sum_empty,zero_div,norm_zero] using hD
   have hpartition : F rows (fun u=>51/100+e*grid u) (fun u=>(3*idx u+1:ℕ)*Z^τ)=

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformHeigh
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
@@ -55,7 +55,7 @@ theorem detectorSchwartz_uniform (S : Finset (ℕ×ℕ)) :
   have hnorm : ‖orientedFrequency reverse t‖=‖t‖ := by cases reverse <;> simp [orientedFrequency]
   rw [hnorm] at he
   change S.sup (schwartzSeminormFamily ℝ ℝ ℂ) (detectorSchwartz reverse n σ t)≤_ at he
-  exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hdegree)
+  exact he.trans (mul_le_mul hCq (pow_le_pow_right₀ (by simp) hdegree)
     (by positivity) (by linarith))
 
 end SevenEighths.CenteredMomentDetectorDictionary

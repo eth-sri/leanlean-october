@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.LowActualEnergies
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
-open CompletedGauss
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve RayFourExpansion
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowGramCoefficient (C : CalibrationData) (σ : RayRing)
     (s : {I : Id // Supported I}) : ℂ :=
@@ -26,19 +24,15 @@ def lowGramScale (Y : ℝ) : ℂ := (Y:ℂ)⁻¹*(Real.sqrt Y:ℂ)⁻¹
 lemma lowGramProfile_norm (W1 : ℝ→ℂ) (v r : ℝ) (hr : 0<r) :
     ‖lowGramProfile W1 v r‖=‖W1 r‖/r := by
   rw [lowGramProfile,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hr]
-  simp only [Complex.add_re,Complex.neg_re,Complex.one_re,Complex.mul_re,
-    Complex.ofReal_re,Complex.ofReal_im,Complex.I_re,Complex.I_im,mul_zero,zero_mul,sub_self,add_zero,
-    Real.rpow_neg_one,div_eq_mul_inv]
+  simp only [Complex.add_re, Complex.neg_re, Complex.one_re, Complex.mul_re, Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_self, add_zero, Real.rpow_neg_one, div_eq_mul_inv]
 
 lemma lowGramScale_mul_star (Y : ℝ) (hY : 0<Y) :
     lowGramScale Y*star (lowGramScale Y)=((Y^3:ℝ):ℂ)⁻¹ := by
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hs : (Real.sqrt Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hY).ne'
+  have hy := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hs := Complex.ofReal_ne_zero.mpr (by positivity)
   have hsquare : (Real.sqrt Y:ℂ)^2=(Y:ℂ) := by exact_mod_cast Real.sq_sqrt hY.le
   simp only [lowGramScale,map_mul,map_inv₀,Complex.star_def,Complex.conj_ofReal,Complex.ofReal_pow]
-  field_simp
-  ring_nf
-  rw [hsquare]
+  grind
 
 theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (s : {I : Id // Supported I}) :
@@ -48,7 +42,7 @@ theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
   have hq : (0:ℝ)<Ideal.absNorm s.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
   have hr : 0<(Ideal.absNorm s.val:ℝ)/Y := div_pos hq hY
-  have hrc : (((Ideal.absNorm s.val:ℝ)/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr hr.ne'
+  have hrc := Complex.ofReal_ne_zero.mpr hr.ne'
   have hsqrt : Real.sqrt (Ideal.absNorm s.val:ℝ)=
       Real.sqrt Y*Real.sqrt ((Ideal.absNorm s.val:ℝ)/Y) := by
     rw [←Real.sqrt_mul hY.le,mul_div_cancel₀ _ hY.ne']
@@ -67,7 +61,7 @@ theorem lowGaussColumn_unnormalized (C : CalibrationData) (W1 : ℝ→ℂ)
         ((((Ideal.absNorm s.val:ℝ)/Y:ℝ):ℂ)^(-(1/2:ℂ)+(v:ℂ)*Complex.I)*
           (Real.sqrt ((Ideal.absNorm s.val:ℝ)/Y):ℂ)⁻¹) := by ring_nf
       _ = _ := by rw [hp];unfold lowGramScale lowGramProfile;ring_nf
-  · simp
+  simp
 
 end SevenEighths.ProbePhysical
 end

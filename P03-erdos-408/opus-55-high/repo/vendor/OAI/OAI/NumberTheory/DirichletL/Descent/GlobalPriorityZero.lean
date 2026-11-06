@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.WholePriorityParentBounds
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion FirstCauchyArithmetic
-open InverseSecondPrincipalCaller InversePrioritySecondSource InverseFirstPriorityParents InverseMomentWholePriorityParents
-local notation "O"=>ActualEisensteinCubic.O
+open FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open InverseSecondPrincipalCaller InverseFirstPriorityParents InverseMomentWholePriorityParents
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
 def globalPriorityZeroAggregate
-    (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→ActualEisensteinCubic.O)[∀i,(Ideal.span {p i}).IsMaximal](hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
-    (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (V:𝓢(ℝ,ℂ))(X Y:ℝ)(R:Finset ι→Finset ι→ℝ):ℝ:=
   (32*512)*(2:ℝ)^slots.card*∑ray:RayCharacter×RayCharacter,∑core:FirstCoreIndex,∑J∈slots.powerset,
     ∑x∈original,‖globalPriorityOuter p hg negative Ψ m ray core w x‖*
@@ -29,12 +28,12 @@ def globalPriorityZeroAggregate
 theorem global_priority_zero_aggregate (ε:ℝ)(hε:0<ε):
     ∃(s:Finset (ℕ×ℕ))(Czero:ℝ),0<Czero ∧
     ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       {Jo:ℕ}(extra:CubeCoordinates ι→Finset ι)(pool:Finset ι)(original:Finset (Source ι Jo))(w:Source ι Jo→ℂ)
-      (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
+      (negative:Bool)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀k∈lists i,‖a i k‖≤1)→(∀u,‖Ψ u‖≤1)→
       (∀x∈original,‖w x‖≤1)→
     ∀(om:𝓢(ℝ,ℂ))(lo hi:ℝ)(hlo:0<lo)(hs:Function.support om⊆Set.Icc lo hi)
@@ -57,7 +56,7 @@ theorem global_priority_zero_aggregate (ε:ℝ)(hε:0<ε):
     (fun ray core J x=>‖priorityZeroParent p hg extra pool negative
       (firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core) m slots J lists a
       (principalWindow om lo hi hlo hs negative t) X Y R (parent p x)‖)
-    (by intros;positivity)
+    (by simp)
     (fun ray core J hJ x hx=>hprincipal p hp hg hinj hcop extra pool negative
       (firstCoreTwist negative (if negative then ray.1 else ray.2) Ψ core) m slots J lists a hslots ha
       (fun u=>(firstCoreTwist_norm_le negative _ Ψ core u).trans (hΨ u))

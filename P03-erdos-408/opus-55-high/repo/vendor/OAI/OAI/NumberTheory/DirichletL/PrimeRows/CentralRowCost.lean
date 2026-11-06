@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbeCentralRepeatedProduct
 open ProbeRowReflectedAllocation ProbeRowRadicalConductor HeckeReciprocalGrowth HeckeDeletionBounds
-local notation "O" => HeckeFamily.O
 
 private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     N^A*N^R*L^2*(2*N^2*L^2)^eps=
@@ -26,7 +25,7 @@ private lemma cost_power_identity (N L A R eps : ℝ) (hN : 0<N) (hL : 0<L) :
     _ = _ := by
       rw [←Real.rpow_add hN,←Real.rpow_add hN,←Real.rpow_two L,←Real.rpow_add hL]
 
-theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem central_rowCost_bound (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (e eps : ℝ) (he : 0<e) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀(u : FreeRow) (a H : ℝ),51/100≤a → a≤1 → 0≤H →
       rowCost S hS u a e eps H≤
@@ -56,7 +55,7 @@ theorem central_rowCost_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     calc
       _ ≤ N*(2*N*L^2) := by
         apply mul_le_mul hrad _ (by positivity) hN.le
-        exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hq (by norm_num)) (sq_nonneg L)
+        nlinarith
       _ = _ := by ring
   have hrpow := Real.rpow_le_rpow (show (0:ℝ)≤(radical (rowCharacter S hS u).modulus).absNorm by positivity) hrad hR
   have hcpow := Real.rpow_le_rpow (show 0≤presentationComplexity (rowCharacter S hS u) H by

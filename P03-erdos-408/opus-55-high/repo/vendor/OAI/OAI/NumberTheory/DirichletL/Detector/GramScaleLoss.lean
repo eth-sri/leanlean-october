@@ -11,16 +11,14 @@ namespace SevenEighths.ProbeGramCommon
 
 lemma nonexceptional_scale_identity (M P Y δ : ℝ) (hM : 0<M) (hP : 0<P) (hY : 0<Y) :
     P*(Y/(M*P))^(-1+δ)=M^(1-δ)*P^(2-δ)*Y^(-1+δ) := by
-  rw [Real.div_rpow hY.le (mul_pos hM hP).le,Real.mul_rpow hM.le hP.le,div_eq_mul_inv,mul_inv_rev,
+  rw [Real.div_rpow hY.le (by positivity),Real.mul_rpow hM.le hP.le,div_eq_mul_inv,mul_inv_rev,
     ←Real.rpow_neg hM.le,←Real.rpow_neg hP.le]
   have he : P*P^(-(-1+δ))=P^(2-δ) := by
     conv_lhs => lhs;rw [←Real.rpow_one P]
     rw [←Real.rpow_add hP]
     congr 1
     ring
-  calc
-    _=M^(1-δ)*(P*P^(-(-1+δ)))*Y^(-1+δ) := by rw [show -(-1+δ)=1-δ by ring];ring
-    _=_ := by rw [he]
+  grind
 
 lemma nonexceptional_scale_loss (M P Y δ : ℝ) (hM : 1≤M) (hP : 1≤P) (hY : 0<Y)
     (hδ : 0≤δ) :

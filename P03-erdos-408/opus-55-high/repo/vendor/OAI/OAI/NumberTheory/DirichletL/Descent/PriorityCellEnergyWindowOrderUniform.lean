@@ -10,14 +10,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open SecondPassIntegration JointLogSeparation
+open InverseInitialClippedColumns
 theorem actual_priority_cell_recursive_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -25,25 +24,25 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
-      ∀ J:ℕ, ∃ C : ℝ,0 ≤ C ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
+      ∀ J:ℕ, ∃ C : ℝ,0 ≤ C ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (_hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (_hs : ActualSecondSourceConditions p source) (d:InverseSecondSourceBlocks.BlockIndex)
     (_hcell:∀x∈source,InverseSecondSourceBlocks.index p x=d),
-    ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+    ∀ (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
         (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
         (Y R L Z X Vlabel εchild : ℝ)
         (ell Ractive j tcount gcount theta eta : ℝ) (ρ : Fin 6 → ℝ) (t : ℝ)
         (w : MarkedSecondSource ι Jo 0 → ℂ)
-        (labels : Finset (Ideal Eis)) (A : ℝ),
-      (∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
-      (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
+        (labels : Finset (Ideal ActualEisensteinCubic.O)) (A : ℝ),
+      (∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient) →
+      (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient) →
       (∀ i,|ρ i| ≤ B₀ i) → 0 ≤ L →
       1 < Z → 0 < X → 0 < Y →
       (∀ x ∈ source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R) →
@@ -88,7 +87,7 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
               (1+Y*(scales d 3)/((scales d 1)*(scales d 2)^2*(Z^(secondCellColumnExponent Z X d))^2))^Aker)) := by
   let g:=priorityLogWindow om lo hi hlo hsupport negative
   let mg:=|Real.log lo|+|Real.log hi|
-  have hm:0≤mg:=add_nonneg (abs_nonneg _) (abs_nonneg _)
+  have hm:0≤mg:=by positivity
   have hg:Function.support g⊆Set.Icc (-mg) mg:=priorityLogWindow_support om lo hi hlo hsupport negative
   have hcg:Function.support (conjugateProfile g)⊆Set.Icc (-mg) mg:=by
     intro x hx
@@ -96,8 +95,8 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
     simpa only [Function.mem_support,conjugateProfile_apply,star_ne_zero] using hx
   obtain ⟨ω₁,ω₂,af,bf,haf,hab,hc₁,hc₂,hs₁,hs₂,hordered⟩:=
     actual_second_fixed_block_recursive_window_order_uniform_types  (conjugateProfile g) g Φ mg mg 1
-      (fun _=>1) (fun _=>2) B₀ hm hm (le_refl 1) (fun _=>zero_lt_one)
-      (fun _=>by norm_num) hB₀ hcg hg Aker K εmass hεmass
+      (fun _=>1) (fun _=>2) B₀ hm hm (le_refl 1) (by simp)
+      (by simp) hB₀ hcg hg Aker K εmass hεmass
   refine ⟨ω₁,ω₂,af,bf,haf,hab,hc₁,hc₂,hs₁,hs₂,?_⟩
   intro J
   obtain ⟨C,hC,henergy⟩:=hordered J
@@ -113,9 +112,9 @@ theorem actual_priority_cell_recursive_window_order_uniform_types
     (scales d 0) (scales d 1) (scales d 2) (scales d 3) Y R L Z
     (secondCellColumnExponent Z X d) Vlabel εchild ell Ractive j tcount gcount theta eta ρ
     1 1 (-priorityHeight negative t) (priorityHeight negative t) w labels A
-    hd₁ hd₂ hρ (le_refl 1) (le_refl 1) (le_refl 1) (le_refl 1) hL (lt_trans zero_lt_one hZ)
+    hd₁ hd₂ hρ (le_refl 1) (le_refl 1) (le_refl 1) (le_refl 1) hL (by positivity)
     (dyadScale_pos _) (dyadScale_pos _) (dyadScale_pos _) (dyadScale_pos _)
-    (Real.rpow_pos_of_pos (lt_trans zero_lt_one hZ) _) hY hrows hblock
+    (by positivity) hY hrows hblock
     hcube₁ hcube₂ hactive hj hquot hcommon hdiv hΨ hw ha₁ ha₂ hlabels ho hslots₁ hslots₂ hA hleft hright
   rw [second_cell_physical_scale Z X d hZ hX] at he
   refine le_trans (le_of_eq (congrArg (fun v : ℂ => ‖(Y : ℂ) * secondRayCoefficient z * v‖) ?_)) he

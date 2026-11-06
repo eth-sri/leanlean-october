@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyInputParentCapacity
 open CenteredMomentEnergyBands CenteredMomentCommonRadialData
@@ -17,7 +17,7 @@ variable {ι:Type*} [Fintype ι]
 
 lemma raw_log_le_length (Z X:ℝ)(hZ:1<Z)(hX:0<X):
     Real.logb Z X≤length Z X :=
-  Real.logb_le_logb_of_le hZ hX (le_max_right _ _)
+  Real.logb_le_logb_of_le hZ hX (by simp)
 
 lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
     length Z X=max 0 (Real.logb Z X) := by
@@ -30,13 +30,11 @@ lemma length_eq_max_log (Z X:ℝ)(hZ:1<Z)(hX:0<X):
 
 theorem postmask_length (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
     length Z (max 1 X/D)=length Z X-min (Real.logb Z D) (length Z X) := by
-  have hp:0<max 1 X:=lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  have hp:0<max 1 X:=by positivity
   have hd:0<D:=zero_lt_one.trans_le hD
-  rw [length_eq_max_log Z _ hZ (div_pos hp hd),Real.logb_div hp.ne' hd.ne']
+  rw [length_eq_max_log Z _ hZ (by positivity),Real.logb_div hp.ne' hd.ne']
   change max 0 (length Z X-Real.logb Z D)=_
-  by_cases h:Real.logb Z D≤length Z X
-  · rw [min_eq_left h,max_eq_right (sub_nonneg.mpr h)]
-  · rw [min_eq_right (le_of_not_ge h),max_eq_left (sub_nonpos.mpr (le_of_not_ge h)),sub_self]
+  grind
 
 lemma postmask_length_le (Z X D:ℝ)(hZ:1<Z)(hD:1≤D):
     length Z (max 1 X/D)≤length Z X := by

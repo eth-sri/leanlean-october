@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped SchwartzMap
+open Complex
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,39 +30,31 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
+open scoped Classical ContDiff Manifold ENNReal
 
 namespace CubicEisenstein
 
@@ -114,7 +93,7 @@ lemma kernelTestEnergyDensity_eq_partials (f : kernelSmoothTests) (w : Hyperboli
   simpa only [Complex.normSq_apply,pow_two] using Complex.normSq_eq_norm_sq (kernelTestPartial f w j)
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups InnerProductSpace
+open scoped Classical ContDiff Manifold ENNReal
 
 def kernelGradientAt (w : HyperbolicSpace) : kernelSmoothTests→ₗ[ℂ]EuclideanSpace ℂ (Fin 3) where
   toFun f := WithLp.toLp 2 (fun j => (hyperbolicHeight w:ℂ)*kernelTestPartial f w j)
@@ -172,7 +151,7 @@ lemma kernelDirichletPairDensity_conj (f g : kernelSmoothTests) (q : KernelQuoti
     change star (kernelDirichletPairDensity g f (integralOrbitProjection globalKubotaKernel w))=
       kernelDirichletPairDensity f g (integralOrbitProjection globalKubotaKernel w)
     rw [kernelDirichletPairDensity_coordinate,kernelDirichletPairDensity_coordinate]
-    exact inner_conj_symm _ _
+    simp
 
 lemma kernelDirichletPairDensity_self (f : kernelSmoothTests) (q : KernelQuotient) :
     kernelDirichletPairDensity f f q=(kernelQuotientEnergyDensity f q:ℂ) := by
@@ -217,8 +196,7 @@ namespace CompletedGauss
 
 section
 
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
+open scoped Classical SchwartzMap
 
 theorem finite_integral_energy_bound {κ : Type*} [Fintype κ]
     (b : ℝ→ℂ) (φ : κ→ℝ→ℂ) (E : ℝ) (hE : 0≤E)
@@ -246,12 +224,12 @@ theorem finite_integral_energy_bound {κ : Type*} [Fintype κ]
   rw [EuclideanSpace.norm_sq_eq,mul_pow,Real.sq_sqrt hE] at hs
   simpa [e,mul_comm] using hs
 
-open CanonicalQuadraticSieve ActualEisensteinCubic
+open CanonicalQuadraticSieve
 
 end
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open CanonicalQuadraticSieve
 
 def completedRowFiber (S : Finset (Ideal O)) (Q A T : Ideal O) : Finset (Ideal O) :=
   S.filter (fun I => rowPowerfulPart I=A ∧ rowMaskPart I Q=T)
@@ -263,9 +241,9 @@ theorem rowResidualPart_injective_on_fiber (S : Finset (Ideal O)) (Q A T : Ideal
   obtain ⟨hIS,hIA,hIT⟩ := Finset.mem_filter.mp hI
   obtain ⟨hJS,hJA,hJT⟩ := Finset.mem_filter.mp hJ
   calc
-    I = rowPowerfulPart I*rowMaskPart I Q*rowResidualPart I Q := (row_powerful_mask_residual_product I Q (hS I hIS)).symm
-    _ = rowPowerfulPart J*rowMaskPart J Q*rowResidualPart J Q := by rw [hIA,hJA,hIT,hJT,he]
-    _ = J := row_powerful_mask_residual_product J Q (hS J hJS)
+    I = rowPowerfulPart I*rowMaskPart I Q*rowResidualPart I Q := (row_powerful_mask_residual_product I Q (by grind)).symm
+    _ = rowPowerfulPart J*rowMaskPart J Q*rowResidualPart J Q := by simp_all
+    _ = J := row_powerful_mask_residual_product J Q (by grind)
 
 theorem completedRowFiber_residual_range (S : Finset (Ideal O)) (Q A T : Ideal O)
     (hbad : ∀P∈fixedBadPrimes,P∣Q) (K : ℝ)
@@ -275,21 +253,19 @@ theorem completedRowFiber_residual_range (S : Finset (Ideal O)) (Q A T : Ideal O
   obtain ⟨hIS,hIA,hIT⟩ := Finset.mem_filter.mp hI
   apply mem_idealRange.mpr
   refine ⟨rowResidualPart_admissible I Q hbad,?_⟩
-  rw [rowResidualPart_norm I Q (hS I hIS).1,hIA,hIT]
-  exact div_le_div_of_nonneg_right (hS I hIS).2 (by positivity)
+  rw [rowResidualPart_norm I Q (by grind),hIA,hIT]
+  exact div_le_div_of_nonneg_right (by grind) (by positivity)
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open scoped Classical SchwartzMap ContDiff
+open CanonicalQuadraticSieve
 
 end CompletedGauss
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace InitialMeanSquare
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstPassCubeLabels (primeProductNorm columnLog)
 

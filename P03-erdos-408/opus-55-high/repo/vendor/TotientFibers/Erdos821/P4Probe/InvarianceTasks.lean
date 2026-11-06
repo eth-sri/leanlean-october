@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.CountingTasks
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -53,8 +52,7 @@ theorem symmetricFullComponentTask_of_counting (hcount : ProbeCountingTask)
     rw [show (∑ S ∈ (Finset.univ : Finset (RowSite s (J + ell))).powerset, E S) =
       productSqNorm (flatWeight w) (fun y => f (flattenRows.symm y)) from
         productAnova_energy (flatWeight w) (fun z => hsum z.1) Finset.univ _, flatSqNorm_eq]
-  rw [ht] at hc
-  convert hc using 1; congr! 2
+  grind
 
 end
 end Erdos821.P4Probe

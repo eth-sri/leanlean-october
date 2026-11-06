@@ -11,36 +11,31 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentReflectedSource
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CanonicalUnitEuler
-open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonLinearSource CenteredMomentCommonPairedSource
-open CenteredMomentFirstSectors CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSecondHeightFamily CenteredMomentSourceRow
+open CenteredMomentHeckeColumnWindow
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-def reflected (η:Character):Character:=η.product (HeckeUnitRows.character (-1:Oˣ))
+def reflected (η:Character):Character:=η.product (HeckeUnitRows.character (-1:HeckeFamily.Oˣ))
 
-theorem unit_ideal (I:Ideal O)(hI:Supported I):
-    idealCoeff (HeckeUnitRows.character (-1:Oˣ)) I=idealRowHom (-1) I:=by
+theorem unit_ideal (I:Ideal HeckeFamily.O)(hI:Supported I):
+    idealCoeff (HeckeUnitRows.character (-1:HeckeFamily.Oˣ)) I=idealRowHom (-1) I:=by
   rw [←ConcretePrimeRowBridge.span_idealGenerator I,
     idealCoeff_span _ (ConcretePrimeRowBridge.idealGenerator_ne_zero I hI.1),
     HeckeUnitRows.elementCoeff_character]
   change (if Supported (Ideal.span {ConcretePrimeRowBridge.idealGenerator I}) then _ else 0)=_
-  rw [ConcretePrimeRowBridge.span_idealGenerator,ite_eq_left hI]
-  rfl
+  simp [ConcretePrimeRowBridge.span_idealGenerator,ite_eq_left hI]
 
-theorem reflected_height (η:Character)(t:ℝ)(I:Ideal O)(hI:Supported I):
+theorem reflected_height (η:Character)(t:ℝ)(I:Ideal HeckeFamily.O)(hI:Supported I):
     heightCoeff (reflected η) t I=heightCoeff η t I*idealRowHom (-1) I:=by
   rw [heightCoeff,reflected,idealCoeff_product,unit_ideal I hI,heightCoeff]
   ring
 
-theorem reflected_row (η:Character)(m A z n:O)
-    (hmLam:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:O)∣m):
+theorem reflected_row (η:Character)(m A z n:HeckeFamily.O)
+    (hmLam:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:HeckeFamily.O)∣m):
     rowTwist (HeckeRowClosure.elementHom η) m 1 (A*(-z)) n=
       rowTwist (HeckeRowClosure.elementHom (reflected η)) m 1 (A*z) n:=by
   by_cases hn:Supported (Ideal.span {n})
@@ -49,7 +44,7 @@ theorem reflected_row (η:Character)(m A z n:O)
     change elementCoeff η n*coprimalityMask m n*idealRowHom (A*(-z)) (Ideal.span {n})=
       elementCoeff (reflected η) n*coprimalityMask m n*idealRowHom (A*z) (Ideal.span {n})
     rw [reflected,elementCoeff_product,HeckeUnitRows.elementCoeff_character]
-    have hu:unitSupplement (-1:Oˣ) n=idealRowHom (-1) (Ideal.span {n}):=by
+    have hu:unitSupplement (-1:HeckeFamily.Oˣ) n=idealRowHom (-1) (Ideal.span {n}):=by
       change (if Supported (Ideal.span {n}) then idealRowHom (-1) (Ideal.span {n}) else 0)=_
       rw [ite_eq_left hn]
     rw [hu,show A*(-z)=(-1)*(A*z) by ring,idealRowHom_argument_mul]
@@ -57,8 +52,8 @@ theorem reflected_row (η:Character)(m A z n:O)
   · rw [CanonicalRowCompletion.rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn,
       CanonicalRowCompletion.rowTwist_zero_of_not_supported _ _ _ _ _ hmLam hm2 hn]
 
-theorem reflected_inducing (η:Character)(Q:Ideal O)(m A z:O)
-    (hmLam:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:O)∣m):
+theorem reflected_inducing (η:Character)(Q:Ideal HeckeFamily.O)(m A z:HeckeFamily.O)
+    (hmLam:ConcretePrimeRowBridge.goodLambda∣m)(hm2:(2:HeckeFamily.O)∣m):
     CenteredExceptionalProfile.FixedInducingRow η Q m A (-z) ↔
       CenteredExceptionalProfile.FixedInducingRow (reflected η) Q m A z:=by
   unfold CenteredExceptionalProfile.FixedInducingRow

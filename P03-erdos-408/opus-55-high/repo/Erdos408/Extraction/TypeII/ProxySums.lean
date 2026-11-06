@@ -23,7 +23,7 @@ that `D_j = ∏_{p ≤ Y} (1 - 1/p) · Π_P(1/j)`.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 /-- Candidate primes lie below `Y` when `exp(L^{0.45}) < Y`. -/
 theorem candidate_lt_cutoff {x : ℝ} (hL : 1 ≤ Real.log x)
@@ -50,27 +50,27 @@ theorem prod_primes_split {x : ℝ} (hL : 1 ≤ Real.log x)
   · rw [mem_filter, mem_range]
     rcases mem_union.1 hp with h | h
     · obtain ⟨hpp, -, hle⟩ := mem_candidatePrimes hL h
-      have : (p : ℝ) ≤ N := (candidate_lt_cutoff hL hYP h).le.trans hYN
-      exact ⟨by exact_mod_cast (show (p : ℝ) < N + 1 by linarith), hpp⟩
+      have : (p : ℝ) ≤ N := by linarith
+      simp_all
     · obtain ⟨hpp, -, hle⟩ := mem_primesIoc.1 h
-      exact ⟨by exact_mod_cast (show (p : ℝ) < N + 1 by linarith), hpp⟩
+      simp_all
   · rw [mem_filter, mem_range] at hp
     rw [mem_union, not_or] at hnot
     have hpY : (p : ℝ) ≤ proxyCutoff x := by
       by_contra h
       push Not at h
-      exact hnot.2 (mem_primesIoc.2 ⟨hp.2, h, by exact_mod_cast (by omega : p ≤ N)⟩)
-    rw [hloc p hp.2 hpY hnot.1, sub_zero, inv_one]
+      exact hnot.2 (mem_primesIoc.2 ⟨hp.2, h, by simp_all⟩)
+    simp_all
 
 theorem proxyLoc_nonneg (x : ℝ) (j p : ℕ) : 0 ≤ proxyLoc x j p := by
-  unfold proxyLoc; split_ifs <;> positivity
+  unfold proxyLoc; positivity
 
 theorem proxyLoc_le_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) (p : ℕ) : proxyLoc x j p ≤ 1 := by
   have hj' : (1 : ℝ) ≤ j := by exact_mod_cast hj
   unfold proxyLoc; split_ifs
   · exact inv_le_one_of_one_le₀ hj'
-  · exact zero_le_one
-  · exact le_rfl
+  · simp
+  simp
 
 theorem proxyLoc_of_candidate {x : ℝ} {j p : ℕ} (hp : p ∈ candidatePrimes x) :
     proxyLoc x j p = (j : ℝ)⁻¹ := by simp [proxyLoc, hp]
@@ -140,12 +140,11 @@ theorem sum_dampedWeight_sq_div_le {x : ℝ} (hL : 1 ≤ Real.log x)
     · have : (j : ℝ)⁻¹ * (j : ℝ)⁻¹ * r ≤ 1 := by
         rw [mul_assoc, inv_mul_le_iff₀ (by linarith), mul_one]
         calc (j : ℝ)⁻¹ * r ≤ (j : ℝ)⁻¹ * j := by gcongr
-          _ = 1 := inv_mul_cancel₀ (by linarith)
+          _ = 1 := by grind
           _ ≤ j := hj'
       linarith
-    · simp only [mul_zero, zero_mul]; linarith
-    · have : proxyCutoff x < p := by push Not at h2; exact h2
-      linarith
+    · linarith
+    linarith
   · rw [prod_primes_split hL hYP hYN _ fun p hp hpY hP => by
       rw [proxyLoc_of_le hpY hP, zero_mul, zero_mul, zero_div]]
     congr 1
@@ -169,9 +168,9 @@ theorem factorization_eq_sum_dvd {p m N : ℕ} (hp : p.Prime) (hm : m ≠ 0) (hm
     simp only [mem_filter, mem_Icc, hp.pow_dvd_iff_le_factorization hm]
     have := Nat.factorization_lt p hm
     constructor
-    · rintro ⟨⟨h1, -⟩, h2⟩; exact ⟨h1, h2⟩
-    · rintro ⟨h1, h2⟩; exact ⟨⟨h1, by omega⟩, h2⟩
-  rw [this, Nat.card_Icc, Nat.add_sub_cancel]
+    · omega
+    · omega
+  simp_all
 
 /-- The candidate logarithm: `∑_{m ≤ N} g(m) log(m / m̄) / m ≤ 2t (∑_P log p / p) ∑ g(m)/m`. -/
 theorem sum_dampedWeight_log_div_le {x : ℝ} (hL : 1 ≤ Real.log x) {j : ℕ} (hj : 1 ≤ j)
@@ -294,10 +293,10 @@ theorem prod_primes_ite_le (P : Finset ℕ) (u : ℕ → ℝ) (h0 : ∀ p ∈ P,
     simp only [apply_ite (fun y : ℝ => (1 - y)⁻¹), sub_zero, inv_one]
     rw [← prod_filter]
   rw [this]
-  refine prod_le_prod_of_subset_of_one_le₀ (fun p hp => (mem_filter.1 hp).2)
-    (fun p hp => inv_nonneg.2 (by linarith [h1 p (mem_filter.1 hp).2])) fun p hp _ => ?_
-  rw [one_le_inv₀ (by linarith [h1 p hp])]
-  linarith [h0 p hp]
+  refine prod_le_prod_of_subset_of_one_le₀ (by grind)
+    (fun p hp => inv_nonneg.2 (by grind)) fun p hp _ => ?_
+  rw [one_le_inv₀ (by simp_all)]
+  simp_all
 
 /-- The rough-count bound for the damped weight:
 `∑_{m ≤ W} g(m) ≤ (A W / log Y) Π_P(t) + W^θ ∏_P (1 - p^{-θ})⁻¹`. -/

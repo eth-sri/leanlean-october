@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.TailAbsorption
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open scoped Classical
+open CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
+theorem actual_row_tail_energy_budget {a c : ActualEisensteinCubic.O} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (Lcap Lcount δ saving : ℝ) (hδ : 0<δ) :
     ∃ A : ℕ, ∀ {φ : Type*} [Fintype φ] (F : PrimeFamily φ)
@@ -37,8 +36,8 @@ theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
     calc
       _ = (nslot*(Z^δ)^(-(A:ℝ)))*
           (((Ideal.absNorm (∏ i,F.ideal i):ℝ)*QK*QP)*(familyRawScale F s X QK QP^2)⁻¹) := by ring
-      _ ≤ (nslot*(Z^δ)^(-(A:ℝ)))*(cusp^2*Z^(17*Lcap)) := by
-        exact mul_le_mul_of_nonneg_left hs (by positivity)
+      _ ≤ (nslot*(Z^δ)^(-(A:ℝ)))*(cusp^2*Z^(17*Lcap)) :=
+        mul_le_mul_of_nonneg_left hs (by positivity)
       _ = cusp^2*(nslot*(Z^δ)^(-(A:ℝ))*Z^(17*Lcap)) := by ring
       _ ≤ _ := mul_le_mul_of_nonneg_left ha (sq_nonneg _)
   calc
@@ -46,7 +45,7 @@ theorem actual_row_tail_energy_budget {a c : Eis} {mode : Bool}
     _ = cusp^4*Z^(Lcount+(-((saving+Lcount)/2))*2) := by
       rw [mul_pow,←pow_mul,←Real.rpow_mul_natCast hz.le,Real.rpow_add hz]
       ring_nf
-    _ = _ := by congr 2;ring
+    _ = _ := by grind
 end
 end SevenEighths.InverseReflectedPhase
 

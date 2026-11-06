@@ -8,17 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondLedger
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentCommonAllowance
 open CenteredMomentActive CenteredMomentSecondLedger CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 
 def activeIndicator (c d : ℕ) : ℝ := if netExponent c d ≠ 0 then 1 else 0
 
 theorem netExponent_self (c : ℕ) : netExponent c c = 0 := by
   unfold netExponent
-  have h : c+5*c=6*c := by omega
-  rw [h, Nat.mul_mod_right]
+  omega
 
 theorem local_allowance (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) :
     max (3*(c:ℝ)-5*(d:ℝ)-activeIndicator c d) 0 / 6 +
@@ -33,9 +31,8 @@ theorem local_allowance (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) :
       rcases lt_or_gt_of_ne hne with h | h
       · left; exact_mod_cast h
       · right; exact_mod_cast h
-    rcases hgap with hgap | hgap <;>
-      rw [max_def,max_def] <;> split_ifs <;> linarith
-  · rw [max_def,max_def]; split_ifs <;> linarith
+    grind
+  grind
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -43,8 +40,8 @@ omit [DecidableEq ι] in
 theorem weighted_positive_part (a w : ι → ℝ) (hw : ∀ i, 0 ≤ w i) :
     max (∑ i, a i*w i) 0 ≤ ∑ i, max (a i) 0*w i := by
   apply max_le
-  · exact Finset.sum_le_sum fun i _ => mul_le_mul_of_nonneg_right (le_max_left _ _) (hw i)
-  · exact Finset.sum_nonneg fun i _ => mul_nonneg (le_max_right _ _) (hw i)
+  · exact Finset.sum_le_sum fun i _ => mul_le_mul_of_nonneg_right (by simp) (hw i)
+  · exact Finset.sum_nonneg fun i _ => mul_nonneg (by positivity) (hw i)
 
 omit [DecidableEq ι] in
 theorem weighted_allowance (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
@@ -66,7 +63,7 @@ theorem weighted_allowance (c d : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
   linarith
 
 omit [DecidableEq ι] in
-theorem actual_common_support_allowance (p : ι → O)
+theorem actual_common_support_allowance (p : ι → ActualEisensteinCubic.O)
     (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ)
     (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (Z : ℝ) (hZ : 1 < Z) :
     let C := Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ)

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthReflection
@@ -19,7 +19,6 @@ open CenteredMomentEnergyZeroGrowthWindow CenteredMomentEnergyZeroReflectionSupp
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentFiniteProfileExceptional
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-local notation "O"=>HeckeFamily.O
 
 theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
@@ -28,14 +27,14 @@ theorem live_deleted_reflection (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
     ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀(Bmask L Mcap loss:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K→
+    ∀(Bmask L Mcap loss:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K→
     ZeroGrowthAt Q a b bΦ Bmask L Mcap loss Z degree S K→0≤Bmask→
     Mcap+Bmask+defect+xi≤L→Mcap+Bmask+defect≤Lreflect→
     ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤Mcap→
     ∀Wlong Wshort:𝓢(ℝ,ℂ),Function.support (Wlong:ℝ→ℂ)⊆Set.Icc a b→
     Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b→
     ∀t Xshort Xlong:ℝ,0<Xshort→Xshort≤Xlong→Xshort≤Z^L→1≤b*Xlong→
-    ∀Dshort Dlong:Finset (Ideal O),
+    ∀Dshort Dlong:Finset (Ideal HeckeFamily.O),
     Dshort∈(CompletedGauss.primeSupport s.puncture).powerset→
     Dlong∈(CompletedGauss.primeSupport s.puncture).powerset→
     let Ns:ℝ:=(∏P∈Dshort,P).absNorm;

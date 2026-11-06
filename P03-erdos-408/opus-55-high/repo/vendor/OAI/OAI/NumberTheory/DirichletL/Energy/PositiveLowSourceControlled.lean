@@ -10,21 +10,18 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
-open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
+open HeckeFamily
+open CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands
+open CenteredMomentNaturalFixedRaySource
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveLowBandSource (PhysicalLowAt)
 open CenteredMomentEnergyBandMonotonicity
@@ -38,7 +35,7 @@ theorem actual_low_stages_from_physical
       (∀T,Function.support (Ψ T:ℝ→ℂ)⊆Set.Icc (-1) (bΦ+1)) ∧
       (∀T x,0≤(Ψ T x).re) ∧∃Cfixed:ℝ,0<Cfixed ∧
     ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀(Bmask L Lslot rho κ e:ℝ)(η₀:Character)(Q:Ideal O)(S:Finset (ℕ×ℕ))(J:ℕ)(Cphysical Cprevious:ℝ),
+    ∀(Bmask L Lslot rho κ e:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(S:Finset (ℕ×ℕ))(J:ℕ)(Cphysical Cprevious:ℝ),
       1/6≤κ→0≤Cphysical→0≤Cprevious→εdiag≤e→-saving≤e→
       PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q
         J S Cprevious→
@@ -68,11 +65,10 @@ theorem actual_low_stages_from_physical
     rw [heq]
     have hh:0≤Cfixed*(Cphysical+1):=by positivity
     linarith
-  have hold':PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q
-      J (insert (0,0) S) (Cfixed*(Cm+1)):=
+  have hold':=
     positiveAt_transport (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z
       a b bΦ Bmask L rho e η₀ Q J J S (insert (0,0) S) Cprevious (Cfixed*(Cm+1)) hZ.1.le
-      le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (Finset.subset_insert _ _)
+      le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (by simp)
       hCprevious hprev hold
   have hmass':PhysicalLowAt (α:=α) M H hH W hW aslot bslot lo hi haslot hWs
       a b bΦ Bmask L Lslot rho Mcap κ ξ e Z ha Ψ η₀ Q S J Cm:=by
@@ -83,8 +79,7 @@ theorem actual_low_stages_from_physical
     have hz:0≤Z:=zero_le_one.trans hZ.1.le
     apply hh.trans
     gcongr
-  have hh:=hZ.2 Bmask L Lslot rho κ e η₀ Q S J Cm hκ hCm he hsave hold' hmass'
-  simpa only [heq] using hh
+  grind
 
 end SevenEighths.CenteredMomentEnergyPositiveLowSourceControlled
 

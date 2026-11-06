@@ -8,16 +8,14 @@ public import OAI.NumberTheory.DirichletL.Detector.CompensationActual
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CompletedGauss CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-lemma span_tupleProduct {K : ℕ} (p : Fin K→O) (J : Finset (Fin K)) :
+lemma span_tupleProduct {K : ℕ} (p : Fin K→ActualEisensteinCubic.O) (J : Finset (Fin K)) :
     Ideal.span {∏i∈J,p i}=∏i∈J,Ideal.span {p i} := by
   induction J using Finset.induction_on with
-  | empty => simp only [Finset.prod_empty,Ideal.span_singleton_one,Ideal.one_eq_top]
+  | empty => simp
   | @insert i J hi ih =>
     rw [Finset.prod_insert hi,←Ideal.span_singleton_mul_span_singleton,ih,Finset.prod_insert hi]
 

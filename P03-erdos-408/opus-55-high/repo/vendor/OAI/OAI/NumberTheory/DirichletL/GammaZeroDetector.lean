@@ -11,7 +11,7 @@ public import Mathlib.Analysis.Complex.RemovableSingularity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open MeasureTheory Set Filter Complex
 
 namespace SevenEighths.GammaZeroDetector
@@ -35,7 +35,7 @@ theorem gamma_shift_norm_lower (z : ℂ) (n : ℕ) :
   calc
     _ = ∏ _k ∈ Finset.range n, |z.im| := by simp
     _ ≤ _ := by
-      apply Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _)
+      apply Finset.prod_le_prod₀ (by simp)
       intro k _
       simpa using Complex.abs_im_le_norm (z + k)
 
@@ -47,13 +47,13 @@ theorem gamma_power_bound (a b : ℝ) (ha : 0 < a) (n : ℕ) :
   refine ⟨C, hC, ?_⟩
   intro z hza hzb hzi
   have hzne : z.im ≠ 0 := by intro h; norm_num [h] at hzi
-  have hzre : 0 < (z + n).re := by simp only [add_re, natCast_re]; linarith [Nat.cast_nonneg (α := ℝ) n]
+  have hzre : 0 < (z + n).re := by simp only [add_re, natCast_re]; linarith
   calc
     _ ≤ ‖∏ k ∈ Finset.range n, (z + k)‖ * ‖Gamma z‖ :=
       mul_le_mul_of_nonneg_right (gamma_shift_norm_lower z n) (norm_nonneg _)
     _ = ‖Gamma (z + n)‖ := by rw [gamma_shift z hzne n, norm_mul, mul_comm]
     _ ≤ Real.Gamma (z + n).re := CubicGammaExponential.norm_Gamma_le_real _ hzre
-    _ ≤ C := hbound _ (by simp only [add_re, natCast_re]; constructor <;> linarith)
+    _ ≤ C := hbound _ (by simp_all)
 
 theorem gamma_rapid_bound (a b : ℝ) (ha : 0 < a) (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
@@ -69,10 +69,10 @@ theorem gamma_rapid_bound (a b : ℝ) (ha : 0 < a) (n : ℕ) :
       linarith
     calc
       _ ≤ (2 ^ n * |z.im| ^ n) * ‖Gamma z‖ := mul_le_mul_of_nonneg_right hp (norm_nonneg _)
-      _ ≤ 2 ^ n * C₁ := by rw [mul_assoc]; exact mul_le_mul_of_nonneg_left (hlarge z hza hzb ht) (by positivity)
+      _ ≤ 2 ^ n * C₁ := by rw [mul_assoc]; simp_all
       _ ≤ _ := by gcongr; linarith
   · have hg : ‖Gamma z‖ ≤ C₀ :=
-      (CubicGammaExponential.norm_Gamma_le_real z (ha.trans_le hza)).trans (hsmall z.re ⟨hza,hzb⟩)
+      (CubicGammaExponential.norm_Gamma_le_real z (ha.trans_le hza)).trans (by grind)
     have hp : (1 + |z.im|) ^ n ≤ (2 : ℝ) ^ n := by gcongr; linarith
     calc
       _ ≤ 2 ^ n * C₀ := mul_le_mul hp hg (norm_nonneg _) (by positivity)
@@ -84,7 +84,7 @@ theorem gamma_differentiableAt_right {z : ℂ} (hz : 0 < z.re) :
   intro n hn
   have h := congrArg Complex.re hn
   simp only [neg_re, natCast_re] at h
-  linarith [Nat.cast_nonneg (α := ℝ) n]
+  linarith
 
 def cancelledKernel (f g : ℂ → ℂ) (Y : ℝ) (z : ℂ) : ℂ :=
   (Y : ℂ) ^ z * Gamma (z + 1) * dslope f 0 z * g z
@@ -106,8 +106,8 @@ theorem dslope_entire {f : ℂ → ℂ} (hf : Differentiable ℂ f) :
 
 theorem cancelledKernel_differentiableAt {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
     (hg : Differentiable ℂ g) {Y : ℝ} (hY : 0 < Y) {z : ℂ} (hz : -1 < z.re) :
-    DifferentiableAt ℂ (cancelledKernel f g Y) z := by
-  exact ((((differentiableAt_id.const_cpow
+    DifferentiableAt ℂ (cancelledKernel f g Y) z :=
+  ((((differentiableAt_id.const_cpow
     (Or.inl (Complex.ofReal_ne_zero.mpr hY.ne'))).mul
     ((gamma_differentiableAt_right (by change 0 < z.re + 1; linarith)).comp z
       (differentiableAt_id.add_const 1))).mul (dslope_entire hf z)).mul (hg z))
@@ -131,23 +131,23 @@ theorem cancelledKernel_large_height_bound {f g : ℂ → ℂ} (hf0 : f 0 = 0)
   have hΓ : ‖Gamma z‖ ≤ ‖Gamma (z + 1)‖ := by
     rw [Gamma_add_one z hz0, norm_mul]
     exact le_mul_of_one_le_left (norm_nonneg _) hnorm
-  have hga := hgamma (z + 1) (by simpa using hza) (by simpa using hzb)
+  have hga := hgamma (z + 1) (by simp_all) (by simp_all)
   simp only [add_im, one_im, add_zero] at hga
   have hweighted : (1 + z.im ^ 2) * (‖Gamma (z + 1)‖ * (1 + |z.im|) ^ n) ≤ G := by
     calc
       _ ≤ (1 + |z.im|) ^ 2 * (‖Gamma (z + 1)‖ * (1 + |z.im|) ^ n) := by
         gcongr
-        nlinarith [sq_abs z.im, abs_nonneg z.im]
-      _ = (1 + |z.im|) ^ (n + 2) * ‖Gamma (z + 1)‖ := by rw [pow_add]; ring
+        nlinarith [sq_abs z.im]
+      _ = (1 + |z.im|) ^ (n + 2) * ‖Gamma (z + 1)‖ := by ring
       _ ≤ _ := hga
   have hgdiv : ‖Gamma (z + 1)‖ * (1 + |z.im|) ^ n ≤ G / (1 + z.im ^ 2) :=
-    (le_div_iff₀ (by positivity)).mpr (by simpa [mul_comm] using hweighted)
+    (le_div_iff₀ (by positivity)).mpr (by linarith)
   rw [cancelledKernel_eq_literal hf0 hz0, literalKernel_norm f g hY0]
   calc
     _ ≤ Y ^ b * ‖Gamma (z + 1)‖ * (A * (1 + |z.im|) ^ n) * B := by
       gcongr
-      · exact hf z hza hzb
-      · exact hg z hza hzb
+      · simp_all
+      simp_all
     _ = (Y ^ b * A * B) * (‖Gamma (z + 1)‖ * (1 + |z.im|) ^ n) := by ring
     _ ≤ (Y ^ b * A * B) * (G / (1 + z.im ^ 2)) :=
       mul_le_mul_of_nonneg_left hgdiv (by positivity)
@@ -175,12 +175,12 @@ theorem cancelledKernel_strip_bound {f g : ℂ → ℂ} (hf : Differentiable ℂ
   · apply (cancelledKernel_large_height_bound hf0 hY ha n hA hB hG.le hgamma
       hfbound hgbound hza hzb ht).trans
     apply div_le_div_of_nonneg_right _ (by positivity)
-    linarith [abs_nonneg K]
-  · have hzS : z ∈ S := ⟨⟨hza,hzb⟩, abs_le.mp (le_of_lt (lt_of_not_ge ht))⟩
+    grind
+  · have hzS : z ∈ S := ⟨by grind, by grind⟩
     have hb := hK (Set.mem_image_of_mem _ hzS)
-    apply (le_div_iff₀ (by positivity : 0 < 1 + z.im ^ 2)).mpr
+    apply (le_div_iff₀ (by positivity)).mpr
     have hnonneg : 0 ≤ Y ^ b * G * A * B := by positivity
-    nlinarith [le_abs_self K]
+    grind
 
 theorem cancelledKernel_vertical_integrable {f g : ℂ → ℂ}
     (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) {Y a b C x : ℝ}
@@ -196,7 +196,7 @@ theorem cancelledKernel_vertical_integrable {f g : ℂ → ℂ}
   apply (integrable_inv_one_add_sq.const_mul C).mono' hc.aestronglyMeasurable
   apply ae_of_all
   intro t
-  simpa [div_eq_mul_inv] using hbound ((x : ℂ) + t * I) (by simpa using hx.1) (by simpa using hx.2)
+  simpa [div_eq_mul_inv] using hbound ((x : ℂ) + t * I) (by simp_all) (by simp_all)
 
 theorem cancelledKernel_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
     (hg : Differentiable ℂ g) (hf0 : f 0 = 0) {Y a b A B : ℝ}
@@ -209,10 +209,10 @@ theorem cancelledKernel_contour_shift {f g : ℂ → ℂ} (hf : Differentiable �
   obtain ⟨C,_,hbnd⟩ := cancelledKernel_strip_bound hf hg hf0 hY ha n hA hB hfbound hgbound
   apply VerticalContourShift.integral_eq_of_strip_decay _ a b C hab
     (fun z hz _ => cancelledKernel_differentiableAt hf hg hY0 (ha.trans_le hz))
-    (cancelledKernel_vertical_integrable hf hg hY0 ha ⟨le_rfl,hab⟩ hbnd)
-    (cancelledKernel_vertical_integrable hf hg hY0 ha ⟨hab,le_rfl⟩ hbnd)
+    (cancelledKernel_vertical_integrable hf hg hY0 ha (by grind) hbnd)
+    (cancelledKernel_vertical_integrable hf hg hY0 ha (by grind) hbnd)
   intro x hx t
-  simpa using hbnd ((x : ℂ) + t * I) (by simpa using hx.1) (by simpa using hx.2)
+  simpa using hbnd ((x : ℂ) + t * I) (by simp_all) (by simp_all)
 
 theorem literal_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
     (hg : Differentiable ℂ g) (hf0 : f 0 = 0) {Y A B : ℝ}
@@ -221,8 +221,8 @@ theorem literal_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
     (hgbound : ∀ z : ℂ, -(1/4 : ℝ) ≤ z.re → z.re ≤ 2 → ‖g z‖ ≤ B) :
     (∫ t : ℝ, literalKernel f g Y ((2 : ℂ) + t * I)) =
       ∫ t : ℝ, literalKernel f g Y ((-(1/4) : ℂ) + t * I) := by
-  have h := cancelledKernel_contour_shift hf hg hf0 hY (by norm_num : (-1 : ℝ) < -(1/4))
-    (by norm_num : (-(1/4) : ℝ)≤2) n hA hB hfbound hgbound
+  have h := cancelledKernel_contour_shift hf hg hf0 hY (by linarith)
+    (by linarith) n hA hB hfbound hgbound
   have he (x : ℝ) (hx : x ≠ 0) (t : ℝ) :
       cancelledKernel f g Y ((x : ℂ) + t * I) = literalKernel f g Y ((x : ℂ) + t * I) := by
     apply cancelledKernel_eq_literal hf0
@@ -232,8 +232,7 @@ theorem literal_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
   simp only [Complex.ofReal_ofNat, Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one] at h
   have h2 (t : ℝ) := he 2 (by norm_num) t
   have hq (t : ℝ) := he (-(1/4)) (by norm_num) t
-  norm_num only [Complex.ofReal_ofNat, Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one] at h2 hq
-  simpa only [h2, hq] using h.symm
+  simp_all
 
 theorem gamma_negative_quarter_bound (n : ℕ) :
     ∃ G : ℝ, 0 < G ∧ ∀ t : ℝ,
@@ -255,8 +254,8 @@ theorem gamma_negative_quarter_bound (n : ℕ) :
   change (1+t^2)*(1+|t|)^n*‖Gamma z‖ ≤ 4*C
   calc
     _ ≤ (1+|t|)^2*(1+|t|)^n*(4*‖Gamma (z+1)‖) := by gcongr
-    _ = 4*((1+|t|)^(n+2)*‖Gamma (z+1)‖) := by rw [pow_add]; ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left hbound (by norm_num)
+    _ = 4*((1+|t|)^(n+2)*‖Gamma (z+1)‖) := by ring
+    _ ≤ _ := by linarith
 
 theorem literal_shifted_integral_bound (n : ℕ) :
     ∃ G : ℝ, 0 < G ∧ ∀ (f g : ℂ → ℂ) (Y A B : ℝ),
@@ -272,21 +271,21 @@ theorem literal_shifted_integral_bound (n : ℕ) :
       ‖literalKernel f g Y ((-(1/4) : ℂ)+t*I)‖ ≤
         (G*A*B*Y^(-(1/4 : ℝ)))*(1+t^2)⁻¹ := by
     have hga : (1+|t|)^n*‖Gamma ((-(1/4) : ℂ)+t*I)‖ ≤ G/(1+t^2) :=
-      (le_div_iff₀ (by positivity)).mpr (by nlinarith [hgamma t])
+      (le_div_iff₀ (by positivity)).mpr (by grind)
     rw [literalKernel_norm f g hY]
     have hzre : (((-(1/4) : ℂ)+t*I).re) = (-(1/4) : ℝ) := by norm_num
     rw [hzre]
     change Y^(-(1/4 : ℝ))*‖Gamma ((-(1/4) : ℂ)+t*I)‖*
       ‖f ((-(1/4) : ℂ)+t*I)‖*‖g ((-(1/4) : ℂ)+t*I)‖ ≤ _
     calc
-      _ ≤ Y^(-(1/4 : ℝ))*‖Gamma ((-(1/4) : ℂ)+t*I)‖*(A*(1+|t|)^n)*B := by gcongr; exact hf t; exact hg t
+      _ ≤ Y^(-(1/4 : ℝ))*‖Gamma ((-(1/4) : ℂ)+t*I)‖*(A*(1+|t|)^n)*B := by gcongr; exact hf t; simp_all
       _ = (A*B*Y^(-(1/4 : ℝ)))*((1+|t|)^n*‖Gamma ((-(1/4) : ℂ)+t*I)‖) := by ring
       _ ≤ (A*B*Y^(-(1/4 : ℝ)))*(G/(1+t^2)) := mul_le_mul_of_nonneg_left hga (by positivity)
       _ = _ := by ring
   have hint := norm_integral_le_of_norm_le
     (integrable_inv_one_add_sq.const_mul (G*A*B*Y^(-(1/4 : ℝ)))) (ae_of_all _ hbound)
   rw [integral_const_mul, integral_univ_inv_one_add_sq] at hint
-  convert hint using 1; ring
+  linarith
 
 theorem literal_detector_bound (n : ℕ) :
     ∃ G : ℝ, 0 < G ∧ ∀ (f g : ℂ → ℂ) (Y A B : ℝ),
@@ -315,8 +314,8 @@ theorem mem_cutoffSet {D : ℝ} (hD : 0 ≤ D) {J : Ideal O} :
   constructor
   · rintro ⟨hp, hb⟩
     refine ⟨?_, ?_⟩
-    · intro h; simp [h] at hp
-    · exact (by exact_mod_cast hb : (J.absNorm : ℝ) ≤ ⌊2*D⌋₊).trans
+    · grind
+    · exact (by simp_all : (J.absNorm : ℝ) ≤ ⌊2*D⌋₊).trans
         (Nat.floor_le (by positivity))
   · rintro ⟨hp, hb⟩
     exact ⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hp),
@@ -337,9 +336,8 @@ theorem cutoffTerm_entire (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Idea
     Differentiable ℂ (cutoffTerm χ V D J) := by
   by_cases hJ : J = 0
   · subst J
-    have he : cutoffTerm χ V D 0 = fun _ : ℂ => 0 := funext (cutoffTerm_zero χ V D)
-    rw [he]
-    exact differentiable_const 0
+    have he := funext (cutoffTerm_zero χ V D)
+    simp_all
   · have hn : (J.absNorm : ℂ) ≠ 0 := by
       exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr hJ
     unfold cutoffTerm
@@ -347,8 +345,8 @@ theorem cutoffTerm_entire (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Idea
     exact (differentiable_id.neg.const_cpow (Or.inl hn)).const_mul _
 
 theorem cutoff_entire (χ : Character) (V : ℝ → ℂ) (D : ℝ) :
-    Differentiable ℂ (cutoff χ V D) := by
-  exact Differentiable.fun_sum fun J _ => cutoffTerm_entire χ V D J
+    Differentiable ℂ (cutoff χ V D) :=
+  Differentiable.fun_sum fun J _ => cutoffTerm_entire χ V D J
 
 theorem cutoffTerm_norm_le (χ : Character) (V : ℝ → ℂ) (D : ℝ)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ 1) {s : ℂ} (hs : 0 ≤ s.re) (J : Ideal O) :
@@ -366,15 +364,15 @@ theorem cutoffTerm_norm_le (χ : Character) (V : ℝ → ℂ) (D : ℝ)
       exact (Real.rpow_le_rpow_of_exponent_le hnorm (neg_nonpos.mpr hs)).trans_eq (Real.rpow_zero _)
     rw [cutoffTerm, norm_mul, norm_mul]
     calc
-      _ ≤ (1 : ℝ)*1*1 := by gcongr; exact HeckeDyadic.coefficient_norm_le χ true J; exact hV _
+      _ ≤ (1 : ℝ)*1*1 := by gcongr; exact HeckeDyadic.coefficient_norm_le χ true J; simp_all
       _ = 1 := by norm_num
 
 theorem cutoff_norm_le (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 1 ≤ D)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ 1) {s : ℂ} (hs : 0 ≤ s.re) :
     ‖cutoff χ V D s‖ ≤ 256*D := by
   have hcount := DescentFiberCost.finite_ideal_count_real (cutoffSet D) (2*D) (by linarith)
-    (fun J hJ => ((mem_cutoffSet (by linarith : 0 ≤ D)).mp hJ).1)
-    (fun J hJ => ((mem_cutoffSet (by linarith : 0 ≤ D)).mp hJ).2)
+    (fun J hJ => ((mem_cutoffSet (by positivity)).mp hJ).1)
+    (fun J hJ => ((mem_cutoffSet (by positivity)).mp hJ).2)
   calc
     _ ≤ ∑ J ∈ cutoffSet D, ‖cutoffTerm χ V D J s‖ := norm_sum_le _ _
     _ ≤ ∑ _J ∈ cutoffSet D, (1 : ℝ) := Finset.sum_le_sum (fun J _ => cutoffTerm_norm_le χ V D hV hs J)
@@ -455,12 +453,12 @@ theorem detector_integral_bound :
     ((LFunction_entire_nonprincipal χ hχ).comp (differentiable_const ρ |>.add differentiable_id))
     ((cutoff_entire χ V D).comp (differentiable_const ρ |>.add differentiable_id))
     (by simpa using hzero) hY (by positivity) (by positivity)
-    (fun z hz _ => hgrowth χ hχ ρ z hρ hz)
+    (by grind)
     (fun z hz _ => cutoff_norm_le χ V hD hV (by simp only [add_re]; linarith))
   change ‖∫ t : ℝ, detectorIntegrand χ V D Y ρ (2+t*I)‖ ≤ _ at hb
   rw [detectorIntegral, norm_mul, norm_inv, Complex.norm_real,
-    Real.norm_eq_abs, abs_of_pos (mul_pos (by norm_num) Real.pi_pos)]
-  apply (mul_le_mul_of_nonneg_left hb (inv_nonneg.mpr (by positivity))).trans_eq
+    Real.norm_eq_abs, abs_of_pos (by positivity)]
+  apply (mul_le_mul_of_nonneg_left hb (by positivity)).trans_eq
   field_simp
   ring
 
@@ -475,7 +473,7 @@ theorem detector_power_bound :
   refine ⟨16*K, by positivity, ?_⟩
   intro R θ hR hθ χ hχ V hV U D hU hD hDU hQ ρ hρ hzero ht
   have hU0 : 0 < U := by linarith
-  have huθ : 1 ≤ U^θ := Real.one_le_rpow hU hθ
+  have huθ := Real.one_le_rpow hU hθ
   have hheight : 3+|ρ.im| ≤ 4*U^θ := by linarith
   have hY : 1 ≤ U^20 := one_le_pow₀ hU
   have he : (U^20)^(-(1/4 : ℝ)) = U^(-5 : ℝ) := by
@@ -491,7 +489,6 @@ theorem detector_power_bound :
     _ = _ := by
       rw [← Real.rpow_mul_natCast hU0.le, ← Real.rpow_add hU0,
         ← Real.rpow_add hU0, ← Real.rpow_add hU0]
-      congr 2
       ring
 
 theorem detector_uniform_small (R θ ε : ℝ) (hR : 0 ≤ R)
@@ -508,8 +505,7 @@ theorem detector_uniform_small (R θ ε : ℝ) (hR : 0 ≤ R)
     simpa [neg_sub, sub_eq_add_neg, add_comm] using h
   obtain ⟨U₀,hU₀⟩ := Filter.eventually_atTop.mp ((tendsto_order.mp ht).2 ε hε)
   refine ⟨U₀,?_⟩
-  intro U hU₀' hU χ hχ V hV D hD hDU hQ ρ hρ hzero ht
-  exact (hbound R θ hR hθ χ hχ V hV U D hU hD hDU hQ ρ hρ hzero ht).trans_lt (hU₀ U hU₀')
+  grind
 
 end SevenEighths.GammaZeroDetector
 

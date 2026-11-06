@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.PrincipalChild
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseSecondPrincipalCaller
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
+open FirstPassCubeLabels SecondPassArithmetic FourierBridge
 open SecondPassIntegration CompletedHeight
-open InverseMoment InversePrincipalEnergy RayFourExpansion
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseMoment InversePrincipalEnergy
 
 def principalWindow (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     (hs : Function.support om ⊆ Set.Icc a b) (negative : Bool) (t : ℝ) : 𝓢(ℝ,ℂ) :=
@@ -47,11 +46,11 @@ theorem principalWindow_seminorm_zero (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a
     SchwartzMap.seminorm ℝ 0 0 (principalWindow om a b ha hs negative t)=
       SchwartzMap.seminorm ℝ 0 0 om := by
   apply le_antisymm
-  · apply SchwartzMap.seminorm_le_bound ℝ 0 0 _ (apply_nonneg _ _)
+  · apply SchwartzMap.seminorm_le_bound ℝ 0 0 _ (by positivity)
     intro x
     simpa only [pow_zero,one_mul,norm_iteratedFDeriv_zero,principalWindow_norm]
       using SchwartzMap.norm_le_seminorm ℝ om x
-  · apply SchwartzMap.seminorm_le_bound ℝ 0 0 _ (apply_nonneg _ _)
+  · apply SchwartzMap.seminorm_le_bound ℝ 0 0 _ (by positivity)
     intro x
     simpa only [pow_zero,one_mul,norm_iteratedFDeriv_zero,principalWindow_norm]
       using SchwartzMap.norm_le_seminorm ℝ (principalWindow om a b ha hs negative t) x
@@ -63,11 +62,11 @@ theorem principalWindow_upper (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
   have hmem : x∈Function.support om := by
     rw [←principalWindow_support om a b ha hs negative t]
     exact hx
-  exact (hs hmem).2.trans hb
+  grind
 
 section Arithmetic
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→Eis) (hp : ∀ i,p i≠0)
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
 
 include hp in
 
@@ -89,7 +88,7 @@ theorem primeMark_union_of_lists_disjoint (slots : Finset σ) (lists : σ→Fins
   apply Finset.sum_congr rfl
   intro k hk
   have hh := Finset.disjoint_left.mp (hD i hi) hk
-  simp only [Finset.mem_union,hh,false_or]
+  simp_all
 
 include hp in
 
@@ -119,13 +118,11 @@ variable [∀ i,(Ideal.span {p i}).IsMaximal]
 
 theorem secondInputCoefficient_overlap_zero
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (Ψ : Eis→*ℂ) (m c d : Eis) (H : Finset ι→ℂ) (D U : Finset ι)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m c d : ActualEisensteinCubic.O) (H : Finset ι→ℂ) (D U : Finset ι)
     (hDU : ¬Disjoint D U) :
     secondInputCoefficient p hg Ψ (m*∏ i∈D,p i) c d H U=0 := by
   rw [secondInputCoefficient_fixed_mask (p := p) (hg := hg),commonProduct_mask p hg hinj]
-  split_ifs with h
-  · exact (hDU h.symm).elim
-  · exact zero_mul _
+  grind
 
 include hp in
 
@@ -133,7 +130,7 @@ theorem firstCoreTest_coefficient (hinj : Function.Injective (fun i=>Ideal.span 
     (slots : Finset σ) (lists : σ→Finset ι) (coeff : σ→ι→ℂ) (D U : Finset ι)
     (hD : ∀ i∈slots,Disjoint (lists i) D)
     (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om⊆Set.Icc a b)
-    (negative : Bool) (X t : ℝ) (hX : 0<X) (Ψ : Eis→*ℂ) (m c d : Eis) :
+    (negative : Bool) (X t : ℝ) (hX : 0<X) (Ψ : ActualEisensteinCubic.O→*ℂ) (m c d : ActualEisensteinCubic.O) :
     secondInputCoefficient p hg Ψ (m*∏ i∈D,p i) c d
       (firstCoreTest (primeMark slots lists coeff) (fun u=>om (Real.exp u))
         (columnLog p (primeProductNorm p D*X)) negative (-t) D) U =

@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentFirstLiveCaps
 open InverseMoment InverseMomentFirstOriginalProfile ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 lemma factor_four_bound (a b c d L:ℝ)(ha:1≤a)(hb:1≤b)(hc:1≤c)(hd:1≤d)
     (h:a*b*c*d≤L): a≤L ∧ b≤L ∧ c≤L ∧ d≤L:=by
@@ -22,22 +21,22 @@ lemma factor_four_bound (a b c d L:ℝ)(ha:1≤a)(hb:1≤b)(hc:1≤c)(hd:1≤d)
   have hc0:0≤c:=zero_le_one.trans hc
   have hd0:0≤d:=zero_le_one.trans hd
   have hab:1≤a*b:=ha.trans (le_mul_of_one_le_right ha0 hb)
-  have habc:1≤a*b*c:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc)
-  have habd:1≤a*b*d:=hab.trans (le_mul_of_one_le_right (mul_nonneg ha0 hb0) hd)
+  have habc:1≤a*b*c:=hab.trans (le_mul_of_one_le_right (by positivity) hc)
+  have habd:1≤a*b*d:=hab.trans (le_mul_of_one_le_right (by positivity) hd)
   have ha':a≤a*b*c*d:=by
     calc
       a≤a*b:=le_mul_of_one_le_right ha0 hb
-      _≤a*b*c:=le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc
-      _≤a*b*c*d:=le_mul_of_one_le_right (mul_nonneg (mul_nonneg ha0 hb0) hc0) hd
+      _≤a*b*c:=le_mul_of_one_le_right (by positivity) hc
+      _≤a*b*c*d:=le_mul_of_one_le_right (by positivity) hd
   have hb':b≤a*b*c*d:=by
     calc
       b≤a*b:=le_mul_of_one_le_left hb0 ha
-      _≤a*b*c:=le_mul_of_one_le_right (mul_nonneg ha0 hb0) hc
-      _≤a*b*c*d:=le_mul_of_one_le_right (mul_nonneg (mul_nonneg ha0 hb0) hc0) hd
+      _≤a*b*c:=le_mul_of_one_le_right (by positivity) hc
+      _≤a*b*c*d:=le_mul_of_one_le_right (by positivity) hd
   have hc':c≤a*b*c*d:=by
     calc
       c≤a*b*c:=le_mul_of_one_le_left hc0 hab
-      _≤a*b*c*d:=le_mul_of_one_le_right (mul_nonneg (mul_nonneg ha0 hb0) hc0) hd
+      _≤a*b*c*d:=le_mul_of_one_le_right (by positivity) hd
   exact ⟨ha'.trans h,hb'.trans h,hc'.trans h,(le_mul_of_one_le_left hd0 habc).trans h⟩
 
 theorem first_profile_live_factors (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fin 9→ℝ)
@@ -52,19 +51,19 @@ theorem first_profile_live_factors (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fi
     intro h
     apply hn
     simp [firstNormProfile,h]
-  have hb₁:=factor_four_bound (q 0) (q 2) (q 5) (q 7) L (hq _) (hq _) (hq _) (hq _) (hW _ h₁)
-  have hb₂:=factor_four_bound (q 1) (q 2) (q 5) (q 8) L (hq _) (hq _) (hq _) (hq _) (hW _ h₂)
-  exact ⟨hb₁.1,hb₂.1,hb₁.2.1,hb₁.2.2.1⟩
+  have hb₁:=factor_four_bound (q 0) (q 2) (q 5) (q 7) L (hq _) (hq _) (hq _) (hq _) (by grind)
+  have hb₂:=factor_four_bound (q 1) (q 2) (q 5) (q 8) L (hq _) (hq _) (hq _) (hq _) (by grind)
+  simp_all
 
 variable {ι:Type*}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem original_live_profile_caps
-    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
-    (Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)
+    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(Y:ℝ)
+    (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(cutoff:CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)
     (hW:∀y,W y≠0→y≤L)(x:OriginalIndex ι)
     (hx:x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun o=>o.1) Y)
     (j:FirstCommonIndex ι)
@@ -88,7 +87,7 @@ theorem original_live_profile_caps
       (firstCommonNorms p (leftNorm p x) (rightNorm p x) (commonNorm p x) (activeNorm p x)
         (divisorElement p x.1) x.2.2 j)≠0:=by
     intro hz
-    exact hn (by unfold sourceSummand;rw [hz,mul_zero])
+    exact hn (by unfold sourceSummand;simp_all)
   exact first_profile_live_factors W Φ K L _ hq hW hprof
 
 end SevenEighths.InverseMomentFirstLiveCaps

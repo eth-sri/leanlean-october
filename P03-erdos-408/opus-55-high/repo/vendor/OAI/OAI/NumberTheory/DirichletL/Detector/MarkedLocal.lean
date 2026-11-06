@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEulerRational
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ProbeEuler ProbeRow
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def idealMarkedLocalFactor (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   ∑e : Fin 2,∑'l,∑'k,∑'m,
@@ -22,7 +21,7 @@ def idealMarkedLocalFactor (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z 
 lemma markedPrimeTerm_summable_norm (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun b : HighValuation=>‖completedValuationMark P b*highPrimeTerm η x w z P b‖) := by
-  apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ (highPrimeTerm_summable_norm η x w z hx hw hz P)
+  apply Summable.of_nonneg_of_le (by grind) _ (highPrimeTerm_summable_norm η x w z hx hw hz P)
   intro b
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (completedValuationMark_norm P b)

@@ -11,33 +11,23 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -46,43 +36,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel
+open ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel
 
 def squarefreeHighRange (M K : ℝ) : Finset (Ideal O) :=
   (idealRange M).filter (fun I => K<(Ideal.absNorm I:ℝ))
@@ -115,10 +97,10 @@ theorem annularLift_row_sum (M N K : ℝ) (I : squarefreeHighRange M K)
   apply Finset.sum_congr rfl
   intro J _
   by_cases hz : a J=0
-  · simp only [hz,mul_zero]
+  · simp_all
   · rw [annularLift,liftedRow_character M I.val
       (mem_idealRange.mp (Finset.mem_filter.mp I.property).1).1 _ J.val
-      (mem_idealRange.mp J.property).1 (hcop J hz)]
+      (mem_idealRange.mp J.property).1 (by grind)]
 
 lemma exists_lifted_annular_scale (M x : ℝ) (hM : 0<M) (hx : M<x) (hupper : x≤49*M) :
     ∃j : Fin 7, ((2:ℝ)^j.val*M)/2≤x ∧ x≤(2:ℝ)^j.val*M := by
@@ -142,13 +124,10 @@ lemma sum_injective_mask_le {ι : Type*} [Fintype ι]
     (∑i, if f i∈S then v (f i) else 0)≤∑I∈S,v I := by
   classical
   rw [←Finset.sum_filter]
-  rw [←Finset.sum_image (f := v) (g := f) (by intro i hi j hj he; exact hf he)]
+  rw [←Finset.sum_image (f := v) (g := f) (by intro i hi j hj he; grind)]
   apply Finset.sum_le_sum_of_subset_of_nonneg
-  · intro I hI
-    obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hI
-    exact (Finset.mem_filter.mp hi).2
-  · intro I hI hnot
-    exact hv I
+  · grind
+  simp_all
 
 theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
     (a : idealRange N → ℂ) (hcop : ∀J, a J≠0 → IsCoprime liftingPrime J.val) :
@@ -173,7 +152,7 @@ theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
     obtain ⟨j,hjlo,hjhi⟩ := exists_lifted_annular_scale M _ hM hp.2.2.1 hp.2.2.2
     have hMj : 0<(2:ℝ)^j.val*M := by positivity
     have hm : annularLift M K I∈highKernelRange (2*((2:ℝ)^j.val*M)) K :=
-      mem_highKernelRange.mpr ⟨hp.1,by linarith,hp.2.1⟩
+      mem_highKernelRange.mpr (by grind)
     have hw : annularHighWeight ((2:ℝ)^j.val*M) (annularLift M K I)=1 := by
       apply QuadraticInitialBound.annularSieveBump_eq_one
       · exact (le_div_iff₀ hMj).mpr (by linarith)
@@ -181,7 +160,7 @@ theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
     have hh := Finset.single_le_sum (s := (Finset.univ : Finset (Fin 7)))
       (f := fun j => if annularLift M K I∈highKernelRange (2*((2:ℝ)^j.val*M)) K then
         annularHighWeight ((2:ℝ)^j.val*M) (annularLift M K I)*E (annularLift M K I) else 0)
-      (fun j _ => by split_ifs; exact mul_nonneg QuadraticInitialBound.annularSieveBump.nonneg (hE _); exact le_rfl)
+      (fun j _ => by split_ifs; exact mul_nonneg QuadraticInitialBound.annularSieveBump.nonneg (hE _); simp)
       (Finset.mem_univ j)
     simpa only [hm,ite_true,hw,one_mul] using hh
   calc
@@ -205,7 +184,7 @@ theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
+open ConcretePrimeRowBridge
 open FiniteSieveRestriction
 
 def liftingDivisibleColumns (N : ℝ) : Finset (idealRange N) :=
@@ -331,13 +310,12 @@ theorem liftingDividedCoefficient_shell (N X : ℝ) (a : idealRange N → ℂ)
     (Ideal.absNorm (idealQuotient liftingPrime I.val.val):ℝ)≤X/7
   rw [idealQuotient_norm_eq liftingPrime I.val.val liftingPrime_prime.ne_zero
     (Finset.mem_filter.mp I.property).2,liftingPrime_norm]
-  norm_num only [Nat.cast_ofNat]
-  constructor <;> linarith
+  grind
 
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss FiniteSieveOperator
+open ConcretePrimeRowBridge CompletedGauss
 
 def ballQuadraticEnergy (M N : ℝ) (a : idealRange N → ℂ) : ℝ :=
   ∑I : idealRange M, ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I.val)*a J‖^2
@@ -388,7 +366,7 @@ theorem ballQuadraticEnergy_lifted_annuli (M N K : ℝ) (hM : 0<M) (a : idealRan
 
 end
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 
 theorem ballQuadraticEnergy_mono {M M' N : ℝ} (hM : M≤M') (a : idealRange N → ℂ) :
     ballQuadraticEnergy M N a≤ballQuadraticEnergy M' N a := by
@@ -397,7 +375,7 @@ theorem ballQuadraticEnergy_mono {M M' N : ℝ} (hM : M≤M') (a : idealRange N 
     (fun I => ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I)*a J‖^2),
     Finset.sum_coe_sort (idealRange M')
     (fun I => ‖∑J : idealRange N, quadraticRow J.val (primaryGenerator I)*a J‖^2)]
-  exact Finset.sum_le_sum_of_subset_of_nonneg (idealRange_mono hM) (fun I hI hnot => sq_nonneg _)
+  exact Finset.sum_le_sum_of_subset_of_nonneg (idealRange_mono hM) (by simp)
 
 theorem ballQuadraticEnergy_coefficientAtScale (M N X : ℝ) (a : idealRange N → ℂ)
     (ha : ∀J, a J≠0 → (Ideal.absNorm J.val:ℝ)≤X) :
@@ -412,7 +390,7 @@ theorem ballQuadraticEnergy_column_shells (M N : ℝ) (lengthScale : ℕ) (hNL :
   simpa only [one_mul,ballQuadraticEnergy] using
     weighted_energy_column_shells N lengthScale hNL
       (fun I : idealRange M => fun J : idealRange N => quadraticRow J.val (primaryGenerator I.val))
-      (fun _ => (1:ℝ)) (fun _ => by norm_num) a
+      (fun _ => (1:ℝ)) (by simp) a
 
 theorem ballQuadraticEnergy_column_shells_at_scale (M N : ℝ) (lengthScale : ℕ) (hNL : N≤(2:ℝ)^lengthScale)
     (a : idealRange N → ℂ) :
@@ -428,31 +406,31 @@ theorem ballQuadraticEnergy_column_shells_at_scale (M N : ℝ) (lengthScale : �
 
 theorem columnDyadicLength_scale_upper (N : ℝ) (hN : 1≤N) :
     (2:ℝ)^columnDyadicLength N≤2*N := by
-  have hlog : 0<Real.log 2 := Real.log_pos (by norm_num)
+  have hlog : 0<Real.log 2 := by positivity
   have hq : 0≤Real.log N/Real.log 2 := div_nonneg (Real.log_nonneg hN) hlog.le
   have hceil := Nat.ceil_lt_add_one hq
   calc
-    _ = (2:ℝ)^((columnDyadicLength N:ℕ):ℝ) := (Real.rpow_natCast _ _).symm
+    _ = (2:ℝ)^((columnDyadicLength N:ℕ):ℝ) := by simp
     _ ≤ (2:ℝ)^(Real.log N/Real.log 2+1) :=
       Real.rpow_le_rpow_of_exponent_le (by norm_num) hceil.le
     _ = 2*N := by
-      rw [Real.rpow_add (by norm_num : (0:ℝ)<2),Real.rpow_one]
+      rw [Real.rpow_add (by positivity),Real.rpow_one]
       have he : (2:ℝ)^(Real.log N/Real.log 2)=N :=
         Real.rpow_logb (by norm_num) (by norm_num) (by linarith)
-      rw [he,mul_comm]
+      linarith
 
 theorem columnDyadicScale_bounds (N : ℝ) (hN : 1≤N) (j : Fin (columnDyadicLength N+1)) :
     1≤(2:ℝ)^j.val ∧ (2:ℝ)^j.val≤2*N := by
   refine ⟨one_le_pow₀ (by norm_num),?_⟩
-  exact (pow_le_pow_right₀ (by norm_num) (by omega : j.val≤columnDyadicLength N)).trans
+  exact (pow_le_pow_right₀ (by norm_num) (by omega)).trans
     (columnDyadicLength_scale_upper N hN)
 
 end
 
 section
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss
+open scoped Classical
+open ConcretePrimeRowBridge CompletedGauss
 open IdealCoprimeSieveOperator DivisorBlockCauchy
 
 theorem gcdPool_admissible {n : Type*} [Fintype n] (cols : n → Ideal O)
@@ -468,7 +446,7 @@ theorem annularHighEnergy_gcd_reduction (M N K H : ℝ) (hN : 1≤N) (hH : 0<H)
       highKernelNorm (2*M) (N/H) K*(supportConstant ε hε*divisorConstant ε hε)*(N^ε)^2*∑J,‖a J‖^2) := by
   have h := highKernel_weighted_energy_ray_gcd_reduction ε hε H hH
     (fun I : highKernelRange (2*M) K => I.val) (fun J : idealRange N => J.val)
-    Subtype.val_injective Subtype.val_injective (2*M) N K hN (fun I => I.property)
+    Subtype.val_injective Subtype.val_injective (2*M) N K hN (by simp)
     (fun J => mem_idealRange.mp J.property) (fun I => annularHighWeight M I.val) 1 (by norm_num)
     (fun I => ⟨QuadraticInitialBound.annularSieveBump.nonneg,QuadraticInitialBound.annularSieveBump.le_one⟩) a
   simpa only [annularHighEnergy,annularRayGcdBlock,one_mul] using h
@@ -539,9 +517,7 @@ theorem cutoffRescaleCoefficient_eq (C η r q : ℝ) (hr : 0<r) (hq : 0<q) :
     cutoffRescaleCoefficient C η r q=C*r^(1-η)*q^(2+η) := by
   rw [cutoffRescaleCoefficient,Real.div_rpow hr.le hq.le,
     Real.rpow_sub hr,Real.rpow_one,Real.rpow_add hq,Real.rpow_two]
-  have hrp : r^η≠0 := (Real.rpow_pos_of_pos hr η).ne'
-  have hqp : q^η≠0 := (Real.rpow_pos_of_pos hq η).ne'
-  field_simp
+  grind
 
 theorem cutoffRescaleCoefficient_bounds (C η r q : ℝ)
     (hC : 0≤C) (hη : 0≤η) (hη1 : η≤1) (hr : 1≤r) (hr64 : r≤64) (hq : 1≤q) (hq7 : q≤7) :
@@ -568,13 +544,13 @@ theorem selectedPoissonK_rescale (C M X η r q : ℝ)
       selectedPoissonK C M X η := by
   unfold selectedPoissonK selectedPoissonT cutoffRescaleCoefficient
   have he : (r*M)*(X/q)=(r/q)*(M*X) := by ring
-  rw [he,Real.mul_rpow (by positivity : 0≤r/q) (by positivity : 0≤M*X)]
-  have hp : (r/q)^η≠0 := (Real.rpow_pos_of_pos (by positivity) η).ne'
+  rw [he,Real.mul_rpow (by positivity) (by positivity)]
+  have hp : (r/q)^η≠0 := by positivity
   field_simp
 
 end
 
-open scoped BigOperators Classical
+open scoped Classical
 
 def largeGcdThreshold (α N : ℝ) : ℝ := N^(1-1/α)
 
@@ -584,8 +560,7 @@ theorem largeGcdThreshold_quotient_power (α N : ℝ) (hα : α≠0) (hN : 0<N) 
     rw [show 1/α=1-(1-1/α) by ring,Real.rpow_sub hN,Real.rpow_one]
     rfl
   rw [he,←Real.rpow_mul hN.le]
-  field_simp
-  rw [Real.rpow_one]
+  simp_all
 
 theorem largeGcdThreshold_bounds (α N : ℝ) (hα1 : 1≤α) (hα2 : α≤2) (hN : 4≤N) :
     1≤largeGcdThreshold α N ∧ largeGcdThreshold α N≤N/2 := by
@@ -613,13 +588,7 @@ theorem high_kernel_chosen_scale (M N K : ℝ) (hM : 0<M) (_hN : 0<N) (hK : 0<K)
   have hs : s^2*K=2*M := by
     dsimp only [s]
     rw [Real.sq_sqrt (by positivity),div_mul_cancel₀ _ hK.ne']
-  have hb : s^2*N^2≤2*M^2 := by
-    calc
-      _ ≤ s^2*(M*K) := mul_le_mul_of_nonneg_left hNK (sq_nonneg s)
-      _ = (s^2*K)*M := by ring
-      _ = _ := by rw [hs]; ring
-  change s*N≤2*M
-  nlinarith [sq_nonneg (s*N)]
+  nlinarith
 
 theorem chosen_large_gcd_main (α M N K : ℝ) (hα : α≠0)
     (hM : 0<M) (hN : 0<N) (hK : 0<K) (hcut : N^2/M≤K) :
@@ -643,7 +612,7 @@ theorem chosen_large_gcd_full (α deltaLoss C M N K : ℝ) (hα1 : 1≤α) (hα2
   have hm := chosen_large_gcd_main α M N K (by linarith) hM hN0 hK hcut
   calc
     _ ≤ C*(2*(M*N))^deltaLoss*(4*M) := by gcongr
-    _ = _ := by rw [Real.mul_rpow (by norm_num : (0:ℝ)≤2) (by positivity)]; ring
+    _ = _ := by rw [Real.mul_rpow (by positivity) (by positivity)]; ring
 
 end CanonicalQuadraticSieve
 

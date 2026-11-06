@@ -8,21 +8,20 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstRemainder
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSourceReduction
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
 open CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform
 open CenteredMomentSourceInputFirstRemainder CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentFirstEnergy
+open CenteredMomentFirstSectorTransform CenteredMomentFirstSectors
 open CenteredMomentActiveSource (activeSource)
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-def physicalMass (s:Input ι)(R seed:Ideal O)(m A:O)(Φ:𝓢(ℝ,ℂ))(K Z ξ:ℝ):ℝ:=
+def physicalMass (s:Input ι)(R seed:Ideal HeckeFamily.O)(m A:HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K Z ξ:ℝ):ℝ:=
   let β:=coefficient s R seed
   let T:=activeSource (finiteColumns (Fintype.piFinset s.pools)) β
   ∑p:commonLabels (supportedColumns T) (supportedColumns T),
@@ -36,8 +35,8 @@ def physicalMass (s:Input ι)(R seed:Ideal O)(m A:O)(Φ:𝓢(ℝ,ℂ))(K Z ξ:�
       ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),
       s.W₁=W₁→s.W₂=W₂→Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→(∀i,s.hi i≤hi i)→
-      ∀(m A:O),ConcretePrimeRowBridge.goodLambda∣m→(2:O)∣m→
-      ∀(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0<K→
+      ∀(m A:HeckeFamily.O),ConcretePrimeRowBridge.goodLambda∣m→(2:HeckeFamily.O)∣m→
+      ∀(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0<K→
       volume s.toData≤Z^B→K⁻¹≤Z^B→
       ‖finiteHeckeEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
           (coefficient s R seed) Φ K‖/volume s.toData≤

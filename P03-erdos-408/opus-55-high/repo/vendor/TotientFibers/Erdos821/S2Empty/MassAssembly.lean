@@ -6,7 +6,6 @@ public import Erdos821.S2.MassDecomposition
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -33,8 +32,8 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
   let M := J + F.ell
   let C : ℝ := (Fintype.card P.SmallResidues : ℝ)⁻¹ *
     ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℕ) : ℤ)
-  have hCardNat : 0 < Fintype.card P.SmallResidues := by
-    exact Fintype.card_pos_iff.mpr ⟨fun _ _ => 0⟩
+  have hCardNat : 0 < Fintype.card P.SmallResidues :=
+    by positivity
   have hCard : 0 < (Fintype.card P.SmallResidues : ℝ) := by exact_mod_cast hCardNat
   have hsmallProd : 0 < ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℕ) : ℤ) := by
     apply Finset.prod_pos
@@ -42,19 +41,19 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
     exact zpow_pos (hV g.val) _
   have hC : 0 < C := by
     dsimp [C]
-    exact mul_pos (inv_pos.mpr hCard) hsmallProd
+    exact by positivity
   have htilt (g : P.BigGroup) (p : P.Prime g.val) :
       0 < tiltedMu F P n g.val p := by
     unfold tiltedMu
     have hp : 0 < (p.val : ℝ) := by
       exact_mod_cast (P.prime g.val p.val p.property).pos
-    exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (hbase g p))
+    exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (by grind))
   have hweight (b : BigLabels P M) : 0 ≤ bigLabelWeight F P n M b := by
     apply Finset.prod_nonneg
     intro g _
     apply Finset.prod_nonneg
     intro j _
-    exact (htilt g (b g j)).le
+    exact by grind
   have hterm (y : P.SmallResidues) (a : P.Labels M) :
       |P.memoryMass F J n (y, a, fun _ => 0)| =
         if P.smallPhysical y a then
@@ -73,10 +72,10 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
         rfl
       calc
         _ = |C * bigLabelWeight F P n M ((labelSplitEquiv P M a).2)| := by
-          rw [hcoeff, hbig]
+          grind
         _ = _ := by
           rw [abs_of_nonneg (mul_nonneg hC.le (hweight _)), ite_eq_left hs]
-    · simp [hs]
+    · grind
   unfold Erdos821.S2Core.initialMemoryBoundaryMass
   simp_rw [hterm]
   change
@@ -87,11 +86,7 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
     _ = ∑ y : P.SmallResidues, ∑ a : P.Labels M,
         C * (if P.smallPhysical y a then
           bigLabelWeight F P n M ((labelSplitEquiv P M a).2) else 0) := by
-      apply Finset.sum_congr rfl
-      intro y _
-      apply Finset.sum_congr rfl
-      intro a _
-      by_cases hs : P.smallPhysical y a <;> simp [hs]
+      grind
     _ = C * ∑ y : P.SmallResidues, ∑ a : P.Labels M,
         if P.smallPhysical y a then
           bigLabelWeight F P n M ((labelSplitEquiv P M a).2) else 0 := by
@@ -122,7 +117,7 @@ theorem initial_boundary_mass_factorization (F : FixedData) (P : PrimeGroups)
           exact full_label_sum_factor F P n M y
         _ = _ := by rw [Finset.sum_mul]
     _ = _ := by
-      simp [C, M]
+      linarith
 
 
 end Erdos821.S2Empty

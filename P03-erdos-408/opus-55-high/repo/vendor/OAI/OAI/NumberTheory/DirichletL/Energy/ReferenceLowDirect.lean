@@ -7,30 +7,29 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowChild
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowDirect
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
-open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
+open CenteredMomentEnergyReferenceChild
+open CenteredMomentNaturalFixedRaySource
+open CenteredMomentPrimeSlot QuadraticInitialBound
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyReferenceLowChild
 
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem direct_child_from_low
     (Wslot:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
+    (η₀:Character)(Q:Ideal HeckeFamily.O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hlow:PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
       Mcap ε κ Z η₀ Q degree S C)
     (hB:0≤Bmask)(ha:0<a)
@@ -55,9 +54,9 @@ theorem direct_child_from_low
         (1+|t|+height)^degree*Z^(s.width+ε):=by
   have hZ:0<Z:=zero_lt_one.trans_le s.base_ge_one
   have hh:=hlow F (fun i=>θ i) (fun i=>w i) (fun i=>σ i) (fun i=>t+freq i)
-    0 (|t|+height) (fun i=>hw i) (fun i=>hwL i) (fun i=>hσlo i) (fun i=>hσhi i)
-    (add_nonneg (abs_nonneg t) hheight)
-    (fun i=>(abs_add_le t (freq i)).trans (add_le_add le_rfl (hfreq i)))
+    0 (|t|+height) (by grind) (by grind) (by grind) (by grind)
+    (by positivity)
+    (by grind)
     (unitBudgetState s hB) hQ hs (independentProfiles ha W₁ W₂ hs₁ hs₂ t t)
     X₁ X₂ hX₁ hX₂ hc₁ hc₂
     (by simpa only [Finset.sum_coe_sort,unitBudgetState,unpuncturedState,NaturalState.width] using hcapacity)

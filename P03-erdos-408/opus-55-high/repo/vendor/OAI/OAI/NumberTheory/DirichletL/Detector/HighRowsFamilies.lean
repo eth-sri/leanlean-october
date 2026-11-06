@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsSummability
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 def rowInner (eta a X W V rho : ℂ) (j e l : ℕ) : ℂ :=
   ∑' k, ∑' m,rowMarkedTerm p hp hg eta a X W V rho j e l k m
@@ -30,7 +29,7 @@ lemma rowInner_two (eta a X W V rho : ℂ) (j e l : ℕ) :
 
 @[simp] lemma rowInner_zero (eta a X W V rho : ℂ) (j : ℕ) :
     rowInner p hp hg eta a X W V rho j 0 0=0 := by
-  simp only [rowInner,rowMarkedTerm,mul_zero,add_zero,ite_true,tsum_zero]
+  simp only [rowInner, rowMarkedTerm, ite_true, tsum_zero]
 
 include hc in
 theorem rowInner_family_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)

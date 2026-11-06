@@ -8,33 +8,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +29,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical MatrixGroups
 
 section
-open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 instance complexSLTopology : TopologicalSpace (SL(2,ℂ)) :=
@@ -106,9 +83,9 @@ lemma continuous_coordinateSection : Continuous coordinateSection := by
     Complex.continuous_ofReal.comp (Real.continuous_sqrt.comp
       (continuous_snd.comp continuous_subtype_val))
   have hne : ∀w : UpperCoordinates,(Real.sqrt w.1.2 : ℂ)≠0 := fun w =>
-    Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr w.2).ne'
+    Complex.ofReal_ne_zero.mpr (by grind)
   fin_cases i <;> fin_cases j
-  · exact hroot
+  · simp_all
   · exact (continuous_fst.comp continuous_subtype_val).div hroot hne
   · exact continuous_const
   · exact hroot.inv₀ hne
@@ -122,8 +99,8 @@ lemma continuous_upperCoordinates :
   continuous_hyperbolicProjection.comp continuous_coordinateSection
 
 lemma continuous_translatedUpperCoordinates (g : SL(2,ℂ)) :
-    Continuous (fun w : UpperCoordinates => g • upperPoint w.1.1 w.1.2 w.2) := by
-  exact continuous_hyperbolicProjection.comp
+    Continuous (fun w : UpperCoordinates => g • upperPoint w.1.1 w.1.2 w.2) :=
+  continuous_hyperbolicProjection.comp
     ((continuous_complexSL_mul g).comp continuous_coordinateSection)
 
 def integralOrbitRel (H : Subgroup (SL(2,O))) : Setoid HyperbolicSpace where
@@ -155,7 +132,6 @@ lemma integralOrbitProjection_eq (H : Subgroup (SL(2,O))) (h : H) (w : Hyperboli
 
 end
 
-open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 def truncatedFordLift (T : ℝ) (p : truncatedFordBox T) : UpperCoordinates :=
@@ -213,8 +189,8 @@ theorem finiteIndex_compact_core_cusp_cover (H : Subgroup (SL(2,O))) [H.FiniteIn
       · apply Or.inr
         apply Set.mem_iUnion.mpr
         refine ⟨r,Set.mem_iUnion.mpr ⟨hr,?_⟩⟩
-        exact ⟨⟨(z,v),hv⟩,⟨hz,hfloor,lt_of_not_ge hT⟩,rfl⟩
-  · exact Set.subset_univ _
+        exact ⟨⟨(z,v),hv⟩,by grind,rfl⟩
+  simp
 
 theorem globalKubotaKernel_compact_core_cusp_cover :
     ∃S : Finset (SL(2,O)), ∀T : ℝ,
@@ -229,11 +205,9 @@ namespace SecondPassArithmetic
 
 section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
+open scoped Classical
 
 section
-open ActualEisensteinCubic
 open SecondPassFiber (newLabel newRow)
 open JointLogSeparation (outerWindow)
 
@@ -247,7 +221,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (b0Label)
 open SecondPassFiber (newLabel newRow)
 open JointLogSeparation (outerWindow)
@@ -260,7 +233,6 @@ variable {ι : Type*} [DecidableEq ι]
 end
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct jLabel b0Label cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -272,7 +244,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 

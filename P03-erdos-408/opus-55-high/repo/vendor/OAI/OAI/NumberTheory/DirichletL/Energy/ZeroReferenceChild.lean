@@ -7,19 +7,18 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowChild
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyProfiles CenteredMomentLattice
+open HeckeDyadic QuadraticInitialBound
+open CenteredMomentEnergyProfiles
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceLowChild
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild
 open CenteredMomentEnergyReferenceChildProfiles CenteredMomentInductionEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-open CenteredMomentSectorLocalization CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open CenteredMomentScaleSupremum
+open CenteredMomentSectorLocalization
 
 lemma independent_energy {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     (hB:0≤Bmask)(ha:0<a)(W₁ W₂:𝓢(ℝ,ℂ))
@@ -37,7 +36,7 @@ lemma independent_energy {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     unitBudgetState,unpuncturedState,NaturalState.mask,effectiveState,effectiveRadial] using hh
 
 theorem independent_from_low
-    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
+    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal HeckeFamily.O)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hlow:ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S C)
     (hB:0≤Bmask)(ha:0<a)(s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=Q)
@@ -58,7 +57,7 @@ theorem independent_from_low
     norm_zero,add_zero,one_pow,mul_one,effectiveState,effectiveRadial] using hh
 
 theorem reflected_from_low
-    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
+    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal HeckeFamily.O)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hlow:ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S C)
     (hB:0≤Bmask)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)

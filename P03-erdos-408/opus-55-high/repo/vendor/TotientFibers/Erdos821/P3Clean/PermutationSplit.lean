@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.ConditionedKernel
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -71,7 +70,7 @@ theorem sum_permutations_split {P : PrimeGroups} {M : ℕ} (f : P.Permutations M
   change (∑ p : SmallPermutations P M × P.BigPermutations M,
     f (joinPermutations p.1 p.2)) = ∑ p : P.Permutations M, f p at h
   rw [Fintype.sum_prod_type] at h
-  exact h.symm
+  simp_all
 
 
 end Erdos821.P3Clean

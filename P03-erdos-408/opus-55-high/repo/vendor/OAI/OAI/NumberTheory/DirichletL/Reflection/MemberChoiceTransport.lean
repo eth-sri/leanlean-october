@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedTuples
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ τ : Type*} [Fintype σ] [DecidableEq σ] [Fintype τ]
-variable (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis)
+variable (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O)
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
@@ -23,7 +22,7 @@ abbrev originalTupleMax : ∀ p∈fixedSlotTupleSet L F,∀ i,(p i).IsMaximal :=
 abbrev originalTupleGood : ∀ p∈fixedSlotTupleSet L F,∀ i,ConcretePrimeRowBridge.goodLambda∉p i :=
   fun p hp i => hgood i _ (((mem_fixedSlotTupleSet L F p).mp hp).1 i)
 
-variable {N a c : Eis} {mode : Bool} (G : PrimeFamily τ) (K : Ideal Eis) (hK : Admissible K)
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool} (G : PrimeFamily τ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
 variable (D : ∀ p : fixedSlotTupleSet L F,IsCoprime K (slotTupleProduct p.val)→
     ControlledStratumArithmetic (G.reflected K hK
       (memberTupleFamily (fixedSlotTupleSet L F) (originalTupleMax L F hmax) (originalTupleGood L F hgood) p)).generator N a c mode)

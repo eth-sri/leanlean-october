@@ -32,7 +32,7 @@ theorem exists_probe_window : ∃ (w : ℝ→ℝ) (W : SchwartzMap ℝ ℂ),
     funext x
     have h := congrArg (fun F : SchwartzMap ℝ ℂ => (F x).re) hz
     change w x=0 at h
-    exact h
+    omega
   · intro x hx
     have hwx : w x≠0 := by intro h;apply hx;change (w x:ℂ)=0;rw [h];rfl
     exact Set.Ioo_subset_Icc_self (hs (subset_tsupport w hwx))

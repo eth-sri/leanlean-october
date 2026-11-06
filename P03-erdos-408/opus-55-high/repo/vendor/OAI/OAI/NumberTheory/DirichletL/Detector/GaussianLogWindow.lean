@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianFlow
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap FourierTransform
+open scoped Classical ContDiff Topology FourierTransform
 open Filter Set MeasureTheory
 namespace SevenEighths.ProbePhysical
 
@@ -29,10 +29,9 @@ lemma gaussianLogWindow_derivative_outside (V : SchwartzMap ℝ ℂ) (hV : HasCo
   have he : (gaussianLogWindow V hV R:ℝ→ℂ)=ᶠ[𝓝 y](fun _=>0) := by
     have hu : {x : ℝ | L < |x|}∈𝓝 y := (isOpen_lt continuous_const continuous_abs).mem_nhds hy
     filter_upwards [hu] with x hx
-    have hv : V x=0 := by by_contra h; exact (not_lt_of_ge (hbox x h)) hx
+    have hv : V x=0 := by by_contra h; exact by grind
     simp only [gaussianLogWindow_apply,hv,zero_mul]
-  rw [he.iteratedDeriv_eq n]
-  simp
+  simp [he.iteratedDeriv_eq n]
 
 lemma gaussianLogWindow_derivative_bound (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (L : ℝ) (hL : 0≤L) (a : ℝ) (n : ℕ) :
@@ -42,7 +41,7 @@ lemma gaussianLogWindow_derivative_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
   let A (i : ℕ) := SchwartzMap.seminorm ℝ 0 i V
   let C := ∑i∈Finset.range (n+1),(n.choose i:ℝ)*A i*B (n-i)
   have hA (i : ℕ) : 0≤A i := apply_nonneg _ _
-  have hC : 0≤C := Finset.sum_nonneg (fun i _=>mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (hA i)) (hB _).le)
+  have hC : 0≤C := Finset.sum_nonneg (fun i _=>mul_nonneg (by positivity) (by grind))
   refine ⟨C+1,by positivity,?_⟩
   intro R hR y hy
   change ‖iteratedDeriv n (fun s : ℝ=>V s*gaussianFlow R (s:ℂ)) y‖≤_
@@ -59,8 +58,8 @@ lemma gaussianLogWindow_derivative_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
       have hv : ‖iteratedDeriv i V y‖≤A i := by
         simpa only [pow_zero,one_mul] using SchwartzMap.le_seminorm' ℝ 0 i V y
       exact mul_le_mul (mul_le_mul_of_nonneg_left hv (Nat.cast_nonneg _))
-        (hbound _ R hR y hy) (norm_nonneg _) (mul_nonneg (Nat.cast_nonneg _) (hA i))
-    _ = C*R^(-a) := by simp only [C,Finset.sum_mul]; apply Finset.sum_congr rfl; intros; ring
+        (by grind) (norm_nonneg _) (by positivity)
+    _ = C*R^(-a) := by simp only [C,Finset.sum_mul]; grind
     _ ≤ (C+1)*R^(-a) := by nlinarith [Real.rpow_pos_of_pos hR (-a)]
 
 theorem gaussianLogWindow_seminorm (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -75,7 +74,7 @@ theorem gaussianLogWindow_seminorm (V : SchwartzMap ℝ ℂ) (hV : HasCompactSup
   by_cases hy : |y|≤L
   · calc
       _ ≤ L^k*(B*R^(-a)) := mul_le_mul (pow_le_pow_left₀ (abs_nonneg _) hy k)
-        (hbound R hR y hy) (norm_nonneg _) (pow_nonneg hL _)
+        (by grind) (norm_nonneg _) (by positivity)
       _ ≤ _ := by nlinarith [mul_pos hB (Real.rpow_pos_of_pos hR (-a))]
   · rw [gaussianLogWindow_derivative_outside V hV L hbox R y (lt_of_not_ge hy) n,norm_zero,mul_zero]
     positivity
@@ -105,14 +104,12 @@ theorem gaussianLogWindow_fourier_moment (V : SchwartzMap ℝ ℂ) (hV : HasComp
     have hbi : B (0,i)+B (p,i)≤C := by
       have hh := Finset.single_le_sum (s:=Finset.range (K+1)) (a:=i)
         (f:=fun i=>B (0,i)+B (p,i))
-        (fun i _=>add_nonneg (hB _).le (hB _).le) (Finset.mem_range.mpr (by dsimp only [K,p]; omega))
+        (fun i _=>add_nonneg (hB _).le (hB _).le) (Finset.mem_range.mpr (by omega))
       dsimp only [C]; linarith
     calc
       _ ≤ R^a*(B (0,i)*R^(-a)+B (p,i)*R^(-a)) :=
         mul_le_mul_of_nonneg_left (add_le_add (hb (0,i) R hR) (hb (p,i) R hR)) (by positivity)
-      _ = B (0,i)+B (p,i) := by rw [←add_mul]; calc
-        _=(B (0,i)+B (p,i))*(R^a*R^(-a)) := by ring
-        _=_ := by rw [hcancel,mul_one]
+      _ = B (0,i)+B (p,i) := by grind
       _ ≤ C := hbi
   have hh := FourierBridge.uniform_fourier_one_plus_moment (gaussianLogWindow V hV R) J
     (R^a) C (by positivity) hC.le hsource

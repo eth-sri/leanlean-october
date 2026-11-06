@@ -8,8 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.Overlap
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum
+open scoped Classical
+open CanonicalQuadraticSieve IdealMobiusDivisorSum
 open UniqueFactorizationMonoid
 
 namespace SevenEighths.InverseInitialOverlap
@@ -41,7 +41,7 @@ theorem residual_squarefree {P j : Ideal O} (hP : Squarefree P) (hj : j ∣ P) :
 
 theorem quotient_mul_cancel {D H : Ideal O} (hD : D ≠ 0) :
     idealQuotient D (D * H) = H :=
-  mul_left_cancel₀ hD (idealQuotient_mul (dvd_mul_right D H))
+  mul_left_cancel₀ hD (idealQuotient_mul (by simp))
 
 theorem column_properties {P j n : Ideal O} (hP : Squarefree P) (hj : j ∣ P)
     (hn : Squarefree n) (hg : gcd n P = j) :
@@ -55,7 +55,7 @@ theorem column_properties {P j n : Ideal O} (hP : Squarefree P) (hj : j ∣ P)
   have hHP0 := hHP.mono (dvd_refl _) (idealQuotient_dvd hj)
   have hJP0 : IsCoprime j (residual P j) :=
     ideals_coprime_of_relprime _ _ (squarefree_mul_iff.mp
-      (show Squarefree (j * residual P j) by rw [residual_mul hj]; exact hP)).1
+      (show Squarefree (j * residual P j) by rw [residual_mul hj]; omega)).1
   refine ⟨squarefree_mul_iff.mpr ⟨hHP0.isRelPrime,
     hn.squarefree_of_dvd (idealQuotient_dvd hjn), residual_squarefree hP hj⟩,
     hHj.mul_left hJP0.symm, dvd_mul_left _ _⟩
@@ -72,10 +72,10 @@ theorem reconstruct_properties {P j c : Ideal O} (hP : Squarefree P) (hj : j ∣
     Squarefree (reconstruct P j c) ∧ gcd (reconstruct P j c) P = j := by
   let H := idealQuotient (residual P j) c
   have hHc : H ∣ c := idealQuotient_dvd hPc
-  have hHj : IsCoprime H j := hcj.mono hHc (dvd_refl _)
-  have hHP0 : IsCoprime H (residual P j) :=
+  have hHj := hcj.mono hHc (dvd_refl _)
+  have hHP0 :=
     (ideals_coprime_of_relprime _ _ (squarefree_mul_iff.mp
-      (show Squarefree (residual P j * H) by rw [idealQuotient_mul hPc]; exact hc)).1).symm
+      (show Squarefree (residual P j * H) by rw [idealQuotient_mul hPc]; omega)).1).symm
   have hHP : IsCoprime H P := by
     rw [← residual_mul hj]
     exact hHj.mul_right hHP0
@@ -102,7 +102,7 @@ theorem mem_columns {S : Finset (Ideal O)} {P j c : Ideal O}
   · rintro ⟨hc, hcj, hPc, hnS⟩
     obtain ⟨hn, hg⟩ := reconstruct_properties hP hj hc hcj hPc
     exact Finset.mem_image.mpr ⟨reconstruct P j c,
-      mem_original.mpr ⟨hnS, hn, hg⟩, column_reconstruct hP hj hPc⟩
+      mem_original.mpr (by grind), column_reconstruct hP hj hPc⟩
 
 theorem column_injOn (S : Finset (Ideal O)) {P j : Ideal O}
     (hP : Squarefree P) (hj : j ∣ P) :
@@ -110,7 +110,7 @@ theorem column_injOn (S : Finset (Ideal O)) {P j : Ideal O}
   intro n hn m hm he
   have hn' := reconstruct_column hP hj (mem_original.mp hn).2.2
   have hm' := reconstruct_column hP hj (mem_original.mp hm).2.2
-  rw [← hn', ← hm', he]
+  simp_all
 
 theorem reconstruct_mul_residual {P j c : Ideal O} (hPc : residual P j ∣ c) :
     reconstruct P j c * residual P j = j * c := by
@@ -120,7 +120,7 @@ theorem reconstruct_mul_residual {P j c : Ideal O} (hPc : residual P j ∣ c) :
 theorem norm_reconstruct {P j c : Ideal O} (hPc : residual P j ∣ c) :
     Ideal.absNorm (reconstruct P j c) * Ideal.absNorm (residual P j) =
       Ideal.absNorm j * Ideal.absNorm c := by
-  simpa only [map_mul] using congrArg Ideal.absNorm (reconstruct_mul_residual hPc)
+  simpa using congrArg Ideal.absNorm (reconstruct_mul_residual hPc)
 
 theorem cutoff_argument {P j c : Ideal O} (hP : Squarefree P) (hj : j ∣ P)
     (hPc : residual P j ∣ c) (X : ℝ) :
@@ -134,7 +134,7 @@ theorem cutoff_argument {P j c : Ideal O} (hP : Squarefree P) (hj : j ∣ P)
       (Ideal.absNorm j : ℝ) * Ideal.absNorm c / Ideal.absNorm (residual P j) := by
     apply (eq_div_iff h0).mpr
     exact_mod_cast norm_reconstruct hPc
-  rw [hn, div_div]
+  grind
 
 theorem sum_reconstruct (S : Finset (Ideal O)) {P j : Ideal O}
     (hP : Squarefree P) (hj : j ∣ P) (F : Ideal O → ℂ) :
@@ -207,16 +207,12 @@ theorem scaled_cutoff_argument {P j c : Ideal O} (hP : Squarefree P) (hj : j ∣
     ring
   rw [cutoff_argument hP hj hPc]
   rw [div_mul_div_comm, div_div_eq_mul_div]
-  field_simp [hnorm, (Real.rpow_pos_of_pos hZ r).ne',
-    (Real.rpow_pos_of_pos hZ G).ne',
-    (Real.rpow_pos_of_pos hZ (r + z - 2 * G)).ne',
-    (Real.rpow_pos_of_pos hZ (z - G)).ne']
-  linear_combination ((Ideal.absNorm j : ℝ) * Ideal.absNorm c) * hscale
+  field_simp
+  grind
 
 theorem normalization_split {Z : ℝ} (hZ : 0 < Z) (r z G : ℝ) :
     Z ^ (-(r + z) / 2) = Z ^ (-G) * Z ^ (-(r + z - 2 * G) / 2) := by
   rw [← Real.rpow_add hZ]
-  congr 1
   ring
 
 theorem normalized_polynomial_fixed_overlap (S : Finset (Ideal O)) {P j : Ideal O}
@@ -244,8 +240,7 @@ theorem normalized_polynomial_fixed_overlap (S : Finset (Ideal O)) {P j : Ideal 
     intro c hc
     have hPc := ((mem_columns hP hj).mp hc).2.2.1
     rw [← cutoff_argument hP hj hPc, scaled_cutoff_argument hP hj hPc hZ]
-  rw [hs]
-  ring
+  grind
 
 theorem normalized_polynomial_all_overlaps (S : Finset (Ideal O)) {P : Ideal O}
     (hP : Squarefree P) (ψ : Ideal O →* ℂ) (a : Ideal O → ℂ)
@@ -270,10 +265,8 @@ theorem sum_moebius_filter (S : Finset (Ideal O)) (F : Ideal O → ℂ) :
     (∑ n ∈ S, (moebius n : ℂ) * F n) =
       ∑ n ∈ S.filter Squarefree, (moebius n : ℂ) * F n := by
   symm
-  apply Finset.sum_subset (Finset.filter_subset _ _)
-  intro n hn hnf
-  have hns : ¬ Squarefree n := fun h => hnf (Finset.mem_filter.mpr ⟨hn, h⟩)
-  simp only [moebius_of_not_squarefree hns, Int.cast_zero, zero_mul]
+  apply Finset.sum_subset (by simp)
+  simp_all
 
 theorem original_normalized_polynomial (S : Finset (Ideal O)) {P : Ideal O}
     (hP : Squarefree P) (ψ : Ideal O →* ℂ) (a : Ideal O → ℂ)

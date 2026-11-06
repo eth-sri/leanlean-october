@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical FourierTransform
 noncomputable section
 
 lemma frequency_interval_compl (R : ℝ) :
@@ -23,7 +23,7 @@ private lemma exists_interval_norm_product (f h : ℝ → ℂ) (hf : Continuous 
     ∃ t : ℝ, ‖t‖ ≤ R ∧
       ‖∫ u : ℝ in Set.Icc (-R) R, h u * f u‖ ≤ (∫ u : ℝ, ‖h u‖) * ‖f t‖ := by
   obtain ⟨t, ht, hmax⟩ := isCompact_Icc.exists_isMaxOn
-    (show (Set.Icc (-R) R).Nonempty from ⟨0, by constructor <;> linarith⟩)
+    (show (Set.Icc (-R) R).Nonempty from ⟨0, by simp_all⟩)
     hf.norm.continuousOn
   refine ⟨t, by simpa only [Real.norm_eq_abs, abs_le, Set.mem_Icc] using ht, ?_⟩
   have hb : Integrable (fun u => ‖h u‖ * ‖f t‖) := hh.norm.mul_const _
@@ -73,7 +73,7 @@ private theorem integral_sub_interval_norm_le (f w : ℝ → ℂ) (E R : ℝ)
     _ ≤ ∫ u : ℝ in {u | R < ‖u‖}, ‖f u‖ := norm_integral_le_integral_norm _
     _ ≤ ∫ u : ℝ in {u | R < ‖u‖}, E * ‖w u‖ :=
       setIntegral_mono_on hf.norm.integrableOn (hw.norm.const_mul E).integrableOn hm
-        (fun u _ => hbound u)
+        (by grind)
     _ = _ := integral_const_mul _ _
 
 private theorem separated_pair_norm_le {α β : Type*} (S : Finset α) (T : Finset β)
@@ -83,13 +83,13 @@ private theorem separated_pair_norm_le {α β : Type*} (S : Finset α) (T : Fins
   rw [mul_assoc, norm_mul, norm_mul, mul_comm ‖z‖]
   apply mul_le_mul_of_nonneg_right _ (norm_nonneg z)
   exact mul_le_mul (phasePolynomial_norm S a x u) (phasePolynomial_norm T b y u)
-    (norm_nonneg _) (Finset.sum_nonneg (fun _ _ => norm_nonneg _))
+    (norm_nonneg _) (by positivity)
 
 private theorem schwartz_tail_le (g : SchwartzMap ℝ ℂ) (R : ℝ)
     (hR : 0 < R) (N : ℕ) :
     (∫ u : ℝ in {u | R < ‖u‖}, ‖(𝓕 g) u‖) ≤
       (∫ u : ℝ, (1+‖u‖)^N * ‖(𝓕 g) u‖) / R^N := by
-  apply (le_div_iff₀ (pow_pos hR N)).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   simpa only [pow_zero, one_mul, Nat.zero_add, mul_comm] using
     schwartz_weighted_tail g 0 N R hR
 
@@ -103,16 +103,14 @@ private theorem separated_pair_tail_of_bound {α β : Type*} (S : Finset α) (T 
         w u * phasePolynomial S a x u * phasePolynomial T b y u)‖ ≤
       ((∑ i ∈ S, ‖a i‖) * (∑ j ∈ T, ‖b j‖)) / R^N * M := by
   let E := (∑ i ∈ S, ‖a i‖) * (∑ j ∈ T, ‖b j‖)
-  have hE : 0 ≤ E := mul_nonneg
-    (Finset.sum_nonneg (fun _ _ => norm_nonneg _))
-    (Finset.sum_nonneg (fun _ _ => norm_nonneg _))
+  have hE : 0 ≤ E := by positivity
   have htail := integral_sub_interval_norm_le
     (fun u => w u * phasePolynomial S a x u * phasePolynomial T b y u)
     w E R hi hw (fun u => separated_pair_norm_le S T a b x y (w u) u)
   calc
     _ ≤ E * (∫ u : ℝ in {u | R < ‖u‖}, ‖w u‖) := htail
     _ ≤ E * (M / R^N) := mul_le_mul_of_nonneg_left hbound hE
-    _ = _ := by rw [div_mul_eq_mul_div, mul_div_assoc]
+    _ = _ := by ring
 
 theorem separated_pair_tail {α β : Type*} (S : Finset α) (T : Finset β)
     (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ)
@@ -121,8 +119,8 @@ theorem separated_pair_tail {α β : Type*} (S : Finset α) (T : Finset β)
       (∫ u : ℝ in Set.Icc (-R) R,
         (𝓕 g) u*phasePolynomial S a x u*phasePolynomial T b y u)‖ ≤
       ((∑ i ∈ S, ‖a i‖)*(∑ j ∈ T, ‖b j‖))/R^N *
-        (∫ u : ℝ, (1+‖u‖)^N*‖(𝓕 g) u‖) := by
-  exact separated_pair_tail_of_bound S T a b x y (fun u : ℝ => (𝓕 g : SchwartzMap ℝ ℂ) u)
+        (∫ u : ℝ, (1+‖u‖)^N*‖(𝓕 g) u‖) :=
+  separated_pair_tail_of_bound S T a b x y (fun u : ℝ => (𝓕 g : SchwartzMap ℝ ℂ) u)
     R (∫ u : ℝ, (1+‖u‖)^N * ‖(𝓕 g) u‖) N
     (separated_pair_integrable S T a b x y g) (𝓕 g).integrable
     (schwartz_tail_le g R hR N)
@@ -140,7 +138,7 @@ theorem exists_bounded_frequency {α β : Type*} (S : Finset α) (T : Finset β)
   refine ⟨t,ht,?_⟩
   rw [finite_pair_separation]
   have htail := separated_pair_tail S T a b x y g R hR N
-  exact (norm_le_norm_sub_add _ _).trans (add_le_add htail hb)
+  exact (norm_le_norm_sub_add _ _).trans (by linarith)
 
 end
 end SevenEighths.HeckeDetectorFourier

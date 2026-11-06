@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentReflectedAnnuli
 open Set EisensteinSchwartzPoisson CenteredMomentSectorLocalization
@@ -25,10 +25,10 @@ theorem logWindow_support : Function.support logWindow ⊆ Icc (-Real.log 4) 0 :
   have hlow : 1/4 < Real.exp v := lt_of_not_ge (fun h => hn (annulus_zero_low _ h))
   have hhigh : Real.exp v < 1 := lt_of_not_ge (fun h => hn (annulus_zero_high _ h))
   have hl : Real.exp (-Real.log 4) = (1/4 : ℝ) := by
-    rw [Real.exp_neg, Real.exp_log (by norm_num : (0:ℝ)<4)]
+    rw [Real.exp_neg, Real.exp_log (by positivity)]
     norm_num
   constructor
-  · exact (Real.exp_lt_exp.mp (hl ▸ hlow)).le
+  · exact (Real.exp_lt_exp.mp (by linarith)).le
   · exact (Real.exp_lt_one_iff.mp hhigh).le
 
 theorem logWindow_compact : HasCompactSupport logWindow :=
@@ -66,14 +66,14 @@ theorem normalized_annular_term (η : HeckeFamily.Character) (F : ℝ→ℂ)
     (s Y : ℝ) (hs : 0<s) (hY : 0<Y) :
     HeckeDyadic.polynomial η false (fun x=>(annulus (x/s):ℂ)*F x) Y 0 0=
       (Real.sqrt s:ℂ)*HeckeDyadic.polynomial η false (annularProfile F s) (s*Y) 0 0 := by
-  rw [polynomial_plain _ _ _ hY,polynomial_plain _ _ _ (mul_pos hs hY)]
+  rw [polynomial_plain _ _ _ hY,polynomial_plain _ _ _ (by positivity)]
   have he (x : ℝ) : (annulus ((x/Y)/s):ℂ)*F (x/Y)=
       annularProfile F s (x/(s*Y)) := by
     unfold annularProfile
     congr 2 <;> field_simp
   simp_rw [he]
   rw [Real.sqrt_mul hs.le,Complex.ofReal_mul]
-  have hs' : (Real.sqrt s:ℂ)≠0 := by exact_mod_cast (ne_of_gt (Real.sqrt_pos.2 hs))
+  have hs' : (Real.sqrt s:ℂ)≠0 := by exact_mod_cast (by positivity)
   field_simp
 
 def annularMass (B : ℕ) (n : ℤ) : ℝ :=
@@ -88,14 +88,14 @@ lemma sqrt_nat_pow (x : ℝ) (hx : 0≤x) (j : ℕ) :
     Real.sqrt (x^j)=(Real.sqrt x)^j := by
   induction j with
   | zero => simp
-  | succ j ih => rw [pow_succ,Real.sqrt_mul (pow_nonneg hx j),ih,pow_succ]
+  | succ j ih => rw [pow_succ,Real.sqrt_mul (by positivity),ih,pow_succ]
 
 theorem annularMass_lower_bound (B j : ℕ) :
     annularMass B (-(j:ℤ))≤(Real.sqrt (1/2:ℝ))^j := by
   have hx := dyadicScale_pos (-(j:ℤ))
   have hd : 1≤(1+dyadicScale (-(j:ℤ)))^B := one_le_pow₀ (by linarith)
   have he : dyadicScale (-(j:ℤ))=(1/2:ℝ)^j := by
-    simp [dyadicScale,zpow_neg,inv_pow]
+    simp [dyadicScale]
   calc
     annularMass B (-(j:ℤ))≤Real.sqrt (dyadicScale (-(j:ℤ))) :=
       div_le_self (Real.sqrt_nonneg _) hd
@@ -119,7 +119,7 @@ theorem annularMass_upper_bound (B A j : ℕ) (hAB : A+1≤B) :
     _=((2:ℝ)^A)⁻¹^j := by
       rw [pow_succ,mul_comm (dyadicScale (j:ℤ)^A),div_mul_cancel_left₀ (ne_of_gt hp)]
       simp only [dyadicScale,zpow_natCast,←pow_mul,inv_pow]
-      rw [Nat.mul_comm]
+      ring
 
 lemma nonnegative_geometric_tail (f : ℕ→ℝ) (q : ℝ) (hq0 : 0≤q) (hq1 : q<1)
     (hf : ∀j,0≤f j) (hb : ∀j,f j≤q^j) (L : ℕ) :
@@ -127,7 +127,7 @@ lemma nonnegative_geometric_tail (f : ℕ→ℝ) (q : ℝ) (hq0 : 0≤q) (hq1 : 
   have hg : Summable (fun j:ℕ=>q^(j+L)) := by
     simpa only [pow_add] using (summable_geometric_of_lt_one hq0 hq1).mul_right (q^L)
   have hs := Summable.of_nonneg_of_le (fun j=>hf (j+L)) (fun j=>hb (j+L)) hg
-  refine ⟨hs,(hs.tsum_le_tsum (fun j=>hb (j+L)) hg).trans_eq ?_⟩
+  refine ⟨hs,(hs.tsum_le_tsum (by grind) hg).trans_eq ?_⟩
   simp_rw [pow_add]
   rw [tsum_mul_right,tsum_geometric_of_lt_one hq0 hq1]
   ring
@@ -155,8 +155,8 @@ theorem annularMass_upper_tail (B A L : ℕ) (hA : 1≤A) (hAB : A+1≤B) :
 
 theorem annularMass_summable (B : ℕ) (hB : 2≤B) : Summable (annularMass B) := by
   apply Summable.of_nat_of_neg
-  · simpa only [Nat.add_zero] using (annularMass_upper_tail B 1 0 (by omega) hB).1
-  · simpa only [Nat.add_zero] using (annularMass_lower_tail B 0).1
+  · simpa using (annularMass_upper_tail B 1 0 (by omega) hB).1
+  · simpa using (annularMass_lower_tail B 0).1
 
 end SevenEighths.CenteredMomentReflectedAnnuli
 

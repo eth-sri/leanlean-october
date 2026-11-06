@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Local
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentHeterogeneousCRT
 open CenteredMomentCorrelation
 
@@ -32,7 +32,7 @@ theorem fullCorrelation_heterogeneous_pi {ι : Type*} [Fintype ι]
       rw [ite_eq_right he]
       symm
       apply Finset.prod_eq_zero (Finset.mem_univ i)
-      simp only [hi, ite_false]
+      simp_all
   simp only [fullCorrelation]
   simp_rw [hterm]
   calc
@@ -67,10 +67,10 @@ theorem fullCorrelation_three_equiv {ι X Y R : Type*} [Fintype ι]
   have he : left x - right y = k ↔
       (fun i => li i (eX x i)) - (fun i => ri i (eY y i)) = eR k := by
     rw [← eR.injective.eq_iff, map_sub]
-    have hleft : eR (left x) = fun i => li i (eX x i) := funext (hl x)
-    have hright : eR (right y) = fun i => ri i (eY y i) := funext (hr y)
+    have hleft := funext (hl x)
+    have hright := funext (hr y)
     rw [hleft, hright]
-  simp only [he]
+  simp_all
 
 end SevenEighths.CenteredMomentHeterogeneousCRT
 

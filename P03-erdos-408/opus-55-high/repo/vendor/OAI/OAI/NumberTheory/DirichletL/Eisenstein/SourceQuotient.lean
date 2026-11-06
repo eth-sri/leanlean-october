@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +31,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+open scoped Classical MatrixGroups Matrix Pointwise
 
 open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
@@ -110,7 +89,7 @@ lemma source_action_respects_kernel (M : levelTwo) (u v : HyperbolicSpace)
   rw [map_mul,map_mul,map_inv,mul_smul,mul_smul]
   change sourceComplexMatrix M • (integralComplexMatrix (N:SL(2,ActualEisensteinCubic.O)) •
     ((sourceComplexMatrix M)⁻¹ • (sourceComplexMatrix M • u)))=_
-  rw [inv_smul_smul,hN]
+  simp_all
 
 def kernelSourceAction (M : levelTwo) : SourceKernelQuotient→SourceKernelQuotient :=
   Quotient.map' (fun w => sourceComplexMatrix M • w) (source_action_respects_kernel M)
@@ -123,7 +102,7 @@ lemma kernelSourceAction_one (q : SourceKernelQuotient) : kernelSourceAction 1 q
   induction q using Quotient.inductionOn with
   | _ w =>
     change integralOrbitProjection globalKubotaKernel (sourceComplexMatrix 1 • w)=integralOrbitProjection globalKubotaKernel w
-    rw [map_one,one_smul]
+    simp
 
 lemma kernelSourceAction_mul (M N : levelTwo) (q : SourceKernelQuotient) :
     kernelSourceAction (M*N) q=kernelSourceAction M (kernelSourceAction N q) := by
@@ -187,7 +166,7 @@ end CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical MatrixGroups
 
 namespace CubicEisenstein
 open CubicKubota
@@ -246,7 +225,6 @@ lemma kernelSourceProjection_eq_twentyFour (F : KernelQuotientL2) :
 end CubicEisenstein
 
 namespace CubicKubota
-open ActualEisensteinCubic
 
 def sourceLevelInclusion : levelThree→*levelTwo where
   toFun n := ⟨(n:SL(2,ActualEisensteinCubic.O)),levelThree_le_levelTwo n.property⟩
@@ -273,12 +251,11 @@ lemma kernelSourceProjection_ae_eq (F : KernelQuotientL2) :
     (eventuallyEq_sum (fun q _ =>
       kernelSourcePullback_ae_eq (rationalLift (sourceRationalSection q)) F))
   filter_upwards [(Lp.coeFn_smul (24:ℂ)⁻¹ _).trans (hsum.const_smul (24:ℂ)⁻¹)] with x hx
-  simpa only [Pi.smul_apply,Finset.sum_apply,smul_eq_mul] using hx
+  simp_all
 
 end CubicEisenstein
 end
 
-open scoped Classical
 
 namespace CubicEisenstein
 open CubicKubota
@@ -286,11 +263,10 @@ open CubicKubota
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
 namespace CubicEisenstein
-open EisensteinSchwartzPoisson ActualEisensteinCubic ConcreteTraceCRT Module
+open EisensteinSchwartzPoisson Module
 
 def periodVector : (Fin 2 → ℝ) ≃L[ℝ] ℂ := periodBasis.equivFunL.symm
 
@@ -319,15 +295,15 @@ lemma periodVector_character (n : Fin 2 → ℤ) (x : Fin 2 → ℝ) :
     ShortDraftTrace.breveE (cuspFrequency (periodFrequencyEquiv n) * periodVector x) =
       Complex.exp (2 * Real.pi * Complex.I *
         ((n 0 : ℂ) * (x 0 : ℂ) + (n 1 : ℂ) * (x 1 : ℂ))) := by
-  have hlam : eisLam ≠ 0 := by
-    exact eisLam_ne_zero
+  have hlam : eisLam ≠ 0 :=
+    eisLam_ne_zero
   have harg : cuspFrequency (periodFrequencyEquiv n) * periodVector x =
       (eisEmbedding (dualFrequencyEquiv (n 0,n 1)) *
         ((x 0 : ℂ) + (x 1 : ℂ) * omega3)) / eisLam := by
     rw [cuspFrequency, periodVector_apply, periodFrequencyEquiv_apply]
     field_simp
   rw [harg, ←paperE, paperE_eq_exp, dualFrequencyEquiv_coordinates]
-  have hs : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
+  have hs : Real.sqrt 3 ≠ 0 := by positivity
   have hw : omega3.re = -(1/2:ℝ) := by norm_num [omega3]
   congr 1
   simp only [complexPoint, Complex.mul_im, Complex.add_re, Complex.add_im,
@@ -344,7 +320,6 @@ lemma periodTorus_mFourier (n : Fin 2 → ℤ) (z : ℂ) :
   simp only [UnitAddTorus.mFourier, ContinuousMap.coe_mk, Fin.prod_univ_two,
     fourier_coe_apply, Complex.ofReal_one, div_one]
   rw [←Complex.exp_add]
-  congr 1
   ring
 
 lemma periodFrequencyEquiv_neg (n : Fin 2 → ℤ) :
@@ -353,8 +328,7 @@ lemma periodFrequencyEquiv_neg (n : Fin 2 → ℤ) :
   change eisEmbedding (ActualEisensteinCoordinates.eval (-n 0 + -n 1) (-n 0)) =
     eisEmbedding (-ActualEisensteinCoordinates.eval (n 0 + n 1) (n 0))
   rw [map_neg, eisEmbedding_eval, eisEmbedding_eval]
-  push_cast
-  ring
+  grind
 
 lemma cuspFrequency_neg (h : ActualEisensteinCubic.O) : cuspFrequency (-h) = -cuspFrequency h := by
   simp only [cuspFrequency, map_neg, neg_div]
@@ -362,7 +336,7 @@ lemma cuspFrequency_neg (h : ActualEisensteinCubic.O) : cuspFrequency (-h) = -cu
 lemma periodVector_eq_lattice (x : Fin 2 → ℝ) :
     periodVector x = eisensteinLatticeMap 3 (by norm_num) (Complex.measurableEquivPi.symm x) := by
   rw [periodVector_apply]
-  simp [eisensteinLatticeMap, Complex.measurableEquivPi_symm_apply, mul_comm]
+  simp [eisensteinLatticeMap, mul_comm]
 
 lemma periodVector_map_volume :
     Measure.map periodVector volume = ENNReal.ofReal (2/(9*Real.sqrt 3)) • volume := by
@@ -395,7 +369,7 @@ lemma periodDomain_integral_coordinates (f : ℂ → ℂ) :
     ∫x in periodVector ⁻¹' periodDomain, f (periodVector x) at h
   rw [periodVector_map_volume, Measure.restrict_smul, integral_smul_measure,
     ENNReal.toReal_ofReal (by positivity), periodVector_preimage_domain] at h
-  exact h
+  omega
 
 local instance : MeasureSpace UnitAddCircle := ⟨AddCircle.haarAddCircle⟩
 local instance : Measure.IsAddHaarMeasure (volume : Measure UnitAddCircle) :=
@@ -427,7 +401,7 @@ lemma periodTorus_fourierCoeff (f : UnitAddTorus (Fin 2) → ℂ) (n : Fin 2 →
   exact Eventually.of_forall (fun z => by
     dsimp only
     rw [periodTorus_mFourier, periodFrequencyEquiv_neg, cuspFrequency_neg]
-    exact mul_comm _ _)
+    ring)
 
 lemma periodTorus_L2_ext (F G : Lp ℂ 2 (volume : Measure (UnitAddTorus (Fin 2))))
     (h : ∀h : ActualEisensteinCubic.O,

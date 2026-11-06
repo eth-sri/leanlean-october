@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CompensatedTriple
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def highRowOnLines (η : HeckeFamily.Character) (S : Finset Id) (C : CalibrationData) (D : Id)
     (σ υ ξ : ℝ) (u : NonzeroFrequency) (t : HeightSpace) : ℂ :=
@@ -43,7 +41,7 @@ lemma highRowOnLines_continuous (η : HeckeFamily.Character) (S : Finset Id) (C 
   simp_rw [highRowOnLines_eq_tsum]
   apply continuous_tsum _ (initialHighMajorant_row_summable σ υ ξ hσ hυ hξ u)
     (fun q t=>initialHighOnLines_norm_le S D η (fun H=>star (C.residueMonoid H.val))
-      (fun H=>by simpa only [norm_star] using C.residueMonoid_norm_le_one H.val) σ υ ξ (u,q) t)
+      (fun H=>by simpa using C.residueMonoid_norm_le_one H.val) σ υ ξ (u,q) t)
   intro q
   exact initialHighOnLines_continuous S D η _ σ υ ξ (u,q)
 
@@ -55,8 +53,8 @@ lemma highRowOnLines_bound (η : HeckeFamily.Character) (S : Finset Id) (C : Cal
   have hm := initialHighMajorant_row_summable σ υ ξ hσ hυ hξ u
   have hb (q : (Id×Id)×(Id×Id)) := initialHighOnLines_norm_le S D η
     (fun H=>star (C.residueMonoid H.val))
-    (fun H=>by simpa only [norm_star] using C.residueMonoid_norm_le_one H.val) σ υ ξ (u,q) t
-  have hs := Summable.of_nonneg_of_le (fun q=>norm_nonneg _) hb hm
+    (fun H=>by simpa using C.residueMonoid_norm_le_one H.val) σ υ ξ (u,q) t
+  have hs := Summable.of_nonneg_of_le (by simp) hb hm
   apply (norm_tsum_le_tsum_norm hs).trans
   have he := hs.tsum_le_tsum hb hm
   simpa only [initialHighMajorant,tsum_mul_left] using he

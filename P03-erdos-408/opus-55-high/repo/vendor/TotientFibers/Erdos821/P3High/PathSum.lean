@@ -13,7 +13,6 @@ public import Mathlib.Tactic.Ring.RingNF
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3High
 
@@ -87,10 +86,6 @@ theorem pathSumR_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℝ) (E :
       rw [hih]
       congr 1
       simp only [tailR, applyR, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro s' _
-      apply Finset.sum_congr rfl
-      intro t' _
       ring
 
 theorem tailR_bound (w : β → ℝ) :
@@ -111,25 +106,25 @@ theorem tailR_bound (w : β → ℝ) :
   | succ n ih =>
       intro G E cG cE hG hE hcG hcE hGr hEr v hv0 hvw
       have IH := ih (fun i => G i.succ) (fun i => E i.succ) (fun i => cG i.succ)
-        (fun i => cE i.succ) (fun i => hG i.succ) (fun i => hE i.succ)
-        (fun i => hcG i.succ) (fun i => hcE i.succ) (fun i => hGr i.succ)
-        (fun i => hEr i.succ) v hv0 hvw
+        (fun i => cE i.succ) (by grind) (by grind)
+        (by grind) (by grind) (by grind)
+        (by grind) v hv0 hvw
       set T := tailR n (fun i => G i.succ) (fun i => E i.succ) v with hT
       set K : ℝ := (∏ i : Fin n, cG i.succ.succ) * (∏ i : Fin n, cE i.succ) with hK
-      have hK0 : 0 ≤ K := mul_nonneg (Finset.prod_nonneg fun i _ => hcG _)
-        (Finset.prod_nonneg fun i _ => hcE _)
+      have hK0 : 0 ≤ K := mul_nonneg (Finset.prod_nonneg (by grind))
+        (Finset.prod_nonneg (by grind))
       have hinner : ∀ t', 0 ≤ applyR (G (Fin.succ 0)) T t' ∧
           applyR (G (Fin.succ 0)) T t' ≤ K * cG (Fin.succ 0) * w t' := by
         intro t'
         constructor
-        · exact Finset.sum_nonneg fun t'' _ => mul_nonneg (hG _ _ _) (IH t'').1
+        · exact Finset.sum_nonneg fun t'' _ => mul_nonneg (by grind) (by grind)
         · calc applyR (G (Fin.succ 0)) T t' = ∑ t'', G (Fin.succ 0) t' t'' * T t'' := rfl
             _ ≤ ∑ t'', G (Fin.succ 0) t' t'' * (K * w t'') :=
-                Finset.sum_le_sum fun t'' _ => mul_le_mul_of_nonneg_left (IH t'').2 (hG _ _ _)
+                Finset.sum_le_sum fun t'' _ => mul_le_mul_of_nonneg_left (by grind) (by grind)
             _ = K * ∑ t'', G (Fin.succ 0) t' t'' * w t'' := by
                 rw [Finset.mul_sum]
-                exact Finset.sum_congr rfl fun _ _ => by ring
-            _ ≤ K * (cG (Fin.succ 0) * w t') := mul_le_mul_of_nonneg_left (hGr _ t') hK0
+                grind
+            _ ≤ K * (cG (Fin.succ 0) * w t') := mul_le_mul_of_nonneg_left (by grind) hK0
             _ = K * cG (Fin.succ 0) * w t' := by ring
       intro t
       have hprod : (∏ i : Fin (n + 1), cG i.succ) * (∏ i, cE i) =
@@ -140,16 +135,16 @@ theorem tailR_bound (w : β → ℝ) :
         ring
       have hKc : 0 ≤ K * cG (Fin.succ 0) := mul_nonneg hK0 (hcG _)
       constructor
-      · exact Finset.sum_nonneg fun t' _ => mul_nonneg (hE _ _ _) (hinner t').1
+      · exact Finset.sum_nonneg fun t' _ => mul_nonneg (by grind) (by grind)
       · change ∑ t', E 0 t t' * applyR (G (Fin.succ 0)) T t' ≤ _
         rw [hprod]
         calc ∑ t', E 0 t t' * applyR (G (Fin.succ 0)) T t'
             ≤ ∑ t', E 0 t t' * (K * cG (Fin.succ 0) * w t') :=
-              Finset.sum_le_sum fun t' _ => mul_le_mul_of_nonneg_left (hinner t').2 (hE _ _ _)
+              Finset.sum_le_sum fun t' _ => mul_le_mul_of_nonneg_left (by grind) (by grind)
           _ = K * cG (Fin.succ 0) * ∑ t', E 0 t t' * w t' := by
               rw [Finset.mul_sum]
-              exact Finset.sum_congr rfl fun _ _ => by ring
-          _ ≤ K * cG (Fin.succ 0) * (cE 0 * w t) := mul_le_mul_of_nonneg_left (hEr 0 t) hKc
+              grind
+          _ ≤ K * cG (Fin.succ 0) * (cE 0 * w t) := mul_le_mul_of_nonneg_left (by grind) hKc
           _ = K * cG (Fin.succ 0) * cE 0 * w t := by ring
 
 /-- The path sum is at most the product of the row constants times the weighted start mass. -/
@@ -165,8 +160,8 @@ theorem pathSumR_le (w : β → ℝ) (n : ℕ)
   rw [pathSumR_eq]
   have hT := tailR_bound w n G E cG cE hG hE hcG hcE hGr hEr v hv0 hvw
   set K : ℝ := (∏ i : Fin n, cG i.succ) * (∏ i, cE i) with hK
-  have hK0 : 0 ≤ K := mul_nonneg (Finset.prod_nonneg fun i _ => hcG _)
-    (Finset.prod_nonneg fun i _ => hcE _)
+  have hK0 : 0 ≤ K := mul_nonneg (Finset.prod_nonneg (by grind))
+    (Finset.prod_nonneg (by grind))
   have hprod : (∏ i, cG i) * (∏ i, cE i) = cG 0 * K := by
     rw [Fin.prod_univ_succ (f := cG)]
     simp only [hK]
@@ -176,12 +171,12 @@ theorem pathSumR_le (w : β → ℝ) (n : ℕ)
   intro s _
   calc ∑ t, u s * G 0 s t * tailR n G E v t
       ≤ ∑ t, u s * G 0 s t * (K * w t) :=
-        Finset.sum_le_sum fun t _ => mul_le_mul_of_nonneg_left (hT t).2
-          (mul_nonneg (hu s) (hG _ _ _))
+        Finset.sum_le_sum fun t _ => mul_le_mul_of_nonneg_left (by grind)
+          (mul_nonneg (hu s) (by grind))
     _ = u s * K * ∑ t, G 0 s t * w t := by
         rw [Finset.mul_sum]
-        exact Finset.sum_congr rfl fun _ _ => by ring
-    _ ≤ u s * K * (cG 0 * w s) := mul_le_mul_of_nonneg_left (hGr 0 s) (mul_nonneg (hu s) hK0)
+        grind
+    _ ≤ u s * K * (cG 0 * w s) := mul_le_mul_of_nonneg_left (by grind) (mul_nonneg (hu s) hK0)
     _ = cG 0 * K * (u s * w s) := by ring
 
 end Erdos821.P3High

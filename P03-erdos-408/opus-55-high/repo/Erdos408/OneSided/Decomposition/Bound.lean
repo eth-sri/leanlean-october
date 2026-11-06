@@ -52,17 +52,14 @@ theorem ite_exists_eq {a b m n r s : ℕ} (hab : Nat.Coprime a b) (ha : 0 < a) {
     rw [ht, hu, hv, Nat.add_sub_cancel_left, Nat.add_sub_cancel_left]
     constructor
     · rintro ⟨h, -, rfl, rfl⟩
-      push_cast
-      ring
+      grind
     · intro heq
       have hbu : b * u = a * v := by
         have : (b * u : ℤ) = a * v := by linarith
         exact_mod_cast this
       obtain ⟨h, rfl⟩ : a ∣ u := hab.dvd_of_dvd_mul_left ⟨v, hbu⟩
       refine ⟨h, ?_, rfl, ?_⟩
-      · rcases Nat.eq_zero_or_pos h with rfl | h1
-        · omega
-        · exact h1
+      · grind
       · have : a * (b * h) = a * v := by rw [← hbu]; ring
         exact (Nat.eq_of_mul_eq_mul_left ha this).symm
   by_cases heq : (b * m * n - a * r * s : ℤ) = (b : ℤ) - a
@@ -76,8 +73,8 @@ theorem ite_exists_eq {a b m n r s : ℕ} (hab : Nat.Coprime a b) (ha : 0 < a) {
         push_cast
         constructor <;> linarith [Nat.cast_nonneg (α := ℝ) a, Nat.cast_nonneg (α := ℝ) b]
       linarith
-    rw [hψ, Complex.ofReal_one]
-  · rw [ite_eq_right (fun h => heq (hiff.1 h)), ite_eq_right heq, mul_zero]
+    simp_all
+  simp_all
 
 open scoped Classical in
 /-- For unshared label tuples with products in `(0, 4Y)`, the pair error is the coprime-pair
@@ -101,14 +98,13 @@ theorem liftError_eq_pairError (A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K
   refine sum_congr rfl fun m _ => sum_congr rfl fun n _ => sum_congr rfl fun r _ =>
     sum_congr rfl fun s _ => ?_
   by_cases hc : d.α m * star (d.α r) * d.β n * star (d.β s) = 0
-  · rw [hc, zero_mul, zero_mul, mul_zero]
-  have hm : d.α m ≠ 0 := fun h => hc (by rw [h]; ring)
-  have hr : d.α r ≠ 0 := fun h => hc (by rw [h]; simp)
-  have hn : d.β n ≠ 0 := fun h => hc (by rw [h]; ring)
-  have hs : d.β s ≠ 0 := fun h => hc (by rw [h]; simp)
-  rw [ite_exists_eq hab ha hY ha4 hb4 (hmn m n hm hn) (hmn r s hr hs), majorWeight]
+  · grind
+  have hm : d.α m ≠ 0 := fun h => hc (by simp_all)
+  have hr : d.α r ≠ 0 := fun h => hc (by simp_all)
+  have hn : d.β n ≠ 0 := fun h => hc (by simp_all)
+  have hs : d.β s ≠ 0 := fun h => hc (by simp_all)
+  rw [ite_exists_eq hab ha hY ha4 hb4 (by grind) (by grind), majorWeight]
   unfold liftDet
-  push_cast
   ring
 
 /-! ### The bound at one `x` -/
@@ -116,7 +112,7 @@ theorem liftError_eq_pairError (A₀ : ℝ) {C CX alo ahi g x : ℝ} {d : Data K
 /-- `μ(p) = (∏ p_i)⁻¹ ∏V_i⁻¹`. -/
 theorem labelWeight_eq (x : ℝ) (d : Data K) (p : Fin K → ℕ) :
     labelWeight x d p = ((∏ i, p i : ℕ) : ℝ)⁻¹ * (d.bandMass x)⁻¹ := by
-  simp [labelWeight, Data.bandMass, prod_mul_distrib, prod_inv_distrib]
+  simp [labelWeight, Data.bandMass, prod_mul_distrib]
   ring
 
 /-- `η(b/Y) ≤ 4Y/b`. -/
@@ -128,11 +124,11 @@ theorem dyadicBump_le_div {Y : ℝ} (hY : 0 < Y) (b : ℕ) :
   obtain ⟨h₁, h₂⟩ := lt_of_dyadicBump_ne_zero hη
   have hb : (0 : ℝ) < b := by
     by_contra hb
-    rw [show (b : ℝ) = 0 by linarith [Nat.cast_nonneg (α := ℝ) b], zero_div] at h₁
+    rw [show (b : ℝ) = 0 by linarith, zero_div] at h₁
     linarith
   rw [div_lt_iff₀ hY] at h₂
   rw [le_div_iff₀ hb]
-  linarith [dyadicBump_le_one (b / Y), mul_le_mul_of_nonneg_right (dyadicBump_le_one (b / Y))
+  linarith [mul_le_mul_of_nonneg_right (dyadicBump_le_one (b / Y))
     hb.le]
 
 /-- `∏V_i⁻² η(a/Y) η(b/Y) ≤ 16 Y² μ(p) μ(p')`. -/
@@ -182,13 +178,13 @@ theorem norm_square_decomposition_le (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d 
   have hμ0 : ∀ z : Fin K × Fin (padCount x) → ℕ, 0 ≤ padWeight x d z := fun z =>
     prod_nonneg fun c _ => one_div_mul_harmonicMass_nonneg (hV c.1) _
   have hbad0 : ∀ p p', 0 ≤ bad p p' := fun p p' =>
-    sum_nonneg fun z _ => by split_ifs <;> simp [hμ0]
+    sum_nonneg fun z _ => by grind
   -- the good pads have mass `1 - bad`
   have hgood : ∀ p p', ∑ z ∈ padSet x d (padCount x),
       (if GoodPads p p' z then padWeight x d z else 0) = 1 - bad p p' := by
     intro p p'
     rw [← sum_padWeight hV (padCount x), eq_sub_iff_add_eq, ← sum_add_distrib]
-    exact sum_congr rfl fun z _ => by split_ifs <;> simp
+    exact sum_congr rfl fun z _ => by grind
   -- one pair of label tuples
   have key : ∀ p ∈ d.labels x, ∀ p' ∈ d.labels x,
       (d.bandMass x)⁻¹ ^ 2 * ‖((dyadicBump ((∏ i, p i : ℕ) / Y) *
@@ -213,7 +209,7 @@ theorem norm_square_decomposition_le (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d 
       positivity
     by_cases hη : η = 0
     · simp only [hη, Complex.ofReal_zero, zero_mul, ite_self, sub_zero, norm_zero, mul_zero]
-      exact hR0
+      omega
     -- the label products lie in `(Y, 4Y)`
     have hab : ∀ {b : ℕ}, dyadicBump (b / Y) ≠ 0 → Y < b ∧ (b : ℝ) < 4 * Y := by
       intro b hb
@@ -291,8 +287,7 @@ theorem norm_square_decomposition_le (q A₀ : ℝ) {C CX alo ahi g x : ℝ} {d 
         rw [← sum_add_distrib, mul_sum]
         refine sum_congr rfl fun p _ => ?_
         rw [← sum_add_distrib, mul_sum]
-        refine sum_congr rfl fun p' _ => ?_
-        split_ifs <;> ring
+        grind
     _ ≤ 16 * Y ^ 2 * B * (∑ p ∈ d.labels x, ∑ p' ∈ d.labels x,
           labelWeight x d p * labelWeight x d p' * (c * ε) + K ^ 2 * ε) := by
         gcongr with p _ p' _

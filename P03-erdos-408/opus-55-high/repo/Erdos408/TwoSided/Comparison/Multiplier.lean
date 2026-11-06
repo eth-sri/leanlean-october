@@ -100,7 +100,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
       obtain ⟨g', -, hg'⟩ := (Prime.dvd_finsetProd_iff hpp _).1 hpn
       obtain ⟨i, hi, hgi⟩ := (Prime.dvd_finsetProd_iff hpp _).1 hg'
       have hmem : l₀ g' i ∈ P g' := by simpa [hi] using hl₀a g' i
-      have heq : p = l₀ g' i := (Nat.prime_dvd_prime_iff_eq (hprime g p hpP)
+      have heq := (Nat.prime_dvd_prime_iff_eq (hprime g p hpP)
         (hprime g' _ hmem)).1 hgi
       have hgg : g' = g := by
         by_contra hne
@@ -120,7 +120,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
         refine Finset.mem_filter.2 ⟨this, ?_⟩
         rw [← hln, slotProduct]
         exact (Finset.dvd_prod_of_mem _ hi).trans (Finset.dvd_prod_of_mem _ (Finset.mem_univ g))
-      · rwa [ite_eq_right hi] at this
+      · grind
     have hpi : (Fintype.piFinset fun g =>
         Fintype.piFinset fun i => if i ∈ A g then (P g).filter (· ∣ n) else {1}).card ≤
           (max 1 m₀) ^ k := by
@@ -131,7 +131,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
             refine Finset.prod_congr rfl fun g _ => ?_
             rw [Fintype.card_piFinset]
             simp only [apply_ite Finset.card, Finset.card_singleton]
-            rw [Finset.prod_ite_mem, Finset.univ_inter, Finset.prod_const]
+            simp
         _ ≤ ∏ _g : ι, (max 1 m₀) ^ m₀ := by
             refine Finset.prod_le_prod fun g _ => ?_
             exact (Nat.pow_le_pow_left ((hc g).trans ((hA g).trans (le_max_right _ _))) _).trans
@@ -139,7 +139,7 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
         _ = (max 1 m₀) ^ k := by rw [Finset.prod_const, Finset.card_univ, ← pow_mul]
     have := (Finset.card_le_card hsub).trans hpi
     calc (S.card : ℝ) ≤ ((max 1 m₀ ^ k : ℕ) : ℝ) := by exact_mod_cast this
-      _ = max 1 (m₀ : ℝ) ^ k := by push_cast; rfl
+      _ = max 1 (m₀ : ℝ) ^ k := by simp
   -- `γ^k ≤ L^{C₇}`, as `|ι| ≤ 2 C₀ T`
   have hι : (Fintype.card ι : ℝ) ≤ 2 * C₀ * Real.log (Real.log x) := by
     have h := Finset.card_sdiff_add_card_eq_card (Finset.subset_univ big)
@@ -155,9 +155,9 @@ theorem eventually_sum_auxLabels_eq_le (c₀ C₀ vlo vhi : ℝ) (hvlo : 0 < vlo
     nlinarith [mul_le_mul_of_nonneg_left hι h₀]
   calc ∑ l ∈ S, ∏ g, ∏ i ∈ A g, (harmonicMass (P g) * l g i)⁻¹ ≤ S.card • (β ^ k / n) :=
         Finset.sum_le_card_nsmul _ _ _ hterm
-    _ = S.card * β ^ k / n := by rw [nsmul_eq_mul, mul_div_assoc]
+    _ = S.card * β ^ k / n := by ring
     _ ≤ max 1 (m₀ : ℝ) ^ k * β ^ k / n := by gcongr
-    _ = γ ^ k / n := by rw [hγ, mul_pow]
+    _ = γ ^ k / n := by ring
     _ ≤ Real.log x ^ (2 * m₀ * C₀ * Real.log γ) / n := by gcongr
 
 /-- **Lemma C2 (minor arcs).** WD's `MinorArcTask`: for `C, δ, A > 0` there are

@@ -13,7 +13,6 @@ open Blueprint.Graph
 lemma imaginaryPower_eq_mellin (n : ℕ) (ζ : ℝ) :
     imaginaryPower n ζ = Blueprint.Analytic.mellin n ζ := by
   unfold imaginaryPower Blueprint.Analytic.mellin
-  congr 1
   ring
 
 lemma imaginaryPower_mul (n k : ℕ) (hn : 0 < n) (hk : 0 < k) (ζ : ℝ) :
@@ -29,7 +28,6 @@ lemma imaginaryPower_mul (n k : ℕ) (hn : 0 < n) (hk : 0 < k) (ζ : ℝ) :
 lemma phase_mul_shift (θ C D : ℝ) :
     phase (θ * (C * D)) = Blueprint.Analytic.e ((θ * C) * D) := by
   unfold phase Blueprint.Analytic.e
-  congr 1
-  ring_nf
+  ring
 
 end Erdos821.P4Probe

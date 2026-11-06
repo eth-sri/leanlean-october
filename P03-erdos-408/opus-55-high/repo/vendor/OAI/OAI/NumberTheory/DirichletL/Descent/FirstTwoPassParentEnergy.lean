@@ -13,16 +13,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
+open InverseSecondSourceBlocks
+open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell
 open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_two_pass_parent_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
@@ -38,14 +37,14 @@ theorem original_two_pass_parent_energy
       1≤bw ∧ b≤bw ∧ bw=Real.exp window ∧
     ∀epsFirst epsSecond:ℝ,0<epsFirst→0<epsSecond→∀degree:ℕ,
       ∃C:ℝ,0≤C ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-      (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
+      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+      (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
       (Z M r ell V Γ theta pi epschild A loss lossFinal:ℝ)
       (_hZ:2≤Z)(_hbin:2≤Z^eta)(_hM:0≤M)(_hF:r+3*ell+V≤Lcap)(_hMcap:M≤Lcap)(_hell:0≤ell)(_hV:0≤V)(_hr: -eta≤r)
@@ -67,7 +66,7 @@ theorem original_two_pass_parent_energy
       (_hslots:(slots:Set σ).PairwiseDisjoint lists)(_hweights:∀i∈slots,∀q∈lists i,‖weights i q‖≤1),
       let mark:=fun v U=>primeMark slots lists weights (v.support∪U);
       let Y:=Z^(2*Lcap+15*eta+tau);
-      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal ActualEisensteinCubic.O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
       let W:=fun y=>normTwistedSource om theta (y/Z^r);
       let source:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y;
       let keys:=liveJointKeys p source pool (sourceSummand p hp hcop hg β cutoff Ψ m mark W rowMajorant (Z^M));
@@ -95,7 +94,7 @@ theorem original_two_pass_parent_energy
     hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hΨ hΓ hA hsf hn hβ hlabels hslots hweights hl hr'
   exact hall.trans (two_pass_scalar C Cz Ct Γ A Z (r+3*ell+V) M r ell eta tau pi epsFirst loss Lcap saving lossFinal
     ((1+‖theta‖)^(2*InverseClippingProfiles.momentOrder (firstDegree degree))) hC hCz hCt hA (by linarith)
-    (one_le_pow₀ (by linarith [norm_nonneg theta])) hparent hprincipal hretained htail)
+    (one_le_pow₀ (by simp)) hparent hprincipal hretained htail)
 
 end SevenEighths.InverseMoment
 

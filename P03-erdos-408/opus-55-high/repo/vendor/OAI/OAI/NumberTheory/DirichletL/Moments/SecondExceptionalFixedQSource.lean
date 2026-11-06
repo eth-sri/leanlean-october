@@ -21,40 +21,28 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondExceptionalFixedQSource
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
+open HeckeFamily
+open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn
+open CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
+open RayFourExpansion
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentCanonicalFirst
 open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicRowSupport
+open CenteredMomentSectorLocalization
 
-open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
-open CenteredMomentSecondExceptionalCommonSaving
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
+open ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalSourceFamily
+open CenteredMomentSecondExceptionalFamily
 open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceLowerSupport
+open CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFiniteProfileExceptionalPhysical
 
 open CenteredMomentSecondExceptionalFixedQChosenBlock CenteredMomentSecondExceptionalAggregate
@@ -65,14 +53,14 @@ open CenteredMomentActiveSource
 theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))
     (ε δ θ B L Cr:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤L)(hCr:0<Cr):
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∃Ck:ℝ,0≤Ck ∧
-      ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
+      ∀Q:Ideal HeckeFamily.O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:HeckeFamily.O)} →
       ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
-      ∀(R0 seed:Ideal O),R0≠0 → Squarefree seed → seed≠0 → sourceRadius s≤Z^B →
+      ∀(R0 seed:Ideal HeckeFamily.O),R0≠0 → Squarefree seed → seed≠0 → sourceRadius s≤Z^B →
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=coefficient s R0 seed
-      ∀χ₀:RayCharacter,∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀χ₀:RayCharacter,∀m:HeckeFamily.O,m≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
       ∀(Tsec ξ Kphys:ℝ),0<Kphys →
       let R:=frequencyRadius Tsec Z ξ
       0<R → R≤Cr*Z^L →
@@ -128,13 +116,13 @@ theorem original_exceptional_energy (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo h
     have hs:=commonLabels_supported (activeSource S β) _ _ q.property
     have hcnd:(expandedFactor s.η:ℝ)*R0.absNorm*q.val.1.absNorm*q.val.2.absNorm*(4*R)≤Z^B:=by
       apply le_trans _ hcond
-      have hH:0≤sourceRadius s:=(Nat.cast_nonneg q.val.1.absNorm).trans hg.2.2.2.2.2.1
+      have hH:0≤sourceRadius s:=by linarith
       calc
         _=(expandedFactor s.η:ℝ)*R0.absNorm*((q.val.1.absNorm:ℝ)*q.val.2.absNorm)*(4*R):=by ring
         _≤(expandedFactor s.η:ℝ)*R0.absNorm*(sourceRadius s*sourceRadius s)*(4*R):=by
           gcongr
-          · exact hg.2.2.2.2.2.1
-          · exact hg.2.2.2.2.2.2
+          · linarith
+          linarith
         _=_:=by ring
     have hh:=hZ.2 s p hlo hhi hP hW1 hW2 q.val.1 q.val.2 hs.1 hs.2 R0 seed hR0
       hg.2.2.2.1 hg.2.2.2.2.1 (hg.2.2.2.2.2.1.trans hcap) (hg.2.2.2.2.2.2.trans hcap)

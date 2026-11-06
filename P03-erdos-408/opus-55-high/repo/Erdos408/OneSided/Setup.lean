@@ -126,7 +126,7 @@ reduction says nothing. -/
 theorem one_le_bandThreshold {Dstar C : ℝ} (hD : 0 < Dstar) (hC : 0 < C) :
     1 ≤ bandThreshold Dstar C := by
   unfold bandThreshold edgePrec momentPrec squarePrec
-  exact Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne'
+  exact Nat.one_le_iff_ne_zero.2 (by positivity)
 
 /-- `D = D₁ + 1`, the precision of the major term. -/
 def majorPrec (Dstar : ℝ) : ℝ := squarePrec Dstar + 1

@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Detector.MellinPoisson
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
 
 def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
-  (Y:ℂ)⁻¹ * ∑' s : {I : Ideal O // Supported I},
+    (D : Ideal ActualEisensteinCubic.O) (W₀ W₁ : ℝ → ℂ) (X Y Z : ℝ) : ℂ :=
+  (Y:ℂ)⁻¹ * ∑' s : {I : Ideal ActualEisensteinCubic.O // Supported I},
     if ∀ p∈C.excluded, ¬p∣s.val then
       let a := primaryGenerator s.val
       let has := (supported_span_primaryGenerator_iff s.val).mpr s.property
@@ -22,12 +21,12 @@ def poissonPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
       W₁ (q_s/Y) * CanonicalRowCompletion.idealRowHom C.generator s.val /
         (C.tau*C.residueMonoid a*(Real.sqrt (elementNorm C.generator*q_s*X):ℂ)) *
       verticalIntegral 4 (fun t => (Real.sqrt q_s:ℂ)⁻¹*((Z:ℂ)^t*Complex.exp (t^2)) *
-        ∑' p : Ideal O × Ideal O, transformedSpectralTerm η C C.excluded D a has W₀
+        ∑' p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O, transformedSpectralTerm η C C.excluded D a has W₀
           (elementNorm C.generator*q_s*X) t p.1 p.2)
     else 0
 
 theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W₀ W₁ : ℝ → ℂ) (hWc : HasCompactSupport W₀)
+    (D : Ideal ActualEisensteinCubic.O) (W₀ W₁ : ℝ → ℂ) (hWc : HasCompactSupport W₀)
     (hWs : ContDiff ℝ ∞ W₀) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z) :
     markedPhysicalProbe η C D W₀ W₁ X Y Z = poissonPhysicalProbe η C D W₀ W₁ X Y Z := by
   unfold markedPhysicalProbe poissonPhysicalProbe
@@ -48,10 +47,10 @@ theorem markedPhysicalProbe_eq_poisson (η : HeckeFamily.Character) (C : Calibra
         (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
     have hs : 0<(Ideal.absNorm s.val:ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.property.1)
-    have hK : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := mul_pos (mul_pos hb hs) hX
+    have hK : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := by positivity
     simpa only [hn] using inner_mellin_poisson η C D (primaryGenerator s.val) has
       W₀ hWc hWs (elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X) Z hK hZ
-  · rfl
+  simp
 
 end SevenEighths.ProbePhysical
 end

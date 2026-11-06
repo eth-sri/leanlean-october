@@ -7,20 +7,18 @@ public import OAI.NumberTheory.DirichletL.Reflection.NormalizedColumns
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 lemma two_block_phase_bounds (F : PrimeFamily φ) (S : PrimeFamily σ) (jF : φ → ℕ)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+    (hc : c ≠ 0) (hN : (9:ActualEisensteinCubic.O)*c ∣ N)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hcop : Pairwise (Function.onFun IsCoprime (F.sum S).ideal))
     (hNp : ∀ i, IsCoprime (Ideal.span {N}) ((F.sum S).ideal i))
-    (hchar : ∀ i, ringChar (Eis ⧸ (F.sum S).ideal i) ≠ 2) (u : Eisˣ) (m : ℕ) :
+    (hchar : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ (F.sum S).ideal i) ≠ 2) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) :
     ‖sourceRowPhase s (F.sum S).generator_ne_zero (F.sum S).generator_good
       (Sum.elim jF (fun _ => 1)) (Finset.univ.image Sum.inr) (Finset.univ.image Sum.inl) u m‖ ≤ 1 ∧
     ‖actualSlotPhase F S jF s u m‖ ≤ 1 := by
@@ -29,9 +27,9 @@ lemma two_block_phase_bounds (F : PrimeFamily φ) (S : PrimeFamily σ) (jF : φ 
   have hcp : Pairwise (Function.onFun IsCoprime
       (fun i => Ideal.span {(F.sum S).generator i})) := by
     simpa only [PrimeFamily.generator_span] using hcop
-  have hch : ∀ i, ringChar (Eis ⧸ Ideal.span {(F.sum S).generator i}) ≠ 2 := by
+  have hch : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {(F.sum S).generator i}) ≠ 2 := by
     intro i
-    have he := congrArg (fun I : Ideal Eis => ringChar (Eis ⧸ I)) ((F.sum S).generator_span i)
+    have he := congrArg (fun I : Ideal ActualEisensteinCubic.O => ringChar (ActualEisensteinCubic.O ⧸ I)) ((F.sum S).generator_span i)
     exact he.symm ▸ hchar i
   have hd : Disjoint (Finset.univ.image (Sum.inr : σ → φ ⊕ σ)) (Finset.univ.image Sum.inl) := by
     simp only [Finset.disjoint_left,Finset.mem_image,Finset.mem_univ,true_and]
@@ -40,15 +38,15 @@ lemma two_block_phase_bounds (F : PrimeFamily φ) (S : PrimeFamily σ) (jF : φ 
   exact ⟨sourceRowPhase_norm_le_one D s _ _ hch hcp _ _ _ hd u m,
     sourceSlotPhase_norm_le_one D s _ _ hch hcp _ _ _ hd u m⟩
 
-lemma actualRowPhase_norm_le_one (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+lemma actualRowPhase_norm_le_one (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
     (jF : φ → ℕ) (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+    (hc : c ≠ 0) (hN : (9:ActualEisensteinCubic.O)*c ∣ N)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal))
     (hFK : ∀ f, IsCoprime (F.ideal f) K)
     (hNF : ∀ f, IsCoprime (Ideal.span {N}) (F.ideal f))
     (hNK : IsCoprime (Ideal.span {N}) K)
-    (hcharF : ∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) (u : Eisˣ) (m : ℕ) :
+    (hcharF : ∀ f, ringChar (ActualEisensteinCubic.O ⧸ F.ideal f) ≠ 2) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) :
     ‖actualRowPhase F K hK jF s u m‖ ≤ 1 := by
   have hcp := PrimeFamily.sum_pairwise F (PrimeFamily.residual K hK) hF
     (PrimeFamily.residual_pairwise K hK) (fun f P =>
@@ -58,33 +56,33 @@ lemma actualRowPhase_norm_le_one (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admi
     cases i with
     | inl f => exact hNF f
     | inr P => exact hNK.of_isCoprime_of_dvd_right (PrimeFamily.residual_dvd K hK P)
-  have hchar : ∀ i, ringChar (Eis ⧸ (F.sum (PrimeFamily.residual K hK)).ideal i) ≠ 2 := by
+  have hchar : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ (F.sum (PrimeFamily.residual K hK)).ideal i) ≠ 2 := by
     intro i
     cases i with
     | inl f => exact hcharF f
     | inr P => exact (hK.2.2 P.val (Multiset.mem_toFinset.mp P.property)).2
   have hh := (two_block_phase_bounds F (PrimeFamily.residual K hK) jF s hc hN hbase hac hcp hNp hchar u m).1
   unfold actualRowPhase
-  convert hh using 1 ; congr 2 <;> ext i <;> simp
+  grind
 
 lemma actualFrozenPhase_norm_le_one (F : PrimeFamily φ) (jF : φ → ℕ) (κ : ℂ) (hκ : ‖κ‖ ≤ 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+    (hc : c ≠ 0) (hN : (9:ActualEisensteinCubic.O)*c ∣ N)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal))
     (hNF : ∀ f, IsCoprime (Ideal.span {N}) (F.ideal f))
-    (hcharF : ∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) (hj : ∀ f, jF f < 6) (u : Eisˣ) (m : ℕ) :
+    (hcharF : ∀ f, ringChar (ActualEisensteinCubic.O ⧸ F.ideal f) ≠ 2) (hj : ∀ f, jF f < 6) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) :
     ‖actualFrozenPhase F jF κ s u m‖ ≤ 1 := by
   obtain ⟨D⟩ := F.exists_controlled N a c mode hc hN hbase hac hF hNF
   have hcp : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {F.generator i})) := by
     simpa only [PrimeFamily.generator_span] using hF
-  have hch : ∀ i, ringChar (Eis ⧸ Ideal.span {F.generator i}) ≠ 2 := by
+  have hch : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {F.generator i}) ≠ 2 := by
     intro i
-    have he := congrArg (fun I : Ideal Eis => ringChar (Eis ⧸ I)) (F.generator_span i)
+    have he := congrArg (fun I : Ideal ActualEisensteinCubic.O => ringChar (ActualEisensteinCubic.O ⧸ I)) (F.generator_span i)
     exact he.symm ▸ hcharF i
   rw [actualFrozenPhase,norm_mul,norm_mul,norm_star,
-    frozenCore_norm D _ _ hch hcp _ _ (fun i _ => hj i),ramifiedBlock_norm,mul_one,mul_one]
-  exact hκ
+    frozenCore_norm D _ _ hch hcp _ _ (by grind),ramifiedBlock_norm,mul_one,mul_one]
+  omega
 
 end
 end SevenEighths.InverseReflectedPhase

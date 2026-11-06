@@ -9,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open FirstPassCubeLabels InverseSecondSourceBlocks
+open InverseSecondFibers
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 include hp
 
@@ -35,13 +34,13 @@ theorem actual_cell_row_decrease {Jo Jn : ℕ}
   have hD := (actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).1
   have hh := actual_second_row_decrease p hp x (hs.second_divisor x (cell_subset p source d hx)) Z M ell A t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j eta cutoff hZ hA ht hterminal hsmall
-    (by simpa [outerNorms] using hG) (by simpa [outerNorms] using hD) h1 h2 hJ
+    (by simpa) (by simpa) h1 h2 hJ
   linarith
 
 theorem actual_cell_triple_puncture_nonzero
     (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (hs : ActualSecondSourceConditions p source) (d : BlockIndex) (m : O) (hm : m≠0)
+    (hs : ActualSecondSourceConditions p source) (d : BlockIndex) (m : ActualEisensteinCubic.O) (hm : m≠0)
     (γ : OuterTriple) (hγ : γ∈actualSecondTriples p 1 1 (cell p source d)) :
     actualSecondInheritedRadicalPuncture m γ≠0 := by
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hγ

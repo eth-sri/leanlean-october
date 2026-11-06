@@ -7,7 +7,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -60,21 +60,21 @@ theorem product_atom_group_count (G : S34.Core.PrimeGroups) (k : Fin G.size → 
       ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ S.card / n := by
   let cost : Fin G.size → ℝ := fun g =>
     (Nat.factorial (k g) : ℝ) * (S34.Core.mass G g)⁻¹ ^ k g
-  have hcost₀ (g : Fin G.size) : 0 ≤ cost g := by
-    exact mul_nonneg (Nat.cast_nonneg _) (pow_nonneg
+  have hcost₀ (g : Fin G.size) : 0 ≤ cost g :=
+    mul_nonneg (Nat.cast_nonneg _) (pow_nonneg
       (inv_nonneg.mpr (S34.Proofs.mass_nonneg G g)) _)
   have hcost (g : Fin G.size) (hg : g ∈ S) :
       cost g ≤ (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m := by
     have hfac : (Nat.factorial (k g) : ℝ) ≤ Nat.factorial m := by
       exact_mod_cast Nat.factorial_le (hcap g)
     have hinv : (S34.Core.mass G g)⁻¹ ≤ v⁻¹ := by
-      simpa only [one_div] using one_div_le_one_div_of_le hv (hmass g hg)
+      simpa only [one_div] using one_div_le_one_div_of_le hv (by grind)
     have hp : (S34.Core.mass G g)⁻¹ ^ k g ≤ (max 1 v⁻¹) ^ m :=
-      (pow_le_pow_left₀ (inv_nonneg.mpr (S34.Proofs.mass_nonneg G g))
-        (hinv.trans (le_max_right _ _)) (k g)).trans
-          (pow_le_pow_right₀ (le_max_left _ _) (hcap g))
+      (pow_le_pow_left₀ (inv_nonneg.mpr (by grind))
+        (by grind) (k g)).trans
+          (pow_le_pow_right₀ (by simp) (hcap g))
     exact mul_le_mul hfac hp
-      (pow_nonneg (inv_nonneg.mpr (S34.Proofs.mass_nonneg G g)) _) (Nat.cast_nonneg _)
+      (pow_nonneg (inv_nonneg.mpr (by grind)) _) (Nat.cast_nonneg _)
   have hdrop : (∏ g, cost g) = ∏ g ∈ S, cost g := by
     symm
     apply Finset.prod_subset (Finset.subset_univ S)
@@ -87,7 +87,7 @@ theorem product_atom_group_count (G : S34.Core.PrimeGroups) (k : Fin G.size → 
     rw [hdrop]
     calc
       _ ≤ ∏ _ ∈ S, (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m :=
-        Finset.prod_le_prod₀ (fun g _ => hcost₀ g) hcost
+        Finset.prod_le_prod₀ (by grind) hcost
       _ = _ := by simp
   exact (product_atom_finite G k n).trans
     (div_le_div_of_nonneg_right hprod (Nat.cast_nonneg _))
@@ -102,17 +102,16 @@ theorem group_cost_log_power (m s : ℕ) (v C L : ℝ)
   have hmax : (1 : ℝ) ≤ max 1 v⁻¹ := le_max_left _ _
   have hpow : (1 : ℝ) ≤ (max 1 v⁻¹) ^ m := one_le_pow₀ hmax
   have hbase : 1 ≤ (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m := by
-    simpa only [one_mul] using mul_le_mul hfac hpow (by norm_num : (0 : ℝ) ≤ 1) (Nat.cast_nonneg _)
+    simpa only [one_mul] using mul_le_mul hfac hpow (by positivity) (Nat.cast_nonneg _)
   have hbasepos : 0 < (Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m := lt_of_lt_of_le zero_lt_one hbase
   have hLpos : 0 < L := lt_of_lt_of_le zero_lt_one hL
   calc
-    _ = ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ (s : ℝ) := (Real.rpow_natCast _ _).symm
+    _ = ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ (s : ℝ) := by simp
     _ ≤ ((Nat.factorial m : ℝ) * (max 1 v⁻¹) ^ m) ^ (C * Real.log L) :=
       Real.rpow_le_rpow_of_exponent_le hbase hs
     _ = _ := by
       rw [Real.rpow_def_of_pos hbasepos, Real.rpow_def_of_pos hLpos,
         Real.log_mul (ne_of_gt hfacpos) (by positivity), Real.log_pow]
-      congr 1
       ring
 
 end

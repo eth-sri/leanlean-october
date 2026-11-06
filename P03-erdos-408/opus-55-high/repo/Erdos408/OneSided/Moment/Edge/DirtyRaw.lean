@@ -57,7 +57,7 @@ private theorem abs_dyadicBump_le' (y : ℝ) : |dyadicBump y| ≤ 1 := by
   have h₂ := smoothTransition.le_one (y - 1)
   have h₃ := smoothTransition.nonneg (y / 2 - 1)
   have h₄ := smoothTransition.le_one (y / 2 - 1)
-  exact abs_le.2 ⟨by linarith, by linarith⟩
+  grind
 
 /-- **The raw coefficient bound**: `|w [t - b + a = 0]| ≤ rawAmp`. With `D ∣ det`, the raw kernel
 is the raw determinant equation, and the factors `d₀/D`, `η`, `η`, `ψ` have modulus at most
@@ -79,26 +79,26 @@ theorem norm_rawCoef_le (hq : 0 < q) (hd₀ : 0 < d₀)
         rw [← Int.mul_ediv_cancel' hv.2.2.2.2.1]
         linear_combination (edgePad s c : ℤ) * hsh
       unfold rawAmp
-      rw [ite_eq_left hv, ite_eq_left hsh, ite_eq_left ⟨hv, hdet⟩, mul_one, Complex.norm_real,
+      rw [ite_eq_left hv, ite_eq_left hsh, ite_eq_left (by grind), mul_one, Complex.norm_real,
         Real.norm_eq_abs]
       set w := (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 *
         pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
         pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) * rawWeight q N s c with hw
       have hw0 : 0 ≤ w := by
         unfold rawAmp at h0
-        rwa [ite_eq_left ⟨hv, hdet⟩] at h0
+        rwa [ite_eq_left (by grind)] at h0
       have hD : 0 < (edgePad s c : ℝ) := hd₀.trans_le hv.2.2.1
       have hk : |d₀ / edgePad s c * dyadicBump ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y) *
           dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y) *
           plateau ((edgeDet s c / edgePad s c : ℤ) / Y)| ≤ 1 := by
-        rw [abs_mul, abs_mul, abs_mul, abs_of_pos (div_pos hd₀ hD),
+        rw [abs_mul, abs_mul, abs_mul, abs_of_pos (by positivity),
           abs_of_nonneg (show 0 ≤ plateau ((edgeDet s c / edgePad s c : ℤ) / Y) from
             smoothTransition.nonneg _)]
         have h₁ : d₀ / edgePad s c ≤ 1 := (div_le_one hD).2 hv.2.2.1
         have h₂ := abs_dyadicBump_le' ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y)
         have h₃ := abs_dyadicBump_le' ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)
         have h₄ := smoothTransition.le_one (5 - |((edgeDet s c / edgePad s c : ℤ) : ℝ) / Y|)
-        have h₅ : 0 ≤ d₀ / edgePad s c := (div_pos hd₀ hD).le
+        have h₅ : 0 ≤ d₀ / edgePad s c := by positivity
         calc d₀ / ↑(edgePad s c) * |dyadicBump _| * |dyadicBump _| * plateau _
             ≤ 1 * 1 * 1 * 1 := by
               gcongr <;> first | exact h₄ | exact smoothTransition.nonneg _
@@ -113,10 +113,8 @@ theorem norm_rawCoef_le (hq : 0 < q) (hd₀ : 0 < d₀)
             ring_nf
         _ ≤ w * 1 := mul_le_mul_of_nonneg_left hk hw0
         _ = w := mul_one w
-    · rw [ite_eq_right hsh, mul_zero, norm_zero]
-      exact h0
-  · rw [ite_eq_right hv, Complex.ofReal_zero, zero_mul, norm_zero]
-    exact h0
+    simp_all
+  simp_all
 
 end Coef
 
@@ -152,7 +150,7 @@ theorem sum_rawAmp_le_rowBound (hq : 0 < q) (hq₁ : q < 1) (hU : 0 < d₀ * Y *
     refine (sum_rawAmp_le_of_nonempty hq hq₁ hU hu hdisj hV hb s S hIn).trans ?_
     unfold rawEps
     gcongr
-    exact ha _
+    simp_all
 
 /-- **The dirty raw pieces for fixed data** (PD `mem:raw-dirty-norm`): the weighted Schur test
 with weight one. The row of `(S, I)` and the column (`2^K` times the row of `(I, S)`) are
@@ -169,7 +167,7 @@ theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU :
       (choiceOp (rawChoices x d Y d₀ u v r S I) (rawCoef q N) (chainEdgeOut x d Y d₀ u v r B))
       (Real.sqrt (2 ^ K * (16 * 2 ^ K) * rawEps (K := K) q x B)) := by
   classical
-  have hV' : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) := fun i => (hV i).1
+  have hV' := fun i => (hV i).1
   have hν := primeWeight_nonneg_of hV' hb (q := q) (N := N)
   have hμ0 : ∀ t : ChainState x d Y d₀ u v r B, 0 ≤ chainMeasure q x d Y d₀ u v r B N t :=
     fun t => mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun h _ => hν _)
@@ -178,45 +176,36 @@ theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU :
   set ρB : Finset (Fin K) → ℝ := fun J => if J = ∅ then 16 * 2 ^ K else rawEps (K := K) q x B
     with hρB
   have hρB0 : ∀ J, 0 ≤ ρB J := fun J => by
-    simp only [hρB]
-    split_ifs
-    · positivity
-    · exact hε0
+    positivity
   have hρBle : ∀ J, ρB J ≤ 16 * 2 ^ K := fun J => by
-    simp only [hρB]
-    split_ifs
-    · exact le_rfl
-    · exact hε
+    grind
   have hrowB := fun s J T => sum_rawAmp_le_rowBound (N := N) (B := B) hq hq₁ hU hu hdisj hV' hb
     ha hL (Y := Y) (d₀ := d₀) (v := v) (r := r) s T J
   have hnorm := normLe_choiceOp (cs := rawChoices x d Y d₀ u v r S I) (a := rawCoef q N)
     (out := chainEdgeOut x d Y d₀ u v r B)
     (μ := fun s => chainMeasure q x d Y d₀ u v r B N s)
     (ν := fun s => chainMeasure q x d Y d₀ u v r B N s) (h := fun _ => 1) (h' := fun _ => 1)
-    (R := ρB I) (C := 2 ^ K * ρB S) (hρB0 I) (by have := hρB0 S; positivity) hμ0
+    (R := ρB I) (C := 2 ^ K * ρB S) (hρB0 I) (by positivity) hμ0
     (fun _ => zero_lt_one) (fun s => ?_) (fun s' => ?_)
   · refine fun f => (hnorm f).trans (mul_le_mul_of_nonneg_right
       (pow_le_pow_left₀ (Real.sqrt_nonneg _) (Real.sqrt_le_sqrt ?_) 2)
       (sum_nonneg fun t _ => mul_nonneg (hμ0 t) (sq_nonneg _)))
     -- one of the two sides is small
     by_cases hI : I = ∅
-    · have hS : S ≠ ∅ := fun hS => hSI (by rw [hS, hI])
+    · have hS : S ≠ ∅ := fun hS => hSI (by simp_all)
       simp only [hρB, hI, hS, ↓reduceIte]
-      exact le_of_eq (by ring)
+      linarith
     · have h₁ : ρB I = rawEps (K := K) q x B := by simp only [hρB, hI, ↓reduceIte]
       rw [h₁]
       have h2 : (0 : ℝ) < 2 ^ K := by positivity
       have h3 := mul_le_mul_of_nonneg_left (hρBle S) (mul_nonneg hε0 h2.le)
-      calc rawEps (K := K) q x B * (2 ^ K * ρB S) = rawEps (K := K) q x B * 2 ^ K * ρB S := by
-            ring
-        _ ≤ rawEps (K := K) q x B * 2 ^ K * (16 * 2 ^ K) := h3
-        _ = _ := by ring
+      linarith
   · -- the row
     rw [mul_one]
     refine (sum_le_sum fun c hc => ?_).trans ((hrowB s I S).trans (le_of_eq ?_))
     · rw [mul_one]
       exact norm_rawCoef_le hq hd₀ hdisj hV' hν s (mem_filter.1 hc).1
-    · simp only [hρB]
+    linarith
   · -- the column, by reversal
     rw [mul_one]
     calc ∑ s, ∑ c ∈ rawChoices x d Y d₀ u v r S I with chainEdgeOut x d Y d₀ u v r B s c = s',
@@ -233,8 +222,8 @@ theorem normLe_rawChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hU :
           sum_col_rawAmp_le hq hdisj hV hb S I s'
       _ ≤ 2 ^ K * (chainMeasure q x d Y d₀ u v r B N s' * ρB S) := by
           gcongr
-          · exact hμ0 s'
-          · exact hrowB s' S I
+          · grind
+          grind
       _ = 2 ^ K * ρB S * chainMeasure q x d Y d₀ u v r B N s' := by ring
 
 end Schur
@@ -244,7 +233,7 @@ end Schur
 /-- The damping defects are in `[0, 1]`. -/
 private theorem dampDefect_mem_Icc' {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  have hs := Real.sqrt_le_one.2 hq₁.le
   unfold dampDefect
   split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
 
@@ -253,8 +242,8 @@ most `1`, and `p + 1 ≥ 2(N + 1)`. -/
 private theorem half_le_baseline' {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
     (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
   have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
+  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (by omega)
+  have hsum :=
     calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
           sum_le_sum fun j _ => (dampDefect_mem_Icc' hq hq₁ N j).2
       _ = (N : ℝ) + 1 := by simp
@@ -341,7 +330,7 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
       _ ≤ ((padCount x + 1 : ℕ) : ℝ) ^ K :=
           pow_le_pow_left₀ (Real.rpow_nonneg hL0.le _) hM₁ K
   have hMpos : 0 < ((padCount x + 1 : ℕ) : ℝ) ^ K := by positivity
-  have hpow : ∀ a b : ℝ, L ^ a * L ^ b = L ^ (a + b) := fun a b => (Real.rpow_add hL0 a b).symm
+  have hpow := fun a b => (Real.rpow_add hL0 a b).symm
   have hL3 : L ^ 3 = L ^ (3 : ℝ) := (Real.rpow_natCast L 3).symm
   have hsq : (L ^ (-(G + 1))) ^ 2 = L ^ (-(2 * G + 2)) := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
@@ -352,15 +341,14 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
     have hBM : (B : ℝ) / ((padCount x + 1 : ℕ) : ℝ) ^ K ≤ L ^ (-(2 * G + 3)) := by
       rw [div_le_iff₀ hMpos]
       calc (B : ℝ) ≤ L ^ (3 : ℝ) := hL3 ▸ hB
-        _ = L ^ (-(2 * G + 3)) * L ^ (2 * G + 6) := by rw [hpow]; ring_nf
+        _ = L ^ (-(2 * G + 3)) * L ^ (2 * G + 6) := by grind
         _ ≤ L ^ (-(2 * G + 3)) * ((padCount x + 1 : ℕ) : ℝ) ^ K :=
             mul_le_mul_of_nonneg_left hM (Real.rpow_nonneg hL0.le _)
     calc κ * (16 * (4 * dampConst q) ^ K * B / ((padCount x + 1 : ℕ) : ℝ) ^ K)
-        = c₁ * ((B : ℝ) / ((padCount x + 1 : ℕ) : ℝ) ^ K) := by rw [hc₁]; ring
+        = c₁ * ((B : ℝ) / ((padCount x + 1 : ℕ) : ℝ) ^ K) := by ring
       _ ≤ c₁ * L ^ (-(2 * G + 3)) := mul_le_mul_of_nonneg_left hBM (by positivity)
       _ = c₁ * L ^ (-(1 : ℝ)) * L ^ (-(2 * G + 2)) := by
-          rw [mul_assoc c₁ (L ^ (-(1 : ℝ))), hpow]
-          ring_nf
+          grind
       _ ≤ 1 / 2 * L ^ (-(2 * G + 2)) := by
           refine mul_le_mul_of_nonneg_right ?_ (Real.rpow_nonneg hL0.le _)
           rw [Real.rpow_neg_one, ← div_eq_mul_inv, div_le_iff₀ hL0]
@@ -381,13 +369,7 @@ theorem eventually_rawEps_small {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {G : ℝ}
         ≤ κ * (16 * (3 * L ^ 3) ^ K * (2 ^ K * Real.exp (-L ^ (1 / 10 : ℝ) / 4))) := by
           gcongr
       _ = c₂ * (L ^ A * Real.exp (-(L ^ (1 / 10 : ℝ)) / 4)) * L ^ (-(2 * G + 2)) := by
-          have hLA : L ^ A * L ^ (-(2 * G + 2)) = L ^ (3 * (K : ℝ)) := by
-            rw [hpow, hA]
-            ring_nf
-          rw [show c₂ * (L ^ A * Real.exp (-(L ^ (1 / 10 : ℝ)) / 4)) * L ^ (-(2 * G + 2)) =
-            c₂ * Real.exp (-(L ^ (1 / 10 : ℝ)) / 4) * (L ^ A * L ^ (-(2 * G + 2))) by ring,
-            hLA, hLK, hc₂, neg_div]
-          ring
+          grind
       _ ≤ c₂ * (1 / (2 * c₂)) * L ^ (-(2 * G + 2)) := by gcongr
       _ = L ^ (-(2 * G + 2)) / 2 := by field_simp
   have hmain : κ * rawEps (K := K) q x B ≤ (L ^ (-(G + 1))) ^ 2 := by
@@ -438,15 +420,15 @@ theorem eventually_rawChoiceOp_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q
     rcases lt_or_gt_of_ne hii with h | h
     · exact hdisjx _ _ (hd.gap i i' h)
     · exact (hdisjx _ _ (hd.gap i' i h)).symm
-  have hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) ∧ harmonicMass (band x (d.a i)) ≤ 1 :=
+  have hV :=
     fun i => hVx _ (hd.window i).1
-  have hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q (2 * momentPower x) p :=
+  have hb :=
     fun p hp => half_le_baseline' hq hq₁ (hbig d hd p hp)
   have ha : ∀ i, 1 / 10 ≤ d.a i := fun i => halo.le.trans (hd.window i).1
   have hHm : 0 < d.Hm := (Real.rpow_pos_of_pos hx0 _).trans_le hd.Hm_ge
   have hU : 0 < (2 : ℝ) ^ k * 2 ^ j * d.Hm := by positivity
   have hnorm := normLe_rawChoiceOp (N := 2 * momentPower x) (v := v) (r := r) hq hq₁
-    (by positivity : (0 : ℝ) < 2 ^ k) hU (hU.trans_le hu) hdisj hV hb ha hL1 hε hSI
+    (by positivity) hU (hU.trans_le hu) hdisj hV hb ha hL1 hε hSI
   have hL0 : 0 < Real.log x := by linarith
   refine fun f => (hnorm f).trans (mul_le_mul_of_nonneg_right
     (pow_le_pow_left₀ (Real.sqrt_nonneg _) ?_ 2)

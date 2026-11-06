@@ -85,7 +85,7 @@ theorem dvd_rootC_mul_add_one {u v : ℕ} (hu : 0 < u) (huv : u.Coprime v) :
 /-- `c` is the unique residue in `[0, u)` with `u ∣ c v + 1`; this also forces `(u, v) = 1`. -/
 theorem rootC_eq_of_dvd {u v c : ℕ} (hc : c < u) (h : u ∣ c * v + 1) :
     u.Coprime v ∧ rootC u v = c := by
-  have : NeZero u := ⟨(c.zero_le.trans_lt hc).ne'⟩
+  have : NeZero u := ⟨by omega⟩
   have h' : (c : ZMod u) * v = -1 := by
     rw [← ZMod.natCast_eq_zero_iff] at h
     push_cast at h
@@ -106,8 +106,7 @@ theorem mul_rootD {u v : ℕ} (hu : 0 < u) (huv : u.Coprime v) :
 theorem matrix_eq_iff {R : Type*} (a b c d : R) (g : Matrix (Fin 2) (Fin 2) R) :
     !![a, b; c, d] = g ↔ a = g 0 0 ∧ b = g 0 1 ∧ c = g 1 0 ∧ d = g 1 1 := by
   rw [← Matrix.ext_iff]
-  simp only [Fin.forall_fin_two, Matrix.of_apply, Matrix.cons_val', Matrix.cons_val_zero,
-    Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one]
+  simp only [Fin.forall_fin_two, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
   tauto
 
 /-! ### The congruences at fixed `u` -/
@@ -145,9 +144,9 @@ theorem fixedU_modEq_iff {S u u₀ c₀ v₀ d₀ c v : ℕ} (hS : Squarefree S)
   have hS₂S : S₂ ∣ S := Nat.div_dvd_of_dvd hS₁S
   -- the CRT for `S = S₁ S₂`
   have hcrt : ∀ {a b : ℕ}, a ≡ b [MOD S₁] → a ≡ b [MOD S₂] → a ≡ b [MOD S] := fun h₁ h₂ => by
-    rw [← hS₁₂]; exact (Nat.modEq_and_modEq_iff_modEq_mul hcop).1 ⟨h₁, h₂⟩
+    rw [← hS₁₂]; exact (Nat.modEq_and_modEq_iff_modEq_mul hcop).1 (by grind)
   -- `u ≡ 0 (mod S₁)`, so `c₀ v₀ + 1 ≡ 0 (mod S₁)` and `c₀` is a unit mod `S₁`
-  have hu₀ : u₀ ≡ 0 [MOD S₁] :=
+  have hu₀ :=
     (huu₀.of_dvd hS₁S).symm.trans (Nat.modEq_zero_iff_dvd.2 hS₁u)
   have hcv₀ : c₀ * v₀ + 1 ≡ 0 [MOD S₁] := by
     have := (hdet.of_dvd hS₁S).symm.trans (hu₀.mul_right d₀)
@@ -162,25 +161,25 @@ theorem fixedU_modEq_iff {S u u₀ c₀ v₀ d₀ c v : ℕ} (hS : Squarefree S)
     -- reduce mod `u`: `u ∣ c v + 1`
     have hdvd : u ∣ c * v + 1 := by
       have := h₁.of_mul_right S₁
-      exact (Nat.modEq_zero_iff_dvd.1 (this.trans (Nat.modEq_zero_iff_dvd.2 (dvd_mul_right u d₀))))
+      exact (Nat.modEq_zero_iff_dvd.1 (this.trans (Nat.modEq_zero_iff_dvd.2 (by simp))))
     obtain ⟨huv, hroot⟩ := rootC_eq_of_dvd hc hdvd
     have hcS := hcrt h₂ h₃
     refine ⟨huv, hroot, hcrt ?_ h₄, hcS, ?_⟩
     · -- `c₀ v + 1 ≡ c v + 1 ≡ u d₀ ≡ 0 ≡ c₀ v₀ + 1 (mod S₁)`
-      have hcv : c * v + 1 ≡ 0 [MOD S₁] :=
-        (h₁.of_mul_left u).trans (Nat.modEq_zero_iff_dvd.2 (hS₁u.mul_right d₀))
-      have : c₀ * v + 1 ≡ c₀ * v₀ + 1 [MOD S₁] :=
+      have hcv :=
+        (h₁.of_mul_left u).trans (Nat.modEq_zero_iff_dvd.2 (by grind))
+      have  :=
         ((h₂.symm.mul_right v).add_right 1).trans (hcv.trans hcv₀.symm)
       exact Nat.ModEq.cancel_left_of_coprime hc₀ (Nat.ModEq.add_right_cancel' 1 this)
     · -- `u d = c v + 1 ≡ u d₀` mod `u S₁` and mod `S₂`, hence mod `u S`
       have hud := mul_rootD hu huv
       rw [hroot, add_comm, mul_comm v] at hud
-      have hS₂ : c * v + 1 ≡ u * d₀ [MOD S₂] :=
+      have hS₂ :=
         ((((h₃.mul_right v).trans (h₄.mul_left c₀)).add_right 1).trans
           (hdet.symm.of_dvd hS₂S)).trans ((huu₀.symm.of_dvd hS₂S).mul_right d₀)
       have hmod : u * rootD u v ≡ u * d₀ [MOD u * S] := by
         rw [hud, ← hS₁₂, ← mul_assoc]
-        exact (Nat.modEq_and_modEq_iff_modEq_mul (Nat.Coprime.mul_left huS₂ hcop)).1 ⟨h₁, hS₂⟩
+        exact (Nat.modEq_and_modEq_iff_modEq_mul (Nat.Coprime.mul_left huS₂ hcop)).1 (by grind)
       exact Nat.ModEq.mul_left_cancel' hu.ne' hmod
   · rintro ⟨huv, hroot, hv, hcS, hd⟩
     have hud := mul_rootD hu huv
@@ -201,7 +200,7 @@ theorem det_modEq {S : ℕ} [NeZero S] {g₀ : Matrix (Fin 2) (Fin 2) (ZMod S)} 
   push_cast
   simp only [ZMod.natCast_zmod_val]
   rw [Matrix.det_fin_two] at hg
-  linear_combination hg
+  grind
 
 /-! ### The count at fixed `u` -/
 
@@ -230,11 +229,9 @@ theorem mem_fibreSet_iff {S u : ℕ} (hu : 0 < u) (g₀ : Matrix (Fin 2) (Fin 2)
   simp only [mem_univ, true_and]
   refine and_congr ?_ ?_
   · rw [eq_sub_iff_add_eq, ← ZMod.natCast_eq_natCast_iff]
-    push_cast
-    rfl
+    simp
   · rw [← Nat.ModEq.mul_left_cancel_iff' hu.ne', ← ZMod.natCast_eq_natCast_iff]
-    push_cast
-    rfl
+    simp
 
 /-- PD (3.25)–(3.26): the fibre over `u ≡ u₀ (mod S)` is the number of points `(c, v)` of the
 box `[a₃ u, b₃ u) × [α, β)`, restricted to the progressions `c ≡ c₀`, `v ≡ v₀ (mod S₂)`,
@@ -249,10 +246,10 @@ theorem fibreCount_eq_card {S u : ℕ} [NeZero S] (hS : Squarefree S)
         ((p.1 : ZMod (u * Nat.gcd u S)), (p.2 : ZMod (u * Nat.gcd u S))) ∈ fibreSet S u g₀} := by
   set S₂ := S / Nat.gcd u S
   have hS₂ : 0 < S₂ := Nat.div_pos (Nat.le_of_dvd (NeZero.pos S) (Nat.gcd_dvd_right u S))
-    (Nat.gcd_pos_of_pos_left S hu)
+    (by positivity)
   have hu' : (0 : ℝ) < u := Nat.cast_pos.2 hu
   have hdet := det_modEq hg
-  have huu₀ : u ≡ (g₀ 0 0).val [MOD S] := (natCast_eq_iff_modEq _ _).1 hu₀
+  have huu₀ := (natCast_eq_iff_modEq _ _).1 hu₀
   have key := fun c v (hc : c < u) => fixedU_modEq_iff (v := v) hS hu huu₀ hdet hc
   have hmemA : ∀ c, c ∈ prog (a₃ * u) (b₃ * u) S₂ ((g₀ 0 1).val % S₂) ↔
       c ≡ (g₀ 0 1).val [MOD S₂] ∧ a₃ ≤ (c : ℝ) / u ∧ (c : ℝ) / u < b₃ := fun c => by
@@ -266,7 +263,7 @@ theorem fibreCount_eq_card {S u : ℕ} [NeZero S] (hS : Squarefree S)
       g₀ ↔ rootC u v ≡ (g₀ 0 1).val [MOD S] ∧ v ≡ (g₀ 1 0).val [MOD S] ∧
         rootD u v ≡ (g₀ 1 1).val [MOD S] := fun v => by
     simp only [matrix_eq_iff, natCast_eq_iff_modEq]
-    exact ⟨fun h => h.2, fun h => ⟨huu₀, h⟩⟩
+    simp_all
   -- a point of the box gives a root, with `c = c(u, v)`
   have hback : ∀ p ∈ ({p ∈ prog (a₃ * u) (b₃ * u) S₂ ((g₀ 0 1).val % S₂) ×ˢ
       prog α β S₂ ((g₀ 1 0).val % S₂) | ((p.1 : ZMod (u * Nat.gcd u S)),
@@ -285,17 +282,17 @@ theorem fibreCount_eq_card {S u : ℕ} [NeZero S] (hS : Squarefree S)
       have h := (div_lt_iff₀ hu').1 hc₃
       have : (c : ℝ) < u := by nlinarith
       exact_mod_cast this
-    obtain ⟨huv, hroot, hvS, hcS, hd⟩ := (key c v hcu).1 ⟨h₁, h₂, hc₂, hv₂⟩
-    refine ⟨hroot, mem_filter.2 ⟨hv, huv, ?_, ?_, (hmat v).2 ⟨hroot ▸ hcS, hvS, hd⟩⟩⟩
-    · rw [hroot]; exact hc₁
-    · rw [hroot]; exact hc₃
+    obtain ⟨huv, hroot, hvS, hcS, hd⟩ := (key c v hcu).1 (by grind)
+    refine ⟨hroot, mem_filter.2 ⟨hv, huv, ?_, ?_, (hmat v).2 (by grind)⟩⟩
+    · simp_all
+    · simp_all
   refine card_nbij' (fun v => (rootC u v, v)) Prod.snd (fun v hv => ?_)
     (fun p hp => (hback p hp).2) (fun v _ => rfl) (fun p hp => ?_)
   · obtain ⟨hv, huv, hc₁, hc₃, hM⟩ := mem_filter.1 hv
     obtain ⟨hcS, hvS, hd⟩ := (hmat v).1 hM
-    obtain ⟨h₁, h₂, h₃, h₄⟩ := (key (rootC u v) v (rootC_lt hu v)).2 ⟨huv, rfl, hvS, hcS, hd⟩
-    refine mem_filter.2 ⟨mem_product.2 ⟨(hmemA _).2 ⟨h₃, hc₁, hc₃⟩, (hmemB v).2 ⟨h₄, hv⟩⟩,
-      (mem_fibreSet_iff hu g₀ _ v).2 ⟨h₁, h₂⟩⟩
+    obtain ⟨h₁, h₂, h₃, h₄⟩ := (key (rootC u v) v (rootC_lt hu v)).2 (by grind)
+    refine mem_filter.2 ⟨mem_product.2 ⟨(hmemA _).2 (by grind), (hmemB v).2 (by grind)⟩,
+      (mem_fibreSet_iff hu g₀ _ v).2 (by grind)⟩
   · exact Prod.ext (hback p hp).1 rfl
 
 /-- `u d₀ - 1` is a unit mod `u S₁`: `u² ≡ 0`, so `(u d₀ - 1)(-(u d₀ + 1)) = 1`. -/
@@ -305,7 +302,7 @@ theorem isUnit_mul_sub_one {S u : ℕ} [NeZero (u * Nat.gcd u S)] (d : ZMod (u *
     rw [← Nat.cast_mul, ZMod.natCast_eq_zero_iff]
     exact Nat.mul_dvd_mul_left u (Nat.gcd_dvd_left u S)
   refine (Units.mkOfMulEqOne _ (-((u : ZMod (u * Nat.gcd u S)) * d + 1)) ?_).isUnit
-  linear_combination (-(d * d)) * hsq
+  grind
 
 /-- For a unit `a`, the equation `x y = a` has one solution `y` if `x` is a unit, else none. -/
 theorem card_filter_mul_eq {n : ℕ} [NeZero n] {a : ZMod n} (ha : IsUnit a) (x : ZMod n) :
@@ -321,8 +318,7 @@ theorem card_filter_mul_eq {n : ℕ} [NeZero n] {a : ZMod n} (ha : IsUnit a) (x 
     · rintro rfl
       rw [← mul_assoc, hx.mul_val_inv, one_mul]
   · rw [card_eq_zero, filter_eq_empty_iff]
-    intro y _ hxy
-    exact hx (isUnit_of_mul_isUnit_left (hxy ▸ ha))
+    grind
 
 /-- The column count of the box identity: each admissible `c` has exactly one `v mod u S₁`,
 so `Mc = #{c ∈ [a₃ u, b₃ u) : c ≡ c₀ (mod S), (c, u) = 1}`. -/
@@ -336,7 +332,7 @@ theorem card_fibreSet_column_eq {S u : ℕ} [NeZero S] (hS : Squarefree S)
   obtain ⟨hS₁₂, hcop, -⟩ := gcd_facts hS u
   set S₂ := S / Nat.gcd u S
   have hS₂ : 0 < S₂ := Nat.div_pos (Nat.le_of_dvd (NeZero.pos S) (Nat.gcd_dvd_right u S))
-    (Nat.gcd_pos_of_pos_left S hu)
+    (by positivity)
   have ha := isUnit_mul_sub_one (S := S) (u := u) ((g₀ 1 1).val : ZMod _)
   -- count the `y` over each `c`
   rw [card_filter, sum_product]
@@ -352,15 +348,14 @@ theorem card_fibreSet_column_eq {S u : ℕ} [NeZero S] (hS : Squarefree S)
       rfl
     have hunit : IsUnit (c : ZMod (u * Nat.gcd u S)) ↔ c.Coprime u := by
       rw [ZMod.isUnit_iff_coprime, Nat.coprime_mul_iff_right]
-      exact ⟨fun h => h.1, fun h => ⟨h, h.coprime_dvd_right (Nat.gcd_dvd_left u S)⟩⟩
+      exact by grind
     simp only [fibreSet, hyperbola, mem_filter, mem_univ, true_and]
     rw [← filter_filter]
     by_cases hc : (u : ZMod (u * Nat.gcd u S)) * (c : ZMod (u * Nat.gcd u S)) =
         u * ((g₀ 0 1).val : ZMod (u * Nat.gcd u S))
-    · rw [filter_true_of_mem fun _ _ => hc, card_filter_mul_eq ha]
-      simp only [hunit, hP.1 hc, and_true]
-    · rw [filter_false_of_mem fun _ _ => hc, card_empty]
-      rw [ite_eq_right_iff.2 fun h => absurd (hP.2 h.2) hc]
+    · rw [filter_true_of_mem (by grind), card_filter_mul_eq ha]
+      simp_all
+    · simp_all
   simp only [hcol]
   rw [sum_boole, Nat.cast_id]
   congr 1
@@ -374,8 +369,8 @@ theorem card_fibreSet_column_eq {S u : ℕ} [NeZero S] (hS : Squarefree S)
 /-- `c₀` is a unit mod `S₁ = (u, S)`: `S₁ ∣ u₀`, so `c₀ v₀ ≡ -1 (mod S₁)`. -/
 theorem coprime_entry_gcd {S u : ℕ} [NeZero S] {g₀ : Matrix (Fin 2) (Fin 2) (ZMod S)}
     (hg : g₀.det = 1) (hu₀ : (u : ZMod S) = g₀ 0 0) : (g₀ 0 1).val.Coprime (Nat.gcd u S) := by
-  have hS₁S : Nat.gcd u S ∣ S := Nat.gcd_dvd_right u S
-  have h₀ : (g₀ 0 0).val ≡ 0 [MOD Nat.gcd u S] :=
+  have hS₁S := Nat.gcd_dvd_right u S
+  have h₀ :=
     (((natCast_eq_iff_modEq _ _).1 hu₀).of_dvd hS₁S).symm.trans
       (Nat.modEq_zero_iff_dvd.2 (Nat.gcd_dvd_left u S))
   have hcv : (g₀ 0 1).val * (g₀ 1 0).val + 1 ≡ 0 [MOD Nat.gcd u S] := by
@@ -412,7 +407,7 @@ theorem rpow_mul_card_divisors_le :
   calc (m : ℝ) ^ (3 / 4 + 1 / 100 : ℝ) * m.divisors.card * (2 + Real.log m) ^ 2
       ≤ (m : ℝ) ^ (3 / 4 + 1 / 100 : ℝ) * (D * e) * (102 * e) ^ 2 := by
         gcongr
-        exact hD m hm
+        grind
     _ = D * 102 ^ 2 * ((m : ℝ) ^ (3 / 4 + 1 / 100 : ℝ) * e * e * e) := by ring
     _ = D * 102 ^ 2 * (m : ℝ) ^ (79 / 100 : ℝ) := by
         simp only [e, ← Real.rpow_add hm0]
@@ -438,8 +433,8 @@ theorem abs_fibreCount_sub_le :
   refine ⟨C * K₁ + 1, by positivity, fun S _ hS g₀ hg u hu hu₀ α β a₃ b₃ hα hαβ ha₃ hab₃ hb₃ =>
     ?_⟩
   obtain ⟨hS₁₂, hcop, huS₂⟩ := gcd_facts hS u
-  have hS₁ : 0 < Nat.gcd u S := Nat.gcd_pos_of_pos_left S hu
-  have : NeZero (u * Nat.gcd u S) := ⟨(Nat.mul_pos hu hS₁).ne'⟩
+  have hS₁ := Nat.gcd_pos_of_pos_left S hu
+  have : NeZero (u * Nat.gcd u S) := ⟨by positivity⟩
   set S₁ := Nat.gcd u S
   set S₂ := S / S₁
   set m := u * S₁
@@ -456,7 +451,7 @@ theorem abs_fibreCount_sub_le :
     refine (card_le_card fun c hc => ?_).trans (card_range u).le
     obtain ⟨-, -, hc₃⟩ := (mem_prog hS₂ (Nat.mod_lt _ hS₂)).1 hc
     have : (c : ℝ) < u := by nlinarith
-    exact mem_range.2 (by exact_mod_cast this)
+    exact mem_range.2 (by simp_all)
   have hA : ⌈(b₃ * u - r) / S₂⌉₊ - ⌈(a₃ * u - r) / S₂⌉₊ ≤ m := by
     have : #(prog (a₃ * u) (b₃ * u) S₂ r) = ⌈(b₃ * u - r) / S₂⌉₊ - ⌈(a₃ * u - r) / S₂⌉₊ := by
       rw [prog, card_image_of_injective _ fun i j hij => by simpa [hS₂.ne'] using hij,
@@ -486,7 +481,7 @@ theorem abs_fibreCount_sub_le :
   -- the three estimates
   have hbox' : |X - Bc / m * Mc| ≤ C * K₁ * (u * S : ℝ) ^ (4 / 5 : ℝ) := by
     refine hbox.trans ?_
-    have hm1 : 1 ≤ m := Nat.one_le_iff_ne_zero.2 (NeZero.ne m)
+    have hm1 := Nat.one_le_iff_ne_zero.2 (NeZero.ne m)
     have hS₁S : (S₁ : ℝ) ≤ S := by
       exact_mod_cast Nat.le_of_dvd (NeZero.pos S) (Nat.gcd_dvd_right u S)
     have hmS : (m : ℝ) ≤ u * S := by
@@ -518,14 +513,14 @@ theorem abs_fibreCount_sub_le :
     linarith [(abs_le.1 hB).2]
   have hm0 : (0 : ℝ) < m := hu'.trans_le hm
   have h₂ : |Bc / m * (Mc - Y)| ≤ (β - α + 1) * T / u := by
-    rw [abs_mul, abs_of_nonneg (by positivity : (0 : ℝ) ≤ Bc / m), mul_div_assoc]
+    rw [abs_mul, abs_of_nonneg (by positivity), mul_div_assoc]
     calc Bc / m * |Mc - Y| ≤ (β - α + 1) / u * T := by
           gcongr
       _ = (β - α + 1) * (T / u) := by ring
   have hY : |Y| ≤ u * T := by
     simp only [Y]
     rw [abs_mul, abs_div, abs_of_nonneg (by nlinarith : (0 : ℝ) ≤ b₃ * u - a₃ * u),
-      abs_of_nonneg (by linarith : (0 : ℝ) ≤ S)]
+      abs_of_nonneg (by positivity)]
     calc (b₃ * u - a₃ * u) / S * |E| ≤ (u : ℝ) / 1 * T := by
           gcongr
           · nlinarith
@@ -544,7 +539,7 @@ theorem abs_fibreCount_sub_le :
     _ ≤ C * K₁ * (u * S : ℝ) ^ (4 / 5 : ℝ) + (β - α + 1) * T / u + T := by
         linarith
     _ ≤ (C * K₁ + 1) * ((u * S : ℝ) ^ (4 / 5 : ℝ) + (β - α + 1) * T / u + T) := by
-        nlinarith [mul_nonneg (mul_nonneg hC0 hK₁0) hterm, mul_nonneg (mul_nonneg hC0 hK₁0) hT0]
+        nlinarith [mul_nonneg (by positivity) hterm, mul_nonneg (by positivity) hT0]
 
 /-! ### Summing over `u` -/
 
@@ -552,11 +547,7 @@ theorem abs_fibreCount_sub_le :
 theorem mem_Icc_and_lt_iff {x y : ℝ} (hy : 0 ≤ y) (n : ℕ) :
     (n ∈ Icc ⌈x⌉₊ ⌊y⌋₊ ∧ (n : ℝ) < y) ↔ n ∈ Ico ⌈x⌉₊ ⌈y⌉₊ := by
   rw [mem_Icc, mem_Ico, Nat.le_floor_iff hy, Nat.lt_ceil]
-  constructor
-  · rintro ⟨⟨h₁, -⟩, h₂⟩
-    exact ⟨h₁, h₂⟩
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨⟨h₁, h₂.le⟩, h₂⟩
+  grind
 
 /-- `rootCount` is the sum of the fibres over `u ∈ [a₁ U, b₁ U)`, `u ≡ u₀ (mod S)`. -/
 theorem rootCount_eq_sum_fibreCount {U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (hU : 0 ≤ b₁ * U)
@@ -594,10 +585,7 @@ theorem three_add_log_le {U : ℝ} (hU : 1 ≤ U) : 3 + Real.log (17 * U) ≤ 25
   have h := Real.log_le_rpow_div (x := 17 * U) (by positivity) (ε := 4 / 5) (by norm_num)
   rw [Real.mul_rpow (by norm_num) (by linarith)] at h
   have h17 : (17 : ℝ) ^ (4 / 5 : ℝ) ≤ 17 := rpow_le_self_of_one_le (by norm_num) (by norm_num)
-  have : (17 : ℝ) ^ (4 / 5 : ℝ) * U ^ (4 / 5 : ℝ) / (4 / 5) ≤ 22 * U ^ (4 / 5 : ℝ) := by
-    rw [div_le_iff₀ (by norm_num)]
-    nlinarith
-  linarith
+  nlinarith
 
 /-- **The root count with the coprime density** (PD Lemma 3.3 for `U ≤ V`, before the
 density is identified): `rootCount = U V |I₁||I₂||I₃| ∑_{(l, S) = 1} μ(l)/l² / S³
@@ -686,7 +674,7 @@ theorem abs_rootCount_sub_coprimeDensity_le :
   have hmsum : ∑ u ∈ Us, m u =
       (b₂ * V - a₂ * V) * (b₃ - a₃) / S ^ 2 * ∑ u ∈ Us, eulerFactor S u := by
     rw [mul_sum]
-    exact sum_congr rfl fun u _ => by simp only [m]; ring
+    exact sum_congr rfl fun u _ => by ring
   have hmain : U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) * coprimeDensity S / S ^ 3 =
       (b₂ * V - a₂ * V) * (b₃ - a₃) / S ^ 2 * ((b₁ * U - a₁ * U) / S * coprimeDensity S) := by
     field_simp
@@ -723,7 +711,7 @@ theorem abs_rootCount_sub_coprimeDensity_le :
     calc _ ≤ ∑ u ∈ Us, |(fibreCount S g₀ (a₂ * V) (b₂ * V) a₃ b₃ u : ℝ) - m u| :=
           abs_sum_le_sum_abs _ _
       _ ≤ ∑ _u ∈ Us, B := sum_le_sum hfib
-      _ = #Us * B := by rw [sum_const, nsmul_eq_mul]
+      _ = #Us * B := by simp
       _ ≤ 16 * U * B := by
           have : 0 ≤ B := by positivity
           gcongr
@@ -746,11 +734,11 @@ theorem abs_rootCount_sub_coprimeDensity_le :
         _ = w * V * S ^ 2 := by ring
     have h₃ : V * e ≤ w * V * S ^ 2 := by
       calc V * e ≤ V * w * 1 := by rw [mul_one]; gcongr
-        _ ≤ V * w * S ^ 2 := by gcongr; exact one_le_pow₀ hS1
+        _ ≤ V * w * S ^ 2 := by gcongr; linarith
         _ = w * V * S ^ 2 := by ring
     have h₄ : U * e ≤ w * V * S ^ 2 := by
       calc U * e ≤ V * w * 1 := by rw [mul_one]; gcongr
-        _ ≤ V * w * S ^ 2 := by gcongr; exact one_le_pow₀ hS1
+        _ ≤ V * w * S ^ 2 := by gcongr; linarith
         _ = w * V * S ^ 2 := by ring
     have hKD : 0 ≤ K * D := mul_nonneg hK0 hD0
     have P₂ := mul_le_mul_of_nonneg_left h₂ hK0
@@ -780,7 +768,7 @@ theorem det_root_matrix {S u v : ℕ} (hu : 0 < u) (huv : u.Coprime v) :
   have h := congrArg (fun n : ℕ => (n : ZMod S)) (mul_rootD hu huv)
   push_cast at h
   rw [Matrix.det_fin_two_of]
-  linear_combination h
+  grind
 
 /-- Each primitive root lies over exactly one `g₀ ∈ SL₂(ℤ/S)`, so the counts over all `g₀` add
 up to the count without congruence condition (`S = 1`). -/
@@ -818,10 +806,7 @@ theorem sum_rootCount_eq {U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (ha₁ : 0 < 
     have hd := hdet P hP ⟨huv, h₁, h₂, h₃, h₄⟩
     simp only [f, hd, ↓reduceDIte]
     exact Subtype.ext hM
-  · rintro ⟨⟨huv, h₁, h₂, h₃, h₄⟩, hf⟩
-    have hd := hdet P hP ⟨huv, h₁, h₂, h₃, h₄⟩
-    simp only [f, hd, ↓reduceDIte] at hf
-    exact ⟨huv, h₁, h₂, h₃, h₄, congrArg Subtype.val hf⟩
+  grind
 
 /-- A number with `|a| N ≤ K` for all `N ≥ 2` vanishes. -/
 theorem eq_zero_of_abs_mul_le {a K : ℝ} (h : ∀ N : ℕ, 2 ≤ N → |a| * N ≤ K) : a = 0 := by
@@ -829,7 +814,7 @@ theorem eq_zero_of_abs_mul_le {a K : ℝ} (h : ∀ N : ℕ, 2 ≤ N → |a| * N 
   have ha' : 0 < |a| := abs_pos.2 ha
   obtain ⟨N, hN⟩ := exists_nat_gt (max 2 (K / |a|))
   have h₁ := h N (by exact_mod_cast (le_max_left _ _).trans hN.le)
-  have h₂ : K / |a| < N := (le_max_right _ _).trans_lt hN
+  have h₂ : K / |a| < N := by grind
   rw [div_lt_iff₀ ha'] at h₂
   linarith
 
@@ -865,10 +850,7 @@ theorem coprimeDensity_div_eq (S : ℕ) [NeZero S] (hS : Squarefree S) :
     have hg : ∀ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
         |(rootCount U U 1 2 1 2 0 1 S g₀ : ℝ) - U * U * coprimeDensity S / S ^ 3| ≤
           C * U ^ (4 / 5 : ℝ) * U * S ^ 2 := fun g₀ => by
-      have := hC U U hU2 le_rfl S hS g₀ g₀.2 1 2 1 2 0 1 le_rfl (by norm_num) (by norm_num)
-        le_rfl (by norm_num) (by norm_num) le_rfl (by norm_num) le_rfl
-      norm_num at this ⊢
-      exact this
+      grind
     norm_num at h₁
     -- sum the errors over `g₀`
     have hsum : |(∑ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
@@ -903,11 +885,7 @@ theorem coprimeDensity_div_eq (S : ℕ) [NeZero S] (hS : Squarefree S) :
       calc |a| * N * (N : ℝ) ^ 9 = |a| * ((N : ℝ) ^ 9 * N) := by ring
         _ ≤ _ := key
     exact le_of_mul_le_mul_right this hN0
-  have := hzero
-  rw [hσ₁, sub_eq_zero] at this
-  field_simp
-  rw [← this]
-  field_simp
+  grind
 
 /-- **PD Lemma 3.3 for `U ≤ V`**: `rootCount = c₂ U V |I₁||I₂||I₃| / |SL₂(ℤ/S)| +
 O(U^{4/5} V S²)`, for intervals in `[1, 16] × [1, 16] × [0, 1]`. -/
@@ -928,16 +906,15 @@ theorem abs_rootCount_sub_le_of_le :
         Fintype.card (Matrix.SpecialLinearGroup (Fin 2) (ZMod S)) := by
     rw [mul_div_assoc, coprimeDensity_div_eq S hS]
     ring
-  rwa [hmain] at h
+  simp_all
 
 /-- `|c₂| ≤ 2`. -/
 theorem abs_primitiveDensity_le : |primitiveDensity| ≤ 2 := by
   have h := abs_coprimeDensity_sub_le 1 one_pos
-  simp only [range_one, sum_singleton, densityTerm, Nat.cast_zero, ArithmeticFunction.map_zero,
-    Int.cast_zero, zero_div, ite_self, sub_zero, Nat.cast_one, div_one] at h
+  simp only [range_one, sum_singleton, densityTerm, ArithmeticFunction.map_zero, Int.cast_zero, zero_div, ite_self, sub_zero, Nat.cast_one, div_one] at h
   have hσ : coprimeDensity 1 = primitiveDensity := by
     simp [coprimeDensity, densityTerm, primitiveDensity]
-  rwa [hσ] at h
+  simp_all
 
 /-! ### Swapping the coordinates -/
 
@@ -953,7 +930,7 @@ theorem rootC_rootD_swap {u v : ℕ} (hu : 0 < u) (hv : 2 ≤ v) (huv : u.Coprim
   have hdv : d < v := by
     by_contra h
     push Not at h
-    have h₁ : u * v ≤ u * d := Nat.mul_le_mul_left u h
+    have h₁ := Nat.mul_le_mul_left u h
     have h₂ : v * c ≤ v * (u - 1) := Nat.mul_le_mul_left v (by omega)
     have h₃ : v * (u - 1) + v = u * v := by
       rw [← Nat.mul_succ, Nat.succ_eq_add_one, Nat.sub_add_cancel hu, mul_comm]
@@ -964,9 +941,7 @@ theorem rootC_rootD_swap {u v : ℕ} (hu : 0 < u) (hv : 2 ≤ v) (huv : u.Coprim
     push_cast at this
     linear_combination -this
   obtain ⟨-, hroot⟩ := rootC_eq_of_dvd (Nat.sub_lt (by omega) (by
-    by_contra h; push Not at h
-    have : d = 0 := by omega
-    rw [this, mul_zero] at hud; omega)) ⟨u - c, hkey⟩
+    grind)) ⟨u - c, hkey⟩
   refine ⟨hdv.le, hroot, ?_⟩
   have h₁ := mul_rootD (by omega) huv.symm
   rw [hroot, mul_comm u, add_comm, hkey] at h₁
@@ -989,13 +964,8 @@ theorem matrix_swap_iff {S u v : ℕ} (hu : 0 < u) (hv : 2 ≤ v) (huv : u.Copri
   obtain ⟨hdv, hc', hd'⟩ := rootC_rootD_swap hu hv huv
   have hc : rootC u v ≤ u := (rootC_lt hu v).le
   rw [matrix_eq_iff, matrix_eq_iff, hc', hd', Nat.cast_sub hdv, Nat.cast_sub hc]
-  simp only [swapSL, Matrix.SpecialLinearGroup.coe_mk, Matrix.of_apply, Matrix.cons_val',
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.empty_val', Matrix.cons_val_fin_one]
-  constructor
-  · rintro ⟨h₁, h₂, h₃, h₄⟩
-    exact ⟨h₃, by linear_combination h₃ - h₄, h₁, by linear_combination h₁ - h₂⟩
-  · rintro ⟨h₁, h₂, h₃, h₄⟩
-    exact ⟨h₃, by rw [h₃, h₄], h₁, by rw [h₁, h₂]⟩
+  simp only [swapSL, Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
+  grind
 
 /-- `c'/v = 1 - c/u - 1/(u v)` for the swapped completion. -/
 theorem rootC_swap_div {u v : ℕ} (hu : 0 < u) (hv : 2 ≤ v) (huv : u.Coprime v) :
@@ -1004,10 +974,9 @@ theorem rootC_swap_div {u v : ℕ} (hu : 0 < u) (hv : 2 ≤ v) (huv : u.Coprime 
   have hud := congrArg (fun n : ℕ => (n : ℝ)) (mul_rootD hu huv)
   push_cast at hud
   have hu' : (0 : ℝ) < u := Nat.cast_pos.2 hu
-  have hv' : (0 : ℝ) < v := by exact_mod_cast (by omega : 0 < v)
+  have hv' : (0 : ℝ) < v := by exact_mod_cast (by positivity)
   rw [hc', Nat.cast_sub hdv]
-  field_simp
-  linear_combination (-1 : ℝ) * hud
+  grind
 
 /-- The coordinates of a point counted by `rootCount` with `a₁, a₂ ≥ 1`, `U > 0`, `V ≥ 2`:
 `u ≥ U`, `u ≥ 1`, `v ≥ V` and `v ≥ 2`. -/
@@ -1016,9 +985,9 @@ theorem bounds_of_mem_box {U V a₁ b₁ a₂ b₂ : ℝ} (hU : 0 < U) (hV : 2 �
     U ≤ P.1 ∧ 0 < P.1 ∧ V ≤ P.2 ∧ 2 ≤ P.2 := by
   obtain ⟨h₁, h₂⟩ := mem_product.1 hP
   have hu : U ≤ P.1 := (le_mul_of_one_le_left hU.le ha₁).trans
-    (Nat.ceil_le.1 (mem_Icc.1 h₁).1)
+    (Nat.ceil_le.1 (by grind))
   have hv : V ≤ P.2 := (le_mul_of_one_le_left (by linarith) ha₂).trans
-    (Nat.ceil_le.1 (mem_Icc.1 h₂).1)
+    (Nat.ceil_le.1 (by grind))
   refine ⟨hu, by exact_mod_cast hU.trans_le hu, hv, by exact_mod_cast hV.trans hv⟩
 
 /-- Upper count after the swap: `c/u ∈ [a₃, b₃)` gives
@@ -1035,18 +1004,14 @@ theorem rootCount_le_swap {U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (hU : 0 < U)
   have hinv : 1 / ((P.1 : ℝ) * P.2) ≤ 1 / (U * V) :=
     one_div_le_one_div_of_le (by positivity) huv'
   have hinv0 : 0 < 1 / ((P.1 : ℝ) * P.2) := by
-    have : (0 : ℝ) < P.2 := by exact_mod_cast (by omega : 0 < P.2)
+    have : (0 : ℝ) < P.2 := by exact_mod_cast (by positivity)
     have : (0 : ℝ) < P.1 := by exact_mod_cast hu0
     positivity
-  refine mem_filter.2 ⟨mem_product.2 ⟨(mem_product.1 hP).2, (mem_product.1 hP).1⟩, huv.symm, hv,
+  refine mem_filter.2 ⟨by grind, huv.symm, hv,
     hu, ?_, ?_, (matrix_swap_iff hu0 hv2 huv g₀).2 hM⟩
   · refine max_le (by positivity) ?_
-    change 1 - b₃ - 1 / (U * V) ≤ (rootC P.2 P.1 : ℝ) / P.2
-    rw [hswap]
-    linarith
-  · change (rootC P.2 P.1 : ℝ) / P.2 < 1 - a₃
-    rw [hswap]
-    linarith
+    grind
+  grind
 
 /-- Lower count after the swap: `c'/v ∈ [1 - b₃, max(1 - b₃, 1 - a₃ - 1/(U V)))` gives
 `c/u ∈ [a₃, b₃)`. -/
@@ -1057,16 +1022,16 @@ theorem swap_le_rootCount {U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (hU : 0 < U)
   refine card_le_card_of_injOn Prod.swap (fun P hP => ?_) Prod.swap_injective.injOn
   obtain ⟨hP, hvu, hv, hu, h₁, h₂, hM⟩ := mem_filter.1 hP
   have hP' : P.swap ∈ Icc ⌈a₁ * U⌉₊ ⌊b₁ * U⌋₊ ×ˢ Icc ⌈a₂ * V⌉₊ ⌊b₂ * V⌋₊ :=
-    mem_product.2 ⟨(mem_product.1 hP).2, (mem_product.1 hP).1⟩
+    by grind
   obtain ⟨hUu, hu0, hVv, hv2⟩ := bounds_of_mem_box hU hV ha₁ ha₂ hP'
-  have huv : P.2.Coprime P.1 := hvu.symm
+  have huv := hvu.symm
   have hswap := rootC_swap_div hu0 hv2 huv
   simp only [Prod.fst_swap, Prod.snd_swap] at hUu hu0 hVv hv2 hswap
   have huv' : U * V ≤ P.2 * P.1 := mul_le_mul hUu hVv (by linarith) (Nat.cast_nonneg _)
   have hinv : 1 / ((P.2 : ℝ) * P.1) ≤ 1 / (U * V) :=
     one_div_le_one_div_of_le (by positivity) huv'
   have hinv0 : 0 < 1 / ((P.2 : ℝ) * P.1) := by
-    have : (0 : ℝ) < P.1 := by exact_mod_cast (by omega : 0 < P.1)
+    have : (0 : ℝ) < P.1 := by exact_mod_cast (by positivity)
     have : (0 : ℝ) < P.2 := by exact_mod_cast hu0
     positivity
   change 1 - b₃ ≤ (rootC P.1 P.2 : ℝ) / P.1 at h₁
@@ -1075,12 +1040,10 @@ theorem swap_le_rootCount {U V a₁ b₁ a₂ b₂ a₃ b₃ : ℝ} (hU : 0 < U)
   have h₂' : 1 - (rootC P.2 P.1 : ℝ) / P.2 - 1 / (P.2 * P.1) < 1 - a₃ - 1 / (U * V) := by
     rcases lt_max_iff.1 h₂ with h | h
     · linarith
-    · exact h
+    · omega
   refine mem_filter.2 ⟨hP', huv, hu, hv, ?_, ?_, (matrix_swap_iff hu0 hv2 huv g₀).1 hM⟩
-  · change a₃ ≤ (rootC P.2 P.1 : ℝ) / P.2
-    linarith
-  · change (rootC P.2 P.1 : ℝ) / P.2 < b₃
-    linarith
+  · grind
+  grind
 
 /-- Moving the third interval by `O(1/(U V))` moves the main term by at most `30`. -/
 theorem abs_main_sub_le {c₂ n U V Δ₁ Δ₂ x y : ℝ} (hc : |c₂| ≤ 2) (hn : 1 ≤ n) (hU : 0 < U)
@@ -1150,12 +1113,12 @@ theorem abs_rootCount_sub_le : ∃ C₀ : ℝ, ∀ (U V : ℝ), 2 ≤ U → 2 �
     -- the moved intervals have lengths within `δ` of `b₃ - a₃`
     have hJout : |((1 - a₃) - max 0 (1 - b₃ - δ)) - (b₃ - a₃)| ≤ δ := by
       rcases le_total 0 (1 - b₃ - δ) with h | h
-      · rw [max_eq_right h, abs_le]; constructor <;> linarith
-      · rw [max_eq_left h, abs_le]; constructor <;> linarith
+      · rw [max_eq_right h, abs_le]; grind
+      · rw [max_eq_left h, abs_le]; grind
     have hJin : |(max (1 - b₃) (1 - a₃ - δ) - (1 - b₃)) - (b₃ - a₃)| ≤ δ := by
       rcases le_total (1 - b₃) (1 - a₃ - δ) with h | h
-      · rw [max_eq_right h, abs_le]; constructor <;> linarith
-      · rw [max_eq_left h, abs_le]; constructor <;> linarith
+      · rw [max_eq_right h, abs_le]; grind
+      · rw [max_eq_left h, abs_le]; grind
     have hmout := RootResidue.abs_main_sub_le RootResidue.abs_primitiveDensity_le hn hU0 hV0
       (by linarith : 0 ≤ b₁ - a₁) (by linarith) (by linarith : 0 ≤ b₂ - a₂) (by linarith) hJout
     have hmin := RootResidue.abs_main_sub_le RootResidue.abs_primitiveDensity_le hn hU0 hV0

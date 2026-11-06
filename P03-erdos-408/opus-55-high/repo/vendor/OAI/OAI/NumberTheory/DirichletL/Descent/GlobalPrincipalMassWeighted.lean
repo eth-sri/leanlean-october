@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
 open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def principalSupport {ι : Type*} [DecidableEq ι] {Jo : ℕ}
     (extra : CubeCoordinates ι→Finset ι) (negative : Bool) (x : Source ι Jo) : Finset ι :=
   (extra x.cube∪((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon))∪x.quotientSupport
 
-lemma principalSupport_norm {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+lemma principalSupport_norm {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal] {Jo : ℕ}
     (extra : CubeCoordinates ι→Finset ι) (negative : Bool) (x : Source ι Jo)
     (hx : SourceValid p x) (hextra : extra x.cube⊆x.cube.support)
@@ -32,10 +31,10 @@ lemma principalSupport_norm {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀
   unfold principalSupport
   apply (primeProductNorm_union_le_mul p hp _ _).trans
   exact mul_le_mul (hh.trans (mul_le_mul_of_nonneg_left hC (sq_nonneg _))) ht
-    (primeProductNorm_pos p hp _).le (mul_nonneg (sq_nonneg _) hV)
+    (primeProductNorm_pos p hp _).le (by positivity)
 
 theorem original_weighted_mass (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(B H V T a : ℝ),
@@ -58,12 +57,12 @@ theorem original_weighted_mass (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
   calc
     _ ≤ ∑_x∈S,(B^2*V*T)^a := Finset.sum_le_sum (fun x hx=>
       Real.rpow_le_rpow (primeProductNorm_pos p hp _).le
-        (principalSupport_norm p hp extra negative x (hS x hx) (hextra x hx) B V T hBp.le hV.le
-          (hb₁ x hx) (hb₂ x hx) (hcommon x hx) (hquot x hx)) ha)
+        (principalSupport_norm p hp extra negative x (by grind) (by grind) B V T hBp.le hV.le
+          (by grind) (by grind) (by grind) (by grind)) ha)
     _ = (S.card:ℝ)*(B^2*V*T)^a := by simp
     _ ≤ (C*B^(1+eps)*H*V*T*(B^2*V*T)^eps)*(B^2*V*T)^a :=
       mul_le_mul_of_nonneg_right hcard (by positivity)
-    _ = _ := by rw [mul_assoc,←Real.rpow_add (by positivity : 0<B^2*V*T)]
+    _ = _ := by rw [mul_assoc,←Real.rpow_add (by positivity)]
 
 lemma weighted_mass_power (Z ell R Bfirst t eta eps a : ℝ) (hZ : 0<Z) :
     (Z^(ell+eta))^(1+eps)*Z^((R+eta)/2)*Z^(Bfirst+eta)*Z^(t+eta)*
@@ -72,8 +71,6 @@ lemma weighted_mass_power (Z ell R Bfirst t eta eps a : ℝ) (hZ : 0<Z) :
   rw [←Real.rpow_mul hZ.le,←Real.rpow_mul_natCast hZ.le]
   repeat rw [←Real.rpow_add hZ]
   rw [←Real.rpow_mul hZ.le,←Real.rpow_add hZ]
-  congr 1
-  norm_num
   ring
 
 end SevenEighths.InverseMomentGlobalPrincipalMass

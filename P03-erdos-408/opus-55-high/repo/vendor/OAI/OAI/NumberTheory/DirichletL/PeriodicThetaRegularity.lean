@@ -8,7 +8,6 @@ namespace OAI
 
 noncomputable section
 open Set Filter Asymptotics MeasureTheory
-open scoped Topology BigOperators
 namespace SevenEighths.PeriodicThetaRegularity
 open ThetaProduct EisensteinTheta HeckeTheta
 

@@ -10,9 +10,8 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
 theorem theta_le_vonMangoldt (n : ℕ) : theta n ≤ ArithmeticFunction.vonMangoldt n := by
   by_cases hn : Nat.Prime n
@@ -36,18 +35,15 @@ theorem residueSlice_primepower_error {U : ℕ} (hU : 1 ≤ U) (L q c : ℕ) :
   calc
     _ ≤ ∑ n ∈ Finset.Ioc 0 U, (ArithmeticFunction.vonMangoldt n - theta n) := by
       apply Finset.sum_le_sum_of_subset_of_nonneg
-      · intro n hn
-        obtain ⟨hn,_⟩ := Finset.mem_filter.mp hn
-        obtain ⟨hnL,hnU⟩ := Finset.mem_Ioc.mp hn
-        exact Finset.mem_Ioc.mpr ⟨by omega, hnU⟩
+      · grind
       · intro n _ _
         exact sub_nonneg.mpr (theta_le_vonMangoldt n)
     _ = Chebyshev.psi U - Chebyshev.theta U := sum_vonMangoldt_sub_theta U
-    _ ≤ _ := Chebyshev.psi_sub_theta_le (by exact_mod_cast hU)
+    _ ≤ _ := Chebyshev.psi_sub_theta_le (by simp_all)
 
 theorem residueSlice_theta_le {L U bound : ℕ} (hU : U ≤ bound) (hb : 1 ≤ bound)
     (q c : ℕ) : residueSlice theta L U q c ≤ (U-L:ℕ) * Real.log bound := by
-  have hlog : 0 ≤ Real.log (bound:ℝ) := Real.log_nonneg (by exact_mod_cast hb)
+  have hlog : 0 ≤ Real.log (bound:ℝ) := Real.log_nonneg (by simp_all)
   calc
     _ ≤ ∑ n ∈ (Finset.Ioc L U).filter (fun n => n % q = c), Real.log bound := by
       apply Finset.sum_le_sum
@@ -61,7 +57,7 @@ theorem residueSlice_theta_le {L U bound : ℕ} (hU : U ≤ bound) (hb : 1 ≤ b
     _ ≤ (U-L:ℕ) * Real.log bound := by
       apply mul_le_mul_of_nonneg_right _ hlog
       exact_mod_cast (Finset.card_filter_le (Finset.Ioc L U) (fun n => n % q = c)).trans_eq
-        (Nat.card_Ioc L U)
+        (by simp)
 
 noncomputable def endpointError (x : ℝ) (q : ℕ) : NNReal :=
   (Finset.range q).sup fun c => if Nat.Coprime c q then

@@ -10,8 +10,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology ContDiff
-open Set Complex
+open scoped Classical ContDiff
+open Set
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
 
@@ -59,7 +59,7 @@ theorem source_log_profile_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   have htail' := htail Z d 0 hZ hd hd' (by norm_num)
   simp only [Real.rpow_zero,mul_one] at htail'
   have hexp : (a-1/2+8*e)*r+κ≤(a-1/2)*r+ε := by
-    nlinarith [mul_le_mul_of_nonneg_left hrR (by positivity : 0≤8*e)]
+    nlinarith [mul_le_mul_of_nonneg_left hrR (by positivity)]
   have hp : 0≤(a-1/2)*r+ε := by
     have : 0≤8*e*R := by positivity
     nlinarith [mul_nonneg (show 0≤a-1/2 by linarith) hr]

@@ -7,7 +7,6 @@ public import Erdos821.P3Adj.Weight
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -34,16 +33,13 @@ lemma Sv_disjoint (s : P.Memory g.val) (v w : P.Particle g.val) (hvw : v ≠ w) 
     Disjoint (Sv (P := P) (g := g) s v) (Sv (P := P) (g := g) s w) := by
   unfold Sv
   apply Finset.disjoint_filter.mpr
-  intro i _ hiv hiw
-  exact hvw (hiv.symm.trans hiw)
+  simp_all
 
 lemma filter_sdiff_eq (A : Finset (Fin s.card)) (v : P.Particle g.val) :
     ((Finset.univ \ A).filter (fun i => memoryEntry s i = v))
     = ((Sv (P := P) (g := g) s v) \ A) := by
   unfold Sv
-  ext i
-  simp only [Finset.mem_filter, Finset.mem_sdiff, Finset.mem_univ, true_and]
-  tauto
+  grind
 
 lemma delete_count_Sv (A : Finset (Fin s.card)) (v : P.Particle g.val) :
     (deleteMemoryIndices s A).count v = (((Sv (P := P) (g := g) s v) \ A).card) := by
@@ -53,7 +49,7 @@ lemma delete_count_Sv (A : Finset (Fin s.card)) (v : P.Particle g.val) :
 lemma mem_Sv_self (i : Fin s.card) :
     i ∈ Sv (P := P) (g := g) s (memoryEntry s i) := by
   unfold Sv
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and]
+  simp
 
 /-- Any deleted set splits across value blocks. -/
 lemma A_eq_biUnion (A : Finset (Fin s.card)) :
@@ -63,26 +59,19 @@ lemma A_eq_biUnion (A : Finset (Fin s.card)) :
   constructor
   · intro hi
     exact ⟨memoryEntry s i, mem_Sv_self s i, hi⟩
-  · rintro ⟨v, _, hiA⟩
-    exact hiA
+  simp_all
 
 /-- Zero blocks lie inside zero indices; nonzero blocks are disjoint from them. -/
 lemma Sv_subset_zero (v : P.Particle g.val) (hv : isZeroParticle (P := P) (g := g) v) :
     Sv (P := P) (g := g) s v ⊆ zeroMemoryIndices s := by
   unfold Sv zeroMemoryIndices isZeroParticle at *
-  intro i hi
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi ⊢
-  rw [hi]
-  exact hv
+  grind
 
 lemma Sv_disjoint_zero (v : P.Particle g.val) (hv : ¬ isZeroParticle (P := P) (g := g) v) :
     Disjoint (Sv (P := P) (g := g) s v) (zeroMemoryIndices s) := by
   unfold Sv zeroMemoryIndices isZeroParticle at *
   apply Finset.disjoint_filter.mpr
-  intro i _ hiv hzero
-  apply hv
-  rw [← hiv]
-  exact hzero
+  grind
 
 /-- Deletion fiber: deleted index sets giving surviving `u`. -/
 def fiberA : Finset (Finset (Fin s.card)) :=
@@ -101,17 +90,8 @@ lemma fiber_imp_inter_card (A : Finset (Fin s.card))
   have hcount : (deleteMemoryIndices s A).count v = u.count v := by
     rw [hmem.2]
   rw [delete_count_Sv s A v] at hcount
-  have hSv : (Sv (P := P) (g := g) s v).card = s.count v := Sv_card s v
-  have hsdiff : (((Sv (P := P) (g := g) s v) \ A).card)
-      = (Sv (P := P) (g := g) s v).card - (A ∩ (Sv (P := P) (g := g) s v)).card := by
-    rw [Finset.card_sdiff]
-  have hcomm : (A ∩ (Sv (P := P) (g := g) s v)).card
-      = ((Sv (P := P) (g := g) s v) ∩ A).card := by
-    rw [Finset.inter_comm]
-  have hle : ((Sv (P := P) (g := g) s v) ∩ A).card ≤ s.count v := by
-    rw [← hSv]
-    exact Finset.card_le_card Finset.inter_subset_left
-  omega
+  have hSv := Sv_card s v
+  grind
 
 /-- Deletion is always a submultiset. -/
 lemma delete_le (A : Finset (Fin s.card)) : deleteMemoryIndices s A ≤ s := by
@@ -122,7 +102,7 @@ lemma delete_le (A : Finset (Fin s.card)) : deleteMemoryIndices s A ≤ s := by
     Finset.sdiff_subset
   have hcard := Finset.card_le_card hsub
   rw [Sv_card s v] at hcard
-  exact hcard
+  omega
 
 /-- Fiber implies validity (nonzero preserved and submultiset). -/
 lemma fiber_imp_valid (A : Finset (Fin s.card)) (hA : A ∈ fiberA (P := P) (g := g) s u) :
@@ -140,7 +120,7 @@ lemma fiber_imp_valid (A : Finset (Fin s.card)) (hA : A ∈ fiberA (P := P) (g :
       have hiA := hi.2
       have hiZ := hmem.1 hiA
       have hnot : i ∉ zeroMemoryIndices s := by
-        have hdisj' : Disjoint (Sv (P := P) (g := g) s v) (zeroMemoryIndices s) := hdisj
+        have hdisj' := hdisj
         rw [Finset.disjoint_left] at hdisj'
         exact hdisj' hiS
       exact hnot hiZ
@@ -182,7 +162,7 @@ lemma fiberA_card :
       simp only [Pf, t, Fintype.mem_piFinset, Finset.mem_powersetCard]
       intro v
       constructor
-      · exact Finset.inter_subset_left
+      · simp
       · exact fiber_imp_inter_card (P := P) (g := g) s u A hA v
     have hfw_inj : ∀ A1 ∈ fiberA (P := P) (g := g) s u,
         ∀ A2 ∈ fiberA (P := P) (g := g) s u,
@@ -201,7 +181,7 @@ lemma fiberA_card :
       have hDmem : ∀ v, D v ⊆ Sv (P := P) (g := g) s v ∧ (D v).card = k v := by
         intro v
         have hv : D v ∈ t v := by
-          have hmem : D ∈ Pf := hD
+          have hmem := hD
           simp only [Pf, t, Fintype.mem_piFinset] at hmem
           exact hmem v
         simp only [t, k, Finset.mem_powersetCard] at hv
@@ -224,9 +204,7 @@ lemma fiberA_card :
               -- hcard : card = s.count - u.count, with preserved equality gives 0?
               have hpresv := hpres v hvz
               omega
-            have hempty : D v = ∅ := Finset.card_eq_zero.mp hcard0
-            rw [hempty]
-            exact Finset.empty_subset _
+            grind
         have hA0_del : deleteMemoryIndices s A0 = u := by
           apply Multiset.ext.mpr
           intro v
@@ -239,23 +217,17 @@ lemma fiberA_card :
             · rintro ⟨hxS, hxU⟩
               rw [Finset.mem_biUnion] at hxU
               obtain ⟨w, _, hxDw⟩ := hxU
-              have hxSw : x ∈ Sv (P := P) (g := g) s w := (hDmem w).1 hxDw
+              have hxSw := (hDmem w).1 hxDw
               by_cases hvw : v = w
-              · subst hvw
-                exact hxDw
+              · grind
               · have hdisj := Sv_disjoint (P := P) (g := g) s v w hvw
                 have hcontra : False := by
                   rw [Finset.disjoint_left] at hdisj
                   exact hdisj hxS hxSw
-                exact False.elim hcontra
-            · intro hxD
-              have hxS : x ∈ Sv (P := P) (g := g) s v := (hDmem v).1 hxD
-              have hxU : x ∈ Finset.univ.biUnion D := by
-                rw [Finset.mem_biUnion]
-                exact ⟨v, Finset.mem_univ v, hxD⟩
-              exact ⟨hxS, hxU⟩
-          have hcardD : (D v).card = k v := (hDmem v).2
-          have hSv : (Sv (P := P) (g := g) s v).card = s.count v := Sv_card s v
+                simp_all
+            · grind
+          have hcardD := (hDmem v).2
+          have hSv := Sv_card s v
           have hsdiff : (((Sv (P := P) (g := g) s v) \ A0).card)
               = (Sv (P := P) (g := g) s v).card - ((Sv (P := P) (g := g) s v) ∩ A0).card := by
             have h := Finset.card_sdiff (s := A0) (t := Sv (P := P) (g := g) s v)
@@ -278,21 +250,15 @@ lemma fiberA_card :
         · rintro ⟨hxS, hxU⟩
           rw [Finset.mem_biUnion] at hxU
           obtain ⟨w, _, hxDw⟩ := hxU
-          have hxSw : x ∈ Sv (P := P) (g := g) s w := (hDmem w).1 hxDw
+          have hxSw := (hDmem w).1 hxDw
           by_cases hvw : v = w
-          · subst hvw
-            exact hxDw
+          · grind
           · have hdisj := Sv_disjoint (P := P) (g := g) s v w hvw
             have hcontra : False := by
               rw [Finset.disjoint_left] at hdisj
               exact hdisj hxS hxSw
-            exact False.elim hcontra
-        · intro hxD
-          have hxS : x ∈ Sv (P := P) (g := g) s v := (hDmem v).1 hxD
-          have hxU : x ∈ Finset.univ.biUnion D := by
-            rw [Finset.mem_biUnion]
-            exact ⟨v, Finset.mem_univ v, hxD⟩
-          exact ⟨hxS, hxU⟩
+            simp_all
+        · grind
       exact ⟨A0, hA0_mem, hA0_eq⟩
     have hbij := Finset.card_bij (fun A _ => (fun v => (Sv (P := P) (g := g) s v) ∩ A))
       hfw_mem hfw_inj hfw_surj

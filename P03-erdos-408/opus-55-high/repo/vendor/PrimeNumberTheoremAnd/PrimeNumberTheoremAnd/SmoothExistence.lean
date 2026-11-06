@@ -10,7 +10,7 @@ public import Mathlib.Tactic.Bound
 
 @[expose] public section
 
-open MeasureTheory Set Real
+open Set
 open scoped ContDiff
 
 theorem smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
@@ -21,10 +21,7 @@ theorem smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
     (s := Set.Iic a ∪ Set.Ici d) (t := Set.Icc b c)
     (IsClosed.union isClosed_Iic isClosed_Ici) isClosed_Icc
     (by
-      simp_rw [Set.disjoint_union_left, Set.disjoint_iff, Set.subset_def,
-        Set.mem_inter_iff, Set.mem_Iic, Set.mem_Icc, Set.mem_empty_iff_false,
-        and_imp, imp_false, not_le, Set.mem_Ici]
-      constructor <;> intros <;> linarith)
+      grind)
   obtain ⟨Ψ, hΨSmooth, hΨrange, hΨ0, hΨ1⟩ := this
   simp only [Set.mem_union, Set.mem_Iic, Set.mem_Ici, Set.mem_Icc] at *
   use Ψ
@@ -34,15 +31,11 @@ theorem smooth_urysohn_support_Ioo {a b c d : ℝ} (h1 : a < b) (h3 : c < d) :
     simp only [Function.support_subset_iff, ne_eq, mem_Icc, ← hΨ0, not_or]
     bound
   · apply Set.indicator_le'
-    · intro x hx
-      rw [hΨ1 x |>.mp, Pi.one_apply]
-      simpa using hx
-    · exact fun x _ ↦ (hΨrange x).1
+    · simp_all
+    simp_all
   · intro x
     apply Set.le_indicator_apply
-    · exact fun _ ↦ (hΨrange x).2
-    · intro hx
-      rw [← hΨ0 x |>.mp]
-      simpa [-not_and, mem_Ioo, not_and_or, not_lt] using hx
+    · simp_all
+    grind
   · ext x
     simp only [Function.mem_support, ne_eq, mem_Ioo, ← hΨ0, not_or, not_le]

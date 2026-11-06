@@ -29,8 +29,7 @@ theorem primesIcc_two_eq (y : ℝ) : primesIcc 2 y = (Ioc 0 ⌊y⌋₊).filter N
   have h2 : ⌈(2 : ℝ)⌉₊ = 2 := by norm_num
   rw [h2]
   constructor
-  · rintro ⟨hp, -, h⟩
-    exact ⟨⟨hp.pos, h⟩, hp⟩
+  · grind
   · rintro ⟨⟨-, h⟩, hp⟩
     exact ⟨hp, hp.two_le, h⟩
 
@@ -40,14 +39,14 @@ theorem mertens_third_lower : ∃ c₃ : ℝ, 0 < c₃ ∧ ∀ y : ℝ, 2 ≤ y 
   obtain ⟨C, hC⟩ := Mertens.E₃.abs_le
   refine ⟨Real.exp (-eulerMascheroniConstant) * Real.exp (-(|C| / Real.log 2)), by positivity,
     fun y hy => ?_⟩
-  have hly : Real.log 2 ≤ Real.log y := Real.log_le_log (by norm_num) hy
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hly := Real.log_le_log (by norm_num) hy
+  have hl2 : 0 < Real.log 2 := by positivity
   have hlpos : 0 < Real.log y := lt_of_lt_of_le hl2 hly
   rw [primesIcc_two_eq, Mertens.prod_one_minus_div_prime_eq (by linarith)]
   have hE := hC y hy
   have hE' : -(|C| / Real.log 2) ≤ Mertens.E₃ y := by
     have h1 : C / Real.log y ≤ |C| / Real.log 2 := by
-      calc C / Real.log y ≤ |C| / Real.log y := by gcongr; exact le_abs_self C
+      calc C / Real.log y ≤ |C| / Real.log y := by gcongr; grind
         _ ≤ |C| / Real.log 2 := div_le_div_of_nonneg_left (abs_nonneg C) hl2 hly
     have := neg_abs_le (Mertens.E₃ y)
     rw [abs_le] at hE

@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Descent.CommonMeasure
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open MeasureTheory ActualEisensteinCubic CubicEisenstein InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {Ω φ σ : Type*} [MeasurableSpace Ω] [Fintype φ] [Fintype σ]
-variable {N a c : Eis} {mode : Bool}
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 lemma weightedReflectedBranchHybridRow_aestronglyMeasurable
     (μ : Measure Ω) (F : PrimeFamily φ) (jF : φ → ℕ) (e : φ → Fin 3)
-    (S : Ideal Eis → PrimeFamily σ)
+    (S : Ideal ActualEisensteinCubic.O → PrimeFamily σ)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (κ : ℂ) (A : Ideal Eis → Ideal Eis → ℂ)
-    (r aw : Ω → Ideal Eis → ℂ) (w : Ω → Ideal Eis → Ideal Eis → ℂ)
-    (u : Eisˣ) (m : ℕ) (Pset nset bset : Finset (Ideal Eis)) (K : Ideal Eis)
+    (κ : ℂ) (A : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
+    (r aw : Ω → Ideal ActualEisensteinCubic.O → ℂ) (w : Ω → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ)
+    (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (Pset nset bset : Finset (Ideal ActualEisensteinCubic.O)) (K : Ideal ActualEisensteinCubic.O)
     (hr : AEStronglyMeasurable (fun t => r t K) μ)
     (ha : ∀ P ∈ Pset, AEStronglyMeasurable (fun t => aw t P) μ)
     (hw : ∀ n ∈ nset, ∀ b ∈ bset, AEStronglyMeasurable (fun t => w t n b) μ) :

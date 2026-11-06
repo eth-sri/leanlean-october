@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowPrimeIdealList (T : Finset PrimeIdeal) : Finset Id := T.image Subtype.val
 
@@ -29,19 +28,19 @@ def lowPrimeListEquiv (T : Finset PrimeIdeal) : T≃lowPrimeIdealList T :=
 
 lemma lowPrimeIdealList_prime (T : Finset PrimeIdeal) (I : Id) (hI : I∈lowPrimeIdealList T) : Prime I := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hI
-  exact P.property
+  grind
 
 lemma lowPrimeIdealList_supported (T : Finset PrimeIdeal) (hT : ∀P∈T,Supported P.val)
     (I : Id) (hI : I∈lowPrimeIdealList T) : Supported I := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hI
-  exact hT P hP
+  grind
 
 lemma lowPrimeIdealList_maximal (T : Finset PrimeIdeal) (I : Id) (hI : I∈lowPrimeIdealList T) : I.IsMaximal :=
   (Ideal.isPrime_of_prime (lowPrimeIdealList_prime T I hI)).isMaximal (lowPrimeIdealList_prime T I hI).ne_zero
 
 lemma lowPrimeIdealList_good_odd (T : Finset PrimeIdeal) (hT : ∀P∈T,Supported P.val)
     (I : Id) (hI : I∈lowPrimeIdealList T) :
-    ConcretePrimeRowBridge.goodLambda∉I ∧ ringChar (O⧸I)≠2 := by
+    ConcretePrimeRowBridge.goodLambda∉I ∧ ringChar (ActualEisensteinCubic.O⧸I)≠2 := by
   have hs := lowPrimeIdealList_supported T hT I hI
   exact hs.2 I ((Ideal.mem_normalizedFactors_iff hs.1).mpr
     ⟨Ideal.isPrime_of_prime (lowPrimeIdealList_prime T I hI),le_rfl⟩)
@@ -54,14 +53,14 @@ lemma lowPrimeIdealList_disjoint {ι : Type*} (T : ι→Finset PrimeIdeal)
   intro I hI hJ
   obtain ⟨P,hP,hPI⟩ := Finset.mem_image.mp hI
   obtain ⟨Q,hQ,hQI⟩ := Finset.mem_image.mp hJ
-  have he : P=Q := Subtype.ext (hPI.trans hQI.symm)
-  exact Finset.disjoint_left.mp (hT hij) hP (he.symm ▸ hQ)
+  have he := Subtype.ext (hPI.trans hQI.symm)
+  exact Finset.disjoint_left.mp (hT hij) hP (by grind)
 
 lemma lowPrimeIdealList_norm (T : Finset PrimeIdeal) (H : ℝ)
     (hT : ∀P∈T,(Ideal.absNorm P.val:ℝ)≤H) (I : Id) (hI : I∈lowPrimeIdealList T) :
     (Ideal.absNorm I:ℝ)≤H := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hI
-  exact hT P hP
+  grind
 
 theorem low_actual_ideal_polynomial {ι : Type*} [Fintype ι]
     (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
@@ -76,7 +75,7 @@ theorem low_actual_ideal_polynomial {ι : Type*} [Fintype ι]
   rw [←Equiv.sum_comp E]
   simp only [E,Equiv.piCongrRight_apply,Pi.map_apply,canonicalSlotEquiv_val]
   have hspan (p : ∀i,T i) (i : ι) : Ideal.span {primaryGenerator (p i).val.val}=(p i).val.val :=
-    span_primaryGenerator_of_supported _ (hT i _ (p i).property)
+    span_primaryGenerator_of_supported _ (by grind)
   simp_rw [hspan]
   rw [low_canonical_polynomial_period_filter η S hS hbad T hT hout W Y t (fun p=>F (fun i=>(p i).val))]
   exact Equiv.sum_comp (Equiv.piCongrRight (fun i=>lowPrimeListEquiv (lowPeriodPrimeList η S hS (T i))))

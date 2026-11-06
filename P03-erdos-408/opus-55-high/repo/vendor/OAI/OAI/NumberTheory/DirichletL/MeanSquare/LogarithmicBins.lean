@@ -8,33 +8,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,46 +28,37 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace InitialMeanSquare
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic
 open FourierBridge (logPhase)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -92,12 +68,12 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic
 
 end
 
 section
-open ActualEisensteinCubic SecondPassArithmetic
+open SecondPassArithmetic
 open FirstPassCubeLabels (primeProductNorm)
 open SecondPassIntegration (elementNorm)
 open ConcreteTraceCRT (eisEmbedding)
@@ -110,7 +86,7 @@ def initialLogColumn (Z B : ℝ) (j : SecondLogIndex) : ℝ :=
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic
+open SecondPassArithmetic
 open FirstPassCubeLabels (primeProductNorm)
 open SecondPassIntegration (elementNorm)
 
@@ -126,7 +102,6 @@ end InitialMeanSquare
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (bit conductorExponent dilationExponent retained parity evenDouble
   primeProduct primeProductNorm aLabel dilationLabel jLabel j2Label squarefreeLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
@@ -147,9 +122,7 @@ theorem firstActiveProduct_as_primeProduct (S : Finset ι) (v : ι → ℕ) (ε�
       primeProduct p S (fun i => if conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)=0 then 0 else 1) := by
   unfold cubeActiveSupport primeProduct
   rw [Finset.prod_filter]
-  apply Finset.prod_congr rfl
-  intro i hi
-  by_cases h : conductorExponent (parity (v i)) (ε₁ i) (ε₂ i)=0 <;> simp [h]
+  simp
 
 variable [∀ i,(Ideal.span {p i}).IsMaximal]
 
@@ -164,7 +137,7 @@ theorem first_conductor_product_dvd (S : Finset ι) (v₁ v₂ : ι → ℕ) (ε
   apply Finset.prod_dvd_prod_of_dvd
   intro i hi
   apply pow_dvd_pow
-  simpa only [mul_comm] using local_first_conductor_bound (parity (v₁ i+v₂ i)) (ε₁ i) (ε₂ i) (v₁ i+v₂ i) (hv i hi)
+  simpa only [mul_comm] using local_first_conductor_bound (parity (v₁ i+v₂ i)) (ε₁ i) (ε₂ i) (v₁ i+v₂ i) (by grind)
 
 variable (hp : ∀ i,p i≠0)
 include hp in
@@ -183,15 +156,14 @@ theorem first_conductor_norm_bound (S : Finset ι) (v₁ v₂ : ι → ℕ) (ε�
   have h := element_norm_le_of_dvd hn (first_conductor_product_dvd p S v₁ v₂ ε₁ ε₂ hv)
   simp only [map_mul,map_pow,norm_mul,norm_pow,mul_pow] at h
   apply h.trans
-  apply mul_le_mul_of_nonneg_left _ (mul_nonneg (sq_nonneg _) (sq_nonneg _))
+  apply mul_le_mul_of_nonneg_left _ (by positivity)
   have hm := mul_le_mul hb₁ hb₂ (sq_nonneg _) hB
-  have hs := pow_le_pow_left₀ (mul_nonneg (sq_nonneg _) (sq_nonneg _)) hm 2
-  convert hs using 1 <;> ring
+  have hs := pow_le_pow_left₀ (by positivity) hm 2
+  linarith
 
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel dilationLabel jLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -201,8 +173,8 @@ lemma first_row_numeric_bound (an en jn a1 a2 cn dn hn fn ell K B F : ℝ)
     (hcon : an*en*jn≤a1*a2*B^4) (hfreq : hn≤ell^2*an*dn/(K*a1*a2*cn^2)) (hlabel : fn≤F) :
     hn*fn^2*en≤ell^2*B^4*F^2*dn/(K*cn^2*jn) := by
   have hratio : an*en/(a1*a2)≤B^4/jn := by
-    apply (div_le_div_iff₀ (mul_pos h1 h2) hj).mpr
-    nlinarith [hcon]
+    apply (div_le_div_iff₀ (by positivity) hj).mpr
+    nlinarith
   calc
     hn*fn^2*en ≤ (ell^2*an*dn/(K*a1*a2*cn^2))*F^2*en := by
       apply mul_le_mul_of_nonneg_right _ he
@@ -218,7 +190,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct aLabel dilationLabel cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 

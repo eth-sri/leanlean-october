@@ -42,7 +42,7 @@ theorem eventually_scales {ahi c : ℝ} (hahi : ahi < 1 / 5) (hc : 0 < c) :
   simp only [Function.comp_apply] at h₁ h₂
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hT : 0 < Real.log L := Real.log_pos hL
+  have hT := Real.log_pos hL
   refine ⟨hL, hT, ?_, ?_⟩
   · have : L ^ (0.27 : ℝ) = L ^ (0.27 - ahi) * L ^ ahi := by
       rw [← Real.rpow_add hL0]; ring_nf
@@ -57,11 +57,7 @@ theorem eventually_scales {ahi c : ℝ} (hahi : ahi < 1 / 5) (hc : 0 < c) :
     have hsplit : L ^ (0.46 : ℝ) * L ^ (0.54 : ℝ) = L := by
       rw [← Real.rpow_add hL0]; norm_num
     have h46 : 0 < L ^ (0.46 : ℝ) := Real.rpow_pos_of_pos hL0 _
-    calc L ^ (0.46 : ℝ) * Real.log L ^ 20 ≤ L ^ (0.46 : ℝ) * (c / 2 * L ^ (0.54 : ℝ)) :=
-          mul_le_mul_of_nonneg_left h₂ h46.le
-      _ = c / 2 * (L ^ (0.46 : ℝ) * L ^ (0.54 : ℝ)) := by ring
-      _ = c / 2 * L := by rw [hsplit]
-      _ < c * L := by nlinarith [mul_pos hc hL0]
+    nlinarith
 
 /-- The separation of the scales at an `x` where `eventually_scales` holds: every group prime
 is a prime `≤ exp(L^{0.46})`, the small-group primes are `≥ exp(L^{0.27})`, the band primes
@@ -82,7 +78,7 @@ theorem scales_of_admissible {c₀ C₀ vlo vhi alo ahi c x : ℝ} {K₀ : ℕ} 
   refine ⟨fun g p hp => ?_, fun g hg p hp => ?_, fun i p hp => ?_, fun i => ?_⟩
   · by_cases hg : g ∈ big
     · obtain ⟨h₁, -, h₂⟩ := mem_primesIcc.1 (hadm.2.2.2.2.2.2.2.1 g hg hp)
-      exact ⟨h₁, h₂⟩
+      grind
     · obtain ⟨h₁, -, h₂⟩ := mem_primesIcc.1 (hadm.2.2.2.2.2.2.1 g hg hp)
       refine ⟨h₁, h₂.trans (Real.exp_le_exp.2 ?_)⟩
       exact Real.rpow_le_rpow_of_exponent_le hL.le (by norm_num)
@@ -125,12 +121,7 @@ theorem slotLists_congr {ι : Type} [Fintype ι] [DecidableEq ι] {P : ι → Fi
     {S : ι → Finset (Fin M)} {m n : ℕ} (h : ∀ g, ∀ i ∈ S g, ∀ p ∈ P g, p ∣ m ↔ p ∣ n) :
     slotLists P S m = slotLists P S n := by
   unfold slotLists
-  refine filter_congr fun p hp => ?_
-  rw [Fintype.mem_piFinset] at hp
-  refine forall_congr' fun g => and_congr_right fun _ => forall₂_congr fun i hi => ?_
-  have hpi := Fintype.mem_piFinset.1 (hp g) i
-  rw [ite_eq_left hi] at hpi
-  exact h g i hi _ hpi
+  grind
 
 /-- **E3 (small-prime removal).** If the group `g_s` has the single slot `j`, `b` ignores the
 labels of `g_s` and no `p ∈ P_{g_s}` has `p² ∣ w`, then

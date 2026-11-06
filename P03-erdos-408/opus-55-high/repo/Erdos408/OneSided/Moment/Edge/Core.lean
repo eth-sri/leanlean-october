@@ -41,11 +41,10 @@ open Finset Real
 /-- The cardinality of the box `|m₁| ≤ A`, `|m₂| ≤ B` is `(2A + 1)(2B + 1)`. -/
 theorem card_intBox (A B : ℕ) : ((intBox A B).card : ℝ) = (2 * A + 1) * (2 * B + 1) := by
   rw [intBox, card_product, Int.card_Icc, Int.card_Icc]
-  rw [show (A : ℤ) + 1 - -(A : ℤ) = ((2 * A + 1 : ℕ) : ℤ) by push_cast; ring,
-    show (B : ℤ) + 1 - -(B : ℤ) = ((2 * B + 1 : ℕ) : ℤ) by push_cast; ring, Int.toNat_natCast,
+  rw [show (A : ℤ) + 1 - -(A : ℤ) = ((2 * A + 1 : ℕ) : ℤ) by omega,
+    show (B : ℤ) + 1 - -(B : ℤ) = ((2 * B + 1 : ℕ) : ℤ) by omega, Int.toNat_natCast,
     Int.toNat_natCast]
-  push_cast
-  ring
+  simp
 
 /-- `Y^{0.9} ≤ Y` for `Y ≥ 1`. -/
 private theorem rpow_nine_tenths_le {Y : ℝ} (hY : 1 ≤ Y) : Y ^ (9 / 10 : ℝ) ≤ Y := by
@@ -136,12 +135,12 @@ theorem kerLe_detBox_minor {ϑ Y P c : ℝ} {A' B' : ℕ} {cc : ℤ} {d Q : ℕ}
     have h2d : 2 * (d : ℝ) ≤ 4 * Y := by
       have : 2 * Y / P ≤ 2 * Y := div_le_self (by positivity) hP
       linarith
-    have : Real.log (2 * d) ≤ Real.log (4 * Y) :=
-      Real.log_le_log (by have h0 : (0 : ℝ) < d := (by exact_mod_cast hd0); positivity) h2d
+    have  :=
+      Real.log_le_log (by linarith) h2d
     linarith
   -- the two Gram bounds
   have happ' : |-ϑ - (-cc : ℤ) / d| ≤ 1 / (d * Q) := by
-    rw [show -ϑ - ((-cc : ℤ) : ℝ) / d = -(ϑ - cc / d) by push_cast; ring, abs_neg]
+    rw [show -ϑ - ((-cc : ℤ) : ℝ) / d = -(ϑ - cc / d) by grind, abs_neg]
     exact happ
   have hcop' : Int.gcd (-cc) d = 1 := by rw [Int.neg_gcd]; exact hcop
   have hS₁ := sum_dirBound_le hd0 hdQ hcop' happ' (2 * A') (n := 2 * B' + 1) (by positivity)
@@ -223,8 +222,7 @@ theorem abs_rootCell_sub_le {Y d₀ U V u v r : ℝ} {D : ℕ} (hY : 0 < Y) (hd�
   have hgt : (-2561 : ℝ) < ((⌊a⌋ - ⌊b⌋ : ℤ) : ℝ) := by push_cast; linarith
   have hlt' : ⌊a⌋ - ⌊b⌋ < 2561 := by exact_mod_cast hlt
   have hgt' : -2561 < ⌊a⌋ - ⌊b⌋ := by exact_mod_cast hgt
-  rw [abs_le]
-  constructor <;> omega
+  grind
 
 /-- A term supported on cell shifts `|b - a| ≤ 2560` is the sum over the shifts `δ` of its
 restrictions to `b = a + δ`. -/
@@ -234,14 +232,13 @@ private theorem sum_shift_eq (c₁ c₂ : Prop) [Decidable c₁] [Decidable c₂
       ∑ δ ∈ Icc (-2560 : ℤ) 2560, (if c₁ ∧ c₂ ∧ b = a + δ then (1 : ℂ) else 0) * g := by
   by_cases hc : c₁ ∧ c₂
   · by_cases hg : g = 0
-    · simp [hg]
+    · simp_all
     · have hab := h hc.1 hc.2 hg
       simp only [hc.1, hc.2, true_and, ↓reduceIte]
-      rw [sum_eq_single_of_mem (b - a) (mem_Icc.2 (abs_le.1 hab)) fun δ _ hne => by
-        have : ¬ b = a + δ := fun h' => hne (by rw [h']; ring)
-        simp only [this, ↓reduceIte, zero_mul]]
+      rw [sum_eq_single_of_mem (b - a) (by grind) fun δ _ hne => by
+        grind]
       simp
-  · have hc' : ∀ δ : ℤ, ¬ (c₁ ∧ c₂ ∧ b = a + δ) := fun δ h' => hc ⟨h'.1, h'.2.1⟩
+  · have hc' : ∀ δ : ℤ, ¬ (c₁ ∧ c₂ ∧ b = a + δ) := by grind
     simp only [hc, hc', ↓reduceIte, zero_mul, sum_const_zero]
 
 /-- The final arithmetic of the core bound:
@@ -251,9 +248,9 @@ private theorem core_numeric {Cψ K₁ Kt Y P Λ ε : ℝ} (hCψ : 0 ≤ Cψ) (h
     5121 * (Cψ / 2 * (Y * Λ * (K₁ / P + 54 * ε) + Kt * Y / (P / 2))) ≤
       (5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) + 1) * Y * Λ * (P⁻¹ + ε) := by
   set S := Y * Λ * (P⁻¹ + ε) with hS
-  have hS0 : 0 ≤ S := mul_nonneg (mul_nonneg hY.le (by linarith)) (add_nonneg (inv_nonneg.2 hP.le) hε)
+  have hS0 : 0 ≤ S := by positivity
   have hP' : 0 ≤ P⁻¹ := inv_nonneg.2 hP.le
-  have hYΛ : 0 ≤ Y * Λ := mul_nonneg hY.le (by linarith)
+  have hYΛ : 0 ≤ Y * Λ := by positivity
   have h1 : Y * Λ * (K₁ / P + 54 * ε) ≤ (K₁ + 54) * S := by
     rw [hS, div_eq_mul_inv]
     have : K₁ * P⁻¹ + 54 * ε ≤ (K₁ + 54) * (P⁻¹ + ε) := by nlinarith
@@ -268,15 +265,7 @@ private theorem core_numeric {Cψ K₁ Kt Y P Λ ε : ℝ} (hCψ : 0 ≤ Cψ) (h
         _ ≤ Y * Λ * (P⁻¹ + ε) := mul_le_mul_of_nonneg_left (by linarith) hYΛ
     calc Kt * Y * 2 * P⁻¹ = 2 * Kt * (Y * P⁻¹) := by ring
       _ ≤ 2 * Kt * (Y * Λ * (P⁻¹ + ε)) := mul_le_mul_of_nonneg_left h3 (by linarith)
-  have hC : 0 ≤ Cψ / 2 := div_nonneg hCψ zero_le_two
-  calc 5121 * (Cψ / 2 * (Y * Λ * (K₁ / P + 54 * ε) + Kt * Y / (P / 2)))
-      ≤ 5121 * (Cψ / 2 * ((K₁ + 54) * S + 2 * Kt * S)) := by
-        have := add_le_add h1 h2
-        have := mul_le_mul_of_nonneg_left this hC
-        linarith
-    _ = 5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) * S := by ring
-    _ ≤ (5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) + 1) * S := by linarith
-    _ = (5121 * (Cψ / 2) * (K₁ + 54 + 2 * Kt) + 1) * Y * Λ * (P⁻¹ + ε) := by rw [hS]; ring
+  nlinarith
 
 open scoped Classical in
 /-- **The core kernel bound** (PD `mem:minor-decay`). For `L^{A₀} ≥ 2`, `Y ≥ 8 L^{3A₀}`,
@@ -379,8 +368,7 @@ theorem exists_coreKer_bound : ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ {κ : Type} (X :
     (fun θ => (minorWeight_spec hP1 hY8 θ).1) (-(2 * arcRadius A₀ x Y)) hε₁0 hfib
   refine (hpar.congr fun q _ q' _ => ?_).mono hε₁0 ?_
   · rw [← sub_arcIntegral_eq hP1 hY8]
-    simp only [hG, hT]
-    split_ifs <;> simp
+    grind
   · -- the numerical bound
     rw [hε₁, sum_const, Int.card_Icc, nsmul_eq_mul]
     have hcard : (((2560 : ℤ) + 1 - -2560).toNat : ℝ) = 5121 := by norm_num

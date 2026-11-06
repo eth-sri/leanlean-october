@@ -27,12 +27,12 @@ theorem card_primeFactors_le {n : ℕ} (hn : 1 ≤ n) :
     (#n.primeFactors : ℝ) ≤ 2 * Real.log n := by
   have h₁ : 2 ^ #n.primeFactors ≤ ∏ p ∈ n.primeFactors, p :=
     pow_card_le_prod _ _ _ fun p hp => (Nat.prime_of_mem_primeFactors hp).two_le
-  have h₂ : ∏ p ∈ n.primeFactors, p ≤ n := Nat.le_of_dvd hn (Nat.prod_primeFactors_dvd n)
-  have h : ((2 ^ #n.primeFactors : ℕ) : ℝ) ≤ n := by exact_mod_cast h₁.trans h₂
+  have h₂ := Nat.le_of_dvd hn (Nat.prod_primeFactors_dvd n)
+  have h : ((2 ^ #n.primeFactors : ℕ) : ℝ) ≤ n := by exact_mod_cast (by omega)
   have hlog := Real.log_le_log (by positivity) h
   rw [Nat.cast_pow, Real.log_pow, Nat.cast_ofNat] at hlog
   have h2 := Real.log_two_gt_d9
-  nlinarith [Nat.cast_nonneg (α := ℝ) #n.primeFactors]
+  nlinarith
 
 /-- `|∑_{Q ∈ ∏ F_i, ∏ Q ∣ n} B(Q)| ≤ ω(n)^d` for prime slots `F_i`, `|B| ≤ 1` and `n ≥ 1`:
 every entry of such a `Q` is a prime factor of `n`. -/
@@ -46,7 +46,7 @@ theorem abs_sum_filter_prod_dvd_le {d : ℕ} (F : Fin d → Finset ℕ)
     rw [mem_filter, Fintype.mem_piFinset] at hQ
     rw [Fintype.mem_piFinset]
     intro i
-    exact Nat.mem_primeFactors.2 ⟨hF i _ (hQ.1 i),
+    exact Nat.mem_primeFactors.2 ⟨by grind,
       (dvd_prod_of_mem Q (mem_univ i)).trans hQ.2, by omega⟩
   have hcard := card_le_card hsub
   rw [Fintype.card_piFinset, prod_const, card_univ, Fintype.card_fin] at hcard

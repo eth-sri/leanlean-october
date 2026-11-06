@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRowwise
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff ComplexConjugate
+open scoped Classical ContDiff ComplexConjugate
 open Set Filter
 namespace SevenEighths.HeckeDetectorNoSlotInverseCount
 open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeInverseAmplification

@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Descent.Quotients
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K X N L A H : ℝ,
       1 ≤ K → 1 ≤ X → 1 ≤ N → 1 ≤ A → 1 ≤ H →
-    ∀ (R r t : Ideal Eis), R ≠ 0 → r ≠ 0 →
-    ∀ (rows nset Pset : Finset (Ideal Eis)) (pairs : Finset (Ideal Eis × Ideal Eis))
-      (cset : Ideal Eis → Finset (Ideal Eis))
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ),
+    ∀ (R r t : Ideal ActualEisensteinCubic.O), R ≠ 0 → r ≠ 0 →
+    ∀ (rows nset Pset : Finset (Ideal ActualEisensteinCubic.O)) (pairs : Finset (Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O))
+      (cset : Ideal ActualEisensteinCubic.O → Finset (Ideal ActualEisensteinCubic.O))
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧
@@ -45,7 +44,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
     hrows hn hP ha hpairs hhs hcs hbeta
   let Hset := pairs.image Prod.snd
   let mc := (pairs.image Prod.fst).biUnion fun m => (cset m).image fun c => (m, c)
-  have hRr : R * r ≠ 0 := mul_ne_zero hR hr
+  have hRr := mul_ne_zero hR hr
   have hn0 : ∀ n ∈ nset, n ≠ 0 := fun n hn' => (hn n hn').1.1.ne_zero
   have hP0 : ∀ P ∈ Pset, P ≠ 0 := fun P hP' => (hP P hP').1.1.ne_zero
   have hHcount : (Hset.card : ℝ) ≤ 128 * H := by
@@ -95,7 +94,7 @@ theorem hybrid_original_quotient_block (ε : ℝ) (hε : 0 < ε) :
       abs_of_nonneg (Real.sqrt_nonneg _), Real.sq_sqrt (Nat.cast_nonneg _)]
   simp_rw [norm_mul, mul_pow, hsqrt]
   rw [← Finset.mul_sum]
-  apply (mul_le_mul_of_nonneg_left he (inv_nonneg.mpr (Nat.cast_nonneg _))).trans
+  apply (mul_le_mul_of_nonneg_left he (by positivity)).trans
   calc
     _ ≤ (Ideal.absNorm R : ℝ)⁻¹ *
       (C * (K * X * N) ^ ε * (K + X) * (128 * A) * (128 * H) *

@@ -9,39 +9,37 @@ public import OAI.NumberTheory.DirichletL.Moments.SlotClassTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentAllocatedRayDictionary
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
 open CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation
 open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
 open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentHeckeTwist CenteredMomentHeckeCancellation
 local notation "O" => HeckeFamily.O
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
-def originalEmbedding (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C) :
+def originalEmbedding (s : Input α) (C : Ideal HeckeFamily.O) (B : actualAllocations s.pools C) :
     CenteredMomentCommonProfile.liveIndices B.val ↪ α :=
   ⟨Subtype.val, Subtype.val_injective⟩
 
-def remaining (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C)
-    (L : Ideal O) (a : Allocation L (Finset.univ : Finset
+def remaining (s : Input α) (C : Ideal HeckeFamily.O) (B : actualAllocations s.pools C)
+    (L : Ideal HeckeFamily.O) (a : Allocation L (Finset.univ : Finset
       (CenteredMomentCommonProfile.liveIndices B.val ⊕ Fin 2)))
     (J : Finset (CenteredMomentCommonProfile.liveIndices B.val)) :
     Finset (CenteredMomentCommonProfile.liveIndices B.val) :=
   CenteredMomentDivisorRaw.liveIndices (ι := CenteredMomentCommonProfile.liveIndices B.val) L a \ J
 
-def originalImage (s : Input α) (C : Ideal O) (B : actualAllocations s.pools C)
-    (L : Ideal O) (a : Allocation L (Finset.univ : Finset
+def originalImage (s : Input α) (C : Ideal HeckeFamily.O) (B : actualAllocations s.pools C)
+    (L : Ideal HeckeFamily.O) (a : Allocation L (Finset.univ : Finset
       (CenteredMomentCommonProfile.liveIndices B.val ⊕ Fin 2)))
     (J : Finset (CenteredMomentCommonProfile.liveIndices B.val)) : Finset α :=
   (remaining s C B L a J).map (originalEmbedding s C B)
 
 section RayData
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M ≤ H)
 
 structure Matches (s : Input α) (η₀ : Character)
     (θ : α → RayQuotient.Characters M H) (w σ freq : α → ℝ)
@@ -59,9 +57,9 @@ variable {s : Input α} {η₀ : Character} {θ : α → RayQuotient.Characters 
 include h
 
 omit [DecidableEq α] in
-lemma common_coefficient (τ : Character) (v : ℝ) (C R : Ideal O)
+lemma common_coefficient (τ : Character) (v : ℝ) (C R : Ideal HeckeFamily.O)
     (B : actualAllocations s.pools C) (i : CenteredMomentCommonProfile.liveIndices B.val)
-    (I : Ideal O) :
+    (I : Ideal HeckeFamily.O) :
     (commonData (withHeight s τ v) C R B).coefficient i I =
       idealCoeff (relativeCharacter M H hH η₀ (θ i.val)) I *
         annularWeight W (Z^(w i.val)) (σ i.val) (freq i.val) I := by
@@ -69,12 +67,12 @@ lemma common_coefficient (τ : Character) (v : ℝ) (C R : Ideal O)
   rw [h.character, h.profile, h.scale]
   rfl
 
-theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
-    (B : actualAllocations s.pools C) (L : Ideal O)
+theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal HeckeFamily.O)
+    (B : actualAllocations s.pools C) (L : Ideal HeckeFamily.O)
     (a : Allocation L (Finset.univ : Finset (CenteredMomentCommonProfile.liveIndices B.val ⊕ Fin 2)))
     (J : Finset (CenteredMomentCommonProfile.liveIndices B.val))
-    (m A : O) (W₁ W₂ : ℝ → ℂ) (X₁ X₂ : ℝ)
-    (keep : O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
+    (m A : HeckeFamily.O) (W₁ W₂ : ℝ → ℂ) (X₁ X₂ : ℝ)
+    (keep : HeckeFamily.O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let d := commonData (withHeight s τ v) C R B
     energy τ m A 0 W₁ W₂
       (fun i : remaining s C B L a J => d.slots i.val)
@@ -106,7 +104,7 @@ theorem common_energy (τ : Character) (v : ℝ) (C R : Ideal O)
   rw [hhc, hp, hs]
   rw [CenteredMomentEnergySlotHeight.inherited_height_energy τ m A W₁ W₂ _ _ _ _ _ _
     (fun i => h.scale i.val.val ▸ s.P_pos i.val.val)
-    (fun i I hI => (s.prime i.val.val I (by rw [h.pool]; exact hI)).ne_zero)
+    (fun i I hI => (s.prime i.val.val I (by rw [h.pool]; omega)).ne_zero)
     v 0 X₁ X₂ keep Φ K]
   exact CenteredMomentEnergyReindex.energy_subset_map (originalEmbedding s C B)
     (remaining s C B L a J) τ m A W₁ W₂

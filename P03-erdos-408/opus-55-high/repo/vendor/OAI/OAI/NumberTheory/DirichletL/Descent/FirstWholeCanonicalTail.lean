@@ -7,25 +7,24 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct Cm : ℝ),0<Ct ∧ 0<Cm ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hchar : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hchar : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (pool : Finset ι) (b : CubeCoordinates ι),b.Admissible →
       ∀ (common divisor : Finset ι),Disjoint common b.support →
-      ∀ (f : Ideal O),f≠0 →
-      ∀ (Ψ₁ Ψ₂ : O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
-      ∀ (m₁ m₂ : O) (extra₁ extra₂ : Finset ι) (E : ℝ) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
+      ∀ (f : Ideal ActualEisensteinCubic.O),f≠0 →
+      ∀ (Ψ₁ Ψ₂ : ActualEisensteinCubic.O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
+      ∀ (m₁ m₂ : ActualEisensteinCubic.O) (extra₁ extra₂ : Finset ι) (E : ℝ) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
       0≤E → primeProductNorm p extra₁≤E → primeProductNorm p extra₂≤E →
       (slots : Set σ).PairwiseDisjoint lists → (∀ i∈slots,∀ k∈lists i,‖a i k‖≤1) →
       ∀ (test₁ test₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ))
@@ -52,7 +51,7 @@ theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
       let slow := Z^M/(primeProductNorm p divisor*primeProductNorm p active*U₁*U₂)
       let T := childFrequencyBall (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit f)
         (Z^(firstPhysicalHeight M r ell V delta B j+12*eta+tau))
-      ‖∑' h : {h : O // h∉T},actualFirstKernel p hp hcop hg residualPool b.support
+      ‖∑' h : {h : ActualEisensteinCubic.O // h∉T},actualFirstKernel p hp hcop hg residualPool b.support
         (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit C₁ C₂ W
         (fun _=>1) (fun _=>1) 1 1 (Z^M)
         (primeSubsetGenerator (fun i=>Ideal.span {p i}) divisor) h.val‖ ≤
@@ -70,21 +69,21 @@ theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
     exact (Finset.mem_sdiff.mp hi).2 hi2
   apply htail p hp hinj hcop hg hchar residualPool b.support common divisor b.leftExponent b.rightExponent
     b.leftBit b.rightBit b.support_pos (hdis.mono_right Finset.subset_union_left) f hf0 C₁ C₂ W
-    G₁' G₂' Z M r ell V delta B j eta tau (by dsimp [G₁']; positivity) (by dsimp [G₂']; positivity) hZ
+    G₁' G₂' Z M r ell V delta B j eta tau (by positivity) (by positivity) hZ
   · intro N hN
     exact (canonical_residual_norm p hg b common true Ψ₁ hΨ₁ m₁ _ _ N).trans
       (hmark p hp hcop slots lists a hslots ha extra₁ test₁ E G₁ (Z^(r+eta)) hE hG₁
-        (Real.rpow_pos_of_pos hZ _).le he₁ htest₁ hs₁ _)
+        (by positivity) he₁ htest₁ hs₁ _)
   · intro N hN
     exact (canonical_residual_norm p hg b common false Ψ₂ hΨ₂ m₂ _ _ N).trans
       (hmark p hp hcop slots lists a hslots ha extra₂ test₂ E G₂ (Z^(r+eta)) hE hG₂
-        (Real.rpow_pos_of_pos hZ _).le he₂ htest₂ hs₂ _)
-  · exact hb₁
-  · exact hb₂
-  · exact hf
-  · exact hd
-  · exact hc
-  · exact hj
+        (by positivity) he₂ htest₂ hs₂ _)
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
   · intro N hN hn
     have ht := canonical_residual_test_nonzero p hg b common true Ψ₁ m₁
       (ConcretePrimeRowBridge.idealGenerator f) _ N hn

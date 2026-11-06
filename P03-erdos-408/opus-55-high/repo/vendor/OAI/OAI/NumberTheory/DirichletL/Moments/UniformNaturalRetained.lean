@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformRetainedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformNaturalRetained
 open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum CenteredMomentNaturalPrimitive
@@ -40,7 +40,7 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
   refine ⟨hZ.1,?_⟩
   intro ι _ G χ ψ P omega Wshort c d M along bshort D E Rcap hd hshort hshortsmooth
     hnatural hmod hD hE hGD hRcap hcap henergy
-  have hz : 0<Z := by linarith [hZ.1]
+  have hz : 0<Z := by linarith
   have hlog : 0≤Real.log Z := (Real.log_pos hZ.1).le
   have hexp : Real.exp (bshort*Real.log Z)=Z^bshort := by
     rw [Real.rpow_def_of_pos hz,mul_comm]
@@ -51,16 +51,16 @@ theorem actual_natural_retained_energy (epsilon Cscale xi : ℝ)
       Real.log (dyadicScale u.2*dualScale (χ i) (ψ i) (Z^along) u.1.1 u.1.2)∈
         Set.Icc 0 (max 0 (M-along+xi)*Real.log Z) := by
     have hh := hZ.2 (χ i) (ψ i) M along (hnatural i) (hmod i) u hY hu
-    exact ⟨hh.2.1,hh.2.2.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hlog)⟩
+    exact ⟨hh.2.1,hh.2.2.trans (mul_le_mul_of_nonneg_right (by simp) hlog)⟩
   have hrad (i : ι) : (Ideal.absNorm (∏Q∈sourcePrimes (χ i) (ψ i),Q):ℝ)≤Rcap :=
     (radical_le_original (χ i) (ψ i) (hnatural i)).trans (hcap i)
   have hh := hb G χ ψ P (fun _=>Z^along) (fun _=>Z^(xi/4)) (fun _=>bshort*Real.log Z) omega
     Wshort c d 0 (max 0 (M-along+xi)*Real.log Z) (bshort*Real.log Z) (bshort*Real.log Z)
     D E Rcap (fun _=>Real.rpow_pos_of_pos hz _) hd hshort hshortsmooth
-    (mul_nonneg (le_max_left _ _) hlog) le_rfl (fun _=>⟨le_rfl,le_rfl⟩) hgeom
+    (by positivity) le_rfl (by simp) hgeom
     hD hE hGD hRcap hrad (by
       intro v j k x hx y hy
-      have hey : y=bshort*Real.log Z := le_antisymm hy.2 hy.1
+      have hey := le_antisymm hy.2 hy.1
       simpa only [hey,hexp] using henergy v j k x hx)
   simpa only [hexp,sub_zero,sub_self,mul_zero,add_zero,mul_one] using hh
 

@@ -9,31 +9,29 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowReflectionError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLiveClippingDefect
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy
 open CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
 
-theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
+theorem rowTwistedSum_support_witness (η : Character) (m A z : HeckeFamily.O)
     (W : ℝ → ℂ) (t X : ℝ) (h : rowTwistedSum η m A z W t X ≠ 0) :
-    ∃ I : Ideal O, I ≠ 0 ∧ W ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
+    ∃ I : Ideal HeckeFamily.O, I ≠ 0 ∧ W ((Ideal.absNorm I : ℝ) / X) ≠ 0 := by
   by_contra hn
   push Not at hn
   apply h
   unfold rowTwistedSum
   calc
-    _ = ∑' _I : Ideal O, (0 : ℂ) := by
+    _ = ∑' _I : Ideal HeckeFamily.O, (0 : ℂ) := by
       apply tsum_congr
       intro I
       by_cases hI : I = 0
-      · subst I
-        rw [idealCoeff_zero, zero_mul, zero_mul, zero_mul]
-      · rw [hn I hI, mul_zero]
+      · grind
+      simp_all
     _ = 0 := tsum_zero
 
-theorem rowTwistedSum_support_scale (η : Character) (m A z : O)
+theorem rowTwistedSum_support_scale (η : Character) (m A z : HeckeFamily.O)
     (W : ℝ → ℂ) (t X b : ℝ) (hX : 0 < X)
     (hs : Function.support W ⊆ Set.Iic b)
     (h : rowTwistedSum η m A z W t X ≠ 0) : 1 ≤ b * X := by
@@ -44,9 +42,9 @@ theorem rowTwistedSum_support_scale (η : Character) (m A z : O)
 
 variable {ι : Type*} [Fintype ι]
 
-theorem positiveSlotRow_support_scales (η : Character) (m A z : O)
-    (W₁ W₂ : ℝ → ℂ) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (P : ι → ℝ) (t X₁ X₂ b : ℝ)
+theorem positiveSlotRow_support_scales (η : Character) (m A z : HeckeFamily.O)
+    (W₁ W₂ : ℝ → ℂ) (S : ι → Finset (Ideal HeckeFamily.O))
+    (β : ι → Ideal HeckeFamily.O → ℂ) (P : ι → ℝ) (t X₁ X₂ b : ℝ)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
     (hs₁ : Function.support W₁ ⊆ Set.Iic b)
     (hs₂ : Function.support W₂ ⊆ Set.Iic b)
@@ -58,24 +56,24 @@ theorem positiveSlotRow_support_scales (η : Character) (m A z : O)
     rowTwistedSum_support_scale η m A z W₂ t X₂ b hX₂ hs₂
       (right_ne_zero_of_mul hp)⟩
 
-theorem positiveSlotRow_profiles_scales (η : Character) (m A z : O)
-    {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (P : ι → ℝ) (t X₁ X₂ : ℝ)
+theorem positiveSlotRow_profiles_scales (η : Character) (m A z : HeckeFamily.O)
+    {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal HeckeFamily.O))
+    (β : ι → Ideal HeckeFamily.O → ℂ) (P : ι → ℝ) (t X₁ X₂ : ℝ)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)
     (h : positiveSlotRow η m A z (p.profile 0) (p.profile 1) S β P t X₁ X₂ ≠ 0) :
-    1 ≤ b * X₁ ∧ 1 ≤ b * X₂ := by
-  exact positiveSlotRow_support_scales η m A z _ _ S β P t X₁ X₂ b hX₁ hX₂
+    1 ≤ b * X₁ ∧ 1 ≤ b * X₂ :=
+  positiveSlotRow_support_scales η m A z _ _ S β P t X₁ X₂ b hX₁ hX₂
     (fun _ hx => (p.support 0 hx).2) (fun _ hx => (p.support 1 hx).2) h
 
 theorem length_le_raw_add_endpoint (Z X b : ℝ) (hZ : 1 < Z) (hX : 0 < X)
     (hs : 1 ≤ b * X) : length Z X ≤ Real.logb Z X + Real.logb Z (max 1 b) := by
-  have hB : 0 < max 1 b := zero_lt_one.trans_le (le_max_left _ _)
+  have hB : 0 < max 1 b := by positivity
   have hc : max 1 X ≤ max 1 b * X := by
     apply max_le
-    · exact hs.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hX.le)
-    · simpa using mul_le_mul_of_nonneg_right (le_max_left (1 : ℝ) b) hX.le
+    · exact hs.trans (mul_le_mul_of_nonneg_right (by simp) hX.le)
+    · simp_all
   have hh := Real.logb_le_logb_of_le hZ
-    (zero_lt_one.trans_le (le_max_left (1 : ℝ) X)) hc
+    (by positivity) hc
   rw [Real.logb_mul hB.ne' hX.ne'] at hh
   simpa [length, add_comm] using hh
 
@@ -92,17 +90,17 @@ theorem endpoint_threshold (b δ : ℝ) (hδ : 0 < δ) :
     ∃ Z₀ : ℝ, 1 < Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
       2 * Real.logb Z (max 1 b) ≤ δ := by
   let Z₀ := Real.exp (1 + 2 * Real.log (max 1 b) / δ)
-  have hb : 0 ≤ Real.log (max 1 b) := Real.log_nonneg (le_max_left _ _)
+  have hb : 0 ≤ Real.log (max 1 b) := Real.log_nonneg (by simp)
   have he : 0 < 1 + 2 * Real.log (max 1 b) / δ := by positivity
   have hZ₀ : 1 < Z₀ := Real.one_lt_exp_iff.mpr he
   refine ⟨Z₀, hZ₀, ?_⟩
   intro Z hZZ
-  have hZ : 1 < Z := hZ₀.trans_le hZZ
+  have hZ : 1 < Z := by linarith
   have hlog := Real.log_le_log (Real.exp_pos _) hZZ
   rw [Real.log_exp] at hlog
   have hbound : 2 * Real.log (max 1 b) ≤ δ * Real.log Z := by
     have hh : 2 * Real.log (max 1 b) / δ ≤ Real.log Z := by linarith
-    exact (div_le_iff₀ hδ).mp hh |>.trans_eq (mul_comm _ _)
+    exact (div_le_iff₀ hδ).mp hh |>.trans_eq (by linarith)
   rw [Real.logb, ← mul_div_assoc]
   exact (div_le_iff₀ (Real.log_pos hZ)).mpr hbound
 
@@ -115,43 +113,36 @@ theorem total_clipping_defect_nonneg (Z X₁ X₂ : ℝ) (hZ : 1 < Z)
   dsimp only [length]
   linarith
 
-theorem positiveSlotRow_zero_or_defect (η : Character) (m A z : O)
-    {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (P : ι → ℝ) (t X₁ X₂ Z : ℝ)
+theorem positiveSlotRow_zero_or_defect (η : Character) (m A z : HeckeFamily.O)
+    {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal HeckeFamily.O))
+    (β : ι → Ideal HeckeFamily.O → ℂ) (P : ι → ℝ) (t X₁ X₂ Z : ℝ)
     (hZ : 1 < Z) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) :
     positiveSlotRow η m A z (p.profile 0) (p.profile 1) S β P t X₁ X₂ = 0 ∨
     (0 ≤ length Z X₁ + length Z X₂ - Real.logb Z (X₁ * X₂) ∧
       length Z X₁ + length Z X₂ - Real.logb Z (X₁ * X₂) ≤
         2 * Real.logb Z (max 1 b)) := by
   by_cases hrow : positiveSlotRow η m A z (p.profile 0) (p.profile 1) S β P t X₁ X₂ = 0
-  · exact Or.inl hrow
+  · simp_all
   · obtain ⟨h1, h2⟩ := positiveSlotRow_profiles_scales η m A z p S β P t X₁ X₂ hX₁ hX₂ hrow
     exact Or.inr ⟨total_clipping_defect_nonneg Z X₁ X₂ hZ hX₁ hX₂,
       total_clipping_defect Z X₁ X₂ b hZ hX₁ hX₂ h1 h2⟩
 
-theorem energy_support_witness (η : Character) (m A : O) (t : ℝ)
-    (W₁ W₂ : ℝ → ℂ) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (P : ι → ℝ) (X₁ X₂ : ℝ)
-    (keep : O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
+theorem energy_support_witness (η : Character) (m A : HeckeFamily.O) (t : ℝ)
+    (W₁ W₂ : ℝ → ℂ) (S : ι → Finset (Ideal HeckeFamily.O))
+    (β : ι → Ideal HeckeFamily.O → ℂ) (P : ι → ℝ) (X₁ X₂ : ℝ)
+    (keep : HeckeFamily.O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
     (h : CenteredMomentInductionEnergy.energy η m A t W₁ W₂ S β P X₁ X₂ keep Φ K ≠ 0) :
-    ∃ z : O, keep z ∧ positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂ ≠ 0 := by
+    ∃ z : HeckeFamily.O, keep z ∧ positiveSlotRow η m A z W₁ W₂ S β P t X₁ X₂ ≠ 0 := by
   by_contra hn
   push Not at hn
   apply h
   unfold CenteredMomentInductionEnergy.energy
-  calc
-    _ = ∑' _z : O, (0 : ℝ) := by
-      apply tsum_congr
-      intro z
-      by_cases hk : keep z
-      · simp only [ite_eq_left hk, hn z hk, norm_zero, zero_pow (by norm_num : 2 ≠ 0), zero_mul]
-      · simp only [ite_eq_right hk]
-    _ = 0 := tsum_zero
+  simp_all
 
-theorem energy_zero_or_defect (η : Character) (m A : O) (t : ℝ)
-    {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (P : ι → ℝ) (X₁ X₂ Z : ℝ)
-    (keep : O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
+theorem energy_zero_or_defect (η : Character) (m A : HeckeFamily.O) (t : ℝ)
+    {a b : ℝ} (p : Profiles a b) (S : ι → Finset (Ideal HeckeFamily.O))
+    (β : ι → Ideal HeckeFamily.O → ℂ) (P : ι → ℝ) (X₁ X₂ Z : ℝ)
+    (keep : HeckeFamily.O → Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ)
     (hZ : 1 < Z) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) :
     CenteredMomentInductionEnergy.energy η m A t (p.profile 0) (p.profile 1)
         S β P X₁ X₂ keep Φ K = 0 ∨
@@ -160,7 +151,7 @@ theorem energy_zero_or_defect (η : Character) (m A : O) (t : ℝ)
         2 * Real.logb Z (max 1 b)) := by
   by_cases h : CenteredMomentInductionEnergy.energy η m A t (p.profile 0) (p.profile 1)
       S β P X₁ X₂ keep Φ K = 0
-  · exact Or.inl h
+  · simp_all
   · obtain ⟨z, _, hz⟩ := energy_support_witness η m A t _ _ S β P X₁ X₂ keep Φ K h
     exact Or.inr ((positiveSlotRow_zero_or_defect η m A z p S β P t X₁ X₂ Z hZ hX₁ hX₂).resolve_left hz)
 
@@ -172,7 +163,7 @@ theorem raw_gates_of_defect (Z M X₁ X₂ ell κ e : ℝ) (hZ : 1 < Z)
     5*M/6-e ≤ Real.logb Z (X₁ * X₂)+ell ∧
       Real.logb Z (X₁ * X₂)+ell+(6*κ-1)*ell ≤ M := by
   have hnonneg := total_clipping_defect_nonneg Z X₁ X₂ hZ hX₁ hX₂
-  constructor <;> nlinarith
+  grind
 
 theorem robust_slot_budgets (M total ell kappa defect : ℝ)
     (hell : 0 ≤ ell) (hk : 3/4 ≤ kappa)
@@ -181,7 +172,7 @@ theorem robust_slot_budgets (M total ell kappa defect : ℝ)
     ell ≤ M/21+2*defect/7 ∧ (6*kappa-1)*ell ≤ M/6+defect := by
   have hkell : 7/2*ell ≤ (6*kappa-1)*ell :=
     mul_le_mul_of_nonneg_right (by linarith) hell
-  constructor <;> nlinarith
+  grind
 
 theorem robust_defect_le_width (M xi defect : ℝ) (hM : 0 ≤ M) (hxi : 0 ≤ xi)
     (hreserve : xi+11*defect/7 ≤ M/14) : defect ≤ M := by
@@ -194,7 +185,7 @@ theorem robust_balanced_long_nonneg (M total ell kappa xi defect : ℝ)
     (hreserve : xi+11*defect/7 ≤ M/14) :
     15*M/28-9*defect/7 ≤ total-M/4 ∧ 0 ≤ total-M/4 := by
   obtain ⟨he, hb⟩ := robust_slot_budgets M total ell kappa defect hell hk hlarge hcap
-  constructor <;> linarith
+  grind
 
 theorem robust_reflected_low (M short along ell z kappa xi defect reflected : ℝ)
     (hM : 0 ≤ M) (_hs : 0 ≤ short) (hsM : short ≤ M/4)
@@ -214,20 +205,14 @@ theorem robust_reflected_low (M short along ell z kappa xi defect reflected : �
   rw [max_eq_right haz.le] at hhigh
   have hzbudget : (6*kappa-1)*z ≤ M/6+defect :=
     (mul_le_mul_of_nonneg_left hze (by linarith)).trans hbudget
-  have hzcap : z ≤ M/21+2*defect/7 := hze.trans he
-  refine ⟨haz, ?_⟩
-  by_cases hr : 0 ≤ M-along+xi
-  · rw [max_eq_right hr] at href
-    constructor <;> nlinarith
-  · rw [max_eq_left (le_of_not_ge hr)] at href
-    constructor <;> nlinarith
+  grind
 
 theorem robust_reflected_low_admissible (M xi defect short reflected z kappa : ℝ)
     (hd : 0 ≤ defect) (hreserve : xi+11*defect/7 ≤ M/14)
     (ht : reflected+short+z ≤ 16*M/21+xi+4*defect/7)
     (hc : reflected+short+6*kappa*z ≤ 13*M/14+xi+11*defect/7) :
     reflected+short+z ≤ 5*M/6 ∧ reflected+short+6*kappa*z ≤ M := by
-  constructor <;> linarith
+  grind
 
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget
 open CenteredMomentEnergyReferenceDeletionCapacity
@@ -238,7 +223,7 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
     (hξ : 0 ≤ ξ) (he : 0 ≤ e) (hreserve : ξ+11*e/7 ≤ M/14)
     (hlarge : 5*M/6-e ≤ Real.logb Z (X₁*X₂)+ell)
     (hcap : Real.logb Z (X₁*X₂)+ell+(6*κ-1)*ell ≤ M)
-    (D₁ D₂ : Finset (Ideal O)) (hD₁ : ∀ I ∈ D₁, Prime I) (hD₂ : ∀ I ∈ D₂, Prime I)
+    (D₁ D₂ : Finset (Ideal HeckeFamily.O)) (hD₁ : ∀ I ∈ D₁, Prime I) (hD₂ : ∀ I ∈ D₂, Prime I)
     (href : reflected ≤ max 0 (M-Real.logb Z
       (comparisonSecond Z M X₁ X₂ / ((∏ I ∈ D₂, I).absNorm : ℝ))+ξ)) :
     let short := length Z (comparisonFirst Z M / ((∏ I ∈ D₁, I).absNorm : ℝ));
@@ -265,19 +250,19 @@ theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : 
       Real.logb Z (X₁*X₂)-M/4 := by
     rw [← hlog]
     exact Real.logb_le_logb_of_le hZ
-      (zero_lt_one.trans_le (le_max_left 1 _)) (max_le hY (div_le_self hpos.2.le hn₂))
+      (by positivity) (max_le hY (div_le_self hpos.2.le hn₂))
   by_cases hlo : length Z (comparisonFirst Z M / ((∏ I ∈ D₁, I).absNorm : ℝ))+
       length Z (comparisonSecond Z M X₁ X₂ / ((∏ I ∈ D₂, I).absNorm : ℝ))+z ≤ 5*M/6
   · refine Or.inl ⟨hlo, ?_⟩
-    have hkc := mul_le_mul_of_nonneg_left hze (by linarith : 0 ≤ 6*κ)
+    have hkc := mul_le_mul_of_nonneg_left hze (by positivity)
     nlinarith
   · apply Or.inr
     obtain ⟨hellbound, hslot⟩ := robust_slot_budgets M (Real.logb Z (X₁*X₂)) ell κ e
       hell hκ hlarge hcap
     apply robust_reflected_low M _ _ ell z κ ξ e reflected hM hshort0 hshort hell hz hze hκ
-      hellbound hslot hξ he (robust_defect_le_width M ξ e hM hξ hreserve) _ href
+      hellbound hslot hξ he (by linarith) _ href
     rw [← CenteredMomentEnergyReferenceLowBranchGeometry.length_eq_max_log Z _ hZ hlongpos]
-    exact lt_of_not_ge hlo
+    linarith
 
 end SevenEighths.CenteredMomentEnergyLiveClippingDefect
 

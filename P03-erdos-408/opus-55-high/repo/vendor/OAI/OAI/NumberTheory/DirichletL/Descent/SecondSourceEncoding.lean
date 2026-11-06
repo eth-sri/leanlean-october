@@ -7,23 +7,22 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 @[ext] structure MarkedSecondSource (ι : Type*) (Jo Jn : ℕ) where
   cube : CubeCoordinates ι
   firstCommon : Finset ι
   firstDivisor : Finset ι
   second : SecondExpansionData ι
-  quotient : Ideal Eis
+  quotient : Ideal ActualEisensteinCubic.O
   oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal
   newAssigned : Fin Jn → ι
 
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
 def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : SecondOriginalSource ι Jo Jn :=
@@ -61,7 +60,7 @@ theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
   · exact congrArg SecondOriginalSource.newAssigned hxy
 
 theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : Eisˣ) :
+    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : ActualEisensteinCubic.Oˣ) :
     Set.InjOn (fun x : MarkedSecondSource ι Jo Jn => originalSecondTuple p u v (markedSecondOriginal p x))
       {x | x.cube.Admissible} := by
   intro x hx y hy he
@@ -88,7 +87,7 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
+    {Jo Jn : ℕ} (u v : ActualEisensteinCubic.Oˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (ha : ∀ x ∈ source, x.cube.Admissible)
     (hCB : ∀ x ∈ source, Disjoint x.firstCommon x.cube.support)
     (hD : ∀ x ∈ source, x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
@@ -96,7 +95,7 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
     (hold : ∀ x ∈ source, ∀ i, (x.oldAssigned i).val ∣
       sourceIdeal p x.cube.support*sourceIdeal p x.firstCommon*x.quotient)
     (hnew : ∀ x ∈ source, ∀ i, x.newAssigned i ∈ x.second.sourceCommon∪x.second.overlap)
-    (γ : OuterTriple) (f : Ideal Eis) (k : Eis)
+    (γ : OuterTriple) (f : Ideal ActualEisensteinCubic.O) (k : ActualEisensteinCubic.O)
     (hf : f ≠ 0) (hq : γ.q0 ≠ 0) (ht : γ.quotient ≠ 0) (hr : γ.residual ≠ 0)
     (K : ℕ) (ho : Jo ≤ 2*K) (hn : Jn ≤ 2*K) :
     (source.filter (fun x => secondChild (originalSecondTuple p u v (markedSecondOriginal p x)) = (γ,f,k))).card ≤
@@ -111,7 +110,7 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
       Valid (encode x) (secondChild (encode x)).1 (secondChild (encode x)).2.1 (secondChild (encode x)).2.2 := by
     intro x hx
     exact originalSecondTuple_valid p hp hpr u v (markedSecondOriginal p x)
-      (markedSecondOriginal_valid p hp hpr hcop x (hCB x hx) (hD x hx) (hE x hx) (hold x hx) (hnew x hx))
+      (markedSecondOriginal_valid p hp hpr hcop x (by grind) (by grind) (by grind) (by grind) (by grind))
   have hv : ∀ y ∈ S.image encode, Valid y γ f k := by
     intro y hy
     obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp hy
@@ -120,10 +119,9 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
   have hi : Set.InjOn encode (S : Set (MarkedSecondSource ι Jo Jn)) := by
     intro x hx y hy he
     exact markedSecondTuple_injOn p hp hinj u v
-      (ha x (Finset.mem_filter.mp hx).1) (ha y (Finset.mem_filter.mp hy).1) he
+      (by grind) (by grind) he
   have hb := valid_tuple_card_le_slot_cap (S.image encode) γ f k hf hq ht hr hv K ho hn
-  rw [Finset.card_image_iff.mpr hi] at hb
-  exact hb
+  grind
 
 end
 end SevenEighths.InverseMoment

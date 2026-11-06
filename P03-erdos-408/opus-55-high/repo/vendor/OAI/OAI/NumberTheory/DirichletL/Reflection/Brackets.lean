@@ -8,17 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.Hybrid
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
 open LocalReflectionBrackets CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-noncomputable local instance bracketField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) := Ideal.Quotient.field P
-noncomputable local instance bracketFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+noncomputable local instance bracketField (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Field (ActualEisensteinCubic.O ⧸ P) := Ideal.Quotient.field P
+noncomputable local instance bracketFinite (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
-theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
-    (hg : λ₀ ∉ P) (n b : Eis) :
+theorem marked_bracket_cube (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (n b : ActualEisensteinCubic.O) :
     bracket (actualSextic P hg) 0 (Ideal.Quotient.mk P (n*b^3)) =
       (Real.sqrt (Ideal.absNorm P : ℝ) : ℂ)⁻¹ *
       (idealRowHom n P)⁻¹^2 * (if IsCoprime P (Ideal.span {b}) then 1 else 0) := by
@@ -28,7 +26,7 @@ theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
   have h6' : (actualSextic P hg (Ideal.Quotient.mk P b))^6 = 0 ∨
       (actualSextic P hg (Ideal.Quotient.mk P b))^6 = 1 := by
     rw [h6]; split_ifs <;> simp
-  let ψ : Eis →* ℂ := (actualSextic P hg).toMonoidHom.comp (Ideal.Quotient.mk P).toMonoidHom
+  let ψ : ActualEisensteinCubic.O →* ℂ := (actualSextic P hg).toMonoidHom.comp (Ideal.Quotient.mk P).toMonoidHom
   have he := InverseMoment.inverse_square_cube_mask ψ n b h6'
   change ((actualSextic P hg) (Ideal.Quotient.mk P (n*b^3)))⁻¹^2 =
     ((actualSextic P hg) (Ideal.Quotient.mk P n))⁻¹^2 *
@@ -38,11 +36,11 @@ theorem marked_bracket_cube (P : Ideal Eis) [P.IsMaximal]
   simp only [inv_pow] at he
   rw [he,rootCard_eq_sqrt_absNorm,idealRowHom_prime n P hg,h6,
     SixthPowerAverage.prime_coprime_span_iff]
-  by_cases hb : b ∈ P <;> simp [hb]
+  simp
 
 theorem marked_bracket_product {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (n b : Eis) :
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ P i) (n b : ActualEisensteinCubic.O) :
     (∏ i, bracket (actualSextic (P i) (hg i)) 0 (Ideal.Quotient.mk (P i) (n*b^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ *
       (idealRowHom n (∏ i, P i))⁻¹^2 *
@@ -67,11 +65,11 @@ theorem marked_bracket_product {ι : Type*} [Fintype ι]
         exact hi (hp.of_isCoprime_of_dvd_left (Finset.dvd_prod_of_mem P (Finset.mem_univ i)))
       rw [ite_eq_right hp]
       exact Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)
-  rw [hn,hc,hm]
+  simp_all
 
 theorem marked_bracket_hybrid {ι : Type*} [Fintype ι]
-    (P : ι → Ideal Eis) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ P i) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ P i) (n b : Ideal ActualEisensteinCubic.O) (hb : primaryGenerator b ≠ 0) :
     (∏ i, bracket (actualSextic (P i) (hg i)) 0
       (Ideal.Quotient.mk (P i) (primaryGenerator n*(primaryGenerator b)^3))) =
       (Real.sqrt (Ideal.absNorm (∏ i, P i) : ℝ) : ℂ)⁻¹ *

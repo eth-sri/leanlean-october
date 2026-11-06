@@ -7,7 +7,6 @@ public import Erdos821.S2.PrimeIndices
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -27,7 +26,7 @@ theorem memoryBefore_member_form (S : LifespanAssignment P n) (i : Fin (n + 1)) 
   have he := Q.memoryBefore_eq_map S i g
   have hm := Eq.mp (congrArg (fun m : P.Memory g.val => z ∈ m) he) hz
   obtain ⟨p, hp, he⟩ := Multiset.mem_map.mp hm
-  exact ⟨p, hp, he.symm⟩
+  grind
 
 def ghostBatchLabels (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup)
     (h : Fin (Q.ghostBirthPrimes S i g).card) : P.Prime g.val :=
@@ -125,26 +124,17 @@ theorem ghostDeleted_eq_map (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : 
   have hi : Q.ghostTerminationIndices S i g = Finset.univ.filter
       (fun h => R (memoryEntry (Q.memoryBefore S i g) h)) := by
     ext h
-    simp only [ghostTerminationIndices, Finset.mem_filter, Finset.mem_univ, true_and, R]
+    simp only [ghostTerminationIndices, R]
   have hd := deleteMemoryIndices_filter (P := P) (g := g.val) (Q.memoryBefore S i g) R
   rw [hi]
   calc
     _ = (Q.memoryBefore S i g).filter (fun z => ¬ R z) := by
-      convert hd using 1
-      · congr 1
-        ext h
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      · apply Multiset.ext.mpr
-        intro z
-        by_cases hz : ¬ R z
-        · simp only [Multiset.count_filter, ite_eq_left hz]
-        · simp only [Multiset.count_filter, ite_eq_right hz]
+      grind
     _ = _ := by
       rw [memoryBefore_eq_map, Multiset.filter_map]
       change ((Q.pendingBeforePrimes S i g).filter (fun p => p ∉ Q.ghostStopPrimes S i g)).val.map _ = _
       congr 2
-      ext p
-      simp
+      grind
 
 theorem reconstructed_ghost_memory (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
     (i : Fin (n + 1)) (g : P.BigGroup) :

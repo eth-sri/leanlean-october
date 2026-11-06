@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Contractions
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -20,7 +19,7 @@ theorem normBound_equiv {alpha beta : Type*} (mass : alpha → ℝ)
   intro s t f g
   have h := hK (s.map e.toEmbedding) (t.map e.toEmbedding)
     (fun a => f (e.symm a)) (fun b => g (e.symm b))
-  simpa only [Finset.sum_map, Equiv.toEmbedding_apply, Equiv.symm_apply_apply] using h
+  simp_all
 
 theorem normBound_subtype_project {alpha : Type*} (mass : alpha → ℝ)
     (K : alpha → alpha → ℂ) (keep : alpha → Prop) (C : ℝ)
@@ -52,22 +51,19 @@ theorem normBound_subtype_project {alpha : Type*} (mass : alpha → ℝ)
     apply Finset.sum_congr rfl
     intro a _
     by_cases ha : keep a
-    · simp only [ite_eq_left ha]
-      apply Finset.sum_congr rfl
-      intro b _
-      by_cases hb : keep b <;> simp [ha, hb]
-    · simp [ha]
+    · simp_all
+    · simp_all
   rw [he]
   have hs : (∑ a ∈ s.filter keep, mass a * ‖f a‖ ^ 2) ≤ ∑ a ∈ s, mass a * ‖f a‖ ^ 2 :=
-    Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+    Finset.sum_le_sum_of_subset_of_nonneg (by simp)
       (fun a _ _ => mul_nonneg (hm a) (sq_nonneg _))
   have ht : (∑ b ∈ t.filter keep, mass b * ‖g b‖ ^ 2) ≤ ∑ b ∈ t, mass b * ‖g b‖ ^ 2 :=
-    Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+    Finset.sum_le_sum_of_subset_of_nonneg (by simp)
       (fun b _ _ => mul_nonneg (hm b) (sq_nonneg _))
   exact h.trans (mul_le_mul
     (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hs) hC)
     (Real.sqrt_le_sqrt ht) (Real.sqrt_nonneg _)
-    (mul_nonneg hC (Real.sqrt_nonneg _)))
+    (by positivity))
 
 
 end Erdos821.P3Clean

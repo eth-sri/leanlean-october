@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorAmplitudeFirst
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification HeckeDetectorBatch ProbePhysical
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem actual_source_amplitude_batches (S : Finset (Ideal O)) (hS : SourceExclusions S)
+theorem actual_source_amplitude_batches (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character)
     (dmin dmax τ ε e κ heightCost margin mesh binWidth : ℝ) (I : ℕ)
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hdtop : dmax≤37/42) (hτ : 0<τ)
@@ -72,7 +71,7 @@ theorem actual_source_amplitude_batches (S : Finset (Ideal O)) (hS : SourceExclu
       (HeckeDetectorAdaptiveCutoff.cutoff (2*a-1) q) hcut.1 hcut.2 N ell hell hsmall hsum W upper z
   refine ⟨B,hBr,hBd,hRev,hSlots,hWidths,hW,hUpper,hZ,hMesh,hBin,hFam,?_⟩
   intro u hu
-  have hu' : u∈rows' := hBr ▸ hu
+  have hu' := hBr ▸ hu
   rw [hSlots,hWidths,hW,hUpper,hZ,hBin]
   exact HeckeDetectorAmplitudeFirst.rowMean_eq rows Finset.univ (Z^d) ((2*a-1)/2)
     binWidth hb (fun j=>ell j/d) Q bin u hu'

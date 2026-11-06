@@ -9,14 +9,13 @@ public import OAI.NumberTheory.DirichletL.Detector.PairPhase
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalRowCompletion
+open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition
+open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
 
-lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :
+lemma gaussTwo_eq_elementFourier (I : Ideal ActualEisensteinCubic.O) (hI : CubicSieve.Admissible I) :
     gaussTwo I hI.2 =
       elementFourier (primaryGenerator I) hI.2 (CubicSieve.cubicRow I) 1 /
         (‖eisEmbedding (primaryGenerator I)‖:ℂ) := by
@@ -34,7 +33,7 @@ lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :
   simp only [map_one, one_mul]
   rfl
 
-lemma residueGauss_principalCubicCharacter (I : Ideal O) (hI : CubicSieve.Admissible I)
+lemma residueGauss_principalCubicCharacter (I : Ideal ActualEisensteinCubic.O) (hI : CubicSieve.Admissible I)
     [Fintype (Residue (primaryGenerator I))] :
     residueGauss (primaryGenerator I) hI.2 (CubicSieve.principalCubicCharacter I hI) 1 =
       elementFourier (primaryGenerator I) hI.2 (CubicSieve.cubicRow I) 1 := by
@@ -43,9 +42,9 @@ lemma residueGauss_principalCubicCharacter (I : Ideal O) (hI : CubicSieve.Admiss
   intro x hx
   have hc := CubicSieve.principalCubicCharacter_mk I hI (representative (primaryGenerator I) x)
   rw [representative_spec] at hc
-  rw [hc]
+  simp_all
 
-theorem gaussTwo_coprime_product (I J : Ideal O)
+theorem gaussTwo_coprime_product (I J : Ideal ActualEisensteinCubic.O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hcop : IsCoprime I J) :
     gaussTwo (I*J) hIJ.2 =
@@ -109,7 +108,7 @@ theorem gaussTwo_coprime_product (I J : Ideal O)
   rw [hgen, map_mul, norm_mul, Complex.ofReal_mul]
   ring
 
-theorem gaussTwo_coprime_product_sextic (I J : Ideal O)
+theorem gaussTwo_coprime_product_sextic (I J : Ideal ActualEisensteinCubic.O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hcop : IsCoprime I J) :
     gaussTwo (I*J) hIJ.2 =

@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentSourceRow CenteredMomentFirstAmplificationChoice
+open CenteredMomentFirstAmplificationChoice
 open CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentHeckeColumnWindow
 open CenteredMomentLogDyadic CenteredMomentSecondWindowSource CenteredMomentSecondWindowBudget
 open IdealMobiusDivisorSum
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι]
 
-theorem column_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal O)(hQ:Q≠0)(hC:Supported C)
-    (hQC:primeSupport Q=primeSupport C)(τ:Character)(t θ X:ℝ)(hX:0<X)(L:Ideal O)
+theorem column_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal ActualEisensteinCubic.O)(hQ:Q≠0)(hC:Supported C)
+    (hQC:primeSupport Q=primeSupport C)(τ:Character)(t θ X:ℝ)(hX:0<X)(L:Ideal ActualEisensteinCubic.O)
     (a:columns Q C hC.1 s.columns→ℂ)
     (ha:∀I:columns Q C hC.1 s.columns,
-      a I=(if L∣(I:Ideal O) then s.beta (C*I) else 0)*heightCoeff τ t I)
-    (U:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(hU:∀z:O,0≤(U (‖eisEmbedding z‖^2/K)).re)
+      a I=(if L∣(I:Ideal ActualEisensteinCubic.O) then s.beta (C*I) else 0)*heightCoeff τ t I)
+    (U:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(hU:∀z:ActualEisensteinCubic.O,0≤(U (‖eisEmbedding z‖^2/K)).re)
     (J:ℕ)(E:ℝ)(hE:0≤E)
     (henergy:∀v:ℝ,(commonEnergy s C hC τ v L U K).re≤E*(1+‖v‖)^(2*J)):
     (gaussEnergy Finset.univ (element Q C hC.1 s.columns) (element_supported Q C hC.1 s.columns)
@@ -35,12 +34,12 @@ theorem column_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal O)(hQ:Q≠0)(h
     logAnnulus logAnnulus_compact logAnnulus_smooth L a ha U K hK hU J E hE henergy).trans
       (shifted_window_budget J t θ E hE)
 
-theorem column_star_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal O)(hQ:Q≠0)(hC:Supported C)
-    (hQC:primeSupport Q=primeSupport C)(τ:Character)(t θ X:ℝ)(hX:0<X)(L:Ideal O)
+theorem column_star_dyadic_window_energy (s:OriginalData ι)(Q C:Ideal ActualEisensteinCubic.O)(hQ:Q≠0)(hC:Supported C)
+    (hQC:primeSupport Q=primeSupport C)(τ:Character)(t θ X:ℝ)(hX:0<X)(L:Ideal ActualEisensteinCubic.O)
     (a:columns Q C hC.1 s.columns→ℂ)
     (ha:∀I:columns Q C hC.1 s.columns,
-      a I=(if L∣(I:Ideal O) then s.beta (C*I) else 0)*heightCoeff τ t I)
-    (U:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(hU:∀z:O,0≤(U (‖eisEmbedding z‖^2/K)).re)
+      a I=(if L∣(I:Ideal ActualEisensteinCubic.O) then s.beta (C*I) else 0)*heightCoeff τ t I)
+    (U:𝓢(ℝ,ℂ))(K:ℝ)(hK:0<K)(hU:∀z:ActualEisensteinCubic.O,0≤(U (‖eisEmbedding z‖^2/K)).re)
     (J:ℕ)(E:ℝ)(hE:0≤E)
     (henergy:∀v:ℝ,(commonEnergy s C hC τ v L U K).re≤E*(1+‖v‖)^(2*J)):
     (gaussEnergy Finset.univ (element Q C hC.1 s.columns) (element_supported Q C hC.1 s.columns)

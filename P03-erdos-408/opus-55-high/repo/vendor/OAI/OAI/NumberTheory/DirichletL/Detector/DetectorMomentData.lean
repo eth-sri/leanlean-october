@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
+open scoped ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure ProbePhysical
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 
-theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
+theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal HeckeFamily.O) :
     idealCoeff ((momentData χ).character (momentElement u)) I=
       idealCoeff (χ.product (rawRow u)) I := by
   have he : idealCoeff ((momentData χ).character (momentElement u))=
@@ -22,9 +21,9 @@ theorem momentData_product_raw (χ : Character) (u : FreeRow) (I : Ideal O) :
     intro P
     rw [momentData_coeff,idealCoeff_product,rawRow_coeff,fixedSourcePrincipal_prime]
     simp
-  exact congrArg (fun f : Ideal O→*₀ℂ=>f I) he
+  simp_all
 
-theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal O) :
+theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal HeckeFamily.O) :
     idealCoeff ((rawRow u).inverse.product χ) I=
       conj (idealCoeff ((momentData χ.inverse).character (momentElement u)) I) := by
   rw [momentData_product_raw,idealCoeff_product,idealCoeff_product,
@@ -32,11 +31,11 @@ theorem inverse_row_twist_moment_coeff (χ : Character) (u : FreeRow) (I : Ideal
   simp only [starRingEnd_self_apply]
   ring
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-def sourceMomentData (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) :
+def sourceMomentData (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P) (η : Character) :
     Sum Bool (RayQuotient.Characters M H)→RowData :=
   Sum.elim (fun b=>if b then momentData (fixedSourcePrincipal S hS)
     else momentData (η.inverse.excludePrimes S hS))
@@ -45,9 +44,9 @@ def sourceMomentData (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Charac
 def sourceMomentReverse : Sum Bool (RayQuotient.Characters M H)→Bool :=
   Sum.elim (fun b=>!b) (fun _=>true)
 
-theorem source_family_moment_coeff (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem source_family_moment_coeff (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character)
-    (u : FreeRow) (j : Sum Bool (RayQuotient.Characters M H)) (I : Ideal O) :
+    (u : FreeRow) (j : Sum Bool (RayQuotient.Characters M H)) (I : Ideal HeckeFamily.O) :
     idealCoeff (sourceDetectorFamily S hS η u (rayCubeFamily M H hH u) j) I=
       if sourceMomentReverse M H j then
         conj (idealCoeff ((sourceMomentData M H hH S hS η j).character (momentElement u)) I)

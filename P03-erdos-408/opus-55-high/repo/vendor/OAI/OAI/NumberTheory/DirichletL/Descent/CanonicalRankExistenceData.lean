@@ -10,17 +10,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CanonicalRowCompletion
 
 def CompletePoolRankMoments (q D:ℕ) {σ:Type}[DecidableEq σ]
     (slots:Finset σ)
     (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)))
     (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)→ℂ)
-    (base:O→*ℂ)(W:𝓢(ℝ,ℂ))(Z Mmax Fcap z c eps A:ℝ)(K degree:ℕ):Prop :=
+    (base:ActualEisensteinCubic.O→*ℂ)(W:𝓢(ℝ,ℂ))(Z Mmax Fcap z c eps A:ℝ)(K degree:ℕ):Prop :=
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D;
   let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q);
   letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
@@ -47,7 +46,7 @@ def RankEnergyExists (n:ℕ)(L cstar cutoff eta:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Pro
       (∀i∈slots,1≤H i)→(∀i∈slots,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i)→
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1)→
     ∀z:ℝ,0≤z→(∏i∈slots,H i)≤Z^z→
-    ∀base:O→*ℂ,(∀u,‖base u‖≤1)→
+    ∀base:ActualEisensteinCubic.O→*ℂ,(∀u,‖base u‖≤1)→
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) base→
       CompletePoolRankMoments q D slots lists a base W Z (rankRowCap n cutoff)
         (rankTotalCap n L eta) z (rankMargin n cstar eta) (rankLoss n eta) C K degree
@@ -72,8 +71,7 @@ theorem actual_rank_successor_caps (n:ℕ)(L cstar cutoff eta M F c:ℝ)
     M-3*cutoff/4≤rankRowCap n cutoff ∧ F+15*eta≤rankTotalCap n L eta ∧
       rankMargin n cstar eta≤c-7*eta :=by
   unfold rankRowCap rankTotalCap rankMargin at *
-  push_cast at *
-  constructor <;> first | linarith | constructor <;> linarith
+  grind
 
 end SevenEighths.InverseMoment
 

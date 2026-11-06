@@ -16,7 +16,6 @@ public import Erdos821.P3Sum.SpanSumTask
 noncomputable section
 namespace Erdos821.S2Core
 
-open Erdos821.Blueprint.Graph
 
 theorem historyStructure_of_reconstruction (hRec : HistoryReconstructionTask) : HistoryStructureProofs :=
   ⟨SpanEdgeMemoryTask_proof, SpanBirthTask_proof, LifespanClassificationTask_proof,

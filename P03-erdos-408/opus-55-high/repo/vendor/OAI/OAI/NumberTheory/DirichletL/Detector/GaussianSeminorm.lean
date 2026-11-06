@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbePhysical
 
@@ -21,13 +21,13 @@ lemma gaussianFixedWindow_compact : HasCompactSupport gaussianFixedWindow := by
   intro y hy
   change gaussianFixedWindow y≠0 at hy
   constructor
-  · by_contra h; exact hy (gaussianFixedWindow_small y (le_of_lt (lt_of_not_ge h)))
-  · by_contra h; exact hy (gaussianFixedWindow_large y (le_of_lt (lt_of_not_ge h)))
+  · by_contra h; exact hy (gaussianFixedWindow_small y (by linarith))
+  · by_contra h; exact hy (gaussianFixedWindow_large y (by linarith))
 lemma gaussianFixedWindow_contDiff : ContDiff ℝ ∞ gaussianFixedWindow := by
   rw [contDiff_iff_contDiffAt]
   intro y
   by_cases hy : 0<y
-  · have hs : (Real.sqrt y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
+  · have hs := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hy).ne'
     have hf : ContDiffAt ℝ ∞ (fun x : ℝ=>(Real.sqrt x:ℂ)) y :=
       Complex.ofRealCLM.contDiff.contDiffAt.comp y (Real.contDiffAt_sqrt hy.ne')
     unfold gaussianFixedWindow
@@ -49,7 +49,6 @@ lemma gaussianDyadicProfile_factor (Z : ℝ) (j : ℕ) :
       gaussianMellinProfile (((2:ℝ)^j/Z)*y)) := by
   funext y
   unfold gaussianDyadicProfile gaussianFixedWindow
-  rw [show (2:ℝ)^j*y/Z=((2:ℝ)^j/Z)*y by ring]
   ring
 
 end SevenEighths.ProbePhysical

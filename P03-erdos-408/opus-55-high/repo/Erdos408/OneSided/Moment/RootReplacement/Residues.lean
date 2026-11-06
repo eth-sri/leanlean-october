@@ -83,7 +83,7 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
   have : NeZero S := ⟨prod_ne_zero_iff.2 fun p hp => (hPp p hp).ne_zero⟩
   have hSsq : Squarefree S := Finset.squarefree_prod_of_pairwise_isCoprime
     (fun p hp q hq hpq => Nat.coprime_iff_isRelPrime.1
-      ((Nat.coprime_primes (hPp p hp) (hPp q hq)).2 hpq))
+      ((Nat.coprime_primes (by grind) (by grind)).2 hpq))
     fun p hp => (hPp p hp).prime.squarefree
   have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
   -- step: the root matrix modulo `S`, an element of `SL₂(ℤ/S)` at the roots of the box
@@ -95,9 +95,9 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
   have hdet : ∀ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, (mat P₀).det = 1 := by
     intro P₀ hP₀
     obtain ⟨hbox, hco, -⟩ := mem_filter.1 hP₀
-    have h₁ : ⌈a₁ * U⌉₊ ≤ P₀.1 := (mem_Icc.1 (mem_product.1 hbox).1).1
-    have h₂ : 0 < ⌈a₁ * U⌉₊ := Nat.ceil_pos.2 (by nlinarith)
-    exact RootResidue.det_root_matrix (h₂.trans_le h₁) hco
+    have h₁ : ⌈a₁ * U⌉₊ ≤ P₀.1 := by grind
+    have h₂ : 0 < ⌈a₁ * U⌉₊ := by positivity
+    exact RootResidue.det_root_matrix (by omega) hco
   have hcls : ∀ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, (cls P₀).1 = mat P₀ := fun P₀ hP₀ => by
     simp only [cls, hdet P₀ hP₀, ↓reduceDIte]
   -- step: the lines of a root are the kernel lines of its matrix modulo `S`
@@ -111,7 +111,7 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
       ∑ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
         (rootCount U V a₁ b₁ a₂ b₂ a₃ b₃ S g₀ : ℂ) * G (fun p => matLine p g₀.1) := by
     rw [sum_congr rfl hlines, ← sum_fiberwise_of_maps_to (t := univ) (g := cls)
-      fun _ _ => mem_univ _]
+      (by simp)]
     refine sum_congr rfl fun g₀ _ => ?_
     rw [sum_congr rfl fun P₀ hP₀ => by rw [(mem_filter.1 hP₀).2], sum_const, nsmul_eq_mul]
     refine congrArg (fun n : ℕ => (n : ℂ) * G (fun p => matLine p g₀.1)) ?_
@@ -123,8 +123,8 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
       exact ⟨hQ.1, hQ.2.1, hQ.2.2.1, hQ.2.2.2.1, hQ.2.2.2.2, by rw [← hg, hcls P₀ hP₀']⟩
     · rintro ⟨h₁, h₂, h₃, h₄, h₅, hg⟩
       have hP₀' : P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃ :=
-        mem_filter.2 ⟨hP₀, h₁, h₂, h₃, h₄, h₅⟩
-      exact ⟨⟨h₁, h₂, h₃, h₄, h₅⟩, Subtype.ext ((hcls P₀ hP₀').trans hg)⟩
+        mem_filter.2 (by grind)
+      exact ⟨by grind, Subtype.ext ((hcls P₀ hP₀').trans hg)⟩
   -- step: the main term is the average over `SL₂(ℤ/S)`, the independent line average (RR5)
   have hmain := average_matLine_eq_lineAverage x d hP S rfl G hG
   have hdiff : ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, G (rootLines P₀) -
@@ -142,7 +142,7 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
   -- step: one root-count error for each of the `|SL₂(ℤ/S)| ≤ S⁴` classes
   set E := max C 0 * U * V * min U V ^ (-(1 / 5 : ℝ))
   have hE : 0 ≤ E := by
-    have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (by positivity) _
+    have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := by positivity
     have : 0 ≤ max C 0 := le_max_right _ _
     positivity
   have hterm : ∀ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
@@ -155,12 +155,12 @@ theorem exists_rootEquidist (K : ℕ) : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ RootEquid
     refine mul_le_mul ((hC U V hU hV S hSsq g₀ a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃
       hab₃ hb₃).trans ?_) (hM _) (norm_nonneg _) (by positivity)
     have : 0 ≤ U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ)) := by
-      have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := Real.rpow_nonneg (by positivity) _
+      have : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) := by positivity
       positivity
     calc C * U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))
         = C * (U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))) := by ring
       _ ≤ max C 0 * (U * V * (S : ℝ) ^ 2 * min U V ^ (-(1 / 5 : ℝ))) :=
-          mul_le_mul_of_nonneg_right (le_max_left _ _) this
+          mul_le_mul_of_nonneg_right (by simp) this
       _ = (S : ℝ) ^ 2 * E := by ring
   have hS4 := card_SL_le S
   have hSR : (∏ p ∈ P, (p : ℝ)) = (S : ℝ) := by rw [hS, Nat.cast_prod]

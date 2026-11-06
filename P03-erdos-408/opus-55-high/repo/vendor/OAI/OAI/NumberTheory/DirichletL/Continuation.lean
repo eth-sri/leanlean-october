@@ -36,7 +36,7 @@ theorem common_signal_bound (J f : ℝ → ℂ) (a b : ℝ)
     f =O[atTop] (fun x : ℝ => x ^ max a b) := by
   have h₁ := hJ.trans (rpow_isBigO_atTop_of_le (le_max_left a b))
   have h₂ := herror.trans (rpow_isBigO_atTop_of_le (le_max_right a b))
-  simpa only [sub_sub_cancel] using h₁.sub h₂
+  simpa using h₁.sub h₂
 
 theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
     (hJ : J =O[atTop] (fun x : ℝ => x ^ (7 / 8 + c + ω)))
@@ -54,11 +54,11 @@ theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
     MellinConvergent f (-(s + (c : ℂ))) := by
   apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
     (b := (-(s + (c : ℂ))).re - 1) hlocal
-  · simpa only [neg_neg] using htop
+  · simp_all
   · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
     linarith
   · exact hzero _
-  · linarith
+  linarith
 
 theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
     (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
@@ -70,10 +70,9 @@ theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
   have hd : DifferentiableAt ℂ (mellin f) (-(s + (c : ℂ))) := by
     apply mellin_differentiableAt_of_isBigO_rpow (a := -(a+c))
       (b := (-(s + (c : ℂ))).re - 1) hlocal
-    · simpa only [neg_neg] using htop
+    · simp_all
     · simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re]
-      change a < s.re at hs
-      linarith
+      grind
     · exact hzero _
     · linarith
   exact (hd.comp s ((differentiableAt_id.add_const (c : ℂ)).neg)).differentiableWithinAt
@@ -109,23 +108,20 @@ theorem nonzero_of_regularized_signal (a b c : ℝ)
   have hid := product_identity_on_halfPlane a b Lregular (signalMellin f c)
     (fun s => R s * W s) hL (signalMellin_analytic f a c hlocal htop hzero)
     (hR.mul hW) heq hρ
-  intro hz
-  change Lregular ρ * signalMellin f c ρ = R ρ * W ρ at hid
-  rw [hregular, hz, mul_zero, zero_mul] at hid
-  exact (mul_ne_zero hRρ hWρ) hid.symm
+  grind
 
 theorem multiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
     (h : ‖H s - 1‖ ≤ (1 / 2 : ℝ)) : H s ≠ 0 := by
   intro hz
   simp [hz] at h
-  norm_num at h
+  linarith
 
 def gaussianMultiplier (H : ℂ → ℂ) (s : ℂ) : ℂ :=
   Complex.exp ((s - 5 / 6) ^ 2) * H s
 
 theorem gaussianMultiplier_analytic {H : ℂ → ℂ} {U : Set ℂ}
-    (hH : AnalyticOnNhd ℂ H U) : AnalyticOnNhd ℂ (gaussianMultiplier H) U := by
-  exact ((analyticOnNhd_id.sub analyticOnNhd_const).pow 2).cexp.mul hH
+    (hH : AnalyticOnNhd ℂ H U) : AnalyticOnNhd ℂ (gaussianMultiplier H) U :=
+  ((analyticOnNhd_id.sub analyticOnNhd_const).pow 2).cexp.mul hH
 
 theorem gaussianMultiplier_ne_zero {H : ℂ → ℂ} {s : ℂ}
     (hH : ‖H s - 1‖ ≤ (1 / 2 : ℝ)) : gaussianMultiplier H s ≠ 0 :=
@@ -151,7 +147,7 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
   have hboundary := Supremum.continuation_boundary_gt (β := β) (σ := σ) hω
   have hH' : AnalyticOnNhd ℂ H
       {s : ℂ | β - Supremum.continuationMargin β ω σ < s.re} :=
-    hH.mono (fun s hs => lt_trans hboundary hs)
+    hH.mono (by grind)
   have htop : f =O[atTop] (fun x : ℝ =>
       x ^ ((β - Supremum.continuationMargin β ω σ) + c)) := by
     have hexp : (β - Supremum.continuationMargin β ω σ) + c =
@@ -159,7 +155,7 @@ theorem nonzero_of_common_signal (β ω σ c : ℝ) (hω : 0 < ω)
     simpa only [hexp] using common_signal_bound_with_margin J f β ω σ c hJ herror
   exact nonzero_of_regularized_signal _ 1 c L Lregular R (gaussianMultiplier H) f
     hL hR (gaussianMultiplier_analytic hH') hlocal htop hzero heq hρ hregular
-    hRρ (gaussianMultiplier_ne_zero (hcontract ρ (lt_trans hboundary hρ)))
+    hRρ (gaussianMultiplier_ne_zero (by grind))
 
 end SevenEighths.Continuation
 

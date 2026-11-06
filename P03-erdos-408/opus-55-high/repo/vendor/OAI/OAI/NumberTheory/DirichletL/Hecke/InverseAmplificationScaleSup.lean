@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
-open MeasureTheory Set Complex
+open scoped Classical ContDiff
+open Set
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise
 open ConcretePrimeRowBridge hiding O
@@ -47,12 +47,9 @@ theorem rowwise_scales {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     (fun i hi => scaleSum_continuous (χ i) (scaleProfile W) S (scaleProfile_continuous W hW))
     (fun i hi t => scaleSum_deriv (χ i) W S (hW.differentiable (by simp)) t)
     lo hi E hlh l hl
-    (fun t ht => by simpa only [eq0 _ t ht] using h0 t ht)
-    (fun t ht => by simpa only [eq1 _ t ht] using h1 t ht)
-  convert hh using 1
-  apply Finset.sum_congr rfl
-  intro i hi
-  rw [eq0 i (l i) (hl i hi)]
+    (fun t ht => by simp_all)
+    (fun t ht => by simp_all)
+  simp_all
 
 theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Character)
     (W : ℝ→ℂ) (a b : ℝ) (hb : 0≤b) (hWs : Function.support W⊆Icc a b)
@@ -65,18 +62,18 @@ theorem exists_scale_majorant {ι : Type*} (rows : Finset ι) (χ : ι→Charact
       (∑ i∈rows, B i)≤(1+2*(hi-lo))*E := by
   let S := scaleSupport hi b
   have hm (i : ι) : ∃ t∈Icc lo hi, ∀ u∈Icc lo hi,
-      ‖scaleSum (χ i) W S u‖^2≤‖scaleSum (χ i) W S t‖^2 := by
-    exact isCompact_Icc.exists_isMaxOn (nonempty_Icc.mpr hlh)
+      ‖scaleSum (χ i) W S u‖^2≤‖scaleSum (χ i) W S t‖^2 :=
+    isCompact_Icc.exists_isMaxOn (nonempty_Icc.mpr hlh)
       ((scaleSum_continuous (χ i) W S hW.continuous).norm.pow 2).continuousOn
   choose t ht hmax using hm
   refine ⟨fun i => ‖polynomial (χ i) true W (Real.exp (t i)) 0 0‖^2,
-    fun i => sq_nonneg _,?_,?_⟩
+    by simp,?_,?_⟩
   · intro i u hu
     have hh := hmax i u hu
     rw [scaleSum_eq_polynomial (χ i) W S u (scaleSupport_cover W a b hi u hb hWs hu.2),
-      scaleSum_eq_polynomial (χ i) W S (t i) (scaleSupport_cover W a b hi (t i) hb hWs (ht i).2)] at hh
-    exact hh
-  · exact rowwise_scales rows χ W a b hb hWs hW lo hi E hlh t (fun i hi => ht i) h0 h1
+      scaleSum_eq_polynomial (χ i) W S (t i) (scaleSupport_cover W a b hi (t i) hb hWs (by grind))] at hh
+    omega
+  · exact rowwise_scales rows χ W a b hb hWs hW lo hi E hlh t (by grind) h0 h1
 
 end SevenEighths.HeckeInverseAmplification
 

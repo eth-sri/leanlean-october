@@ -38,20 +38,20 @@ theorem beta_le_seven_eighths (h : UniformCommonProbe) : beta ≤ 7/8 := by
   obtain ⟨χ, H, J, hmask, hH, hb, hJ, herr⟩ := hcontract η hp
   have hχpole : ρ ≠ 1 ∨ χ.residue ≠ 1 := by
     rcases hpole with h1 | hη
-    · exact Or.inl h1
+    · simp_all
     · exact Or.inr (fun hc => hη ((HeckeFiniteDeletion.principal_iff_of_mask χ η hmask).mp hc))
   have hzχ : LFunction χ ρ = 0 := by
     rw [HeckeFiniteDeletion.LFunction_eq_of_mask_nonpole χ η hmask (by linarith) hχpole,
       hz, zero_mul]
   apply (HeckeSignal.nonzero_of_probe_bounds χ H J beta ω σ (-11/16)
     beta_le_one hω0 hω hσ hH hb ?_ ?_ hnear hχpole) hzχ
-  · convert hJ using 1; ring_nf
-  · convert herr using 1; ring_nf
+  · grind
+  grind
 
 theorem hecke_ne_zero_of_common_probe (h : UniformCommonProbe)
     (χ : Character) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
-    (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
-  exact LFunction_ne_zero_of_beta_lt χ ((beta_le_seven_eighths h).trans_lt hs) hpole
+    (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 :=
+  LFunction_ne_zero_of_beta_lt χ ((beta_le_seven_eighths h).trans_lt hs) hpole
 
 theorem dirichlet_of_common_probe (h : UniformCommonProbe) (q : ℕ) (hq : q ≠ 0)
     (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8 : ℝ) < s.re)

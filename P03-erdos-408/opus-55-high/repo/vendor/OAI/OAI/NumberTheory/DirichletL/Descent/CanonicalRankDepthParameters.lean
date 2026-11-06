@@ -15,10 +15,9 @@ theorem actual_rank_depth_covers (Mmax cutoff:ℝ)(hcut:0<cutoff):
     Mmax≤rankRowCap (actualDepth Mmax (cutoff/2)) cutoff := by
   have hceil:=Nat.le_ceil (2*Mmax/(3*(cutoff/2)))
   have hscaled:2*Mmax≤(⌈2*Mmax/(3*(cutoff/2))⌉₊:ℝ)*(3*(cutoff/2)):=
-    (div_le_iff₀ (by positivity:0<3*(cutoff/2))).mp hceil
+    (div_le_iff₀ (by positivity)).mp hceil
   unfold rankRowCap actualDepth
-  push_cast
-  nlinarith
+  grind
 
 theorem actual_rank_depth_parameters (Mmax Fmax c eps:ℝ)
     (hM:0≤Mmax)(hF:0≤Fmax)(hc:0<c)(heps:0<eps):
@@ -30,7 +29,7 @@ theorem actual_rank_depth_parameters (Mmax Fmax c eps:ℝ)
         c/2≤rankMargin k c eta ∧ rankMargin k c eta≤c ∧
         0≤rankLoss k eta ∧ rankLoss k eta≤eps/4 := by
   let csmall:=min c 1
-  have hcs:0<csmall:=lt_min hc (by norm_num)
+  have hcs:0<csmall:=by positivity
   have hcc:csmall≤c:=min_le_left _ _
   have hc1:csmall≤1:=min_le_right _ _
   obtain ⟨cutoff,eta,hcut,heta,heta1,hetacut,hcutc,hetac,hbudgets⟩:=
@@ -46,7 +45,7 @@ theorem actual_rank_depth_parameters (Mmax Fmax c eps:ℝ)
   have hkE:0≤(k:ℝ)*eta:=mul_nonneg hk0 heta.le
   rcases hbudgets with ⟨hmargin,hsize,hloss⟩
   unfold rankTotalCap rankMargin rankLoss
-  refine ⟨?_,?_,?_,?_,?_⟩ <;> nlinarith
+  grind
 
 theorem actual_rank_top_parameters (Mmax Fmax c eps:ℝ)
     (hM:0≤Mmax)(hF:0≤Fmax)(hc:0<c)(heps:0<eps):
@@ -61,7 +60,7 @@ theorem actual_rank_top_parameters (Mmax Fmax c eps:ℝ)
   have htop:=hall (actualDepth Mmax (cutoff/2)) le_rfl
   refine ⟨actualDepth Mmax (cutoff/2),cutoff,eta,rfl,hn,hcut,heta,heta1,hetacut,
     hcutL,hcutc,hetac,hrow,htop.1,htop.2.1,htop.2.2.1,htop.2.2.2.1,?_⟩
-  linarith [htop.2.2.2.2]
+  linarith
 
 end SevenEighths.InverseMoment
 

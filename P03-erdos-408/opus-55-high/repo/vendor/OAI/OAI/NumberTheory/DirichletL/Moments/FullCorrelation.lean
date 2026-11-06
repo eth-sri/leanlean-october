@@ -8,7 +8,7 @@ public import Mathlib.RingTheory.Ideal.Quotient.Operations
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentCorrelation
 variable {A : Type*} [CommRing A]
 
@@ -61,11 +61,11 @@ theorem fullModulusCorrelation_fourier (u v : A)
 
 theorem common_divisor_frequency {u v d x y j : A}
     (hdu : d ∣ u) (hdv : d ∣ v) (hcong : u * v ∣ v * x - u * y - j) : d ∣ j := by
-  have hleft : d ∣ v * x - u * y := dvd_sub (hdv.trans (dvd_mul_right v x))
-    (hdu.trans (dvd_mul_right u y))
-  have hprod : d ∣ u * v := hdu.trans (dvd_mul_right u v)
+  have hleft : d ∣ v * x - u * y := dvd_sub (hdv.trans (by simp))
+    (hdu.trans (by simp))
+  have hprod : d ∣ u * v := hdu.trans (by simp)
   have hdiff := dvd_sub hleft (hprod.trans hcong)
-  convert hdiff using 1 ; ring
+  simp_all
 
 theorem fullModulusCorrelation_eq_zero_of_common_not_dvd (u v d j : A)
     [Fintype (A ⧸ Ideal.span {u})] [Fintype (A ⧸ Ideal.span {v})]
@@ -81,7 +81,7 @@ theorem fullModulusCorrelation_eq_zero_of_common_not_dvd (u v d j : A)
   refine Quotient.inductionOn₂' x y ?_
   intro a b
   have hn : ¬ scaledResidue u v (u * v) rfl (Ideal.Quotient.mk (Ideal.span {u}) a) -
-      scaledResidue v u (u * v) (mul_comm u v) (Ideal.Quotient.mk (Ideal.span {v}) b) =
+      scaledResidue v u (u * v) (by ring) (Ideal.Quotient.mk (Ideal.span {v}) b) =
       Ideal.Quotient.mk (Ideal.span {u * v}) j := by
     intro h
     exact hdj (common_divisor_frequency hdu hdv ((scaledResidue_congruence u v a b j).mp h))

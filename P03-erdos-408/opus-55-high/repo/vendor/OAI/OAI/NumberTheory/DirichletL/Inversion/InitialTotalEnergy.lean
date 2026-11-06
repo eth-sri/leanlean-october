@@ -10,15 +10,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialTotalEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialProfile
+open InverseInitialQuotientGeometry
+open InverseInitialProfileBounds Filter
 
 open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
 theorem original_input_bound
@@ -43,11 +41,11 @@ theorem original_input_bound
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
       (∏i∈assigned,bl i)≤Z^η→
       (∏i∈all\assigned,Hslot i)≤Z^(assignedCenter (all\assigned) z+η)→
@@ -56,7 +54,7 @@ theorem original_input_bound
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
     ∀(c θ:ℝ),1≤c→c≤bcap→
-      ‖∑'u:O,Φ (‖eisEmbedding u‖^2/Z^m)*
+      ‖∑'u:ActualEisensteinCubic.O,Φ (‖eisEmbedding u‖^2/Z^m)*
         (‖((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg Finset.univ Ψ
           (assignedElement assigned qelem) 1 1
           (initialTest p (primeMark (all\assigned) lists coeff)
@@ -82,11 +80,11 @@ theorem original_input_bound
   intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent c θ hc hbc
-  have hZp:1<Z:=hZ₀.trans_le hZ
+  have hZp:1<Z:=by linarith
   have hDcap:D≤cap:=by
     have hg:0≤assignedCenter assigned z:=Finset.sum_nonneg (fun i hi=>hz i (hassigned hi))
     rw [hDeq];linarith
-  have hconj:(fun x=>star (clippedSource W c θ x))=clippedSource (fun x=>star (W x)) c (-θ):=
+  have hconj:=
     funext (clippedSource_conjugate W c θ)
   have hn:=nonzero_frequency_norm_le p hp hcop hg
     (InverseInitialRayAttachment.poolPrimary_injective F hFa) (poolPrimary_odd F hFa)
@@ -94,7 +92,7 @@ theorem original_input_bound
     (assignedElement assigned qelem) (primeMark (all\assigned) lists coeff)
     (clippedSource W c θ) Φ Z D m
     (Cf*Z^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)))
-    (by linarith : 0<Z) (by
+    (by positivity) (by
       intro freqT hzero
       rw [hconj]
       have h:=hfinite Z hZ Dpool hD all assigned hassigned hK lists Hslot coeff
@@ -103,14 +101,14 @@ theorem original_input_bound
         (finiteSource_divisor Finset.univ freqT) (finiteSource_nonzero Finset.univ freqT hzero)
         (fun x hx=>Finset.subset_univ _) (fun x hx=>Finset.subset_univ _)
         D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent
-        c c (-θ) θ hc hbc hc hbc (fun _=>1) (by intros;norm_num)
+        c c (-θ) θ hc hbc hc hbc (fun _=>1) (by simp)
       simpa only [Function.comp_def,norm_neg,pow_mul,pow_two,mul_pow] using h)
   have hz0:=hzero p hp hcop hg (InverseInitialRayAttachment.poolPrimary_injective F hFa)
     (poolPrimary_odd F hFa) (InverseInitialRayAttachment.poolPrimary_primary F hFa)
     Finset.univ Ψ hΨ (assignedElement assigned qelem) (all\assigned) lists coeff
     (fun i hi j hj hij=>hdis (Finset.mem_sdiff.mp hi).1 (Finset.mem_sdiff.mp hj).1 hij) hac
     (clippedSource W c θ) (clipped_bound W B₀ hb c θ)
-    (fun x hx=>le_trans (clipped_support_upper W a₀ b₀ c θ ha₀ hc hs hx) (le_max_right 1 b₀))
+    (fun x hx=>le_trans (clipped_support_upper W a₀ b₀ c θ ha₀ hc hs hx) (by simp))
     Z D m hZp.le hDcap
   rw [original_input_zero_nonzero p hp hcop hg
     (InverseInitialRayAttachment.poolPrimary_injective F hFa) (poolPrimary_odd F hFa)
@@ -118,7 +116,7 @@ theorem original_input_bound
     (assignedElement assigned qelem) (primeMark (all\assigned) lists coeff)
     (clippedSource W c θ) Φ Z D m (by linarith)]
   apply (norm_add_le _ _).trans
-  have hh:1≤(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)):=one_le_pow₀ (by linarith [norm_nonneg θ])
+  have hh:1≤(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)):=one_le_pow₀ (by simp)
   have hz1:Cz*Z^(m+loss)≤Cz*Z^(m+15*η+π+eps+loss)*(1+‖θ‖)^(2*InverseClippingProfiles.momentOrder (4*J)):=by
     calc
       _≤Cz*Z^(m+15*η+π+eps+loss):=mul_le_mul_of_nonneg_left

@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ScalarGrowth
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1)
     (ha : 0<a) (hb : 0<b) (hr : (17/50:ℝ)≤r) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow),u.val≠1 →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S),
@@ -28,13 +27,13 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
       (1/2:ℝ)≤w.re → z.re=r →
       (∑P:(∀i,T i),‖calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
         (fun i=>hT i (P i).val (P i).property) W Y x w z‖)≤
-      C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(3/5+δ)*
+      C*(η.modulus.absNorm:ℝ)^δ*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^(3/5+δ)*
         (∏i,(Y i)^r)*(3+|x.im|)^2*(3+|w.im|)^2 := by
   obtain ⟨CL,hCL,hL⟩ := calibrated_scalar_growth e (δ/2) he he' (by linarith) (by linarith) S hS hmax
   obtain ⟨CG,hCG,hG⟩ := continued_selected_tuple_with_correction K (δ/2) a b r B (by linarith) ha hb hr hB
   refine ⟨CL*CG,mul_pos hCL hCG,?_⟩
   intro η u hu T hT hdis Y hY W hWS hWB x w z hx hxβ hw hz
-  let N : ℝ := ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)
+  let N : ℝ := ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)
   have hN : 0<N := by
     dsimp [N]
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -49,14 +48,14 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
     (markExclusions S (Finset.univ.image (fun i=>(P i).val)))
     (markedSourceExclusions S hS (Finset.univ.image (fun i=>(P i).val))) η u x w z*
     ∏i,W i (((P i).val.val.absNorm:ℝ)/Y i)*((P i).val.val.absNorm:ℂ)^(z-1)*
-      continuedCompensatedLocal η u (P i).val (ht i (P i).val (P i).property).1 x w z
+      continuedCompensatedLocal η u (P i).val (ht i (P i).val (by simp)).1 x w z
         (star (idealCoeff η (P i).val.val)*((P i).val.val.absNorm:ℂ)^x)
         (((P i).val.val.absNorm:ℂ)^(-w))
   have heq (P:∀i,T i) : calibratedTupleValue S hS hmax η u (fun i=>(P i).val)
-      (fun i=>hT i (P i).val (P i).property) W Y x w z=L*G P :=
+      (fun i=>hT i (P i).val (by simp)) W Y x w z=L*G P :=
     calibratedTupleValue_factor S hS hmax η u _ (hdis P) _ W Y x w z
   have hLb : ‖L‖≤CL*(η.modulus.absNorm:ℝ)^(δ/2)*N^(3/5+δ/2)*(3+|x.im|)^2*(3+|w.im|)^2 :=
-    hL η u hu x w z hxβ hw (by rw [hz];exact hr)
+    hL η u hu x w z hxβ hw (by linarith)
   have hGb : (∑P:(∀i,T i),‖G P‖)≤CG*N^(δ/2)*∏i,(Y i)^r :=
     hG (1/4) S hS hfirst η u T ht Y hY W hWS hWB x w z hx hw hz (by linarith)
   have hη : (η.modulus.absNorm:ℝ)^(δ/2)≤(η.modulus.absNorm:ℝ)^δ :=
@@ -67,7 +66,7 @@ theorem calibrated_physical_tuple_sum (K : ℕ) (e δ a b r B : ℝ)
   calc
     _ ≤ (CL*(η.modulus.absNorm:ℝ)^(δ/2)*N^(3/5+δ/2)*(3+|x.im|)^2*(3+|w.im|)^2)*
         (CG*N^(δ/2)*∏i,(Y i)^r) :=
-      mul_le_mul hLb hGb (Finset.sum_nonneg fun _ _=>norm_nonneg _) (by positivity)
+      mul_le_mul hLb hGb (by positivity) (by positivity)
     _ ≤ (CL*(η.modulus.absNorm:ℝ)^δ*N^(3/5+δ/2)*(3+|x.im|)^2*(3+|w.im|)^2)*
         (CG*N^(δ/2)*∏i,(Y i)^r) := by gcongr
     _ = (CL*CG)*(η.modulus.absNorm:ℝ)^δ*N^(3/5+δ)*(∏i,(Y i)^r)*(3+|x.im|)^2*(3+|w.im|)^2 := by

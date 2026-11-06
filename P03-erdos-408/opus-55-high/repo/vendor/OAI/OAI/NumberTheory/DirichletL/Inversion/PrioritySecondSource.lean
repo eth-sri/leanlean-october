@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondFullSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InversePrioritySecondSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def quotientSupport (y : SecondParentSource ι Jo) : Finset ι :=
   Function.extend (sourceIdeal p) id (fun _=>∅) y.quotient
@@ -42,7 +41,7 @@ theorem residualLists_disjoint (negative : Bool) (lists : σ→Finset ι)
     Disjoint (residualLists p negative lists y i) (quotientSupport p y) := by
   apply Finset.disjoint_left.mpr
   intro q hq hd
-  exact (Finset.mem_sdiff.mp hq).2 (Finset.mem_union_right _ hd)
+  exact (Finset.mem_sdiff.mp hq).2 (by grind)
 
 def retainedPool (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ)
@@ -66,7 +65,7 @@ variable (hp : ∀ i,p i≠0)
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
+    (pool : Finset ι) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω : ℝ→ℂ) (X t Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (y : SecondParentSource ι Jo) : ℂ :=
@@ -76,7 +75,7 @@ def parentPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (primeMark (slots\J) (residualLists p negative lists y) a) ω X
     (∏ i∈y.firstCommon,p i) (secondParentDivisor p y) core t Y
 
-def retainedRow (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
+def retainedRow (pool : Finset ι) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) : ℂ :=
   actualSecondSignedWeight p hp hcop hg Ψ
@@ -87,11 +86,11 @@ def retainedRow (pool : Finset ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
 
 theorem parentPoisson_full [Fintype κ]
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (y : SecondParentSource ι Jo) (pool : Finset ι)
     (hq : y.quotient=sourceIdeal p (quotientSupport p y))
-    (negative : Bool) (Ψ : O→*ℂ) (m : O)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
     (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
@@ -136,10 +135,7 @@ theorem parentPoisson_full [Fintype κ]
   have he := first_parent_full_second_source p hp hcop hg hinj hc hpr y pool (quotientSupport p y) hq
     negative (if negative then r.1 else r.2) Ψ m (slots\J) (residualLists p negative lists y) a
     (fun i _=>residualLists_disjoint p negative lists y i) om lo hi hlo hs X t Y hX hY core R label
-  exact he.trans (congrArg (fun z : ℂ=>truncatedSecondZero p hg pool Ψ₀ (secondParentPuncture p m y)
-    (secondParentLabel p y) (secondParentDivisor p y) H rowMajorant Y K + z +
-    secondSourceTail p hp hg hinj pool Ψ₀ (secondParentPuncture p m y)
-      (secondParentLabel p y) (secondParentDivisor p y) H rowMajorant Y K) hsum)
+  exact he.trans (by grind)
 
 omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 
@@ -155,8 +151,7 @@ theorem retained_sum
   rw [retainedPool,sum_attachedSecondFamily]
   apply Finset.sum_congr rfl
   intro y hy
-  rw [Finset.sum_image (fun _ _ _ _ h=>attachSecondExpansion_injective y h),Finset.mul_sum]
-  rfl
+  simp [Finset.sum_image (fun _ _ _ _ h=>attachSecondExpansion_injective y h),Finset.mul_sum]
 
 end SevenEighths.InversePrioritySecondSource
 

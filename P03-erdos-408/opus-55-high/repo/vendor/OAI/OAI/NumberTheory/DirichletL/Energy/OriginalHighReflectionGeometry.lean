@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O"=>HeckeFamily.O
 
 lemma original_long_positive (Z M X₁ X₂ ell κ:ℝ)(hZ:1<Z)(hM:0<M)
     (_hX₁:0<X₁)(hX₂:0<X₂)(hell:0≤ell)(hκ:3/4≤κ)
@@ -47,7 +46,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hshort:length Z X₁≤s.width/4)
     (hlarge:5*s.width/6≤length Z X₁+length Z X₂+ell)
     (hcap:length Z X₁+length Z X₂+6*κ*ell≤s.width)
-    (D₁ D₂:Finset (Ideal O))
+    (D₁ D₂:Finset (Ideal HeckeFamily.O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
     let short:=Real.logb Z (X₁/((∏P∈D₁,P).absNorm:ℝ));
@@ -86,7 +85,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   rw [←hlogdiv] at hrange
   have hL0:0≤L:=by linarith
   refine ⟨he₁,he₂,by linarith,by linarith,by linarith,hrange.2.1,
-    max_le hL0 (by linarith [hrange.1]),?_⟩
+    max_le hL0 (by linarith),?_⟩
   rw [he₁,he₂]
   by_cases hd:length Z (X₁/((∏P∈D₁,P).absNorm:ℝ))+
       length Z (X₂/((∏P∈D₂,P).absNorm:ℝ))+z≤5*s.width/6
@@ -100,8 +99,8 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       (max 0 (s.width-Real.logb Z (X₂/((∏P∈D₂,P).absNorm:ℝ))+xi))
       hM.le (length_nonneg Z _ hZ)
       (hd₁.trans hshort) hell hz hze hκ he hbudget hxi
-      (by rw [←length_eq_max_log Z _ hZ hp₂];exact lt_of_not_ge hd) le_rfl
-    exact Or.inr (reflected_low_admissible s.width xi _ _ z κ hxiM hlow.2.1 hlow.2.2)
+      (by rw [←length_eq_max_log Z _ hZ hp₂];linarith) le_rfl
+    grind
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionGeometry
 

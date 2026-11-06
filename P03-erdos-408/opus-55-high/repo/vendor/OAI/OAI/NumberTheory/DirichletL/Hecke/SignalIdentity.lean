@@ -9,7 +9,7 @@ public import Mathlib.Analysis.Analytic.IsolatedZeros
 namespace OAI
 
 noncomputable section
-open MeasureTheory Set Filter Asymptotics Complex
+open Filter Asymptotics Complex
 open scoped Topology Classical
 namespace SevenEighths.HeckeSignal
 open HeckeFamily Continuation
@@ -21,11 +21,7 @@ private theorem line_tendsto_punctured :
   · have h : Continuous (fun y : ℝ => (2 : ℂ) - 2 * Real.pi * y * I) := by fun_prop
     simpa using (h.tendsto (0 : ℝ)).mono_left nhdsWithin_le_nhds
   · filter_upwards [self_mem_nhdsWithin] with y hy
-    simp only [Set.mem_compl_iff, Set.mem_singleton_iff] at hy ⊢
-    intro h
-    have hi := congrArg Complex.im h
-    simp at hi
-    exact hy (by nlinarith [Real.pi_pos])
+    simp_all
 
 theorem signalMellin_eq_amplitude (χ : Character) (H : ℂ → ℂ)
     (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
@@ -44,7 +40,7 @@ theorem signalMellin_eq_amplitude (χ : Character) (H : ℂ → ℂ)
     have hq := quotient_differentiableAt χ H hH ((le_max_right a 1).trans_lt hz)
     exact ((((differentiable_id.sub_const (5/6 : ℂ)).pow 2).cexp.differentiableAt).mul hq).differentiableWithinAt
   apply hFa.eqOn_of_preconnected_of_frequently_eq hA (convex_halfSpace_re_gt _).isPreconnected
-    (z₀ := (2 : ℂ)) (by simpa using max_lt ha (by norm_num : (1 : ℝ) < 2)) _ hs
+    (z₀ := (2 : ℂ)) (by simp_all) _ hs
   apply line_tendsto_punctured.frequently
   exact Filter.Frequently.of_forall (fun y => signalMellin_eq_amplitude_on_line χ H hH hb c a ha htop y)
 
@@ -57,11 +53,9 @@ def regularL (χ : Character) (s : ℂ) : ℂ :=
 theorem targetRegularizer_entire (χ : Character) : Differentiable ℂ (targetRegularizer χ) := by
   by_cases h : χ.residue = 1
   · have he : targetRegularizer χ = fun z : ℂ => z-1 := by funext z; simp [targetRegularizer, h]
-    rw [he]
-    exact differentiable_id.sub_const 1
+    simp_all
   · have he : targetRegularizer χ = fun _ : ℂ => (1 : ℂ) := by funext z; simp [targetRegularizer, h]
-    rw [he]
-    exact differentiable_const 1
+    simp_all
 
 theorem regularL_entire (χ : Character) : Differentiable ℂ (regularL χ) := by
   by_cases h : χ.residue = 1
@@ -77,7 +71,7 @@ theorem regularL_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0)
     regularL χ s = targetRegularizer χ s * LFunction χ s := by
   by_cases h : χ.residue = 1
   · simp only [regularL, targetRegularizer, h, ite_true]
-    exact HeckeOrigin.poleRemoved_eq χ h0 (hpole.resolve_right (not_not.mpr h))
+    exact HeckeOrigin.poleRemoved_eq χ h0 (by grind)
   · simp [regularL, targetRegularizer, h]
 
 theorem targetRegularizer_ne_zero (χ : Character) {s : ℂ}
@@ -112,7 +106,7 @@ theorem nonzero_of_probe_bounds (χ : Character) (H : ℂ → ℂ) (J : ℝ → 
     hH hb (signal_locallyIntegrable χ H hHd hb c) (signal_rapidDecayAtZero χ H hHd hb c)
     hJ herror _ hρ _ (targetRegularizer_ne_zero χ hpole)
   · intro s hs
-    have hs1 : 1 < s.re := (le_max_right a 1).trans_lt hs
+    have hs1 : 1 < s.re := by grind
     have h0 : s ≠ 0 := by intro h; norm_num [h] at hs1
     have h1 : s ≠ 1 := by intro h; norm_num [h] at hs1
     rw [regularL_eq χ h0 (Or.inl h1), signalMellin_eq_amplitude χ H hHd hb c a ha2 htop hs]

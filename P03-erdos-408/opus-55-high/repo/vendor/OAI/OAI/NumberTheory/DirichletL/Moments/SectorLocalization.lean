@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Moments.DescentLedger
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSectorLocalization
-open CubicEisenstein ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier
-local notation "O" => ActualEisensteinCubic.O
+open CubicEisenstein ConcreteTraceCRT EisensteinSchwartzPoisson
 
 def cutoff (x : ℝ) : ℝ := Real.smoothTransition (2-2*x)
 
@@ -39,12 +38,12 @@ theorem annulus_zero_high (x : ℝ) (hx : 1 ≤ x) : annulus x=0 := by
 
 theorem annulus_bounds (x : ℝ) : 0 ≤ annulus x ∧ annulus x ≤ 1 := by
   by_cases hx : x ≤ 1/4
-  · rw [annulus_zero_low x hx]; constructor <;> norm_num
+  · rw [annulus_zero_low x hx]; simp
   have hm := cutoff_antitone (show x ≤ 2*x by linarith)
   have h₁ := cutoff_bounds x
   have h₂ := cutoff_bounds (2*x)
   unfold annulus
-  constructor <;> linarith
+  grind
 
 theorem annulus_smooth : ContDiff ℝ ∞ annulus := by
   have hc : ContDiff ℝ ∞ cutoff :=
@@ -75,7 +74,7 @@ theorem dyadicWeight_zero_low (n : ℤ) (q : ℝ) (hq : q ≤ dyadicScale n/4) :
 theorem dyadicWeight_zero_high (n : ℤ) (q : ℝ) (hq : dyadicScale n ≤ q) :
     dyadicWeight n q=0 := by
   apply annulus_zero_high
-  exact (le_div_iff₀ (dyadicScale_pos n)).mpr (by simpa using hq)
+  exact (le_div_iff₀ (dyadicScale_pos n)).mpr (by linarith)
 
 theorem dyadicWeight_support (n : ℤ) :
     Function.support (dyadicWeight n) ⊆ Set.Ioo (dyadicScale n/4) (dyadicScale n) := by
@@ -91,18 +90,17 @@ theorem dyadicWeight_tsupport (n : ℤ) :
 theorem dyadicWeight_outside_pair (q : ℝ) (k : ℤ)
     (hlo : dyadicScale k ≤ q) (hhi : q < dyadicScale (k+1))
     (n : ℤ) (hn : n ∉ ({k+1,k+2} : Finset ℤ)) : dyadicWeight n q=0 := by
-  have hn₁ : n ≠ k+1 := by simpa using fun h => hn (by simp [h])
-  have hn₂ : n ≠ k+2 := by simpa using fun h => hn (by simp [h])
+  have hn₁ : n ≠ k+1 := by simpa using fun h => hn (by simp_all)
+  have hn₂ : n ≠ k+2 := by simpa using fun h => hn (by simp_all)
   by_cases hnk : n ≤ k
-  · exact dyadicWeight_zero_high n q ((zpow_le_zpow_right₀ (by norm_num : (1:ℝ) ≤ 2) hnk).trans hlo)
+  · exact dyadicWeight_zero_high n q ((zpow_le_zpow_right₀ (by simp) hnk).trans hlo)
   · have hkn : k+3 ≤ n := by omega
     have hmono : dyadicScale (k+3) ≤ dyadicScale n :=
-      zpow_le_zpow_right₀ (by norm_num : (1:ℝ) ≤ 2) hkn
+      zpow_le_zpow_right₀ (by simp) hkn
     have he : dyadicScale (k+3)=4*dyadicScale (k+1) := by
       rw [show k+3=(k+1)+1+1 by omega,dyadicScale_add,dyadicScale_add]
       ring
     apply dyadicWeight_zero_low
-    rw [he] at hmono
     linarith
 
 theorem dyadicWeight_finite (q : ℝ) : (Function.support (fun n => dyadicWeight n q)).Finite := by
@@ -112,9 +110,9 @@ theorem dyadicWeight_finite (q : ℝ) : (Function.support (fun n => dyadicWeight
     intro n hn
     by_contra hh
     exact hn (dyadicWeight_outside_pair q k hlo hhi n hh)
-  · have hz : ∀ n,dyadicWeight n q=0 := fun n =>
+  · have hz := fun n =>
       dyadicWeight_zero_low n q ((le_of_not_gt hq).trans (div_nonneg (dyadicScale_pos n).le (by norm_num)))
-    simp [hz]
+    simp_all
 
 theorem dyadicWeight_summable (q : ℝ) : Summable (fun n => dyadicWeight n q) :=
   summable_of_hasFiniteSupport (dyadicWeight_finite q)
@@ -131,13 +129,12 @@ theorem dyadicWeight_partition (q : ℝ) (hq : 0 < q) : ∑' n,dyadicWeight n q=
     rw [dyadicScale_add]; field_simp
   have h₂ : 2*(q/dyadicScale (k+2))=q/dyadicScale (k+1) := by
     rw [show k+2=(k+1)+1 by omega,dyadicScale_add]; field_simp
-  rw [h₁,h₂,cutoff_zero _ ((le_div_iff₀ (dyadicScale_pos k)).mpr (by simpa using hlo))]
+  rw [h₁,h₂,cutoff_zero _ ((le_div_iff₀ (dyadicScale_pos k)).mpr (by linarith))]
   have hs : q/dyadicScale (k+2) ≤ 1/2 := by
     apply (div_le_iff₀ (dyadicScale_pos (k+2))).mpr
     rw [show k+2=(k+1)+1 by omega,dyadicScale_add]
     linarith
-  rw [cutoff_one _ hs]
-  ring
+  simp [cutoff_one _ hs]
 
 def Retained (R : ℝ) (n : ℤ) : Prop :=
   ∃ q : ℝ, 0 < q ∧ q ≤ R ∧ q ∈ tsupport (dyadicWeight n)
@@ -153,17 +150,13 @@ theorem retained_summable (R q : ℝ) :
 theorem discarded_summable (R q : ℝ) :
     Summable (fun n : ℤ => if Retained R n then 0 else dyadicWeight n q) := by
   have h := (dyadicWeight_summable q).sub (retained_summable R q)
-  convert h using 1
-  ext n
-  split_ifs <;> simp
+  grind
 
 theorem retained_add_discarded (R q : ℝ) (hq : 0 < q) :
     retainedWeight R q+discardedWeight R q=1 := by
   rw [retainedWeight,discardedWeight,← (retained_summable R q).tsum_add (discarded_summable R q)]
   convert dyadicWeight_partition q hq using 1
-  apply tsum_congr
-  intro n
-  split_ifs <;> simp
+  grind
 
 theorem dyadicWeight_zero_nonpos (n : ℤ) (q : ℝ) (hq : q ≤ 0) : dyadicWeight n q=0 :=
   dyadicWeight_zero_low n q (hq.trans (div_nonneg (dyadicScale_pos n).le (by norm_num)))
@@ -179,13 +172,13 @@ theorem retainedWeight_nonneg (R q : ℝ) : 0 ≤ retainedWeight R q := by
   intro n
   split_ifs
   · exact (dyadicWeight_bounds n q).1
-  · exact le_rfl
+  simp
 
 theorem discardedWeight_nonneg (R q : ℝ) : 0 ≤ discardedWeight R q := by
   apply tsum_nonneg
   intro n
   split_ifs
-  · exact le_rfl
+  · simp
   · exact (dyadicWeight_bounds n q).1
 
 theorem retainedWeight_bounds (R q : ℝ) : 0 ≤ retainedWeight R q ∧ retainedWeight R q ≤ 1 := by
@@ -194,7 +187,7 @@ theorem retainedWeight_bounds (R q : ℝ) : 0 ≤ retainedWeight R q ∧ retaine
   · have hp := retained_add_discarded R q hq
     have hd := discardedWeight_nonneg R q
     linarith
-  · rw [retainedWeight_zero_nonpos R q (le_of_not_gt hq)]; norm_num
+  · simp [retainedWeight_zero_nonpos R q (le_of_not_gt hq)]
 
 theorem discardedWeight_bounds (R q : ℝ) : 0 ≤ discardedWeight R q ∧ discardedWeight R q ≤ 1 := by
   refine ⟨discardedWeight_nonneg R q,?_⟩
@@ -202,7 +195,7 @@ theorem discardedWeight_bounds (R q : ℝ) : 0 ≤ discardedWeight R q ∧ disca
   · have hp := retained_add_discarded R q hq
     have hd := retainedWeight_nonneg R q
     linarith
-  · rw [discardedWeight_zero_nonpos R q (le_of_not_gt hq)]; norm_num
+  · simp [discardedWeight_zero_nonpos R q (le_of_not_gt hq)]
 
 theorem retained_scale_le (R : ℝ) (n : ℤ) (hn : Retained R n) : dyadicScale n ≤ 4*R := by
   obtain ⟨q,hq,hqR,hs⟩ := hn
@@ -216,8 +209,8 @@ theorem retainedWeight_zero_above (R q : ℝ) (hq : 4*R ≤ q) : retainedWeight 
     intro n
     split_ifs with hn
     · exact dyadicWeight_zero_high n q ((retained_scale_le R n hn).trans hq)
-    · rfl
-  · exact tsum_zero
+    simp
+  simp
 
 theorem retainedWeight_enclosure (R q : ℝ) (hq : retainedWeight R q ≠ 0) : 0 < q ∧ q ≤ 4*R := by
   constructor
@@ -234,7 +227,7 @@ theorem discardedWeight_zero_below (R q : ℝ) (hq : q ≤ R) : discardedWeight 
       · rfl
       · by_contra hne
         exact hn ⟨q,hp,hq,subset_tsupport _ hne⟩
-    · exact tsum_zero
+    simp
   · exact discardedWeight_zero_nonpos R q (le_of_not_gt hp)
 
 theorem discardedWeight_support (R q : ℝ) (hq : discardedWeight R q ≠ 0) : R < q :=
@@ -250,18 +243,18 @@ theorem finite_retained_integral_dyads (R : ℝ) :
   have hs := (dyadicWeight_support n hne).2
   constructor
   · have : (2:ℝ)^(0:ℤ) < (2:ℝ)^n := by simpa [dyadicScale] using hq.trans_lt hs
-    have := (zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp this
+    have := (zpow_lt_zpow_iff_right₀ (by simp)).mp this
     omega
   · have h : (2:ℝ)^n < (2:ℝ)^(k:ℤ) := by
       simpa only [zpow_natCast,dyadicScale] using hu.trans_lt hk
-    have := (zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h
+    have := (zpow_lt_zpow_iff_right₀ (by simp)).mp h
     omega
 
 theorem annulus_pos (x : ℝ) (hlo : 1/4 < x) (hhi : x < 1) : 0 < annulus x := by
   by_cases hx : x ≤ 1/2
   · rw [annulus,cutoff_one x hx]
     have h := Real.smoothTransition.lt_one_of_lt_one (by linarith : 2-2*(2*x) < 1)
-    exact sub_pos.mpr h
+    positivity
   · rw [annulus,cutoff_zero (2*x) (by linarith),sub_zero]
     exact Real.smoothTransition.pos_of_pos (by linarith)
 
@@ -272,7 +265,7 @@ theorem dyadicWeight_support_eq (n : ℤ) :
   apply ne_of_gt
   apply annulus_pos
   · apply (lt_div_iff₀ (dyadicScale_pos n)).mpr
-    linarith [hq.1]
+    grind
   · exact (div_lt_one (dyadicScale_pos n)).mpr hq.2
 
 theorem dyadicWeight_tsupport_eq (n : ℤ) :
@@ -280,25 +273,24 @@ theorem dyadicWeight_tsupport_eq (n : ℤ) :
   rw [tsupport,dyadicWeight_support_eq,closure_Ioo]
   linarith [dyadicScale_pos n]
 
-def normValue (h : O) : ℝ := Ideal.absNorm (Ideal.span {h})
+def normValue (h : ActualEisensteinCubic.O) : ℝ := Ideal.absNorm (Ideal.span {h})
 
-theorem normValue_eq_embedding (h : O) : normValue h=‖eisEmbedding h‖^2 :=
+theorem normValue_eq_embedding (h : ActualEisensteinCubic.O) : normValue h=‖eisEmbedding h‖^2 :=
   (ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span h).symm
 
-theorem normValue_mul (v h : O) : normValue (v*h)=normValue v*normValue h := by
+theorem normValue_mul (v h : ActualEisensteinCubic.O) : normValue (v*h)=normValue v*normValue h := by
   simp only [normValue,← Ideal.span_singleton_mul_span_singleton,map_mul,Nat.cast_mul]
 
-theorem normValue_pos (h : O) (hh : h ≠ 0) : 0 < normValue h := by
+theorem normValue_pos (h : ActualEisensteinCubic.O) (hh : h ≠ 0) : 0 < normValue h := by
   unfold normValue
-  exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
-    (Ideal.span_singleton_eq_bot.not.mpr hh))
+  simp_all
 
-theorem normValue_ge_one (h : O) (hh : h ≠ 0) : 1 ≤ normValue h := by
+theorem normValue_ge_one (h : ActualEisensteinCubic.O) (hh : h ≠ 0) : 1 ≤ normValue h := by
   unfold normValue
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hh))
 
-theorem retained_norm_enclosure (R : ℝ) (v h : O) (hv : v ≠ 0)
+theorem retained_norm_enclosure (R : ℝ) (v h : ActualEisensteinCubic.O) (hv : v ≠ 0)
     (hne : retainedWeight R (normValue (v*h)) ≠ 0) : normValue h ≤ 4*R/normValue v := by
   have hb := (retainedWeight_enclosure R _ hne).2
   rw [normValue_mul] at hb
@@ -323,8 +315,8 @@ theorem source_enclosure_power (Z Csec L ξ Nv : ℝ) (hZ : 1 < Z) (hC : 0 < Cse
     Real.rpow_sub hz,Real.rpow_add hz,Real.rpow_add hz,
     Real.rpow_logb hz (ne_of_gt hZ),Real.rpow_logb hz (ne_of_gt hZ)]
   · ring
-  · exact hNv
-  · positivity
+  · omega
+  linarith
 
 theorem retained_first_dyad_enclosure (Tsec Z Csec L ξ : ℝ)
     (hZ : 1 < Z) (hC : 0 < Csec) (hT : Tsec ≤ Csec*Z^L)
@@ -353,7 +345,7 @@ theorem discarded_kernel_argument (Tsec Z Csec H ξ q : ℝ)
   have hlog := Real.log_nonneg (show 1 ≤ 4*Csec by linarith)
   have hlogdiv := div_nonneg hlog (Real.log_pos hZ).le
   have he : 2*H < ξ/4*Real.log Z :=
-    (div_lt_iff₀ (Real.log_pos hZ)).mp (by linarith : 2*H/Real.log Z < ξ/4)
+    (div_lt_iff₀ (Real.log_pos hZ)).mp (by linarith)
   have hs : Z^(ξ/4) ≤ Real.exp (-2*H)*Z^(ξ/2) := by
     rw [Real.rpow_def_of_pos (zero_lt_one.trans hZ),Real.rpow_def_of_pos (zero_lt_one.trans hZ),← Real.exp_add]
     apply Real.exp_le_exp.mpr
@@ -363,8 +355,7 @@ theorem discarded_kernel_argument (Tsec Z Csec H ξ q : ℝ)
   have hid : kernelReference Tsec H*frequencyRadius Tsec Z ξ=Real.exp (-2*H)*Z^(ξ/2) := by
     unfold kernelReference frequencyRadius
     field_simp
-  rw [hid] at hm
-  exact hs.trans hm
+  linarith
 
 theorem actual_discarded_lattice_tail (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -372,33 +363,33 @@ theorem actual_discarded_lattice_tail (A : ℕ) :
       0 < Tsec → 1 < Z → 1 ≤ Csec →
       (2*H/Real.log Z+Real.log (4*Csec)/Real.log Z < ξ/4) →
       kernelReference Tsec H ≤ K → 0 ≤ B →
-      ∀ c : O → ℂ, (∀ h, ‖c h‖ ≤ B) →
-      ‖∑' h : O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*c h*
+      ∀ c : ActualEisensteinCubic.O → ℂ, (∀ h, ‖c h‖ ≤ B) →
+      ‖∑' h : ActualEisensteinCubic.O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*c h*
         paperRadialFourier W (K*normValue h)‖ ≤
       B*(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
         ((min 1 (kernelReference Tsec H))^2*(1+Z^(ξ/4))^A) := by
   obtain ⟨s,C,hC,ht⟩ := CenteredMomentTail.uniform_sector_lattice_tail A
   refine ⟨s,C,hC,?_⟩
   intro W Tsec Z Csec H ξ K B hT hZ hCsec hthreshold hK hB c hc
-  let D : Set O := {h | discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0}
+  let D : Set ActualEisensteinCubic.O := {h | discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0}
   have hb := ht W D (kernelReference Tsec H) (Z^(ξ/4)) B
-    (kernelReference_pos Tsec H hT) (Real.rpow_nonneg (zero_lt_one.trans hZ).le _) hB
+    (kernelReference_pos Tsec H hT) (by positivity) hB
     (fun h hh => by
       rw [← normValue_eq_embedding]
       exact discarded_kernel_argument Tsec Z Csec H ξ (normValue h) hT hZ hCsec hthreshold hh)
     K hK c (fun h => (discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ))
-    (fun h _ => hc h) (fun h _ => by
+    (by grind) (fun h _ => by
       rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (discardedWeight_nonneg _ _)]
       exact (discardedWeight_bounds _ _).2)
   simp_rw [← normValue_eq_embedding] at hb
-  have he := tsum_subtype_eq_of_support_subset (f := fun h : O =>
+  have he := tsum_subtype_eq_of_support_subset (f := fun h : ActualEisensteinCubic.O =>
     (discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*c h*paperRadialFourier W (K*normValue h))
     (s := D) (by
       intro h hh
       change discardedWeight (frequencyRadius Tsec Z ξ) (normValue h) ≠ 0
       intro hz
       exact hh (by simp [hz]))
-  rwa [he] at hb
+  grind
 
 theorem actual_discarded_second_tail (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -406,9 +397,9 @@ theorem actual_discarded_second_tail (A : ℕ) :
       0 < Tsec → 1 < Z → 1 ≤ Csec →
       (2*H/Real.log Z+Real.log (4*Csec)/Real.log Z < ξ/4) →
       kernelReference Tsec H ≤ K →
-      ∀ (u v : O) (hu : CanonicalQuadraticSieve.Supported (Ideal.span {u}))
+      ∀ (u v : ActualEisensteinCubic.O) (hu : CanonicalQuadraticSieve.Supported (Ideal.span {u}))
         (hv : CanonicalQuadraticSieve.Supported (Ideal.span {v})),
-      ‖∑' h : O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
+      ‖∑' h : ActualEisensteinCubic.O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
         CenteredMomentSupportedCorrelation.actualCorrelation u v hu hv (-h)*
         paperRadialFourier W (K*normValue h)‖ ≤
       (normValue u*normValue v)*(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
@@ -419,7 +410,7 @@ theorem actual_discarded_second_tail (A : ℕ) :
   exact ht W Tsec Z Csec H ξ K (normValue u*normValue v) hT hZ hCsec hthreshold hK
     (by unfold normValue; positivity) _ (fun h => CenteredMomentTail.actualCorrelation_norm_le u v hu hv (-h))
 
-theorem retained_product_ne_zero (R : ℝ) (v h : O)
+theorem retained_product_ne_zero (R : ℝ) (v h : ActualEisensteinCubic.O)
     (hne : retainedWeight R (normValue (v*h)) ≠ 0) : v ≠ 0 ∧ h ≠ 0 := by
   have hp := (retainedWeight_enclosure R _ hne).1
   constructor <;> intro hz <;> simp [hz,normValue] at hp
@@ -435,10 +426,10 @@ theorem finite_retained_above (R a : ℝ) (ha : 0 < a) :
   have hs := (dyadicWeight_support n hne).2
   constructor
   · have h : (2:ℝ)^k < (2:ℝ)^n := hk.trans_lt (hq.trans_lt hs)
-    exact ((zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h).le
+    exact ((zpow_lt_zpow_iff_right₀ (by simp)).mp h).le
   · have h : (2:ℝ)^n < (2:ℝ)^(l:ℤ) := by
       simpa only [zpow_natCast,dyadicScale] using hu.trans_lt hl
-    exact ((zpow_lt_zpow_iff_right₀ (by norm_num : (1:ℝ) < 2)).mp h).le
+    exact ((zpow_lt_zpow_iff_right₀ (by simp)).mp h).le
 
 end SevenEighths.CenteredMomentSectorLocalization
 

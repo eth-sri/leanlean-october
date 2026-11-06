@@ -8,11 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
@@ -21,20 +18,13 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,38 +33,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicReflectionKernel
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform SchwartzMap ContDiff
 open MeasureTheory Filter Set
 
 def inverseMellinIntegrand (V : ℝ → ℂ) (j : ℕ) (y : ℝ) (s : ℂ) : ℂ :=
@@ -84,8 +68,8 @@ theorem inverseMellinIntegrand_differentiableAt
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
     (j : ℕ) (y : ℝ) (hy : 0 < y) (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
-    DifferentiableAt ℂ (inverseMellinIntegrand V j y) s := by
-  exact (differentiableAt_id.neg.const_cpow
+    DifferentiableAt ℂ (inverseMellinIntegrand V j y) s :=
+  (differentiableAt_id.neg.const_cpow
     (Or.inl (Complex.ofReal_ne_zero.mpr hy.ne'))).mul
     (mellinEulerData_differentiableAt V a b ha hsupp hV j s hs)
 
@@ -100,8 +84,7 @@ theorem inverseMellinIntegrand_vertical_integrable
   · exact ((show Continuous (fun t : ℝ => -((σ : ℂ) + t * Complex.I)) by fun_prop).const_cpow
       (Or.inl (Complex.ofReal_ne_zero.mpr hy.ne'))).aestronglyMeasurable
   · filter_upwards [] with t
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos hy]
-    simp
+    simp [Complex.norm_cpow_eq_rpow_re_of_pos hy]
 
 theorem inverseMellinIntegrand_strip_bound
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
@@ -116,13 +99,13 @@ theorem inverseMellinIntegrand_strip_bound
   refine ⟨(|B| + 1) * C, by positivity, ?_⟩
   intro σ hσ t
   have hby : y ^ (-σ) ≤ |B| + 1 :=
-    (hB (Set.mem_image_of_mem _ hσ)).trans (by linarith [le_abs_self B])
+    (hB (by grind)).trans (by grind)
   rw [inverseMellinIntegrand, norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos hy]
   simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
     Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
   calc
     _ ≤ (|B| + 1) * (C / (1 + t ^ 2)) :=
-      mul_le_mul hby (hb σ hσ t) (norm_nonneg _) (by positivity)
+      mul_le_mul hby (by grind) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
 theorem mellinInv_euler_shift
@@ -135,7 +118,7 @@ theorem mellinInv_euler_shift
   have h0 : (0 : ℝ) ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ) := by
     constructor
     · norm_num
-    · exact Nat.cast_nonneg A
+    · simp
   have hshift (ρ : ℝ) (hρ : ρ ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ)) :
       (∫ t : ℝ, inverseMellinIntegrand V j y ((-(1 / 4) : ℝ) + t * Complex.I)) =
       ∫ t : ℝ, inverseMellinIntegrand V j y ((ρ : ℂ) + t * Complex.I) := by
@@ -145,10 +128,9 @@ theorem mellinInv_euler_shift
       apply inverseMellinIntegrand_differentiableAt V a b ha hsupp hV j y hy z
       linarith
     · apply inverseMellinIntegrand_vertical_integrable V a b ha hsupp hV A j
-        (-(1 / 4)) ⟨le_rfl, hρ.1.trans hρ.2⟩ y hy
+        (-(1 / 4)) (by grind) y hy
     · exact inverseMellinIntegrand_vertical_integrable V a b ha hsupp hV A j ρ hρ y hy
-    · intro r hr t
-      exact hb r ⟨hr.1, hr.2.trans hρ.2⟩ t
+    · grind
   have heq := (hshift 0 h0).symm.trans (hshift σ hσ)
   simpa only [mellinInv, smul_eq_mul, inverseMellinIntegrand] using
     congrArg (fun z : ℂ => (1 / (2 * Real.pi) : ℝ) • z) heq
@@ -173,9 +155,9 @@ theorem mellinInv_euler_line_bound
         simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
           Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
         simpa only [div_eq_mul_inv, mul_assoc] using
-          mul_le_mul_of_nonneg_left (hb σ hσ t) (Real.rpow_nonneg hy.le (-σ))
+          mul_le_mul_of_nonneg_left (by grind) (by positivity)
       _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
-  rw [mellinInv, norm_smul, Real.norm_of_nonneg (by positivity : (0 : ℝ) ≤ 1 / (2 * Real.pi))]
+  rw [mellinInv, norm_smul, Real.norm_of_nonneg (by positivity)]
   simp only [smul_eq_mul]
   calc
     _ ≤ (1 / (2 * Real.pi)) * ((y ^ (-σ) * C) * Real.pi) :=
@@ -209,7 +191,7 @@ theorem paperEulerKernel_eq_euler (V : ℝ → ℂ) (logSource : SchwartzMap ℝ
       (fun u : ℝ => (-2 * Real.pi * Complex.I * u) ^ j * spectralProfile logSource u) := by
     funext u
     exact mellinEulerData_axis V logSource hlog j u
-  rw [hfun]
+  simp_all
 
 theorem paperKernel_euler_decay_at_line
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
@@ -220,12 +202,12 @@ theorem paperKernel_euler_decay_at_line
   obtain ⟨C, hC, hb⟩ := mellinInv_euler_line_bound V a b ha hsupp hV A j
   refine ⟨C * paperScale ^ (-σ), mul_pos hC (Real.rpow_pos_of_pos paperScale_pos _), ?_⟩
   intro x hx
-  rw [← paperEulerKernel_eq_euler V (logSchwartz V a b ha hsupp hV) (by intro u; rfl) j x hx]
+  rw [← paperEulerKernel_eq_euler V (logSchwartz V a b ha hsupp hV) (by simp) j x hx]
   unfold paperEulerKernel
   rw [mellinInv_euler_shift V a b ha hsupp hV A j σ hσ _ (mul_pos paperScale_pos hx)]
   have hbound := hb σ hσ (paperScale * x) (mul_pos paperScale_pos hx)
   rw [Real.mul_rpow paperScale_pos.le hx.le] at hbound
-  simpa only [mul_assoc] using hbound
+  linarith
 
 theorem paperKernel_euler_power_decay
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
@@ -237,27 +219,27 @@ theorem paperKernel_euler_power_decay
   have hleft : -(1 / 4 : ℝ) ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ) := by
     constructor
     · rfl
-    · linarith [show (0 : ℝ) ≤ A from Nat.cast_nonneg A]
+    · linarith
   have hright : (A : ℝ) ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ) := by
     constructor
-    · linarith [show (0 : ℝ) ≤ A from Nat.cast_nonneg A]
+    · linarith
     · rfl
   obtain ⟨CL, hCL, hL⟩ := paperKernel_euler_decay_at_line V a b ha hsupp hV A j _ hleft
   obtain ⟨CR, hCR, hR⟩ := paperKernel_euler_decay_at_line V a b ha hsupp hV A j _ hright
-  refine ⟨max CL CR, lt_of_lt_of_le hCL (le_max_left _ _), ?_⟩
+  refine ⟨max CL CR, by positivity, ?_⟩
   intro x hx
   constructor
   · have hh : ‖LocalLogFourier.eulerDeriv (paperKernel V) j x‖ ≤ CL * x ^ (1 / 4 : ℝ) := by
       simpa only [neg_neg] using hL x hx
     exact hh.trans
-      (mul_le_mul_of_nonneg_right (le_max_left CL CR) (Real.rpow_nonneg hx.le _))
+      (mul_le_mul_of_nonneg_right (by simp) (by positivity))
   · exact (hR x hx).trans
-      (mul_le_mul_of_nonneg_right (le_max_right CL CR) (Real.rpow_nonneg hx.le _))
+      (mul_le_mul_of_nonneg_right (by simp) (by positivity))
 
 end CubicReflectionKernel
 
 namespace DescentFiberCost
-open scoped BigOperators Classical
+open scoped Classical
 open ConcretePrimeRowBridge
 
 abbrev O := ActualEisensteinCubic.O
@@ -268,7 +250,7 @@ theorem finite_ideal_count_real (s : Finset (Ideal O)) (H : ℝ) (hH : 1 ≤ H)
   have hs : s ⊆ idealsUpTo ⌊H⌋₊ := by
     intro I hI
     apply mem_idealsUpTo.mpr
-    refine ⟨?_, Nat.le_floor (hN I hI)⟩
+    refine ⟨?_, Nat.le_floor (by grind)⟩
     exact Nat.one_le_iff_ne_zero.mpr (fun h => hpos I hI (Ideal.absNorm_eq_zero_iff.mp h))
   have hc := (Finset.card_le_card hs).trans (CompactScaleBridge.idealsUpTo_card_le ⌊H⌋₊)
   have hfloor : (⌊H⌋₊ : ℝ) ≤ H := Nat.floor_le (by linarith)
@@ -287,33 +269,19 @@ theorem fixed_triple_count
   let c := s.image (fun x => x.2.2)
   have hsub : s ⊆ a ×ˢ (b ×ˢ c) := by
     intro x hx
-    exact Finset.mem_product.mpr ⟨Finset.mem_image.mpr ⟨x, hx, rfl⟩,
-      Finset.mem_product.mpr ⟨Finset.mem_image.mpr ⟨x, hx, rfl⟩,
-        Finset.mem_image.mpr ⟨x, hx, rfl⟩⟩⟩
+    exact by grind
   have ha : (a.card : ℝ) ≤ 128 * B := by
     apply finite_ideal_count_real a B hB
-    · intro I hI
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hI
-      exact (hpos x hx).1
-    · intro I hI
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hI
-      exact (hN x hx).1
+    · grind
+    · grind
   have hb : (b.card : ℝ) ≤ 128 * T := by
     apply finite_ideal_count_real b T hT
-    · intro I hI
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hI
-      exact (hpos x hx).2.1
-    · intro I hI
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hI
-      exact (hN x hx).2.1
+    · grind
+    · grind
   have hc : (c.card : ℝ) ≤ 128 * W := by
     apply finite_ideal_count_real c W hW
-    · intro I hI
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hI
-      exact (hpos x hx).2.2
-    · intro I hI
-      obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hI
-      exact (hN x hx).2.2
+    · grind
+    · grind
   have hs : (s.card : ℝ) ≤ (a.card : ℝ) * ((b.card : ℝ) * c.card) := by
     have hcard := Finset.card_le_card hsub
     simp only [Finset.card_product] at hcard
@@ -326,15 +294,13 @@ theorem fixed_triple_count
 end DescentFiberCost
 
 namespace EisensteinSchwartzPoisson
-open MeasureTheory Set
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped FourierTransform SchwartzMap
 
 theorem fourier_real_line_integrable (f : 𝓢(ℂ, ℂ)) :
     Integrable (fun x : ℝ => 𝓕 (f : ℂ → ℂ) (x : ℂ)) := by
   have h : Integrable (fun x : ℝ => horizontalSlice (𝓕 f) 0 x) :=
     (horizontalSlice (𝓕 f) 0).integrable
-  simpa only [horizontalSlice_apply, complexPoint_eq, mul_zero, add_zero,
-    Complex.ofReal_zero, SchwartzMap.fourier_coe] using h
+  simpa
 
 theorem fourier_real_line_integral (f : 𝓢(ℂ, ℂ)) :
     (∫ x : ℝ, 𝓕 (f : ℂ → ℂ) (x : ℂ)) =
@@ -348,7 +314,7 @@ theorem fourier_real_line_integral (f : 𝓢(ℂ, ℂ)) :
     (partialFourier_integrable f 0).fourierInv_fourier_eq hgi
       (partialFourier_continuous f 0).continuousAt
   calc
-    _ = ∫ x : ℝ, 𝓕 g x := by rw [hF]
+    _ = ∫ x : ℝ, 𝓕 g x := by simp_all
     _ = 𝓕⁻ (𝓕 g) 0 := by simp [Real.fourierInv_eq]
     _ = g 0 := hinv
     _ = _ := by simp [g, partialFourier_eq_integral, complexPoint_eq]
@@ -365,9 +331,9 @@ theorem paperRadialFourier_square (W : ℝ → ℂ) (x : ℝ) :
         ((((2 / Real.sqrt 3) * x : ℝ) : ℂ)) := by
   have h := paperFourier_radial W ((x : ℂ) * Complex.I)
   have hn : ‖(x : ℂ) * Complex.I‖ ^ 2 = x ^ 2 := by
-    simp [ Complex.norm_real, Real.norm_eq_abs, sq_abs]
+    simp
   rw [hn, paperFourier_eq_standard, paperFrequency_imaginary] at h
-  exact h.symm
+  simp_all
 
 theorem radial_square_integrable (W : 𝓢(ℝ, ℂ)) :
     Integrable (fun x : ℝ => W (x ^ 2)) := by
@@ -400,9 +366,7 @@ theorem paperRadialFourier_square_integral (W : 𝓢(ℝ, ℂ)) :
       rw [abs_of_pos (inv_pos.mpr hc), smul_smul, mul_inv_cancel₀ hc.ne', one_smul]
     _ = ∫ y : ℝ, radialTest W (Complex.I * (y : ℂ)) := fourier_real_line_integral _
     _ = _ := by
-      apply integral_congr_ae
-      filter_upwards [] with y
-      simp [radialTest_apply,  Complex.norm_real, Real.norm_eq_abs, sq_abs]
+      simp
 
 theorem integral_even_eq_twice_Ioi (F : ℝ → ℂ) (hF : Integrable F)
     (heven : ∀ x : ℝ, F (-x) = F x) :
@@ -410,7 +374,7 @@ theorem integral_even_eq_twice_Ioi (F : ℝ → ℂ) (hF : Integrable F)
   have hneg : (∫ x : ℝ in Iic 0, F x) = ∫ x : ℝ in Ioi 0, F x := by
     calc
       _ = ∫ x : ℝ in Ioi 0, F (-x) := by simp
-      _ = _ := setIntegral_congr_fun measurableSet_Ioi (fun x _ => heven x)
+      _ = _ := by grind
   rw [← integral_add_compl (s := Ioi 0) measurableSet_Ioi hF, compl_Ioi, hneg]
   ring
 
@@ -419,13 +383,13 @@ theorem paperRadialFourier_halfline_integral (W : 𝓢(ℝ, ℂ)) :
       ∫ x : ℝ in Ioi 0, W (x ^ 2) := by
   have h := paperRadialFourier_square_integral W
   rw [integral_even_eq_twice_Ioi _ (paperRadialFourier_square_integrable W)
-    (by intro x; simp), integral_even_eq_twice_Ioi _ (radial_square_integrable W)
-    (by intro x; simp)] at h
-  exact mul_left_cancel₀ (by norm_num : (2 : ℂ) ≠ 0) h
+    (by simp), integral_even_eq_twice_Ioi _ (radial_square_integrable W)
+    (by simp)] at h
+  simp_all
 
 end EisensteinSchwartzPoisson
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform SchwartzMap ContDiff
 open MeasureTheory Filter Set
 namespace CubicReflectionKernel
 
@@ -477,9 +441,8 @@ def logPullbackCLM (a b : ℝ) : SchwartzMap ℝ ℂ →L[ℝ] SchwartzMap ℝ �
 
 theorem logPullbackCLM_apply (a b : ℝ) (W : SchwartzMap ℝ ℂ) (u : ℝ) :
     logPullbackCLM a b W u = logCutoff a b u • W (patchedExp a b u) := by
-  rw [logPullbackCLM, ContinuousLinearMap.comp_apply, SchwartzMap.smulLeftCLM_apply_apply
+  simp [logPullbackCLM, ContinuousLinearMap.comp_apply, SchwartzMap.smulLeftCLM_apply_apply
     ((logCutoff a b).hasCompactSupport.hasTemperateGrowth (logCutoff a b).contDiff)]
-  rfl
 
 theorem logCutoff_eq_one_of_source (a b : ℝ) (ha : 0 < a) (u : ℝ)
     (hu : Real.exp u ∈ Set.Icc a b) : logCutoff a b u = 1 := by
@@ -510,14 +473,14 @@ theorem logPullbackCLM_eq_actual (a b : ℝ) (ha : 0 < a) (W : SchwartzMap ℝ �
   rw [logPullbackCLM_apply]
   by_cases hW : W (Real.exp u) = 0
   · by_cases hcut : logCutoff a b u = 0
-    · simp [hcut, hW]
+    · simp_all
     · rw [patchedExp_eq_exp_of_cutoff_ne_zero a b u hcut, hW, smul_zero]
   · have hcut := logCutoff_eq_one_of_source a b ha u (hsupp hW)
-    rw [patchedExp_eq_exp_of_cutoff_ne_zero a b u (by rw [hcut]; norm_num), hcut, one_smul]
+    rw [patchedExp_eq_exp_of_cutoff_ne_zero a b u (by linarith), hcut, one_smul]
 
 end CubicReflectionKernel
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform SchwartzMap ContDiff
 open MeasureTheory Filter Set
 namespace CubicReflectionKernel
 
@@ -533,7 +496,7 @@ theorem compact_family_deriv_sup_bound (F : ℝ → ℝ → ℂ)
   rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv]
   by_cases hu : u ∈ K
   · exact (hM (Set.mem_image_of_mem _ (show (σ, u) ∈ J ×ˢ K from ⟨hσ, hu⟩))).trans
-      (by linarith [le_abs_self M])
+      (by grind)
   · have hs : Function.support (iteratedDeriv j (F σ)) ⊆ K :=
       (subset_tsupport _).trans ((tsupport_iteratedDeriv_subset (F σ) j).trans
         (closure_minimal (hsupp σ) hK.isClosed))
@@ -551,15 +514,15 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
   choose c hc hcb using fun i : Fin (j + 1) => compact_family_deriv_sup_bound F hF K hK hsupp J hJ i.val
   let D := (∑ i : Fin (j + 1), c i) + 1
   have hD : 0 < D := by
-    have : 0 ≤ ∑ i : Fin (j + 1), c i := Finset.sum_nonneg (fun i _ => (hc i).le)
+    have : 0 ≤ ∑ i : Fin (j + 1), c i := Finset.sum_nonneg (by grind)
     dsimp [D]
     linarith
   have hder (i : ℕ) (hi : i ≤ j) (σ : ℝ) (hσ : σ ∈ J) (u : ℝ) :
       ‖iteratedFDeriv ℝ i (F σ) u‖ ≤ D := by
     let k : Fin (j + 1) := ⟨i, by omega⟩
     have hsum : c k ≤ ∑ l : Fin (j + 1), c l :=
-      Finset.single_le_sum (fun l _ => (hc l).le) (Finset.mem_univ k)
-    exact (hcb k σ hσ u).trans (by dsimp [D]; linarith)
+      Finset.single_le_sum (by grind) (Finset.mem_univ k)
+    exact (hcb k σ hσ u).trans (by linarith)
   let B : ℝ := ∑ i ∈ Finset.range (j + 1), (j.choose i : ℝ) * D
   have hB : 0 ≤ B := by dsimp [B]; positivity
   refine ⟨(B + 1) * (volume.real K + 1), by positivity, ?_⟩
@@ -569,7 +532,7 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
   have hWder (k : ℕ) (hk : k ≤ j) (u : ℝ) : ‖iteratedFDeriv ℝ k W u‖ ≤ S := by
     have hle : schwartzSeminormFamily ℝ ℝ ℂ (0, k) ≤
         (Finset.Iic (0, j)).sup (schwartzSeminormFamily ℝ ℝ ℂ) :=
-      Finset.le_sup (f := schwartzSeminormFamily ℝ ℝ ℂ) (by simp [hk])
+      Finset.le_sup (f := schwartzSeminormFamily ℝ ℝ ℂ) (by simp_all)
     exact (SchwartzMap.norm_iteratedFDeriv_le_seminorm ℝ W k u).trans (Seminorm.le_def.mp hle W)
   have hb (u : ℝ) : ‖iteratedDeriv j (fun u => F σ u * W u) u‖ ≤ (B + 1) * S := by
     rw [← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
@@ -579,10 +542,10 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
       _ ≤ ∑ i ∈ Finset.range (j + 1), (j.choose i : ℝ) * D * S := by
         apply Finset.sum_le_sum
         intro i hi
-        exact mul_le_mul (mul_le_mul_of_nonneg_left (hder i (Nat.le_of_lt_succ (Finset.mem_range.mp hi)) σ hσ u) (by positivity))
-          (hWder (j - i) (Nat.sub_le _ _) u) (norm_nonneg _) (by positivity)
+        exact mul_le_mul (mul_le_mul_of_nonneg_left (by grind) (by positivity))
+          (by grind) (norm_nonneg _) (by positivity)
       _ = B * S := by rw [← Finset.sum_mul]
-      _ ≤ (B + 1) * S := mul_le_mul_of_nonneg_right (by linarith) hS
+      _ ≤ (B + 1) * S := by linarith
   have hmul : Function.support (fun u => F σ u * W u) ⊆ K := by
     intro u hu
     exact hsupp σ (mul_ne_zero_iff.mp hu).1
@@ -595,13 +558,10 @@ theorem compact_family_mul_deriv_L1_source_bound (F : ℝ → ℝ → ℂ)
     simp [hz]
   have hi := norm_setIntegral_le_of_norm_le_const («μ» := volume)
     (f := fun u => ‖iteratedDeriv j (fun u => F σ u * W u) u‖) hK.measure_lt_top
-    (C := (B + 1) * S) (fun u _ => by simpa using hb u)
+    (C := (B + 1) * S) (fun u _ => by simp_all)
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzero,
-    Real.norm_of_nonneg (integral_nonneg (fun u => norm_nonneg _))] at hi
-  calc
-    _ ≤ ((B + 1) * S) * volume.real K := hi
-    _ ≤ ((B + 1) * S) * (volume.real K + 1) := by gcongr; linarith
-    _ = _ := by dsimp [S]; ring
+    Real.norm_of_nonneg (by positivity)] at hi
+  nlinarith
 
 end CubicReflectionKernel
 

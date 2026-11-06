@@ -25,8 +25,7 @@ theorem sum_Ioc_natCast_mul_eq (a : ℕ → ℂ) (m : ℕ) {N : ℕ} (hN : m ≤
   | base => simp
   | succ N hmN ih =>
       rw [sum_Ioc_succ_top hmN, sum_Ioc_succ_top hmN, sum_Ico_succ_top hmN, ih]
-      push_cast
-      ring
+      grind
 
 /-- **Lemma E9 (spare prime polynomial from AP1).** Under `PrimeTwistBound x A' E C_m κ'`,
 for `H ∈ [exp(L/T²²), x]`, an interval `(lo, hi] ⊂ [H, 2H]`, a character `χ` of modulus
@@ -58,16 +57,14 @@ theorem norm_primeTwistPoly_le {x A' E Cm κ' : ℝ} (hP : PrimeTwistBound x A' 
     intro n hn
     rw [mem_Icc] at hn
     rcases hn.1.eq_or_lt with h | h
-    · rw [← h, Ioc_self, sum_empty, norm_zero]
-      exact hB0
-    · have hN1 : 0 < N := lt_of_le_of_lt (Nat.zero_le _) (h.trans_le hn.2)
+    · simp_all
+    · have hN1 : 0 < N := by omega
       have hhi0 : 0 ≤ hi := (Nat.floor_pos.1 hN1).trans' zero_le_one
       have hnhi : (n : ℝ) ≤ 2 * H :=
         ((Nat.cast_le.2 hn.2).trans (Nat.floor_le hhi0)).trans hhi
       have h := hP H lo n hH₁ hH₂ hlo hnhi k hk₁ hk₂ χ u hu₁ hu₂
       rw [Nat.floor_natCast] at h
-      rw [hS]
-      exact h
+      grind
   -- the sum is `∑ k a_k` over `(m, N]`
   have hT : ∑ p ∈ (Ioc m N).filter Nat.Prime, χ p * (p : ℂ) ^ ((u : ℂ) * Complex.I) =
       ∑ k ∈ Ioc m N, (k : ℂ) * a k := by
@@ -78,20 +75,20 @@ theorem norm_primeTwistPoly_le {x A' E Cm κ' : ℝ} (hP : PrimeTwistBound x A' 
     · have hn0 : (n : ℂ) ≠ 0 := by exact_mod_cast hn.ne_zero
       rw [Complex.cpow_add _ _ hn0, Complex.cpow_neg_one]
       field_simp
-    · rw [mul_zero]
+    · simp
   rw [hT, norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hH0.le]
   rcases le_or_gt m N with hmN | hmN
   · rw [sum_Ioc_natCast_mul_eq a m hmN]
     -- `‖N S(N) - ∑ S(n)‖ ≤ N B + (N - m) B ≤ 2 N B ≤ 4 H B`
     have h₁ : ‖(N : ℂ) * ∑ k ∈ Ioc m N, a k‖ ≤ N * B := by
       rw [norm_mul, Complex.norm_natCast]
-      exact mul_le_mul_of_nonneg_left (hSn N (mem_Icc.2 ⟨hmN, le_rfl⟩)) (Nat.cast_nonneg _)
+      exact mul_le_mul_of_nonneg_left (by grind) (Nat.cast_nonneg _)
     have h₂ : ‖∑ n ∈ Ico m N, ∑ k ∈ Ioc m n, a k‖ ≤ N * B := by
       refine (norm_sum_le _ _).trans ?_
       calc ∑ n ∈ Ico m N, ‖∑ k ∈ Ioc m n, a k‖ ≤ ∑ _n ∈ Ico m N, B :=
-            sum_le_sum fun n hn => hSn n (Ico_subset_Icc_self hn)
-        _ = (N - m : ℕ) * B := by rw [sum_const, Nat.card_Ico, nsmul_eq_mul]
-        _ ≤ N * B := mul_le_mul_of_nonneg_right (by exact_mod_cast Nat.sub_le N m) hB0
+            sum_le_sum (by grind)
+        _ = (N - m : ℕ) * B := by simp
+        _ ≤ N * B := mul_le_mul_of_nonneg_right (by simp) hB0
     have hN : (N : ℝ) ≤ 2 * H := by
       rcases Nat.eq_zero_or_pos N with h0 | hN1
       · rw [h0, Nat.cast_zero]
@@ -99,13 +96,12 @@ theorem norm_primeTwistPoly_le {x A' E Cm κ' : ℝ} (hP : PrimeTwistBound x A' 
       · exact (Nat.floor_le ((Nat.floor_pos.1 hN1).trans' zero_le_one)).trans hhi
     calc H⁻¹ * ‖(N : ℂ) * ∑ k ∈ Ioc m N, a k - ∑ n ∈ Ico m N, ∑ k ∈ Ioc m n, a k‖
         ≤ H⁻¹ * (N * B + N * B) :=
-          mul_le_mul_of_nonneg_left ((norm_sub_le _ _).trans (add_le_add h₁ h₂)) (by positivity)
+          mul_le_mul_of_nonneg_left ((norm_sub_le _ _).trans (by linarith)) (by positivity)
       _ ≤ H⁻¹ * (4 * H * B) := by
           refine mul_le_mul_of_nonneg_left ?_ (by positivity)
           nlinarith
       _ = 4 * κ' * Real.log x ^ (-A') := by
-          rw [hB]
-          field_simp
+          grind
   · rw [Ioc_eq_empty_of_le hmN.le, sum_empty, norm_zero, mul_zero]
     linarith
 

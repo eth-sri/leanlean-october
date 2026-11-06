@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,46 +31,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ramifiedTraceLambda : Eis := 1+2*omega
@@ -100,20 +78,18 @@ lemma primary_add_three (a r : Eis) (ha : lambda^2∣a-1) :
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ninthCuspFrequency (h : Eis) : ℂ := cuspFrequency h/3
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical
 
 namespace CubicEisenstein
 
@@ -121,8 +97,7 @@ lemma cuspTransition_dilate (A : ℝ) (hA : A≠0) :
     cuspTransition A (2*A)=fun v => cuspTransition 1 2 (v/A) := by
   funext v
   unfold cuspTransition
-  congr 1
-  field_simp
+  grind
 
 lemma cuspTransition_dilate_deriv (A v : ℝ) (hA : A≠0) :
     deriv (cuspTransition A (2*A)) v=deriv (cuspTransition 1 2) (v/A)/A := by
@@ -204,10 +179,10 @@ theorem smoothCuspSeedDefect_dilate_bound :
     ∃C : ℝ,0≤C ∧ ∀A : ℝ,1≤A → ∀w : HyperbolicSpace,
       ‖smoothCuspSeedDefect A (2*A) (4/3) w‖≤C*A^2 := by
   obtain ⟨C,hC,hbound⟩ := cuspSeedDefectProfile_dilate_bound
-  exact ⟨C,hC,fun A hA w => cuspCutoffCorrection_norm_le _ _ (by positivity) (hbound A hA) w⟩
+  exact ⟨C,hC,fun A hA w => cuspCutoffCorrection_norm_le _ _ (by positivity) (by grind) w⟩
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical
 
 lemma movingDefect_product_bound
     (f : KernelQuotient→ℂ) (K C : ℝ) (hK : 0≤K) (hC : 0≤C)
@@ -229,10 +204,10 @@ lemma movingDefect_product_bound
     have hheight : 0<cosetHeight r w := hApos.trans_le hr
     have hf : ‖f (integralOrbitProjection globalKubotaKernel w)‖≤K/A^3 := by
       apply (hdec w r (hA.trans_le hr)).trans
-      apply div_le_div_of_nonneg_left hK (pow_pos hApos 3)
+      apply div_le_div_of_nonneg_left hK (by positivity)
       exact pow_le_pow_left₀ hApos.le hr 3
     calc
-      _ ≤ (K/A^3)*(C*A^2) := mul_le_mul hf (hbound A hA.le w) (norm_nonneg _) (by positivity)
+      _ ≤ (K/A^3)*(C*A^2) := mul_le_mul hf (by grind) (norm_nonneg _) (by positivity)
       _ = K*C/A := by field_simp
 
 lemma movingDefect_inner_bound
@@ -273,11 +248,11 @@ theorem cubicEisensteinResidue_orthogonal_of_rapid_cusp_decay
     calc
       _ ≤ (3/2)*((K*C/A)*(integralQuotientVolume globalKubotaKernel).real Set.univ) :=
         mul_le_mul_of_nonneg_left (movingDefect_inner_bound F f hrep K C hK hC hdec hbound A hA) (by norm_num)
-      _ = B/A := by dsimp [B]; ring
+      _ = B/A := by ring
     exact hF
   apply norm_eq_zero.mp
   by_contra hn
-  have hnpos : 0<‖inner ℂ F cubicEisensteinResidue‖ := lt_of_le_of_ne (norm_nonneg _) (Ne.symm hn)
+  have hnpos : 0<‖inner ℂ F cubicEisensteinResidue‖ := by positivity
   let A := B/‖inner ℂ F cubicEisensteinResidue‖+2
   have hA : 1<A := by
     have hh := div_nonneg hB hnpos.le
@@ -288,7 +263,6 @@ theorem cubicEisensteinResidue_orthogonal_of_rapid_cusp_decay
     dsimp [A]
     field_simp
 
-  rw [he] at hh
   linarith
 
 lemma coset_decay_of_cusp_chart_decay
@@ -311,7 +285,7 @@ lemma coset_decay_of_cusp_chart_decay
     rw [hh] at hr ⊢
     have he : complexMatrix M⁻¹ • upperPoint z v hv=w := by
       rw [hpt,map_inv,inv_smul_smul]
-    simpa only [he] using hdec M⁻¹ z v hv hr
+    grind
 
 theorem cubicEisensteinResidue_orthogonal_of_cusp_chart_decay
     (F : KernelQuotientL2) (hF : (F,(8/9:ℂ) • F)∈kernelEnergyLaplacian.graph)
@@ -330,7 +304,6 @@ open scoped Classical MatrixGroups
 namespace CubicKubota
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
@@ -340,7 +313,7 @@ lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
   let t := u*A 0 1+v*A 1 1
   let N : SL(2,Eis) := ⟨!![x,-v+x*t;y,u+y*t],by
     rw [Matrix.det_fin_two_of]
-    linear_combination huv⟩
+    grind⟩
   have hd : A 0 0*A 1 1-A 0 1*A 1 0=1 := by
     simpa only [Matrix.det_fin_two] using A.property
   have hr : (3:Eis)∣1+y*A 0 1-x*A 1 1 := by
@@ -351,10 +324,10 @@ lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
     fin_cases i <;> fin_cases j
     · exact hx
     · have hv := dvd_mul_of_dvd_left hr (-v)
-      convert hv using 1 ; dsimp [N,t] ; linear_combination (A 0 1)*huv
+      convert hv using 1 ; dsimp [N,t] ; grind
     · exact hy
     · have hu := dvd_mul_of_dvd_left hr u
-      convert hu using 1 ; dsimp [N,t] ; linear_combination (A 1 1)*huv
+      convert hu using 1 ; dsimp [N,t] ; grind
   have hq : Matrix.SpecialLinearGroup.map (n:=Fin 2)
       (Ideal.Quotient.mk (Ideal.span {(3:Eis)})) N =
       Matrix.SpecialLinearGroup.map (n:=Fin 2)
@@ -362,11 +335,11 @@ lemma exists_congruent_cusp_completion (A : SL(2,Eis)) (x y : Eis)
     apply Matrix.SpecialLinearGroup.ext
     intro i j
     exact (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr
-      (Ideal.mem_span_singleton.mpr (hmod i j))
+      (Ideal.mem_span_singleton.mpr (by grind))
   refine ⟨N,rfl,rfl,?_⟩
   change Matrix.SpecialLinearGroup.map (n:=Fin 2)
     (Ideal.Quotient.mk (Ideal.span {(3:Eis)})) (N*A⁻¹)=1
-  rw [map_mul,map_inv,hq,mul_inv_cancel]
+  simp_all
 
 lemma cusp_completion_upper_factor (A N : SL(2,Eis)) (q g x y : Eis)
     (hx : A 0 0+3*q*A 1 0=g*N 0 0) (hy : x*A 1 0=g*N 1 0)
@@ -382,34 +355,30 @@ lemma cusp_completion_upper_factor (A N : SL(2,Eis)) (q g x y : Eis)
   apply Matrix.ext
   intro i j
   fin_cases i <;> fin_cases j
-  · norm_num [hinv,Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_two]
-    rw [hx,hy]
-    linear_combination g*hNdet
+  · norm_num [hinv, Matrix.mul_apply, Matrix.vecMul, dotProduct]
+    grind
   · rfl
-  · norm_num [hinv,Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_two]
-    rw [hx,hy]
-    ring
-  · norm_num [hinv,Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_two]
+  · norm_num [hinv, Matrix.mul_apply, Matrix.vecMul, dotProduct]
+    grind
+  · norm_num [hinv, Matrix.mul_apply, Matrix.vecMul, dotProduct]
     apply mul_left_cancel₀ hg
-    linear_combination x*hAdet-x*(A 1 1)*hx+(A 0 1+3*q*A 1 1)*hy+hdet
+    grind
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
 private lemma bounded_power_factor (p a : Eis) (n : ℕ) :
     ∃ j≤n,∃b,a=p^j*b ∧ (j=n ∨ ¬p∣b) := by
   induction n generalizing a with
-  | zero => exact ⟨0,le_rfl,a,by simp,Or.inl rfl⟩
+  | zero => simp
   | succ n ih =>
     by_cases h:p∣a
     · obtain ⟨a',rfl⟩:=h
       obtain ⟨j,hj,b,hab,hb⟩:=ih a'
       refine ⟨j+1,Nat.succ_le_succ hj,b,?_,?_⟩
-      · rw [hab,pow_succ]
-        ring
-      · exact hb.elim (fun h=>Or.inl (congrArg (fun k=>k+1) h)) Or.inr
+      · grind
+      simp_all
     · exact ⟨0,Nat.zero_le _,a,by simp,Or.inr h⟩
 
 lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
@@ -433,7 +402,7 @@ lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
     exact haC.of_mul_left_right
   have hbY:IsCoprime b (p^(3-j)*A 1 0) := by
     rcases hb with h | h
-    · simpa [h] using hbC
+    · simp_all
     · exact ((hp.coprime_iff_not_dvd.mpr h).symm.pow_right).mul_right hbC
   have hpow (k:ℕ):(3:Eis)∣p^k-1 := by
     have hd:(3:Eis)∣p-1:=CubicJacobiGlobal.three_dvd_primary_sub_one p hprimary
@@ -454,7 +423,7 @@ lemma cube_average_cusp_reduction (A : SL(2,Eis)) (p q : Eis)
   have hC:p^3*A 1 0=p^j*N 1 0:=by
     rw [hN1,←mul_assoc,←pow_add,Nat.add_sub_of_le hj]
   refine ⟨j,hj,N,hA,hC,hNA,?_,?_⟩
-  · simpa [hN0] using hb
+  · simp_all
   · exact cusp_completion_upper_factor A N q (p^j) (p^3) (p^(3-j))
       hA hC (pow_ne_zero j hp.ne_zero) (by rw [←pow_add,Nat.add_sub_of_le hj])
 

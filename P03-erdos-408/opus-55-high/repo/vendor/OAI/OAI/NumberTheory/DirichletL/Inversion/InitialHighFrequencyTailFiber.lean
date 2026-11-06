@@ -9,19 +9,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialKernelBridge InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
-def keyNorms (p : ι→O) (k : Fin 5→Finset ι) : Fin 5→ℝ :=
+def keyNorms (p : ι→ActualEisensteinCubic.O) (k : Fin 5→Finset ι) : Fin 5→ℝ :=
   fun i=>primeProductNorm p (k i)
 
 omit [DecidableEq ι] in
-theorem coordinates_sourcePoint (p : ι→O) (k : Fin 5→Finset ι) (h : O) :
+theorem coordinates_sourcePoint (p : ι→ActualEisensteinCubic.O) (k : Fin 5→Finset ι) (h : ActualEisensteinCubic.O) :
     coordinates p (sourcePoint k h)=
       ![keyNorms p k 0,keyNorms p k 1,keyNorms p k 2,‖eisEmbedding h‖^2,
         keyNorms p k 3,keyNorms p k 4] := by
@@ -34,18 +33,18 @@ theorem coordinates_sourcePoint (p : ι→O) (k : Fin 5→Finset ι) (h : O) :
 theorem original_frequency_fiber_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (Ψ : O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : O)
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (Ψ : ActualEisensteinCubic.O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : ActualEisensteinCubic.O)
       (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
     (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) →
     ∀ (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m L T Γ B₁ B₂ : ℝ),
     0<Z → 1≤L → 0≤T → 0≤Γ → 0≤B₁ → 0≤B₂ →
     (∀x,‖W₁ x‖≤B₁) → (∀x,‖W₂ x‖≤B₂) →
-    ∀ (k : Fin 5→Finset ι) (F : Finset O) (w : Point ι→ℂ) (ρ : SecondRayIndex),
+    ∀ (k : Fin 5→Finset ι) (F : Finset ActualEisensteinCubic.O) (w : Point ι→ℂ) (ρ : SecondRayIndex),
     keyNorms p k 1≤L →
     keyNorms p k 0*keyNorms p k 2*keyNorms p k 3≤L →
     keyNorms p k 0*keyNorms p k 2*keyNorms p k 4≤L →

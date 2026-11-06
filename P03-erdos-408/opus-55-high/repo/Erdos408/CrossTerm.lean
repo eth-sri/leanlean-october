@@ -58,21 +58,20 @@ private lemma harmonicFPair_eq_sum_harmonicF (x : ℝ) :
   simp_rw [mul_div_mul_comm _ _ (q : ℝ), ← Finset.mul_sum]
   congr 1
   split_ifs with h
-  · exact Finset.sum_erase_eq_sub h
-  · rw [Finset.erase_eq_of_notMem h, sub_zero]
+  · simp_all
+  simp_all
 
 /-- `u(t) / t` is interval integrable on `[a, b] ⊆ (0, ∞)` for monotone `u`. -/
 private lemma intervalIntegrable_div_of_monotone {u : ℝ → ℝ} (hu : Monotone u) {a b : ℝ}
     (ha : 0 < a) (hb : 0 < b) : IntervalIntegrable (fun t => u t / t) volume a b := by
   simp_rw [div_eq_mul_inv]
   refine hu.intervalIntegrable.mul_continuousOn (continuousOn_inv₀.mono fun t ht => ?_)
-  exact (lt_of_lt_of_le (lt_min ha hb) ht.1).ne'
+  exact (lt_of_lt_of_le (by positivity) ht.1).ne'
 
 /-- The step `t ↦ [q ≤ t]` is monotone. -/
 private lemma monotone_step (q : ℝ) : Monotone fun t : ℝ => if q ≤ t then (1 : ℝ) else 0 :=
   fun s t hst => by
-    dsimp only
-    split_ifs with h1 h2 h2 <;> first | exact absurd (h1.trans hst) h2 | norm_num
+    grind
 
 /-- `∫_1^x [q ≤ t] dt / t = log (x / q)` for `1 ≤ q ≤ x`. -/
 private lemma integral_step_div {q x : ℝ} (hq : 1 ≤ q) (hqx : q ≤ x) :
@@ -81,7 +80,7 @@ private lemma integral_step_div {q x : ℝ} (hq : 1 ≤ q) (hqx : q ≤ x) :
   rw [← intervalIntegral.integral_add_adjacent_intervals
     (intervalIntegrable_div_of_monotone (monotone_step q) one_pos hq0)
     (intervalIntegrable_div_of_monotone (monotone_step q) hq0 (by linarith)),
-    ← integral_one_div_of_pos hq0 (by linarith : 0 < x)]
+    ← integral_one_div_of_pos hq0 (by linarith)]
   -- the step vanishes on `(1, q)`
   have h1 : ∫ t in (1 : ℝ)..q, (if q ≤ t then (1 : ℝ) else 0) / t = 0 := by
     rw [← intervalIntegral.integral_zero (a := (1 : ℝ)) (b := q) (μ := volume)]
@@ -91,8 +90,7 @@ private lemma integral_step_div {q x : ℝ} (hq : 1 ≤ q) (hqx : q ≤ x) :
     simp [not_le.2 (lt_of_le_of_ne ht'.2 ht)]
   rw [h1, zero_add]
   refine intervalIntegral.integral_congr fun t ht => ?_
-  rw [Set.uIcc_of_le hqx] at ht
-  simp [ht.1]
+  simp_all
 
 /-- Fubini: `∫_1^x B(t) dt / t = ∑_{q ≤ x} (F q / q) log (x / q)`. -/
 private lemma integral_harmonicF_div {x : ℝ} (hx : 1 ≤ x) :
@@ -123,7 +121,7 @@ private lemma intervalIntegrable_log_div {x : ℝ} (hx : 1 ≤ x) :
     IntervalIntegrable (fun t => log t / t) volume 1 x := by
   have hpos : ∀ t ∈ Set.uIcc 1 x, t ≠ 0 := fun t ht => by
     rw [Set.uIcc_of_le hx] at ht
-    linarith [ht.1]
+    grind
   exact ((continuousOn_log.mono hpos).div continuousOn_id hpos).intervalIntegrable
 
 /-- `∫_1^x log t dt / t = (log x)² / 2`. -/
@@ -131,12 +129,11 @@ private lemma integral_log_div {x : ℝ} (hx : 1 ≤ x) :
     ∫ t in (1 : ℝ)..x, log t / t = log x ^ 2 / 2 := by
   have hpos : ∀ t ∈ Set.uIcc 1 x, 0 < t := fun t ht => by
     rw [Set.uIcc_of_le hx] at ht
-    linarith [ht.1]
+    grind
   rw [intervalIntegral.integral_eq_sub_of_hasDerivAt (f := fun t => log t ^ 2 / 2)]
   · simp
   · intro t ht
     convert ((hasDerivAt_log (hpos t ht).ne').pow 2).div_const 2 using 1
-    simp only [Nat.cast_ofNat]
     ring
   · exact intervalIntegrable_log_div hx
 
@@ -190,7 +187,7 @@ private lemma abs_harmonicFPair_sub_le {α M x : ℝ} (hx : 1 ≤ x)
     intro q hq
     have hqp := (Finset.mem_filter.1 hq).2
     have hq0 : (0 : ℝ) < q := by exact_mod_cast hqp.pos
-    have hFq : (F q : ℝ) / q ≤ 1 / log 2 :=
+    have hFq :=
       calc (F q : ℝ) / q ≤ q / log 2 / q := by
             gcongr
             exact (F_le_log_div_log_two hqp.ne_zero).trans
@@ -269,7 +266,7 @@ theorem cross_term {α K : ℝ}
       have := hglob t ht1
       nlinarith
     · have hlt : √L < log t := by simpa using log_lt_log (exp_pos _) hte
-      have hTt : T / 2 ≤ log (log t) := hT2 ▸ log_le_log (by linarith) hlt.le
+      have hTt := hT2 ▸ log_le_log (by linarith) hlt.le
       calc |harmonicF t - α * log t| ≤ K * log t / log (log t) ^ 5 := hy₀ t (hy.trans hte.le)
         _ ≤ |K| * L / (T / 2) ^ 5 := by
           rw [mul_div_assoc, mul_div_assoc]
@@ -292,11 +289,11 @@ theorem cross_term {α K : ℝ}
     rw [sq, mul_div_assoc]
     exact mul_le_mul_of_nonneg_left hsu (by linarith)
   have hLu : L ≤ L ^ 2 / T ^ 5 := (le_mul_of_one_le_right (by linarith) hs1.le).trans hu
-  have hML : M * L ≤ C * (L ^ 2 / T ^ 5) :=
-    calc M * L = c₁ * (L * √L) + c₂ * L + 32 * |K| * (L ^ 2 / T ^ 5) := by rw [hM]; ring
+  have hML :=
+    calc M * L = c₁ * (L * √L) + c₂ * L + 32 * |K| * (L ^ 2 / T ^ 5) := by ring
       _ ≤ c₁ * (L ^ 2 / T ^ 5) + c₂ * (L ^ 2 / T ^ 5) + 32 * |K| * (L ^ 2 / T ^ 5) := by
         gcongr
-      _ = C * (L ^ 2 / T ^ 5) := by rw [hC]; ring
+      _ = C * (L ^ 2 / T ^ 5) := by linarith
   calc |harmonicFPair x - α ^ 2 / 2 * L ^ 2|
       ≤ |α| * (M * L) + M * harmonicF x + harmonicF x / log 2 :=
         abs_harmonicFPair_sub_le hx hErr

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionApproximation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentUniformRetainedEnergy
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson CenteredMomentScaleSupremum
 open CenteredMomentUniformReflectionChoices CenteredMomentRetainedWeightedSource
@@ -27,8 +27,7 @@ lemma normalized_zero (G:𝓢(ℝ,ℂ)) (B:ℕ) (s:ℝ) :
       (fun x=>(annulus x:ℂ)*((1+s)^B:ℂ)*paperRadialFourier G (s*x)) := by
   funext x
   simp only [normalizedReflected,heightScale,pow_zero,div_one,twisted_zero,actual_log_window]
-  push_cast
-  rfl
+  simp
 
 lemma retained_zero (χ ψ:Character) (G:𝓢(ℝ,ℂ)) (X R:ℝ) :
     retainedOriginal χ ψ G X R 0=retainedSchwartz χ ψ G X R := by
@@ -76,11 +75,11 @@ theorem actual_retained_uniform_energy (epsilon : ℝ)
       (∑i,‖retainedColumn (χ i) (ψ i) (G i) (X i) (R i) 0 (hX i) B 0 (P' i) (u i)‖^2)≤
         Cp*D^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
     simpa only [retainedColumn,P',Y,s,keep,normalized_zero,mul_assoc] using hchoice u
-  have hh := hw χ ψ (fun i=>(G i:ℝ→ℂ)) X R (fun _=>0) hX (fun _=>B) 0 P' (fun _=>hB)
-    0 Rcap _ le_rfl (fun _=>by simp) hRcap hcap hselected
+  have hh := hw χ ψ (fun i=>(G i:ℝ→ℂ)) X R (fun _=>0) hX (fun _=>B) 0 P' (by omega)
+    0 Rcap _ le_rfl (by simp) hRcap hcap hselected
   have hfinal := hh.2.2.2
   simp only [retained_zero,P',Nat.mul_zero,pow_zero,mul_one,←mul_assoc] at hfinal
-  convert hfinal using 1 ; ring
+  linarith
 
 end SevenEighths.CenteredMomentUniformRetainedEnergy
 

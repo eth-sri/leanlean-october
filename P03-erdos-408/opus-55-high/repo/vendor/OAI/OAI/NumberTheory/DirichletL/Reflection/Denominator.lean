@@ -17,12 +17,7 @@ lemma sqrt_extraction_identity (A B C r U V : ℝ)
       (r*Real.sqrt (A*U)*(B*V)) =
       1/(r*Real.sqrt U*V*Real.sqrt (C*B)) := by
   rw [Real.sqrt_mul hA.le,Real.sqrt_mul hC.le]
-  have hsa := (Real.sqrt_pos.mpr hA).ne'
-  have hsb := (Real.sqrt_pos.mpr hB).ne'
-  have hsc := (Real.sqrt_pos.mpr hC).ne'
-  have hsu := (Real.sqrt_pos.mpr hU).ne'
-  field_simp
-  nlinarith [Real.sq_sqrt hB.le]
+  grind
 
 def extractedOutsideScalar (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
     (r U B R : ℝ) : ℝ :=
@@ -39,13 +34,7 @@ theorem extractedOutsideScalar_scale (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   unfold extractedOutsideScalar frozenBranchScale
   have hh := sqrt_extraction_identity _ _ _ r U B (hn 1) (hn 2) (hn 0) hr hU hB
-  calc
-    _ = smallScalar R * ((Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*
-      Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 2):ℝ)/
-      Real.sqrt (Ideal.absNorm (frozenExtracted F jF e 0):ℝ))/
-      (r*Real.sqrt ((Ideal.absNorm (frozenExtracted F jF e 1):ℝ)*U)*
-        ((Ideal.absNorm (frozenExtracted F jF e 2):ℝ)*B))) := by ring
-    _ = _ := by rw [hh]; ring
+  grind
 
 lemma power_normalizer {Z : ℝ} (hZ : 1≤Z) (v ell el S₀ B₀ Td : ℝ) :
     smallScalar (Z^(v+3*ell+el-Td)) /
@@ -57,9 +46,7 @@ lemma power_normalizer {Z : ℝ} (hZ : 1≤Z) (v ell el S₀ B₀ Td : ℝ) :
     ← Real.rpow_add hZ0,← Real.rpow_add hZ0,← Real.rpow_add hZ0]
   unfold outsideScalar
   rw [div_eq_mul_inv,← Real.rpow_neg hZ0.le]
-  have he : -(el/3+v*(1/2:ℝ)+ell+(S₀+B₀)*(1/2:ℝ)) =
-      -v/2-ell-el/3-(S₀+B₀)/2 := by ring
-  rw [he,mul_comm]
+  ring
 
 theorem extractedOutsideScalar_log_widths (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
     (Z r U B R : ℝ) (hZ : 1<Z) (hr : 0<r) (hU : 0<U) (hB : 0<B) (hR : 0<R) :

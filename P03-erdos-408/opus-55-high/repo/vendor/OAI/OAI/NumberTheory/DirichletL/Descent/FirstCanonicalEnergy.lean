@@ -8,31 +8,30 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyToSecond
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def retainedCubeWeight (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O→*ℂ)
-    (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O) : ℂ :=
+def retainedCubeWeight (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : ActualEisensteinCubic.O→*ℂ)
+    (m₁ m₂ d : ActualEisensteinCubic.O) (a : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O→ℂ) (x : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) : ℂ :=
   a x * canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ (ConcretePrimeRowBridge.idealGenerator x.1) *
     cubeBaseFactor p hp hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit d x.2
 
 theorem retainedCubeWeight_norm
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-    (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O→*ℂ)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+    (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : ActualEisensteinCubic.O→*ℂ)
     (hΨ₁ : ∀ u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀ u,‖Ψ₂ u‖≤1)
-    (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O) :
+    (m₁ m₂ d : ActualEisensteinCubic.O) (a : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O→ℂ) (x : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) :
     ‖retainedCubeWeight p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ d a x‖≤‖a x‖ := by
   simp only [retainedCubeWeight,norm_mul]
   calc
-    _ ≤ ‖a x‖*1*1 := by
-      exact mul_le_mul
+    _ ≤ ‖a x‖*1*1 :=
+      mul_le_mul
         (mul_le_mul_of_nonneg_left
           (canonicalCubeOuter_norm_le_one p hp hcop hg hc b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂ _) (norm_nonneg _))
         (cubeBaseFactor_norm_le_one p hp hcop hg hc _ _ _ _ _ _)
@@ -40,7 +39,7 @@ theorem retainedCubeWeight_norm
     _ = _ := by ring
 
 include hp in
-theorem retained_physical_row_support (b : CubeCoordinates ι) (x : Ideal O×O) (hx : x.1≠0)
+theorem retained_physical_row_support (b : CubeCoordinates ι) (x : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) (hx : x.1≠0)
     (Y : ℝ) (hcut : x.2∈nonzeroChildFrequencyBall
       (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit x.1) Y) :
     DescentWeightedCauchy.firstElementRowMap
@@ -53,15 +52,15 @@ theorem retained_physical_row_support (b : CubeCoordinates ι) (x : Ideal O×O) 
 
 theorem retained_cube_energy_to_second (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
-      (Ψ₁ Ψ₂ : O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
-      ∀ (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (source : Finset (Ideal O×O)) (Γ Y : ℝ),0≤Γ → 0<Y →
+      (Ψ₁ Ψ₂ : ActualEisensteinCubic.O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
+      ∀ (m₁ m₂ d : ActualEisensteinCubic.O) (a : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O→ℂ) (source : Finset (Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O)) (Γ Y : ℝ),0≤Γ → 0<Y →
       (∀ x∈source,Squarefree x.1) → (∀ x∈source,x.1≠0) → (∀ x∈source,‖a x‖≤Γ) →
       (∀ x∈source,x.2∈nonzeroChildFrequencyBall
         (firstPhysicalMultiplier p b.support b.leftExponent b.rightExponent b.leftBit b.rightBit x.1) Y) →

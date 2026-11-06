@@ -16,7 +16,6 @@ The corresponding nonvanishing statement for the Riemann zeta function follows.
 -/
 
 namespace DirichletCharacter
-open scoped _root_.DirichletCharacter
 
 /-- Dirichlet L-functions do not vanish to the right of `7 / 8`, away from the
 principal character's pole at `1`. -/

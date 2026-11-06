@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Contractions
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -30,7 +29,7 @@ theorem normBound_density_identification {α : Type*} (mass density : α → ℝ
       (mass a : ℂ) * star ((Real.sqrt (density a) : ℂ) * f a) *
         densityNormalizedKernel density K a b * ((Real.sqrt (density b) : ℂ) * g b) =
       (mass a * density a : ℝ) * star (f a) * K a b * g b := by
-    have hb : (Real.sqrt (density b) : ℂ) ≠ 0 :=
+    have hb :=
       Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.mpr (hd b)))
     have ha : (Real.sqrt (density a) : ℂ) ^ 2 = (density a : ℂ) := by
       exact_mod_cast Real.sq_sqrt (hs a)
@@ -40,9 +39,8 @@ theorem normBound_density_identification {α : Type*} (mass density : α → ℝ
     field_simp [hb]
     calc
       _ = (mass a : ℂ) * (Real.sqrt (density a) : ℂ) ^ 2 * star (f a) * K a b * g b := by ring
-      _ = _ := by rw [ha]; ring
-  simp only [hentry, hnorm] at h
-  simpa only [mul_assoc] using h
+      _ = _ := by grind
+  grind
 
 
 end Erdos821.P3Clean

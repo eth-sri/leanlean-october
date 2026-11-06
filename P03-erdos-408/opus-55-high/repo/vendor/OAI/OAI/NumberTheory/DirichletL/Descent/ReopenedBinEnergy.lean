@@ -8,17 +8,16 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open scoped Classical SchwartzMap ContDiff
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion
+open ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
 
 theorem markedReopenedCubeBin_energy
     {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S) (hSp : ∀P∈S,Prime P)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S) (hSp : ∀P∈S,Prime P)
     (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ))
-    (labels : Finset (Ideal O)) (Ψ : O →* ℂ) (m : O) (W : ℝ → ℂ)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hb : 0≤b) (hs : Function.support W ⊆ Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (V : 𝓢(ℝ,ℂ))
     (hV : ∀ u, |u| ≤ columnWindowRadius a b → V u = 1)

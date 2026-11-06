@@ -8,25 +8,23 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowReflectionError
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow
-open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
+open CenteredMomentNaturalRowSource
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyReferenceLowReflection CenteredMomentEnergyReferenceLowError
 theorem reference_from_low_with_error
@@ -39,7 +37,7 @@ theorem reference_from_low_with_error
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(Bmask L Lslot Mcap ε κ:ℝ)
-        (η₀:Character)(Q:Ideal O)(K:ℝ),0≤K →
+        (η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤K →
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap ε κ Z η₀ Q degree S K →
       0≤Bmask →

@@ -75,7 +75,7 @@ theorem eventually_goodness_removal {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
           Real.exp (-Real.log x ^ alo / 8)) := by
         refine mul_le_mul_of_nonneg_left ((hx d hd j k).trans ?_) (by positivity)
         gcongr
-        exact le_max_left _ _
+        simp
     _ = max C₀ 0 * (2 ^ k * 2 ^ j * d.X) * Real.log x ^ (-D') *
           (Real.log x ^ E * Real.exp (-(Real.log x ^ alo / 8))) := by
         rw [show E = 4 * C + 3 * A₀ + D' from rfl, Real.rpow_add hL0, Real.rpow_add hL0,
@@ -84,7 +84,7 @@ theorem eventually_goodness_removal {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
     _ ≤ max C₀ 0 * (2 ^ k * 2 ^ j * d.X) * Real.log x ^ (-D') * 1 := by
         refine mul_le_mul_of_nonneg_left ?_ (by positivity)
         rw [Real.exp_neg, ← div_eq_mul_inv, div_le_one (Real.exp_pos _)]
-        exact hLE
+        omega
     _ = _ := mul_one _
 
 /-- The final comparison: for `L ≥ 8`, `8E + 1 ≤ L^{1/100}` and `2 ≤ n ≤ L^{1/2} + 2`,
@@ -104,8 +104,7 @@ private theorem exp_add_thirty_mul_rpow_le {E L n : ℝ} (hE : 0 < E) (hL : 8 �
           ring
       _ ≤ 1 / 64 := by
           gcongr
-          calc (64 : ℝ) = 8 * 8 := by norm_num
-            _ ≤ L * L := mul_le_mul hL hL (by norm_num) hL0.le
+          nlinarith
   have h₁ : 30 * L ^ (-((E + 1) * n)) ≤ a / 2 := by
     have hsplit : L ^ (-((E + 1) * n)) = a * L ^ (-n) := by
       rw [ha, ← Real.rpow_add hL0]
@@ -120,8 +119,8 @@ private theorem exp_add_thirty_mul_rpow_le {E L n : ℝ} (hE : 0 < E) (hL : 8 �
     linarith
   have hn' : n ≤ 2 * L ^ (1 / 2 : ℝ) := by linarith
   have hn0 : 0 ≤ n := by linarith
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
-  have hprod : E * n * Real.log L ≤ 8 * E * L ^ (3 / 4 : ℝ) :=
+  have hlog0 := Real.log_nonneg hL1
+  have hprod :=
     calc E * n * Real.log L ≤ E * (2 * L ^ (1 / 2 : ℝ)) * (4 * L ^ (1 / 4 : ℝ)) := by
           gcongr
       _ = 8 * E * (L ^ (1 / 2 : ℝ) * L ^ (1 / 4 : ℝ)) := by ring
@@ -207,8 +206,7 @@ theorem eventually_detMoment {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ 
             norm_sum_le_of_le _ fun i₃ hi₃ => hterm i₁ hi₁ i₂ hi₂ i₃ hi₃
       _ = ((n : ℝ) ^ 3)⁻¹ * (15 * n ^ 3) * B := by
           simp only [sum_const, card_range, nsmul_eq_mul]
-          push_cast
-          ring
+          grind
       _ ≤ 15 * B := by
           by_cases hn0 : n = 0
           · simp [hn0, hB]
@@ -264,12 +262,12 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
   have hL : 1 ≤ Real.log x := by
     rw [← Real.log_exp 1]; exact Real.log_le_log (Real.exp_pos 1) hx
   have hL0 : 0 < Real.log x := by linarith
-  have hX : 0 < d.X := lt_of_lt_of_le (div_pos hx0 (by linarith)) hd.X_ge
+  have hX : 0 < d.X := lt_of_lt_of_le (by positivity) hd.X_ge
   set L := Real.log x
   -- `4C - E₀ = -(D₁ + 2)`
   have hexp : 4 * C - momentPrec Dstar C = -(D₁ + 2) := by
     simp only [momentPrec, D₁]; ring
-  have hP : 0 ≤ L ^ (-(D₁ + 2)) := (rpow_pos_of_pos hL0 _).le
+  have hP : 0 ≤ L ^ (-(D₁ + 2)) := by positivity
   -- each pad dyad contributes `O(X Y L^{-D₁ - 2})`
   have hterm : ∀ k : ℕ, ‖((2 : ℂ) ^ k)⁻¹ * rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ ≤
       (|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2)) := by
@@ -282,11 +280,11 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
         (|CB| + |CD|) * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) := by
       calc ‖rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖
           = ‖(rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k) - pairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)) +
-              pairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ := by rw [sub_add_cancel]
+              pairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ := by simp
         _ ≤ ‖rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k) - pairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ +
               ‖pairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ := norm_add_le _ _
         _ ≤ CB * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) +
-              CD * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) := add_le_add h₁ h₂
+              CD * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) := by linarith
         _ ≤ |CB| * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) +
               |CD| * ((2 : ℝ) ^ k * 2 ^ j * d.X) * L ^ (-(D₁ + 2)) := by
           gcongr <;> exact le_abs_self _
@@ -306,9 +304,9 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
     calc _ ≤ ∑ k ∈ range (⌊L⌋₊ + 1),
           ‖((2 : ℂ) ^ k)⁻¹ * rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)‖ := norm_sum_le _ _
       _ ≤ ∑ _k ∈ range (⌊L⌋₊ + 1), (|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2)) :=
-          sum_le_sum fun k _ => hterm k
+          sum_le_sum (by grind)
       _ = ((⌊L⌋₊ : ℝ) + 1) * ((|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2))) := by
-          rw [sum_const, card_range, nsmul_eq_mul]; push_cast; ring
+          simp
       _ ≤ 2 * L * ((|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2))) := by
           gcongr
   -- `L · L^{-D₁ - 2} = L^{-D₁ - 1}` and `L^{-D₁ - 2} ≤ L^{-D₁ - 1}`
@@ -319,7 +317,7 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
   set S := ∑ k ∈ range (⌊L⌋₊ + 1), ((2 : ℂ) ^ k)⁻¹ * rowPairing (1 / 2) A₀ x d (2 ^ j) (2 ^ k)
   calc ‖cauchySquare x d (2 ^ j) - majorSquare A₀ x d (2 ^ j)‖
       = ‖(cauchySquare x d (2 ^ j) - majorSquare A₀ x d (2 ^ j) - S) + S‖ := by
-        rw [sub_add_cancel]
+        simp
     _ ≤ ‖cauchySquare x d (2 ^ j) - majorSquare A₀ x d (2 ^ j) - S‖ + ‖S‖ := norm_add_le _ _
     _ ≤ CA * d.X * 2 ^ j * L ^ (-(D₁ + 2)) +
           2 * L * ((|CB| + |CD|) * (d.X * 2 ^ j) * L ^ (-(D₁ + 2))) := add_le_add (hA d hd j) hS
@@ -328,8 +326,8 @@ theorem eventually_replacement {C CX alo ahi Dstar g : ℝ} (hC : 0 < C) (hD : 0
         have : CA * d.X * 2 ^ j * L ^ (-(D₁ + 2)) ≤ |CA| * d.X * 2 ^ j * L ^ (-(D₁ + 1)) := by
           gcongr
           exact le_abs_self _
-        exact add_le_add this (le_of_eq (by ring))
+        linarith
     _ = (|CA| + 2 * (|CB| + |CD|)) * d.X * 2 ^ j * L ^ (-(D₁ + 1)) := by
-        rw [hLpow]; ring
+        grind
 
 end Erdos408.OneSided

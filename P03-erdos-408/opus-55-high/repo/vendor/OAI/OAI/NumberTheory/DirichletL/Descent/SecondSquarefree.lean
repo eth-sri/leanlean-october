@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWeights
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal sourcePrime sourceIdeal_dvd)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -37,29 +36,29 @@ theorem sourceIdeal_coprime_of_disjoint (S T : Finset ι) (hST : Disjoint S T) :
   intro i hi
   apply IsCoprime.prod_right
   intro j hj
-  exact hcop (fun he => Finset.disjoint_left.mp hST hi (he.symm ▸ hj))
+  exact hcop (fun he => Finset.disjoint_left.mp hST hi (by grind))
 
 omit [DecidableEq ι] in
-lemma prime_span_coprime_of_not_mem (i : ι) (c : Eis) (hc : c ∉ Ideal.span {p i}) :
-    IsCoprime (Ideal.span {p i}) (Ideal.span {c} : Ideal Eis) := by
+lemma prime_span_coprime_of_not_mem (i : ι) (c : ActualEisensteinCubic.O) (hc : c ∉ Ideal.span {p i}) :
+    IsCoprime (Ideal.span {p i}) (Ideal.span {c} : Ideal ActualEisensteinCubic.O) := by
   apply Ideal.isCoprime_iff_sup_eq.mpr
   by_contra hne
   have he := (inferInstance : (Ideal.span {p i}).IsMaximal).eq_of_le hne le_sup_left
   apply hc
   rw [he]
-  exact (show Ideal.span {c} ≤ (Ideal.span {p i} : Ideal Eis) ⊔ Ideal.span {c} from le_sup_right)
-    (Ideal.subset_span (by simp))
+  exact (show Ideal.span {c} ≤ (Ideal.span {p i} : Ideal ActualEisensteinCubic.O) ⊔ Ideal.span {c} from le_sup_right)
+    (by simp)
 
 omit [DecidableEq ι] in
-theorem sourceIdeal_coprime_of_not_mem (S : Finset ι) (c : Eis)
+theorem sourceIdeal_coprime_of_not_mem (S : Finset ι) (c : ActualEisensteinCubic.O)
     (hc : ∀ i ∈ S, c ∉ Ideal.span {p i}) :
-    IsCoprime (sourceIdeal p S) (Ideal.span {c} : Ideal Eis) := by
+    IsCoprime (sourceIdeal p S) (Ideal.span {c} : Ideal ActualEisensteinCubic.O) := by
   rw [sourceIdeal,FiniteGaussPhase.span_finset_prod]
-  exact IsCoprime.prod_left (fun i hi => prime_span_coprime_of_not_mem p i c (hc i hi))
+  exact IsCoprime.prod_left (fun i hi => prime_span_coprime_of_not_mem p i c (by grind))
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem jLabel_span_dvd_source (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) :
-    (Ideal.span {jLabel p B v ε₁ ε₂} : Ideal Eis) ∣ sourceIdeal p B := by
+    (Ideal.span {jLabel p B v ε₁ ε₂} : Ideal ActualEisensteinCubic.O) ∣ sourceIdeal p B := by
   apply span_dvd_of_element_dvd
   change (∏ i ∈ B,p i^bit (retained (parity (v i)) (ε₁ i) (ε₂ i))) ∣ ∏ i ∈ B,p i
   apply Finset.prod_dvd_prod_of_dvd
@@ -67,7 +66,7 @@ theorem jLabel_span_dvd_source (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : �
   cases retained (parity (v i)) (ε₁ i) (ε₂ i) <;> simp [bit]
 
 omit [DecidableEq ι] in
-theorem secondInputCoefficient_zero_of_label_mem (Ψ : Eis →* ℂ) (m c d : Eis)
+theorem secondInputCoefficient_zero_of_label_mem (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O)
     (H : Finset ι → ℂ) (S : Finset ι) (i : ι) (hi : i ∈ S) (hc : c ∈ Ideal.span {p i}) :
     secondInputCoefficient p hg Ψ m c d H S = 0 := by
   have hz : rowCoprimeMask (fun i => Ideal.span {p i}) S c = 0 := by
@@ -75,7 +74,7 @@ theorem secondInputCoefficient_zero_of_label_mem (Ψ : Eis →* ℂ) (m c d : Ei
   have hr := row_zero_of_mask_zero (fun i => Ideal.span {p i}) hg S c hz
   simp only [secondInputCoefficient,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
 
-theorem secondPreColumn_zero_of_mask_label_mem (Ψ : Eis →* ℂ) (m c d e k : Eis)
+theorem secondPreColumn_zero_of_mask_label_mem (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d e k : ActualEisensteinCubic.O)
     (H : Finset ι → ℂ) (S : Finset ι) (i : ι) (hi : i ∈ S)
     (hc : m*c ∈ Ideal.span {p i}) : secondPreColumn p hp hcop hg Ψ m c d e k H S = 0 := by
   rcases (inferInstance : (Ideal.span {p i}).IsPrime).mem_or_mem hc with hm|hc
@@ -88,7 +87,7 @@ theorem secondPreColumn_zero_of_mask_label_mem (Ψ : Eis →* ℂ) (m c d e k : 
     simp only [secondPreColumn,hr,zero_pow (by decide : (4:ℕ) ≠ 0),mul_zero,zero_mul]
 
 theorem secondSignedSourceWeight_nonzero_masks
-    (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex) (x : SecondExpansionData ι)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex) (x : SecondExpansionData ι)
     (hE : x.divisor ⊆ x.sourceCommon)
     (hw : secondSignedSourceWeight p hp hcop hg Ψ m c d z x ≠ 0) :
     IsCoprime (sourceIdeal p x.sourceCommon) (Ideal.span {c}) ∧
@@ -119,7 +118,7 @@ theorem secondSignedSourceWeight_nonzero_masks
     apply hw
     simp only [secondSignedSourceWeight,secondCommonWeight,hz,mul_zero]
 
-def actualSecondSignedWeight {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+def actualSecondSignedWeight {Jo Jn : ℕ} (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (x : MarkedSecondSource ι Jo Jn) : ℂ :=
   let d := primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor
   let c := (∏ i ∈ x.firstCommon,p i)*jLabel p x.cube.support
@@ -130,26 +129,26 @@ def actualSecondSignedWeight {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (m : Eis) (z : Se
 
 theorem actualSecondSignedWeight_norm_le_one
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
+    (hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
+    {Jo Jn : ℕ} (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (x : MarkedSecondSource ι Jo Jn) : ‖actualSecondSignedWeight p hp hcop hg Ψ m z x‖ ≤ 1 :=
   secondSignedSourceWeight_norm_le_one p hp hcop hg hinj hc Ψ hΨ _ _ _ z x.second
 
 theorem actual_second_nonzero_weight_squarefree
-    {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+    {Jo Jn : ℕ} (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (x : MarkedSecondSource ι Jo Jn)
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hE : x.second.divisor ⊆ x.second.sourceCommon)
-    (hw : actualSecondSignedWeight p hp hcop hg Ψ m z x ≠ 0) (u v : Eisˣ) :
+    (hw : actualSecondSignedWeight p hp hcop hg Ψ m z x ≠ 0) (u v : ActualEisensteinCubic.Oˣ) :
     Squarefree (actualSecondChild p u v x).2.1 := by
-  let J : Ideal Eis := Ideal.span {(jLabel p x.cube.support
+  let J : Ideal ActualEisensteinCubic.O := Ideal.span {(jLabel p x.cube.support
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)}
   let C := sourceIdeal p x.firstCommon
   let E := sourceIdeal p x.second.divisor
   let G := sourceIdeal p x.second.sourceCommon
   let V := sourceIdeal p x.second.overlap
   have hj : J ∣ sourceIdeal p x.cube.support := jLabel_span_dvd_source p _ _ _ _
-  have hJ : Squarefree J := (sourceIdeal_squarefree p hcop x.cube.support).squarefree_of_dvd hj
+  have hJ := (sourceIdeal_squarefree p hcop x.cube.support).squarefree_of_dvd hj
   have hC : Squarefree C := sourceIdeal_squarefree p hcop _
   have hG : Squarefree G := sourceIdeal_squarefree p hcop _
   have hV : Squarefree V := sourceIdeal_squarefree p hcop _

@@ -8,19 +8,14 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Complex Real Set MeasureTheory Filter Topology
+open Complex Real Set MeasureTheory Filter
 
-open Complex Filter Topology
 
-open Complex Filter Topology MeasureTheory
 
 open scoped FourierTransform
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
-open Complex Real Set MeasureTheory Filter Topology
 
 open scoped FourierTransform
 
@@ -36,7 +31,6 @@ lemma logRieszVertical_contDiff {q : ℕ} [NeZero q] (χ : DirichletCharacter �
   convert vertical_contDiff h using 1
   ext t
   dsimp [logRieszVertical]
-  congr 1
   ring
 
 lemma logRieszVertical_iteratedDeriv {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
@@ -64,7 +58,7 @@ lemma logRieszVertical_bound (n : ℕ) :
   intro q _ χ hp σ t hσ hσ2
   have he : (σ:ℂ)+2*π*t*I=(σ:ℂ)+I*((2*π*t:ℝ):ℂ) := by push_cast; ring
   rw [logRieszVertical_iteratedDeriv χ hσ,norm_mul,norm_pow,he]
-  have hc : ‖(2:ℂ)*π*I‖=2*π := by simp [abs_of_pos pi_pos]
+  have hc : ‖(2:ℂ)*π*I‖=2*π := by simp
   rw [hc]
   have ht : (|2*π*t|+2)^(-(3/2:ℝ)) ≤ decayMajorant t := by
     dsimp [decayMajorant]
@@ -75,7 +69,7 @@ lemma logRieszVertical_bound (n : ℕ) :
     · norm_num
   calc
     _ ≤ (2*π)^n*(D*((q:ℝ)+2)^(1/2:ℝ)*(|2*π*t|+2)^(-(3/2:ℝ))) :=
-      mul_le_mul_of_nonneg_left (hb q χ hp σ (2*π*t) hσ hσ2) (by positivity)
+      mul_le_mul_of_nonneg_left (by grind) (by positivity)
     _ ≤ (2*π)^n*(D*((q:ℝ)+2)^(1/2:ℝ)*decayMajorant t) := by gcongr
     _ = _ := by ring
 
@@ -94,15 +88,15 @@ lemma logRiesz_mellinInv_bound (n : ℕ) :
           D*((q:ℝ)+2)^(1/2:ℝ)*x^σ/(Real.log x)^n := by
   obtain ⟨D,hD,hb⟩ := logRieszVertical_bound n
   let J : ℝ := ∫ t, decayMajorant t
-  refine ⟨D*(|J|+1),by dsimp [J]; positivity,?_⟩
+  refine ⟨D*(|J|+1),by positivity,?_⟩
   intro q _ χ hp σ x hσ hσ2 hx
   have hx0 : 0<x := by linarith
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hlog := Real.log_pos hx
   have hi := logRieszVertical_integrable χ hp hσ hσ2
   have hg := logRieszVertical_contDiff χ hσ
   have hb' : (∫ t, ‖iteratedDeriv n (logRieszVertical χ σ) t‖) ≤ D*((q:ℝ)+2)^(1/2:ℝ)*J :=
-    integral_norm_le_of_decay_bound (hg.continuous_iteratedDeriv n (by simp)) (hb q χ hp σ · hσ hσ2)
-  have hf := fourierInv_decay hg hi n hb' (u:=Real.log x) (by rwa [abs_of_pos hlog])
+    integral_norm_le_of_decay_bound (hg.continuous_iteratedDeriv n (by simp)) (by grind)
+  have hf := fourierInv_decay hg hi n hb' (u:=Real.log x) (by positivity)
   rw [mellinInv_eq_fourierInv σ _ (one_div_pos.mpr hx0),norm_smul,
     Complex.norm_cpow_eq_rpow_re_of_pos (one_div_pos.mpr hx0)]
   have he : -(Real.log (1/x))=Real.log x := by simp
@@ -118,7 +112,6 @@ lemma logRiesz_mellinInv_bound (n : ℕ) :
       gcongr
     _ = _ := by ring
 
-open Complex Real Set MeasureTheory Filter Topology
 
 noncomputable def primeCoefficients {q : ℕ} (χ : DirichletCharacter ℂ q) (n : ℕ) : ℂ :=
   χ (n:ZMod q)*(ArithmeticFunction.vonMangoldt n:ℂ)
@@ -151,7 +144,7 @@ lemma primeRiesz_identity {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) {
   have hs1 : s-1≠0 := by intro h; have := congrArg Complex.re h; simp at this; linarith
   have hs2 : s+1≠0 := by intro h; have := congrArg Complex.re h; simp at this; linarith
   rw [hlog,he,characterMain]
-  split_ifs <;> field_simp <;> ring
+  grind
 
 lemma logRiesz_verticalIntegrable {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
     (hp : χ.IsPrimitive) {σ : ℝ} (hσ : 1≤σ) (hσ2 : σ≤2) :
@@ -174,7 +167,7 @@ lemma primeRiesz_mellinInv {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
       rieszSum (primeCoefficients χ) x-characterMain χ*poleRieszKernel (1/x) := by
   have he : rieszSum (primeCoefficients χ) x=
       mellinInv σ (logRiesz (poleRemovedL χ)) (1/x)+characterMain χ*poleRieszKernel (1/x) := by
-    rw [←rieszSum_mellinInv hσ.le hx _ (primeCoefficients_summable χ (by simpa using hσ))]
+    rw [←rieszSum_mellinInv hσ.le hx _ (primeCoefficients_summable χ (by omega))]
     calc
       _ = mellinInv σ (fun s => logRiesz (poleRemovedL χ) s+
           characterMain χ*(1/((s-1)*s*(s+1)))) (1/x) := by
@@ -182,13 +175,13 @@ lemma primeRiesz_mellinInv {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
         congr 1
         apply integral_congr_ae
         filter_upwards [] with t
-        rw [primeRiesz_identity χ (by simpa using hσ)]
+        rw [primeRiesz_identity χ (by simp_all)]
       _ = mellinInv σ (logRiesz (poleRemovedL χ)) (1/x)+
           mellinInv σ (fun s => characterMain χ*(1/((s-1)*s*(s+1)))) (1/x) :=
         mellinInv_add_of_verticalIntegrable (one_div_pos.mpr hx)
           (logRiesz_verticalIntegrable χ hp hσ.le hσ2) ((poleRiesz_verticalIntegrable hσ).const_mul _)
       _ = _ := by rw [mellinInv_const_mul,poleRiesz_mellinInv hσ (one_div_pos.mpr hx)]
-  linear_combination -he
+  simp_all
 
 lemma primeRiesz_error_bound (n : ℕ) :
     ∃ D : ℝ, 0<D ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ.IsPrimitive →
@@ -246,8 +239,7 @@ lemma weightedPrefix_difference {x h : ℝ} (hh : 0≤h) (a : ℕ → ℂ) :
     intro n _
     push_cast
     ring
-  rw [hs]
-  ring
+  grind
 
 lemma weightedPrefix_tail_bound {x h L : ℝ} (hx : 0≤x) (hh : 0≤h) (hL : 0≤L)
     (a : ℕ → ℂ) (ha : ∀ n∈Finset.Ioc ⌊x⌋₊ ⌊x+h⌋₊, ‖a n‖≤L) :
@@ -271,10 +263,10 @@ lemma weightedPrefix_tail_bound {x h L : ℝ} (hx : 0≤x) (hh : 0≤h) (hL : 0�
     _ ≤ ∑ _n∈Finset.Ioc ⌊x⌋₊ ⌊x+h⌋₊, h*L := by
       apply Finset.sum_le_sum
       intro n hn'
-      rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hn n hn').1]
-      exact mul_le_mul (hn n hn').2 (ha n hn') (norm_nonneg _) hh
+      rw [norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by grind)]
+      exact mul_le_mul (by grind) (by grind) (norm_nonneg _) hh
     _ = ((Finset.Ioc ⌊x⌋₊ ⌊x+h⌋₊).card:ℝ)*(h*L) := by simp
-    _ ≤ _ := mul_le_mul_of_nonneg_right hc (mul_nonneg hh hL)
+    _ ≤ _ := mul_le_mul_of_nonneg_right hc (by positivity)
 
 lemma prefix_unsmoothing {x h L : ℝ} (hx : 0≤x) (hh : 0<h) (hL : 0≤L)
     (a : ℕ → ℂ) (δ : ℂ) (ha : ∀ n∈Finset.Ioc ⌊x⌋₊ ⌊x+h⌋₊, ‖a n‖≤L) :
@@ -301,17 +293,13 @@ lemma prefix_unsmoothing {x h L : ℝ} (hx : 0≤x) (hh : 0<h) (hL : 0≤L)
       _ ≤ (‖E (x+h)‖+‖E x‖)+((h+1)*(h*L))+‖δ‖*h^2/2 := by
         have hT : ‖T‖≤(h+1)*(h*L) := weightedPrefix_tail_bound hx hh.le hL a ha
         have hδ : ‖δ*(h:ℂ)^2/2‖=‖δ‖*h^2/2 := by
-          simp [norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hh]
+          simp
         rw [hδ]
         exact add_le_add (add_le_add (norm_sub_le _ _) hT) le_rfl
   have hd : h*((‖E (x+h)‖+‖E x‖)/h+(h+1)*L+‖δ‖*h/2)=
       (‖E (x+h)‖+‖E x‖)+((h+1)*(h*L))+‖δ‖*h^2/2 := by field_simp
-  dsimp [E] at hn hd
-  apply (mul_le_mul_iff_left₀ hh).mp
-  rw [mul_comm _ h, mul_comm _ h, hd]
-  exact hn
+  nlinarith
 
-open Complex Real Set MeasureTheory Filter Topology
 
 lemma weightedPrefix_eq_mul_rieszSum (a : ℕ → ℂ) {x : ℝ} (hx : 0<x) :
     weightedPrefix a x=(x:ℂ)*rieszSum a x := by
@@ -326,10 +314,9 @@ lemma weightedPrefix_eq_mul_rieszSum (a : ℕ → ℂ) {x : ℝ} (hx : 0<x) :
 lemma rpow_one_add_inv_log {x : ℝ} (hx : 1<x) :
     x^(1+1/Real.log x)=Real.exp 1*x := by
   have hx0 : 0<x := by linarith
-  have hlog : Real.log x≠0 := (Real.log_pos hx).ne'
+  have hlog := (Real.log_pos hx).ne'
   rw [Real.rpow_add hx0,Real.rpow_one,Real.rpow_def_of_pos hx0]
-  rw [mul_one_div_cancel hlog]
-  ring
+  grind
 
 lemma primeWeighted_error_bound (a : ℝ) :
     ∃ D : ℝ, 0<D ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q), χ.IsPrimitive →
@@ -340,7 +327,7 @@ lemma primeWeighted_error_bound (a : ℝ) :
   refine ⟨D*Real.exp 1,by positivity,?_⟩
   intro q _ χ hp x hx hL
   have hx0 : 0<x := by linarith
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hlog := Real.log_pos hx
   have hσ : 1<1+1/Real.log x := by linarith [one_div_pos.mpr hlog]
   have hσ2 : 1+1/Real.log x≤2 := by
     have : 1/Real.log x≤1 := (div_le_one hlog).mpr hL
@@ -352,7 +339,7 @@ lemma primeWeighted_error_bound (a : ℝ) :
   rw [he,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hx0]
   calc
     _ ≤ x*(D*((q:ℝ)+2)^(1/2:ℝ)*x^(1+1/Real.log x)/(Real.log x)^⌈a⌉₊+1) :=
-      mul_le_mul_of_nonneg_left (hb q χ hp _ x hσ hσ2 hx) hx0.le
+      mul_le_mul_of_nonneg_left (by grind) hx0.le
     _ = D*Real.exp 1*((q:ℝ)+2)^(1/2:ℝ)*x^2*(Real.log x)^(-(⌈a⌉₊:ℝ))+x := by
       rw [rpow_one_add_inv_log hx,Real.rpow_neg hlog.le,Real.rpow_natCast]
       ring

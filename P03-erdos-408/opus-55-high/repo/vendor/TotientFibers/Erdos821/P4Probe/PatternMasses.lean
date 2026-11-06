@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.PatternProducts
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -26,9 +25,7 @@ lemma sharedLabelMass_mul_freshMass (ν : Pattern P J ell m)
   apply Finset.prod_congr rfl
   intro g _
   rw [← Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro i _
-  split_ifs <;> simp
+  simp_all
 
 lemma sharedLabelMass_pos (ν : Pattern P J ell m) (hV : ∀ g, 0 < P.V g)
     (a : P.BigLabels (J + ell)) : 0 < sharedLabelMass ν a := by
@@ -38,7 +35,7 @@ lemma sharedLabelMass_pos (ν : Pattern P J ell m) (hV : ∀ g, 0 < P.V g)
   intro i _
   split_ifs
   · exact graph_mu_pos P g.val (hV g.val) (a g i)
-  · exact zero_lt_one
+  simp
 
 lemma sharedLabelMass_matches (ν : Pattern P J ell m)
     {a b : P.BigLabels (J + ell)} (hab : ν.matchesBig a b) :
@@ -50,7 +47,7 @@ lemma sharedLabelMass_matches (ν : Pattern P J ell m)
   intro i _
   by_cases hi : ν.shared g.val i
   · rw [ite_eq_left hi, ite_eq_left hi, hab g i hi]
-  · simp [hi]
+  simp_all
 
 lemma freshMass_eq_div_shared (ν : Pattern P J ell m) (hV : ∀ g, 0 < P.V g)
     {a b : P.BigLabels (J + ell)} (hab : ν.matchesBig a b) :
@@ -79,7 +76,7 @@ lemma idealRaw_eq_targetMass {F : FixedData} (A : Model F P J m)
   · rw [ite_eq_left hab, ite_eq_left hab, freshMass_eq_div_shared (A.pattern v) hV hab]
     simp only [Complex.ofReal_mul, Complex.ofReal_div]
     ring
-  · simp [hab]
+  grind
 
 end
 end Erdos821.P4Probe

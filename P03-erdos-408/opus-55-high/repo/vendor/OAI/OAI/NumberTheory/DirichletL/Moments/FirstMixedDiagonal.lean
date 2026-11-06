@@ -7,24 +7,23 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedExceptionalCap
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedDiagonal
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
 open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap
 open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger
+open CenteredMomentFirstExceptionalPrefactor
 open CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily
 open CenteredMomentAmplificationErrorEnergy
-local notation "O"=>HeckeFamily.O
 
-theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem actual_common_diagonal (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z w wo branch sigma delta reserve eps:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)
     (hw:0≤w)(hwo:0≤wo)(heps:0≤eps)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     let c:=Real.logb Z (C.absNorm:ℝ);
     let d:=Real.logb Z (D.absNorm:ℝ);
@@ -51,8 +50,8 @@ theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
   have hallow:=allowance_nonneg C D Z
   have hfix:=fixed_presentation_log_nonneg Z hZ
   have hm:max (Real.logb Z (D.absNorm:ℝ)-Real.logb Z (C.absNorm:ℝ)-2*w+wo) 0≤
-      Real.logb Z (D.absNorm:ℝ)+wo:=max_le (by linarith) (by linarith)
-  have he:eps*(Real.logb Z (C.absNorm:ℝ)+w)≥0:=mul_nonneg heps (add_nonneg hc hw)
+      Real.logb Z (D.absNorm:ℝ)+wo:=by grind
+  have he:eps*(Real.logb Z (C.absNorm:ℝ)+w)≥0:=by positivity
   have hq:=actual_reference_width η τ C D hC E K Z hK hZ hmod
   have hnom:nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z=
       Real.logb Z ((Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}).absNorm:ℝ)+
@@ -64,14 +63,12 @@ theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
   dsimp only
   apply (Real.logb_le_iff_le_rpow hZ (by positivity)).mp
   simp (disch := positivity) only [Real.logb_div,Real.logb_mul,Real.logb_rpow hz hZ.ne',Real.logb_rpow_eq_mul_logb_of_pos,Real.logb_pow]
-  rw [hnom]
-  norm_num only [Nat.cast_ofNat]
-  nlinarith only [hq,hm,he,hfix,hallow]
+  grind
 
-theorem actual_main_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem actual_main_diagonal (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve eps:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)(heps:0≤eps)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     (V/(C.absNorm:ℝ))*mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
@@ -84,12 +81,12 @@ theorem actual_main_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:S
     actual_common_diagonal η τ C D hC hD hCD E K V Z 0 0 2 sigma delta reserve eps
       hK hV hZ (le_refl _) (le_refl _) heps hmod
 
-theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem actual_error_diagonal (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve eps:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)(heps:0≤eps)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
-    (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
+    (p:HeckeFamily.O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
     (V/(C.absNorm:ℝ))*localErrorCost p (k-1)*errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p k*(V/(C.absNorm:ℝ)/(normValue p)^k)^eps/
@@ -100,7 +97,7 @@ theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:
   have hpv:=normValue_pos p hp
   have hcpos:=norm_pos C hC.1
   have hqpos:=norm_pos _ τ.modulus_ne_bot
-  have hl:0≤Real.logb Z (normValue p):=Real.logb_nonneg hZ (normValue_ge_one p hp)
+  have hl:=Real.logb_nonneg hZ (normValue_ge_one p hp)
   have hw:0≤errorRemoval p Z k:=by unfold errorRemoval;positivity
   have hwo:0≤errorMoving p Z k:=by unfold errorMoving;split_ifs <;> positivity
   have hh:=actual_common_diagonal η τ C D hC hD hCD E K V Z

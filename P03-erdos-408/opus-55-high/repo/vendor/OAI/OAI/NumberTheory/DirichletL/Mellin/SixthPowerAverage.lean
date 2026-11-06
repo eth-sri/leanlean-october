@@ -10,33 +10,21 @@ noncomputable section
 
 namespace SixthPowerAverage
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -45,100 +33,83 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Metric
-open EisensteinSchwartzPoisson
+open scoped Classical
 
 end
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+open scoped Classical
 open ConcretePrimeRowBridge hiding O
 open ShortDraftHeckeBridge
 
 lemma prime_coprime_span_iff (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
     (b : ActualEisensteinCubic.O) : IsCoprime P (Ideal.span {b}) ↔ b∉P := by
   rw [Ideal.isCoprime_iff_codisjoint,
-    ←(Ideal.isMaximal_def.mp (inferInstance : P.IsMaximal)).not_le_iff_codisjoint,
+    ←(Ideal.isMaximal_def.mp (by omega)).not_le_iff_codisjoint,
     Ideal.span_singleton_le_iff_mem]
 
 end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 
 section
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open EisensteinSchwartzPoisson hiding O
 open IdealMobiusDivisorSum hiding O
-open ConcreteTraceCRT ShortDraftHeckeBridge
+open ShortDraftHeckeBridge
 open QuadraticInitialBound hiding O
 
 end
 
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open EisensteinSchwartzPoisson hiding O
-open ConcreteTraceCRT ShortDraftHeckeBridge
+open ShortDraftHeckeBridge
 open QuadraticInitialBound hiding O
 open InitialMeanSquare
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalRowCompletion
 
 end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff Topology
+open scoped Classical
 open Filter Asymptotics MeasureTheory
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open ShortDraftHeckeBridge
 open IdealMobiusDivisorSum hiding O
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalRowCompletion
 open InitialMeanSquare
 
 def weightedMoebius {q : ℕ} (χ : DirichletCharacter ℂ q) (I : Ideal ActualEisensteinCubic.O) : ℂ :=
@@ -164,7 +135,7 @@ def weightedCoeff {q : ℕ} (χ : DirichletCharacter ℂ q)
   unfold outsideWeight FiniteSFactor.outsideWeight
   split_ifs
   · exact weightedMoebius_zero χ
-  · rfl
+  simp
 
 @[simp] theorem weightedCoeff_zero {q : ℕ} (χ : DirichletCharacter ℂ q)
     (S : Finset (Ideal ActualEisensteinCubic.O)) : weightedCoeff χ S 0=0 := by
@@ -178,15 +149,13 @@ def weightedCoeff {q : ℕ} (χ : DirichletCharacter ℂ q)
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff Topology
+open scoped Classical
 open Filter Asymptotics MeasureTheory
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open ShortDraftHeckeBridge
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalRowCompletion
-open InitialMeanSquare CompactMellinBridge
+open InitialMeanSquare
 
 end SixthPowerAverage
 

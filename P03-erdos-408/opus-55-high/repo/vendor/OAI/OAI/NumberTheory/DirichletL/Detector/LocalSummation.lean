@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.Euler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge
 
 lemma hasSum_geometric_tail (f : ℕ → ℂ) (a : ℕ) (B V : ℂ) (hV : ‖V‖<1)
     (hz : ∀ m, m<a → f m=0) (hf : ∀ n, f (n+a)=B*V^n) :
@@ -19,7 +18,7 @@ lemma hasSum_geometric_tail (f : ℕ → ℂ) (a : ℕ) (B V : ℂ) (hV : ‖V�
   have ht : HasSum (fun n => f (n+a)) (B/(1-V)) := by
     simpa only [hf, div_eq_mul_inv] using (hasSum_geometric_of_norm_lt_one hV).mul_left B
   have hs : (∑ i ∈ Finset.range a, f i) = 0 :=
-    Finset.sum_eq_zero (fun i hi => hz i (Finset.mem_range.mp hi))
+    Finset.sum_eq_zero (by grind)
   simpa only [hs, zero_add] using ht.sum_range_add
 
 lemma tsum_two_of_rest_zero (f : ℕ → ℂ) (hf : ∀ k, f (k+2)=0) :
@@ -29,10 +28,10 @@ lemma tsum_two_of_rest_zero (f : ℕ → ℂ) (hf : ∀ k, f (k+2)=0) :
   · intro k hk
     have hk2 : 2 ≤ k := by simp only [Finset.mem_insert, Finset.mem_singleton, not_or] at hk; omega
     obtain ⟨k,rfl⟩ := Nat.exists_eq_add_of_le hk2
-    simpa only [Nat.add_comm] using hf k
+    grind
 
-variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
-  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
 
 def principalInner (eta a X W V : ℂ) (e l : ℕ) : ℂ :=
   ∑' k : ℕ, ∑' m : ℕ, principalMarkedTerm p hp hg eta a X W V e l k m
@@ -137,7 +136,6 @@ lemma principalInner_squarefree_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
     simp only [principalInner_odd p hp hg hc eta a X W V 1 _ (by omega)]
     exact hasSum_zero
   convert he.even_add_odd ho using 1
-  simp only [add_zero, div_eq_mul_inv, B]
   ring
 
 lemma principalInner_even_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
@@ -153,9 +151,7 @@ lemma principalInner_even_hasSum (eta a X W V : ℂ) (hV : ‖V‖<1)
   have he : HasSum (fun r => principalInner p hp hg eta a X W V 0 (2*r))
       (B/(1-evenRatio (Ideal.absNorm (Ideal.span {p})) a X V)) := by
     apply hasSum_geometric_tail _ 1 B _ hR
-    · intro m hm
-      have hm0 : m=0 := by omega
-      simp [hm0, principalInner_zero p hp hg]
+    · simp
     · intro r
       rw [show 2*(r+1)=2*r+2 by ring, principalInner_even p hp hg hc _ _ _ _ _ hV]
       ring
@@ -179,7 +175,6 @@ theorem principalMarkedSeries_eq (eta a X W V : ℂ) (hV : ‖V‖<1)
   rw [(principalInner_even_hasSum p hp hg hc eta a X W V hV hR).tsum_eq,
     (principalInner_squarefree_hasSum p hp hg hc eta a X W V hV hR).tsum_eq]
   unfold markedFactor
-  simp only [pow_one]
   ring
 
 end SevenEighths.ProbeEuler

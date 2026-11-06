@@ -45,9 +45,8 @@ private lemma sum_ite_sum_powerset_filter_dvd (s P : Finset ℕ) (Q : ℕ → Pr
     intro e _
     rw [hpow, filter_filter, sum_filter]
     split_ifs with hQ
-    · refine sum_congr rfl fun u _ => ?_
-      by_cases hB : B u <;> by_cases hd : ∀ p ∈ u, p ∣ e <;> simp [hB, hd, hQ]
-    · exact (sum_eq_zero fun u _ => by simp [hQ]).symm
+    · simp_all
+    · simp_all
   have hR : ∀ u ∈ P.powerset.filter B,
       F u * ((s.filter fun e => Q e ∧ ∀ p ∈ u, p ∣ e).card : ℝ) =
         ∑ e ∈ s, (if Q e ∧ (∀ p ∈ u, p ∣ e) ∧ B u then F u else 0) := by
@@ -60,7 +59,7 @@ private lemma sum_ite_sum_powerset_filter_dvd (s P : Finset ℕ) (Q : ℕ → Pr
   refine sum_congr rfl fun u _ => ?_
   split_ifs with hB
   · rfl
-  · exact sum_eq_zero fun e _ => by simp [hB]
+  · exact sum_eq_zero fun e _ => by grind
 
 /-! ### The count of rough numbers -/
 
@@ -80,7 +79,7 @@ private lemma abs_card_cong_dvd_sub_le {U u : Finset ℕ} (hU : ∀ p ∈ U, p.P
     exact ⟨m, by rw [Nat.ModEq, hm, Nat.mod_eq_of_lt (hU p hp).one_lt]⟩
   choose! m hm using hinv
   set a : ℕ → ℕ := fun p => if p ∈ U then m p else 0
-  have hV : ∀ p ∈ U ∪ u, p.Prime := fun p hp => (mem_union.1 hp).elim (hU p) (hu p)
+  have hV := fun p hp => (mem_union.1 hp).elim (hU p) (hu p)
   have h := abs_card_filter_forall_modEq_sub_le (U ∪ u) hV a hAt
   have hfilt : ((Ioc A t).filter fun e => (∀ p ∈ U, e * c ≡ 1 [MOD p]) ∧ ∀ p ∈ u, p ∣ e) =
       (Ioc A t).filter fun e => ∀ p ∈ U ∪ u, e ≡ a p [MOD p] := by
@@ -103,7 +102,7 @@ private lemma abs_card_cong_dvd_sub_le {U u : Finset ℕ} (hU : ∀ p ∈ U, p.P
       simp only [a, hpU, ↓reduceIte]
       exact Nat.modEq_zero_iff_dvd.symm
   rw [hfilt, ← prod_union hUu]
-  exact h
+  omega
 
 /-- The sifted count: among the `e ∈ (A, t]` free of the primes of `S`, those with `e c ≡ 1`
 modulo every `p ∈ U` number `(t - A) Π / φ_U` up to `2 (t - A) ε / φ_U + N`. -/
@@ -116,7 +115,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
         ((S.powerset.filter (·.card ≤ R + 1)).card : ℝ) := by
   classical
   set P' := S \ U with hP'
-  have hU : ∀ p ∈ U, p.Prime := fun p hp => hS p (hUS hp)
+  have hU := fun p hp => hS p (hUS hp)
   have hP'pr : ∀ p ∈ P', p.Prime := fun p hp => hS p (mem_sdiff.1 hp).1
   set cong : ℕ → Prop := fun e => ∀ p ∈ U, e * c ≡ 1 [MOD p] with hcong
   set tA : ℝ := (t : ℝ) - A with htA
@@ -136,14 +135,14 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
     intro e he
     rw [filter_eq_empty_iff]
     constructor
-    · exact fun h p hp => h p (mem_sdiff.1 hp).1
+    · simp_all
     · intro h p hp hpe
       by_cases hpU : p ∈ U
       · have h1 : e * c ≡ 0 [MOD p] := Nat.modEq_zero_iff_dvd.2 (dvd_mul_of_dvd_left hpe c)
         have h2 := (he p hpU).symm.trans h1
         rw [Nat.ModEq, Nat.zero_mod, Nat.mod_eq_of_lt (hU p hpU).one_lt] at h2
-        exact one_ne_zero h2
-      · exact h (mem_sdiff.2 ⟨hp, hpU⟩) hpe
+        omega
+      simp_all
   -- the count as a sum of indicators
   set Cu : Finset ℕ → ℝ := fun u =>
     ((((Ioc A t).filter fun e => cong e ∧ ∀ p ∈ u, p ∣ e).card : ℕ) : ℝ) with hCu
@@ -153,7 +152,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
     refine sum_congr rfl fun e _ => ?_
     by_cases he : cong e
     · simp only [he, and_true, ↓reduceIte, hrough e he, Nat.cast_one]
-    · simp [he]
+    · grind
   have hmain : ∑ e ∈ Ioc A t, (if cong e then
       ∑ u ∈ (P'.filter (· ∣ e)).powerset with u.card ≤ R, (-1 : ℝ) ^ u.card else 0) =
       ∑ u ∈ P'.powerset with u.card ≤ R, (-1 : ℝ) ^ u.card * Cu u :=
@@ -175,7 +174,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
     · simp only [he, ↓reduceIte, sum_const, nsmul_eq_mul, mul_one]
       have := abs_ite_sub_sum_powerset_le (P'.filter (· ∣ e)) R
       rwa [powersetCard_eq_filter] at this
-    · simp [he]
+    · grind
   -- each `C_u` is `tA / (q_U ∏ u) + O(1)`
   have hCu_approx : ∀ u ∈ P'.powerset, |Cu u - tA / (qU * ∏ p ∈ u, (p : ℝ))| ≤ 1 := by
     intro u hu
@@ -190,7 +189,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
   set ε' := ∑ u ∈ P'.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p with hε'
   have hx : ∀ p ∈ P', 0 ≤ (1 : ℝ) / p ∧ (1 : ℝ) / p ≤ 1 := fun p hp => by
     have : (1 : ℝ) ≤ p := by exact_mod_cast (hP'pr p hp).one_lt.le
-    exact ⟨by positivity, by rw [div_le_one (by linarith)]; exact this⟩
+    exact ⟨by positivity, by rw [div_le_one (by linarith)]; omega⟩
   have hprod := abs_prod_one_sub_sub_sum_le P' R (fun p => (1 : ℝ) / p) hx
   have hround : |∑ u ∈ P'.powerset with u.card ≤ R, (-1 : ℝ) ^ u.card * Cu u -
       tA / qU * ∑ u ∈ P'.powerset with u.card ≤ R, (-1 : ℝ) ^ u.card * ∏ p ∈ u, (1 : ℝ) / p| ≤
@@ -200,7 +199,7 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
     rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one]
     refine sum_le_sum fun u hu => ?_
     rw [show tA / qU * ((-1 : ℝ) ^ u.card * ∏ p ∈ u, (1 : ℝ) / p) =
-      (-1 : ℝ) ^ u.card * (tA / (qU * ∏ p ∈ u, (p : ℝ))) by rw [hrecip]; ring, ← mul_sub,
+      (-1 : ℝ) ^ u.card * (tA / (qU * ∏ p ∈ u, (p : ℝ))) by grind, ← mul_sub,
       abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul]
     exact hCu_approx u (mem_filter.1 hu).1
   have henv' : ∑ u ∈ P'.powersetCard (R + 1), Cu u ≤
@@ -236,15 +235,10 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
     rw [← Nat.cast_add, ← card_union_of_disjoint]
     · refine Nat.cast_le.2 (card_le_card fun u hu => ?_)
       rcases mem_union.1 hu with hu | hu
-      · obtain ⟨hu, hc⟩ := mem_filter.1 hu
-        exact mem_filter.2 ⟨mem_powerset.2 ((mem_powerset.1 hu).trans sdiff_subset), by omega⟩
-      · obtain ⟨hu, hc⟩ := mem_powersetCard.1 hu
-        exact mem_filter.2 ⟨mem_powerset.2 (hu.trans sdiff_subset), by omega⟩
+      · grind
+      grind
     · rw [disjoint_left]
-      intro u hu hu'
-      have := (mem_filter.1 hu).2
-      have := (mem_powersetCard.1 hu').2
-      omega
+      grind
   have hqε : tA / qU * ε' ≤ tA * (∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p) / φU := by
     rw [div_mul_eq_mul_div, div_le_div_iff₀ hqU0 (by linarith)]
     have := mul_le_mul hε'ε hqφ (by linarith) (sum_nonneg fun u _ => prod_nonneg fun p _ =>
@@ -260,20 +254,14 @@ theorem abs_card_rough_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime
       ∏ p ∈ u, (1 : ℝ) / p - tA / qU * ∏ p ∈ P', (1 - (1 : ℝ) / p)| ≤ tA / qU * ε' := by
     rw [← mul_sub, abs_mul, abs_of_nonneg (by positivity), abs_sub_comm]
     exact mul_le_mul_of_nonneg_left hprod (by positivity)
-  rw [← hPi]
-  have h2 : 2 * tA * (∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p) / φU =
-      2 * (tA * (∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p) / φU) := by ring
-  rw [h2]
-  linarith
+  grind
 
 /-! ### Partial summation -/
 
 /-- `(A, n + 1] = (A, n] ∪ {n + 1}` for `A ≤ n`. -/
 lemma Ioc_succ_right_eq_insert {A n : ℕ} (h : A ≤ n) :
     Ioc A (n + 1) = insert (n + 1) (Ioc A n) := by
-  ext e
-  simp only [mem_Ioc, mem_insert]
-  omega
+  grind
 
 /-- Partial summation against a decreasing nonnegative weight: if the partial sums of `f` over
 `(A, t]`, `t ≤ B`, are at most `η` in size, then `|∑_{(A, B]} f w| ≤ η w(A + 1)`. -/
@@ -311,8 +299,7 @@ lemma abs_sum_Ioc_mul_le {f w : ℕ → ℝ} {A B : ℕ} (hAB : A ≤ B) {η : �
       have : |F (A + (n + 1))| * (w (A + n + 1) - w (A + n + 1 + 1)) ≤
           η * (w (A + n + 1) - w (A + n + 1 + 1)) :=
         mul_le_mul_of_nonneg_right hFb (sub_nonneg.2 hdec)
-      rw [show A + (n + 1) + 1 = A + n + 1 + 1 by ring]
-      linarith
+      grind
   obtain ⟨n, rfl⟩ : ∃ n, B = A + n := ⟨B - A, by omega⟩
   have h1 := key n le_rfl
   have hη : 0 ≤ η := by simpa using hf A le_rfl (by omega)
@@ -321,12 +308,10 @@ lemma abs_sum_Ioc_mul_le {f w : ℕ → ℝ} {A B : ℕ} (hAB : A ≤ B) {η : �
   calc |∑ e ∈ Ioc A (A + n), f e * w e|
       ≤ |∑ e ∈ Ioc A (A + n), f e * w e - F (A + n) * w (A + n + 1)| +
           |F (A + n) * w (A + n + 1)| := by
-        have := abs_add_le (∑ e ∈ Ioc A (A + n), f e * w e - F (A + n) * w (A + n + 1))
-          (F (A + n) * w (A + n + 1))
-        simpa using this
+        grind
     _ ≤ η * (w (A + 1) - w (A + n + 1)) + η * w (A + n + 1) := by
         rw [abs_mul, abs_of_nonneg hwB]
-        exact add_le_add h1 (mul_le_mul_of_nonneg_right hFB hwB)
+        nlinarith
     _ = η * w (A + 1) := by ring
 
 /-! ### The weighted comparison -/
@@ -449,7 +434,7 @@ theorem abs_weighted_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) 
   have h3 : |S0 - Pi * W| / φU ≤ δ₁ * (Pi * W) / φU + N * w (A + 1) := by
     rw [div_le_iff₀ hφU0]
     have : N * w (A + 1) ≤ N * w (A + 1) * φU := le_mul_of_one_le_right (by positivity) hφU1
-    have h2' : |S0 - Pi * W| ≤ δ₁ * (Pi * W) + N * w (A + 1) := h2
+    have h2' := h2
     calc |S0 - Pi * W| ≤ δ₁ * (Pi * W) + N * w (A + 1) := h2'
       _ ≤ δ₁ * (Pi * W) / φU * φU + N * w (A + 1) * φU := by
           rw [div_mul_cancel₀ _ hφU0.ne']
@@ -466,8 +451,6 @@ theorem abs_weighted_cong_sub_le (S U : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) 
     calc 2 * (δ₁ * (Pi * W) / φU) ≤ 2 * (δ₁ * (2 * (S0 + N * w (A + 1))) / φU) := by gcongr
       _ = 4 * δ₁ * (S0 / φU) + 4 * δ₁ * (N * w (A + 1)) / φU := by ring
       _ ≤ _ := by linarith
-  have h6 : 8 * ε * K / Pi = 4 * δ₁ := by rw [hδ₁]; ring
-  rw [h6]
-  linarith
+  grind
 
 end Erdos408

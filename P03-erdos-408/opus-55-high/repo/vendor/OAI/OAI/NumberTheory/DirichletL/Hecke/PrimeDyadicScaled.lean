@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeDeletionBounds
@@ -32,8 +32,8 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
   obtain ⟨B,hB,hbound⟩ := polynomial_bound_in_bin e he he'
   let Cb := (B*(2+η)+localBound (1/2))/κ
   have hCb : 0<Cb := div_pos
-    (add_pos_of_nonneg_of_pos (mul_nonneg hB (by linarith))
-      (localBound_pos (by norm_num : (0 : ℝ)<1/2))) hκ
+    (add_pos_of_nonneg_of_pos (by positivity)
+      (localBound_pos (by positivity))) hκ
   let E := eulerBound 2
   have hE : 0≤E := tsum_nonneg (fun I => mul_nonneg (IdealMangoldt.value_nonneg _) (Real.rpow_nonneg (norm_pos I).le _))
   let C := 1+Cb*Real.pi+4*Cb+E*Real.pi
@@ -43,29 +43,29 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
     U r R σ freq V C₂ Cn n hU2 hQ hr hrR hV hfreq hheight hC₂ hCn hm₂ hmn
   let H : ℝ := (3*i+2 : ℕ)*T
   have hH : 0≤H := by dsimp [H]; positivity
-  have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one (χ j)).trans hQ
+  have hU : 1≤U := by linarith
   have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
-  have hD : 1≤U^r := Real.one_le_rpow hU hr
+  have hD := Real.one_le_rpow hU hr
   have hb := hbound χ hχ T a i hT ha ha' hmax j W A B' hA hWs hW
     (U^r) σ freq V C₂ Cn n hD hV hC₂ hCn hfreq hm₂ hmn
   have hcost : binCost B (χ j) H ≤ Cb*U^κ :=
-    binCost_le_power (χ j) B U H η κ hB hU2 hQ hη hκ (by rw [abs_of_nonneg hH]; exact hheight)
+    binCost_le_power (χ j) B U H η κ hB hU2 hQ hη hκ (by rw [abs_of_nonneg hH]; omega)
   have hcentral : (U^r)^(a+8*e-1/2)*binCost B (χ j) H ≤
       Cb*U^((a-1/2+8*e)*r+κ) := by
     calc
       _ ≤ (U^r)^(a+8*e-1/2)*(Cb*U^κ) :=
-        mul_le_mul_of_nonneg_left hcost (Real.rpow_nonneg (Real.rpow_nonneg hUp.le _) _)
-      _ = _ := by rw [←Real.rpow_mul hUp.le, mul_left_comm, ←Real.rpow_add hUp]; congr 2; ring
+        mul_le_mul_of_nonneg_left hcost (by positivity)
+      _ = _ := by rw [←Real.rpow_mul hUp.le, mul_left_comm, ←Real.rpow_add hUp]; ring
   have hexternal : (U^r)^(3/2 : ℝ)*binCost B (χ j) H ≤ Cb*U^(2*R+κ) := by
     calc
       _ ≤ (U^r)^(3/2 : ℝ)*(Cb*U^κ) :=
-        mul_le_mul_of_nonneg_left hcost (Real.rpow_nonneg (Real.rpow_nonneg hUp.le _) _)
+        mul_le_mul_of_nonneg_left hcost (by positivity)
       _ = Cb*U^(r*(3/2)+κ) := by rw [←Real.rpow_mul hUp.le, mul_left_comm, ←Real.rpow_add hUp]
       _ ≤ _ := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hU (by nlinarith)) hCb.le
   have hpow : (U^r)^(3/2 : ℝ)≤U^(2*R+κ) := by
     rw [←Real.rpow_mul hUp.le]
     exact Real.rpow_le_rpow_of_exponent_le hU (by nlinarith)
-  have hwidth : |2-a-8*e|≤2 := abs_le.mpr ⟨by linarith,by linarith⟩
+  have hwidth : |2-a-8*e|≤2 := abs_le.mpr (by grind)
   have hc : C₂*(U^r)^(a+8*e-1/2)*binCost B (χ j) H*Real.pi≤
       (Cb*Real.pi)*C₂*U^((a-1/2+8*e)*r+κ) := by
     calc
@@ -95,7 +95,7 @@ theorem scaled_direct_bound (e κ η : ℝ) (he : 0<e) (he' : e<1/1000)
   calc
     _ ≤ (Cb*Real.pi)*C₂*U^((a-1/2+8*e)*r+κ)+
         (4*Cb)*Cn*U^(2*R+κ)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+κ)/(1+V)^n := by
-      exact add_le_add (add_le_add hc hj) ht
+      linarith
     _ = (Cb*Real.pi)*C₂*U^((a-1/2+8*e)*r+κ)+
         (4*Cb+E*Real.pi)*Cn*U^(2*R+κ)/(1+V)^n := by ring
     _ ≤ _ := by gcongr

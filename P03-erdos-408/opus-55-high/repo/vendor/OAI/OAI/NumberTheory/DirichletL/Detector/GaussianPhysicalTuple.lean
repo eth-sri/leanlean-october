@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianDensityBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
-open ProbeCompleted ProbeRow
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeCompleted
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma physicalRows_common_finset {α : Type*} (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
     (F : Finset α) (X Y : α→ℝ) (hX : ∀k∈F,0<X k) (hY : ∀k∈F,0<Y k) :
     ∃R : Finset PhysicalRowIndex,∀k∈F,∀r,r∉R→physicalRowWeight C W0 W1 (X k) (Y k) r=0 := by
   have hf (k : {k // k∈F}) := physicalRowWeight_finite_support C W0 W1 hW0 hW1
-    (X k.val) (Y k.val) (hX k.val k.property) (hY k.val k.property)
+    (X k.val) (Y k.val) (by grind) (by grind)
   let R := F.attach.biUnion (fun k=>(hf k).toFinset)
   refine ⟨R,?_⟩
   intro k hk r hr
   by_contra hn
   apply hr
-  exact Finset.mem_biUnion.mpr ⟨⟨k,hk⟩,by simp,by simpa only [Set.Finite.mem_toFinset,Function.mem_support] using hn⟩
+  exact Finset.mem_biUnion.mpr ⟨⟨k,hk⟩,by simp,by simp_all⟩
 
 theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
@@ -51,12 +50,12 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
   have hs (k : α) (hk : k∈F) (f : PhysicalRowIndex→ℂ) :
       (∑'r,physicalRowWeight C W0 W1 (X k) (Y k) r*f r)=
       ∑r∈R,physicalRowWeight C W0 W1 (X k) (Y k) r*f r :=
-    tsum_eq_sum (fun r hr=>by rw [hR k hk r hr,zero_mul])
+    tsum_eq_sum (fun r hr=>by simp_all)
   let A (p : α×PhysicalRowIndex) := a p.1*physicalRowWeight C W0 W1 (X p.1) (Y p.1) p.2
   have hh := gaussian_selected_tuple_reassembly W V hV hsep (F×ˢR) A C.excluded
     (fun p=>D p.1) (fun p=>physicalRowMonoid η C p.2)
     (fun p _=>physicalRowMonoid_norm η C p.2) Z hZ (fun p=>q p.1)
-    (fun p hp=>hq p.1 (Finset.mem_product.mp hp).1)
+    (by grind)
   calc
     _ = ∑p∈F×ˢR,A p*(∏i,W i (q p.1 i))*correctedCompletedT C.excluded (D p.1)
       (physicalRowMonoid η C p.2) gaussianCompletedProfile (Z*∏i,q p.1 i) := by
@@ -64,12 +63,9 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
         apply Finset.sum_congr rfl
         intro k hk
         rw [markedPhysicalProbe_eq_gaussian_rows η C (D k) W0 W1 hW0 hW1
-          (X k) (Y k) _ (hX k hk) (hY k hk) (mul_pos hZ (Finset.prod_pos (fun i _=>hq k hk i))),hs k hk]
+          (X k) (Y k) _ (by grind) (by grind) (mul_pos hZ (Finset.prod_pos (by grind))),hs k hk]
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro r hr
-        dsimp [A]
-        ring
+        grind
     _ = _ := hh
     _ = _ := by
       apply tsum_congr
@@ -83,10 +79,7 @@ theorem physical_selected_gaussian_reassembly {ι α : Type*} [Fintype ι]
       apply Finset.sum_congr rfl
       intro k hk
       rw [hs k hk,Finset.mul_sum,Finset.sum_mul]
-      apply Finset.sum_congr rfl
-      intro r hr
-      dsimp [A]
-      ring
+      grind
 
 end SevenEighths.ProbePhysical
 end

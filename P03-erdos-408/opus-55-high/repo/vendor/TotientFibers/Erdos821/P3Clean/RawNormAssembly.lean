@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.PhysicalConditioning
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance 10000] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -53,7 +52,7 @@ theorem coordinateMass_eq_memoryMass (F : FixedData) (J n B : ℕ)
     P.memoryMass F J n (a.2.2.val.1, joinLabels a.1 a.2.1, a.2.2.val.2)
   rw [memoryMass_coordinates]
   unfold coordinateMass fibreMass betweenMass
-  split_ifs <;> ring
+  grind
 
 theorem clean_norm_from_entry (F : FixedData) :
     ∃ Cs : ℝ, ∀ (x : ℝ) (P : PrimeGroups), P.Admissible F x → 0 < L x →
@@ -79,15 +78,9 @@ theorem clean_norm_from_entry (F : FixedData) :
     (smallArrayPrefix J F.ell)
     (fun y : BetweenState P (J + F.ell) B => physicalSmallCoefficient F P J y.2.val.1)
     (smallMarkMass P (J + F.ell)) (betweenMass F n (B := B)) K H
-    C ((L x) ^ Cs) hm hC (Real.rpow_nonneg hL.le _) hH
+    C ((L x) ^ Cs) hm hC (by positivity) hH
   · intro y f
     exact hmap x P hP hL J y.2.val.1 f
-  · intro a b
-    have h := hentry a b
-    by_cases hs : a.1 ∈ smallArrayStates P (J + F.ell) a.2.2.val.1 ∧
-        b.1 ∈ smallArrayStates P (J + F.ell) b.2.2.val.1 ∧
-        smallArrayPrefix J F.ell a.1 = smallArrayPrefix J F.ell b.1
-    · simpa only [ite_eq_left hs] using h
-    · simpa only [ite_eq_right hs] using h
+  grind
 
 end Erdos821.P3Clean

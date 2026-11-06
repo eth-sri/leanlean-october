@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceChild
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceChildProfiles
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyProfiles
 open CenteredMomentAllocatedNaturalRadial CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentInductionEnergy
 open CenteredMomentOriginalRadialComparison CenteredMomentFiniteProfileExceptional
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentLattice CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open CenteredMomentLattice
 
 def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (W:𝓢(ℝ,ℂ))(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
@@ -31,7 +30,7 @@ def reflectionProfiles {a b:ℝ}(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
 theorem reflected_child_ray_energy {α:Type*}[Fintype α][DecidableEq α]
     {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (W:𝓢(ℝ,ℂ))(hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)
-    (F:Finset α)(pool:α→Finset (Ideal O))(ν:α→Character)(Wslot:α→ℝ→ℂ)(P σ freq:α→ℝ)
+    (F:Finset α)(pool:α→Finset (Ideal HeckeFamily.O))(ν:α→Character)(Wslot:α→ℝ→ℂ)(P σ freq:α→ℝ)
     (hp:∀i∈F,∀I∈pool i,Prime I)(hP:∀i∈F,0<P i)
     (j k:Fin 2)(v t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):
     radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false
@@ -67,18 +66,17 @@ theorem independent_profile_control (a b:ℝ)(ha:0<a)(S:Finset (ℕ×ℕ)):
   intro W₁ W₂ hs₁ hs₂ t₁ t₂
   have h₁:=hc W₁ hs₁ t₁
   have h₂:=hc W₂ hs₂ t₂
-  have hp₁:(1+‖t₁‖)^n≤(1+‖t₁‖+‖t₂‖)^n:=pow_le_pow_left₀ (by positivity) (by linarith [norm_nonneg t₂]) n
-  have hp₂:(1+‖t₂‖)^n≤(1+‖t₁‖+‖t₂‖)^n:=pow_le_pow_left₀ (by positivity) (by linarith [norm_nonneg t₁]) n
+  have hp₁:(1+‖t₁‖)^n≤(1+‖t₁‖+‖t₂‖)^n:=pow_le_pow_left₀ (by positivity) (by simp) n
+  have hp₂:(1+‖t₂‖)^n≤(1+‖t₁‖+‖t₂‖)^n:=pow_le_pow_left₀ (by positivity) (by simp) n
   have h₁':S.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (normPowerProfile W₁ a b ha hs₁ (W₁.smooth ⊤) t₁)≤C*sourceControl T W₁*(1+‖t₁‖+‖t₂‖)^n:=
-    h₁.trans (mul_le_mul_of_nonneg_left hp₁ (mul_nonneg hC.le (sourceControl_nonneg _ _)))
+    h₁.trans (mul_le_mul_of_nonneg_left hp₁ (by positivity))
   have h₂':S.sup (schwartzSeminormFamily ℝ ℝ ℂ)
-      (normPowerProfile W₂ a b ha hs₂ (W₂.smooth ⊤) t₂)≤C*sourceControl T W₂*(1+‖t₁‖+‖t₂‖)^n:=
-    h₂.trans (mul_le_mul_of_nonneg_left hp₂ (mul_nonneg hC.le (sourceControl_nonneg _ _)))
+      (normPowerProfile W₂ a b ha hs₂ (by grind) t₂)≤C*sourceControl T W₂*(1+‖t₁‖+‖t₂‖)^n:=
+    h₂.trans (mul_le_mul_of_nonneg_left hp₂ (by positivity))
   simp only [Profiles.control,independentProfiles,show (1:Fin 2)≠0 by decide,ite_true,ite_false]
-  apply (mul_le_mul h₁' h₂' (apply_nonneg _ _)
+  apply (mul_le_mul h₁' h₂' (by positivity)
     (mul_nonneg (mul_nonneg hC.le (sourceControl_nonneg _ _)) (by positivity))).trans_eq
-  rw [show (1+‖t₁‖+‖t₂‖)^(2*n)=((1+‖t₁‖+‖t₂‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 lemma derivative_choice_control (S:Finset (ℕ×ℕ)):
@@ -88,9 +86,9 @@ lemma derivative_choice_control (S:Finset (ℕ×ℕ)):
   refine ⟨S∪T,1+C,by positivity,?_⟩
   intro W j
   have h₁:sourceControl S W≤sourceControl (S∪T) W:=
-    Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:S⊆S∪T)) W
+    Seminorm.le_def.mp (by grind) W
   have h₂:sourceControl T W≤sourceControl (S∪T) W:=
-    Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_right:T⊆S∪T)) W
+    Seminorm.le_def.mp (by grind) W
   by_cases hj:j=0
   · simp only [derivativeChoice,ite_eq_left hj]
     exact h₁.trans (le_mul_of_one_le_left (sourceControl_nonneg _ _) (by linarith))

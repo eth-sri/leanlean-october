@@ -37,7 +37,7 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
   have hB : ‖B‖≤Q^x.re := by
     dsimp only [B]
     rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
+    exact mul_le_of_le_one_left (by positivity) heta
   have hRh : ‖R‖≤1/2 := hR.trans (rpow_le_half Q _ hQ (by linarith))
   have hVh : ‖V‖≤1/2 := by rw [hV];exact rpow_le_half Q _ hQ (by linarith)
   have hDh : ‖D‖≤1/2 := hD.trans (rpow_le_half Q _ hQ (by linarith))
@@ -47,15 +47,15 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
   have hprod (a b aa bb : ℝ) (ha : 0≤a) (hb : 0≤b)
       (haa : a≤Q^aa) (hbb : b≤Q^bb) (he : aa+bb≤0) : a*b≤1 := by
     calc
-      a*b≤Q^aa*Q^bb := mul_le_mul haa hbb hb (Real.rpow_nonneg hQ0.le _)
+      a*b≤Q^aa*Q^bb := mul_le_mul haa hbb hb (by positivity)
       _=Q^(aa+bb) := (Real.rpow_add hQ0 _ _).symm
       _≤1 := Real.rpow_le_one_of_one_le_of_nonpos hQ1 he
   have hKV : ‖K‖*‖V‖≤1 := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hK hV.le (by linarith)
   have hBR : ‖B‖*‖R‖≤1 := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hB hR (by linarith)
   have hKV' : ‖K‖*‖V‖≤Q^(1-x.re-w.re-6*z.re) := by
     calc
-      _≤Q^(1-x.re-w.re)*Q^(-6*z.re) := mul_le_mul hK hV.le (norm_nonneg _) (Real.rpow_nonneg hQ0.le _)
-      _=_ := by rw [←Real.rpow_add hQ0];congr 1;ring
+      _≤Q^(1-x.re-w.re)*Q^(-6*z.re) := mul_le_mul hK hV.le (norm_nonneg _) (by positivity)
+      _=_ := by rw [←Real.rpow_add hQ0];ring
   have hBKV : ‖B‖*(‖K‖*‖V‖)≤1 := hprod _ _ _ _ (norm_nonneg _) (by positivity) hB hKV' (by linarith)
   have hE := unramified_marked_error_bound R V (Q:ℂ)⁻¹ K W D hRh hVh hqi hDh
   change ‖unramifiedMarked Q A eta v x w z+D‖≤_ at hE
@@ -63,11 +63,9 @@ lemma unramifiedMarked_selected_error (Q : ℝ) (A eta v x w z : ℂ)
     apply hE.trans
     nlinarith [mul_le_mul_of_nonneg_left hW (norm_nonneg R)]
   constructor
-  · change ‖unramifiedMarked Q A eta v x w z+D‖≤28
-    linarith
+  · linarith
   · have hh := mul_le_mul_of_nonneg_left hE' (norm_nonneg B)
-    change ‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤28
-    nlinarith
+    linarith
 
 end SevenEighths.ProbeEuler
 end

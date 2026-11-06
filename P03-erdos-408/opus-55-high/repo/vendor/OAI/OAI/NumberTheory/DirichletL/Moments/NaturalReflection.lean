@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentNaturalReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentNaturalPrimitive
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
-local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
+local instance : IsPrincipalIdealRing HeckeFamily.O := IsCyclotomicExtension.Rat.three_pid K
 
 lemma polynomial_coeff_congr (χ ψ : Character)
     (h : ∀I,idealCoeff χ I=idealCoeff ψ I) (W : ℝ→ℂ) (X : ℝ) :
@@ -24,18 +23,18 @@ lemma polynomial_coeff_congr (χ ψ : Character)
   apply tsum_congr
   intro I
   unfold HeckeDyadic.summand HeckeDyadic.coefficient
-  rw [h]
+  simp_all
 
-lemma inverse_deletion_coeff (χ ψ : Character) (S : Finset (Ideal O))
+lemma inverse_deletion_coeff (χ ψ : Character) (S : Finset (Ideal HeckeFamily.O))
     (hS : ∀P∈S,Prime P) (h : ∀I,idealCoeff χ I=idealCoeff (ψ.excludePrimes S hS) I)
-    (I : Ideal O) : idealCoeff χ.inverse I=idealCoeff (ψ.inverse.excludePrimes S hS) I := by
+    (I : Ideal HeckeFamily.O) : idealCoeff χ.inverse I=idealCoeff (ψ.inverse.excludePrimes S hS) I := by
   rw [idealCoeff_inverse_conj,h,idealCoeff_excludePrimes,idealCoeff_excludePrimes,
     idealCoeff_inverse_conj]
-  split_ifs <;> simp
+  grind
 
 theorem primitive_character_deleted (ψ : Character)
     (hp : FiniteFourier.IsPrimitiveOnIdeals ψ.residue) (hn : ψ.residue≠1) :
-    ∃G : ℂ,‖G‖=1 ∧ ∀(S : Finset (Ideal O))(hS : ∀P∈S,Prime P)
+    ∃G : ℂ,‖G‖=1 ∧ ∀(S : Finset (Ideal HeckeFamily.O))(hS : ∀P∈S,Prime P)
       (W : 𝓢(ℝ,ℂ))(X : ℝ),0<X →
       (∀D∈S.powerset,Summable (reflectedTerm ψ ψ.inverse S hS (paperRadialFourier W)
         X (ψ.modulus.absNorm:ℝ) D)) ∧
@@ -97,7 +96,7 @@ theorem original_inverse_reflection (χ : Character) (hn : χ.residue≠1) :
   intro H
   unfold reflectedTerm
   rw [←polynomial_coeff_congr χ.inverse _
-    (inverse_deletion_coeff χ ψ _ (redundantSet_prime χ.modulus ψ.modulus) hcoeff)]
+    (inverse_deletion_coeff χ ψ _ (by grind) hcoeff)]
 
 end SevenEighths.CenteredMomentNaturalReflection
 

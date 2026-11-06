@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Sandwich
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -23,11 +22,7 @@ theorem finiteLinearMap_form_entry {α β : Type*} [Fintype α]
       ∑ a, ∑ b, star (f a) * ((mass y : ℂ) * star (B y a) * H y z * B z b) * g b := by
   simp only [finiteLinearMap, star_sum, star_mul, Finset.mul_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro a _
-  apply Finset.sum_congr rfl
-  intro b _
-  ring
+  grind
 
 theorem matrixSandwich_form {α β δ : Type*} [Fintype α] [Fintype β] [Fintype δ]
     (mass : α → ℝ) (targetMass : β → ℝ) (K : α → α → ℂ)
@@ -77,8 +72,8 @@ theorem normBound_matrixSandwich {α β δ : Type*} [Fintype α] [Fintype β] [F
       S * ∑ a, mass a * ‖f a‖ ^ 2)
     (hentry : ∀ a b, (mass a : ℂ) * K a b =
       ∑ d, ∑ y, ∑ z, (targetMass y : ℂ) * star (B d y a) * H d y z * B d z b) :
-    NormBound mass K (C * S) := by
-  exact normBound_conditioned_form mass targetMass K H
+    NormBound mass K (C * S) :=
+  normBound_conditioned_form mass targetMass K H
     (fun d => finiteLinearMap (B d)) C S hm hC hS hH hB
     (matrixSandwich_form mass targetMass K H B hentry)
 

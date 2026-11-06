@@ -22,57 +22,39 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalMainHomogeneous
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
+open HeckeFamily
+open CenteredMomentAllocatedNaturalSource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*} : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
+open CenteredMomentCommonAllocationSum
+open CenteredMomentAllocatedRayDictionary
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentCanonicalFirst CenteredMomentSourceLiveColumn
+open CanonicalQuadraticSieve CompletedGauss
+open ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
 
-open RayFourExpansion CenteredMomentSourceMass CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondEnergySplit CenteredMomentGaussNormalization
-open Filter CenteredMomentOriginalCommonHarmonic CenteredMomentActiveSource
-open CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondWindowSource
+open CenteredMomentSourceMass
+open Filter CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstChildProfileControl CenteredMomentSecondChildPowerBudget
-open CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondReferenceNormalization
-open CenteredMomentFirstSeededGaussianPower CenteredMomentFirstSecondInputGates
+open CenteredMomentFirstSecondInputGates
 
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentFirstAmplifiedFourCoefficients
+open CenteredMomentFirstAmplifiedFourCoefficients
 theorem actual_main_homogeneous
     (Wslot:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
     (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(hbPlain:0≤b)
@@ -88,8 +70,8 @@ theorem actual_main_homogeneous
     (hεsrc:0<εsrc)(hδsrc:0<δsrc)(hθsrc:0<θsrc)(hBcap:0≤Bcap)(hξ:0<ξ)
     (sigma cost:ℝ)(hsigma:0<sigma)(hξsmall:ξ≤sigma/4)(hcost:1≤cost):
     ∃Uprofile:Finset (ℕ×ℕ),∃Jheight:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M →
-      internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:O)} →
+    ∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M →
+      internalQ Q η₀≠0 → internalQ Q η₀≠⊤ → internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)} →
     ∃Cbound:ℝ,0<Cbound ∧ ∃Z₀:ℝ,1<Z₀ ∧
     ∀θ:α→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
@@ -103,10 +85,10 @@ theorem actual_main_homogeneous
     (∀i,src.lo i=lows i) → (∀i,src.hi i=highs i) →
     Fintype.card α≤N → lower≤src.lower → src.upper≤upper →
     0≤src.b₁ → 0≤src.b₂ → src.b₁≤max 1 b → src.b₂≤max 1 b →
-    ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
+    ∀(C D R0:Ideal HeckeFamily.O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
-    τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
     ∀K delta reserve asource:ℝ,0<K → 0<asource →
     0≤delta → 0≤reserve → a0≤asource →
@@ -116,7 +98,7 @@ theorem actual_main_homogeneous
         (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve
     Ready input (R0*C) Kmain Z ξ Bcap →
-    ∀seed:Ideal O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z^Bseed →
+    ∀seed:Ideal HeckeFamily.O,Squarefree seed → seed≠0 → (seed.absNorm:ℝ)≤Z^Bseed →
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
     src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
     ∀Mdecl Mwidth θclip:ℝ,0≤θclip →
@@ -147,8 +129,8 @@ theorem actual_main_homogeneous
       (CenteredMomentSecondInputCapacitySource.lowerFactor N lower a)
       Cm Ce Cd Ct Cc cost εsrc δsrc θsrc Bcap J (dc+degree+4*n) (dc+degree+4*n)
       Sp T Sf CenteredMomentFirstAmplificationChoice.ballProfile
-      (zero_le_one.trans hupper) (le_trans zero_le_one (le_max_left _ _))
-      (le_trans zero_le_one (le_max_left _ _)) (by positivity) hlo
+      (zero_le_one.trans hupper) (by positivity)
+      (by positivity) (by positivity) hlo
       hCm.le hCe hCd.le hCt.le hCc.le (zero_le_one.trans hcost)
   refine ⟨Uprofile,Jheight,?_⟩
   intro η₀ Q hQM hQ0 hQt hQ72
@@ -174,11 +156,11 @@ theorem actual_main_homogeneous
   have hg:=hbound 1 fixedBadMask fixedBadMask_ne_zero (dvd_mul_right _ _) (dvd_mul_left _ _)
     r hr1 hr2 hr3 hr4
   dsimp only at hg ⊢
-  have hz:0<Z:=zero_lt_one.trans (hZi.trans_le hZ)
+  have hz:0<Z:=by linarith
   have hmass:mass src≤(max 1 Mslot)^N:=
     CenteredMomentEnergyOriginalProfileControl.slot_product_le src N (max 1 Mslot)
-      (le_max_left _ _) hcard (fun i=>(hMs i).trans (le_max_right _ _))
-  have hnseed:1≤(seed.absNorm:ℝ):=norm_ge_one seed hseed0
+      (by simp) hcard (fun i=>(hMs i).trans (by simp))
+  have hnseed:=norm_ge_one seed hseed0
   have hh:=hwbound p Z t height (mass src) (seed.absNorm:ℝ) C₀ C₁
     hz hheight (mass_nonneg src) hmass hnseed hC₀ hC₁
   dsimp only at hh

@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Reflection.TruncatedSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
-def literalWholeRow (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+def literalWholeRow (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
+    (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal ActualEisensteinCubic.O))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal Eis→ℂ) : ℂ :=
+    (W : ℝ→ℂ) (θ X : ℝ) (r aw : Ideal ActualEisensteinCubic.O→ℂ) : ℂ :=
   ∑ P : {P : Pset // IsCoprime K P.val}, r K*aw P.val.val*
     mixedReflectedValue (D P.val P.property) s (F.reflected K hK (S P.val.val)).generator_ne_zero hc
       (F.reflected K hK (S P.val.val)).generator_good (reflectedExponent jF)
@@ -32,27 +31,27 @@ lemma sum_tsum_tsum_finite_middle {α β γ : Type*} [Fintype β]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro u hu
-  exact (Summable.tsum_finsetSum (fun p hp => hf p hp u)).symm
+  exact (Summable.tsum_finsetSum (by grind)).symm
 
-theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-    (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
+    (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal ActualEisensteinCubic.O))
     (D : ∀ P : Pset, IsCoprime K P.val →
       ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (hN : (9:Eis)*c∣N)
+    (hN : (9:ActualEisensteinCubic.O)*c∣N)
     (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
-    (hchar : ∀ P∈Pset, ∀ i, ringChar (Eis⧸(F.reflected K hK (S P)).ideal i)≠2)
+    (hchar : ∀ P∈Pset, ∀ i, ringChar (ActualEisensteinCubic.O⧸(F.reflected K hK (S P)).ideal i)≠2)
     (hj : ∀ i,jF i<6) (hprod : ∀ P∈Pset,(∏ j,(S P).ideal j)=P)
     (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo) (hWs : Function.support W⊆Set.Icc lo hi)
-    (hW : ContDiff ℝ ∞ W) (θ X : ℝ) (hX : 0<X) (r aw : Ideal Eis→ℂ) :
+    (hW : ContDiff ℝ ∞ W) (θ X : ℝ) (hX : 0<X) (r aw : Ideal ActualEisensteinCubic.O→ℂ) :
     literalWholeRow F K hK S jF Pset D s hc W θ X r aw=
       (fixedRadialCoefficientScalar*s.stratumShapeFactor (c*primaryGenerator (∏ i,F.ideal i)))*
-        ∑' u : Eisˣ,∑' i : ℕ×ℕ×ℕ,
+        ∑' u : ActualEisensteinCubic.Oˣ,∑' i : ℕ×ℕ×ℕ,
           literalDyadicRow F K hK S jF Pset D s hc u i W θ X
             (fun K => r K*shapeArgument (primaryGenerator K))
             (fun P => aw P*shapeArgument (primaryGenerator P)) := by
-  let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
-  let : Fintype Eisˣ := Fintype.ofFinite _
+  let : Finite ActualEisensteinCubic.Oˣ := PrimaryIdealUnitReindex.finite_units
+  let : Fintype ActualEisensteinCubic.Oˣ := Fintype.ofFinite _
   have htw : ContDiff ℝ ∞ (CompletedHeight.normTwistedSource W θ) := by
     have he : (CompletedHeight.uniformTwistedSchwartz W lo hi hlo hWs hW θ:ℝ→ℂ)=
         CompletedHeight.normTwistedSource W θ := by
@@ -66,13 +65,13 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
     rcases i with f | k | p
     · exact hj f
     · norm_num [reflectedExponent]
-    · norm_num [reflectedExponent]
+    · positivity
   let L := {P : Pset // IsCoprime K P.val}
   let block := fun (P : L) u i => literalDyadicBlock (F.reflected K hK (S P.val.val))
     (D P.val P.property) s hc (reflectedExponent jF) (slotIndices φ (PrimeIndex K) σ)
     (CompletedHeight.normTwistedSource W θ) X u i
   let wt := fun P : L => (r K*shapeArgument (primaryGenerator K))*(aw P.val.val*shapeArgument (primaryGenerator P.val.val))
-  have hs (P : L) (u : Eisˣ) : Summable (fun i => wt P*block P u i) :=
+  have hs (P : L) (u : ActualEisensteinCubic.Oˣ) : Summable (fun i => wt P*block P u i) :=
     (literalDyadicBlock_summable (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc hN hbase
       (hchar P.val.val P.val.property) (reflectedExponent jF) hj' (slotIndices φ (PrimeIndex K) σ)
       (CompletedHeight.normTwistedSource W θ) lo hi hlo hts htw X hX u).mul_left _
@@ -81,7 +80,7 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
         (F.reflected K hK (S P.val.val)).generator_good (reflectedExponent jF)
         (slotIndices φ (PrimeIndex K) σ) (CompletedHeight.normTwistedSource W θ) X=
       (fixedRadialCoefficientScalar*s.stratumShapeFactor (c*primaryGenerator (∏ i,F.ideal i)))*
-        ∑' u : Eisˣ,∑' i : ℕ×ℕ×ℕ,wt P*block P u i := by
+        ∑' u : ActualEisensteinCubic.Oˣ,∑' i : ℕ×ℕ×ℕ,wt P*block P u i := by
     rw [mixedReflectedValue_eq_dyadic (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc hN hbase
       (hchar P.val.val P.val.property) (reflectedExponent jF) hj' (slotIndices φ (PrimeIndex K) σ)
       (CompletedHeight.normTwistedSource W θ) lo hi hlo hts htw X hX,

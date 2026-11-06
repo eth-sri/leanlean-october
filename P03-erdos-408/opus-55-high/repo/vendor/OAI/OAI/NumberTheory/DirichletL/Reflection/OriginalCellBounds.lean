@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.TupleDyads
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-lemma original_residual_norm_bounds (rows : Finset (Ideal Eis)) (J Q : Ideal Eis)
+lemma original_residual_norm_bounds (rows : Finset (Ideal ActualEisensteinCubic.O)) (J Q : Ideal ActualEisensteinCubic.O)
     (hbad : ∀ P∈fixedBadPrimes,P∣Q) (U : ℝ)
     (hrows : ∀ I∈rows,I≠0 ∧ (Ideal.absNorm I:ℝ)≤U) :
     ∀ K∈originalResidualRows rows J Q,
@@ -24,10 +23,10 @@ lemma original_residual_norm_bounds (rows : Finset (Ideal Eis)) (J Q : Ideal Eis
   exact ⟨QuadraticMainBoundary.norm_one_le hr.1.1,hr.2⟩
 
 lemma dyadic_canonical_lower (Z QK : ℝ) (hZ : 1<Z) (hQK : 0<QK)
-    (K : Ideal Eis) (hK : QK/2≤(Ideal.absNorm K:ℝ)) :
+    (K : Ideal ActualEisensteinCubic.O) (hK : QK/2≤(Ideal.absNorm K:ℝ)) :
     Z^(Real.logb Z QK)/2≤(Ideal.absNorm K:ℝ) := by
-  rw [Real.rpow_logb (lt_trans zero_lt_one hZ) (ne_of_gt hZ) hQK]
-  exact hK
+  rw [Real.rpow_logb (by positivity) (ne_of_gt hZ) hQK]
+  omega
 
 end
 end SevenEighths.InverseReflectedPhase

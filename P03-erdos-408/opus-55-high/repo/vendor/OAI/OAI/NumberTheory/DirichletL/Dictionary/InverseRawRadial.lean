@@ -8,11 +8,8 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRadial
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve
-open ConcreteTraceCRT ActualEisensteinCubic
 local notation "O"=>HeckeFamily.O
 
 theorem exists_raw_radial_majorant :
@@ -25,14 +22,14 @@ theorem exists_raw_radial_majorant :
     (n:=⊤) isOpen_Ioo isClosed_Icc hsub
   let v : ℝ→ℂ:=fun x=>((f x)^2:ℝ)
   have hv : ContDiff ℝ ∞ v:=Complex.ofRealCLM.contDiff.comp
-    ((by simpa using hf : ContDiff ℝ ∞ f).pow 2)
+    ((by omega : ContDiff ℝ ∞ f).pow 2)
   have hsupp : Function.support v⊆Set.Icc (-1) 2 := by
     intro x hx
     have hn : x∈Function.support f := by
       intro hz
       exact hx (by simp [v,hz])
     rw [hs] at hn
-    exact ⟨hn.1.le,hn.2.le⟩
+    exact by grind
   have hvc:=HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   refine ⟨hvc.toSchwartzMap hv,hvc,?_,?_⟩
   · intro x
@@ -40,8 +37,7 @@ theorem exists_raw_radial_majorant :
     positivity
   · intro x hx
     change (((f x)^2:ℝ):ℂ)=1
-    rw [(hone x).mp hx]
-    norm_num
+    simp_all
 
 end SevenEighths.DetectorDictionaryInverseRawRadial
 

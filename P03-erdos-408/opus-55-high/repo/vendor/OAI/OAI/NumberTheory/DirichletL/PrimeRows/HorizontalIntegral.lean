@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedJoinDecay
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma continuedRow_horizontal_measurable {K : ℕ}
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -23,7 +22,7 @@ lemma continuedRow_horizontal_measurable {K : ℕ}
       p.1 υ r ((tx,p.2.1),p.2.2)) := by
   have hR : Continuous (fun t : ℝ=>mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) ((r:ℂ)+t*I)) :=
     (ProbeRadialMellin.radial_mellin_differentiable W0).continuousOn.comp_continuous
-      (by fun_prop) (by intro t;simpa using hr)
+      (by fun_prop) (by simp_all)
   have hW := (CubicReflectionKernel.compact_source_mellin_differentiable W1 a1 b1 ha1 hW1 (W1.smooth ⊤)).continuous
   have hcoords : Continuous (fun p : ℝ × (ℝ × ℝ)=>(((p.1:ℂ)+tx*I,(υ:ℂ)+p.2.2*I),(r:ℂ)+p.2.1*I)) := by fun_prop
   have hscale := (sourceScale_continuous X Y Z hX hY hZ).comp hcoords
@@ -70,7 +69,7 @@ lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr 
   have hnorm : Integrable (fun v=>∫q,‖F v q‖ ∂ν) μ := by
     apply (integrable_const C).mono' hm'.norm.integral_prod_right'
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
-    rw [Real.norm_eq_abs,abs_of_nonneg (integral_nonneg (fun _=>norm_nonneg _))]
+    rw [Real.norm_eq_abs,abs_of_nonneg (by positivity)]
     exact hb v hv
   have hprod : Integrable (Function.uncurry F) (μ.prod ν) := by
     apply (integrable_prod_iff hm').mpr
@@ -86,10 +85,10 @@ lemma horizontal_integral_bound (F : ℝ→(ℝ×ℝ)→ℂ) (l r C : ℝ) (hlr 
     _ = ∫v,∫q,‖F v q‖ ∂ν ∂μ := integral_integral_swap hprod.norm.swap
     _ ≤ ∫v,C ∂μ := integral_mono_ae hnorm (integrable_const C) (by
       filter_upwards [ae_restrict_mem measurableSet_Ioc] with v hv
-      exact hb v hv)
+      grind)
     _ = _ := by
       dsimp [μ]
-      rw [setIntegral_const,Real.volume_real_Ioc_of_le hlr,smul_eq_mul]
+      simp_all
 
 end SevenEighths.ProbeHighRowFamily
 

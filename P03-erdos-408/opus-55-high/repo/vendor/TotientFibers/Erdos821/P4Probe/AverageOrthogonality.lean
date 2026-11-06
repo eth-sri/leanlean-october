@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -44,7 +43,7 @@ lemma productAverage_idempotent (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (S : Finset ι) (f : ProductSample α → ℂ) :
     productAverage w S (productAverage w S f) = productAverage w S f := by
   funext x
-  simpa only [Finset.union_self] using productAverage_union w hsum S S f x
+  simpa using productAverage_union w hsum S S f x
 
 lemma productAverage_pair_self (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (S : Finset ι) (f : ProductSample α → ℂ) :
@@ -60,8 +59,8 @@ lemma productAverage_energy_split (w : ∀ i, α i → ℝ)
         productSqNorm w (productAverage w S f) = productSqNorm w f := by
   have hfg := productAverage_pair_self w hsum S f
   have hgf : productPair w (productAverage w S f) f =
-      productPair w (productAverage w S f) (productAverage w S f) := by
-    exact (productAverage_duality w S f f).symm.trans hfg
+      productPair w (productAverage w S f) (productAverage w S f) :=
+    (productAverage_duality w S f f).symm.trans hfg
   have h := productPair_sub_sub w f (productAverage w S f)
   rw [hfg, hgf] at h
   have hre := congrArg Complex.re h
@@ -73,7 +72,7 @@ lemma productSqNorm_nonneg (w : ∀ i, α i → ℝ) (hw : ∀ i a, 0 ≤ w i a)
   apply Finset.sum_nonneg
   intro x _
   apply mul_nonneg _ (sq_nonneg _)
-  exact Finset.prod_nonneg (fun i _ => hw i (x i))
+  exact Finset.prod_nonneg (by grind)
 
 lemma productAverage_sqNorm_le (w : ∀ i, α i → ℝ) (hw : ∀ i a, 0 ≤ w i a)
     (hsum : ∀ i, ∑ a, w i a = 1) (S : Finset ι) (f : ProductSample α → ℂ) :

@@ -48,7 +48,7 @@ lemma unramifiedSelected_error_bound (Q : ℝ) (A eta v x w z : ℂ)
   have hh := compensated_phase_error_bound (coordV Q z) (coordW Q v w) (coordD Q eta v x)
     (unramifiedMarked Q A eta v x w z) (star eta*(Q:ℂ)^x) ((Q:ℂ)^(-w)) (star v) 1
     (by norm_num) hV hW hD hq (by linarith) (by linarith)
-    (by simpa using he.1) (by simpa using he.2) (by rw [norm_star,hv]) hi.1 hi.2
+    (by linarith) (by linarith) (by simp_all) hi.1 hi.2
   simpa only [mul_one,unramifiedSelected,unramifiedClosed,unramifiedMarked] using hh
 
 lemma unramifiedSelected_bound (Q : ℝ) (A eta v x w z : ℂ)

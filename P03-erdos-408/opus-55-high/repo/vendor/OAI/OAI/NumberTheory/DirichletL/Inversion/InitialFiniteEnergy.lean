@@ -10,15 +10,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialFiniteEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
+open InverseInitialEnergyCallerSource
+open InverseInitialQuotientGeometry
 open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem finite_physical_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -42,11 +41,11 @@ theorem finite_physical_bound
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
       (∀x∈S,x.common⊆Finset.univ)→(∀x∈S,x.overlap⊆Finset.univ)→
@@ -93,17 +92,17 @@ theorem finite_physical_bound
     rw [hDeq];linarith
   have hsize:max 1 b₀*Z^D≤Z^(2*cap+2):=by
     calc
-      _≤Z*Z^D:=mul_le_mul_of_nonneg_right hbZ (Real.rpow_nonneg (by linarith) _)
-      _=Z^(D+1):=by rw [Real.rpow_add (by linarith : 0<Z),Real.rpow_one];ring
+      _≤Z*Z^D:=mul_le_mul_of_nonneg_right hbZ (by positivity)
+      _=Z^(D+1):=by rw [Real.rpow_add (by positivity),Real.rpow_one];ring
       _≤_:=Real.rpow_le_rpow_of_exponent_le hZp.le (by linarith)
   have hs₁':Function.support (clippedSource W₁ c₁ θ₁)⊆Set.Iic (max 1 b₀):=
     by
       intro x hx
-      exact le_trans (clipped_support_upper W₁ a₀ b₀ c₁ θ₁ ha₀ hc₁ hs₁ hx) (le_max_right 1 b₀)
+      exact le_trans (clipped_support_upper W₁ a₀ b₀ c₁ θ₁ ha₀ hc₁ hs₁ hx) (by simp)
   have hs₂':Function.support (clippedSource W₂ c₂ θ₂)⊆Set.Iic (max 1 b₀):=
     by
       intro x hx
-      exact le_trans (clipped_support_upper W₂ a₀ b₀ c₂ θ₂ ha₀ hc₂ hs₂ hx) (le_max_right 1 b₀)
+      exact le_trans (clipped_support_upper W₂ a₀ b₀ c₂ θ₂ ha₀ hc₂ hs₂ hx) (by simp)
   obtain ⟨T,hT,hfreqcap⟩:=exists_source_frequency_cap p S
   have hsplit:=actual_physical_retained_tail p hp hcop hg
     (InverseInitialRayAttachment.poolPrimary_primary F hFa) Finset.univ S hdiv hf w Ψ
@@ -129,12 +128,12 @@ theorem finite_physical_bound
     (fun x hx=>hdiv x (Finset.mem_filter.mp hx).1)
     (fun x hx=>hf x (Finset.mem_filter.mp hx).1)
     (fun x hx=>hw x (Finset.mem_filter.mp hx).1)
-    (fun _=>1) (physicalCaps (max 1 b₀) Z D T) (by intros;norm_num)
+    (fun _=>1) (physicalCaps (max 1 b₀) Z D T) (by simp)
     (fun x hx=>(Finset.mem_filter.mp hx).2)
   have hheight:1≤((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
       (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)):=
-    one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by linarith [norm_nonneg θ₁]))
-      (one_le_pow₀ (by linarith [norm_nonneg θ₂]))
+    one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by simp))
+      (one_le_pow₀ (by simp))
   have hpow:Z^(-1:ℝ)≤Z^(m+15*η+π+eps+loss):=
     Real.rpow_le_rpow_of_exponent_le hZp.le (by linarith)
   apply (add_le_add hret ht).trans
@@ -145,9 +144,7 @@ theorem finite_physical_bound
     calc
       _≤tailC*Z^(m+15*η+π+eps+loss):=mul_le_mul_of_nonneg_left hpow htailC
       _≤_:=le_mul_of_one_le_right (by positivity) hheight
-  convert add_le_add_left hh (Cr*Z^(m+15*η+π+eps+loss)*
-    ((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
-      (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J))) using 1 <;> dsimp [tailC] <;> ring
+  linarith
 
 end SevenEighths.InverseInitialFiniteEnergy
 

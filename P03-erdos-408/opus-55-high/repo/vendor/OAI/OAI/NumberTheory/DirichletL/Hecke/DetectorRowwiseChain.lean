@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwise
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwise
 
@@ -30,11 +30,9 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
     have c1 := cm 1 i (by norm_num)
     have c2 := cm 2 i (by norm_num)
     fin_cases j <;> fin_cases k
-    · simpa [F] using c0
+    · grind
     · convert c1.const_mul I using 1
-      ext p
-      simp [F]
-      rfl
+      grind
     · convert c1.neg using 1
       ext p
       simp [F]
@@ -46,16 +44,16 @@ theorem chain_rowwise {ι : Type*} (rows : Finset ι) (M : ℕ→ι→ℝ→ℝ�
   have dFx (k : Fin 2) (i : ι) (hi : i∈rows) (x y : ℝ) :
       HasDerivAt (fun u => F 0 k i u y) (F 1 k i x y) x := by
     fin_cases k
-    · simpa [F] using dx 0 i x y (by norm_num)
+    · grind
     · simpa [F] using (dx 1 i x y (by norm_num)).const_mul I
   have dFy (j : Fin 2) (i : ι) (hi : i∈rows) (x y : ℝ) :
       HasDerivAt (F j 0 i x) (F j 1 i x y) y := by
     fin_cases j
-    · simpa [F] using dy 0 i x y (by norm_num)
+    · grind
     · convert (dy 1 i x y (by norm_num)).neg using 1
       · ext t
         simp [F]
-      · simp [F]
+      grind
   have eF (j k : Fin 2) (x : ℝ) (hx : x∈Icc a b) (y : ℝ) (hy : y∈Icc c d) :
       ∑ i∈rows, ‖F j k i x y‖^2≤E := by
     fin_cases j <;> fin_cases k

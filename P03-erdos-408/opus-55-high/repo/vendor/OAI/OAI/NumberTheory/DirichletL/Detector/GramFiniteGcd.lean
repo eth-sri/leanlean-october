@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 lemma supportedIdealProduct_injective (C : SupportedIdeal) : Function.Injective (supportedIdealProduct C) := by
@@ -38,16 +37,16 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
       have hl : supportedIdealProduct (gcdCommon p.1 p.2) (gcdLeft p.1 p.2)=p.1 := Subtype.ext (gcd_common_left _ _)
       have hr : supportedIdealProduct (gcdCommon p.1 p.2) (gcdRight p.1 p.2)=p.2 := Subtype.ext (gcd_common_right _ _)
       simp only [commonTriples,Finset.mem_sigma,Finset.mem_filter,Finset.mem_product,commonColumns_mem]
-      exact ⟨Finset.mem_image.mpr ⟨p,hp,rfl⟩,⟨by rw [hl];exact (Finset.mem_product.mp hp).1,by rw [hr];exact (Finset.mem_product.mp hp).2⟩,gcd_residual_coprime _ _⟩
+      exact ⟨Finset.mem_image.mpr (by grind),⟨by simp_all,by simp_all⟩,gcd_residual_coprime _ _⟩
     · intro p hp q hq he
       have hc := congrArg Sigma.fst he
       have hl := congrArg (fun t : (C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)=>t.2.1) he
       have hr := congrArg (fun t : (C : SupportedIdeal)×(SupportedIdeal×SupportedIdeal)=>t.2.2) he
       apply Prod.ext <;> apply Subtype.ext
       · rw [←gcd_common_left p.1 p.2,←gcd_common_left q.1 q.2]
-        rw [show gcdCommon p.1 p.2=gcdCommon q.1 q.2 from hc,show gcdLeft p.1 p.2=gcdLeft q.1 q.2 from hl]
+        simp_all
       · rw [←gcd_common_right p.1 p.2,←gcd_common_right q.1 q.2]
-        rw [show gcdCommon p.1 p.2=gcdCommon q.1 q.2 from hc,show gcdRight p.1 p.2=gcdRight q.1 q.2 from hr]
+        simp_all
     · intro t ht
       have ht' : t.1∈commonPool F ∧ (t.2.1∈commonColumns F t.1 ∧ t.2.2∈commonColumns F t.1) ∧ IsCoprime t.2.1.val t.2.2.val := by
         simpa only [commonTriples,Finset.mem_sigma,Finset.mem_filter,Finset.mem_product] using ht
@@ -59,7 +58,7 @@ theorem finite_pair_gcd (F : Finset SupportedIdeal) (f : SupportedIdeal→Suppor
     · intro p hp
       have hl : supportedIdealProduct (gcdCommon p.1 p.2) (gcdLeft p.1 p.2)=p.1 := Subtype.ext (gcd_common_left _ _)
       have hr : supportedIdealProduct (gcdCommon p.1 p.2) (gcdRight p.1 p.2)=p.2 := Subtype.ext (gcd_common_right _ _)
-      simp only [hl,hr]
+      simp_all
   rw [Finset.sum_product] at he
   rw [he,commonTriples,Finset.sum_sigma]
   apply Finset.sum_congr rfl

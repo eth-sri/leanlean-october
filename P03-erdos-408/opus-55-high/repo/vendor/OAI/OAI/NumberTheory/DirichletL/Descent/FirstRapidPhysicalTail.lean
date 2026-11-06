@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstSourceTail
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem first_whole_cube_rapid_physical_tail (ε:ℝ) (hε:0<ε)
     (Mmax Fmax eta tau saving:ℝ) (hMm:0≤Mmax) (hFm:0≤Fmax)
     (heta:0≤eta) (htau:0<tau) :
     ∃ (s:Finset (ℕ×ℕ)) (Ct Cm:ℝ),0<Ct ∧ 0<Cm ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (pool:Finset ι) (b:CubeCoordinates ι) (C D extra₁ extra₂:Finset ι)
-      (f:Ideal O) (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂:O)
+      (f:Ideal ActualEisensteinCubic.O) (Ψ₁ Ψ₂:ActualEisensteinCubic.O→*ℂ) (m₁ m₂:ActualEisensteinCubic.O)
       (slots:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
       (test₁ test₂:Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
       (E G₁ G₂ Z M r ell V B j:ℝ) (delta:Finset ι→ℝ),

@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,40 +30,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical
 
 end CubicEisenstein
 
@@ -87,10 +66,10 @@ theorem symmetric_truncation_scales (X₀ X T : ℝ) (hX₀ : 0 < X₀)
     0 < X ∧ 0 < X₀/T ∧ X₀/T ≤ X ∧ X ≤ T*X₀ ∧ 0 ≤ T^4 := by
   have hT0 : 0 < T := by linarith
   have hX : 0 < X := by linarith
-  refine ⟨hX,div_pos hX₀ hT0,?_,?_,by positivity⟩
+  refine ⟨hX,by positivity,?_,?_,by positivity⟩
   · apply (div_le_iff₀ hT0).mpr
     nlinarith
-  · nlinarith
+  nlinarith
 
 theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 < X₀)
     (hlo : X₀/2 ≤ X) (hhi : X ≤ 2*X₀) (hT : 4 ≤ T) :
@@ -100,7 +79,7 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
   have hT0 : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
   have hX : 0 < X := by linarith
-  have hY : 0 < X₀/T := div_pos hX₀ hT0
+  have hY : 0 < X₀/T := by positivity
   have hratio : (X₀/T)/X ≤ 2/T := by
     apply (div_le_iff₀ hX).mpr
     calc
@@ -113,8 +92,8 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
       _ = 2/T := by field_simp
   have hpow : (2/T)^(m+3) ≤ (2 : ℝ)^(m+3)/T^m := by
     rw [div_pow]
-    exact div_le_div_of_nonneg_left (by positivity) (pow_pos hT0 m)
-      (pow_le_pow_right₀ hT1 (by omega : m ≤ m+3))
+    exact div_le_div_of_nonneg_left (by positivity) (by positivity)
+      (pow_le_pow_right₀ hT1 (by omega))
   have h₁ : ((X₀/T)/X)^(m+3) ≤ (2 : ℝ)^(m+3)/T^m :=
     (pow_le_pow_left₀ (by positivity) hratio _).trans hpow
   have h₂ : 1/(1+(T*X₀)/X)^(m+3) ≤ (2 : ℝ)^(m+3)/T^m := by
@@ -126,20 +105,20 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
     exact hhi
   have hmin : 1/(2*T) ≤ min 1 (X/(T*X₀)) := by
     apply le_min
-    · apply (div_le_iff₀ (by positivity : 0 < 2*T)).mpr
+    · apply (div_le_iff₀ (by positivity)).mpr
       linarith
-    · apply (le_div_iff₀ (mul_pos hT0 hX₀)).mpr
+    · apply (le_div_iff₀ (by positivity)).mpr
       have he : 1/(2*T)*(T*X₀)=X₀/2 := by field_simp
-      rwa [he]
+      linarith
   have hfreq : T ≤ 1+X*T^4/(T*X₀) := by
     have ht2 : 2 ≤ T^2 := by nlinarith
-    have ht4 : 2*T^2 ≤ T^4 := by nlinarith [sq_nonneg (T^2-2)]
-    have hprod : T*(T*X₀) ≤ X*T^4 := by nlinarith [mul_nonneg (sub_nonneg.mpr hlo) (sq_nonneg (T^2))]
-    have hh := (le_div_iff₀ (mul_pos hT0 hX₀)).mpr hprod
+    have ht4 : 2*T^2 ≤ T^4 := by nlinarith
+    have hprod : T*(T*X₀) ≤ X*T^4 := by nlinarith [mul_nonneg (sub_nonneg.mpr hlo) (by positivity)]
+    have hh := (le_div_iff₀ (by positivity)).mpr hprod
     linarith
   have hden : (1/(2*T))^2*T^(m+3) ≤
-      (min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3) := by
-    exact mul_le_mul (pow_le_pow_left₀ (by positivity) hmin 2)
+      (min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3) :=
+    mul_le_mul (pow_le_pow_left₀ (by positivity) hmin 2)
       (pow_le_pow_left₀ hT0.le hfreq (m+3)) (by positivity) (by positivity)
   have h₃ : (X/(X₀/T))/((min 1 (X/(T*X₀)))^2*(1+X*T^4/(T*X₀))^(m+3)) ≤ 8/T^m := by
     calc
@@ -152,17 +131,16 @@ theorem symmetric_truncation_scalar_bound (m : ℕ) (X₀ X T : ℝ) (hX₀ : 0 
     norm_num
     nlinarith
   calc
-    _ ≤ (2 : ℝ)^(m+3)/T^m + (2 : ℝ)^(m+3)/T^m + 8/T^m := add_le_add (add_le_add h₁ h₂) h₃
+    _ ≤ (2 : ℝ)^(m+3)/T^m + (2 : ℝ)^(m+3)/T^m + 8/T^m := by linarith
     _ = (2*(2 : ℝ)^(m+3)+8)/T^m := by ring
     _ ≤ _ := div_le_div_of_nonneg_right hc (by positivity)
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
 
 def SecondSourceSupport {ι : Type*} [DecidableEq ι]
@@ -179,7 +157,6 @@ variable {ι : Type*} [DecidableEq ι]
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -219,13 +196,11 @@ def secondLogIndex (D : Finset ι) (x : SecondExpansionData ι) : SecondLogIndex
 lemma element_norm_ge_one (a : O) (ha : a ≠ 0) : 1 ≤ ‖eisEmbedding a‖^2 := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span]
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (show Ideal.absNorm (Ideal.span {a}) ≠ 0 by
-    rw [ne_eq, Ideal.absNorm_eq_zero_iff, Ideal.span_singleton_eq_bot]
-    exact ha)
+    simp_all)
 
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -234,7 +209,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 

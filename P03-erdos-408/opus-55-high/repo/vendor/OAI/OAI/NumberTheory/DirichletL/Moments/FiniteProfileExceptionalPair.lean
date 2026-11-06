@@ -7,13 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CenteredMomentEligibleEnergy
+open ConcretePrimeRowBridge
 universe u
 structure Profiles (lo hi:ℝ) where
   profile : Fin 2→𝓢(ℝ,ℂ)
@@ -27,8 +25,8 @@ lemma Profiles.control_nonneg {lo hi:ℝ} (p:Profiles lo hi) (R:Finset (ℕ×ℕ
 
 variable {lo hi:ℝ}
 def ProfileAdmissible {ι:Type u} [Fintype ι] (s:Data ι) (p:Profiles lo hi)
-    (Q:Ideal O) (Z B r:ℝ) (z:O):Prop:=
-  (∀i,1≤s.P i) ∧ s.m≠0 ∧ s.A≠0 ∧ z≠0 ∧ goodLambda∣s.m ∧ (2:O)∣s.m ∧
+    (Q:Ideal HeckeFamily.O) (Z B r:ℝ) (z:HeckeFamily.O):Prop:=
+  (∀i,1≤s.P i) ∧ s.m≠0 ∧ s.A≠0 ∧ z≠0 ∧ goodLambda∣s.m ∧ (2:HeckeFamily.O)∣s.m ∧
   (HeckeRowClosure.rowConductorBound s.η s.m 1 (s.A*z):ℝ)≤Z^B ∧
   CenteredExceptionalProfile.FixedInducingRow s.η Q s.m s.A z ∧
   s.W₁=p.profile 0 ∧ s.W₂=p.profile 1 ∧

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.UniformSlices
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_buffered_horizontal_join_decay (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -40,7 +39,7 @@ theorem uniform_buffered_horizontal_join_decay (K : ℕ)
   have hbound := hbound0 η u hu P hP hPS ψ
   have hcost := contourArithmeticCost_nonneg η u P
   let A : ℝ := C*contourArithmeticCost η u P*(X^(1/2-r)*scaleBound Z ((51/100)+r-1) (2+r-1)*Y^((1-a-6*e)-1))/height H^N
-  have hA : 0≤A := by dsimp [A];exact div_nonneg (mul_nonneg (mul_nonneg hC hcost) (by unfold scaleBound;positivity)) (pow_nonneg (height_pos _).le _)
+  have hA : 0≤A := by dsimp [A];exact div_nonneg (mul_nonneg (by positivity) (by unfold scaleBound;positivity)) (pow_nonneg (height_pos _).le _)
   have hslice (v : ℝ) (hv : v∈Ioc (a+16*e) 2) :=
     hbound X Y Z hX hY hZ a B H i ha haTop hB hH hbin v ⟨hv.1.le,hv.2⟩ tx htx
   have hnorm (v : ℝ) (hv : v∈Ioc (a+16*e) 2) :
@@ -59,8 +58,8 @@ theorem uniform_buffered_horizontal_join_decay (K : ℕ)
     (a+16*e) 2 A (by linarith) hA hm (fun v hv=>(hslice v hv).1) hnorm
   refine ⟨hi,hb.trans ?_⟩
   calc
-    _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith : 2-(a+16*e)≤2) hA
-    _ = _ := by dsimp [A];ring
+    _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith) hA
+    _ = _ := by ring
 
 end SevenEighths.ProbeHighRowFamily
 

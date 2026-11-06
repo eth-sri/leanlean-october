@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.RawNormAssembly
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -51,20 +50,16 @@ theorem bigAveragedRawKernel_entry (A : Model F P J m) (n : ℕ) (theta : ℝ) (
         star (physicalSmallCoefficient F P J a.2.2.val.1) *
           physicalSmallCoefficient F P J b.2.2.val.1 *
           cutoffConditionedKernel A n theta forward (smallArrayPrefix J F.ell a.1)
-            (permuteBetween p a.2) (permuteBetween q b.2) else 0 := by
-    exact rawCleanKernel_coordinates A n theta forward a.1 b.1
+            (permuteBetween p a.2) (permuteBetween q b.2) else 0 :=
+    rawCleanKernel_coordinates A n theta forward a.1 b.1
       (P.actBig p a.2.1) (P.actBig q b.2.1) a.2.2.val b.2.2.val hV
   unfold bigAveragedRawKernel bigAveragedConditionedKernel
   rw [mul_left_comm, Finset.mul_sum]
   simp_rw [Finset.mul_sum, he]
   by_cases hs : smallCleanGate J F.ell a.1 b.1 a.2.2.val b.2.2.val
   · simp only [ite_eq_left hs]
-    apply Finset.sum_congr rfl
-    intro p _
-    apply Finset.sum_congr rfl
-    intro q _
     ring
-  · simp only [ite_eq_right hs, Finset.sum_const_zero, mul_zero]
+  simp_all
 
 
 theorem big_averaged_clean_norm (F : FixedData) :
@@ -88,10 +83,10 @@ theorem big_averaged_clean_norm (F : FixedData) :
   by_cases hs : smallCleanGate J F.ell a.1 b.1 a.2.2.val b.2.2.val
   · rw [ite_eq_left hs] at h
     simp only [smallCleanGate] at hs
-    simpa only [ite_eq_left hs] using h
+    grind
   · rw [ite_eq_right hs] at h
     simp only [smallCleanGate] at hs
-    simpa only [ite_eq_right hs] using h
+    grind
 
 
 end Erdos821.P3Clean

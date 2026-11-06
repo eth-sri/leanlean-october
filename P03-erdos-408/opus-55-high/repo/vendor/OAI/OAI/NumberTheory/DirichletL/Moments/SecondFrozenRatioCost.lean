@@ -20,38 +20,29 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondFrozenRatioCost
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss
 open CenteredMomentSecondSectorColumns CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar
-open CenteredMomentLogDyadic CenteredMomentSmooth CenteredMomentSupport
-open CenteredMomentSecondNonexceptional CenteredMomentRestrictedEnergy CenteredMomentSecondScaled
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-open CenteredMomentSecondMaskedWindow CenteredMomentSecondRadicalColumns CenteredMomentSecondWindowBudget
-open CenteredMomentRestrictedSource CenteredMomentFirstSectors CenteredMomentSecondWindowSource
-open CenteredMomentSecondIdealBlockBound
-open CenteredMomentSecondRetainedRatioCost CenteredMomentSourceLiveColumn
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSecondCanonicalNonunit
+open CenteredMomentMobiusRegroup
+open CenteredMomentSectorLocalization RayFourExpansion
+open CenteredMomentSecondWindowBudget
+open CenteredMomentSourceLiveColumn
 
 open Filter
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialData CenteredMomentCommonRadialPointwise
 open CenteredMomentRadialEligibleEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
+open CenteredMomentCommonAllocationSum
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-open CenteredMomentSecondOriginalChildren CenteredMomentSecondSupportedChildren
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel
-open CenteredMomentSecondPhysicalCost CenteredMomentCommonRadialData CenteredMomentExceptionalAmplitudePair
+open CenteredMomentSecondPhysicalBlock
+open CenteredMomentExceptionalAmplitudePair
 
-open CenteredMomentSecondHeightFamily
 open CenteredMomentSecondExceptionalFamily CenteredMomentSecondEnergySplit
-open CenteredMomentSecondDyadicRowSupport CenteredMomentFirstAmplificationChoice
-open CenteredMomentOriginalCommonHarmonic CenteredMomentExceptionalAmplitudePair
+open CenteredMomentOriginalCommonHarmonic
 
 open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalScalar
 open CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedRatioScalar
@@ -61,28 +52,28 @@ theorem actual_canonical_child_ratio_cost (lo hi:ι→ℝ) (W : 𝓢(ℝ,ℂ)) (
       let _r:=dyadicScale (n 0)*dyadicScale (n 1)/(dyadicScale (n 2)*dyadicScale (n 3))
       ;
       ∀(s:Input ι) (τ:RayCharacter→Character),
-      (∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) → ∀R0 seed:Ideal O,
+      (∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) → ∀R0 seed:Ideal ActualEisensteinCubic.O,
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=finiteColumnCoefficient (Fintype.piFinset s.pools)
         (profileCoefficient R0 s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
-      ∀(C D:Ideal O) (hC:Supported C) (hD:Supported D),
+      ∀(C D:Ideal ActualEisensteinCubic.O) (hC:Supported C) (hD:Supported D),
       seed∣C → seed∣D → (Ideal.absNorm C:ℝ)≤Z^B → (Ideal.absNorm D:ℝ)≤Z^B →
       primeSupport C=primeSupport D → ∀U:Finset (CommonIndex C D),
       let _A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
       Family s.η C D hC hD U τ →
       s.W₁ 0=0 → s.W₂ 0=0 → 0≤sourceRadius s → sourceRadius s≤Z^B →
       ∀R:ℝ,
-      ∀(Q:Ideal O) (m:O) (χ₀:RayCharacter),Q≤Ideal.span {(72:O)} →
-      m≠0 → ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀(Q:Ideal ActualEisensteinCubic.O) (m:ActualEisensteinCubic.O) (χ₀:RayCharacter),Q≤Ideal.span {(72:ActualEisensteinCubic.O)} →
+      m≠0 → ConcretePrimeRowBridge.goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       ∀E₁ E₂:ℝ,
       0≤E₁ → 0≤E₂ →
-      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O)),(L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ) → Squarefree L →
+      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O)),(L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ) → Squarefree L →
         ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools C,
         frozenCoefficient b.val C R0 s.ν s.W s.P≠0 →
         ∀a∈(commonData (withHeight s (τ χ) v) C R0 b).toSource.active L,
           childEnergy (commonData (withHeight s (τ χ) v) C R0 b)
             (canonicalRadial (τ χ) Q n) L a≤E₁*childEnvelope s.η C D U n*(max 1 (1/retainedRatio n))^((1:ℝ)/6)*(1+‖v‖)^(2*J₁)) →
-      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O)),(L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ) → Squarefree L →
+      (∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O)),(L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ) → Squarefree L →
         ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools D,
         frozenCoefficient b.val D R0 s.ν s.W s.P≠0 →
         ∀a∈(commonData (withHeight s (τ χ) v) D R0 b).toSource.active L,
@@ -109,12 +100,12 @@ theorem actual_canonical_child_ratio_cost (lo hi:ι→ℝ) (W : 𝓢(ℝ,ℂ)) (
   by_cases hzero:physicalBlock s.η s.t S β C D hC hD U R rows W Kphys n=0
   · rw [hzero,norm_zero,zero_div]
     positivity
-  have hβ:∀I:Ideal O,β I≠0→(I.absNorm:ℝ)≤sourceRadius s:=
+  have hβ:∀I:Ideal ActualEisensteinCubic.O,β I≠0→(I.absNorm:ℝ)≤sourceRadius s:=
     fun I hi=>(original_column_norm s R0 seed I hz1 hz2 hi).2
   let E:=childEnvelope s.η C D U n*(max 1 (1/retainedRatio n))^((1:ℝ)/6)
   have hdyad:0<dyadicScale (n 1):=dyadicScale_pos _
   have hE:0≤E:=by unfold E childEnvelope;positivity
-  have hl:∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O)),
+  have hl:∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O)),
       (L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ) → Squarefree L →
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools C,
         frozenCoefficient b.val C R0 s.ν s.W s.P≠0 →
@@ -123,7 +114,7 @@ theorem actual_canonical_child_ratio_cost (lo hi:ι→ℝ) (W : 𝓢(ℝ,ℂ)) (
         (E₁*E)*(1+‖v‖)^(2*J₁):=by
     intro L hL hLN hsf χ v b hlive a ha
     simpa only [E,mul_assoc] using hleft L hL hLN hsf χ v b hlive a ha
-  have hr:∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal O)),
+  have hr:∀L∈divisorPool Finset.univ (fun J:sectorPool D hD.1 S=>(J:Ideal ActualEisensteinCubic.O)),
       (L.absNorm:ℝ)≤sourceRadius s/(D.absNorm:ℝ) → Squarefree L →
       ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools D,
         frozenCoefficient b.val D R0 s.ν s.W s.P≠0 →
@@ -133,7 +124,7 @@ theorem actual_canonical_child_ratio_cost (lo hi:ι→ℝ) (W : 𝓢(ℝ,ℂ)) (
     intro L hL hLN hsf χ v b hlive a ha
     simpa only [E,mul_assoc] using hright L hL hLN hsf χ v b hlive a ha
   have hh:=hZ.2 Kphys hKphys n s τ hlo hhi R0 seed C D hC hD hsC hsD hNC hND hCD U hf
-    hz1 hz2 hH R Q m χ₀ hQ hm hml hm2 (E₁*E) (E₂*E) (mul_nonneg hE₁ hE) (mul_nonneg hE₂ hE) hl hr
+    hz1 hz2 hH R Q m χ₀ hQ hm hml hm2 (E₁*E) (E₂*E) (by positivity) (by positivity) hl hr
   have hsqrt:Real.sqrt ((E₁*E)*(E₂*E))=E*Real.sqrt (E₁*E₂):=by
     rw [show (E₁*E)*(E₂*E)=E^2*(E₁*E₂) by ring,
       Real.sqrt_mul (sq_nonneg E),Real.sqrt_sq hE]

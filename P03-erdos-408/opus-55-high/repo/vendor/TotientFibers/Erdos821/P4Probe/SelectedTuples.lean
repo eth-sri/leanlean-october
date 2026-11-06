@@ -7,7 +7,6 @@ public import Erdos821.P4Probe.Bridge
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -92,7 +91,7 @@ lemma rowPartialTuple_product (S : P.BigGroup → Finset (Fin J)) (x : BigRowPar
     apply Finset.prod_eq_one
     intro g _
     have hk : selectedCounts S g.val = 0 := by simp [selectedCounts, g.property]
-    have : IsEmpty (Fin (selectedCounts S g.val)) := ⟨fun i => by have hi := i.isLt; omega⟩
+    have : IsEmpty (Fin (selectedCounts S g.val)) := by grind
     exact Fintype.prod_empty _
   rw [hempty, mul_one]
   apply Finset.prod_congr rfl
@@ -114,14 +113,14 @@ lemma rowPartialTuple_weight (S : P.BigGroup → Finset (Fin J)) (x : BigRowPart
     apply Finset.prod_eq_one
     intro g _
     have hk : selectedCounts S g.val = 0 := by simp [selectedCounts, g.property]
-    have : IsEmpty (Fin (selectedCounts S g.val)) := ⟨fun i => by have hi := i.isLt; omega⟩
+    have : IsEmpty (Fin (selectedCounts S g.val)) := by grind
     exact Fintype.prod_empty _
   rw [hempty, mul_one]
   apply Finset.prod_congr rfl
   intro g _
   apply Fintype.prod_equiv (selectedRowIndex S g)
   intro i
-  simp [rowPartialTuple, selectedRowIndex, g.property, Blueprint.Analytic.mu, PrimeGroups.mu, one_div]
+  simp [rowPartialTuple, selectedRowIndex, g.property, Blueprint.Analytic.mu, PrimeGroups.mu]
 
 lemma partial_expectation_real {ι : Type*} [Fintype ι] {α : ι → Type*}
     [∀ i, Fintype (α i)] (w : ∀ i, α i → ℝ)
@@ -141,7 +140,7 @@ lemma partial_expectation_real {ι : Type*} [Fintype ι] {α : ι → Type*}
   have ht : (∑ b : ∀ i : {i // i ∉ S}, α i.val,
       productWeight (fun i : {i // i ∉ S} => w i.val) b) = 1 := by
     convert productWeight_total (fun i : {i // i ∉ S} => w i.val)
-      (fun i => hsum i.val) using 1; congr! 2
+      (by grind) using 1; congr! 2
   rw [he, Fintype.sum_prod_type R]
   apply Finset.sum_congr rfl
   intro a _
@@ -168,7 +167,7 @@ lemma partial_expectation_complex {ι : Type*} [Fintype ι] {α : ι → Type*}
     have ht' : (∑ b : ∀ i : {i // i ∉ S}, α i.val,
         productWeight (fun i : {i // i ∉ S} => w i.val) b) = 1 := by
       convert productWeight_total (fun i : {i // i ∉ S} => w i.val)
-        (fun i => hsum i.val) using 1; congr! 2
+        (by grind) using 1; congr! 2
     exact_mod_cast ht'
   rw [he, Fintype.sum_prod_type R]
   apply Finset.sum_congr rfl
@@ -190,8 +189,7 @@ lemma selectedProduct_rows {ell m : ℕ} (ν : Pattern P J ell m)
   rw [Finset.prod_coe_sort (patternAuxCoordinates ν block side g) (fun i => (u g i).val)]
   by_cases hg : block g = side
   · simp only [hg, true_and, patternAuxCoordinates, ite_true]
-    exact (Finset.prod_filter (p := fun i => i ∈ ν.changed g.val)
-      (f := fun i => (u g i).val)).symm.trans (by simp)
+    simp
   · simp [patternAuxCoordinates, hg]
 
 def selectedAuxTuple {ell m : ℕ} (ν : Pattern P J ell m)
@@ -261,8 +259,7 @@ lemma selectedCellMass_eq {ell m : ℕ} (ν : Pattern P J ell m)
       Blueprint.Analytic.tupleWeight (analyticGroups P) (selectedCounts S)
         (rowPartialTuple S (flatPartialRows S x)) else 0
   rw [partialProductWeight_rows, rowPartialTuple_product, rowPartialTuple_weight]
-  dsimp only [H]
-  split_ifs <;> simp
+  grind
 
 lemma selectedKernel_eq {ell m : ℕ} (ν : Pattern P J ell m)
     (block : P.BigGroup → Bool) (side : Bool) (hV : ∀ g, 0 < P.V g)

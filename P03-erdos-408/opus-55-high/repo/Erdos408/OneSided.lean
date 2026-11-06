@@ -43,17 +43,17 @@ theorem oneSidedTypeII : OneSidedTypeII := by
   have hx0 : 0 < x := (Real.exp_pos 1).trans_le hx
   have hL : 1 ≤ Real.log x := by
     rw [← Real.log_exp 1]; exact Real.log_le_log (Real.exp_pos 1) hx
-  have hX : 0 < d.X := lt_of_lt_of_le (div_pos hx0 (by linarith)) hd.X_ge
+  have hX : 0 < d.X := lt_of_lt_of_le (by positivity) hd.X_ge
   refine h₁ d hd fun j => ?_
   -- `‖Q_Y‖ ≤ ‖Q_Y - Q_Y^maj‖ + ‖Q_Y^maj‖`
   calc ‖cauchySquare x d (2 ^ j)‖
       = ‖(cauchySquare x d (2 ^ j) - majorSquare (arcExp Dstar C) x d (2 ^ j)) +
-          majorSquare (arcExp Dstar C) x d (2 ^ j)‖ := by rw [sub_add_cancel]
+          majorSquare (arcExp Dstar C) x d (2 ^ j)‖ := by simp
     _ ≤ ‖cauchySquare x d (2 ^ j) - majorSquare (arcExp Dstar C) x d (2 ^ j)‖ +
           ‖majorSquare (arcExp Dstar C) x d (2 ^ j)‖ := norm_add_le _ _
     _ ≤ C₂ * d.X * 2 ^ j * Real.log x ^ (-(squarePrec Dstar + 1)) +
           C₃ * d.X * 2 ^ j * Real.log x ^ (-(squarePrec Dstar + 1)) :=
-        add_le_add (h₂ d hd j) (h₃ d hd hP4 hG j)
+        add_le_add (by grind) (h₃ d hd hP4 hG j)
     _ = (C₂ + C₃) * (d.X * 2 ^ j * Real.log x ^ (-(squarePrec Dstar + 1))) := by ring
     _ ≤ (|C₂| + |C₃|) * (d.X * 2 ^ j * Real.log x ^ (-(squarePrec Dstar + 1))) := by
         gcongr <;> exact le_abs_self _

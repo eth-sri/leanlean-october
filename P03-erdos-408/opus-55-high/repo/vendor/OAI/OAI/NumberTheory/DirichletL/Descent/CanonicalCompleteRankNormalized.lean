@@ -9,13 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open InverseInitialClippedColumns FourierBridge JointLogSeparation InverseReflectedPhase InverseTerminalWidths InverseSecondFibers
-local notation "O"=>ActualEisensteinCubic.O
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalCubeSeparation SecondPassArithmetic
+open InverseMomentFirstSecondHeightCost CompletedHeight
+open InverseInitialClippedColumns InverseTerminalWidths
 
 theorem actual_complete_normalized_rank_step
     (lo hi:ℝ)(hlo:0<lo)(hhi:0≤hi)(W:ℝ→ℂ)
@@ -34,7 +33,7 @@ theorem actual_complete_normalized_rank_step
       1≤bw ∧ Real.exp Alog≤bw ∧ bw=Real.exp window ∧
     ∀epsFirst epsSecond:ℝ,0<epsFirst → 0<epsSecond → ∀degree:ℕ,
     ∀(q:ℕ)(hq:q≠0),∃Cs Cb Z₀:ℝ,0<Cs ∧ 0≤Cb ∧ 1<Z₀ ∧
-    ∀{σ:Type}[DecidableEq σ](m:O),m≠0 →
+    ∀{σ:Type}[DecidableEq σ](m:ActualEisensteinCubic.O),m≠0 →
     ∀Z N V M z₀ margin cutoff pi epschild A loss lossFinal theta:ℝ,
       Z₀≤Z → 2≤Z → 2≤Z^eta → Real.exp 1≤Z^eta → 1≤eta*Real.log Z →
       0≤N → 0≤V → 0≤M → N+V≤L → M≤N+V → z₀≤L →
@@ -42,19 +41,19 @@ theorem actual_complete_normalized_rank_step
       0<cutoff → cutoff≤L → cutoff≤cstar/200 → eta≤cutoff/32 →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
       CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
-      (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^(normWidth Z (Ideal.span {m})) →
+      (Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^(normWidth Z (Ideal.span {m})) →
       0≤pi → 6*eta≤pi → em*(20*(3*L+16)+30)≤pi/4 → ed*(20*(3*L+16)+30)≤pi/4 →
       0≤epschild → -saving≤48*eta+tau+pi+epschild+epsSecond →
       48*eta+tau+pi+epschild+epsSecond≤loss →
       3*eta+epsFirst*(2*L+7*eta)≤lossFinal →
       loss+(2*L+15*eta+tau)*epsFirst+epsFirst≤lossFinal → -saving≤lossFinal →
       0≤A →
-    ∀labels:Finset (Ideal O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
+    ∀labels:Finset (Ideal ActualEisensteinCubic.O),(∀I∈labels,Supported I ∧ Squarefree I ∧ (I.absNorm:ℝ)≤Z^V) →
     ∀D:ℕ,hi*Z^N≤D → ∀slots:Finset σ,slots.card≤K →
     ∀(lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)))(H:σ→ℝ),
       (slots:Set σ).PairwiseDisjoint lists →
       (∀i∈slots,1≤H i) → (∀i∈slots,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i) → (∏i∈slots,H i)≤Z^z₀ →
-    ∀(base Ψ:O→*ℂ),CanonicalCoefficientClass.IsBaseRayTwist base Ψ → (∀u,‖Ψ u‖≤1) →
+    ∀(base Ψ:ActualEisensteinCubic.O→*ℂ),CanonicalCoefficientClass.IsBaseRayTwist base Ψ → (∀u,‖Ψ u‖≤1) →
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) Ψ →
     ∀a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)→ℂ,
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1) →
@@ -104,7 +103,7 @@ theorem actual_complete_normalized_rank_step
   rw [outside_complete_normalized_energy (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
     Ψ m slots lists a labels (fun I hI=>(hlabels I hI).1) (secondLabelWeight K)
     (normTwistedSource W theta) (Z^N) Z (N+V) (Z^M) (by linarith)] at hh
-  exact hh
+  omega
 
 end SevenEighths.InverseMoment
 

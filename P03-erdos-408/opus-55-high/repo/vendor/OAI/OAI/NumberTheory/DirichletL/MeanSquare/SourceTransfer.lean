@@ -8,33 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,42 +32,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace InitialMeanSquare
 
 section
-open ActualEisensteinCubic SecondPassArithmetic
+open SecondPassArithmetic
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 open SecondPassIntegration (elementNorm)
@@ -93,7 +75,7 @@ end
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic IdealMobiusDivisorSum
+open SecondPassArithmetic
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 
 section
@@ -113,7 +95,7 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory LineDeriv
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv
+open scoped Classical SchwartzMap LineDeriv
 
 abbrev EuclideanL2 := Lp ℂ 2 (volume : Measure EuclideanSpatial)
 abbrev EuclideanGradientL2 := PiLp 2 (fun _ : Fin 3 => EuclideanL2)
@@ -165,7 +147,7 @@ lemma schwartz_mem_euclideanWeakGradientGraph (f : 𝓢(EuclideanSpatial,ℂ)) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology SchwartzMap LineDeriv
+open scoped Classical SchwartzMap LineDeriv
 
 abbrev EuclideanH1Ambient := WithLp 2 (EuclideanL2 × EuclideanGradientL2)
 
@@ -211,10 +193,10 @@ lemma euclideanH1_norm_sq (u : EuclideanH1) :
 
 end CubicEisenstein
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace InitialMeanSquare
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CompletedGauss FirstCauchyArithmetic ShortDraftHeckeBridge
+open ConcretePrimeRowBridge
+open FirstCauchyArithmetic
 
 def normCharacter {q : ℕ} (χ : DirichletCharacter ℂ q) : O→*ℂ where
   toFun a := χ (Ideal.absNorm (Ideal.span {a}))
@@ -240,27 +222,24 @@ theorem sum_selected_ideals (F : Finset (Ideal O)) (hF : ∀I∈F,Squarefree I)
   rw [←Finset.sum_filter]
   symm
   apply Finset.sum_bij (fun S _ => ∏i∈S,i.val)
-  · intro S hS
-    exact (Finset.mem_filter.mp hS).2
+  · simp
   · intro S hS T hT he
     exact family_product_injective (fun i:primePool F => i.val) Subtype.val_injective he
   · intro I hI
-    refine ⟨idealSupport F I,?_,idealSupport_product_eq F hI (hF I hI)⟩
+    refine ⟨idealSupport F I,?_,idealSupport_product_eq F hI (by grind)⟩
     apply Finset.mem_filter.mpr
-    refine ⟨Finset.mem_powerset.mpr (Finset.subset_univ _),?_⟩
-    rwa [idealSupport_product_eq F hI (hF I hI)]
-  · intro S hS
-    rfl
+    refine ⟨by grind,?_⟩
+    rwa [idealSupport_product_eq F hI (by grind)]
+  simp
 
 def selectedIdealTest (F : Finset (Ideal O)) (W : ℕ→ℂ) (S : Finset (primePool F)) : ℂ :=
   if (∏i∈S,i.val)∈F then W (Ideal.absNorm (∏i∈S,i.val)) else 0
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
+open scoped Classical SchwartzMap
 namespace InitialMeanSquare
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic JointLogSeparation
 
 section
 variable {ι : Type*} [DecidableEq ι]

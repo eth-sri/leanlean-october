@@ -7,7 +7,7 @@ public import Erdos821.S34.Core
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 open OAI.LargePrimeGaps
 
 namespace Erdos821.S34.Proofs
@@ -22,12 +22,12 @@ private theorem interval_from_real_bounds (s : Finset ℤ) (X H : ℝ)
     (hs : ∀ n ∈ s, X ≤ (n : ℝ) ∧ (n : ℝ) ≤ X + H) :
     ∀ n ∈ s, ⌈X⌉ ≤ n ∧ n < ⌈X⌉ + (⌊H⌋₊ + 1 : ℕ) := by
   intro n hn
-  have hlo : ⌈X⌉ ≤ n := Int.ceil_le.mpr (hs n hn).1
+  have hlo := Int.ceil_le.mpr (hs n hn).1
   have hceil : X ≤ (⌈X⌉ : ℝ) := Int.le_ceil X
   have hoff : ((n - ⌈X⌉).toNat : ℝ) = (n : ℝ) - ⌈X⌉ := by
-    exact_mod_cast (show ((n - ⌈X⌉).toNat : ℤ) = n - ⌈X⌉ by omega)
-  have hnat : (n - ⌈X⌉).toNat ≤ ⌊H⌋₊ := Nat.le_floor (by rw [hoff]; linarith [(hs n hn).2])
-  exact ⟨hlo, by omega⟩
+    exact_mod_cast (by omega)
+  have hnat : (n - ⌈X⌉).toNat ≤ ⌊H⌋₊ := Nat.le_floor (by grind)
+  omega
 
 /-- §3 integer bilinear estimate, including intervals with arbitrary origins
 and coefficients with arbitrary holes in their support. -/
@@ -106,11 +106,10 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
       _ ≤ ((2 * C + 1) * (1 + V / r)) * (B * (U + r * Real.log (2 * r))) * Ea := by
         exact mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right hcount (by positivity)) hEa
-      _ = K₂ * ((1 + V / r) * (U + r * Real.log (2 * r))) * Ea := by dsimp [K₂]; ring
+      _ = K₂ * ((1 + V / r) * (U + r * Real.log (2 * r))) * Ea := by linarith
       _ ≤ K₂ * F * Ea := by
         apply mul_le_mul_of_nonneg_right _ hEa
         apply mul_le_mul_of_nonneg_left _ hKpos.le
-        dsimp [F]
         linarith
   have heq : (∑ n ∈ s, ∑ v ∈ t, a n * b v * Core.e (α * n * v)) =
       ∑ v ∈ t, b v * (∑ n ∈ s, a n * bvExp (α * n * v)) := by
@@ -134,6 +133,6 @@ theorem integer_bilinear (C : ℝ) (hC : 0 < C) :
   change ‖∑ n ∈ s, ∑ v ∈ t, a n * b v * Core.e (α * n * v)‖ ≤
     Real.sqrt K₂ * Real.sqrt Ea * Real.sqrt Eb * Real.sqrt F
   apply (sq_le_sq₀ (norm_nonneg _) hrhs).mp
-  simpa only [hrhssq] using hsq
+  linarith
 
 end Erdos821.S34.Proofs

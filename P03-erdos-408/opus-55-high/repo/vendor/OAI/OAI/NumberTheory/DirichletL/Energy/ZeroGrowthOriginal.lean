@@ -11,7 +11,7 @@ public import OAI.NumberTheory.DirichletL.Energy.LiveClippingDefect
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthOriginal
@@ -23,7 +23,6 @@ open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentEnergyReferencePr
 open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentInductionEnergy CenteredMomentEnergyLiveClippingDefect CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
 
 def swapProfiles {a b:ℝ}(p:Profiles a b):Profiles a b where
   profile := ![p.profile 1,p.profile 0]
@@ -51,14 +50,14 @@ lemma plainEnergy_swap {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)
     unfold positiveSlotRow
     rw [mul_comm X₂ X₁]
     ring
-  rw [hh]
+  simp_all
 
 theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
     (hepsilon:0<epsilon)(hxi:0<xi)(hdefect:0<defect)(S:Finset (ℕ×ℕ)):
     ∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(Bmask L Mcap loss:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K→
+      ∀(Bmask L Mcap loss:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K→
       ZeroGrowthAt Q a b bΦ Bmask L Mcap loss Z degree S K→0≤Bmask→
       Mcap+Bmask+defect+xi≤L→Mcap+Bmask+defect≤Lreflect→
       ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤Mcap→
@@ -74,7 +73,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
     live_deleted_bounded a b bΦ epsilon xi defect saving Lreflect
       ha hlo hhi hbΦ hepsilon hxi hdefect 2 (by norm_num) S
   obtain ⟨ndead,Sdead,Cdead,hCd,hdead⟩:=natural_original_error_mass
-    a b bΦ epsilon xi saving ha (by linarith only [hlo, hhi]) hbΦ hepsilon hxi
+    a b bΦ epsilon xi saving ha (by linarith) hbΦ hepsilon hxi
   obtain ⟨Cweight,hCw,hweight⟩:=original_energy_weighted_deletion (α:=Fin 0)
     (fun _=>0) (fun _=>0) (fun _=>le_refl 0) epsilon hepsilon
   obtain ⟨J,U,Cprofile,hCp,hprofile⟩:=reference_envelopes a b ha S T (Slive∪Sdead)
@@ -154,7 +153,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
         nlinarith only [mul_nonneg hK (mul_nonneg hd hA)]
       apply le_trans _ he
       convert hh' using 1; ring
-    have hw:=hweight Z Bmask bΦ a b s (p.profile 0) (p.profile 1) ha (by linarith only [hlo, hhi])
+    have hw:=hweight Z Bmask bΦ a b s (p.profile 0) (p.profile 1) ha (by linarith)
       (p.support 0) (p.support 1) (fun _=>∅) (fun _ _=>0) (fun _=>1)
       t Xshort Xlong (E*(Pmain+Perror)) 1
     have hresult:s.plainEnergy p t Xshort Xlong≤
@@ -164,27 +163,27 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
       · simp
       · simp
       · simp
-      · exact hXs
-      · exact hXl
-      · exact mul_nonneg hE (add_nonneg hPm hPe)
+      · omega
+      · omega
+      · positivity
       · norm_num
       · intro Ds hDs Dl hDl' I hI
         obtain ⟨hNs,_⟩:=divisor_norm s Ds hDs
         obtain ⟨hNl,_⟩:=divisor_norm s Dl hDl'
         have hpS:0<((∏P∈Ds,P).absNorm:ℝ):=zero_lt_one.trans_le hNs
         have hpL:0<((∏P∈Dl,P).absNorm:ℝ):=zero_lt_one.trans_le hNl
-        have heffective (f:O→ℂ):radialEnergy f (effectiveState s).radial.keep
+        have heffective (f:HeckeFamily.O→ℂ):radialEnergy f (effectiveState s).radial.keep
             s.radial.profile s.radial.scale=radialEnergy f s.radial.keep s.radial.profile s.radial.scale:=
           radialEnergy_effective s.radial f
         simp only [Finset.univ_eq_empty,Finset.empty_sdiff,Finset.prod_empty,mul_one,Real.rpow_one]
-        rw [show (fun z:O=>polynomial (naturalCharacter s.character z) false (p.profile 0)
+        rw [show (fun z:HeckeFamily.O=>polynomial (naturalCharacter s.character z) false (p.profile 0)
               (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 1)
               (Xlong/((∏P∈Dl,P).absNorm:ℝ)) 0 t)=
-            (fun z:O=>polynomial (naturalCharacter s.character z) false (p.profile 1)
+            (fun z:HeckeFamily.O=>polynomial (naturalCharacter s.character z) false (p.profile 1)
               (Xlong/((∏P∈Dl,P).absNorm:ℝ)) 0 t*
             polynomial (naturalCharacter s.character z) false (p.profile 0)
-              (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t) by funext z;exact mul_comm _ _]
+              (Xshort/((∏P∈Ds,P).absNorm:ℝ)) 0 t) by funext z;ring]
         by_cases hl:0≤s.width-Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ))+xi
         · have hh:=hZ.2 Bmask L Mcap loss Q degree K hK hgrowth hBmask hL hLreflect
             s hQ hs (p.profile 1) (p.profile 0) (p.support 1) (p.support 0)
@@ -198,11 +197,7 @@ theorem original_from_growth (a b bΦ epsilon xi defect saving Lreflect:ℝ)
               _ ≤ E*Pmain*((∏P∈Dl,P).absNorm:ℝ)+(E*Perror)*((∏P∈Dl,P).absNorm:ℝ) :=
                 add_le_add le_rfl (le_mul_of_one_le_right (mul_nonneg hE hPe) hNl)
               _ = _ := by ring
-          apply hh.trans
-          calc
-            _ ≤ E*Pmain*((∏P∈Dl,P).absNorm:ℝ)+E*Perror := by
-              convert hb using 1 <;> dsimp only [Pmain,Perror,Rcap] <;> ring
-            _ ≤ _ := hc
+          linarith
         · have hfar:s.width+xi<Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ)):=by linarith only [hl]
           have hh:=hZd.2 Bmask s (p.profile 1) (p.profile 0) (p.support 1) (p.support 0)
             t t (Real.logb Z (Xlong/((∏P∈Dl,P).absNorm:ℝ)))

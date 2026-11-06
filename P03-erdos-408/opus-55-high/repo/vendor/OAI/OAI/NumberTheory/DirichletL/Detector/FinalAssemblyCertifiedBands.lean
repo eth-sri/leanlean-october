@@ -11,18 +11,17 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedWidthInduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate
+open scoped Classical ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeFinalAssemblyCertifiedBands
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeFamily
 open ProbeFinalAssembly ProbeHighRowFamily Parameters
-open CenteredMomentEnergyBands CenteredMomentEnergyState
+open CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthSchedule CenteredMomentDetectorPlainMomentParameters
 open CenteredMomentDetectorEnergyInitialState CenteredMomentNaturalFixedRaySource
 open ProbeDetectorPlainMarkedFineField ProbeDetectorPlainUnmarkedField
-local notation "O"=>HeckeFamily.O
 
 def detectorMesh (Δ t:ℝ):ℝ:=fineMesh 2 0 1 (3/4+2*Δ) (t/4)
 
@@ -74,7 +73,7 @@ theorem plain_inputs {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
     refine ⟨degree,control,?_⟩
     intro η₀
     obtain ⟨Cz,Cp,hCz,hCp,h⟩:=h η₀
-    exact ⟨Cp,hCp,h.mono (fun U h=>h.2)⟩
+    exact ⟨Cp,hCp,h.mono (by simp)⟩
   · obtain ⟨degree,control,h⟩:=hactual radialSupportUpper radialSupportUpper_spec.1
     refine ⟨degree,control,?_⟩
     intro η₀
@@ -131,13 +130,13 @@ theorem source_moments {Δ:ℝ}{D:HighData Δ}(F:SourceData D)
       rawMoment_mono_constant (hinv.1 n hn σ hσ t ht).2 hCi'⟩
   · intro selected hselected hfirst hsecond n hn σ hσ t ht
     exact (hinv.2 selected hselected hfirst hsecond n hn σ hσ t ht).trans
-      (mul_le_mul_of_nonneg_right hCi' (Real.rpow_nonneg hU _))
+      (mul_le_mul_of_nonneg_right hCi' (by positivity))
   · intro selected hselected hcap j k hjk σ hσ t ht
     exact (hmarked selected hselected hcap j k hjk σ hσ t ht).trans
-      (mul_le_mul_of_nonneg_right hCm' (Real.rpow_nonneg hU _))
+      (mul_le_mul_of_nonneg_right hCm' (by positivity))
   · intro j k hjk σ hσ t ht
     exact (hunmarked j k hjk σ hσ t ht).1.trans
-      (mul_le_mul_of_nonneg_right hCu' (Real.rpow_nonneg hU _))
+      (mul_le_mul_of_nonneg_right hCu' (by positivity))
 
 theorem fine_moments_of_certified (h:DetectorCertifiedBands):FineMomentInput:=by
   intro hβ

@@ -44,9 +44,7 @@ lemma markedWeight_eq_prod {ι : Type*} (s : Finset ι) {q : ℝ} (hq : q ≠ 0)
     markedWeight s q G n = ∏ i ∈ s, markedWeight {i} q G n := by
   simp only [markedWeight, sum_singleton, card_singleton, prod_singleton]
   rw [prod_mul_distrib, prod_zpow_eq_zpow_sum s hq]
-  congr 2
-  push_cast
-  rw [sum_sub_distrib, sum_const, nsmul_eq_mul, mul_one]
+  simp
 
 /-- The single-band weight is the marked weight of one band. -/
 lemma bandWeight_eq (q x a : ℝ) (n : ℕ) {ι : Type*} (i : ι) (G : ι → Finset ℕ)
@@ -60,8 +58,7 @@ lemma prod_one_sub_eq_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) (y : ι 
     ∏ i ∈ s, (1 - y i) = ∑ t ∈ s.powerset, (-1) ^ t.card * ∏ i ∈ t, y i := by
   have h := prod_add (fun i => -y i) (fun _ => (1 : ℝ)) s
   simp only [prod_const_one, mul_one, prod_neg] at h
-  rw [← h]
-  exact prod_congr rfl fun i _ => by ring
+  grind
 
 /-! ### Success coins -/
 
@@ -74,7 +71,7 @@ def ManySuccesses (c₂ x : ℝ) (P : Finset (Finset ℕ)) : Prop :=
   c₂ * logLog x ≤ (P ∩ smallGroups x).card ∧ c₂ * logLog x ≤ (P ∩ bigGroups x).card
 
 /-- Many successes is decided classically. -/
-noncomputable instance (c₂ x : ℝ) : DecidablePred (ManySuccesses c₂ x) :=
+instance (c₂ x : ℝ) : DecidablePred (ManySuccesses c₂ x) :=
   fun _ => Classical.dec _
 
 /-- The weight `∏_{g ∈ P} s_g ∏_{g ∈ 𝒞 ∖ P} (1 - s_g)` of the success pattern
@@ -103,25 +100,25 @@ lemma successProb_add_failureProb (c₁ c₂ x : ℝ) (w : ℕ) :
 lemma patternWeight_nonneg {c₁ x : ℝ} {w : ℕ}
     (hs : ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1)
     {P : Finset (Finset ℕ)} (hP : P ⊆ candidateGroups x) : 0 ≤ patternWeight c₁ x P w :=
-  mul_nonneg (prod_nonneg fun g hg => (hs g (hP hg)).1)
-    (prod_nonneg fun g hg => sub_nonneg.2 (hs g (mem_sdiff.1 hg).1).2)
+  mul_nonneg (prod_nonneg (by grind))
+    (prod_nonneg (by grind))
 
 /-- With coins in `[0, 1]`, the success probability lies in `[0, 1]`. -/
 lemma successProb_mem_Icc {c₁ c₂ x : ℝ} {w : ℕ}
     (hs : ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1) :
     0 ≤ successProb c₁ c₂ x w ∧ successProb c₁ c₂ x w ≤ 1 := by
   have h₁ : 0 ≤ successProb c₁ c₂ x w :=
-    sum_nonneg fun _ hP => patternWeight_nonneg hs (mem_powerset.1 (mem_filter.1 hP).1)
+    sum_nonneg fun _ hP => patternWeight_nonneg hs (by grind)
   have h₂ : 0 ≤ failureProb c₁ c₂ x w :=
-    sum_nonneg fun _ hP => patternWeight_nonneg hs (mem_powerset.1 (mem_filter.1 hP).1)
+    sum_nonneg fun _ hP => patternWeight_nonneg hs (by grind)
   have := successProb_add_failureProb c₁ c₂ x w
-  exact ⟨h₁, by linarith⟩
+  grind
 
 /-- The failure probability is nonnegative when the coins lie in `[0, 1]`. -/
 lemma failureProb_nonneg {c₁ c₂ x : ℝ} {w : ℕ}
     (hs : ∀ g ∈ candidateGroups x, 0 ≤ successCoin c₁ g w ∧ successCoin c₁ g w ≤ 1) :
     0 ≤ failureProb c₁ c₂ x w :=
-  sum_nonneg fun _ hP => patternWeight_nonneg hs (mem_powerset.1 (mem_filter.1 hP).1)
+  sum_nonneg fun _ hP => patternWeight_nonneg hs (by grind)
 
 /-- The product of the coins over `S` is `c₁^{|S|} W_{1,q₀}(w) W_{1,q₀}(w + 1)`. -/
 lemma prod_successCoin (c₁ : ℝ) (S : Finset (Finset ℕ)) (w : ℕ) :
@@ -142,8 +139,8 @@ lemma successProb_eq (c₁ c₂ x : ℝ) (w : ℕ) :
   refine sum_congr rfl fun P _ => ?_
   rw [patternWeight, prod_one_sub_eq_sum, mul_sum]
   refine sum_congr rfl fun Q hQ => ?_
-  have hPQ : Disjoint P Q := disjoint_of_subset_right (mem_powerset.1 hQ) disjoint_sdiff
-  rw [show ∀ a b c d : ℝ, a * b * (c * d) = a * (b * c * d) by intros; ring,
+  have hPQ := disjoint_of_subset_right (mem_powerset.1 hQ) disjoint_sdiff
+  rw [show ∀ a b c d : ℝ, a * b * (c * d) = a * (b * c * d) by grind,
     ← prod_successCoin, prod_union hPQ]
   ring
 

@@ -22,8 +22,8 @@ theorem MemoryCleanTask_proof (F : FixedData) (r : MemoryParameters F) : MemoryC
   intro x hx P hP A hpat _ _ hideal theta i
   obtain ⟨⟨hL, hb⟩, hbig⟩ := hx₀ x hx P hP
   have h := hclean x P hP hL J m (N x) (memoryCutoff x) A theta i
-    (2 * (L x) ^ (-Eid)) (by positivity) hb (hbig A hpat hideal)
+    (2 * (L x) ^ (-Eid)) (by positivity) hb (by grind)
   rw [mul_assoc, ← Real.rpow_add hL] at h
-  exact h
+  omega
 
 end Erdos821.S2Core

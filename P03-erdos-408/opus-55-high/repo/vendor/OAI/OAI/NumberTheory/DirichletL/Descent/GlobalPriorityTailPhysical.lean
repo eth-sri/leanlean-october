@@ -7,27 +7,25 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailAggregate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open InverseSecondPrincipalCaller
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem global_physical_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃(s : Finset (ℕ×ℕ))(C : ℝ),0<C ∧
     ∀{ι σ : Type*}[DecidableEq ι][DecidableEq σ]
-      (p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (Jo : ℕ),Jo≤Jmax → ∀(extra : CubeCoordinates ι→Finset ι)(pool : Finset ι)
-      (source : Finset (Source ι Jo))(negative : Bool)(Ψ : O→*ℂ)(m : O)
+      (source : Finset (Source ι Jo))(negative : Bool)(Ψ : ActualEisensteinCubic.O→*ℂ)(m : ActualEisensteinCubic.O)
       (w : Source ι Jo→ℂ)(slots : Finset σ)(lists : σ→Finset ι)(a : σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists →
       (∀i∈slots,∀k∈lists i,‖a i k‖≤1) → (∀u,‖Ψ u‖≤1) → (∀x∈source,‖w x‖≤1) →

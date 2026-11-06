@@ -9,31 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open EisensteinEmbedding
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -53,50 +44,40 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise
+open scoped Classical Topology MatrixGroups Matrix Pointwise
 
 open CubicKubota
-local notation "O" => ActualEisensteinCubic.O
 
 lemma globalKubotaKernel_conjugate_mem (M : levelThree) (N : globalKubotaKernel) :
     (M:SL(2,ActualEisensteinCubic.O))*(N:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹∈globalKubotaKernel := by
   obtain ⟨n,hn,hnval⟩ := N.property
   change (n:SL(2,ActualEisensteinCubic.O))=(N:SL(2,ActualEisensteinCubic.O)) at hnval
   refine ⟨M*n*M⁻¹,?_,?_⟩
-  · change finiteCubicMultiplier (M*n*M⁻¹)=1
-    change finiteCubicMultiplier n=1 at hn
-    simp only [map_mul,map_inv,hn,mul_one,mul_inv_cancel]
-  · change (M:SL(2,ActualEisensteinCubic.O))*(n:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹=_
-    rw [hnval]
+  · simp_all
+  simp_all
 
 def kernelConjugate (M : levelThree) : globalKubotaKernel ≃* globalKubotaKernel where
   toFun N := ⟨(M:SL(2,ActualEisensteinCubic.O))*(N:SL(2,ActualEisensteinCubic.O))*(M:SL(2,ActualEisensteinCubic.O))⁻¹,globalKubotaKernel_conjugate_mem M N⟩
@@ -115,7 +96,7 @@ lemma level_action_respects_kernel (M : levelThree) (u v : HyperbolicSpace)
   rw [map_mul,map_mul,map_inv,mul_smul,mul_smul]
   change complexMatrix M • (integralComplexMatrix (N:SL(2,ActualEisensteinCubic.O)) •
     ((complexMatrix M)⁻¹ • (complexMatrix M • u)))=_
-  rw [inv_smul_smul,hN]
+  simp_all
 
 def kernelLevelAction (M : levelThree) : KernelQuotient→KernelQuotient :=
   Quotient.map' (fun w => complexMatrix M • w) (level_action_respects_kernel M)
@@ -182,7 +163,7 @@ lemma kernelLevelAction_measurePreserving (M : levelThree) :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical Topology MatrixGroups
 
 open CubicKubota
 
@@ -234,7 +215,7 @@ lemma kernelCorrection_character_of_initial_overlap (M : levelThree) (a b : ℝ)
   have hevent : (fun s => kernelLevelPullback M (kernelEisensteinL2Correction a b ha hab s))
       =ᶠ[𝓝 (5+Complex.I:ℂ)] (fun s => complexCharacter M • kernelEisensteinL2Correction a b ha hab s) := by
     filter_upwards [hV.mem_nhds (by norm_num)] with s hs
-    exact kernelLevelPullback_of_remainder_ae M a b s (by linarith [hs.1]) _ (hoverlap s hs.1 hs.2)
+    exact kernelLevelPullback_of_remainder_ae M a b s (by linarith) _ (hoverlap s hs.1 hs.2)
   exact hl.eqOn_of_preconnected_of_eventuallyEq hr cuspUpperParameterRegion_convex.isPreconnected
     (by norm_num [cuspUpperParameterRegion]) hevent
 
@@ -245,7 +226,7 @@ lemma thetaApproach_tendsto_complex_punctured :
   constructor
   · have hh : Continuous (fun t : ℝ => (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I) := by fun_prop
     have ht := (hh.tendsto 0).mono_left (show 𝓝[>] (0:ℝ)≤𝓝 0 from nhdsWithin_le_nhds)
-    simpa only [Complex.ofReal_zero,zero_mul,add_zero] using ht
+    simp_all
   · filter_upwards [self_mem_nhdsWithin] with t ht
     change 0<t at ht
     change (4/3:ℂ)+(t:ℂ)+(t:ℂ)*Complex.I≠(4/3:ℂ)
@@ -315,15 +296,13 @@ lemma kernelEisensteinResidueVector_nonzero_character_of_initial_overlap (a b : 
   constructor
   · apply kernelEisensteinResidueVector_ne_zero_of_overlap a b ha hab
     intro s hs hi
-    exact kernelCuspAverageFamily_eq_of_initial_overlap a b ha hab s (by linarith) (hoverlap s hs hi)
+    exact kernelCuspAverageFamily_eq_of_initial_overlap a b ha hab s (by linarith) (by grind)
   · intro M
     exact kernelEisensteinResidueVector_character_of_initial_overlap M a b ha hab hoverlap
 
 end CubicEisenstein
 
-open scoped BigOperators
 namespace QuadraticAllOddCRT
-open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
 open ActualEisensteinCoordinates hiding O omega
 open EisensteinEPrimaryPhase (Coord odd)
@@ -338,7 +317,6 @@ lemma fourthRoot_add (a b : ZMod 4) : fourthRoot (a+b)=fourthRoot a*fourthRoot b
   unfold fourthRoot
   rw [←zpow_add₀ Complex.I_ne_zero]
   apply I_zpow_eq_of_mod_four
-  push_cast
   simp
 
 lemma quadraticRayValue_eq_fourthRoot (r : Coord) (hr : odd r) :
@@ -349,11 +327,8 @@ lemma quadraticRayValue_eq_fourthRoot (r : Coord) (hr : odd r) :
   rcases r with ⟨a,b⟩
   rcases hcases a with rfl | rfl | rfl | rfl <;>
     rcases hcases b with rfl | rfl | rfl | rfl <;>
-    norm_num [EisensteinEPrimaryPhase.odd,ZMod.val_zero,ZMod.val_one_eq_one_mod,ZMod.val_ofNat] at hr <;>
-    norm_num [quadraticRayExponent,fourthRoot,EisensteinEPrimaryPhase.odd,
-      quadraticRayValue,breveGaussianFourTerms_formula,Prod.mk.injEq,hcmp,
-      ZMod.val_zero,ZMod.val_one_eq_one_mod,ZMod.val_ofNat,
-      Complex.I_sq,Complex.I_pow_three,Complex.inv_I,zpow_neg] <;>
+    norm_num [EisensteinEPrimaryPhase.odd, ZMod.val_one_eq_one_mod, ZMod.val_ofNat] at hr <;>
+    norm_num [quadraticRayExponent, fourthRoot, quadraticRayValue, breveGaussianFourTerms_formula, hcmp, ZMod.val_one_eq_one_mod, ZMod.val_ofNat] <;>
     ring_nf
 
 def quadraticRaySign (r s : Coord) : ℤ :=
@@ -368,7 +343,7 @@ lemma quadraticRaySign_mul_left (r s t : Coord) :
   have h : ∀r s t : Coord,
       quadraticRaySign (EisensteinEPrimaryPhase.mul r s) t=
         quadraticRaySign r t*quadraticRaySign s t := by decide
-  exact h r s t
+  simp_all
 
 lemma quadraticRaySign_mul_right (r s t : Coord) :
     quadraticRaySign r (EisensteinEPrimaryPhase.mul s t)=
@@ -376,17 +351,16 @@ lemma quadraticRaySign_mul_right (r s t : Coord) :
   have h : ∀r s t : Coord,
       quadraticRaySign r (EisensteinEPrimaryPhase.mul s t)=
         quadraticRaySign r s*quadraticRaySign r t := by decide
-  exact h r s t
+  simp_all
 
 lemma quadraticRaySign_symm (r s : Coord) : quadraticRaySign r s=quadraticRaySign s r := by
   have h : ∀r s : Coord,quadraticRaySign r s=quadraticRaySign s r := by decide
-  exact h r s
+  grind
 
 lemma quadraticRaySign_sq (r s : Coord) (hr : odd r) (hs : odd s) :
     quadraticRaySign r s^2=1 := by
   unfold quadraticRaySign
-  rw [ite_eq_left ⟨hr,hs⟩]
-  split_ifs <;> norm_num
+  simp_all
 
 lemma quadraticRaySign_exponent (r s : Coord) (hr : odd r) (hs : odd s) :
     quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
@@ -394,18 +368,18 @@ lemma quadraticRaySign_exponent (r s : Coord) (hr : odd r) (hs : odd s) :
   have h : ∀r s : Coord,odd r → odd s →
       quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
         (if quadraticRaySign r s=1 then 0 else 2)+quadraticRayExponent r+quadraticRayExponent s := by decide
-  exact h r s hr hs
+  simp_all
 
 lemma quadraticRaySign_root (r s : Coord) (hr : odd r) (hs : odd s) :
     fourthRoot (if quadraticRaySign r s=1 then 0 else 2)=(quadraticRaySign r s:ℂ) := by
   by_cases he : quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
       quadraticRayExponent r+quadraticRayExponent s
-  · norm_num [quadraticRaySign,hr,hs,he,fourthRoot,ZMod.val_zero,ZMod.val_ofNat,Complex.I_sq]
-  · norm_num [quadraticRaySign,hr,hs,he,fourthRoot,ZMod.val_zero,ZMod.val_ofNat,Complex.I_sq]
+  · norm_num [quadraticRaySign, hr, hs, he, fourthRoot]
+  · norm_num [quadraticRaySign, hr, hs, he, fourthRoot, ZMod.val_ofNat]
 
 lemma odd_mul (r s : Coord) (hr : odd r) (hs : odd s) : odd (EisensteinEPrimaryPhase.mul r s) := by
   have h : ∀r s : Coord,odd r → odd s → odd (EisensteinEPrimaryPhase.mul r s) := by decide
-  exact h r s hr hs
+  simp_all
 
 theorem quadraticRayValue_mul (r s : Coord) (hr : odd r) (hs : odd s) :
     quadraticRayValue (EisensteinEPrimaryPhase.mul r s)=
@@ -416,18 +390,16 @@ theorem quadraticRayValue_mul (r s : Coord) (hr : odd r) (hs : odd s) :
 
 end QuadraticAllOddCRT
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open CanonicalQuadraticSieve hiding O
 open CubicJacobiGlobal hiding O
 open QuadraticGaussRay hiding O
 open QuadraticAllOddCRT
 open ActualEisensteinCoordinates hiding O omega
-open UniqueFactorizationMonoid
 
 lemma supported_factors_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     ∀P∈normalizedFactors I,P.IsMaximal ∧ lambda∉P ∧ ringChar (ActualEisensteinCubic.O⧸P)≠2 := by
@@ -437,7 +409,7 @@ lemma supported_factors_good (I : Ideal ActualEisensteinCubic.O) (hI : Supported
 
 lemma idealRowHom_one_supported (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) : idealRowHom 1 I=1 := by
   have h := CanonicalUnitEuler.idealRowHom_unit_norm (1:ActualEisensteinCubic.Oˣ) I hI.1 (supported_factors_good I hI)
-  simpa using h
+  simp_all
 
 lemma supported_prime_data (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p})) :
     lambda∉(Ideal.span {p}:Ideal ActualEisensteinCubic.O) ∧ ringChar (ActualEisensteinCubic.O⧸Ideal.span {p})≠2 := by
@@ -457,11 +429,11 @@ theorem idealRowHom_prime_reciprocity (p q : ActualEisensteinCubic.O) (hp : Prim
   obtain ⟨hgP,hcP⟩ := supported_prime_data p hp hsP
   obtain ⟨hgQ,hcQ⟩ := supported_prime_data q hq hsQ
   by_cases he : (Ideal.span {p}:Ideal ActualEisensteinCubic.O)=Ideal.span {q}
-  · have hqp : q∈(Ideal.span {p}:Ideal ActualEisensteinCubic.O) := by rw [he];exact Ideal.subset_span (by simp)
-    have hpq : p∈(Ideal.span {q}:Ideal ActualEisensteinCubic.O) := by rw [←he];exact Ideal.subset_span (by simp)
+  · have hqp : q∈(Ideal.span {p}:Ideal ActualEisensteinCubic.O) := by rw [he];exact by simp
+    have hpq : p∈(Ideal.span {q}:Ideal ActualEisensteinCubic.O) := by rw [←he];exact by simp
     rw [idealRowHom_prime q _ hgP,idealRowHom_prime p _ hgQ,
       Ideal.Quotient.eq_zero_iff_mem.mpr hqp,Ideal.Quotient.eq_zero_iff_mem.mpr hpq]
-    simp only [MulChar.map_zero,mul_zero]
+    simp
   · have hcop : IsCoprime (Ideal.span {p}:Ideal ActualEisensteinCubic.O) (Ideal.span {q}) := Ideal.isCoprime_of_isMaximal he
     have hqp : q∉(Ideal.span {p}:Ideal ActualEisensteinCubic.O) := by
       intro h
@@ -482,23 +454,17 @@ theorem idealRowHom_prime_reciprocity (p q : ActualEisensteinCubic.O) (hp : Prim
     have h3 (x y : ActualEisensteinCubic.O) (hg : lambda∉(Ideal.span {x}:Ideal ActualEisensteinCubic.O)) [(Ideal.span {x}).IsMaximal] :
         idealRowHom y (Ideal.span {x})^3=
           character (Ideal.span {x}) (Ideal.Quotient.mk (Ideal.span {x}) y) := by
-      rw [idealRowHom_prime y _ hg,←MulChar.pow_apply' _ (by decide : (3:ℕ)≠0),actualSextic_cube_quadratic]
+      rw [idealRowHom_prime y _ hg,←MulChar.pow_apply' _ (by positivity),actualSextic_cube_quadratic]
     have hc : idealRowHom q (Ideal.span {p})^3*idealRowHom p (Ideal.span {q})^3=
         (quadraticRaySign (residue p) (residue q):ℂ) := by
       rw [h3 p q hgP,h3 q p hgQ]
       apply mul_right_cancel₀ (quadraticRayValue_ne_zero_of_odd _ (supported_residue_odd p hsP))
       apply mul_right_cancel₀ (quadraticRayValue_ne_zero_of_odd _ (supported_residue_odd q hsQ))
       simpa only [mul_assoc,mul_left_comm,mul_comm] using hcross.symm
-    calc
-      _ = idealRowHom q (Ideal.span {p})*idealRowHom q (Ideal.span {p})^6 := by rw [h6,mul_one]
-      _ = idealRowHom q (Ideal.span {p})^3*(idealRowHom q (Ideal.span {p})^2)^2 := by ring
-      _ = idealRowHom q (Ideal.span {p})^3*(idealRowHom p (Ideal.span {q})^2)^2 := by rw [h2]
-      _ = (idealRowHom q (Ideal.span {p})^3*idealRowHom p (Ideal.span {q})^3)*idealRowHom p (Ideal.span {q}) := by ring
-      _ = _ := by rw [hc]
+    grind
 
 end
 
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open CanonicalQuadraticSieve hiding O
 open CubicJacobiGlobal hiding O
@@ -549,7 +515,7 @@ lemma idealRowHom_prime_primary_reciprocity (p b : ActualEisensteinCubic.O) (hp 
       idealRowHom_one_supported _ hsP,sexticReciprocityPhase_one_right p hsP,mul_one]
   | @cons q s ih =>
     have hq := hfactors q (Multiset.mem_cons_self _ _)
-    have htail : ∀r∈s,Prime r ∧ lambda^2∣r-1 := fun r hr => hfactors r (Multiset.mem_cons_of_mem hr)
+    have htail := fun r hr => hfactors r (Multiset.mem_cons_of_mem hr)
     have hsplit : Supported (Ideal.span {q}) ∧ Supported (Ideal.span {s.prod}) := by
       simpa only [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,supported_mul_iff] using hsB
     rw [Multiset.prod_cons,idealRowHom_argument_mul,←Ideal.span_singleton_mul_span_singleton,
@@ -576,7 +542,7 @@ theorem idealRowHom_primary_reciprocity (a b : ActualEisensteinCubic.O)
       idealRowHom_one_supported _ hsB,sexticReciprocityPhase_one_left b hsB,one_mul]
   | @cons p s ih =>
     have hp := hfactors p (Multiset.mem_cons_self _ _)
-    have htail : ∀r∈s,Prime r ∧ lambda^2∣r-1 := fun r hr => hfactors r (Multiset.mem_cons_of_mem hr)
+    have htail := fun r hr => hfactors r (Multiset.mem_cons_of_mem hr)
     have hsplit : Supported (Ideal.span {p}) ∧ Supported (Ideal.span {s.prod}) := by
       simpa only [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,supported_mul_iff] using hsA
     rw [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,map_mul,

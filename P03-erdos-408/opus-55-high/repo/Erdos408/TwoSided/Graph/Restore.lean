@@ -60,12 +60,12 @@ theorem exists_norm_cutoffPairing_raw_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi :
       halo hc, Restore.eventually_centeredCore_mul_prime q c₀ C₀ vlo vhi alo ahi K₀ CN c d hahi
       hc, eventually_ge_atTop κ]
     with x hx hF hFinv hxκ ι _ _ P big hadm r a u v Bc G Ψ hin hsl hBc hco hcu
-  have hx0 : 0 < x := lt_of_lt_of_le (by linarith) hxκ
-  have hΨ : ∀ y, |Ψ y| ≤ M 0 := fun y => by simpa using hcu.2.2 0 y
-  have h := hx P big hadm (fun _ => ∅) (fun g => by simp) (fun _ _ _ => 1) 1
-    (fun _ _ _ => by simp) (fun p p' a => Restore.pad_invariant_one p p' a)
-    (centeredCore x q a u v Bc) G Ψ (hF r a u v Bc hin hsl hBc)
-    (hFinv P big hadm r a u v Bc hin hsl) hco hΨ hcu.2.1
+  have hx0 : 0 < x := by linarith
+  have hΨ := fun y => by simpa using hcu.2.2 0 y
+  have h := hx P big hadm (fun _ => ∅) (by simp) (fun _ _ _ => 1) 1
+    (by simp) (by simp)
+    (centeredCore x q a u v Bc) G Ψ (by grind)
+    (by grind) hco hΨ hcu.2.1
   rw [one_mul] at h
   have hraw : (twoSidedSum x q q₀ κ a u v Bc P G Ψ : ℂ) =
       Restore.stripSum x q₀ P (fun _ => (∅ : Finset (Fin J))) (fun _ _ _ => 1)
@@ -106,12 +106,12 @@ theorem exists_norm_cutoffPairing_sub_le (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ
       hc]
     with x hx hF hFinv ι _ _ P big hadm r a u v Bc G Ψ hin hsl hBc hco hcu Aν Bν β φ φ' ψ ψ'
       U U' hpat
-  have hΨ : ∀ y, |Ψ y| ≤ M 0 := fun y => by simpa using hcu.2.2 0 y
+  have hΨ := fun y => by simpa using hcu.2.2 0 y
   have h := hx P big hadm (fun h => Aν h ∪ Bν h) (fun g => (hpat.1 g).2)
     (comparisonKernel Aν Bν β φ φ' ψ ψ') ‖β‖ (norm_comparisonKernel_le hpat.2.2.2.1)
     (fun p p' a => Restore.pad_invariant_comparison Aν Bν β φ φ' ψ ψ' p p' a)
-    (centeredCore x q a u v Bc) G Ψ (hF r a u v Bc hin hsl hBc)
-    (hFinv P big hadm r a u v Bc hin hsl) hco hΨ hcu.2.1
+    (centeredCore x q a u v Bc) G Ψ (by grind)
+    (by grind) hco hΨ hcu.2.1
   rw [← Restore.stripSum_comparison_eq]
   exact h
 

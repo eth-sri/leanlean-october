@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplificationChoice
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicRows
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
@@ -16,31 +16,30 @@ open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
 open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
 open CenteredMomentFirstAmplificationChoice CenteredMomentRowNorm
-local notation "O" => HeckeFamily.O
 
-def activeRows (rows : Finset O) (n : Fin 4→ℤ) : Finset O :=
+def activeRows (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ) : Finset HeckeFamily.O :=
   rows.filter (fun h => h∈dyadRows (n 1))
 
-lemma mem_activeRows (rows : Finset O) (n : Fin 4→ℤ) (h : O) :
+lemma mem_activeRows (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ) (h : HeckeFamily.O) :
     h∈activeRows rows n ↔ h∈rows ∧ dyadicWeight (n 1) (normValue h)≠0 := by
   simp only [activeRows,Finset.mem_filter,mem_dyadRows]
 
-lemma activeRows_nonzero (rows : Finset O) (n : Fin 4→ℤ) (h : O)
+lemma activeRows_nonzero (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ) (h : HeckeFamily.O)
     (hh : h∈activeRows rows n) : h≠0 :=
   dyadRows_ne_zero (n 1) h (Finset.mem_filter.mp hh).2
 
-lemma activeRows_norm (rows : Finset O) (n : Fin 4→ℤ) (h : O)
+lemma activeRows_norm (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ) (h : HeckeFamily.O)
     (hh : h∈activeRows rows n) :
     1≤normValue h ∧ dyadicScale (n 1)/4<normValue h ∧ normValue h<dyadicScale (n 1) :=
   ⟨normValue_ge_one h (activeRows_nonzero rows n h hh),
     dyadicWeight_support (n 1) ((mem_activeRows rows n h).mp hh).2⟩
 
-lemma activeRows_scale_gt_one (rows : Finset O) (n : Fin 4→ℤ)
+lemma activeRows_scale_gt_one (rows : Finset HeckeFamily.O) (n : Fin 4→ℤ)
     (hne : (activeRows rows n).Nonempty) : 1<dyadicScale (n 1) := by
   obtain ⟨h,hh⟩:=hne
   exact (activeRows_norm rows n h hh).1.trans_lt (activeRows_norm rows n h hh).2.2
 
-lemma row_log_window (n : ℤ) (h : O) :
+lemma row_log_window (n : ℤ) (h : HeckeFamily.O) :
     logAnnulus (Real.log (‖eisEmbedding h‖^2/dyadicScale n)) =
       (dyadicWeight n (normValue h):ℂ) := by
   by_cases hh : h=0
@@ -48,16 +47,16 @@ lemma row_log_window (n : ℤ) (h : O) :
     simp only [map_zero,norm_zero,zero_pow (by decide : 2≠0),zero_div,Real.log_zero,
       logAnnulus,Real.exp_zero]
     rw [annulus_zero_high 1 le_rfl]
-    rw [show normValue (0:O)=0 by simp [normValue_eq_embedding],
+    rw [show normValue (0:HeckeFamily.O)=0 by simp [normValue_eq_embedding],
       dyadicWeight_zero_nonpos n 0 le_rfl,Complex.ofReal_zero]
   · rw [←normValue_eq_embedding]
     exact (actual_dyadic_log_window n (normValue h)
       (zero_lt_one.trans_le (normValue_ge_one h hh))).symm
 
-theorem block_activeRows (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O→ℂ) (C D : Ideal O)
+theorem block_activeRows (η : Character) (m A : HeckeFamily.O) (t : ℝ)
+    (S : Finset (Ideal HeckeFamily.O)) (c : Ideal HeckeFamily.O→ℂ) (C D : Ideal HeckeFamily.O)
     (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D))
-    (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (n : Fin 4→ℤ) :
+    (rows : Finset HeckeFamily.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (n : Fin 4→ℤ) :
     block η m A t S c C D hC hD E rows W (fun _=>logAnnulus) K
       (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3)) =
     block η m A t S c C D hC hD E (activeRows rows n) W (fun _=>logAnnulus) K
@@ -69,7 +68,7 @@ theorem block_activeRows (η : Character) (m A : O) (t : ℝ)
   apply Finset.sum_congr rfl
   intro h hh
   by_cases hd : h∈dyadRows (n 1)
-  · simp only [hd,ite_true]
+  · grind
   · have hw : dyadicWeight (n 1) (normValue h)=0 := by
       simpa only [mem_dyadRows,not_not] using hd
     simp only [hd,windows,row_log_window,hw,Complex.ofReal_zero,

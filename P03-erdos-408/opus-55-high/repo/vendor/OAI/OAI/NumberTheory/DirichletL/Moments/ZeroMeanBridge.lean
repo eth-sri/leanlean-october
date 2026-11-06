@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ZeroMode
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentZeroMeanBridge
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
@@ -17,44 +17,43 @@ open CenteredMomentCommonSupport
 open CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation
 open CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst
 open CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
-local notation "O" => ActualEisensteinCubic.O
 
-def quotientMean (a : O) (F : Residue a → ℂ) : ℂ :=
+def quotientMean (a : ActualEisensteinCubic.O) (F : Residue a → ℂ) : ℂ :=
   (normValue a : ℂ)⁻¹ * ∑' x : Residue a, F x
 
-lemma normValue_ne_zero (a : O) (ha : a ≠ 0) : normValue a ≠ 0 :=
+lemma normValue_ne_zero (a : ActualEisensteinCubic.O) (ha : a ≠ 0) : normValue a ≠ 0 :=
   by
     rw [normValue_eq_embedding]
     exact pow_ne_zero _ (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero ha))
 
-theorem quotientMean_pullback (a m : O) (ha : a ≠ 0) (hm : m ≠ 0)
+theorem quotientMean_pullback (a m : ActualEisensteinCubic.O) (ha : a ≠ 0) (hm : m ≠ 0)
     (h : a ∣ m) (F : Residue a → ℂ) :
     quotientMean m (fun x => F (frequencyReduction a m h x)) = quotientMean a F := by
   obtain ⟨b, rfl⟩ := h
-  have hb : b ≠ 0 := right_ne_zero_of_mul hm
+  have hb := right_ne_zero_of_mul hm
   have hh := conductorFourier_lift a b ha hb F 0
   simp only [mul_zero, conductorFourier, map_zero, zero_mul, AddChar.map_zero_eq_one,
     mul_one] at hh
   have he : frequencyReduction a (a*b) (dvd_mul_right a b) = conductorReduction a b := rfl
   unfold quotientMean
   rw [he, hh, normValue_mul, Complex.ofReal_mul]
-  have ha' : (normValue a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (normValue_ne_zero a ha)
-  have hb' : (normValue b : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (normValue_ne_zero b hb)
+  have ha' := Complex.ofReal_ne_zero.mpr (normValue_ne_zero a ha)
+  have hb' := Complex.ofReal_ne_zero.mpr (normValue_ne_zero b hb)
   change ((normValue a : ℂ) * (normValue b : ℂ))⁻¹ *
     ((normValue b : ℂ) * _) = _
   field_simp
 
-def dilationMask (e d : O) (F : Residue d → ℂ) (x : Residue (d*e)) : ℂ :=
+def dilationMask (e d : ActualEisensteinCubic.O) (F : Residue d → ℂ) (x : Residue (d*e)) : ℂ :=
   if frequencyReduction e (d*e) (dvd_mul_left e d) x = 0 then
     F (frequencyReduction d (d*e) (dvd_mul_right d e) x) else 0
 
-@[simp] theorem dilationMask_mk (e d : O) (F : Residue d → ℂ) (z : O) :
+@[simp] theorem dilationMask_mk (e d : ActualEisensteinCubic.O) (F : Residue d → ℂ) (z : ActualEisensteinCubic.O) :
     dilationMask e d F (Ideal.Quotient.mk _ z) =
       if e ∣ z then F (Ideal.Quotient.mk _ z) else 0 := by
   simp only [dilationMask, frequencyReduction_mk, Ideal.Quotient.eq_zero_iff_mem,
     Ideal.mem_span_singleton]
 
-theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
+theorem dilationMask_sum (e d : ActualEisensteinCubic.O) (he : e ≠ 0) (F : Residue d → ℂ) :
     (∑' x : Residue (d*e), dilationMask e d F x) =
       ∑' y : Residue d, F (Ideal.Quotient.mk _ e * y) := by
   have hi := scaledResidue_injective d e (d*e) rfl he
@@ -76,7 +75,7 @@ theorem dilationMask_sum (e d : O) (he : e ≠ 0) (F : Residue d → ℂ) :
   obtain ⟨z,rfl⟩ := Ideal.Quotient.mk_surjective y
   rw [scaledResidue_mk, dilationMask_mk, ite_eq_left (dvd_mul_right e z), map_mul]
 
-theorem quotientMean_dilation (e d : O) (he : e ≠ 0) (_hd : d ≠ 0)
+theorem quotientMean_dilation (e d : ActualEisensteinCubic.O) (he : e ≠ 0) (_hd : d ≠ 0)
     (F : Residue d → ℂ) (hF : ∀ x y, F (x*y) = F x * F y) :
     quotientMean (d*e) (dilationMask e d F) =
       (normValue e : ℂ)⁻¹ * F (Ideal.Quotient.mk _ e) * quotientMean d F := by
@@ -86,10 +85,10 @@ theorem quotientMean_dilation (e d : O) (he : e ≠ 0) (_hd : d ≠ 0)
   ring
 
 theorem quotientMean_finite_sum {ι : Type*} [Fintype ι]
-    (a : O) (ha : a ≠ 0) (F : Residue a → ℂ)
-    (d : ι → O) (hd : ∀ i, d i ≠ 0) (G : (i : ι) → Residue (d i) → ℂ)
+    (a : ActualEisensteinCubic.O) (ha : a ≠ 0) (F : Residue a → ℂ)
+    (d : ι → ActualEisensteinCubic.O) (hd : ∀ i, d i ≠ 0) (G : (i : ι) → Residue (d i) → ℂ)
     (c : ι → ℂ)
-    (h : ∀ z : O, F (Ideal.Quotient.mk _ z) =
+    (h : ∀ z : ActualEisensteinCubic.O, F (Ideal.Quotient.mk _ z) =
       ∑ i, c i * G i (Ideal.Quotient.mk _ z)) :
     quotientMean a F = ∑ i, c i * quotientMean (d i) (G i) := by
   let m := a * ∏ i, d i
@@ -113,8 +112,8 @@ theorem quotientMean_finite_sum {ι : Type*} [Fintype ι]
   rfl
 
 theorem row_mask_expansion {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (z : O) (v : ℂ) :
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+    (S : Finset ι) (z : ActualEisensteinCubic.O) (v : ℂ) :
     rowCoprimeMask P S z * v =
       ∑ E ∈ S.powerset, (UniqueFactorizationMonoid.moebius (∏ i∈E,P i) : ℂ) *
         (if primeSubsetGenerator P E ∣ z then v else 0) := by
@@ -126,15 +125,14 @@ theorem row_mask_expansion {ι : Type*} [DecidableEq ι]
   have he : primeSubsetGenerator P E ∣ z ↔ ∀ i ∈ E, z ∈ P i := by
     rw [← Ideal.mem_span_singleton, primeSubsetGenerator, span_idealGenerator,
       mem_prime_product_iff P hinj E z]
-  rw [he]
-  split_ifs <;> ring
+  simp_all
 
 theorem quotientMean_mask_expansion {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (a d : O) (ha : a ≠ 0) (hd : d ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+    (S : Finset ι) (a d : ActualEisensteinCubic.O) (ha : a ≠ 0) (hd : d ≠ 0)
     (F : Residue a → ℂ) (G : Residue d → ℂ)
     (hG : ∀ x y, G (x*y) = G x * G y)
-    (hFG : ∀ z : O, F (Ideal.Quotient.mk _ z) =
+    (hFG : ∀ z : ActualEisensteinCubic.O, F (Ideal.Quotient.mk _ z) =
       rowCoprimeMask P S z * G (Ideal.Quotient.mk _ z)) :
     quotientMean a F =
       ∑ E ∈ S.powerset, (UniqueFactorizationMonoid.moebius (∏ i∈E,P i) : ℂ) *
@@ -156,7 +154,7 @@ theorem quotientMean_mask_expansion {ι : Type*} [DecidableEq ι]
       (normValue (primeSubsetGenerator P E) : ℂ)⁻¹ *
         G (Ideal.Quotient.mk _ (primeSubsetGenerator P E)) * quotientMean d G))
 
-theorem tripleResidue_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
+theorem tripleResidue_mul (a b r : ActualEisensteinCubic.O) (χa : MulChar (Residue a) ℂ)
     (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ)
     (hG : ∀ x y, G (x*y) = G x * G y) (x y : Residue (a*(b*r))) :
     tripleResidue a b r χa χb G (x*y) =
@@ -166,8 +164,8 @@ theorem tripleResidue_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
   rw [← map_mul, tripleResidue_mk, tripleResidue_mk, tripleResidue_mk]
   exact tripleRow_mul a b r χa χb G hG u v
 
-theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (z : O) :
+theorem original_pair_reduced_mask (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
+    (z : ActualEisensteinCubic.O) :
     idealRowHom z I * star (idealRowHom z J) =
       rowCoprimeMask (fun P : CommonIndex I J => P.val)
         (principalSupport Finset.univ (leftExponent I J) (rightExponent I J)) z *
@@ -193,7 +191,7 @@ theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supp
       (CenteredMomentCanonicalFirst.activeExponent I J) z) using 1
   congr 2
 
-theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
+theorem original_pair_mean (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J) :
     let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
     let hj : Supported (Ideal.span {CompletedGauss.primaryGenerator J}) :=
@@ -230,7 +228,7 @@ theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
       exact original_pair_reduced_mask I J hI hJ z)
   simpa only [inactiveSubsets, tripleResidue_mk] using h
 
-theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+theorem canonicalZeroTerm_eq_mean (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
     (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     canonicalZeroTerm I J hI hJ E W K = (K : ℂ) *
       ((UniqueFactorizationMonoid.moebius (∏ P∈E,P.val) : ℂ) *
@@ -247,7 +245,7 @@ theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Suppo
     Complex.ofReal_mul, Complex.ofReal_inv]
   ring
 
-theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+theorem canonicalZeroPair_eq_original (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
@@ -265,15 +263,15 @@ theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : S
     Complex.ofReal_div, div_eq_mul_inv]
   ring
 
-theorem quotientMean_congr (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
+theorem quotientMean_congr (a b : ActualEisensteinCubic.O) (ha : a ≠ 0) (hb : b ≠ 0)
     (F : Residue a → ℂ) (G : Residue b → ℂ)
-    (h : ∀ z : O, F (Ideal.Quotient.mk _ z) = G (Ideal.Quotient.mk _ z)) :
+    (h : ∀ z : ActualEisensteinCubic.O, F (Ideal.Quotient.mk _ z) = G (Ideal.Quotient.mk _ z)) :
     quotientMean a F = quotientMean b G := by
   have hh := quotientMean_finite_sum a ha F (fun _ : Unit => b) (fun _ => hb)
-    (fun _ => G) (fun _ => (1 : ℂ)) (by intro z; simpa using h z)
-  simpa using hh
+    (fun _ => G) (fun _ => (1 : ℂ)) (by simp_all)
+  simp_all
 
-theorem scaled_pairFourier_eq_mean (a b : O)
+theorem scaled_pairFourier_eq_mean (a b : ActualEisensteinCubic.O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b})) (K : ℝ) :
     (((K / ‖eisEmbedding (a*b)‖^2 : ℝ) : ℂ) * CenteredMomentRowNorm.pairFourier a b ha hb 0) =
       (K : ℂ) * quotientMean (a*b) (CenteredMomentRowNorm.pairResidue a b ha hb) := by
@@ -281,8 +279,8 @@ theorem scaled_pairFourier_eq_mean (a b : O)
     Complex.ofReal_div, div_eq_mul_inv]
   ring
 
-theorem canonicalZeroPair_eq_generators (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
-    (a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem canonicalZeroPair_eq_generators (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
+    (a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (haI : Ideal.span {a} = I) (hbJ : Ideal.span {b} = J) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     canonicalZeroPair I J hI hJ W K =
       (((K / ‖eisEmbedding (a*b)‖^2 : ℝ) : ℂ) * CenteredMomentRowNorm.pairFourier a b ha hb 0) *
@@ -296,8 +294,8 @@ theorem canonicalZeroPair_eq_generators (I J : Ideal O) (hI : Supported I) (hJ :
   simp only [CenteredMomentRowNorm.pairResidue_mk, CenteredMomentSourceRow.primary_span_supported I hI,
     CenteredMomentSourceRow.primary_span_supported J hJ, haI, hbJ]
 
-theorem canonical_ideal_zero_sum (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Supported I)
-    (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+theorem canonical_ideal_zero_sum (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ I ∈ S, Supported I)
+    (c : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     (∑ I : S, ∑ J : S, (c I.val * star (c J.val)) *
       canonicalZeroPair I.val J.val (hS I.val I.property) (hS J.val J.property) W K) =
       CenteredMomentZeroMode.idealZeroEnergy S hS c K * paperRadialFourier W 0 := by
@@ -313,8 +311,8 @@ theorem canonical_ideal_zero_sum (S : Finset (Ideal O)) (hS : ∀ I ∈ S, Suppo
     (CenteredMomentZeroMode.idealColumn_span S I) (CenteredMomentZeroMode.idealColumn_span S J)]
   ring
 
-theorem zeroEnergy_eq_original (η : HeckeFamily.Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (c : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+theorem zeroEnergy_eq_original (η : HeckeFamily.Character) (m A : ActualEisensteinCubic.O) (t : ℝ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     zeroEnergy η m A t S c W K =
       CenteredMomentZeroMode.idealZeroEnergy (CenteredMomentSourceRow.supportedColumns S)
         (fun _ h => (Finset.mem_filter.mp h).2)

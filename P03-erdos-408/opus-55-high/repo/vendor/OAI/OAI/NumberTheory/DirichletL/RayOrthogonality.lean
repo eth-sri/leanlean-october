@@ -55,7 +55,7 @@ theorem sum_characters_unit (H : Subgroup Rˣ) (u : Rˣ) :
     obtain ⟨χ, hχ⟩ := exists_character_ne_one H hu
     refine eq_zero_of_mul_eq_self_left hχ ?_
     simp only [Finset.mul_sum, ← MulChar.mul_apply]
-    exact Fintype.sum_bijective _ (Group.mulLeft_bijective χ) _ _ fun χ' ↦ rfl
+    exact Fintype.sum_bijective _ (Group.mulLeft_bijective χ) _ _ (by simp)
 
 def inUnitSubgroup (H : Subgroup Rˣ) (r : R) : Prop :=
   ∃ u : Rˣ, (u : R) = r ∧ u ∈ H
@@ -98,7 +98,7 @@ theorem mem_rayCharacters_iff (χ : MulChar (A ⧸ M) ℂ) :
     exact h _ ⟨u, rfl⟩
   · intro h u hu
     obtain ⟨v, rfl⟩ := hu
-    exact h v
+    simp_all
 
 section PrincipalIdeals
 variable [IsDomain A] [IsPrincipalIdealRing A]

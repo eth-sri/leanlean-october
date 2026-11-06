@@ -8,20 +8,18 @@ public import OAI.NumberTheory.DirichletL.Moments.SmoothedWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceSmoothedAllocation
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentSourceAllocationEnergy CenteredMomentSourceLiveColumn
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
+open CenteredMomentSourceAllocationEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
-    (S : Finset α) (a : α → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+    (S : Finset α) (a : α → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (b : γ → ℂ) (d : γ → α → ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (gaussEnergy S a ha (fun i => ∑ B,b B*d B i) W K).re≤
       (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*(gaussEnergy S a ha (d B) W K).re := by
   have hs := gaussEnergy_hasSum_re S a ha (fun i => ∑ B,b B*d B i) W K hK
@@ -40,8 +38,7 @@ theorem smoothed_allocation_energy {α γ : Type*} [Fintype γ]
       simpa only [Finset.card_univ,norm_mul,mul_pow,Finset.sum_mul,mul_assoc] using h
     _ = (Fintype.card γ:ℝ)*∑ B,‖b B‖^2*
         ∑ z∈rows,‖gaussPolynomial S a ha (d B) z‖^2*(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re := by
-      rw [← Finset.mul_sum,Finset.sum_comm]
-      simp only [Finset.mul_sum]
+      simp [← Finset.mul_sum,Finset.sum_comm]
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ (Nat.cast_nonneg _)
       apply Finset.sum_le_sum

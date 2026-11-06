@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Structure
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -27,7 +26,7 @@ theorem smallPhysical_act {M : ℕ} (π : P.Permutations M)
           P.act π a g.val ((π g.val).symm j) := by
         simpa only [PrimeGroups.act, Equiv.apply_symm_apply] using hij
       have hi := congrArg (π g.val) ((h g).1 hh)
-      simpa only [Equiv.apply_symm_apply] using hi
+      simp_all
     · intro i
       obtain ⟨j, rfl⟩ := (π g.val).surjective i
       exact (h g).2 j

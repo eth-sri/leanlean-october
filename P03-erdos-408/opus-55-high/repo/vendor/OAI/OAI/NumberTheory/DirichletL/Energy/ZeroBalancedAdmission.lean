@@ -8,15 +8,12 @@ public import OAI.NumberTheory.DirichletL.Energy.NaturalSourceAdmission
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentEnergyReferenceState CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentSourceInputTailUniform
-open CenteredMomentEnergyOriginalProfileControl CenteredMomentFirstReferenceEnergy
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstPhysicalSource
+open CenteredMomentEnergyState
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyReferenceState
 variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "inp"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
@@ -35,13 +32,13 @@ theorem four_upper_scales (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     hc₂.trans (Real.rpow_le_rpow_of_exponent_le hZ.le hLg),?_,?_⟩
   · change Z^(s.width/4)≤_
     apply Real.rpow_le_rpow_of_exponent_le hZ.le
-    linarith [s.width_nonneg,le_max_left Mcap (2*Lgoal)]
+    grind
   · change X₁*X₂/comparisonFirst Z s.width≤_
     calc
-      _≤X₁*X₂:=div_le_self (mul_pos hX₁ hX₂).le hY₁
-      _≤Z^Lgoal*Z^Lgoal:=mul_le_mul hc₁ hc₂ hX₂.le (Real.rpow_pos_of_pos hp _).le
-      _=Z^(2*Lgoal):=by rw [←Real.rpow_add hp];congr 1;ring
-      _≤_:=Real.rpow_le_rpow_of_exponent_le hZ.le (le_max_right _ _)
+      _≤X₁*X₂:=div_le_self (by positivity) hY₁
+      _≤Z^Lgoal*Z^Lgoal:=mul_le_mul hc₁ hc₂ hX₂.le (by positivity)
+      _=Z^(2*Lgoal):=by rw [←Real.rpow_add hp];ring
+      _≤_:=Real.rpow_le_rpow_of_exponent_le hZ.le (by simp)
 
 end SevenEighths.CenteredMomentEnergyZeroBalancedAdmission
 

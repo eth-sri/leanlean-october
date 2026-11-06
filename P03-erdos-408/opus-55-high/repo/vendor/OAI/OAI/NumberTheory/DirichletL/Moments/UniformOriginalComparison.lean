@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformOriginalEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentUniformOriginalComparison
 open HeckeFamily HeckeDyadic CenteredMomentScaleSupremum
@@ -44,11 +44,11 @@ theorem actual_original_comparison (epsilon Cscale xi saving L : ℝ)
   refine ⟨hZ.1,?_⟩
   intro ι _ G χ P omega Wshort c d M along bshort E S Rcap hχ hd hshort hshortsmooth
     hML hmod hE hS hGS hRcap hcap henergy
-  have hz : 0<Z := by linarith [hZ.1]
+  have hz : 0<Z := by linarith
   have hG1 (i:ι):H.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G i)≤S :=
-    (Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left : H⊆H∪H')) (G i)).trans (hGS i)
+    (Seminorm.le_def.mp (Finset.sup_mono (by simp)) (G i)).trans (hGS i)
   have hG2 (i:ι):H'.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G i)≤S :=
-    (Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_right : H'⊆H∪H')) (G i)).trans (hGS i)
+    (Seminorm.le_def.mp (Finset.sup_mono (by simp)) (G i)).trans (hGS i)
   obtain ⟨ψ,hψ,horiginal⟩ := ho χ hχ
   let Q (i : ι) := polynomial (χ i) false Wshort (Z^bshort) 0 (omega i)*P i
   have hsource (i : ι) : ((χ i).modulus.absNorm:ℝ)≤Cscale*Z^L*Z^along := by
@@ -64,8 +64,7 @@ theorem actual_original_comparison (epsilon Cscale xi saving L : ℝ)
     hd hshort hshortsmooth (fun i=>(hψ i).2.2) hmod hS hE hG1 hRcap hcap henergy
   dsimp only [Q] at he
   simp only [←mul_assoc] at he
-  have hh := he.trans (add_le_add (mul_le_mul_of_nonneg_left hretained (by norm_num : (0:ℝ)≤2)) le_rfl)
-  convert hh using 1 ; ring
+  linarith
 
 end SevenEighths.CenteredMomentUniformOriginalComparison
 

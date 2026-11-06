@@ -7,7 +7,7 @@ public import Erdos821.S34.AtomBound
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.Blueprint.Analytic
@@ -19,11 +19,11 @@ theorem product_atom_bound_proof : Erdos821.Blueprint.Analytic.product_atom_boun
   have hL : 1 ≤ L x := by
     rw [L, ← Real.log_exp (1 : ℝ)]
     exact Real.log_le_log (Real.exp_pos _) hx
-  have hv : 0 < P.vmin := P.positive.2.2.1
+  have hv := P.positive.2.2.1
   have hmass : ∀ g ∈ G.big, P.vmin ≤ Erdos821.S34.Core.mass (Erdos821.S34Core.coreGroups G) g := by
     intro g _
     exact (hG.2.2.1 g).1
-  have hcap : ∀ g, k g ≤ m := fun g => (hk.2 g).1
+  have hcap := fun g => (hk.2 g).1
   have hinactive : ∀ g, g ∉ G.big → k g = 0 := by
     intro g hg
     have hsmall : g ∈ G.small := by simpa only [PrimeGroups.big, Finset.mem_sdiff,

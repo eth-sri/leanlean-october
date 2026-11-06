@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.CubicDyadicDecay
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open SecondPassArithmetic EisensteinSchwartzPoisson SevenEighths.CubicDyadicDecay
 noncomputable section
 
@@ -29,7 +29,7 @@ theorem HasCubicExponent.frequencyCost_bound {ξ : ℝ} (h : HasCubicExponent ξ
   have hs := sieve_poisson_bound (fun K => elementSieveNorm K Y) A X Y δ ξ hA.le hX hY0
     (by linarith) (by linarith) (by linarith) (by linarith)
     (fun K hK => elementSieveNorm_nonneg K Y)
-    (fun K hK => by simpa only [mul_comm Y (K^(1/3 : ℝ))] using hb K Y hK hY)
+    (fun K hK => by grind)
   have hfac : 0 ≤ 2*C*IdealCoprimeSieveOperator.supportConstant ε hε*Y^ε := by
     have hp := (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le
     positivity
@@ -70,9 +70,9 @@ theorem frequencyCost_descendant_of_bound (C ε A δ ξ M N d e : ℝ)
   · exact mul_le_mul_of_nonneg_right (descendant_unit_scale_le M N d e hM.le hN hd he hdN) (norm_nonneg _)
   · apply mul_le_mul
     · exact mul_le_mul_of_nonneg_left hny hfac
-    · exact henv
+    · omega
     · positivity
-    · positivity
+    positivity
 
 lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
     (hM : 1 ≤ M) (hN : 1 ≤ N) (hδ : 0 ≤ δ) (hε : 0 ≤ ε)
@@ -85,12 +85,12 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
   let X := (M*N)^(2/3 : ℝ)
   let Y := M^(1-ξ)*N^(2*ξ-1)
   let S := M+X+Y
-  have hX : 0 ≤ X := Real.rpow_nonneg (by positivity) _
+  have hX : 0 ≤ X := by positivity
   have hY : 0 ≤ Y := by dsimp [Y]; positivity
   have hS : 0 ≤ S := by dsimp [S]; positivity
   have hshape : P*X+Q*Y ≤ (P+Q)*S := by
     dsimp only [S]
-    nlinarith [mul_nonneg hP hM0.le, mul_nonneg hQ hM0.le, mul_nonneg hP hY, mul_nonneg hQ hX]
+    nlinarith
   have hsmall : M^(-δ) ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hM (by linarith)
   have hloss : 1 ≤ N^(3*δ+ε) := Real.one_le_rpow hN (by positivity)
   have hunit : 2*M*Z ≤ 2*Z*N^(3*δ+ε)*S := by
@@ -110,9 +110,8 @@ lemma poisson_envelope_absorb (M N δ ε ξ H Z P Q : ℝ)
     calc
       _ = H*(N^ε*N^(3*δ))*(M^(-δ)*(P*X+Q*Y)) := by ring
       _ ≤ H*(N^ε*N^(3*δ))*((P+Q)*S) := mul_le_mul_of_nonneg_left hs (by positivity)
-      _ = _ := by rw [hpow]; ring
-  have hh := add_le_add hunit htail
-  convert hh using 1 <;> dsimp only [S,X,Y] <;> ring
+      _ = _ := by grind
+  linarith
 
 end
 end SevenEighths.CubicSieve

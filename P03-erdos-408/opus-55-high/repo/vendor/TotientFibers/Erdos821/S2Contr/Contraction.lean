@@ -24,8 +24,8 @@ theorem normBound_mono {α : Type*} {mass : α → ℝ} {K : α → α → ℂ}
         Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) := by
       apply mul_le_mul_of_nonneg_right
       · apply mul_le_mul_of_nonneg_right hCD
-        exact Real.sqrt_nonneg _
-      · exact Real.sqrt_nonneg _
+        simp
+      simp
 
 private theorem choose_lower_linear (ell : ℕ) (hell : 0 < ell) (J : ℕ) :
     J + 1 ≤ Nat.choose (J + ell) ell := by
@@ -37,13 +37,12 @@ private theorem choose_lower_linear (ell : ℕ) (hell : 0 < ell) (J : ℕ) :
       calc
         Nat.choose (J + 1 + ell) ell =
             Nat.choose (J + ell).succ (ell - 1).succ := by
-              congr 2 <;> omega
+              grind
         _ = Nat.choose (J + ell) (ell - 1) +
             Nat.choose (J + ell) (ell - 1).succ := Nat.choose_succ_succ _ _
-        _ = _ := by rw [show (ell - 1).succ = ell by omega]
+        _ = _ := by grind
     have hpos : 0 < Nat.choose (J + ell) (ell - 1) :=
       Nat.choose_pos (by omega)
-    rw [hrec]
     omega
 
 private theorem log_choose_tendsto (ell : ℕ) (hell : 0 < ell) :
@@ -77,10 +76,10 @@ private theorem omission_power_lower (F : FixedData) (P : PrimeGroups)
   have hOpos : 0 < (omissionNumber F P J : ℝ) := by
     unfold omissionNumber
     positivity
-  have hlogc : 0 ≤ Real.log (c : ℝ) := Real.log_nonneg hcOne
+  have hlogc := Real.log_nonneg hcOne
   have hlogO : Real.log (omissionNumber F P J : ℝ) =
       (P.smallGroups.card : ℝ) * Real.log (c : ℝ) := by
-    simp [omissionNumber, c, Nat.cast_pow, Real.log_pow]
+    simp [omissionNumber, c]
   have hlog : Real.log (L x) * (F.c₀ * Real.log (c : ℝ)) ≤
       Real.log (omissionNumber F P J : ℝ) := by
     rw [show Real.log (L x) = T x by rfl, hlogO]
@@ -106,42 +105,40 @@ private theorem rpow_mono_exp {x a b : ℝ} (hx : 1 ≤ x) (hab : a ≤ b) :
 private theorem gap_two_bound (x G : ℝ) (hx : 4 ≤ x) :
     4 * x ^ (-G - 2) ≤ (1 / 2 : ℝ) * x ^ (-G) := by
   have hxpos : 0 < x := by linarith
-  have hx2 : 8 ≤ x ^ (2 : ℕ) := by nlinarith [sq_nonneg (x - 4)]
+  have hx2 : 8 ≤ x ^ (2 : ℕ) := by nlinarith
   have hfrac : 4 / x ^ (2 : ℕ) ≤ (1 / 2 : ℝ) := by
-    apply (div_le_iff₀ (by positivity : 0 < x ^ (2 : ℕ))).2
+    apply (div_le_iff₀ (by positivity)).2
     nlinarith
   have hpow2 : x ^ (-2 : ℝ) = (x ^ (2 : ℕ))⁻¹ := by
     rw [Real.rpow_neg hxpos.le]
-    exact congrArg (fun z : ℝ => z⁻¹) (Real.rpow_natCast x 2)
+    exact by simp
   have hadd : x ^ (-G - 2) = x ^ (-G) * x ^ (-2 : ℝ) := by
     rw [show -G - 2 = -G + (-2) by ring, Real.rpow_add hxpos]
   calc
     4 * x ^ (-G - 2) = (4 / x ^ (2 : ℕ)) * x ^ (-G) := by
-      rw [hadd, hpow2]
-      ring
+      grind
     _ ≤ (1 / 2 : ℝ) * x ^ (-G) :=
-      mul_le_mul_of_nonneg_right hfrac (Real.rpow_nonneg hxpos.le _)
+      mul_le_mul_of_nonneg_right hfrac (by positivity)
 
 private theorem gap_four_bound (x G : ℝ) (hx : 4 ≤ x) :
     2 * x ^ (-G - 4) ≤ (1 / 2 : ℝ) * x ^ (-G) := by
   have hxpos : 0 < x := by linarith
-  have hx2 : 8 ≤ x ^ (2 : ℕ) := by nlinarith [sq_nonneg (x - 4)]
+  have hx2 : 8 ≤ x ^ (2 : ℕ) := by nlinarith
   have hx4 : 4 ≤ x ^ (4 : ℕ) := by
-    nlinarith [sq_nonneg (x ^ (2 : ℕ) - 4)]
+    nlinarith
   have hfrac : 2 / x ^ (4 : ℕ) ≤ (1 / 2 : ℝ) := by
-    apply (div_le_iff₀ (by positivity : 0 < x ^ (4 : ℕ))).2
+    apply (div_le_iff₀ (by positivity)).2
     nlinarith
   have hpow4 : x ^ (-4 : ℝ) = (x ^ (4 : ℕ))⁻¹ := by
     rw [Real.rpow_neg hxpos.le]
-    exact congrArg (fun z : ℝ => z⁻¹) (Real.rpow_natCast x 4)
+    exact by simp
   have hadd : x ^ (-G - 4) = x ^ (-G) * x ^ (-4 : ℝ) := by
     rw [show -G - 4 = -G + (-4) by ring, Real.rpow_add hxpos]
   calc
     2 * x ^ (-G - 4) = (2 / x ^ (4 : ℕ)) * x ^ (-G) := by
-      rw [hadd, hpow4]
-      ring
+      grind
     _ ≤ (1 / 2 : ℝ) * x ^ (-G) :=
-      mul_le_mul_of_nonneg_right hfrac (Real.rpow_nonneg hxpos.le _)
+      mul_le_mul_of_nonneg_right hfrac (by positivity)
 
 private theorem rare_decay_bound (F : FixedData) (P : PrimeGroups) (J : ℕ)
     (Ca G : ℝ) (x : ℝ) (hL : 4 ≤ L x)
@@ -156,9 +153,9 @@ private theorem rare_decay_bound (F : FixedData) (P : PrimeGroups) (J : ℕ)
   have hcut : (memoryCutoff x : ℝ) ≤ 2 * (L x) ^ (2 : ℕ) := by
     have hceil : (memoryCutoff x : ℝ) < (L x) ^ (2 : ℕ) + 1 := by
       simpa only [memoryCutoff] using
-        (Nat.ceil_lt_add_one (sq_nonneg (L x)))
+        (Nat.ceil_lt_add_one (by positivity))
     have hLsq : 1 ≤ (L x) ^ (2 : ℕ) := by
-      nlinarith [sq_nonneg (L x - 4)]
+      nlinarith
     linarith
   have hO : (L x) ^ (F.c₀ * Real.log c) ≤ (omissionNumber F P J : ℝ) := by
     simpa [c] using omission_power_lower F P J x hLpos hsmall
@@ -172,12 +169,12 @@ private theorem rare_decay_bound (F : FixedData) (P : PrimeGroups) (J : ℕ)
     rw [← hsEq]
     exact hs
   have hdiv : (memoryCutoff x : ℝ) / (omissionNumber F P J : ℝ) ≤
-      (2 * (L x) ^ (2 : ℕ)) / (L x) ^ (F.c₀ * Real.log c) := by
-    exact div_le_div₀ (by positivity) hcut
-      (Real.rpow_pos_of_pos hLpos _) hO
+      (2 * (L x) ^ (2 : ℕ)) / (L x) ^ (F.c₀ * Real.log c) :=
+    div_le_div₀ (by positivity) hcut
+      (by positivity) hO
   have hsqrtCut : Real.sqrt (2 * (L x) ^ (2 : ℕ)) =
       Real.sqrt 2 * L x := by
-    rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 2), Real.sqrt_sq_eq_abs,
+    rw [Real.sqrt_mul (by positivity), Real.sqrt_sq_eq_abs,
       abs_of_pos hLpos]
   have hsqrtO : Real.sqrt ((L x) ^ (F.c₀ * Real.log c)) = (L x) ^ d := by
     rw [Real.sqrt_eq_rpow, ← Real.rpow_mul hLpos.le]
@@ -217,20 +214,16 @@ private theorem rare_decay_bound (F : FixedData) (P : PrimeGroups) (J : ℕ)
   calc
     2 * (L x) ^ Ca * Real.sqrt ((memoryCutoff x : ℝ) /
         omissionNumber F P J)
-        ≤ 2 * (L x) ^ Ca * (Real.sqrt 2 * L x / (L x) ^ d) := by
-          exact mul_le_mul_of_nonneg_left hratio
-            (mul_nonneg (by norm_num) (Real.rpow_nonneg hLpos.le _))
+        ≤ 2 * (L x) ^ Ca * (Real.sqrt 2 * L x / (L x) ^ d) :=
+          mul_le_mul_of_nonneg_left hratio
+            (by positivity)
     _ = 2 * Real.sqrt 2 * (L x) ^ (Ca + 1 - d) := by
-      calc
-        _ = 2 * ((L x) ^ Ca * (Real.sqrt 2 * L x / (L x) ^ d)) := by ring
-        _ = 2 * (Real.sqrt 2 * (L x) ^ (Ca + 1 - d)) :=
-          congrArg (fun z : ℝ => 2 * z) hcombine
-        _ = _ := by ring
+      linarith
     _ ≤ 4 * (L x) ^ (-G - 2) := by
       calc
         _ ≤ 4 * (L x) ^ (Ca + 1 - d) :=
-          mul_le_mul_of_nonneg_right hs2 (Real.rpow_nonneg hLpos.le _)
-        _ ≤ _ := mul_le_mul_of_nonneg_left hpow (by norm_num)
+          mul_le_mul_of_nonneg_right hs2 (by positivity)
+        _ ≤ _ := by linarith
     _ ≤ _ := gap_two_bound (L x) G hL
 
 private theorem clean_decay_bound (G Eid Cs x : ℝ) (hL : 4 ≤ x)
@@ -238,8 +231,8 @@ private theorem clean_decay_bound (G Eid Cs x : ℝ) (hL : 4 ≤ x)
     2 * x ^ (-Eid + Cs) ≤ (1 / 2 : ℝ) * x ^ (-G) := by
   have hExp : -Eid + Cs ≤ -G - 4 := by linarith
   calc
-    2 * x ^ (-Eid + Cs) ≤ 2 * x ^ (-G - 4) := by
-      exact mul_le_mul_of_nonneg_left
+    2 * x ^ (-Eid + Cs) ≤ 2 * x ^ (-G - 4) :=
+      mul_le_mul_of_nonneg_left
         (rpow_mono_exp (by linarith) hExp) (by norm_num)
     _ ≤ _ := gap_four_bound x G hL
 
@@ -248,13 +241,13 @@ theorem WholeEdgeContractionTask_proof (F : FixedData) (r : MemoryParameters F) 
   intro hRare hClean G hG
   obtain ⟨Cs, hCleanBound⟩ := hClean
   let Eid : ℝ := max 1 (G + Cs + 4)
-  have hEid : 0 < Eid := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  have hEid : 0 < Eid := by positivity
   have hEidLower : G + Cs + 4 ≤ Eid := le_max_right _ _
   refine ⟨Eid, hEid, ?_⟩
   intro m C₁
   obtain ⟨Ca, hRareBound⟩ := hRare m C₁
   have hChoose := log_choose_tendsto F.ell
-    (lt_of_lt_of_le (by norm_num : 0 < (1 : ℕ)) F.ell_pos)
+    (lt_of_lt_of_le (by positivity) F.ell_pos)
   let Jgain : ℝ := (2 / F.c₀) * (Ca + G + 4)
   have hJEventually : ∀ᶠ J : ℕ in atTop,
       Jgain ≤ Real.log (Nat.choose (J + F.ell) F.ell : ℝ) :=
@@ -269,30 +262,28 @@ theorem WholeEdgeContractionTask_proof (F : FixedData) (r : MemoryParameters F) 
   obtain ⟨xClean, hCleanX⟩ := hCleanBound m C₁ J C₂ Eid hEid
   refine ⟨max xScale (max xRare xClean), ?_⟩
   intro x hx P hP A hA hk hk' hIdeal theta i
-  have hxScale : 4 ≤ L x := hScale x (le_trans (le_max_left _ _) hx)
-  have hsmall : F.c₀ * T x ≤ (P.smallGroups.card : ℝ) := hP.1
+  have hxScale := hScale x (le_trans (by simp) hx)
+  have hsmall := hP.1
   have hJgain : Ca + G + 3 < (F.c₀ / 2) *
       Real.log (Nat.choose (J + F.ell) F.ell : ℝ) := by
     have h := hJ₀ J hJ
-    have hc₀ : 0 < F.c₀ := F.c₀_pos
+    have hc₀ := F.c₀_pos
     have hscaled : Ca + G + 4 ≤ (F.c₀ / 2) *
         Real.log (Nat.choose (J + F.ell) F.ell : ℝ) := by
       calc
         _ = (F.c₀ / 2) * Jgain := by
           dsimp [Jgain]
-          field_simp [ne_of_gt hc₀]
+          field_simp
         _ ≤ _ := mul_le_mul_of_nonneg_left h (by positivity)
     linarith
   have hxRare : xRare ≤ x := by
     apply le_trans _ hx
-    exact le_trans (le_max_left xRare xClean)
-      (le_max_right xScale (max xRare xClean))
+    exact by simp
   have hxClean : xClean ≤ x := by
     apply le_trans _ hx
-    exact le_trans (le_max_right xRare xClean)
-      (le_max_right xScale (max xRare xClean))
+    exact by simp
   have hRareAt := hRareX x hxRare P hP A hA hk hk' theta i
-    (fun _ _ _ => (1 : ℂ)) (by intro s t c; simp)
+    (fun _ _ _ => (1 : ℂ)) (by simp)
   have hCleanAt := hCleanX x hxClean P hP A hA hk hk' hIdeal theta i
   have hrareConst := rare_decay_bound F P J Ca G x hxScale hsmall hJgain
   have hcleanConst := clean_decay_bound G Eid Cs (L x) hxScale hEidLower
@@ -314,7 +305,7 @@ theorem WholeEdgeContractionTask_proof (F : FixedData) (r : MemoryParameters F) 
       (fun _ _ _ => (1 : ℂ)) s t
     by_cases hkeep : keep s ∧ keep t
     · simp only [projectKernel, ite_eq_left hkeep]
-      exact hAll
+      omega
     · simp [projectKernel, hkeep]
   have hCleanNorm : NormBound (P.memoryMass F J (N x)) Kclean
       (2 * (L x) ^ (-Eid + Cs)) := by
@@ -333,6 +324,6 @@ theorem WholeEdgeContractionTask_proof (F : FixedData) (r : MemoryParameters F) 
   have hTargetNorm := normBound_mono hconst hSumNorm
   change NormBound (P.memoryMass F J (N x)) Kall ((L x) ^ (-G))
   rw [hKernel]
-  exact hTargetNorm
+  omega
 
 end Erdos821.S2Contr

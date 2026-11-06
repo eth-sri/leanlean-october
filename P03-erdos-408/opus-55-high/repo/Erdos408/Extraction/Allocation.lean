@@ -88,7 +88,7 @@ theorem eventually_abs_proxySum_le (h₂ : TwoSidedCorrelation) (q cw : ℝ) (hq
     (hCsx ⟨k, by omega⟩) hgroups hbands hmassband hH hx hxκ hT
     hBd hterms hsq hfailx' (hcorex j hj hjJ) hk hadm hB hΦ hj
   refine hbound.trans ?_
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hpos : 0 ≤ x / Real.log x * Real.log x ^ (-c') := by
     have := rpow_pos_of_pos hL (-c')
     have : 0 < x := by linarith

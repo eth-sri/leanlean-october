@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentGlobalRetainedGates
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseMoment
+open InverseWholePriorityRetainedSource
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 lemma actual_profile_zero_of_geometry
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -44,7 +43,7 @@ lemma wholeRow_zero_of_geometry
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     {Jo : ℕ} (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (X Y b : ℝ) (hX : 0<X) (hW : ∀y,W y≠0 → y≤b)
     (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0)
     (hgeom : b*X<primeProductNorm p x.second.sourceCommon*primeProductNorm p x.second.overlap) :
@@ -53,7 +52,7 @@ lemma wholeRow_zero_of_geometry
   have hh := actual_profile_zero_of_geometry p hp hcop hg pool (secondInheritedProfile p x Ψ m ray)
     (slots\J) (slots\J) (fun i=>lists i\InverseMomentWholeRetainedSource.deleted p extra negative x)
     (fun i=>lists i\InverseMomentWholeRetainedSource.deleted p extra negative x) a a W W rowMajorant Y X b hX hW hgeom
-  rw [hh,mul_zero]
+  simp_all
 
 omit hp [∀i,(Ideal.span {p i}).IsMaximal] in
 def geometrySource {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (b X : ℝ) :
@@ -77,7 +76,7 @@ lemma original_retained_geometry_sum
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     {Jo : ℕ} (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (source : Finset (MarkedSecondSource ι Jo 0)) (w : MarkedSecondSource ι Jo 0→ℂ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ)
     (lists : σ→Finset ι) (a : σ→ι→ℂ) (W : ℝ→ℂ) (X Y b : ℝ)
     (hX : 0<X) (hW : ∀y,W y≠0 → y≤b) (ray : SecondRayIndex) :
     (∑x∈source,w x*wholeRow p hp hcop hg extra pool negative Ψ m slots J lists a W X Y ray x)=
@@ -88,7 +87,7 @@ lemma original_retained_geometry_sum
   split_ifs with hg₀
   · rfl
   · rw [wholeRow_zero_of_geometry p hp hcop hg extra pool negative Ψ m slots J lists a W X Y b hX hW
-      ray x (lt_of_not_ge hg₀),mul_zero]
+      ray x (by linarith),mul_zero]
 
 end SevenEighths.InverseMomentGlobalRetainedGates
 end

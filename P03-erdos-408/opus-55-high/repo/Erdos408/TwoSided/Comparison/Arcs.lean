@@ -111,7 +111,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   set L := Real.log x with hLdef
   set Y := y₀ * (x * U * U') with hYdef
   have hκ0 : 0 < κ := by linarith only [hκ]
-  have he2 : 0 < Real.exp 2 := Real.exp_pos 2
+  have he2 := Real.exp_pos 2
   have hM0sq : 0 ≤ M0 ^ 2 := sq_nonneg _
   have hκe : 0 ≤ 4 * κ * Real.exp 2 := by positivity
   have hκ2 : 0 ≤ 16 * κ ^ 2 := by positivity
@@ -122,7 +122,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hx0 : 0 < x := by linarith only [hx10]
   have hy₀0 : 0 < y₀ := lt_of_lt_of_le (by positivity) hy₀
   have he1 : Real.exp 1 ≤ 4 := (Real.exp_one_lt_d9).le.trans (by norm_num)
-  have he1' : 0 < Real.exp 1 := Real.exp_pos 1
+  have he1' := Real.exp_pos 1
   -- the coefficients of the bilinear form
   set 𝒰 : ℕ → ℂ := endpointCoeff x q q₀ a u v Bc P (fun g => A g ∪ B g)
     (fun p => ψ' (slotProduct B fun g i => p g i.castSucc)) ψ₁ Y σ with h𝒰
@@ -152,10 +152,10 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
       · simp [hcl, hb₁, hφ]
       · simp [hcl, hb₂, hex l hl hφ]
     rw [h0, mul_zero, norm_zero]
-    exact hRHS0
+    omega
   obtain ⟨l₀, hl₀, hφ₀, hφ₀'⟩ := hex
   -- the scales (6.17)
-  have hAB : ∀ g, Disjoint (A g) (B g) := fun g => (hpat.1 g).1
+  have hAB := fun g => (hpat.1 g).1
   have hAm : ∀ g, (A g).card ≤ m₀ := fun g =>
     (Finset.card_le_card Finset.subset_union_left).trans (hpat.1 g).2
   have hBm : ∀ g, (B g).card ≤ m₀ := fun g =>
@@ -196,7 +196,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hUU0 : 0 < U * U' := mul_pos hU0 hU'0
   -- `exp(L^{0.38}) ≤ U, U'`
   have h38 : Real.exp (L ^ (0.38 : ℝ)) ≤ Real.exp (L ^ (0.39 : ℝ) - 1) :=
-    Real.exp_le_exp.2 (by linarith only [hF1])
+    Real.exp_le_exp.2 (by linarith)
   -- `Y` lies in the range of interface E
   have hY_lo : x * Real.exp (L ^ (0.38 : ℝ)) ≤ Y := by
     have h₁ : 4 * κ * Real.exp (L ^ (0.38 : ℝ)) ≤ U * U' := by
@@ -209,19 +209,19 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
         _ ≤ y₀ * (U * U') := mul_le_mul hy₀ h₁ (by positivity) hy₀0.le
     calc x * Real.exp (L ^ (0.38 : ℝ)) ≤ x * (y₀ * (U * U')) :=
           mul_le_mul_of_nonneg_left h₂ hx0.le
-      _ = Y := by rw [hYdef]; ring
+      _ = Y := by ring
   have hY_hi : Y ≤ x * Real.exp (L ^ (0.47 : ℝ)) := by
     have h₁ : y₀ * (U * U') ≤ Real.exp (L ^ (0.47 : ℝ)) := by
       calc y₀ * (U * U') ≤ 2 * κ * Real.exp 2 * Real.exp (2 * L ^ (0.465 : ℝ)) :=
             mul_le_mul hy₀' hUU_hi hUU0.le (by positivity)
         _ = Real.exp (Real.log (2 * κ * Real.exp 2) + 2 * L ^ (0.465 : ℝ)) := by
             rw [Real.exp_add, Real.exp_log (by positivity)]
-        _ ≤ Real.exp (L ^ (0.47 : ℝ)) := Real.exp_le_exp.2 (by linarith only [hF4])
-    calc Y = x * (y₀ * (U * U')) := by rw [hYdef]; ring
+        _ ≤ Real.exp (L ^ (0.47 : ℝ)) := Real.exp_le_exp.2 (by linarith)
+    calc Y = x * (y₀ * (U * U')) := by ring
       _ ≤ x * Real.exp (L ^ (0.47 : ℝ)) := mul_le_mul_of_nonneg_left h₁ hx0.le
   have hΞall := hΞ hY_lo hY_hi
   -- the arc parameters: `H = UU'/L^{C_arc}`, `T₀ = x L^{C_m + 2}`, `R = ⌊L^{C_arc}⌋`
-  have hLCarc1 : 1 ≤ L ^ Carc := Real.one_le_rpow hL1 hCarc.le
+  have hLCarc1 := Real.one_le_rpow hL1 hCarc.le
   have hLCarc : L ^ Carc ≤ U * U' := by
     refine le_trans ?_ hUU_lo
     rw [Real.rpow_def_of_pos hL0, Real.exp_le_exp]
@@ -240,7 +240,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hHle : H ≤ U * U' := by rw [hHdef]; exact div_le_self hUU0.le hLCarc1
   have hxy : 10 ≤ y₀ * x := by
     have : (4 * κ)⁻¹ * (40 * κ) ≤ y₀ * x :=
-      mul_le_mul hy₀ (by linarith only [hF7, hκe, hκ2]) (by positivity) hy₀0.le
+      mul_le_mul hy₀ (by linarith) (by positivity) hy₀0.le
     rwa [show (4 * κ)⁻¹ * (40 * κ) = 10 by
       rw [inv_mul_eq_div, div_eq_iff (by positivity)]; ring] at this
   have hY0 : 0 < Y := by rw [hYdef]; positivity
@@ -255,10 +255,10 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   obtain ⟨T₀, hT₀def⟩ : ∃ T₀ : ℝ, T₀ = x * L ^ (Cm + 2) := ⟨_, rfl⟩
   have hratio : L ^ 2 * L ^ Carc ≤ L ^ (Cm + 2) := by
     rw [← Real.rpow_natCast, ← Real.rpow_add hL0]
-    exact Real.rpow_le_rpow_of_exponent_le hL1 (by push_cast; linarith only [hCm])
+    exact Real.rpow_le_rpow_of_exponent_le hL1 (by push_cast; linarith)
   have hT₀H : 2 * Y * L ≤ T₀ * H := by
     have h₁ : 2 * y₀ ≤ L := by linarith only [hy₀', hF6, hM0sq]
-    calc 2 * Y * L = (2 * y₀) * L * (x * (U * U')) := by rw [hYdef]; ring
+    calc 2 * Y * L = (2 * y₀) * L * (x * (U * U')) := by ring
       _ ≤ L * L * (x * (U * U')) := by gcongr
       _ = x * (L ^ 2 * L ^ Carc) * (U * U') / L ^ Carc := by
           rw [eq_div_iff (by positivity)]; ring
@@ -267,7 +267,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
   have hT₀H' : 2 * Y ≤ T₀ * H := le_trans (le_mul_of_one_le_right (by positivity) hL1) hT₀H
   obtain ⟨R, hRdef⟩ : ∃ R : ℕ, R = ⌊L ^ Carc⌋₊ := ⟨_, rfl⟩
   have hRL : (R : ℝ) ≤ L ^ Carc := by rw [hRdef]; exact Nat.floor_le (by positivity)
-  have hLCm : L ^ Carc ≤ L ^ Cm := Real.rpow_le_rpow_of_exponent_le hL1 hCm
+  have hLCm := Real.rpow_le_rpow_of_exponent_le hL1 hCm
   -- the mean square at the centres, and `Ξ₀ ≥ 0`
   have hΞR : ∀ (r : ℕ) (u : ℤ), 1 ≤ r → r ≤ R →
       ∫ t in (-T₀)..T₀, ‖twistedPoly Y 𝒰 (-u) r t‖ ^ 2 ≤ Ξ₀ := by
@@ -341,7 +341,7 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     (hU9x P big hadm (J + 1) _ (fun p => ψ (slotProduct A fun g i => p g i.castSucc)) hcardS
       fun p => (hpat.2.2.2.1 _).2.2.1)
   -- the multiplier: mass `1`, and the minor arcs
-  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g =>
+  have hV := fun g =>
     (lt_of_lt_of_le hvlo (hadm.2.2.2.2.2.1 g).1).ne'
   have hM1 : ∀ θ ∈ Set.Icc (0 : ℝ) 1, ‖∑ l ∈ auxLabels P (fun g => A g ∪ B g),
       cl l * Erdos821.Blueprint.Analytic.e (-θ * D l)‖ ≤ 1 := by
@@ -421,6 +421,6 @@ theorem exists_norm_comparisonBilinear_le_arcs (q q₀ c₀ C₀ vlo vhi alo ahi
     linarith only [le_abs_self Am, le_abs_self CA, le_abs_self CB, abs_nonneg CA, abs_nonneg CB]
   have hfin := Arcs.div_le_of_arcs hY0 hL1 hKmin.le hK₃.le hΞ0 hmain hE hRL hAm
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hY0.le, inv_mul_eq_div]
-  exact hfin
+  omega
 
 end Erdos408.TwoSided

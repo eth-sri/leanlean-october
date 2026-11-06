@@ -49,24 +49,23 @@ theorem root_det (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) :
     (P₀.1 : ℤ) * rootD P₀.1 P₀.2 - P₀.2 * rootC P₀.1 P₀.2 = 1 := by
   have h : ((P₀.1 * rootD P₀.1 P₀.2 : ℕ) : ℤ) = (1 + P₀.2 * rootC P₀.1 P₀.2 : ℕ) := by
     rw [mul_rootD hu hco]
-  push_cast at h
-  linarith
+  omega
 
 /-- `g⁻¹ g z = z`. -/
 theorem rootMapInv_rootMap (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z : ℤ × ℤ) :
     rootMapInv P₀ (rootMap P₀ z) = z := by
   have h := root_det hu hco
   refine Prod.ext ?_ ?_ <;> simp only [rootMapInv, rootMap]
-  · linear_combination z.1 * h
-  · linear_combination z.2 * h
+  · grind
+  grind
 
 /-- `g g⁻¹ w = w`. -/
 theorem rootMap_rootMapInv (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (w : ℤ × ℤ) :
     rootMap P₀ (rootMapInv P₀ w) = w := by
   have h := root_det hu hco
   refine Prod.ext ?_ ?_ <;> simp only [rootMapInv, rootMap]
-  · linear_combination w.1 * h
-  · linear_combination w.2 * h
+  · grind
+  grind
 
 /-- `g` maps primitive vectors to primitive vectors. -/
 theorem isCoprime_rootMap (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) {z : ℤ × ℤ}
@@ -107,8 +106,7 @@ theorem mul_tau_add_div (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) (z : ℤ
     exact_mod_cast mul_rootD hu hco
   simp only [tau, rootMap]
   push_cast
-  field_simp
-  linear_combination (-(z.2 : ℝ)) * h
+  grind
 
 /-! ### Divisibility and lines -/
 
@@ -125,26 +123,18 @@ theorem dvd_iff_lineOf_eq {p : ℕ} (hp : p.Prime) {a b : ℤ} (hab : IsCoprime 
     push_cast at h'
     rw [hx, hy] at h'
     simp at h'
-  have hval (w : ZMod p) : w.val ≠ p := (ZMod.val_lt w).ne
+  have hval (w : ZMod p) : w.val ≠ p := by grind
   have hz' := hne hz
   have hab' := hne hab
   rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
   simp only [lineOf]
   push_cast
   by_cases h1 : (z.1 : ZMod p) = 0 <;> by_cases h2 : (b : ZMod p) = 0
-  · simp [h1, h2]
-  · have h3 : (z.2 : ZMod p) ≠ 0 := fun h3 => hz' ⟨h1, h3⟩
-    simp [h1, h2, h3, (hval _).symm]
-  · have h3 : (a : ZMod p) ≠ 0 := fun h3 => hab' ⟨h3, h2⟩
-    simp [h1, h2, h3, hval]
+  · simp_all
+  · grind
+  · simp_all
   · simp only [h1, h2, ite_false, (ZMod.val_injective p).eq_iff]
-    constructor
-    · intro h
-      field_simp
-      linear_combination h
-    · intro h
-      field_simp at h
-      linear_combination h
+    grind
 
 /-! ### Ratios -/
 
@@ -169,8 +159,7 @@ theorem rootRatio_sub_div {n m : ℕ} (hn : 0 < n) {Q₁ Q₂ : ℤ} (h : n * Q�
   have hk' : ((-(m : ZMod n)⁻¹ : ZMod n).val : ℝ) - Q₁ = n * k := by exact_mod_cast hk
   have hn' : (n : ℝ) ≠ 0 := by positivity
   rw [rootRatio]
-  field_simp
-  linear_combination hk'
+  grind
 
 /-! ### The boxes -/
 
@@ -277,8 +266,8 @@ theorem rootMapInv_mem (hU : 0 < d₀ * Y * d.Hm) (hV : 0 ≤ d.Hn) (hP₀ : P�
     (Nat.isCoprime_iff_coprime.2 hPc)
   rw [mem_rootPositions_iff hu hco, rootMap_rootMapInv hu hco]
   exact ⟨rootMapInv_mem_square hU hV hP₀ hP, Int.isCoprime_iff_gcd_eq_one.1 hc,
-    by exact_mod_cast hP₁, by exact_mod_cast hP₁', by exact_mod_cast hP₂,
-    by exact_mod_cast hP₂'⟩
+    by omega, by omega, by omega,
+    by omega⟩
 
 /-! ### The isomorphism -/
 
@@ -296,7 +285,7 @@ theorem rootMapInv_self (hu : 0 < P₀.1) (hco : P₀.1.Coprime P₀.2) :
     rootMapInv P₀ (P₀.1, P₀.2) = (1, 0) := by
   refine Prod.ext ?_ ?_ <;> simp only [rootMapInv]
   · linear_combination root_det hu hco
-  · ring
+  linarith
 
 /-- `z ↦ g z` from the root positions at the integer root of `P₀` to the physical
 positions. -/

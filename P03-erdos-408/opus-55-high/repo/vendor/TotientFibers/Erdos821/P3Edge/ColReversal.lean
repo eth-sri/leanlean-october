@@ -6,7 +6,6 @@ public import Erdos821.P3Edge.MultisetSum
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -25,16 +24,13 @@ lemma translateParticle_add (d₁ d₂ : ℤ) {g : P.Group} (z : P.Particle g) :
     unfold translateParticle
     dsimp only []
     congr 1
-    push_cast
-    ring
+    grind
 
 lemma translateParticle_zero {g : P.Group} (z : P.Particle g) :
     translateParticle 0 z = z := by
   cases z with
   | mk p r =>
     unfold translateParticle
-    dsimp only []
-    congr 1
     simp
 
 lemma translateParticle_neg_cancel (d : ℤ) {g : P.Group} (z : P.Particle g) :
@@ -69,7 +65,7 @@ lemma translateMemory_neg_cancel (d : ℤ) {g : P.Group} (z : P.Memory g) :
 lemma translateMemory_add (d : ℤ) {g : P.Group} (z₁ z₂ : P.Memory g) :
     translateMemory d (z₁ + z₂) = translateMemory d z₁ + translateMemory d z₂ := by
   unfold translateMemory
-  exact Multiset.map_add _ z₁ z₂
+  simp
 
 lemma translateMemory_count (d : ℤ) {g : P.Group} (z : P.Memory g) (v : P.Particle g) :
     (translateMemory d z).count (translateParticle d v) = z.count v := by
@@ -80,9 +76,7 @@ lemma multFact_eq_prod_univ {α : Type*} [Fintype α] [DecidableEq α] (z : Mult
     multFact z = ∏ u : α, ((z.count u).factorial : ℝ) := by
   unfold multFact
   apply Finset.prod_subset (Finset.subset_univ z.toFinset)
-  intro u _ hu
-  have hc : z.count u = 0 := Multiset.count_eq_zero.mpr (Multiset.mem_toFinset.not.mp hu)
-  simp [hc]
+  simp_all
 
 lemma multFact_translateMemory (d : ℤ) {g : P.Group} (z : P.Memory g) :
     multFact (translateMemory d z) = multFact z := by
@@ -124,10 +118,9 @@ lemma multFact_cons {α : Type*} [Fintype α] [DecidableEq α] (a : α) (u : Mul
       ∏ x ∈ Finset.univ.erase a, ((u.count x).factorial : ℝ) := by
     apply Finset.prod_congr rfl
     intro x hx
-    have hne : x ≠ a := Finset.ne_of_mem_erase hx
+    have hne := Finset.ne_of_mem_erase hx
     rw [Multiset.count_cons_of_ne hne]
-  rw [hca, hrest]
-  ring
+  grind
 
 /-! ### Index filter count and retrieval fibres -/
 
@@ -156,10 +149,9 @@ lemma retrievalFibre_empty_card {M : ℕ} {g : P.Group} (z : P.Memory g)
   have heq : retrievalFibre z (∅ : Finset (Fin M)) w = Finset.univ := by
     ext f
     simp only [retrievalFibre, Finset.mem_filter, Finset.mem_univ, true_and, iff_true]
-    exact ⟨fun idx _ _ => False.elim (Finset.notMem_empty idx.1 idx.2),
-      fun idx => False.elim (Finset.notMem_empty idx.1 idx.2)⟩
-  have hempty : Fintype.card {idx : Fin M // idx ∈ (∅ : Finset (Fin M))} = 0 := by simp
-  rw [heq, Finset.card_univ, Fintype.card_fun, hempty, Nat.pow_zero]
+    exact ⟨fun idx _ _ => by grind,
+      by simp⟩
+  simp_all
 
 lemma finset_filter_card_eq_map_count {M : ℕ} {α : Type*} [DecidableEq α]
     (S : Finset (Fin M)) (w : Fin M → α) (v : α) :
@@ -175,14 +167,9 @@ lemma finset_filter_card_eq_map_count {M : ℕ} {α : Type*} [DecidableEq α]
     exact eq_comm
   rw [h1]
   apply Finset.card_bij (fun (idx : {idx : Fin M // idx ∈ S}) _ => idx.val)
-  · intro idx hidx
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hidx ⊢
-    exact ⟨idx.2, hidx⟩
-  · intro i₁ _ i₂ _ h
-    exact Subtype.ext h
-  · intro idx hidx
-    simp only [Finset.mem_filter] at hidx
-    exact ⟨⟨idx, hidx.1⟩, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hidx.2⟩, rfl⟩
+  · simp
+  · simp
+  simp_all
 
 lemma retrievalFibre_insert_card {M : ℕ} {g : P.Group} (z : P.Memory g)
     (S : Finset (Fin M)) (a : Fin M) (ha : a ∉ S) (w : Fin M → P.Particle g) :
@@ -199,23 +186,21 @@ lemma retrievalFibre_insert_card {M : ℕ} {g : P.Group} (z : P.Memory g)
       restrict f ∈ retrievalFibre z S w := by
     intro f hf
     simp only [retrievalFibre, Finset.mem_filter, Finset.mem_univ, true_and] at hf ⊢
-    refine ⟨fun i₁ i₂ heq => ?_, fun idx => hf.2 ⟨idx.1, Finset.mem_insert_of_mem idx.2⟩⟩
+    refine ⟨fun i₁ i₂ heq => ?_, by grind⟩
     have hinj := hf.1 heq
-    exact Subtype.ext (Subtype.mk.inj hinj)
+    exact by grind
   have hbiUnion : retrievalFibre z (insert a S) w =
       (retrievalFibre z S w).biUnion extFibre := by
     ext f
     simp only [Finset.mem_biUnion, extFibre, Finset.mem_filter]
     constructor
-    · intro hf
-      exact ⟨restrict f, hrestrict_mem f hf, hf, rfl⟩
-    · rintro ⟨_, _, hf, _⟩
-      exact hf
+    · simp_all
+    · simp
   have hdisj : Set.PairwiseDisjoint (↑(retrievalFibre z S w)) extFibre := by
     intro f₁ _ f₂ _ hne
     apply Finset.disjoint_filter.mpr
     intro f _ h₁ h₂
-    exact hne (h₁.symm.trans h₂)
+    exact by grind
   rw [hbiUnion, Finset.card_biUnion hdisj]
   let Z_a : Finset (Fin z.card) := Finset.univ.filter (fun j => memoryEntry z j = w a)
   have hZa_card : Z_a.card = z.count (w a) := (count_eq_card_filter z (w a)).symm
@@ -231,23 +216,13 @@ lemma retrievalFibre_insert_card {M : ℕ} {g : P.Group} (z : P.Memory g)
       apply Finset.card_bij (fun f _ => f ⟨a, Finset.mem_insert_self a S⟩)
       · intro f hf
         simp only [extFibre, retrievalFibre, Finset.mem_filter, Finset.mem_univ, true_and] at hf
-        obtain ⟨⟨hfinj, hfval⟩, hres⟩ := hf
-        simp only [avail, Z_a, I_f', Finset.mem_sdiff, Finset.mem_filter, Finset.mem_univ,
-          true_and, Finset.mem_image, not_exists]
-        refine ⟨hfval ⟨a, Finset.mem_insert_self a S⟩, fun idx hcon => ?_⟩
-        have hres_idx : f ⟨idx.1, Finset.mem_insert_of_mem idx.2⟩ = f' idx :=
-          congrFun hres idx
-        rw [← hres_idx] at hcon
-        have heq := hfinj hcon
-        have hval_eq : idx.1 = a := Subtype.mk.inj heq
-        exact ha (hval_eq ▸ idx.2)
+        grind
       · intro f₁ hf₁ f₂ hf₂ heq_a
         simp only [extFibre, Finset.mem_filter] at hf₁ hf₂
         funext idx
         by_cases hia : idx.1 = a
-        · have hidx_eq : idx = ⟨a, Finset.mem_insert_self a S⟩ := Subtype.ext hia
-          rw [hidx_eq, heq_a]
-        · have his : idx.1 ∈ S := Finset.mem_of_mem_insert_of_ne idx.2 hia
+        · grind
+        · have his := Finset.mem_of_mem_insert_of_ne idx.2 hia
           have hidx_eq : idx = ⟨idx.1, Finset.mem_insert_of_mem his⟩ := Subtype.ext rfl
           rw [hidx_eq]
           have h1 : restrict f₁ ⟨idx.1, his⟩ = f' ⟨idx.1, his⟩ := congrFun hf₁.2 ⟨idx.1, his⟩
@@ -262,32 +237,26 @@ lemma retrievalFibre_insert_card {M : ℕ} {g : P.Group} (z : P.Memory g)
         have hfa : f ⟨a, Finset.mem_insert_self a S⟩ = j₀ := dite_eq_left rfl
         have hres : restrict f = f' := by
           funext idx
-          have hne : idx.1 ≠ a := fun h => ha (h ▸ idx.2)
+          have hne : idx.1 ≠ a := by grind
           exact dite_eq_right hne
         have hfval : ∀ idx : {idx : Fin M // idx ∈ insert a S},
             memoryEntry z (f idx) = w idx.val := by
           intro idx
           by_cases h : idx.1 = a
-          · dsimp [f]
-            rw [dite_eq_left h, hj₀.1, h]
-          · dsimp [f]
-            rw [dite_eq_right h]
-            exact hf'_prop.2 ⟨idx.1, Finset.mem_of_mem_insert_of_ne idx.2 h⟩
+          · grind
+          · grind
         have hfinj : Function.Injective f := by
           intro i₁ i₂ heq
           dsimp [f] at heq
           by_cases h₁ : i₁.1 = a <;> by_cases h₂ : i₂.1 = a
-          · exact Subtype.ext (h₁.trans h₂.symm)
-          · rw [dite_eq_left h₁, dite_eq_right h₂] at heq
-            exact False.elim (hj₀.2 _ heq.symm)
+          · grind
+          · grind
           · rw [dite_eq_right h₁, dite_eq_left h₂] at heq
-            exact False.elim (hj₀.2 _ heq)
-          · rw [dite_eq_right h₁, dite_eq_right h₂] at heq
-            have hinj := hf'_prop.1 heq
-            exact Subtype.ext (Subtype.mk.inj hinj)
+            grind
+          · grind
         refine ⟨f, ?_, hfa⟩
         simp only [extFibre, retrievalFibre, Finset.mem_filter, Finset.mem_univ, true_and]
-        exact ⟨⟨hfinj, hfval⟩, hres⟩
+        grind
     rw [hbij]
     have hinter_eq : I_f' ∩ Z_a =
         (Finset.univ.filter (fun idx : {idx : Fin M // idx ∈ S} => w idx.val = w a)).image f' := by
@@ -295,10 +264,8 @@ lemma retrievalFibre_insert_card {M : ℕ} {g : P.Group} (z : P.Memory g)
       simp only [I_f', Z_a, Finset.mem_inter, Finset.mem_image, Finset.mem_filter,
         Finset.mem_univ, true_and]
       constructor
-      · rintro ⟨⟨idx, rfl⟩, hj⟩
-        exact ⟨idx, (hf'_prop.2 idx).symm.trans hj, rfl⟩
-      · rintro ⟨idx, hidx, rfl⟩
-        exact ⟨⟨idx, rfl⟩, (hf'_prop.2 idx).trans hidx⟩
+      · grind
+      · grind
     have hinter_card : (I_f' ∩ Z_a).card = (S.val.map w).count (w a) := by
       rw [hinter_eq, Finset.card_image_of_injective _ hf'_prop.1]
       exact finset_filter_card_eq_map_count S w (w a)
@@ -318,7 +285,7 @@ lemma retrievalFibre_card_mul_multFact {M : ℕ} {g : P.Group}
     have hmap : (∅ : Finset (Fin M)).val.map w = 0 := rfl
     have hcard : (retrievalFibre (u + (∅ : Finset (Fin M)).val.map w) ∅ w).card = 1 :=
       retrievalFibre_empty_card _ w
-    rw [hcard, hmap, add_zero, Nat.cast_one, one_mul]
+    simp_all
   | @insert a S ha ih =>
     set z := u + (insert a S).val.map w
     have hcard := retrievalFibre_insert_card z S a ha w
@@ -328,8 +295,7 @@ lemma retrievalFibre_card_mul_multFact {M : ℕ} {g : P.Group}
         Multiset.cons_add, add_comm (S.val.map w) u, ← Multiset.cons_add]
     have hcount : z.count (w a) - (S.val.map w).count (w a) = u.count (w a) + 1 := by
       rw [hz_eq, Multiset.count_add, Multiset.count_cons_self, Nat.add_sub_cancel]
-    have hcard_z : (retrievalFibre z S w).card =
-        (retrievalFibre ((w a ::ₘ u) + S.val.map w) S w).card :=
+    have hcard_z :=
       congrArg (fun m => (retrievalFibre m S w).card) hz_eq
     rw [hcount, hcard_z] at hcard
     have hcast : ((retrievalFibre z (insert a S) w).card : ℝ) =
@@ -343,8 +309,7 @@ lemma groupMemoryMass_add_map (F : FixedData) (n : ℕ) {M : ℕ} {g : P.Group}
     ((u + S.val.map w).map (fun p => tiltedMu F P n g p.1)).prod =
       (u.map (fun p => tiltedMu F P n g p.1)).prod *
         ∏ idx ∈ S, tiltedMu F P n g (w idx).1 := by
-  rw [Multiset.map_add, Multiset.prod_add, Multiset.map_map]
-  congr 1
+  simp
 
 /-- Weighted factorial identity: multiplying `retrievalFibre.card` by `groupMemoryMass`
 extracts the product of `tiltedMu` over `S` and leaves `groupMemoryMass u`. -/
@@ -395,13 +360,13 @@ lemma translateMemory_storedMemory (delta : ℤ) {M : ℕ} {g : P.Group}
   apply Multiset.map_congr rfl
   intro i _
   dsimp [translateParticle]
-  rw [zero_add]
+  simp
 
 lemma subtype_univ_map_eq {M : ℕ} {α : Type*} (S : Finset (Fin M)) (w : Fin M → α) :
     (Finset.univ : Finset {idx : Fin M // idx ∈ S}).val.map (fun idx => w idx.val) =
       S.val.map w := by
   have h := congrArg (fun t : Finset (Fin M) => t.val.map w) (Finset.attach_map_val (s := S))
-  simpa [Finset.map_val, Multiset.map_map] using h
+  simp_all
 
 lemma sdiff_val_add_val {α : Type*} [Fintype α] [DecidableEq α] (B : Finset α) :
     (Finset.univ \ B).val + B.val = (Finset.univ : Finset α).val := by
@@ -411,9 +376,7 @@ lemma sdiff_val_add_val {α : Type*} [Fintype α] [DecidableEq α] (B : Finset �
   by_cases hx : x ∈ B
   · have hnot : x ∉ Finset.univ \ B := by simp [hx]
     rw [Multiset.count_eq_zero.mpr hnot, Multiset.count_eq_one_of_mem B.nodup hx]
-  · have hmem : x ∈ Finset.univ \ B := by simp [hx]
-    rw [Multiset.count_eq_one_of_mem (Finset.univ \ B).nodup hmem,
-      Multiset.count_eq_zero.mpr hx]
+  simp_all
 
 lemma deleteMemoryIndices_add_selected {M : ℕ} {g : P.Group} (z : P.Memory g)
     (S : Finset (Fin M)) (f : {idx : Fin M // idx ∈ S} → Fin z.card)
@@ -471,7 +434,7 @@ lemma valid_bigGroup_decomp (delta : ℤ) (g : P.BigGroup)
     rfl
   have hf_mem : f_g ∈ retrievalFibre s_g A_g w_A := by
     simp only [retrievalFibre, Finset.mem_filter, Finset.mem_univ, true_and]
-    exact ⟨hinj, hentry⟩
+    exact by grind
   have hs_eq : s_g = u_g + A_g.val.map w_A := by
     have hdel := deleteMemoryIndices_add_selected s_g A_g f_g hinj
     have hmap : (Finset.univ : Finset {idx : Fin (J + F.ell) // idx ∈ A_g}).val.map
@@ -486,8 +449,7 @@ lemma valid_bigGroup_decomp (delta : ℤ) (g : P.BigGroup)
     have h1 := congrArg (translateMemory (-delta)) ht_eq
     rw [translateMemory_neg_cancel] at h1
     rw [h1, Multiset.add_sub_cancel_right]
-  refine ⟨hf_mem, hs_eq, ht_decomp, hu_eq, ?_⟩
-  rw [← hu_eq, hs_eq]
+  grind
 
 /-- Active-label product identity when `a_g` and `b_g` agree on shared slots and
 `A_g, B_g` avoid shared slots. -/
@@ -521,16 +483,11 @@ lemma active_fresh_prod_swap (F : FixedData) (n : ℕ)
     apply Finset.prod_congr rfl
     intro idx _
     by_cases hm : idx ∈ S_g
-    · have hnsh : ¬ ν.shared g.val idx := hS idx hm
-      simp [hm, hnsh]
-    · by_cases hsh_idx : ν.shared g.val idx <;> simp [hm, hsh_idx]
+    · simp_all
+    · simp_all
   rw [mul_assoc, hcombine b_g A_g hA, mul_assoc, hcombine a_g B_g hB,
     ← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro idx _
-  by_cases hsh_idx : ν.shared g.val idx
-  · simp [hsh_idx, hsh idx hsh_idx]
-  · simp [hsh_idx, mul_comm]
+  grind
 
 /-- Ratio bound between `(P.V g.val) ^ (-(A_g.card : ℤ))` and `(P.V g.val) ^ (-(B_g.card : ℤ))`. -/
 def colRevConst (F : FixedData) (m : ℕ) : ℝ :=
@@ -540,9 +497,7 @@ lemma colRevConst_ge_one (F : FixedData) (m : ℕ) : 1 ≤ colRevConst F m := by
   unfold colRevConst
   have h1 : 1 ≤ max 1 ((F.vMin⁻¹) ^ (F.ell + m)) := le_max_left _ _
   have h2 : 1 ≤ max 1 ((F.vMax) ^ (F.ell + m)) := le_max_left _ _
-  calc (1 : ℝ) = 1 * 1 := (mul_one 1).symm
-    _ ≤ max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * max 1 ((F.vMax) ^ (F.ell + m)) :=
-      mul_le_mul h1 h2 zero_le_one (le_trans zero_le_one h1)
+  nlinarith
 
 lemma colRevConst_pos (F : FixedData) (m : ℕ) : 0 < colRevConst F m :=
   lt_of_lt_of_le zero_lt_one (colRevConst_ge_one F m)
@@ -555,7 +510,7 @@ lemma groupMemoryMass_nonneg (F : FixedData) (n : ℕ) {g : P.Group}
   refine Multiset.prod_nonneg ?_
   intro r hr
   rcases Multiset.mem_map.mp hr with ⟨p, _, rfl⟩
-  exact htilted p.1
+  grind
 
 lemma V_zpow_swap_le (ν : Pattern P J F.ell m) (g : P.BigGroup)
     (hVlo : F.vMin ≤ P.V g.val) (hVhi : P.V g.val ≤ F.vMax)
@@ -565,39 +520,39 @@ lemma V_zpow_swap_le (ν : Pattern P J F.ell m) (g : P.BigGroup)
     (P.V g.val) ^ (-(A_g.card : ℤ)) ≤
       colRevConst F m * (P.V g.val) ^ (-(B_g.card : ℤ)) := by
   have hVpos : 0 < P.V g.val := lt_of_lt_of_le F.vMin_pos hVlo
-  have hB_card : B_g.card ≤ F.ell + m := prom_card_le ν g B_g hB
-  have hA_card : A_g.card ≤ F.ell + m := prom_card_le ν g A_g hA
+  have hB_card := prom_card_le ν g B_g hB
+  have hA_card := prom_card_le ν g A_g hA
   have hA_le : (P.V g.val) ^ (-(A_g.card : ℤ)) ≤ max 1 ((F.vMin⁻¹) ^ (F.ell + m)) := by
     calc (P.V g.val) ^ (-(A_g.card : ℤ))
-        ≤ ((P.V g.val)⁻¹) ^ A_g.card := by rw [zpow_neg, zpow_natCast, inv_pow]
+        ≤ ((P.V g.val)⁻¹) ^ A_g.card := by simp
       _ ≤ (F.vMin⁻¹) ^ A_g.card :=
           pow_le_pow_left₀ (inv_nonneg.mpr hVpos.le) (inv_anti₀ F.vMin_pos hVlo) _
       _ ≤ max 1 ((F.vMin⁻¹) ^ (F.ell + m)) := by
           rcases le_or_gt (F.vMin⁻¹) 1 with hle1 | hgt1
-          · exact le_trans (pow_le_one₀ (inv_nonneg.mpr F.vMin_pos.le) hle1) (le_max_left _ _)
-          · exact le_trans (pow_le_pow_right₀ hgt1.le hA_card) (le_max_right _ _)
+          · exact le_trans (pow_le_one₀ (inv_nonneg.mpr F.vMin_pos.le) hle1) (by simp)
+          · exact le_trans (pow_le_pow_right₀ hgt1.le hA_card) (by simp)
   have hB_le : (P.V g.val) ^ (B_g.card : ℤ) ≤ max 1 ((F.vMax) ^ (F.ell + m)) := by
     rw [zpow_natCast]
     calc (P.V g.val) ^ B_g.card
         ≤ (F.vMax) ^ B_g.card := pow_le_pow_left₀ hVpos.le hVhi _
       _ ≤ max 1 ((F.vMax) ^ (F.ell + m)) := by
           rcases le_or_gt F.vMax 1 with hle1 | hgt1
-          · exact le_trans (pow_le_one₀ (le_trans hVpos.le hVhi) hle1) (le_max_left _ _)
-          · exact le_trans (pow_le_pow_right₀ hgt1.le hB_card) (le_max_right _ _)
+          · exact le_trans (pow_le_one₀ (by linarith) hle1) (by simp)
+          · exact le_trans (pow_le_pow_right₀ hgt1.le hB_card) (by simp)
   have hB_pos : 0 < (P.V g.val) ^ (-(B_g.card : ℤ)) := zpow_pos hVpos _
   have hB_cancel : (P.V g.val) ^ (B_g.card : ℤ) * (P.V g.val) ^ (-(B_g.card : ℤ)) = 1 := by
     rw [← zpow_add₀ (ne_of_gt hVpos), add_neg_cancel, zpow_zero]
   calc (P.V g.val) ^ (-(A_g.card : ℤ))
       = (P.V g.val) ^ (-(A_g.card : ℤ)) *
           ((P.V g.val) ^ (B_g.card : ℤ) * (P.V g.val) ^ (-(B_g.card : ℤ))) := by
-        rw [hB_cancel, mul_one]
+        simp_all
     _ = ((P.V g.val) ^ (-(A_g.card : ℤ)) * (P.V g.val) ^ (B_g.card : ℤ)) *
           (P.V g.val) ^ (-(B_g.card : ℤ)) := by ring
     _ ≤ colRevConst F m * (P.V g.val) ^ (-(B_g.card : ℤ)) := by
         apply mul_le_mul_of_nonneg_right _ hB_pos.le
         unfold colRevConst
-        exact mul_le_mul hA_le hB_le (zpow_nonneg hVpos.le _)
-          (le_trans zero_le_one (le_max_left _ _))
+        exact mul_le_mul hA_le hB_le (by positivity)
+          (by positivity)
 
 /-- Per-big-group factorial reversal inequality:
 when a valid retrieval map `f₀` exists for `(s_g, t_g)`, multiplying `(retrievalFibre s_g A_g w_A).card`

@@ -39,9 +39,9 @@ lemma eq_of_invariant_sharedProduct {P : ι → Finset ℕ} {f : ℕ → ℝ}
     f (sharedProduct C s * n) = f n := by
   have key : ∀ D D' : ℕ, (∀ n, f (D * n) = f n) → (∀ n, f (D' * n) = f n) →
       ∀ n, f (D * D' * n) = f n := fun D D' hD hD' n => by rw [mul_assoc, hD, hD']
-  refine prod_induction _ (fun D => ∀ n, f (D * n) = f n) key (fun n => by rw [one_mul])
+  refine prod_induction _ (fun D => ∀ n, f (D * n) = f n) key (fun n => by simp)
     (fun g _ => ?_) n
-  refine prod_induction _ (fun D => ∀ n, f (D * n) = f n) key (fun n => by rw [one_mul])
+  refine prod_induction _ (fun D => ∀ n, f (D * n) = f n) key (fun n => by simp)
     (fun i hi => hf _ ?_)
   exact mem_biUnion.2 ⟨g, mem_univ g, mem_of_mem_sharedLabels hs (by
     simpa [sharedSlots] using hi)⟩
@@ -54,7 +54,7 @@ private lemma sum_inv_harmonicMass_mul {S : Finset ℕ} (hS : harmonicMass S ≠
   simp_rw [mul_inv]
   rw [← mul_sum]
   have h : ∑ p ∈ S, (p : ℝ)⁻¹ = harmonicMass S := by simp [harmonicMass]
-  rw [h, inv_mul_cancel₀ hS]
+  simp_all
 
 /-- The indicator of an existential is at most the sum of the indicators. -/
 private lemma ite_exists_le_sum {α : Type*} (t : Finset α) (R : α → Prop) [DecidablePred R]
@@ -62,11 +62,11 @@ private lemma ite_exists_le_sum {α : Type*} (t : Finset α) (R : α → Prop) [
     (if ∃ i ∈ t, R i then (1 : ℝ) else 0) ≤ ∑ i ∈ t, if R i then 1 else 0 := by
   split_ifs with h
   · obtain ⟨i, hi, hR⟩ := h
-    calc (1 : ℝ) = if R i then 1 else 0 := (ite_eq_left hR).symm
+    calc (1 : ℝ) = if R i then 1 else 0 := by grind
       _ ≤ ∑ i ∈ t, if R i then 1 else 0 :=
         single_le_sum (f := fun i => if R i then (1 : ℝ) else 0)
-          (fun j _ => by split_ifs <;> norm_num) hi
-  · exact sum_nonneg fun i _ => by split_ifs <;> norm_num
+          (fun j _ => by positivity) hi
+  simp
 
 omit [Fintype ι] [DecidableEq ι] in
 /-- The number of `P g`-primes satisfying `R`, weighted by `μ_g ≤ μ₀`. -/
@@ -75,7 +75,7 @@ lemma sum_filter_inv_le {P : ι → Finset ℕ} {μ₀ : ℝ}
     [DecidablePred R] :
     ∑ p ∈ (P g).filter R, (harmonicMass (P g) * p)⁻¹ ≤ μ₀ * ((P g).filter R).card := by
   rw [mul_comm, ← nsmul_eq_mul, ← sum_const]
-  exact sum_le_sum fun p hp => hμ g p (mem_filter.1 hp).1
+  exact sum_le_sum (by grind)
 
 /-- The mass of the labels with some slot satisfying `R`. -/
 lemma sum_labelMass_mul_ite_exists_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
@@ -83,7 +83,7 @@ lemma sum_labelMass_mul_ite_exists_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < h
     ∑ x ∈ auxLabels P S, labelMass P S x *
         (if ∃ g ∈ univ, ∃ i ∈ S g, R g i (x g i) then 1 else 0) ≤
       ∑ g, ∑ i ∈ S g, ∑ p ∈ (P g).filter (R g i), (harmonicMass (P g) * p)⁻¹ := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
+  have hV' := fun g => (hV g).ne'
   calc _ ≤ ∑ x ∈ auxLabels P S, labelMass P S x *
         ∑ g, ∑ i ∈ S g, (if R g i (x g i) then 1 else 0) := by
         refine sum_le_sum fun x _ => mul_le_mul_of_nonneg_left ?_ (labelMass_nonneg P S x)
@@ -104,8 +104,8 @@ lemma sum_labelMass_mul_ite_not_injOn_le {P : ι → Finset ℕ}
     ∑ x ∈ auxLabels P S, labelMass P S x *
         (if ∃ g ∈ univ, ∃ i ∈ S g, ∃ j ∈ S g, i ≠ j ∧ x g i = x g j then 1 else 0) ≤
       μ₀ * ∑ g, ((S g).card : ℝ) ^ 2 := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
-  have hsum1 : ∀ g, ∑ p ∈ P g, (harmonicMass (P g) * p)⁻¹ = 1 := fun g =>
+  have hV' := fun g => (hV g).ne'
+  have hsum1 := fun g =>
     sum_inv_harmonicMass_mul (hV' g)
   calc _ ≤ ∑ x ∈ auxLabels P S, labelMass P S x *
         ∑ g, ∑ i ∈ S g, ∑ j ∈ S g, (if i ≠ j ∧ x g i = x g j then 1 else 0) := by
@@ -123,9 +123,7 @@ lemma sum_labelMass_mul_ite_not_injOn_le {P : ι → Finset ℕ}
     _ ≤ ∑ g, ∑ i ∈ S g, ∑ j ∈ S g, μ₀ := by
         refine sum_le_sum fun g _ => sum_le_sum fun i hi => sum_le_sum fun j hj => ?_
         by_cases hij : i = j
-        · simp only [hij, ne_eq, not_true_eq_false, false_and, ite_false, mul_zero,
-            sum_const_zero]
-          exact hμ₀
+        · simp_all
         · simp only [ne_eq, hij, not_false_eq_true, true_and]
           rw [sum_labelMass_mul_ite_eq hV' S hi hj hij]
           calc ∑ p ∈ P g, (harmonicMass (P g) * p)⁻¹ ^ 2
@@ -136,12 +134,12 @@ lemma sum_labelMass_mul_ite_not_injOn_le {P : ι → Finset ℕ}
             _ = μ₀ := by rw [← mul_sum, hsum1, mul_one]
     _ = μ₀ * ∑ g, ((S g).card : ℝ) ^ 2 := by
         simp only [sum_const, nsmul_eq_mul, mul_sum]
-        exact sum_congr rfl fun g _ => by ring
+        grind
 
 /-- Indicators of equivalent propositions agree, whatever their decision procedures. -/
 private lemma ite_one_zero_congr {p q : Prop} {_ : Decidable p} {_ : Decidable q} (h : p ↔ q) :
     (if p then (1 : ℝ) else 0) = if q then 1 else 0 := by
-  split_ifs <;> tauto
+  simp_all
 
 /-- The number of `P g`-primes dividing `w` or `w'`, or among the free labels of `g`. -/
 private lemma card_filter_or_le (S : Finset ℕ) (w w' : ℕ) (T : Finset ℕ) :
@@ -167,7 +165,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
     ∑ a ∈ auxLabels P C, labelMass P C a * ∑ s ∈ auxLabels P (sharedSlots C),
         labelMass P (sharedSlots C) s * (if Clean C a s w then 0 else 1) ≤
       μ₀ * (Fintype.card ι * J ^ 2 + J * (2 * Ω + m₀ * Fintype.card ι) + m₀ * Ω) := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
+  have hV' := fun g => (hV g).ne'
   set A : (ι → Fin J → ℕ) → Prop := fun s =>
     ∃ g ∈ univ, ∃ i ∈ sharedSlots C g, ∃ j ∈ sharedSlots C g, i ≠ j ∧ s g i = s g j
   set R : (ι → Fin J → ℕ) → ι → Fin J → ℕ → Prop := fun a g _ v =>
@@ -179,22 +177,20 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
         (if D a then 1 else 0) := by
     intro a s
     have h₀ : ∀ q : Prop, ∀ _ : Decidable q, (0 : ℝ) ≤ if q then 1 else 0 := fun q _ => by
-      split_ifs <;> norm_num
+      positivity
     by_cases hc : Clean C a s w
     · rw [ite_eq_left hc]
-      exact add_nonneg (add_nonneg (h₀ _ _) (h₀ _ _)) (h₀ _ _)
+      positivity
     · rw [ite_eq_right hc]
       have : A s ∨ (∃ g ∈ univ, ∃ i ∈ sharedSlots C g, R a g i (s g i)) ∨ D a := by
         by_contra h
         refine hc ⟨fun g i hi j hj he => ?_, fun g i hi => ⟨fun hd => ?_, fun hd => ?_⟩,
           fun g i hi i' hi' he => ?_, fun g i hi hd => ?_⟩
-        · by_contra hne
-          exact h (Or.inl ⟨g, mem_univ g, i, hi, j, hj, hne, he⟩)
-        · exact h (Or.inr (Or.inl ⟨g, mem_univ g, i, hi, Or.inl hd⟩))
-        · exact h (Or.inr (Or.inl ⟨g, mem_univ g, i, hi, Or.inr (Or.inl hd)⟩))
-        · exact h (Or.inr (Or.inl ⟨g, mem_univ g, i', hi',
-            Or.inr (Or.inr (mem_image.2 ⟨i, hi, he⟩))⟩))
-        · exact h (Or.inr (Or.inr ⟨g, mem_univ g, i, hi, hd⟩))
+        · grind
+        · grind
+        · grind
+        · grind
+        · grind
       rcases this with h | h | h
       · rw [ite_eq_left h]
         linarith [h₀ (∃ g ∈ univ, ∃ i ∈ sharedSlots C g, R a g i (s g i)) inferInstance,
@@ -221,13 +217,13 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
         (if ∃ g ∈ univ, ∃ i ∈ sharedSlots C g, R a g i (s g i) then 1 else 0) ≤
       μ₀ * (J * (2 * Ω + m₀ * Fintype.card ι)) := by
     intro a ha
-    refine le_trans (le_of_eq (sum_congr rfl fun s _ => by congr 1))
+    refine le_trans (le_of_eq (sum_congr rfl fun s _ => by simp))
       ((sum_labelMass_mul_ite_exists_le hV (sharedSlots C) (R a)).trans ?_)
     calc _ ≤ ∑ g, ∑ i ∈ sharedSlots C g, μ₀ * (primeCount (P g) w +
           primeCount (P g) (w + slotProduct C a) + (C g).card) := by
           refine sum_le_sum fun g _ => sum_le_sum fun i _ => ?_
           refine (sum_filter_inv_le hμ g _).trans (mul_le_mul_of_nonneg_left ?_ hμ₀)
-          exact (card_filter_or_le _ _ _ _).trans (by gcongr; exact_mod_cast card_image_le)
+          exact (card_filter_or_le _ _ _ _).trans (by gcongr; grind)
       _ ≤ ∑ g, (J : ℝ) * (μ₀ * (primeCount (P g) w +
           primeCount (P g) (w + slotProduct C a) + (C g).card)) := by
           refine sum_le_sum fun g _ => ?_
@@ -240,14 +236,14 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
           unfold groupPrimeCount
           push_cast
           rw [← sum_add_distrib, ← sum_add_distrib, mul_sum, mul_sum]
-          exact sum_congr rfl fun g _ => by ring
+          ring
       _ ≤ μ₀ * (J * (2 * Ω + m₀ * Fintype.card ι)) := by
           refine mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left ?_ (Nat.cast_nonneg _))
             hμ₀
           have hCs : ∑ g, ((C g).card : ℝ) ≤ m₀ * Fintype.card ι := by
             rw [mul_comm, ← nsmul_eq_mul, ← card_univ, ← sum_const]
-            exact sum_le_sum fun g _ => by exact_mod_cast hC g
-          linarith [hΩ₂ a ha]
+            exact sum_le_sum fun g _ => by simp_all
+          grind
   have hD : ∑ a ∈ auxLabels P C, labelMass P C a * (if D a then 1 else 0) ≤
       μ₀ * (m₀ * Ω) := by
     refine le_trans (le_of_eq (sum_congr rfl fun a _ => by
@@ -263,7 +259,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
           unfold groupPrimeCount
           push_cast
           rw [mul_sum, mul_sum]
-          exact sum_congr rfl fun g _ => by ring
+          ring
       _ ≤ μ₀ * (m₀ * Ω) := by gcongr
   have hμa := sum_labelMass hV' C
   have hμs := sum_labelMass hV' (sharedSlots C)
@@ -287,7 +283,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
               exact sum_congr rfl fun s _ => by ring
           _ ≤ _ := by
               rw [hμs, one_mul]
-              exact add_le_add (add_le_add hA (hBC a ha)) le_rfl
+              grind
     _ = μ₀ * (Fintype.card ι * J ^ 2) + μ₀ * (J * (2 * Ω + m₀ * Fintype.card ι)) +
         ∑ a ∈ auxLabels P C, labelMass P C a * (if D a then 1 else 0) := by
         rw [show ∑ a ∈ auxLabels P C, labelMass P C a *
@@ -297,7 +293,7 @@ lemma sum_mass_not_clean_le {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMas
             (∑ a ∈ auxLabels P C, labelMass P C a) * (μ₀ * (J * (2 * Ω + m₀ * Fintype.card ι))) +
             ∑ a ∈ auxLabels P C, labelMass P C a * (if D a then 1 else 0) by
           rw [sum_mul, sum_mul, ← sum_add_distrib, ← sum_add_distrib]
-          exact sum_congr rfl fun a _ => by ring, hμa]
+          grind, hμa]
         ring
     _ ≤ μ₀ * (Fintype.card ι * J ^ 2) + μ₀ * (J * (2 * Ω + m₀ * Fintype.card ι)) +
         μ₀ * (m₀ * Ω) := add_le_add le_rfl hD
@@ -355,9 +351,8 @@ lemma sum_norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ 
         unfold listWeight listCount
         ring
     _ ≤ c * (Λ₀ * Λ₀) := mul_le_mul_of_nonneg_left
-        (mul_le_mul (hΛ _) (hΛ _) hW₂ (hW₁.trans (hΛ _))) hc
+        (mul_le_mul (by grind) (by grind) hW₂ (by grind)) hc
     _ = _ := by
-        simp only [c]
         ring
 
 /-- The stripped summands at `(a, s, w)`, summed over the unshared parts. -/
@@ -416,7 +411,7 @@ lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 
             (c * q₀ ^ ((groupPrimeCount P w : ℤ) - ((J + 1) * Fintype.card ι : ℕ)) *
               q₀ ^ ((groupPrimeCount P (w + DC) : ℤ) - ((J + 1) * Fintype.card ι : ℕ))) by
           rw [sum_mul_sum, sum_mul]
-          exact sum_congr rfl fun l _ => by rw [sum_mul]]
+          simp]
         rw [sum_ite_mem, sum_ite_mem, inter_eq_right.2 (slotLists_subset P C _),
           inter_eq_right.2 (slotLists_subset P C _), sum_const, sum_const, nsmul_one,
           nsmul_one]
@@ -424,12 +419,11 @@ lemma sum_norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 
     _ ≤ c * (listWeight P q₀ C w * listWeight P q₀ C (w + DC)) := by
         unfold listWeight
         gcongr
-        · exact Nat.cast_le.1 (hcount _)
-        · exact Nat.cast_le.1 (hcount _)
+        · simp_all
+        simp_all
     _ ≤ c * (Λ₀ * Λ₀) := mul_le_mul_of_nonneg_left
         (mul_le_mul (hΛ _) (hΛ _) hW₂ (hW₁.trans (hΛ _))) hc
     _ = _ := by
-        simp only [c]
         ring
 
 /-! ### Lemma G5 for a general pattern -/
@@ -463,7 +457,7 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
       2 * (targetMass P C ^ 2 * κK * M₀ * LF * LG * Λ₀ ^ 2) *
         (∑ w ∈ Icc 1 ⌊x ^ 2⌋₊, (1 : ℝ) / w) *
         (μ₀ * (Fintype.card ι * J ^ 2 + J * (2 * Ω + m₀ * Fintype.card ι) + m₀ * Ω)) := by
-  have hV' : ∀ g, harmonicMass (P g) ≠ 0 := fun g => (hV g).ne'
+  have hV' := fun g => (hV g).ne'
   set N := ⌊x ^ 2⌋₊
   set B := targetMass P C ^ 2 * κK * M₀ * LF * LG * Λ₀ ^ 2
   have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK (fun _ _ => 0) (fun _ _ => 0) fun _ _ => 0)
@@ -496,7 +490,7 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
       exact physTerm_eq_stripTerm hprime hdisj hs hl hl' hc
         (eq_of_invariant_sharedProduct hFinv hs w)
         (eq_of_invariant_sharedProduct hGinv hs _)
-        (by rw [hKpad, pad_merge hl, pad_merge hl']) (hsupp a ha s hs w)
+        (by rw [hKpad, pad_merge hl, pad_merge hl']) (by grind)
     · rw [ite_eq_right hc, one_mul]
       calc _ ≤ ∑ l ∈ unsharedLists P C, ∑ l' ∈ unsharedLists P C, ‖Φ a s l l' w‖ :=
             (norm_sum_le _ _).trans (sum_le_sum fun l _ => norm_sum_le _ _)
@@ -511,7 +505,7 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
             simp_rw [sum_add_distrib]
             exact add_le_add
               (sum_norm_physTerm_le hprime hV hq₀ hq₀₁ hK hΨ hLF hF hG hΛ hs
-                (mem_Icc.1 hw).1)
+                (by grind))
               (sum_norm_stripTerm_le hV hq₀ hq₀₁ hK hΨ hLF hF hG hΛ a s hw)
         _ = _ := by ring
   rw [hdiff]
@@ -520,7 +514,7 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
           (2 * (labelMass P (sharedSlots C) s * labelMass P C a * B / w)) := by
         refine (norm_sum_le _ _).trans (sum_le_sum fun a ha => ?_)
         refine (norm_sum_le _ _).trans (sum_le_sum fun s hs => ?_)
-        exact (norm_sum_le _ _).trans (sum_le_sum fun w hw => hterm a ha s hs w hw)
+        exact (norm_sum_le _ _).trans (sum_le_sum (by grind))
     _ = ∑ w ∈ Icc 1 N, 2 * B * (1 / w) * ∑ a ∈ auxLabels P C, labelMass P C a *
         ∑ s ∈ auxLabels P (sharedSlots C), labelMass P (sharedSlots C) s *
           (if Clean C a s w then 0 else 1) := by
@@ -534,12 +528,11 @@ theorem norm_physSum_sub_stripSum_le {x q₀ : ℝ} {P : ι → Finset ℕ}
         rw [mul_sum]
         refine sum_congr rfl fun a _ => ?_
         rw [mul_sum, mul_sum]
-        refine sum_congr rfl fun s _ => ?_
-        ring
+        grind
     _ ≤ ∑ w ∈ Icc 1 N, 2 * B * (1 / w) *
         (μ₀ * (Fintype.card ι * J ^ 2 + J * (2 * Ω + m₀ * Fintype.card ι) + m₀ * Ω)) := by
         refine sum_le_sum fun w hw => mul_le_mul_of_nonneg_left ?_ (by positivity)
-        exact sum_mass_not_clean_le hV hC hμ₀ hμ (hΩ₁ w hw) fun a ha => hΩ₂ a ha w hw
+        exact sum_mass_not_clean_le hV hC hμ₀ hμ (by grind) (by grind)
     _ = _ := by
         rw [← sum_mul, ← mul_sum]
 

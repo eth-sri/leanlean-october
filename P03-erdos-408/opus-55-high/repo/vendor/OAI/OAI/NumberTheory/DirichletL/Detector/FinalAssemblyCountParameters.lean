@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
+open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorAdaptiveCutoff
 open ProbeHighRowFamily
 
 structure CountParameters (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ) (εm : ℝ) where

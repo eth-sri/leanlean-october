@@ -9,9 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeRaySlots
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowUnselectedLength {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) : ℝ := ∑i∈J,ell i
 
@@ -20,19 +19,19 @@ def lowSelectedLength {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) : ℝ :
 lemma lowLength_sum {K : ℕ} (ell : Fin K→ℝ) (J : Finset (Fin K)) :
     lowUnselectedLength ell J+lowSelectedLength ell J=∑i,ell i := by
   rw [lowUnselectedLength,lowSelectedLength,Finset.sum_coe_sort]
-  exact Finset.sum_add_sum_compl J ell
+  simp
 
 lemma lowLength_bounds {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell i)
     (hsum : ∑i,ell i≤1/6) (J : Finset (Fin K)) :
     0≤lowUnselectedLength ell J ∧ lowUnselectedLength ell J≤1/6 ∧
     0≤lowSelectedLength ell J ∧ lowSelectedLength ell J≤1/6-lowUnselectedLength ell J := by
-  have hu : 0≤lowUnselectedLength ell J := Finset.sum_nonneg (fun i _=>hell i)
-  have hs : 0≤lowSelectedLength ell J := Finset.sum_nonneg (fun i _=>hell i.val)
+  have hu : 0≤lowUnselectedLength ell J := Finset.sum_nonneg (by grind)
+  have hs : 0≤lowSelectedLength ell J := Finset.sum_nonneg (by grind)
   have he := lowLength_sum ell J
-  exact ⟨hu,by linarith,hs,by linarith⟩
+  grind
 
 lemma lowUnselectedProduct_norm_lower {K : ℕ} (ell : Fin K→ℝ)
-    (a Z : ℝ) (ha : 0<a) (hZ : 0<Z) (slots : Fin K→Finset O)
+    (a Z : ℝ) (ha : 0<a) (hZ : 0<Z) (slots : Fin K→Finset ActualEisensteinCubic.O)
     (hslots : ∀i x,x∈slots i→a*Z^(ell i)≤elementNorm x)
     (J : Finset (Fin K)) (p : LowUnselectedTuple slots J) :
     (min 1 a)^K*Z^(lowUnselectedLength ell J)≤elementNorm (∏i : J,(p i).val) := by
@@ -41,21 +40,20 @@ lemma lowUnselectedProduct_norm_lower {K : ℕ} (ell : Fin K→ℝ)
   calc
     _≤a^J.card*Z^(lowUnselectedLength ell J) := by
       apply mul_le_mul_of_nonneg_right _ (by positivity)
-      exact (pow_le_pow_of_le_one (le_of_lt (lt_min zero_lt_one ha)) (min_le_left _ _) hc).trans
-        (pow_le_pow_left₀ (by positivity) (min_le_right _ _) _)
+      exact (pow_le_pow_of_le_one (by positivity) (by simp) hc).trans
+        (pow_le_pow_left₀ (by positivity) (by simp) _)
     _=∏i : J,a*Z^(ell i.val) := by
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_coe,
         ←Real.rpow_sum_of_pos hZ,Finset.sum_coe_sort]
       rfl
-    _≤_ := Finset.prod_le_prod₀ (fun _ _=>by positivity) (fun i _=>hslots i.val _ (p i).property)
+    _≤_ := Finset.prod_le_prod₀ (fun _ _=>by positivity) (by grind)
 
 lemma lowPhysicalScale_source (C : CalibrationData) (Z L : ℝ) (hZ : 0<Z) :
     lowPhysicalScale C (Z^(17/48:ℝ)/L) (Z^(23/48:ℝ)/L)=
       elementNorm C.generator*Z^(5/6:ℝ)/L^2 := by
   unfold lowPhysicalScale
   have he : Z^(17/48:ℝ)*Z^(23/48:ℝ)=Z^(5/6:ℝ) := by rw [←Real.rpow_add hZ];norm_num
-  rw [←he]
-  ring
+  grind
 
 lemma lowPhysicalScale_nominal_bound (C : CalibrationData) (Z L c d : ℝ)
     (hZ : 0<Z) (hc : 0<c) (hL : c*Z^d≤L) :
@@ -89,16 +87,16 @@ lemma lowSelectedCaps_product {K : ℕ} (ell : Fin K→ℝ) (hell : ∀i,0≤ell
     simpa only [Fintype.card_coe,Finset.card_univ,Fintype.card_fin] using Finset.card_le_card (Finset.subset_univ (Finset.univ\J))
   calc
     _≤∏i : SelectedSlot J,max 1 b*Z^(ell i.val) := by
-      apply Finset.prod_le_prod₀ (fun _ _=>le_trans zero_le_one (le_max_left _ _))
+      apply Finset.prod_le_prod₀ (by simp)
       intro i hi
       apply max_le
-      · exact one_le_mul_of_one_le_of_one_le (le_max_left _ _) (Real.one_le_rpow hZ (hell i.val))
-      · exact mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity)
+      · exact one_le_mul_of_one_le_of_one_le (by simp) (Real.one_le_rpow hZ (hell i.val))
+      · exact mul_le_mul_of_nonneg_right (by simp) (by positivity)
     _=(max 1 b)^(Fintype.card (SelectedSlot J))*Z^(lowSelectedLength ell J) := by
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,
-        ←Real.rpow_sum_of_pos (lt_of_lt_of_le zero_lt_one hZ)]
+        ←Real.rpow_sum_of_pos (by positivity)]
       rfl
-    _≤_ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (le_max_left _ _) hc) (by positivity)
+    _≤_ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by simp) hc) (by positivity)
 
 end SevenEighths.ProbePhysical
 end

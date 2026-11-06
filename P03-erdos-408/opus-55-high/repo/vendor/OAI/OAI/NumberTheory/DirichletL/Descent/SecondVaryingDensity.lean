@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.DensityAssembly
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open MeasureTheory JointLogSeparation FirstPassCubeLabels
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -63,14 +62,7 @@ theorem actualSecondVaryingFreshRows_normalized_density {κ : Type*}
   rw [← density_finite_sum _ density hDensity]
   simp only [Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro j hj
-  calc
-    _ = (w j.1 * secondActualCoefficient p hp hcop hg (x j.1)
-        slots₁ slots₂ (lists₁ j.1) (lists₂ j.1) a₁ a₂ j.2.1 j.2.2) *
-        (normalization * secondNormProfile (fun z => star (W₁ (z/(G₀*V₀*X₀))))
-          (fun z => W₂ (z/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y
-          (secondActualNorms p (x j.1) j.2.1 j.2.2)) := by ring
-    _ = _ := by rw [he j hj]; ring
+  grind
 
 end
 end SevenEighths.InverseMoment

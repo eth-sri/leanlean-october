@@ -7,18 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeTwist
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentHeckeHeight
-open HeckeFamily CenteredMomentHeckeVolume CenteredMomentHeckeCancellation CenteredMomentHeckeTwist
-open CenteredMomentLattice CenteredMomentMask CenteredMomentTwist CenteredMomentHeight
-open QuadraticInitialBound EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeTwist
 local notation "O" => ActualEisensteinCubic.O
 
-def rowTwistedSum (η : Character) (m A₀ z : O) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
-  ∑' I : Ideal O, (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A₀*z)) I)*
+def rowTwistedSum (η : Character) (m A₀ z : ActualEisensteinCubic.O) (W : ℝ → ℂ) (t X : ℝ) : ℂ :=
+  ∑' I : Ideal ActualEisensteinCubic.O, (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A₀*z)) I)*
     (Ideal.absNorm I:ℂ)^(Complex.I*t)*W ((Ideal.absNorm I:ℝ)/X)
 
-theorem rowTwistedSum_eq (η χ : Character) (m A₀ z : O)
+theorem rowTwistedSum_eq (η χ : Character) (m A₀ z : ActualEisensteinCubic.O)
     (hrow : ∀ n, elementCoeff χ n=CanonicalRowCompletion.rowTwist
       (HeckeRowClosure.elementHom η) m 1 (A₀*z) n)
     (W : ℝ → ℂ) (t X : ℝ) :
@@ -26,8 +24,7 @@ theorem rowTwistedSum_eq (η χ : Character) (m A₀ z : O)
   apply tsum_congr
   intro I
   have he := HeckeRowClosure.idealCoeff_eq_row η χ m 1 (A₀*z) hrow I
-  simp only [one_pow,mul_one] at he
-  rw [he]
+  simp_all
 
 end SevenEighths.CenteredMomentHeckeHeight
 

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def firstNormProfile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (V : Fin 9 → ℝ → ℂ) (R : ℝ) (q : Fin 9 → ℝ) : ℂ :=
@@ -40,20 +39,16 @@ theorem firstPoissonProfile_log (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   simp only [Real.exp_add,Real.exp_sub,Real.exp_log (hq _)]
   rw [show R*(q 6/(q 3*q 4*q 5*q 5*q 7*q 8)) =
     R*q 6/(q 3*q 4*(q 5)^2*q 7*q 8) from by ring]
-  simp only [Fin.prod_univ_succ,firstRootWindows,inverseNormWindow,inverseRootWindow,
-    Matrix.cons_val_zero,Matrix.cons_val_succ,Fin.isValue,Real.exp_log (hq _),
-    Fin.prod_univ_zero,mul_one]
-  simp only [Fin.succ,Fin.val_mk]
-  norm_num
-  ring
+  simp only [Fin.prod_univ_succ, firstRootWindows, inverseNormWindow, inverseRootWindow, Matrix.cons_val_zero, Matrix.cons_val_succ, Real.exp_log (hq _), Fin.prod_univ_zero, mul_one]
+  grind
 
 theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (N P B : Finset ι) (hNP : Disjoint N P) (hNB : Disjoint N B) (hPB : Disjoint P B)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ)
-    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C K : ℝ) (d h : Eis) :
+    (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (A₁ A₂ C K : ℝ) (d h : ActualEisensteinCubic.O) :
     (‖eisEmbedding d‖^2 : ℂ)⁻¹ *
       canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ Φ
         (fun y => W₁ (A₁*C*Real.exp y)) (fun y => W₂ (A₂*C*Real.exp y)) 1 1 K d h =
@@ -69,12 +64,10 @@ theorem canonicalPairMode_whole_profile {ι : Type*} [DecidableEq ι]
       Real.sqrt (primeProductNorm p S) := by
     simp only [primeProductNorm,Real.sqrt_sq_eq_abs,abs_of_nonneg (norm_nonneg _)]
   unfold canonicalPairMode firstNormProfile
-  simp only [columnLog,div_one,Real.exp_log (primeProductNorm_pos p hp _),
-    Matrix.cons_val_zero,Fin.isValue,
-    Finset.prod_const_one,one_mul,]
-  rw [primeProductNorm_union p (N ∪ P) _ (Finset.disjoint_union_left.mpr ⟨hNC,hPC⟩),
+  simp only [columnLog, div_one, Real.exp_log (primeProductNorm_pos p hp _), Matrix.cons_val_zero, Finset.prod_const_one, one_mul]
+  rw [primeProductNorm_union p (N ∪ P) _ (Finset.disjoint_union_left.mpr (by grind)),
     primeProductNorm_union p N P hNP]
-  rw [Finset.prod_union (Finset.disjoint_union_left.mpr ⟨hNC,hPC⟩),Finset.prod_union hNP]
+  rw [Finset.prod_union (Finset.disjoint_union_left.mpr (by grind)),Finset.prod_union hNP]
   simp only [map_mul,norm_mul,hs]
   rw [show K*‖eisEmbedding h‖^2 /
       (‖eisEmbedding d‖^2*(primeProductNorm p N*primeProductNorm p P*

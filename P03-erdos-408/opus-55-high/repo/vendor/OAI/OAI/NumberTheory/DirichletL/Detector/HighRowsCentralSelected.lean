@@ -21,23 +21,23 @@ lemma unramifiedSelected_central_error (Q a e : ℝ) (A eta v x w z : ℂ)
   have hL : 1≤Q^(6*e) := Real.one_le_rpow hQ1 (by positivity)
   have hV : ‖coordV Q z‖≤1/2 := by
     rw [coordV_norm Q hQ0]
-    exact rpow_le_half Q _ hQ (by rw [hz];norm_num)
+    exact rpow_le_half Q _ hQ (by linarith)
   have hD : ‖coordD Q eta v x‖≤1/2 :=
     (coordD_norm_le Q hQ0 eta v x heta.le hv.le).trans
-      (rpow_le_half Q _ hQ (by rw [hx];linarith))
+      (rpow_le_half Q _ hQ (by linarith))
   have hW : ‖coordW Q v w‖≤Q^(6*e) := (coordW_norm_le Q hQ0 v w hv.le).trans
-    (Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith))
+    (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hq : ‖(Q:ℂ)^(-w)‖≤Q^(6*e) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith)
+    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
   obtain ⟨hVT,hDT,hET,hBET⟩ := central_unramified_error_weights Q a e A eta v x w z
     hQ ha ha1 he he1 hA heta.le hv.le hx hw hz
   have hi := selected_phase_identities Q eta v x w hQ0 heta hv
   have hh := central_phase_error_bound (coordV Q z) (coordW Q v w) (coordD Q eta v x)
     (unramifiedMarked Q A eta v x w z) (star eta*(Q:ℂ)^x) ((Q:ℂ)^(-w)) (star v)
-    (Q^(6*e)) (Q^(-(51/100:ℝ))) hL hV hD hW hq (by rw [norm_star,hv])
+    (Q^(6*e)) (Q^(-(51/100:ℝ))) hL hV hD hW hq (by simp_all)
     hVT hDT hET hBET hi.1 hi.2
-  simpa only [unramifiedSelected,unramifiedClosed,unramifiedMarked] using hh
+  simpa
 
 end SevenEighths.ProbeEuler
 end

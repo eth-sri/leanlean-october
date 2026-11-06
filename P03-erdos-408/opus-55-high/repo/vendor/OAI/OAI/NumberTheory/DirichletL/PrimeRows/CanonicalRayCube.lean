@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Detector.RayCharacterFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open MeasureTheory Set Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+open HeckeFamily HeckeInverseAmplification ProbePhysical
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 def rayCubeFamily (u : FreeRow) : RayQuotient.Characters M H→Character :=
   HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse
@@ -23,7 +22,7 @@ def rayCubeFamily (u : FreeRow) : RayQuotient.Characters M H→Character :=
 theorem canonical_probe_exists_ray_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)
     (ha : 0<a) (hb : 0<b) (hB : 0≤B) (hβ : (7/8:ℝ)≤HeckeZeroSupremum.beta)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
@@ -48,7 +47,7 @@ theorem canonical_probe_exists_ray_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ
         (calibrationForSet S hmax).residueMonoid u.val≠0 →
         (∀θ,(rayCubeFamily M H hH u θ).residue≠1) ∧
         (∀θ,(rayCubeFamily M H hH u θ).modulus.absNorm≤
-          conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm) ∧
+          conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm) ∧
         ∀hnp : ∀θ,(rayCubeFamily M H hH u θ).residue≠1,
         HeckeDetectorZeros.zeroMaximum (rayCubeFamily M H hH u) hnp
           (3*(idx u+1:ℕ)*Z^τ)<(51/100:ℝ)+e*grid u+2*e) ∧

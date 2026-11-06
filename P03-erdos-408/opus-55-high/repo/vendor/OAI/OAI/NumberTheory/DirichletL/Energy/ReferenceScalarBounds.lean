@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarBounds
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
+open CenteredMomentEnergyState CenteredMomentNaturalRowSource
 
 lemma radical_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)(d:ℝ)(hd:0≤d):
     (s.puncture.radical.absNorm:ℝ)^d≤Z^(Bmask*d):=by
@@ -23,18 +23,18 @@ lemma conductor_power {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
       (max 1 ((fixedConductorFactor:ℝ)*bΦ))^d*Z^(Mcap*d):=by
   have hZ:0<Z:=zero_lt_one.trans_le s.base_ge_one
   have hM:0≤Mcap:=s.width_nonneg.trans hs
-  have hz:1≤Z^Mcap:=Real.one_le_rpow s.base_ge_one hM
+  have hz:=Real.one_le_rpow s.base_ge_one hM
   have hc:1≤max 1 ((fixedConductorFactor:ℝ)*bΦ):=le_max_left _ _
   have hbase:max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)≤
       (max 1 ((fixedConductorFactor:ℝ)*bΦ))*Z^Mcap:=by
     apply max_le
     · nlinarith
-    · apply le_trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg hZ.le _))
+    · apply le_trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (by positivity))
       exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le s.base_ge_one hs)
         (zero_le_one.trans hc)
-  have hh:=Real.rpow_le_rpow (zero_le_one.trans (le_max_left _ _)) hbase hd
-  rw [Real.mul_rpow (zero_le_one.trans hc) (Real.rpow_nonneg hZ.le _),←Real.rpow_mul hZ.le] at hh
-  exact hh
+  have hh:=Real.rpow_le_rpow (by positivity) hbase hd
+  rw [Real.mul_rpow (zero_le_one.trans hc) (by positivity),←Real.rpow_mul hZ.le] at hh
+  omega
 
 lemma radial_scale {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ):
     max 1 s.radial.scale≤Z^s.width:=by
@@ -56,19 +56,17 @@ lemma short_slot_mass {α:Type*}[Fintype α]{Z Bmask bΦ:ℝ}(s:NaturalState Z B
     _≤Z^s.width*Z^(Mcap/4)*Z^Mcap:=by
       apply mul_le_mul (mul_le_mul (radial_scale s)
         (Real.rpow_le_rpow_of_exponent_le s.base_ge_one (by linarith))
-        (Real.rpow_nonneg hz.le _) (Real.rpow_nonneg hz.le _))
+        (by positivity) (by positivity))
         (physical_slot_product Z s.base_ge_one w Mcap hwidth)
-        (Finset.prod_nonneg (fun i _=>Real.rpow_nonneg hz.le _)) (by positivity)
-    _=Z^(s.width+5*Mcap/4):=by rw [←Real.rpow_add hz,←Real.rpow_add hz];congr 1;ring
+        (by positivity) (by positivity)
+    _=Z^(s.width+5*Mcap/4):=by rw [←Real.rpow_add hz,←Real.rpow_add hz];ring
 
 lemma log_interval (Z L d:ℝ)(hZ:1≤Z)(hL:0≤L)(hd:0<d):
     1+2*(L*Real.log Z)≤(1+2*L/d)*Z^d:=by
   have hlog:=Real.log_le_rpow_div (zero_le_one.trans hZ) hd
   have hone:=Real.one_le_rpow hZ hd.le
   have hh:=mul_le_mul_of_nonneg_left hlog (show 0≤2*L by positivity)
-  calc
-    _≤Z^d+2*L*(Z^d/d):=by nlinarith
-    _=(1+2*L/d)*Z^d:=by ring
+  grind
 
 end SevenEighths.CenteredMomentEnergyReferenceScalarBounds
 

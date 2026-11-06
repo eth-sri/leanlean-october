@@ -8,35 +8,27 @@ public import OAI.NumberTheory.DirichletL.Energy.AllocatedBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalCommonPaid
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open HeckeFamily
+open CenteredMomentEnergyAllocatedChildren
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
 open CenteredMomentEnergyCanonicalPaidSource
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondNonexceptionalChosenBlock
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+open CenteredMomentSectorLocalization
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_common_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
     (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
@@ -45,7 +37,7 @@ theorem actual_common_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→RayQuotient.Characters M H,
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z →
-    ∀εchild:ℝ,∀(Q:Ideal O),Q≤M →
+    ∀εchild:ℝ,∀(Q:Ideal HeckeFamily.O),Q≤M →
     ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
@@ -55,7 +47,7 @@ theorem actual_common_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
-    ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
+    ∀(C R:Ideal HeckeFamily.O)(B:actualAllocations src.pools C)(D:Ideal HeckeFamily.O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),R≠0 →
     ∀(τ:Character)(dyad:Fin 4→ℤ),∀_hn:1≤CenteredMomentSectorLocalization.dyadicScale (dyad 1),
     Real.logb Z (CenteredMomentSectorLocalization.dyadicScale (dyad 1))+
@@ -96,14 +88,14 @@ theorem actual_common_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
   let E:=Cc*(C₀+C₁)*diagonalControl rad.profile*(p.control T)^2*
     (1+(|v|+height))^(dc+degree+4*n)*
     Z^(Mnom+εchild+εremove+(δ₂+u+ell+δ₁/6+θclip/3)+κ*mesh)
-  have hz:1<Z:=hZ₀.trans_le hZ
+  have hz:1<Z:=by linarith
   have he:0≤E:=by
     have hd:0≤diagonalControl rad.profile:=by unfold diagonalControl;positivity
     have hz0:0<Z:=zero_lt_one.trans hz
     dsimp [E]
     positivity
   have hleft:∀X₁ X₂:ℝ,∀h₁:0<X₁,∀h₂:0<X₂,X₁≤Z^L → X₂≤Z^L →
-      X₁*X₂=d.X₁*d.X₂ → ∀F₁ F₂:Finset (Ideal O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
+      X₁*X₂=d.X₁*d.X₂ → ∀F₁ F₂:Finset (Ideal HeckeFamily.O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
       ∀J,allocatedEnergy τ rad D alloc V₁ V₂ d.slots d.coefficient d.P
         v X₁ X₂ h₁ h₂ F₁ F₂ J≤E:=by
     intro X₁ X₂ h₁ h₂ hc₁ hc₂ hprod F₁ F₂ hF₁ hF₂ J
@@ -122,9 +114,7 @@ theorem actual_common_paid_source (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
       cases left
       · exact hleft d.Y₁ d.Y₂ d.Y₁_pos d.Y₂_pos hY₁ hY₂ d.same_product F₁ F₂ hf₁ hf₂ J
       · exact hleft d.X₁ d.X₂ d.X₁_pos d.X₂_pos hX₁ hX₂ rfl F₁ F₂ hf₁ hf₂ J)
-  apply hh.trans_eq
-  dsimp [E]
-  ring
+  linarith
 
 end SevenEighths.CenteredMomentEnergyCanonicalCommonPaid
 

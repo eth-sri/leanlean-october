@@ -9,11 +9,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseMoment InverseTerminalWidths CompletedHeight
 universe u v
 theorem actual_complete_short_finite_uniform_degree
     (lo hi : ℝ) (hlo : 0<lo) (W : ℝ→ℂ)
@@ -22,21 +21,21 @@ theorem actual_complete_short_finite_uniform_degree
     (heta1 : eta≤1) (hetac : eta≤cstar/100000) (rmax K : ℕ) :
     ∃ (degree : ℕ), ∀ (q:ℕ)(_hq:q≠0), ∃ (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
     ∀ {σ : Type v} [DecidableEq σ],
-    ∀ (m : Eis),m≠0 → ∀ (Z N V M z₀ margin hcut d : ℝ),
+    ∀ (m : ActualEisensteinCubic.O),m≠0 → ∀ (Z N V M z₀ margin hcut d : ℝ),
       Z₀≤Z → 0≤N → 0≤V → 0≤M → M≤L → V≤L → z₀≤L → 0≤hcut → hcut≤L →
       (Ideal.absNorm (Ideal.span {m}):ℝ)≤Z^L →
       CanonicalMargins (N+V) M (normWidth Z (Ideal.span {m})) z₀ margin → cstar/2≤margin →
       V≤d → hcut≤d+eta → d≤cstar/200 →
-    ∀ (labels : Finset (Ideal Eis)),
+    ∀ (labels : Finset (Ideal ActualEisensteinCubic.O)),
       (∀f∈labels,Supported f ∧ Squarefree f ∧ (Ideal.absNorm f:ℝ)≤Z^V) →
-    ∀ (T : Finset Eis),(∀k∈T,k≠0 ∧ (Ideal.absNorm (Ideal.span {k}):ℝ)≤Z^M) →
+    ∀ (T : Finset ActualEisensteinCubic.O),(∀k∈T,k≠0 ∧ (Ideal.absNorm (Ideal.span {k}):ℝ)≤Z^M) →
     ∀ D : ℕ,hi*Z^N≤D → ∀ slots : Finset σ,slots.card≤rmax →
     ∀ (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)))
       (H : σ→ℝ),
       (slots:Set σ).Pairwise (fun j k=>Disjoint (lists j) (lists k)) →
       (∀j∈slots,1≤H j) → (∀j∈slots,∀i∈lists j,(Ideal.absNorm i.val:ℝ)≤H j) →
       (∏j∈slots,H j)≤Z^z₀ →
-    ∀ (Ψ : Eis→*ℂ),(∀n,‖Ψ n‖≤1) →
+    ∀ (Ψ : ActualEisensteinCubic.O→*ℂ),(∀n,‖Ψ n‖≤1) →
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) Ψ →
     ∀ (θ : ℝ)
       (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D)→ℂ),
@@ -61,9 +60,9 @@ theorem actual_complete_short_finite_uniform_degree
   let S:=reflectionExcludedPrimes q
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF : ∀I∈F,Admissible I:=InitialMeanSquare.outsideSquarefree_admissible S D (reflectionExcludedPrimes_bad q)
-  let ilists:slots→Finset (Ideal Eis):=fun j=>idealLists F lists j.val
+  let ilists:slots→Finset (Ideal ActualEisensteinCubic.O):=fun j=>idealLists F lists j.val
   let iw:∀j,ilists j→ℂ:=fun j=>idealWeights F lists a j.val
-  have hp (j:slots) (P:Ideal Eis) (hP:P∈ilists j) := idealLists_prime_data F hF lists j.val P hP
+  have hp (j:slots) (P:Ideal ActualEisensteinCubic.O) (hP:P∈ilists j) := idealLists_prime_data F hF lists j.val P hP
   have hcap : ∀j:slots,∀P∈ilists j,(Ideal.absNorm P:ℝ)≤H j.val := by
     intro j P hP
     obtain ⟨i,hi,rfl⟩:=Finset.mem_image.mp hP
@@ -81,11 +80,11 @@ theorem actual_complete_short_finite_uniform_degree
     (fun j P hP=>(hp j P hP).2.2.1) (fun j P hP=>(hp j P hP).2.2.2)
     (fun j=>hH1 j.val j.property) hcap (by simpa only [Finset.prod_coe_sort] using hprod)
     Ψ hΨ hperiod θ iw hw
-  have hz:0<Z:=zero_lt_one.trans (lt_of_lt_of_le hZ₀ hZ)
+  have hz:0<Z:=by linarith
   have hn:‖((Z^(-(N+V)/2):ℝ):ℂ)*((Real.sqrt (Z^N):ℝ):ℂ)‖^2=Z^(-V) := by
     rw [norm_mul,mul_pow,Complex.norm_real,Real.norm_eq_abs,
-      abs_of_pos (Real.rpow_pos_of_pos hz _),Complex.norm_real,Real.norm_eq_abs,
-      abs_of_nonneg (Real.sqrt_nonneg _),Real.sq_sqrt (Real.rpow_nonneg hz.le _),
+      abs_of_pos (by positivity),Complex.norm_real,Real.norm_eq_abs,
+      abs_of_nonneg (Real.sqrt_nonneg _),Real.sq_sqrt (by positivity),
       ←Real.rpow_mul_natCast hz.le,←Real.rpow_add hz]
     congr 1
     ring
@@ -101,8 +100,6 @@ theorem actual_complete_short_finite_uniform_degree
   simp only [←mul_assoc,hn',←Finset.mul_sum] at henergy
   convert henergy using 1
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intros
   ring
 
 end SevenEighths.InverseCanonicalShortAttachment

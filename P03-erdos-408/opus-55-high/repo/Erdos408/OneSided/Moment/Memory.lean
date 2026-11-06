@@ -77,11 +77,11 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
   obtain ⟨C₁, hR⟩ := exists_realized_history_le (K := K) (C := C) (CX := CX) (ahi := ahi)
     (g := g) (A₀ := arcExp Dstar C) hq hq₁ halo
   obtain ⟨C₀', hC₀'1, hC₀'⟩ : ∃ C₀' : ℝ, 1 ≤ C₀' ∧ |C₀| ≤ C₀' :=
-    ⟨|C₀| + 1, by linarith [abs_nonneg C₀], by linarith⟩
+    ⟨|C₀| + 1, by simp, by linarith⟩
   obtain ⟨Ce', hCe'0, hCe'⟩ : ∃ Ce' : ℝ, 0 ≤ Ce' ∧ Ce ≤ Ce' :=
     ⟨max Ce 0, le_max_right _ _, le_max_left _ _⟩
   obtain ⟨C₁', hC₁'1, hC₁'⟩ : ∃ C₁' : ℝ, 1 ≤ C₁' ∧ |C₁| ≤ C₁' :=
-    ⟨|C₁| + 1, by linarith [abs_nonneg C₁], by linarith⟩
+    ⟨|C₁| + 1, by simp, by linarith⟩
   have hlog := Real.tendsto_log_atTop
   filter_upwards [hG, hE, hR, eventually_chainEdge_normLe hq hq₁ hC hD hCX halo hahi hK hg,
     eventually_rpow_lt_of_mem_band (by linarith : (0 : ℝ) < alo) 1,
@@ -133,7 +133,7 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
     obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
     exact (primeWeight_le_two_div q x d hq.le hpi (hV (d.a i) (hd.window i).1).1
       (hpN p hp)).1
-  have hν : ∀ i, ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ 2 := fun i =>
+  have hν := fun i =>
     sum_band_primeWeight_le q x d hq.le (hV (d.a i) (hd.window i).1).1 fun p hp =>
       hpN p (mem_biUnion.2 ⟨i, mem_univ _, hp⟩)
   have hμ : ∀ s, 0 ≤ chainMeasure q x d (2 ^ j) (2 ^ k) u v r B N s := chainMeasure_nonneg hν₀
@@ -240,7 +240,7 @@ theorem eventually_norm_distinctSum_le {q C CX alo ahi Dstar g : ℝ} (hq : 0 < 
 /-- The damping defects are in `[0, 1]`. -/
 private theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  have hs := Real.sqrt_le_one.2 hq₁.le
   unfold dampDefect
   split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
 
@@ -262,7 +262,7 @@ private theorem baseline_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {N p : �
     rw [inv_mul_le_iff₀ hp1, mul_one]
     exact hsum₁
   unfold baseline
-  constructor <;> linarith
+  simp_all
 
 /-- For `L ≥ 4`, `2 ≤ L^{1/2}` and `2 L^{1/2} ≤ L`. -/
 theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
@@ -279,8 +279,7 @@ theorem two_le_rpow_half_of_four_le {L : ℝ} (hL : 4 ≤ L) :
     have : s * s < 2 * 2 := mul_lt_mul'' h h hs0 hs0
     linarith
   refine ⟨hs2, ?_⟩
-  calc 2 * s ≤ s * s := mul_le_mul_of_nonneg_right hs2 hs0
-    _ = L := hss
+  nlinarith
 
 /-- `N = 2R` is between `2` and `L^{1/2} + 2`. -/
 theorem two_mul_momentPower_bounds {x : ℝ} (hL : 0 < Real.log x) :
@@ -292,9 +291,8 @@ theorem two_mul_momentPower_bounds {x : ℝ} (hL : 0 < Real.log x) :
     Nat.ceil_lt_add_one hpos.le
   push_cast
   constructor
-  · have : (1 : ℝ) ≤ momentPower x := by exact_mod_cast hR
-    linarith
-  · linarith
+  · simp_all
+  linarith
 
 /-- The final comparison: for `L ≥ 8E + 16` and `2 ≤ n ≤ L^{1/2} + 2`,
 `2 L^{-(E + 2) n} + exp(-L²/2) ≤ L^{-(E + 1) n}`. -/
@@ -313,8 +311,7 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
           ring
       _ ≤ 1 / 4 := by
           gcongr
-          calc (4 : ℝ) = 2 * 2 := by norm_num
-            _ ≤ L * L := mul_le_mul (by linarith) (by linarith) (by norm_num) hL0.le
+          nlinarith
   have h₁ : 2 * L ^ (-((E + 2) * n)) ≤ a / 2 := by
     have hsplit : L ^ (-((E + 2) * n)) = a * L ^ (-n) := by
       rw [ha, ← Real.rpow_add hL0]
@@ -328,8 +325,8 @@ private theorem two_mul_rpow_add_exp_le {E L n : ℝ} (hE : 0 < E) (hL : 8 * E +
     have := Real.log_le_rpow_div hL0.le (show (0 : ℝ) < 1 / 2 by norm_num)
     linarith
   have hn' : n ≤ 2 * L ^ (1 / 2 : ℝ) := by linarith
-  have hlog0 : 0 ≤ Real.log L := Real.log_nonneg hL1
-  have hprod : (E + 1) * n * Real.log L ≤ 4 * (E + 1) * L :=
+  have hlog0 := Real.log_nonneg hL1
+  have hprod :=
     calc (E + 1) * n * Real.log L ≤ (E + 1) * (2 * L ^ (1 / 2 : ℝ)) * (2 * L ^ (1 / 2 : ℝ)) := by
           gcongr
       _ = 4 * (E + 1) * (L ^ (1 / 2 : ℝ) * L ^ (1 / 2 : ℝ)) := by ring

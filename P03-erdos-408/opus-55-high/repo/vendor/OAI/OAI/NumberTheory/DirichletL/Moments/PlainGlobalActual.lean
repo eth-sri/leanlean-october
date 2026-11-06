@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicScale
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical
 open Set Complex
 namespace SevenEighths.CenteredMomentPlainGlobalActual
 open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalBound

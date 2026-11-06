@@ -38,10 +38,9 @@ private theorem norm_natCast_cpow_mul_I_le (n : ℕ) (τ : ℝ) :
     ‖(n : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ≤ 1 := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · by_cases hτ : (τ : ℂ) * Complex.I = 0
-    · simp [hτ]
-    · simp [Complex.zero_cpow hτ]
-  · rw [Complex.norm_natCast_cpow_of_pos hn]
-    simp
+    · simp_all
+    simp_all
+  · simp [Complex.norm_natCast_cpow_of_pos hn]
 
 /-- `η(a/Y) ≤ 4Y/a`, since `η(a/Y) = 0` unless `a < 4Y`. -/
 private theorem dyadicBump_div_le {a Y : ℝ} (ha : 0 ≤ a) (hY : 0 < Y) :
@@ -50,7 +49,7 @@ private theorem dyadicBump_div_le {a Y : ℝ} (ha : 0 ≤ a) (hY : 0 < Y) :
   · rw [h]
     positivity
   obtain ⟨h₁, h₂⟩ := lt_of_dyadicBump_ne_zero h
-  have ha' : 0 < a := lt_of_le_of_ne ha fun h0 => by rw [← h0, zero_div] at h₁; linarith
+  have ha' : 0 < a := lt_of_le_of_ne ha fun h0 => by grind
   rw [div_lt_iff₀ hY] at h₂
   calc dyadicBump (a / Y) ≤ 1 := dyadicBump_le_one _
     _ ≤ 4 * Y / a := by rw [le_div_iff₀ ha']; linarith
@@ -60,9 +59,7 @@ private theorem sum_labels_inv (x : ℝ) (d : Data K) :
     ∑ p ∈ d.labels x, ((∏ i, p i : ℕ) : ℝ)⁻¹ = d.bandMass x := by
   unfold Data.bandMass Data.labels harmonicMass
   rw [Finset.prod_univ_sum]
-  refine Finset.sum_congr rfl fun p _ => ?_
-  rw [Nat.cast_prod, ← Finset.prod_inv_distrib]
-  simp only [one_div]
+  simp
 
 /-- `|B_λ(τ)| ≤ 4`. -/
 private theorem norm_labelPoly_le (x : ℝ) (d : Data K) {Y : ℝ} (hY : 0 < Y) (lam : ℝ) {k : ℕ}
@@ -99,7 +96,7 @@ private theorem norm_labelPoly_le (x : ℝ) (d : Data K) {Y : ℝ} (hY : 0 < Y) 
         rcases hV.eq_or_lt with h | h
         · rw [← h, inv_zero, zero_mul]
           norm_num
-        · rw [inv_mul_cancel₀ h.ne', mul_one]
+        grind
 
 /-- `B_λ` is continuous: the label products are nonzero. -/
 private theorem continuous_labelPoly (x : ℝ) (d : Data K) (Y lam : ℝ) {k : ℕ}
@@ -179,8 +176,7 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
     intro m _
     rw [norm_mul]
     by_cases h : d.α m = 0
-    · rw [h, norm_zero, zero_mul]
-      exact hLC
+    · simp_all
     · calc ‖d.α m‖ * ‖χ₂ m‖ ≤ L ^ C * 1 :=
             mul_le_mul (hd.α_supp m h).2.2.2 (χ₂.norm_le_one _) (norm_nonneg _) hLC
         _ = L ^ C := mul_one _
@@ -188,8 +184,7 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
     intro n _
     rw [norm_mul]
     by_cases h : d.β n = 0
-    · rw [h, norm_zero, zero_mul]
-      exact hLC
+    · simp_all
     · calc ‖d.β n‖ * ‖χ₃ n‖ ≤ L ^ C * 1 :=
             mul_le_mul (hd.β_supp n h).2.2.2 (χ₃.norm_le_one _) (norm_nonneg _) hLC
         _ = L ^ C := mul_one _
@@ -198,10 +193,10 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
   set N₂ := ⌊2 * d.Hn⌋₊
   have hI₁ : ∀ m ∈ d.mRange, 1 ≤ m ∧ m ≤ N₁ := fun m hm => by
     rw [Data.mRange, Finset.mem_Icc] at hm
-    exact ⟨(Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne').trans hm.1, hm.2⟩
+    exact ⟨(Nat.one_le_iff_ne_zero.2 (by positivity)).trans hm.1, hm.2⟩
   have hI₂ : ∀ n ∈ d.nRange, 1 ≤ n ∧ n ≤ N₂ := fun n hn => by
     rw [Data.nRange, Finset.mem_Icc] at hn
-    exact ⟨(Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne').trans hn.1, hn.2⟩
+    exact ⟨(Nat.one_le_iff_ne_zero.2 (by positivity)).trans hn.1, hn.2⟩
   have hmean := integral_norm_sum_mul_sum_sq_le hI₁ hI₂ hLC hLC hu hv hab
   -- `M_α N_β = X⁻¹ (∑_m α_m χ(m) m^{iτ}) (∑_n β_n ψ(n) n^{iτ})`
   have hprod : ∀ τ : ℝ, ‖markedPoly d χ₂ τ * unmarkedPoly d χ₃ τ‖ ^ 2 = d.X⁻¹ ^ 2 *
@@ -216,8 +211,8 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
   -- the length `N = N₁ N₂` has `1 ≤ N ≤ 4X` and `1 + log N ≤ 3L`
   have hN₁ : (N₁ : ℝ) ≤ 2 * d.Hm := Nat.floor_le (by linarith)
   have hN₂ : (N₂ : ℝ) ≤ 2 * d.Hn := Nat.floor_le (by linarith)
-  have hN₁' : 1 ≤ N₁ := Nat.le_floor (by push_cast; linarith)
-  have hN₂' : 1 ≤ N₂ := Nat.le_floor (by push_cast; linarith)
+  have hN₁' : 1 ≤ N₁ := Nat.le_floor (by grind)
+  have hN₂' : 1 ≤ N₂ := Nat.le_floor (by grind)
   have hN : ((N₁ * N₂ : ℕ) : ℝ) ≤ 4 * d.X := by
     push_cast
     unfold Data.X
@@ -225,8 +220,8 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
           mul_le_mul hN₁ hN₂ (Nat.cast_nonneg _) (by linarith)
       _ = 4 * (d.Hm * d.Hn) := by ring
   have hN1 : (1 : ℝ) ≤ ((N₁ * N₂ : ℕ) : ℝ) := by
-    exact_mod_cast Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have hlogN0 : 0 ≤ Real.log ((N₁ * N₂ : ℕ) : ℝ) := Real.log_nonneg hN1
+    exact_mod_cast Nat.one_le_iff_ne_zero.2 (by positivity)
+  have hlogN0 := Real.log_nonneg hN1
   have hlogN : 1 + Real.log ((N₁ * N₂ : ℕ) : ℝ) ≤ 3 * L := by
     have := Real.log_le_log (by linarith) hN
     linarith
@@ -249,7 +244,7 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
       _ = 108 * d.X * L ^ 3 := by ring
   -- collect the powers of `L`
   set y := (b - a) / d.X with hy
-  have hy0 : 0 ≤ y := div_nonneg (by linarith) hX.le
+  have hy0 : 0 ≤ y := by positivity
   set P := L ^ (4 * C) * L ^ 3 with hP
   have hP0 : 0 ≤ P := by positivity
   have hPL : P * L = L ^ meanExp C := by
@@ -267,18 +262,16 @@ theorem integral_norm_labelPoly_mul_sq_le {C CX alo ahi g x : ℝ} {d : Data K}
         have h96 : 0 < 96 * d.X * L := by positivity
         exact mul_le_mul h₁ h₂ (by positivity) (by linarith)
     _ = 1728 * (P * (y + 96 * L)) := by
-        rw [hy, hP]
-        field_simp
-        ring
+        grind
     _ ≤ 1728 * (96 * (P * L) * (1 + y)) := by gcongr
-    _ = 165888 * L ^ meanExp C * (1 + y) := by rw [← hPL]; ring
+    _ = 165888 * L ^ meanExp C * (1 + y) := by grind
 
 /-- `∫_a^b (∑_i f_i)² ≤ |s| ∑_i ∫_a^b f_i²`, by Cauchy's inequality at each point. -/
 private theorem intervalIntegral_sq_sum_le {ι : Type*} (s : Finset ι) {f : ι → ℝ → ℝ}
     (hf : ∀ i, Continuous (f i)) {a b : ℝ} (hab : a ≤ b) :
     ∫ τ in a..b, (∑ i ∈ s, f i τ) ^ 2 ≤ #s * ∑ i ∈ s, ∫ τ in a..b, f i τ ^ 2 := by
   have h₁ : Continuous fun τ => (∑ i ∈ s, f i τ) ^ 2 :=
-    (continuous_finsetSum _ fun i _ => hf i).pow 2
+    (continuous_finsetSum _ (by grind)).pow 2
   have h₂ : Continuous fun τ => (#s : ℝ) * ∑ i ∈ s, f i τ ^ 2 :=
     (continuous_finsetSum _ fun i _ => (hf i).pow 2).const_mul _
   calc ∫ τ in a..b, (∑ i ∈ s, f i τ) ^ 2 ≤ ∫ τ in a..b, (#s : ℝ) * ∑ i ∈ s, f i τ ^ 2 :=
@@ -331,7 +324,7 @@ theorem norm_arcTerm_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (
     ((continuous_labelPoly x d Y lam χ.1).mul (continuous_markedPoly hHm χ.2.1)).mul
       (continuous_unmarkedPoly hHn χ.2.2)
   have hgc : Continuous g := continuous_finsetSum _ fun χ _ => (hQc χ).norm
-  have hg0 : ∀ τ, 0 ≤ g τ := fun τ => Finset.sum_nonneg fun χ _ => norm_nonneg _
+  have hg0 : ∀ τ, 0 ≤ g τ := fun τ => by positivity
   have hgB : ∀ τ, g τ ≤ ∑ _χ : DirichletCharacter ℂ k × DirichletCharacter ℂ k ×
       DirichletCharacter ℂ k, 4 * (d.Hm⁻¹ * ∑ m ∈ d.mRange, ‖d.α m‖) *
         (d.Hn⁻¹ * ∑ n ∈ d.nRange, ‖d.β n‖) := fun τ =>
@@ -389,9 +382,9 @@ theorem norm_arcTerm_le {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hHm : 0 < d.Hm) (
             ≤ (c * ((1 + |τ| / d.X) ^ 2)⁻¹ * ((1 + |τ + σ|) ^ 2)⁻¹) *
                 ((d.X * Y * g τ) * (d.X * Y * g (-σ))) := by
               gcongr
-              · exact hKb τ σ
-              · exact hG τ
-              · exact hG (-σ)
+              · grind
+              · grind
+              grind
           _ = _ := by ring
     _ = c * (d.X * Y) ^ 2 * ∫ q : ℝ × ℝ, ((1 + |q.1| / d.X) ^ 2)⁻¹ *
           ((1 + |q.1 + q.2|) ^ 2)⁻¹ * (g q.1 * g (-q.2)) := integral_const_mul _ _

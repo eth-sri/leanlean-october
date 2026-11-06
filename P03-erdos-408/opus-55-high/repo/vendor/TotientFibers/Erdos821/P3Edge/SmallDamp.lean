@@ -5,7 +5,6 @@ public import Erdos821.P3Edge.SmallZeros
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -26,7 +25,7 @@ lemma smallDamping_le_one {P : PrimeGroups} {F : FixedData} {J : ℕ}
       have h1 : ∀ g : P.SmallGroup, (((J : ℝ) + (F.ell : ℝ))) ≤
           ((Finset.univ.filter (fun p : P.Prime g.val => y g p = 0)).card : ℝ) := by
         intro g
-        have hle : J + F.ell ≤ (Finset.univ.filter (fun p : P.Prime g.val => y g p = 0)).card :=
+        have hle :=
           small_zeros_ge P y a hphys g
         have hcast : (((J + F.ell : ℕ)) : ℝ) = ((J : ℝ) + (F.ell : ℝ)) := by
           push_cast

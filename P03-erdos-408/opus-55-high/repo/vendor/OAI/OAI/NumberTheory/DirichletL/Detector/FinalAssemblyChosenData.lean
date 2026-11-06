@@ -12,7 +12,7 @@ open scoped Classical
 open Filter
 
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison
+open HeckeFamily Parameters PrincipalSignalComparison
 
 def ChosenMomentInput:Prop:=
   ∀_hβ:(7/8:ℝ)<HeckeZeroSupremum.beta,
@@ -76,7 +76,7 @@ theorem common_probe_of_chosen_moments (hmom : ChosenMomentInput) : HeckeCommonP
   apply isBigO_rpow_of_eventual_norm_bound
   refine ⟨Ct+C*Cm*(η.modulus.absNorm:ℝ)^(2*D.eps),by positivity,?_⟩
   filter_upwards [hhigh,hsource] with Z hh hs
-  exact hh Cm hCm.le hs
+  grind
 
 theorem dirichlet_of_chosen_moments (hmom : ChosenMomentInput) (q : ℕ) (hq : q≠0)
     (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8:ℝ)<s.re)

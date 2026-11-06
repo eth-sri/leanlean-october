@@ -9,19 +9,18 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroReferenceError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalDeleted
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily HeckeDyadic QuadraticInitialBound
+open CenteredMomentEnergyState
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroReferenceChild
 open CenteredMomentEnergyZeroUnbalancedDeletedGeometry CenteredMomentEnergyZeroReferenceReflection
 open CenteredMomentEnergyZeroReferenceError CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional
 
 theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)(hepsilon:0<epsilon)(hxi:0<xi)
@@ -29,7 +28,7 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ∀(ε:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
@@ -69,12 +68,12 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
   rw [←hg.1,←hg.2.1]
   have hZpos:0<Z:=zero_lt_one.trans hZ.1
   have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
-  have hLpos:0≤L:=by linarith [s.width_nonneg]
+  have hLpos:0≤L:=by linarith
   have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
   rcases hg.2.2.2.2.2.2.2 with hd|hr
   · have hdirect:=independent_from_low a b bΦ Bmask L Mcap ε Z Q degree S K hlow hBmask ha
       s hQ hs W₁ W₂ hs₁ hs₂ t t (Z^short) (Z^along)
-      (Real.rpow_pos_of_pos hZpos _) (Real.rpow_pos_of_pos hZpos _)
+      (by positivity) (by positivity)
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hg.2.2.2.1)
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hd.1) hd.2
     exact hdirect.trans (le_add_of_nonneg_right (by positivity))
@@ -83,7 +82,7 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     dsimp only at hh
     have he₁:=he W₁ (fun x hx=>(hs₁ hx).2) (fun z=>naturalCharacter s.character z)
       t (Z^short) s.radial.scale s.radial.profile (effectiveState s).radial.keep
-      (Real.rpow_pos_of_pos hZpos _) s.radial.scale_pos s.radial.nonneg
+      (by positivity) s.radial.scale_pos s.radial.nonneg
     have hswap:(fun z=>polynomial (naturalCharacter s.character z) false W₁ (Z^short) 0 t *
         polynomial (naturalCharacter s.character z) false W₂ (Z^along) 0 t)=
       (fun z=>polynomial (naturalCharacter s.character z) false W₂ (Z^along) 0 t *
@@ -93,7 +92,7 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
     apply le_trans _ (le_add_of_nonneg_left (by positivity))
     apply add_le_add
     · gcongr
-      exact hg.2.2.2.2.2.2.1
+      linarith
     · calc
         _≤D*(max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*epsilon)*
           (sourceControl Slong W₂)^2*(1+‖t‖)^(2*nlong)*Z^(-2*saving)*
@@ -102,8 +101,8 @@ theorem deleted_from_low (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
           gcongr
           exact he₁.trans (by
             gcongr
-            · exact hZ.1.le
-            · exact hg.2.2.1)
+            · linarith
+            linarith)
         _=_:=by ring
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalDeleted

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.Reciprocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open Complex Set MeasureTheory
+open scoped Classical
 namespace SevenEighths.ProbeFiniteProductX
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
+open CompletedGauss ProbePhysical ProbeEuler ProbeLocal
 open HeckeFamily PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
@@ -53,7 +52,7 @@ theorem local_analytic_x (η : Character) (S : Finset Id) (hS : CorrectionTail S
   apply DifferentiableAt.differentiableWithinAt
   unfold localMultiplier compensatedReplacement
   dsimp only
-  fun_prop (disch := first | assumption | exact hd.2.2 | exact Or.inl hn)
+  fun_prop (disch := simp_all)
 
 theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
@@ -64,7 +63,7 @@ theorem slot_analytic_x {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro j hj
   apply (T j).analyticOnNhd_fun_sum
   intro P hp
-  exact analyticOnNhd_const.mul (local_analytic_x η S hS P (hT j hj P hp) w z hw hz)
+  exact analyticOnNhd_const.mul (local_analytic_x η S hS P (by grind) w z hw hz)
 
 def continuedSourceMultiplier {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -85,14 +84,14 @@ theorem continued_source_analytic_x {ι : Type*} (η : Character) (S : Finset Id
   have hn : (Z:ℂ) ≠ 0 := by exact_mod_cast hZ.ne'
   apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
   intro x hx
-  have hx' : (7/8 : ℝ)<x.re := lt_of_le_of_lt (le_max_left _ _) hx
-  have hβ : HeckeZeroSupremum.beta<x.re := lt_of_le_of_lt (le_max_right _ _) hx
+  have hx' : (7/8 : ℝ)<x.re := by grind
+  have hβ : HeckeZeroSupremum.beta<x.re := by grind
   have hH := (globalClosedCorrection_analytic_x η S hS.tail w z hw hz x hx').differentiableAt
   have hB := (slot_analytic_x η S hS.tail J T b hT w z hw hz x hx').differentiableAt
   have hR := HeckeReciprocal.reciprocal_differentiableAt (η.excludePrimes S hS.prime) hβ
   apply DifferentiableAt.differentiableWithinAt
   unfold continuedSourceMultiplier
-  fun_prop (disch := first | assumption | exact Or.inl hn)
+  fun_prop (disch := simp_all)
 
 theorem continued_source_eq_raw {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀ P ∈ S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -114,7 +113,7 @@ theorem continued_source_differentiable_strip {ι : Type*} (η : Character) (S :
       {x : ℂ | a≤x.re ∧ x.re≤c} := by
   apply (continued_source_analytic_x η S hS J T b hT W0 W1 X Y Z hZ w z hw hz).differentiableOn.mono
   intro x hx
-  exact lt_of_lt_of_le (max_lt ha hβ) hx.1
+  grind
 
 end SevenEighths.ProbeFiniteProductX
 end

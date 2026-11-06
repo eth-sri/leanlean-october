@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.HeckeDetectorSimultaneousSupport
 open HeckeFamily HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
@@ -48,7 +48,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   have hzeroH := uniform_zero_height dmin τ I hτzero
   have hbudgetH := uniform_height_budget dmin τ η I hτ.le hη hτheight
   have hFourier := uniform_fourier_allowance dmax τ hdmaxp hτ
-  have hcost := uniform_power_allowance 8 0 dmin ε hε.le (mul_pos hdmin hε)
+  have hcost := uniform_power_allowance 8 0 dmin ε hε.le (by positivity)
   have hT := (tendsto_rpow_atTop hτ).eventually (eventually_gt_atTop (2 : ℝ))
   have hall := hscale.and (hzeroH.and (hbudgetH.and (hFourier.and (hcost.and
     (hT.and (eventually_ge_atTop (1 : ℝ)))))))
@@ -57,7 +57,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   intro Z hZlarge d hd hd' ι _ χ hχ a i hi ha ha' hmax j hQ ρ hzero hρ him tstar ht ht'
   obtain ⟨hscale,hzeroH,hbudgetH,hFourier,hcost,hT,hZ⟩ := hZ₀ Z hZlarge
   let U := Z^d
-  have hd0 : 0≤d := (hdmin.trans_le hd).le
+  have hd0 : 0≤d := by linarith
   have hlarge := hscale d hd
   have hU8 : 8≤U := (le_max_left _ _).trans hlarge
   have hUN : UN≤U := (le_max_left _ _).trans ((le_max_right _ _).trans hlarge)
@@ -71,7 +71,7 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   have hh := him.trans (hzeroH d hd i hi)
   obtain ⟨hDs,hDs'⟩ := truncation_scale U tstar hU2 ht ht'
   obtain ⟨J,hJ,K,hK,ν,hν,hprod,hD,hDN,hterminal⟩ :=
-    hN U hUN (χ j) (hχ j) (U^tstar) hDs hDs' (by simpa using hQ) ρ hρlo hzero hh
+    hN U hUN (χ j) (hχ j) (U^tstar) hDs hDs' (by linarith) ρ hρlo hzero hh
   obtain ⟨hr,hr',hm,hm',heJ,heK⟩ := dyadic_scale_bounds U hU8 J K hterminal
   let r := Real.logb U ((2 : ℝ)^J)
   let m := Real.logb U ((2 : ℝ)^K)
@@ -81,10 +81,10 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
   have hKpow : (Z^d)^m=(2 : ℝ)^K := heK
   have hcostU : 8≤U^ε := by simpa using hcost d hd
   have hsupport := support_exponents U tstar r m ε hU1 hcostU
-    (by simpa only [heJ] using hD) (by simpa only [heJ,heK] using hDN)
+    (by linarith) (by simpa only [heJ,heK] using hDN)
   have hfreq : |2*Real.pi*ν-ρ.im|+(Z^τ)/2≤(3*i+2 : ℕ)*Z^τ := by
     have habs : |ν|≤U^(τ/(2*dmax)) := by simpa only [Real.norm_eq_abs] using hν
-    have hnu := (mul_le_mul_of_nonneg_left habs (show 0≤2*Real.pi by positivity)).trans
+    have hnu := (mul_le_mul_of_nonneg_left habs (by positivity)).trans
       (hFourier d hd0 hd')
     have hbase : |2*Real.pi*ν-ρ.im|≤2*Real.pi*|ν|+|ρ.im| := by
       simpa only [sub_zero,zero_sub,abs_neg,abs_mul,
@@ -94,11 +94,11 @@ theorem from_actual_zero (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     nlinarith
   have hs := hS Z d hZ hd0 hd' hT hUS hU1 χ hχ a i ha ha' hmax j (U^tstar)
     r m ρ.re (2*Real.pi*ν-ρ.im) hQ (by positivity) hr hr' hm hm'
-    (by simpa only [hJpow] using hD.le) hρ hρhi hfreq (hbudgetH d hd i hi)
+    (by linarith) hρ hρhi hfreq (hbudgetH d hd i hi)
     (by simpa only [hJpow,hKpow] using hprod)
   refine ⟨J,hJ,K,hK,ν,r,m,hν,heJ,heK,?_,hsupport.1,hm,hs.1,
-    (by linarith [hsupport.2]),hs.2.1,hs.2.2⟩
-  linarith [hsupport.2,hs.1]
+    (by linarith),hs.2.1,hs.2.2⟩
+  linarith
 
 theorem from_actual_maximum (dmin dmax τ ε e κ η : ℝ) (I : ℕ)
     (hdmin : 0<dmin) (hdmax : dmin≤dmax) (hτ : 0<τ)

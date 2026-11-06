@@ -24,8 +24,7 @@ theorem exists_character_factor_iff {G H : Type*} [Group G] [CommGroup H]
     (∃ φ : H →* ℂˣ, φ.comp q = χ) ↔ q.ker ≤ χ.ker := by
   constructor
   · rintro ⟨φ, rfl⟩ g hg
-    simp only [MonoidHom.mem_ker, MonoidHom.comp_apply,
-      MonoidHom.mem_ker.mp hg, map_one]
+    simp_all
   · intro hker
     have hker' : q.rangeRestrict.ker ≤ χ.ker := by
       simpa only [MonoidHom.ker_rangeRestrict] using hker
@@ -36,7 +35,7 @@ theorem exists_character_factor_iff {G H : Type*} [Group G] [CommGroup H]
     refine ⟨φ, ?_⟩
     calc
       φ.comp q = (φ.domRestrict q.range).comp q.rangeRestrict := rfl
-      _ = θ.comp q.rangeRestrict := by rw [← hφ]; rfl
+      _ = θ.comp q.rangeRestrict := by simp_all
       _ = χ := hθ
 
 variable {R : Type*} [CommRing R] [Finite R]
@@ -62,11 +61,10 @@ theorem factorsThroughIdeal_iff (χ : MulChar R ℂ) (I : Ideal R) :
       ∃ φ : (R ⧸ I)ˣ →* ℂˣ, φ.comp (quotientUnits I) = χ.toUnitHom := by
     constructor
     · rintro ⟨φ, hφ⟩
-      exact ⟨φ.toUnitHom, hφ⟩
+      grind
     · rintro ⟨φ, hφ⟩
       refine ⟨MulChar.ofUnitHom φ, ?_⟩
-      simpa only [MulChar.toUnitHom_eq, MulChar.ofUnitHom_eq,
-        Equiv.apply_symm_apply] using hφ
+      simp_all
   rw [hfactor, exists_character_factor_iff]
   constructor
   · intro h u hu
@@ -79,13 +77,8 @@ theorem factorsThroughIdeal_iff (χ : MulChar R ℂ) (I : Ideal R) :
 theorem primitiveOnIdeals_iff_no_descent (χ : MulChar R ℂ) :
     IsPrimitiveOnIdeals χ ↔ ∀ I : Ideal R, I ≠ ⊥ → ¬ FactorsThroughIdeal χ I := by
   simp only [IsPrimitiveOnIdeals, factorsThroughIdeal_iff]
-  push Not
-  rfl
+  simp
 
-theorem FactorsThroughIdeal.mono {χ : MulChar R ℂ} {I J : Ideal R}
-    (h : FactorsThroughIdeal χ I) (hJI : J ≤ I) : FactorsThroughIdeal χ J := by
-  rw [factorsThroughIdeal_iff] at h ⊢
-  exact fun u hu => h u (hJI hu)
 
 omit [Finite R] in
 

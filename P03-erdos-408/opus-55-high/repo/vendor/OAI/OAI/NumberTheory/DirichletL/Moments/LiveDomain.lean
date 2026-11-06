@@ -9,22 +9,21 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentLiveDomain
 open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
+open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum
 open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
 open CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
 
  theorem finite_column_mem {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
-    (β : Tuple ι → ℂ) (a : Ideal O) (ha : finiteColumnCoefficient S β a≠0) : a∈finiteColumns S := by
+    (β : Tuple ι → ℂ) (a : Ideal ActualEisensteinCubic.O) (ha : finiteColumnCoefficient S β a≠0) : a∈finiteColumns S := by
   obtain ⟨v,hv,hvn⟩ := Finset.exists_ne_zero_of_sum_ne_zero ha
   obtain ⟨hv,he⟩ := Finset.mem_filter.mp hv
   exact Finset.mem_image.mpr ⟨v,hv,he⟩
 
- theorem sum_same_support (S T : Finset (Ideal O)) (c f : Ideal O → ℂ)
+ theorem sum_same_support (S T : Finset (Ideal ActualEisensteinCubic.O)) (c f : Ideal ActualEisensteinCubic.O → ℂ)
     (hST : ∀ I∈S,c I≠0 → I∈T) (hTS : ∀ I∈T,c I≠0 → I∈S) :
     (∑ I∈S,c I*f I)=∑ I∈T,c I*f I := by
   have hs : (∑ I∈S∩T,c I*f I)=∑ I∈S,c I*f I := by
@@ -43,19 +42,19 @@ local notation "O" => ActualEisensteinCubic.O
     rw [hc,zero_mul]
   exact hs.symm.trans ht
 
- theorem supported_residualPool (C : Ideal O) (hC : Supported C) (S : Finset (Ideal O)) :
+ theorem supported_residualPool (C : Ideal ActualEisensteinCubic.O) (hC : Supported C) (S : Finset (Ideal ActualEisensteinCubic.O)) :
     supportedColumns (residualPool C hC.1 S)=residualPool C hC.1 (supportedColumns S) := by
   ext I
   simp only [supportedColumns,Finset.mem_filter,mem_residualPool]
   rw [supported_mul_iff]
   tauto
 
-def primaryGaussRow (I : Ideal O) (z : O) : ℂ :=
+def primaryGaussRow (I : Ideal ActualEisensteinCubic.O) (z : ActualEisensteinCubic.O) : ℂ :=
   if hI : Supported I then
     gaussRow (CompletedGauss.primaryGenerator I)
       (by rw [primary_span_supported I hI];exact hI) z else 0
 
-theorem source_gaussPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z : O) :
+theorem source_gaussPolynomial (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ) (z : ActualEisensteinCubic.O) :
     gaussPolynomial Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => c I) z=
       ∑ I∈supportedColumns S,c I*primaryGaussRow I z := by
@@ -69,12 +68,12 @@ theorem source_gaussPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z :
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
+    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) :
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O → ℂ) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     (∑ I∈supportedColumns (residualPool C hC.1 (finiteColumns (Fintype.piFinset S))),c I*f I)=
@@ -88,12 +87,12 @@ theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ hn
     exact Finset.mem_filter.mpr ⟨(mem_residualPool C hC.1 _ I).mpr hh.1,(Finset.mem_filter.mp hI).2⟩
 
-theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
+    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (z : O) :
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O → ℂ) (z : ActualEisensteinCubic.O) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
@@ -113,12 +112,12 @@ theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   simpa only [mul_assoc] using live_column_sum S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
     X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => f I*primaryGaussRow I z)
 
-theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
+    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))

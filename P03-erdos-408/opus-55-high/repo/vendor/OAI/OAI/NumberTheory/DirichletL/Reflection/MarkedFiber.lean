@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [Fintype ι] [Fintype σ]
 
 def joinedInactiveCoefficient (P : PrimeFamily ι) (S : PrimeFamily σ) (j : ι→ℕ) : ι⊕σ→ℂ :=
@@ -19,13 +18,13 @@ def joinedInactiveCoefficient (P : PrimeFamily ι) (S : PrimeFamily σ) (j : ι�
     (fun i => (Ideal.absNorm (S.ideal i):ℂ)⁻¹)
 
 lemma joined_inactive_weight (P : PrimeFamily ι) (S : PrimeFamily σ)
-    (hP : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (hS : ∀ i, ringChar (Eis⧸S.ideal i)≠2)
+    (hP : ∀ i, ringChar (ActualEisensteinCubic.O⧸P.ideal i)≠2) (hS : ∀ i, ringChar (ActualEisensteinCubic.O⧸S.ideal i)≠2)
     (j : ι→ℕ) (hj : ∀ i, j i<6) (A : Finset (ι⊕σ)) :
     localInactiveWeight (P.sum S).generator (P.sum S).generator_ne_zero
       (mixedPrimeFunction (P.sum S).generator (P.sum S).generator_good
         (Sum.elim j (fun _ => 0)) markedSumSlots) A =
     ∏ i∈(Finset.univ:Finset (ι⊕σ))\A, joinedInactiveCoefficient P S j i := by
-  have ho : ∀ i, ringChar (Eis⧸(P.sum S).ideal i)≠2 := by
+  have ho : ∀ i, ringChar (ActualEisensteinCubic.O⧸(P.sum S).ideal i)≠2 := by
     intro i
     cases i with
     | inl i => exact hP i
@@ -33,17 +32,17 @@ lemma joined_inactive_weight (P : PrimeFamily ι) (S : PrimeFamily σ)
   have hj' : ∀ i : ι⊕σ, Sum.elim j (fun _ => 0) i<6 := by
     intro i
     cases i with
-    | inl i => exact hj i
+    | inl i => simp_all
     | inr i => norm_num
   rw [mixed_inactive_weight (P.sum S) ho _ hj']
-  apply Finset.prod_congr (by ext i; simp only [Finset.mem_sdiff,Finset.mem_univ])
+  apply Finset.prod_congr (by grind)
   intro i hi
   cases i <;> simp [markedSumSlots,joinedInactiveCoefficient,PrimeFamily.sum]
   rfl
 
 theorem joined_inactive_three_blocks {α β : Type*} [Fintype α] [Fintype β]
     (P : PrimeFamily ι) (S : PrimeFamily σ)
-    (hP : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (hS : ∀ i, ringChar (Eis⧸S.ideal i)≠2)
+    (hP : ∀ i, ringChar (ActualEisensteinCubic.O⧸P.ideal i)≠2) (hS : ∀ i, ringChar (ActualEisensteinCubic.O⧸S.ideal i)≠2)
     (j : ι→ℕ) (hj : ∀ i, j i<6) (e : α⊕β≃ι) (he : ∀ a, j (e (Sum.inl a))=1)
     (F : Finset (ι⊕σ)→ℂ) :
     (∑ A : Finset (ι⊕σ),
@@ -59,7 +58,7 @@ theorem joined_inactive_three_blocks {α β : Type*} [Fintype α] [Fintype β]
     simp [joinedInactiveCoefficient,he a]
   have h := inactive_weight_three_blocks e (joinedInactiveCoefficient P S j) hz F
   refine Eq.trans ?_ h
-  apply Finset.sum_congr (by ext A; simp only [Finset.mem_univ])
+  apply Finset.sum_congr (by simp)
   intro A hA
   congr 1
   exact joined_inactive_weight P S hP hS j hj A

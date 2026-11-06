@@ -10,26 +10,25 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialPhysicalLimit
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialPhysicalReassembly
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+open ConcreteTraceCRT SecondPassArithmetic
+open InverseInitialRayAttachment InverseInitialPhysicalMeasure
+open InverseInitialEnergyCallerSource InverseInitialPhysicalReassembly
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def physicalFrequency (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
-    (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(h:O):ℂ:=
+def physicalFrequency (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
+    (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(h:ActualEisensteinCubic.O):ℂ:=
   ∑G∈pool.powerset,∑U∈(pool\G).powerset,∑T∈(pool\G).powerset,
     if Disjoint U T then ∑E∈G.powerset,
       initialPhysicalMode p hp hcop hg Ψ j marks W Φ Z D m G U T E h else 0
 
 theorem physicalFrequency_finite
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (pool:Finset ι)(freqT:Finset O)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
+    (pool:Finset ι)(freqT:Finset ActualEisensteinCubic.O)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ):
     (∑h∈freqT,physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h)=
     physicalBlock p hp hcop hg (pointSource pool (finiteSource pool freqT))
@@ -48,17 +47,17 @@ theorem physicalFrequency_finite
   by_cases hd:Disjoint U T
   · simp only [hd,ite_true]
     exact Finset.sum_comm
-  · simp only [hd,ite_false,Finset.sum_const_zero]
+  simp_all
 
 theorem physicalFrequency_hasSum
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:0<Z):
     HasSum (physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m)
       (∑G∈pool.powerset,∑U∈(pool\G).powerset,∑T∈(pool\G).powerset,
-        if Disjoint U T then ∑E∈G.powerset,∑'h:O,
+        if Disjoint U T then ∑E∈G.powerset,∑'h:ActualEisensteinCubic.O,
           initialPhysicalMode p hp hcop hg Ψ j marks W Φ Z D m G U T E h else 0):=by
   unfold physicalFrequency
   apply hasSum_sum
@@ -75,19 +74,19 @@ theorem physicalFrequency_hasSum
       G U T E
       (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hU) Finset.disjoint_sdiff)
       (Finset.disjoint_of_subset_right (Finset.mem_powerset.mp hT) Finset.disjoint_sdiff) hd).hasSum
-  · simpa only [hd,ite_false] using (hasSum_zero : HasSum (fun _ : O=>(0:ℂ)) 0)
+  simp_all
 
 theorem original_input_zero_nonzero
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:0<Z):
-    (∑'u:O,Φ (‖eisEmbedding u‖^2/Z^m)*
+    (∑'u:ActualEisensteinCubic.O,Φ (‖eisEmbedding u‖^2/Z^m)*
       (‖((Z^(-D/2):ℝ):ℂ)*inputConjugateRow p hg pool Ψ j 1 1
         (initialTest p marks W Z D) u‖^2:ℝ))=
     physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m 0+
-      ∑'h:O,if h=0 then 0 else physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h:=by
+      ∑'h:ActualEisensteinCubic.O,if h=0 then 0 else physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h:=by
   rw [initial_input_physical p hp hcop hg hinj hc hpr pool Ψ j marks W Φ hZ D m]
   have hs:=physicalFrequency_hasSum p hp hcop hg hinj hc hpr pool Ψ j marks W Φ Z D m hZ
   rw [←hs.tsum_eq]
@@ -95,29 +94,29 @@ theorem original_input_zero_nonzero
 
 theorem nonzero_frequency_norm_le
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(j:O)(marks:Finset ι→ℂ)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m B:ℝ)(hZ:0<Z)
-    (hfinite:∀freqT:Finset O,(0:O)∉freqT→
+    (hfinite:∀freqT:Finset ActualEisensteinCubic.O,(0:ActualEisensteinCubic.O)∉freqT→
       ‖physicalBlock p hp hcop hg (pointSource pool (finiteSource pool freqT))
         (fun _=>1) Ψ j marks (fun x=>star (W x)) W Φ Z D m‖≤B):
-    ‖∑'h:O,if h=0 then 0 else physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h‖≤B:=by
+    ‖∑'h:ActualEisensteinCubic.O,if h=0 then 0 else physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h‖≤B:=by
   have hs:=physicalFrequency_hasSum p hp hcop hg hinj hc hpr pool Ψ j marks W Φ Z D m hZ
-  have hs0:Summable (fun h:O=>if h=0 then (0:ℂ) else
+  have hs0:Summable (fun h:ActualEisensteinCubic.O=>if h=0 then (0:ℂ) else
       physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h):=by
-    apply (hs.summable.indicator {h:O|h≠0}).congr
+    apply (hs.summable.indicator {h:ActualEisensteinCubic.O|h≠0}).congr
     intro h
-    by_cases he:h=0 <;> simp [Set.indicator,he]
+    by_cases he:h=0 <;> simp [he]
   apply InverseInitialHighFrequencyTail.norm_tsum_of_finite_bound _ hs0
   intro T
-  let freqT:=T.filter (fun h:O=>h≠0)
-  have hzero:(0:O)∉freqT:=by simp [freqT]
+  let freqT:=T.filter (fun h:ActualEisensteinCubic.O=>h≠0)
+  have hzero:(0:ActualEisensteinCubic.O)∉freqT:=by simp [freqT]
   have he:(∑h∈T,if h=0 then (0:ℂ) else physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h)=
       ∑h∈freqT,physicalFrequency p hp hcop hg pool Ψ j marks W Φ Z D m h:=by
     simp only [freqT,Finset.sum_filter,ite_not]
   rw [he,physicalFrequency_finite p hp hcop hg hinj]
-  exact hfinite freqT hzero
+  simp_all
 
 end SevenEighths.InverseInitialPhysicalLimit
 

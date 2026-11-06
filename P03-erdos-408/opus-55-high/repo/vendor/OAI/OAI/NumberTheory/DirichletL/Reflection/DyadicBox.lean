@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.DyadicTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open CompletedGauss CompletedDyadic CanonicalQuadraticSieve
 noncomputable section
 
@@ -37,15 +37,14 @@ lemma center_mem_retainedDyadicBox (scale B : ℝ) (hs : 0<scale)
   have hR : 1≤R := le_max_left _ _
   have hp : (2:ℝ)^(i.1+i.2.2+3*i.2.1)≤R :=
     ((le_div_iff₀ hs).mpr (by nlinarith only [rawDyadicCenter_pow_lower scale hs.le i,hi])).trans (le_max_right _ _)
-  have hl := Real.log_le_log (by positivity : (0:ℝ)<2^(i.1+i.2.2+3*i.2.1)) hp
+  have hl := Real.log_le_log (by positivity) hp
   rw [Real.log_pow] at hl
   have hc : ((i.1+i.2.2+3*i.2.1:ℕ):ℝ)≤columnDyadicLength R := by
-    apply le_trans ((le_div_iff₀ (Real.log_pos (by norm_num : (1:ℝ)<2))).mpr hl)
+    apply le_trans ((le_div_iff₀ (by positivity)).mpr hl)
     exact Nat.le_ceil _
   have hc' : i.1+i.2.2+3*i.2.1≤columnDyadicLength R := by exact_mod_cast hc
   simp only [retainedDyadicBox,Finset.mem_product,Finset.mem_range]
-  change i.1<columnDyadicLength R+1 ∧ i.2.1<columnDyadicLength R+1 ∧ i.2.2<columnDyadicLength R+1
-  omega
+  grind
 
 lemma retainedDyadicBox_card (scale B : ℝ) :
     (retainedDyadicBox scale B).card=(columnDyadicLength (max 1 (B/scale))+1)^3 := by
@@ -63,11 +62,10 @@ theorem retainedDyadicBox_count_small_power (ε : ℝ) (hε : 0<ε) :
   rw [retainedDyadicBox_card]
   push_cast
   rw [← pow_mul]
-  norm_num only [show (3:ℕ)*2=6 by norm_num]
+  norm_num only
   apply (pow_le_pow_left₀ (by positivity) hh 6).trans_eq
   rw [mul_pow,← Real.rpow_mul_natCast hp.le]
-  congr 2
-  ring
+  simp
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.PositiveSummability
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRadialPolynomialEnergy
 open HeckeFamily HeckeDyadic CenteredMomentFrequencyScaleSupremum
 open CenteredMomentPositiveSummability ConcreteTraceCRT
 open HeckeInverseAmplification
-local notation "O" => HeckeFamily.O
 
 lemma polynomial_bounded (W : ℝ→ℂ) (a b X : ℝ) (hb : 0≤b) (hX : 0<X)
     (hs : Function.support W⊆Set.Icc a b) :
@@ -21,10 +20,10 @@ lemma polynomial_bounded (W : ℝ→ℂ) (a b X : ℝ) (hb : 0≤b) (hX : 0<X)
   let l:=Real.log X
   let S:=scaleSupport l b
   have hx : Real.exp l=X := Real.exp_log hX
-  have hc : ∀I : Ideal O,I≠0 → W ((I.absNorm:ℝ)/Real.exp l)≠0 → I∈S :=
+  have hc : ∀I : Ideal HeckeFamily.O,I≠0 → W ((I.absNorm:ℝ)/Real.exp l)≠0 → I∈S :=
     scaleSupport_cover W a b l l hb hs le_rfl
   let B:=‖Complex.exp (-(l:ℂ)/2)‖*∑I∈S,‖W ((I.absNorm:ℝ)*Real.exp (-l))‖
-  refine ⟨B,by dsimp [B];positivity,?_⟩
+  refine ⟨B,by positivity,?_⟩
   intro χ t
   rw [←hx,frequencyScaleSum_eq_polynomial χ false W t S l hc,norm_mul,
     FourierBridge.logPhase_norm,one_mul]
@@ -37,12 +36,12 @@ lemma polynomial_bounded (W : ℝ→ℂ) (a b X : ℝ) (hb : 0≤b) (hX : 0<X)
   rw [norm_mul,norm_mul,FourierBridge.logPhase_norm,mul_one]
   exact mul_le_of_le_one_left (norm_nonneg _) (coefficient_norm_le χ false I)
 
-lemma pair_radial_summable (χ : O→Character) (P : O→ℂ) (t omega : O→ℝ)
+lemma pair_radial_summable (χ : HeckeFamily.O→Character) (P : HeckeFamily.O→ℂ) (t omega : HeckeFamily.O→ℝ)
     (W₁ W₂ : ℝ→ℂ) (a b c d X Y Pbound : ℝ)
     (hb : 0≤b) (hd : 0≤d) (hX : 0<X) (hY : 0<Y)
     (hs₁ : Function.support W₁⊆Set.Icc a b) (hs₂ : Function.support W₂⊆Set.Icc c d)
-    (hP : ∀z,‖P z‖≤Pbound) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
-    Summable (fun z:O=>if keep z then
+    (hP : ∀z,‖P z‖≤Pbound) (keep : HeckeFamily.O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+    Summable (fun z:HeckeFamily.O=>if keep z then
       ‖polynomial (χ z) false W₁ X 0 (t z)*polynomial (χ z) false W₂ Y 0 (omega z)*P z‖^2*
         (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   obtain ⟨B₁,hB₁,h₁⟩:=polynomial_bounded W₁ a b X hb hX hs₁
@@ -50,20 +49,20 @@ lemma pair_radial_summable (χ : O→Character) (P : O→ℂ) (t omega : O→ℝ
   apply bounded_radial_summable _ (B₁*B₂*Pbound) _ keep Φ K hK
   intro z
   rw [norm_mul,norm_mul]
-  exact mul_le_mul (mul_le_mul (h₁ _ _) (h₂ _ _) (norm_nonneg _) hB₁)
-    (hP z) (norm_nonneg _) (mul_nonneg hB₁ hB₂)
+  exact mul_le_mul (mul_le_mul (by grind) (by grind) (norm_nonneg _) hB₁)
+    (hP z) (norm_nonneg _) (by positivity)
 
-lemma single_radial_summable (χ : O→Character) (P : O→ℂ) (t : O→ℝ)
+lemma single_radial_summable (χ : HeckeFamily.O→Character) (P : HeckeFamily.O→ℂ) (t : HeckeFamily.O→ℝ)
     (W : ℝ→ℂ) (a b X Pbound : ℝ) (hb : 0≤b) (hX : 0<X)
     (hs : Function.support W⊆Set.Icc a b) (hP : ∀z,‖P z‖≤Pbound)
-    (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
-    Summable (fun z:O=>if keep z then ‖polynomial (χ z) false W X 0 (t z)*P z‖^2*
+    (keep : HeckeFamily.O→Prop) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+    Summable (fun z:HeckeFamily.O=>if keep z then ‖polynomial (χ z) false W X 0 (t z)*P z‖^2*
       (Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   obtain ⟨B,hB,hh⟩:=polynomial_bounded W a b X hb hX hs
   apply bounded_radial_summable _ (B*Pbound) _ keep Φ K hK
   intro z
   rw [norm_mul]
-  exact mul_le_mul (hh _ _) (hP z) (norm_nonneg _) hB
+  exact mul_le_mul (by grind) (hP z) (norm_nonneg _) hB
 
 end SevenEighths.CenteredMomentRadialPolynomialEnergy
 

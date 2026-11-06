@@ -6,7 +6,6 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -26,11 +25,10 @@ lemma productFull_anova_eq (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a
   induction I using Finset.induction_on with
   | empty => exact productFull_empty w hsum _
   | @insert i I hi hI =>
-      have hiS : i ∈ S := hIS (Finset.mem_insert_self _ _)
-      have hIS' : I ⊆ S := fun j hj => hIS (Finset.mem_insert_of_mem hj)
+      have hiS := hIS (Finset.mem_insert_self _ _)
+      have hIS' : I ⊆ S := by grind
       rw [productFull_insert w hsum I i hi, hI hIS',
         productAnova_mean_zero w hsum Finset.univ S i hiS]
-      funext x
       simp
 
 lemma productFull_anova_zero (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
@@ -50,9 +48,8 @@ lemma productAverage_anova_eq (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w 
   induction A using Finset.induction_on with
   | empty => exact productAverage_empty w hsum _
   | @insert i A hi hA =>
-      have hiS : i ∉ S := fun h => Finset.disjoint_left.mp hAS
-        (Finset.mem_insert_self _ _) h
-      have hAS' : Disjoint A S := hAS.mono_left (Finset.subset_insert _ _)
+      have hiS : i ∉ S := by grind
+      have hAS' := hAS.mono_left (Finset.subset_insert _ _)
       have havg : productAverage w (insert i A) (productAnova w Finset.univ S f) =
           productAverage w {i} (productAverage w A (productAnova w Finset.univ S f)) := by
         funext x
@@ -72,7 +69,7 @@ lemma productAverage_anova_zero (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, 
     funext x
     rw [productAverage_union w hsum A {i}, hu]
   rw [productAnova_mean_zero w hsum Finset.univ S i hiS, productAverage_zero] at havg
-  exact havg.symm
+  simp_all
 
 lemma productFull_sum {β : Type*} (w : ∀ i, α i → ℝ) (I : Finset ι)
     (V : Finset β) (c : β → ℂ) (f : β → ProductSample α → ℂ) (x : ProductSample α) :
@@ -81,10 +78,6 @@ lemma productFull_sum {β : Type*} (w : ∀ i, α i → ℝ) (I : Finset ι)
   unfold productFull
   simp_rw [productAverage_sum, Finset.mul_sum]
   rw [Finset.sum_comm (s := I.powerset) (t := V)]
-  apply Finset.sum_congr rfl
-  intro v _
-  apply Finset.sum_congr rfl
-  intro U _
   ring
 
 lemma productFull_full_commute (w : ∀ i, α i → ℝ)
@@ -132,11 +125,11 @@ lemma productAnova_probe_selector (w : ∀ i, α i → ℝ)
   · rw [productAverage_anova_eq w hsum tail S ht]
     by_cases hI : I ⊆ S
     · rw [productFull_anova_eq w hsum I S hI]
-      simp [hI, ht]
+      simp_all
     · rw [productFull_anova_zero w hsum I S hI]
-      simp [hI]
+      simp_all
   · rw [productAverage_anova_zero w hsum tail S ht, productFull_zero]
-    simp [ht]
+    simp_all
 
 lemma productProbeProjection_energy (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (tail I : Finset ι) (f : ProductSample α → ℂ) :

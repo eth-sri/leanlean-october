@@ -6,7 +6,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalCommon
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
@@ -20,7 +20,7 @@ theorem heightCost_phase (t θ:ℝ):
   have ht:0≤‖t‖:=norm_nonneg t
   have hθ:0≤‖θ‖:=norm_nonneg θ
   have hh:1+‖t‖+2*Real.pi*‖θ‖≤(1+‖t‖)*(1+2*Real.pi)*(1+‖θ‖):=by
-    nlinarith [mul_nonneg hc ht,mul_nonneg ht hθ,mul_nonneg (mul_nonneg hc ht) hθ]
+    nlinarith [mul_nonneg (mul_nonneg hc ht) hθ]
   exact (mul_le_mul_of_nonneg_right hh (by positivity)).trans_eq (by ring)
 
 theorem mass_phase {lo hi:ℝ} (R:Finset (ℕ×ℕ))
@@ -45,8 +45,6 @@ theorem mass_phase {lo hi:ℝ} (R:Finset (ℕ×ℕ))
   rw [hmass]
   apply he.trans_eq
   simp only [profileMass,mul_pow,←pow_mul]
-  rw [show 4*J=2*J+2*J by omega,show 2*J=J+J by omega]
-  simp only [pow_add]
   ring
 end SevenEighths.CenteredMomentFiniteProfileExceptionalPhysical
 

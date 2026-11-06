@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Reflection.KernelWeights
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform
+open scoped Classical ContDiff
+open MeasureTheory InverseKernelSourceUniform
 noncomputable section
 
 lemma reflected_density_integrable (U W : ℝ→ℂ) (hU : Measurable U)
@@ -21,7 +21,7 @@ lemma reflected_density_integrable (U W : ℝ→ℂ) (hU : Measurable U)
   apply hi.mono' hm.aestronglyMeasurable
   apply Filter.Eventually.of_forall
   intro t
-  exact le_mul_of_one_le_left (norm_nonneg _) (one_le_pow₀ (by linarith [norm_nonneg t]))
+  exact le_mul_of_one_le_left (norm_nonneg _) (one_le_pow₀ (by simp))
 
 lemma kernel_mode_integrable (density : ℝ→ℂ) (hi : Integrable density)
     (windows : Fin 4→ℝ→ℂ) (QK QP Qn Qb k p n b : ℝ) :
@@ -64,8 +64,7 @@ theorem kernel_finite_contraction {κ : Type*} (source : Finset κ) (coeff value
   rw [← mul_assoc,mul_comm (coeff j) scalar,mul_assoc]
   apply congrArg (fun z : ℂ => scalar*z)
   rw [← integral_const_mul]
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun t => by dsimp only; ring)
+  grind
 
 end
 end SevenEighths.InverseReflectedPhase

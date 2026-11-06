@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Reflection.TupleMembers
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] [DecidableEq σ] {N a c : Eis} {mode : Bool}
-variable (G : PrimeFamily φ) (rows : Finset (Ideal Eis)) (hrows : ∀ K∈rows,Admissible K)
-    (tuples : Finset (σ→Ideal Eis)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] [DecidableEq σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
+variable (G : PrimeFamily φ) (rows : Finset (Ideal ActualEisensteinCubic.O)) (hrows : ∀ K∈rows,Admissible K)
+    (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
     (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i) (Hrow Hslot : ℝ)
 
 omit [DecidableEq σ] in

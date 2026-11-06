@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Reflection.ShellSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
-def reflectedNDyad (k : ℕ) : Finset (Ideal Eis) :=
+def reflectedNDyad (k : ℕ) : Finset (Ideal ActualEisensteinCubic.O) :=
   (dualIdealDyad k).filter CubicSieve.Admissible
 
-def reflectedBDyad (j : ℕ) : Finset (Ideal Eis) :=
+def reflectedBDyad (j : ℕ) : Finset (Ideal ActualEisensteinCubic.O) :=
   (dualIdealDyad j).filter (fun b => primaryGenerator b≠0)
 
 lemma reflectedNDyad_bounds (k : ℕ) : ∀ n∈reflectedNDyad k,
@@ -29,14 +28,14 @@ lemma reflectedBDyad_bounds (j : ℕ) : ∀ b∈reflectedBDyad j,
   intro b hb
   exact ⟨(Finset.mem_filter.mp hb).2,(dualIdealDyad_bounds j b (Finset.mem_filter.mp hb).1).2⟩
 
-lemma double_sum_coe (A B : Finset (Ideal Eis)) (f : Ideal Eis→Ideal Eis→ℂ) :
+lemma double_sum_coe (A B : Finset (Ideal ActualEisensteinCubic.O)) (f : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ) :
     (∑ n : A, ∑ b : B, f n.val b.val)=∑ n∈A, ∑ b∈B, f n b := by
-  rw [Finset.sum_coe_sort A (fun n : Ideal Eis => ∑ b : B, f n b.val)]
+  rw [Finset.sum_coe_sort A (fun n : Ideal ActualEisensteinCubic.O => ∑ b : B, f n b.val)]
   apply Finset.sum_congr rfl
   intro n hn
   exact Finset.sum_coe_sort B (f n)
 
-lemma sum_dual_mask (j k : ℕ) (f : Ideal Eis→Ideal Eis→ℂ) :
+lemma sum_dual_mask (j k : ℕ) (f : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ) :
     (∑ n : dualIdealDyad k, ∑ b : dualIdealDyad j,
       if CubicSieve.Admissible n.val ∧ primaryGenerator b.val≠0 then f n.val b.val else 0)=
       ∑ n : reflectedNDyad k, ∑ b : reflectedBDyad j, f n.val b.val := by
@@ -47,14 +46,14 @@ lemma sum_dual_mask (j k : ℕ) (f : Ideal Eis→Ideal Eis→ℂ) :
   apply Finset.sum_congr rfl
   intro n hn
   by_cases hn' : CubicSieve.Admissible n
-  · simp only [hn',true_and,ite_eq_left]
-  · simp only [hn',false_and,ite_false,Finset.sum_const_zero]
+  · simp_all
+  simp_all
 
-theorem literalDyadicBlock_eq_filtered_source (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+theorem literalDyadicBlock_eq_filtered_source (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
     (S : PrimeFamily σ) (jF : φ→ℕ)
     (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (u : Eisˣ) (i : ℕ×ℕ×ℕ) (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
+    (u : ActualEisensteinCubic.Oˣ) (i : ℕ×ℕ×ℕ) (QK QP : ℝ) (hQK : 0<QK) (hQP : 0<QP)
     (hKr : QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK)
     (hPr : QP/2≤(Ideal.absNorm (∏ i,S.ideal i):ℝ) ∧ (Ideal.absNorm (∏ i,S.ideal i):ℝ)≤QP)
     (W : ℝ→ℂ) (θ X : ℝ) :

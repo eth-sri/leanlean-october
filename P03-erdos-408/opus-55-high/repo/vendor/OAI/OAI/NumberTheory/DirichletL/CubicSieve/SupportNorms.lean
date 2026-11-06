@@ -9,33 +9,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,42 +34,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 open FirstPassCubeLabels (columnLog primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
@@ -127,7 +109,7 @@ theorem secondInputCoefficient_norm_le_test
       secondInputCoefficient p hg Ψ m c d (fun _ => 1) S * H S := by
     simp only [secondInputCoefficient, mul_one]
   rw [he, norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) ((secondInputCoefficient_norm_le p hg Ψ m c d S).trans (hΨ _))
+  exact mul_le_of_le_one_left (norm_nonneg _) ((secondInputCoefficient_norm_le p hg Ψ m c d S).trans (by grind))
 
 end
 section
@@ -138,25 +120,23 @@ theorem tail_radial_scalar_le (Y E n lengthScale H P : ℝ) (A : ℕ)
     (Y/n) * (P / ((min 1 (Y/(E*n^2)))^2 * (1+H)^A)) ≤
       Y*P*(1+lengthScale^3/Y)^2 / (1+H)^A := by
   have hn0 : 0 < n := lt_of_lt_of_le zero_lt_one hn
-  have he : 0 < E*n^2 := mul_pos hE (sq_pos_of_pos hn0)
+  have he : 0 < E*n^2 := by positivity
   have hs : 0 < Y/(E*n^2) := div_pos hY he
-  have hr : 0 ≤ lengthScale^3/Y := div_nonneg (pow_nonneg (zero_le_one.trans hL) _) hY.le
+  have hr : 0 ≤ lengthScale^3/Y := by positivity
   have hi : (min 1 (Y/(E*n^2)))⁻¹ ≤ 1+lengthScale^3/Y := by
     by_cases h : 1 ≤ Y/(E*n^2)
-    · rw [min_eq_left h, inv_one]
-      linarith
-    · rw [min_eq_right (le_of_lt (lt_of_not_ge h)), inv_div]
+    · simp_all
+    · rw [min_eq_right (by linarith), inv_div]
       exact (div_le_div_of_nonneg_right hden hY.le).trans (by linarith)
-  have hi0 : 0 ≤ (min 1 (Y/(E*n^2)))⁻¹ := inv_nonneg.mpr (le_min zero_le_one hs.le)
+  have hi0 : 0 ≤ (min 1 (Y/(E*n^2)))⁻¹ := by positivity
   have hi2 := pow_le_pow_left₀ hi0 hi 2
   have hyn : Y/n ≤ Y := div_le_self hY.le hn
   calc
     _ = (Y/n)*P*((min 1 (Y/(E*n^2)))⁻¹)^2 / (1+H)^A := by
-      simp only [div_eq_mul_inv, mul_inv_rev, inv_pow]
       ring
     _ ≤ _ := by
-      apply div_le_div_of_nonneg_right _ (pow_nonneg (by linarith) _)
-      exact mul_le_mul (mul_le_mul_of_nonneg_right hyn hP) hi2 (sq_nonneg _) (mul_nonneg hY.le hP)
+      apply div_le_div_of_nonneg_right _ (by positivity)
+      exact mul_le_mul (mul_le_mul_of_nonneg_right hyn hP) hi2 (sq_nonneg _) (by positivity)
 
 theorem sum_pair_indicator {α : Type*} (s : Finset α) (P : α → Prop) [DecidablePred P] (U : ℝ) :
     (∑ a ∈ s, ∑ b ∈ s, if P a ∧ P b then U else 0) =
@@ -167,12 +147,11 @@ theorem sum_pair_indicator {α : Type*} (s : Finset α) (P : α → Prop) [Decid
       apply Finset.sum_congr rfl
       intro a ha
       by_cases h : P a
-      · simp only [h, true_and, ite_true]
-      · simp only [h, false_and, ite_false, Finset.sum_const_zero]
+      · simp_all
+      simp_all
     _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul, pow_two]; ring
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -184,12 +163,10 @@ include hp hinj
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -197,13 +174,13 @@ open RayFourExpansion (RayCharacter)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem sqrt_scale_shell_upper (M B b : ℝ) (hM : 0 < M) (hB : 0 < B)
     (hb : B / 2 ≤ b) : Real.sqrt (M / b) ≤ 2 * Real.sqrt (M / B) := by
-  simpa only [one_mul, div_one] using principal_middle_prefactor_bound
+  simpa using principal_middle_prefactor_bound
     M B b 1 1 1 1 hM hB hb (by norm_num) le_rfl (by norm_num) le_rfl
 
 theorem original_middle_rectangle_upper (M B b D₁ D₂ d e U : ℝ)
@@ -212,7 +189,7 @@ theorem original_middle_rectangle_upper (M B b D₁ D₂ d e U : ℝ)
     (hcut : d * e ≤ U * Real.sqrt (M / b)) :
     D₁ * D₂ ≤ (2 * U) * Real.sqrt (M / B) := by
   calc
-    _ ≤ d * e := mul_le_mul hd he hD₂ (hD₁.trans hd)
+    _ ≤ d * e := mul_le_mul hd he hD₂ (by linarith)
     _ ≤ U * Real.sqrt (M / b) := hcut
     _ ≤ U * (2 * Real.sqrt (M / B)) :=
       mul_le_mul_of_nonneg_left (sqrt_scale_shell_upper M B b hM hB hb) hU
@@ -226,9 +203,9 @@ theorem dual_middle_rectangle_upper (M F B b N D₁ D₂ d e U : ℝ)
   have harg (z : ℝ) : F / (M * z) = (F / M) / z := by ring
   simp only [harg] at hcut ⊢
   have hh := original_middle_rectangle_upper (F / M) B b D₁ D₂ d e (U * N)
-    (div_pos hF hM) hB hb (mul_nonneg hU hN) hD₁ hD₂ hd he
-    (by simpa only [mul_assoc] using hcut)
-  simpa only [mul_assoc] using hh
+    (by positivity) hB hb (by positivity) hD₁ hD₂ hd he
+    (by linarith)
+  linarith
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]

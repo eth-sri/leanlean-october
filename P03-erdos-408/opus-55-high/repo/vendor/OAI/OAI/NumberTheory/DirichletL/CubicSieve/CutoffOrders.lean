@@ -9,31 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -53,38 +44,32 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace SecondPassArithmetic
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalUnitEuler
-open ActualEisensteinCubic
 open CompletedGauss (actualSextic)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -94,11 +79,11 @@ theorem sixth_roots_reduce_injective (P : Ideal ActualEisensteinCubic.O) [P.IsMa
     (hxy : Ideal.Quotient.mk P x=Ideal.Quotient.mk P y) : x=y := by
   let : Field (ActualEisensteinCubic.O⧸P) := Ideal.Quotient.field P
   have hs : x^2=y^2 := cubic_roots_reduce_injective P hg
-    (by simpa only [←pow_mul] using hx)
-    (by simpa only [←pow_mul] using hy)
-    (by simpa only [map_pow] using congrArg (fun z : ActualEisensteinCubic.O⧸P=>z^2) hxy)
+    (by grind)
+    (by grind)
+    (by simp_all)
   rcases (sq_eq_sq_iff_eq_or_eq_neg).mp hs with h|h
-  · exact h
+  · omega
   · have hy0 : Ideal.Quotient.mk P y≠0 := by
       intro hz
       have he := congrArg (Ideal.Quotient.mk P) hy
@@ -107,7 +92,7 @@ theorem sixth_roots_reduce_injective (P : Ideal ActualEisensteinCubic.O) [P.IsMa
     have he : -(Ideal.Quotient.mk P y)=Ideal.Quotient.mk P y := by
       simpa only [h,map_neg] using hxy
     have htwo : (2 : ActualEisensteinCubic.O⧸P)*Ideal.Quotient.mk P y=0 := by linear_combination -he
-    exact False.elim ((Ring.two_ne_zero hc) ((mul_eq_zero.mp htwo).resolve_right hy0))
+    exact False.elim ((Ring.two_ne_zero hc) (by grind))
 
 lemma unit_pow_six (u : ActualEisensteinCubic.Oˣ) : (u.val : ActualEisensteinCubic.O)^6=1 := by
   have h := pow_card_eq_one' (x:=u)
@@ -127,15 +112,15 @@ theorem actualSextic_unit_euler (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal
   obtain ⟨χ,hχ,hχ6,hreduce⟩ := hdata
   let v : (ActualEisensteinCubic.O⧸P)ˣ := Units.map (Ideal.Quotient.mk P).toMonoidHom u
   have hx : χ v.val ^ 6=1 := by
-    rw [←MulChar.pow_apply' _ (by decide : (6:ℕ)≠0),hχ6]
+    rw [←MulChar.pow_apply' _ (by positivity),hχ6]
     exact MulChar.one_apply v.isUnit
   have hy : (u.val^((Nat.card (ActualEisensteinCubic.O⧸P)-1)/6))^6=1 := by
     rw [←pow_mul,Nat.mul_comm, pow_mul,unit_pow_six,one_pow]
-  have he : χ v.val=u.val^((Nat.card (ActualEisensteinCubic.O⧸P)-1)/6) :=
+  have he :=
     sixth_roots_reduce_injective P hg hc hx hy (by simpa [v] using hreduce v)
   rw [hχ]
   change eisEmbedding (χ v.val)=_
-  exact congrArg eisEmbedding he
+  simp_all
 
 end CanonicalUnitEuler
 
@@ -143,7 +128,7 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 lemma kernel_mass_le_weighted_mass_add_core
     (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ)
@@ -163,8 +148,7 @@ lemma kernel_mass_le_weighted_mass_add_core
     by_cases hq : q∈K
     · simp only [Set.indicator_of_mem hq] at hh ⊢
       nlinarith
-    · simp only [Set.indicator_of_notMem hq,mul_zero,sub_zero,one_mul] at hh ⊢
-      exact hh
+    · simp_all
   have hh := integral_mono (hi.sub (hki.const_mul C)) hw hpoint
   simp only [Pi.sub_apply] at hh
   rw [integral_sub hi (hki.const_mul C),integral_const_mul,integral_indicator hK,
@@ -176,8 +160,8 @@ lemma kernel_compact_coercivity_extend
     (hcore : ∀f : kernelSmoothTests,‖kernelSmoothTestsToL2 f‖^2≤kernelDirichletEnergy f+
       C*‖kernelMassRestrictionCLM K hK (kernelSmoothTestsToL2 f)‖^2)
     (u : KernelEnergyGraph) :
-    ‖kernelEnergyMass u‖^2≤‖kernelEnergyGradient u‖^2+C*‖kernelEnergyMassRestriction K hK u‖^2 := by
-  exact kernelEnergyGraphCore_dense.induction_on u
+    ‖kernelEnergyMass u‖^2≤‖kernelEnergyGradient u‖^2+C*‖kernelEnergyMassRestriction K hK u‖^2 :=
+  kernelEnergyGraphCore_dense.induction_on u
     (isClosed_le (by fun_prop) (by fun_prop)) (fun f => by
       change ‖kernelSmoothTestsToL2 f‖^2≤‖kernelGradientToL2 f‖^2+
         C*‖kernelMassRestrictionCLM K hK (kernelSmoothTestsToL2 f)‖^2
@@ -198,7 +182,7 @@ lemma kernel_barrier_coercivity_of_ground_state
   intro f
   exact (kernel_mass_le_weighted_mass_add_core K hK.measurableSet C
     (kernelBarrierPotential 2 3) (kernelBarrierPotential_continuous 2 3 (by norm_num) (by norm_num))
-    hlow f).trans (add_le_add (hground f) le_rfl)
+    hlow f).trans (by grind)
 
 end
 
@@ -241,7 +225,7 @@ theorem ground_state_fderiv_inequality (f : E → ℂ) (u : E → ℝ) (x v : E)
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Classical Topology ContDiff Manifold
 namespace CubicEisenstein
 
 section
@@ -271,8 +255,8 @@ theorem kernelGroundStateTest_tsupport (φ : KernelQuotient → ℝ)
   apply closure_minimal _ (isClosed_tsupport f.1)
   intro q hq
   by_contra hh
-  have hz : f.1 q = 0 := image_eq_zero_of_notMem_tsupport hh
-  exact hq (by simp [hz])
+  have hz := image_eq_zero_of_notMem_tsupport hh
+  simp_all
 
 def kernelTruncatedWeight (χ φ : KernelQuotient → ℝ)
     (hχ : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℝ) ∞ χ) (hχK : HasCompactSupport χ)
@@ -312,7 +296,7 @@ theorem kernelTruncatedWeight_field_eq (χ φ : KernelQuotient → ℝ)
   filter_upwards [he] with q hq
   change χ (kernelEuclideanProjection q) = 1 at hq
   change ((χ (kernelEuclideanProjection q)*φ (kernelEuclideanProjection q) : ℝ) : ℂ) = _
-  rw [hq,one_mul]
+  simp_all
 
 theorem kernelTruncatedPotential_memLp (χ φ V : KernelQuotient → ℝ)
     (hχ : Continuous χ) (hχK : HasCompactSupport χ) (hφ : Continuous φ) (hV : Continuous V) :
@@ -323,18 +307,17 @@ theorem kernelTruncatedPotential_memLp (χ φ V : KernelQuotient → ℝ)
   apply HasCompactSupport.of_support_subset_isCompact hχK
   intro q hq
   by_contra hh
-  have hz : χ q = 0 := image_eq_zero_of_notMem_tsupport hh
-  exact hq (by simp [hz])
+  have hz := image_eq_zero_of_notMem_tsupport hh
+  simp_all
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ComplexConjugate
+open scoped Classical Topology ContDiff Manifold ComplexConjugate
 
 theorem ground_state_ofReal_fderiv {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (u : E → ℝ) (x v : E) (hu : DifferentiableAt ℝ u x) :
     fderiv ℝ (fun y => (u y : ℂ)) x v = (fderiv ℝ u x v : ℂ) := by
   change fderiv ℝ (Complex.ofRealCLM ∘ u) x v = _
-  rw [(Complex.ofRealCLM.hasFDerivAt.comp x hu.hasFDerivAt).fderiv]
-  rfl
+  simp [(Complex.ofRealCLM.hasFDerivAt.comp x hu.hasFDerivAt).fderiv]
 
 theorem ground_state_self_product (z : ℂ) : (star z*z).re = ‖z‖^2 := by
   simp only [Complex.sq_norm,Complex.normSq_apply,Complex.star_def,Complex.mul_re,
@@ -365,7 +348,7 @@ theorem kernelGroundState_pair_le_at
   let F : EuclideanSpatial → ℂ := kernelTestField f
   have hu : DifferentiableAt ℝ u p := (kernelRealLift_contDiffAt φ hφ p hp).differentiableAt (by simp)
   have hF : DifferentiableAt ℝ F p := (kernelTestField_contDiffAt f p hp).differentiableAt (by simp)
-  have hu0 : u p ≠ 0 := (hpos _).ne'
+  have hu0 : u p ≠ 0 := by grind
   have hG : DifferentiableAt ℝ (fun q => ‖F q‖^2/u q) p := by
     simpa only [div_eq_mul_inv,Pi.mul_apply,Pi.inv_apply] using! (hF.norm_sq (𝕜 := ℂ)).mul (hu.inv hu0)
   have hh (j : Fin 3) :
@@ -379,9 +362,7 @@ theorem kernelGroundState_pair_le_at
     change fderiv ℝ (fun q => ((‖F q‖^2/u q : ℝ) : ℂ)) p (euclideanCoordinateVector j) = _
     exact ground_state_ofReal_fderiv _ p _ hG
   rw [kernelDirichletPairDensity_euclidean _ _ p hp,kernelEnergyDensity_euclidean f p hp]
-  simp only [hh,hg,Complex.star_def,Complex.conj_ofReal,← Complex.ofReal_mul,
-    ← Complex.ofReal_pow,Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,
-    zero_mul,sub_zero,Complex.re_sum]
+  simp only [hh, hg, Complex.star_def, Complex.conj_ofReal, ← Complex.ofReal_pow, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, Complex.re_sum]
   apply mul_le_mul_of_nonneg_left _ (sq_nonneg _)
   apply Finset.sum_le_sum
   intro j hj
@@ -427,7 +408,7 @@ theorem kernel_ground_state_inequality (φ V : KernelQuotient → ℝ)
       kernelEuclideanProjection p ∈ tsupport g.1 →
       kernelCoordinateLaplacian h p = A (kernelEuclideanProjection p) := by
     intro p hp hpg
-    have hfmem : kernelEuclideanProjection p ∈ tsupport f.1 :=
+    have hfmem :=
       kernelGroundStateTest_tsupport φ hφ hpos f hpg
     have hlocal := hχone (kernelEuclideanProjection p) hfmem
     change positiveEuclideanLaplacian (kernelTestField h) p = _
@@ -438,33 +419,31 @@ theorem kernel_ground_state_inequality (φ V : KernelQuotient → ℝ)
   have hprod (q : KernelQuotient) : star (A q)*g.1 q = ((V q*‖f.1 q‖^2 : ℝ) : ℂ) := by
     change star ((χ q*V q*φ q : ℝ) : ℂ) * ((‖f.1 q‖^2/φ q : ℝ) : ℂ) = _
     by_cases hfzero : f.1 q = 0
-    · simp [hfzero]
-    · have hq : q ∈ tsupport f.1 := subset_tsupport f.1 hfzero
-      have hχq : χ q = 1 := (hχone q hq).eq_of_nhds
-      have hφq : φ q ≠ 0 := (hpos q).ne'
+    · simp_all
+    · have hq := subset_tsupport f.1 hfzero
+      have hχq := (hχone q hq).eq_of_nhds
+      have hφq := (hpos q).ne'
       simp only [Complex.star_def,Complex.conj_ofReal,← Complex.ofReal_mul,hχq,one_mul]
-      congr 1
-      field_simp
+      grind
   have hgreen : kernelDirichletForm h g =
       ((∫ q, V q*‖f.1 q‖^2 ∂integralQuotientVolume globalKubotaKernel : ℝ) : ℂ) := by
     rw [kernelDirichletForm_supported_equation h g A hA hcoord]
     simp_rw [hprod]
     exact integral_complex_ofReal
   have hbound : (∫ q, (kernelDirichletPairDensity h g q).re
-      ∂integralQuotientVolume globalKubotaKernel) ≤ kernelDirichletEnergy f := by
-    exact integral_mono (kernelDirichletPairDensity_integrable h g).re
+      ∂integralQuotientVolume globalKubotaKernel) ≤ kernelDirichletEnergy f :=
+    integral_mono (kernelDirichletPairDensity_integrable h g).re
       (kernelQuotientEnergyDensity_integrable f)
       (fun q => kernelGroundState_pair_le χ φ hχ hχK hφ hpos f hχone q)
   have hreal : (∫ q, (kernelDirichletPairDensity h g q).re
       ∂integralQuotientVolume globalKubotaKernel) = (kernelDirichletForm h g).re := by
     simpa only [kernelDirichletForm,RCLike.re_to_complex] using integral_re (kernelDirichletPairDensity_integrable h g)
-  rw [hreal,hgreen,Complex.ofReal_re] at hbound
-  exact hbound
+  simp_all
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Classical Topology ContDiff Manifold
 
 theorem kernel_actual_barrier_ground_state (f : kernelSmoothTests) :
     (∫q,kernelBarrierPotential 2 3 q*‖f.1 q‖^2∂integralQuotientVolume globalKubotaKernel)≤

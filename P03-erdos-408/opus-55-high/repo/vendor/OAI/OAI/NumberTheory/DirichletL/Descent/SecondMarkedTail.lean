@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InversePrincipalEnergy InverseSecondPrincipalCaller
+open scoped Classical SchwartzMap
+open FirstPassCubeLabels
+open InversePrincipalEnergy
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ Cm : ℝ, 0 < Cm ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]

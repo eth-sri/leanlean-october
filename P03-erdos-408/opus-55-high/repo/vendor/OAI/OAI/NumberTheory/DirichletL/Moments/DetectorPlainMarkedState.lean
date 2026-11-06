@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawBranches
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate Topology ContDiff
+open scoped Classical SchwartzMap ComplexConjugate
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMarkedState
@@ -18,24 +18,23 @@ open HeckeFamily HeckeDyadic HeckeDetectorRawFiber HeckeDetectorBatch HeckePrime
 open HeckeInverseAmplification HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 open CenteredMomentDetectorPlainStateDictionary CenteredMomentDetectorPlainExceptional
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorPlainCapacity
-open CenteredMomentDetectorPlainSlotProfile CenteredMomentDetectorEnergyInitialState
+open CenteredMomentDetectorEnergyInitialState
 open CenteredMomentDetectorDictionary CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentInductionEnergy CenteredMomentRetainedEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource
+open CenteredMomentInductionEnergy
+open CenteredMomentNaturalFixedRaySource
 open ConcretePrimeRowBridge ProbeHighRowFamily
-local notation "O" => HeckeFamily.O
-variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
+variable {M:Ideal HeckeFamily.O}{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
 theorem source_slot_coefficient (S:ProbeFinalAssembly.SourceData D)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)
     (hprofile:∀s x,F.profile s x=S.W x)(η:Character)(s:Slot)
-    (hreal:(F.external s).re=17/50)(hU:0<U)(I:Ideal O):
+    (hreal:(F.external s).re=17/50)(hU:0<U)(I:Ideal HeckeFamily.O):
     idealCoeff η.inverse I*slotWindow F s ((I.absNorm:ℝ)/(U^(F.widths s)))=
       idealCoeff η.inverse I*annularWeight (fun x=>conj (S.W x))
         (U^(F.widths s)) (33/50) (-(F.external s).im) I := by
-  have he:=physical_annular_all S η (U^(F.widths s)) (Real.rpow_pos_of_pos hU _)
+  have he:=physical_annular_all S η (U^(F.widths s)) (by positivity)
     (F.external s) I
   rw [hreal] at he
   norm_num at he
@@ -44,7 +43,7 @@ theorem source_slot_coefficient (S:ProbeFinalAssembly.SourceData D)
 theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)
     (hprofile:∀s x,F.profile s x=S.W x)(hupper:∀s,F.upper s=2)
-    (η:Character)(Q:Ideal O)(selected:Finset Slot)
+    (η:Character)(Q:Ideal HeckeFamily.O)(selected:Finset Slot)
     (hreal:∀s∈selected,(F.external s).re=17/50)
     (Φ:𝓢(ℝ,ℂ))(bΦ δ:ℝ)(hU:1≤U)(hδ:0≤δ)
     (hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)(hp:∀x,0≤(Φ x).re)
@@ -68,7 +67,7 @@ theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
         annularWeight (fun x=>conj (S.W x)) (U^(F.widths s.val)) (33/50)
           (-(F.external s.val).im) I):=by
     funext s I
-    exact source_slot_coefficient S F hprofile η s.val (hreal s.val s.property)
+    exact source_slot_coefficient S F hprofile η s.val (by grind)
       (zero_lt_one.trans_le hU) I
   rw [hc]
   simp only [hupper,plainProfile_eq_detectorSchwartz,initialState,NaturalState.mask,
@@ -78,7 +77,7 @@ theorem retained_eq_initial_energy (S:ProbeFinalAssembly.SourceData D)
 theorem plain_length_eq [NeZero M]
     (F:Fiber M H Label Slot U a ε tstar T allowance i)(hU:1<U):
     length U (U^F.m)=F.m := by
-  have hm:0≤F.m:=(F.lengths hU).2.2.2.2
+  have hm:=(F.lengths hU).2.2.2.2
   rw [length,max_eq_right (Real.one_le_rpow hU.le hm),
     Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
 
@@ -134,7 +133,7 @@ theorem source_batch_marked_initial (S:ProbeFinalAssembly.SourceData D):
   intro rows hrows d hd a ε tstar T allowance i B hB hdata hprofile hwidth hupper hreal
     bin label J K hne selected hselected F hcap η₀
   have hdpos:0<d:=by linarith
-  have hU:1<Z^d:=Real.one_lt_rpow hz.1 hdpos
+  have hU:=Real.one_lt_rpow hz.1 hdpos
   have hη:(η₀.modulus.absNorm:ℝ)≤(Z^d)^δ:=hz.2 label d hd
   let state:=initialState η₀ (internalQ (sourceFixedIdeal S) η₀) radialMajorant bΦ
     (Z^d) δ hU.le hδ.le hs radialMajorant_nonneg hη

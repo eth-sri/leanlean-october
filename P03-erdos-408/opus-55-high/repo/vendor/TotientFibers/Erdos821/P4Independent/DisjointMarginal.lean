@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.DisjointMarginalTask
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Indep
@@ -65,17 +64,17 @@ lemma partialProductWeight_join (w : ∀ i, α i → ℝ)
       partialProductWeight w S a * partialProductWeight w T b := by
   let eS : {i : {i // i ∈ S ∪ T} // i.val ∈ S} ≃ {i // i ∈ S} := {
     toFun := fun z => ⟨z.val.val, z.property⟩
-    invFun := fun z => ⟨⟨z.val, Finset.mem_union.mpr (Or.inl z.property)⟩, z.property⟩
-    left_inv := by intro z; rfl
-    right_inv := by intro z; rfl
+    invFun := fun z => ⟨⟨z.val, by simp⟩, z.property⟩
+    left_inv := by grind
+    right_inv := by grind
   }
   let eT : {i : {i // i ∈ S ∪ T} // i.val ∉ S} ≃ {i // i ∈ T} := {
-    toFun := fun z => ⟨z.val.val, (Finset.mem_union.mp z.val.property).resolve_left z.property⟩
-    invFun := fun z => ⟨⟨z.val, Finset.mem_union.mpr (Or.inr z.property)⟩, by
+    toFun := fun z => ⟨z.val.val, by grind⟩
+    invFun := fun z => ⟨⟨z.val, by simp⟩, by
       intro hs
       exact (Finset.disjoint_left.mp hST) hs z.property⟩
-    left_inv := by intro z; rfl
-    right_inv := by intro z; rfl
+    left_inv := by grind
+    right_inv := by grind
   }
   have hs :
       (∏ z : {i : {i // i ∈ S ∪ T} // i.val ∈ S},
@@ -136,9 +135,8 @@ theorem DisjointMarginalTask_proof : DisjointMarginalTask := by
       have hc : joinPartial S T (e c).1 (e c).2 = c := by
         change (partialUnionEquiv S T hST).invFun
           ((partialUnionEquiv S T hST).toFun c) = c
-        exact (partialUnionEquiv S T hST).left_inv c
-      rw [hc] at hw
-      rw [hw]
+        exact by simp
+      grind
 
 end
 

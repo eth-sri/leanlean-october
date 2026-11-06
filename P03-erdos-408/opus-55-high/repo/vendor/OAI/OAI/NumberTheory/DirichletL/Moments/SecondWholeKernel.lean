@@ -9,34 +9,32 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstScale
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondWholeKernel
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentScale CenteredMomentSmooth
-open CenteredMomentFirstWholeKernel CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstWholeKernel
 
-def secondEffectiveScale (C D : Ideal O) (A : O) (K : ℝ) : ℝ :=
+def secondEffectiveScale (C D : Ideal ActualEisensteinCubic.O) (A : ActualEisensteinCubic.O) (K : ℝ) : ℝ :=
   K*‖eisEmbedding A‖^2/((Ideal.absNorm C:ℝ)*(Ideal.absNorm D:ℝ))
 
-theorem secondEffectiveScale_pos (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (A : O) (hA : A≠0) (K : ℝ) (hK : 0<K) : 0<secondEffectiveScale C D A K := by
+theorem secondEffectiveScale_pos (C D : Ideal ActualEisensteinCubic.O) (hC : C≠0) (hD : D≠0)
+    (A : ActualEisensteinCubic.O) (hA : A≠0) (K : ℝ) (hK : 0<K) : 0<secondEffectiveScale C D A K := by
   apply div_pos (mul_pos hK (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hA))))
   exact mul_pos (CenteredMomentFirstScale.norm_pos C hC) (CenteredMomentFirstScale.norm_pos D hD)
 
-theorem primary_norm_sq (I : Ideal O) (hI : Supported I) :
+theorem primary_norm_sq (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     ‖eisEmbedding (primaryGenerator I)‖^2=(Ideal.absNorm I:ℝ) := by
   rw [eisEmbedding_norm_sq_eq_absNorm_span,primary_span_supported I hI]
 
-theorem second_kernel_argument (C D a b : Ideal O)
+theorem second_kernel_argument (C D a b : Ideal ActualEisensteinCubic.O)
     (hC : Supported C) (hD : Supported D) (ha : Supported a) (hb : Supported b)
-    (A h : O) (K : ℝ) :
+    (A h : ActualEisensteinCubic.O) (K : ℝ) :
     K*‖eisEmbedding (A*h)‖^2/
       ‖eisEmbedding (primaryGenerator (C*a)*primaryGenerator (D*b))‖^2=
       secondEffectiveScale C D A K*‖eisEmbedding h‖^2/((Ideal.absNorm a:ℝ)*(Ideal.absNorm b:ℝ)) := by
-  simp only [map_mul,norm_mul,mul_pow,primary_norm_sq (C*a) ((supported_mul_iff _ _).mpr ⟨hC,ha⟩),
-    primary_norm_sq (D*b) ((supported_mul_iff _ _).mpr ⟨hD,hb⟩),map_mul,Nat.cast_mul,secondEffectiveScale]
+  simp only [norm_mul, mul_pow, primary_norm_sq (C*a) ((supported_mul_iff _ _).mpr ⟨hC,ha⟩), primary_norm_sq (D*b) ((supported_mul_iff _ _).mpr ⟨hD,hb⟩), map_mul, Nat.cast_mul, secondEffectiveScale]
   ring
 
 theorem common_normalized_kernel (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -51,15 +49,15 @@ theorem common_normalized_kernel (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ)
   rw [wholeKernel_actual W V k H a b K₀ H₀ A₀ B₀ hk hH ha hb hK₀ hH₀ hA₀ hB₀]
   rw [Real.sqrt_mul hC.le a,Real.sqrt_mul hD.le b]
   simp only [Complex.ofReal_mul,windows]
-  have hc : (Real.sqrt C:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
-  have hd : (Real.sqrt D:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
-  have haa : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hbb : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  have hc := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hC).ne'
+  have hd := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hD).ne'
+  have haa := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
+  have hbb := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
   field_simp
 
-theorem second_frequency_whole_kernel (C D a b : Ideal O)
+theorem second_frequency_whole_kernel (C D a b : Ideal ActualEisensteinCubic.O)
     (hC : Supported C) (hD : Supported D) (ha : Supported a) (hb : Supported b)
-    (A h : O) (hA : A≠0) (hh : h≠0) (K : ℝ) (hK : 0<K)
+    (A h : ActualEisensteinCubic.O) (hA : A≠0) (hh : h≠0) (K : ℝ) (hK : 0<K)
     (F : ℂ) (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ → ℂ) (K₀ H₀ A₀ B₀ : ℝ)
     (hK₀ : 0<K₀) (hH₀ : 0<H₀) (hA₀ : 0<A₀) (hB₀ : 0<B₀) :
     let k := secondEffectiveScale C D A K
@@ -82,7 +80,7 @@ theorem second_frequency_whole_kernel (C D a b : Ideal O)
     (CenteredMomentFirstScale.norm_pos a ha.1) (CenteredMomentFirstScale.norm_pos b hb.1)
     (CenteredMomentFirstScale.norm_pos C hC.1) (CenteredMomentFirstScale.norm_pos D hD.1)
     hK₀ hH₀ hA₀ hB₀
-  convert congrArg (fun z : ℂ => F*z) he using 1 <;> ring
+  grind
 
 end SevenEighths.CenteredMomentSecondWholeKernel
 

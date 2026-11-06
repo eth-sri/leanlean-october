@@ -40,8 +40,7 @@ private theorem integrable_inv_one_add_abs_div_sq {X : ℝ} (hX : 0 < X) :
     have hsq : (τ / X) ^ 2 = (|τ| / X) ^ 2 := by rw [div_pow, div_pow, sq_abs]
     rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
     refine inv_anti₀ (by positivity) ?_
-    rw [hsq]
-    nlinarith
+    linarith
 
 /-- `(1 + |u|)^{-2}` is integrable. -/
 private theorem integrable_inv_one_add_abs_sq :
@@ -54,7 +53,7 @@ private theorem integral_inv_one_add_abs_sq_le : ∫ u : ℝ, ((1 + |u|) ^ 2)⁻
   refine integral_mono integrable_inv_one_add_abs_sq integrable_inv_one_add_sq fun u => ?_
   refine inv_anti₀ (by positivity) ?_
   rw [← sq_abs u]
-  nlinarith [abs_nonneg u]
+  grind
 
 /-- On `[-T, T]` a continuous set integral is the interval integral. -/
 private theorem integral_Icc_eq_intervalIntegral (f : ℝ → ℝ) {T : ℝ} (hT : 0 ≤ T) :
@@ -99,8 +98,8 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
     rw [Function.onFun, Set.disjoint_left]
     intro τ hi hj
     rcases lt_or_gt_of_ne hij with h | h
-    · linarith [hle i j h, hi.2, hj.1]
-    · linarith [hle j i h, hi.1, hj.2]
+    · grind
+    · grind
   have hsum := hasSum_integral_iUnion (fun j => measurableSet_Ico) hdisj
     (by rw [hcover]; exact hgi.integrableOn)
   rw [hcover, integral_Ici_eq_integral_Ioi] at hsum
@@ -113,13 +112,13 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
   have hpt : ∀ τ ∈ s j, g τ ≤ (X / P) ^ 2 * f τ := by
     intro τ hτ
     have h1 : P / X ≤ 1 + |τ| / X := by
-      rw [abs_of_pos (hP0.trans_le hτ.1)]
+      rw [abs_of_pos (by grind)]
       have := div_le_div_of_nonneg_right hτ.1 hX.le
       linarith
     refine mul_le_mul_of_nonneg_right ?_ (hf0 τ)
     calc ((1 + |τ| / X) ^ 2)⁻¹ ≤ ((P / X) ^ 2)⁻¹ :=
           inv_anti₀ (by positivity) (pow_le_pow_left₀ (by positivity) h1 2)
-      _ = (X / P) ^ 2 := by rw [← inv_pow, inv_div]
+      _ = (X / P) ^ 2 := by grind
   calc ∫ τ in s j, g τ ≤ ∫ τ in s j, (X / P) ^ 2 * f τ :=
         setIntegral_mono_on hgi.integrableOn
           ((hf.const_mul _).integrableOn_Icc.mono_set Set.Ico_subset_Icc_self) measurableSet_Ico
@@ -129,17 +128,13 @@ theorem integral_Ioi_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : ∀ τ,
           intervalIntegral.integral_of_le (by linarith)]
     _ ≤ (X / P) ^ 2 * (M * (1 + P / X)) := by
         gcongr
-        have h := hM P (2 ^ (j + 1) * T) (by linarith)
-        rwa [hlen] at h
+        grind
     _ ≤ (X / P) ^ 2 * (M * (2 * P / X)) := by
         gcongr
         have h1 : 1 ≤ P / X := (one_le_div hX).2 hXP
-        have h2 : 2 * P / X = P / X + P / X := by ring
-        linarith
+        grind
     _ = 4 * M * X / T / 2 / 2 ^ j := by
-        rw [hP]
-        field_simp
-        ring
+        grind
 
 /-- The two-sided `τ`-tail: `∫_{|τ| > T} (1 + |τ|/X)^{-2} f ≤ 8 M X / T` for `T ≥ X`. The left
 tail is the right tail of `τ ↦ f(-τ)`. -/
@@ -162,7 +157,7 @@ theorem integral_compl_Icc_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : �
     intro τ h₁ h₂
     rw [Set.mem_Iio] at h₁
     rw [Set.mem_Ioi] at h₂
-    linarith [hX.trans_le hXT]
+    linarith
   rw [hcompl, setIntegral_union hdisj measurableSet_Ioi hgi.integrableOn hgi.integrableOn]
   -- reflect the left tail
   have hl : ∫ τ in Set.Iio (-T), ((1 + |τ| / X) ^ 2)⁻¹ * f τ =
@@ -172,14 +167,13 @@ theorem integral_compl_Icc_mul_le {f : ℝ → ℝ} (hf : Continuous f) (hf0 : �
   have hM' : ∀ a b, a ≤ b → ∫ τ in a..b, f (-τ) ≤ M * (1 + (b - a) / X) := by
     intro a b hab
     rw [intervalIntegral.integral_comp_neg]
-    calc ∫ τ in -b..-a, f τ ≤ M * (1 + (-a - -b) / X) := hM _ _ (by linarith)
+    calc ∫ τ in -b..-a, f τ ≤ M * (1 + (-a - -b) / X) := by grind
       _ = M * (1 + (b - a) / X) := by ring
   rw [hl]
   have h₁ := integral_Ioi_mul_le (f := fun τ => f (-τ)) (hf.comp continuous_neg)
     (fun τ => hf0 _) (fun τ => hfF _) hX hXT hM'
   have h₂ := integral_Ioi_mul_le hf hf0 hfF hX hXT hM
-  refine (add_le_add h₁ h₂).trans (le_of_eq ?_)
-  ring
+  grind
 
 /-! ### The two regions -/
 
@@ -206,7 +200,7 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
     intro a b hab
     rw [intervalIntegral.integral_comp_sub_right (fun τ => g τ ^ 2)]
     calc ∫ τ in (a - s)..(b - s), g τ ^ 2 ≤ M * (1 + (b - s - (a - s)) / X) :=
-          hM _ _ (by linarith)
+          by grind
       _ = M * (1 + (b - a) / X) := by ring
   -- integrability of everything in sight
   have hdom : ∀ φ : ℝ → ℝ, Continuous φ → (∀ τ, 0 ≤ φ τ) → (∀ τ, φ τ ≤ B₀ ^ 2) →
@@ -214,8 +208,8 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
     intro φ hφ hφ0 hφB
     refine (hki.mul_const (B₀ ^ 2)).mono' (hkc.mul hφ).aestronglyMeasurable
       (Filter.Eventually.of_forall fun τ => ?_)
-    rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hk0 τ) (hφ0 τ))]
-    exact mul_le_mul_of_nonneg_left (hφB τ) (hk0 τ)
+    rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hk0 τ) (by grind))]
+    exact mul_le_mul_of_nonneg_left (by grind) (hk0 τ)
   have hsqB : ∀ τ, g τ ^ 2 ≤ B₀ ^ 2 := fun τ => pow_le_pow_left₀ (hg0 τ) (hgB τ) 2
   have hhi : Integrable fun τ => k τ * (g τ * gs τ) :=
     hdom _ (hg.mul hgsc) (fun τ => mul_nonneg (hg0 _) (hg0 _)) fun τ => by
@@ -223,7 +217,7 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
   have hi₁ : Integrable fun τ => k τ * g τ ^ 2 :=
     hdom _ (hg.pow 2) (fun τ => sq_nonneg _) hsqB
   have hi₂ : Integrable fun τ => k τ * gs τ ^ 2 :=
-    hdom _ (hgsc.pow 2) (fun τ => sq_nonneg _) fun τ => hsqB _
+    hdom _ (hgsc.pow 2) (fun τ => sq_nonneg _) (by grind)
   rw [← integral_add_compl measurableSet_Icc hhi]
   -- on `[-T, T]`: `k ≤ 1` and `2 g g' ≤ ε g² + ε⁻¹ g'²`
   have hmain : ∫ τ in Set.Icc (-T) T, k τ * (g τ * gs τ) ≤
@@ -251,7 +245,7 @@ theorem integral_mul_shift_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ �
             integral_Icc_eq_intervalIntegral _ hT]
       _ ≤ ε / 2 * E + ε⁻¹ / 2 * (M * (1 + (T - -T) / X)) :=
           add_le_add (mul_le_mul_of_nonneg_left hE (by positivity))
-            (mul_le_mul_of_nonneg_left (hMs _ _ (by linarith)) (by positivity))
+            (mul_le_mul_of_nonneg_left (by grind) (by positivity))
       _ = (ε * E + ε⁻¹ * (M * (1 + 2 * T / X))) / 2 := by ring
   -- on `|τ| > T`: `2 g g' ≤ g² + g'²` and the tail twice
   have htail : ∫ τ in (Set.Icc (-T) T)ᶜ, k τ * (g τ * gs τ) ≤ 8 * M * X / T := by
@@ -295,7 +289,7 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
     rw [intervalIntegral.integral_same, sub_self, zero_div, add_zero, mul_one] at h
     exact h
   have hE0 : 0 ≤ E :=
-    (intervalIntegral.integral_nonneg (by linarith) fun τ _ => sq_nonneg (g τ)).trans hE
+    (intervalIntegral.integral_nonneg (by linarith) fun τ _ => by positivity).trans hE
   set k₁ : ℝ → ℝ := fun τ => ((1 + |τ| / X) ^ 2)⁻¹ with hk₁
   set k₂ : ℝ → ℝ := fun u => ((1 + |u|) ^ 2)⁻¹ with hk₂
   have hk₁c : Continuous k₁ := Continuous.inv₀ (by fun_prop) fun τ => by positivity
@@ -319,16 +313,14 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
       (Filter.Eventually.of_forall fun q => ?_)
     have h0 : 0 ≤ k₁ q.1 * k₂ (q.1 + q.2) := by positivity
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg h0 (mul_nonneg (hg0 _) (hg0 _)))]
-    exact mul_le_mul_of_nonneg_left (hgg _ _) h0
+    exact mul_le_mul_of_nonneg_left (by grind) h0
   rw [Measure.volume_eq_prod]
   refine ⟨hFi, ?_⟩
   -- substitute `σ = s - τ`, then integrate in `τ` first
   set H : ℝ → ℝ → ℝ := fun τ s => k₂ s * (k₁ τ * (g τ * g (τ - s))) with hH
   have hinner : ∀ τ, ∫ σ, F (τ, σ) = ∫ s, H τ s := fun τ => by
     rw [← integral_sub_right_eq_self (fun σ => F (τ, σ)) τ]
-    congr 1 with s
-    simp only [hF, hH, add_sub_cancel, neg_sub]
-    ring
+    grind
   have hHi : Integrable (Function.uncurry H) (volume.prod volume) := by
     have hHc : Continuous (Function.uncurry H) :=
       (hk₂c.comp continuous_snd).mul ((hk₁c.comp continuous_fst).mul
@@ -340,7 +332,7 @@ theorem integral_kernel_mul_le {g : ℝ → ℝ} (hg : Continuous g) (hg0 : ∀ 
     rw [Real.norm_eq_abs, abs_of_nonneg (by positivity [hg0 q.1, hg0 (q.1 - q.2)])]
     calc k₂ q.2 * (k₁ q.1 * (g q.1 * g (q.1 - q.2))) =
         (k₁ q.1 * k₂ q.2) * (g q.1 * g (q.1 - q.2)) := by ring
-      _ ≤ (k₁ q.1 * k₂ q.2) * B₀ ^ 2 := mul_le_mul_of_nonneg_left (hgg _ _) h0
+      _ ≤ (k₁ q.1 * k₂ q.2) * B₀ ^ 2 := mul_le_mul_of_nonneg_left (by grind) h0
   rw [integral_prod F hFi]
   simp only [hinner]
   rw [integral_integral_swap hHi]

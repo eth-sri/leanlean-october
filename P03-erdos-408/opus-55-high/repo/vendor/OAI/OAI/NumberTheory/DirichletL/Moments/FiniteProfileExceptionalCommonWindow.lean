@@ -12,21 +12,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
-open Filter MeasureTheory
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope
-open CenteredMomentCommonExceptionalCost
-open CenteredMomentCommonPairedSource CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalSourceShell CenteredMomentCommonWindowColumn
-open CenteredMomentHeckeColumnWindow CenteredMomentSmooth
-open CenteredMomentSecondHeightFamily CenteredMomentLogDyadic
-open CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
-open CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u}[Fintype ι][DecidableEq ι]

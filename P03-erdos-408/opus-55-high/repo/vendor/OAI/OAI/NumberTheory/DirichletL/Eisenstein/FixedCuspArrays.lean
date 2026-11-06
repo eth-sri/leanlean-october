@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,47 +30,39 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped Classical ContDiff MatrixGroups
 
-open CompletedGauss ConcreteTraceCRT
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma sourceCuspCoefficients_full_support (j:Fin 3) (h:Eis) (hh:h≠0)
@@ -137,7 +116,7 @@ lemma SourceCuspDatum.smoothedKernel_full_index (d:SourceCuspDatum) (W:ℝ→ℂ
   have he:=sourceCuspRadialCoefficient_tsum_full_index d.index d.dualPoint
     (fun h=>CubicReflectionKernel.paperKernel (Vstar W)
       (X*sourceCuspRadialLength h/(27*(sourceCuspScale d.index)^2*d.heightScale^2)))
-  simpa only [mul_comm] using he
+  grind
 
 lemma SourceCuspDatum.smoothedKernel_full_index_norm_summable
     (d:SourceCuspDatum) (W:ℝ→ℂ) (v0 v1:ℝ) (hv0:0<v0)
@@ -156,19 +135,14 @@ lemma SourceCuspDatum.smoothedKernel_full_index_norm_summable
     (by have := sourceCuspScale_pos d.index; have := d.heightScale_pos; positivity)
   have hp:=hs.comp_injective thetaFullFrequency_injective
   apply hp.congr
-  intro p
-  exact congrArg (fun y:ℝ=>‖sourceCuspRadialCoefficient d.index d.dualPoint (thetaFullFrequency p)*
-    CubicReflectionKernel.paperKernel (Vstar W) y‖)
-    (by ring :
-      X/(27*(sourceCuspScale d.index)^2*d.heightScale^2)*sourceCuspRadialLength (thetaFullFrequency p)=
-        X*sourceCuspRadialLength (thetaFullFrequency p)/(27*(sourceCuspScale d.index)^2*d.heightScale^2))
+  grind
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 def fixedCuspCoefficientBound : ℝ :=
@@ -189,7 +163,7 @@ def fixedCuspArrayWeight (m:ℕ) (J:Ideal Eis) : ℝ :=
 lemma fixedCuspArrayWeight_pos (m:ℕ) (J:Ideal Eis) (hJ:primaryGenerator J≠0) :
     0<fixedCuspArrayWeight m J := by
   rw [fixedCuspArrayWeight,←primaryGenerator_norm J hJ]
-  exact mul_pos (Real.rpow_pos_of_pos (by norm_num) _) (norm_pos_iff.mpr (eisEmbedding_ne_zero hJ))
+  exact mul_pos (by positivity) (norm_pos_iff.mpr (eisEmbedding_ne_zero hJ))
 
 lemma sourceCuspCoefficients_squarefree_cube_bound (j:Fin 3) (u:Eisˣ) (m:ℕ)
     (I J:Ideal Eis) (helig:fixedCuspArrayEligible I J) :
@@ -247,8 +221,7 @@ lemma fixedConjugateCuspArray_reconstruct (j:Fin 3) (u:Eisˣ) (m:ℕ) (I J:Ideal
 end CubicEisenstein
 
 section
-open scoped BigOperators Classical
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
 namespace IdealGaussCRT
 open CubicEisenstein
@@ -278,7 +251,7 @@ lemma frequencyRow_units (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   intro h hh
   ring_nf
 
-open ActualEisensteinCubic CompletedGauss
+open CompletedGauss
 noncomputable local instance quotientFieldFrequency (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] :
     Field (ActualEisensteinCubic.O⧸P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeFrequency (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] :
@@ -291,11 +264,11 @@ theorem canonical_frequencyRow_units (P : Ideal ActualEisensteinCubic.O) [P.IsMa
       (((actualSextic P hgood)⁻¹)^2) σ *
         phase (actualSextic P hgood) ψ j ε*bracket (actualSextic P hgood) j x := by
   rw [frequencyRow_units]
-  simpa only [actualSextic] using canonical_A5_normalized P hgood hchar ψ hψ j hj σ ε x
+  simpa using canonical_A5_normalized P hgood hchar ψ hψ j hj σ ε x
 
 end
 
-open ActualEisensteinCubic CubicEisenstein IdealGaussCRT CompletedGauss
+open CubicEisenstein CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance quotientFintypeCrt (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
@@ -304,25 +277,22 @@ end LocalReflectionBrackets
 end
 
 namespace CubicEisenstein
-open scoped Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups
 
-open CubicKubota EisensteinCuspModThree ConcreteTraceCRT
+open CubicKubota EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma upper_right_removed_bottom (M T:SL(2,Eis)) (hT:T 1 0=0) :
     (M*T⁻¹) 1 0=M 1 0*T 1 1 := by
-  simp [Matrix.SpecialLinearGroup.coe_mul,Matrix.SpecialLinearGroup.coe_inv,
-    Matrix.adjugate_fin_two,Matrix.mul_apply,Fin.sum_univ_two,hT]
+  simp [Matrix.adjugate_fin_two, Matrix.mul_apply, hT]
 
 lemma upper_right_removed_top (M T:SL(2,Eis)) (hT:T 1 0=0) :
     (M*T⁻¹) 0 0=M 0 0*T 1 1 := by
-  simp [Matrix.SpecialLinearGroup.coe_mul,Matrix.SpecialLinearGroup.coe_inv,
-    Matrix.adjugate_fin_two,Matrix.mul_apply,Fin.sum_univ_two,hT]
+  simp [Matrix.adjugate_fin_two, Matrix.mul_apply, hT]
 
 lemma upper_right_removed_last (M T:SL(2,Eis)) :
     (M*T⁻¹) 1 1= -M 1 0*T 0 1+M 1 1*T 0 0 := by
-  simp [Matrix.SpecialLinearGroup.coe_mul,Matrix.SpecialLinearGroup.coe_inv,
-    Matrix.adjugate_fin_two,Matrix.mul_apply,Fin.sum_univ_two]
+  simp [Matrix.adjugate_fin_two, Matrix.mul_apply]
 
 lemma upper_diagonal_product (T:SL(2,Eis)) (hT:T 1 0=0) : T 0 0*T 1 1=1 := by
   have hd:=T.property
@@ -381,7 +351,7 @@ lemma datum_heightScale (h:((g:SL(2,Eis))*H) 1 0≠0) :
     rcases s.lower_unit with ⟨u,hu⟩
     rw [←hu]
     exact GaussGeneratorTransport.norm_eisEmbedding_unit u
-  rw [hn,mul_one]
+  simp_all
 
 lemma datum_dualPoint (h:((g:SL(2,Eis))*H) 1 0≠0) :
     (s.datum g h).dualPoint=
@@ -395,10 +365,7 @@ lemma datum_dualPoint (h:((g:SL(2,Eis))*H) 1 0≠0) :
   have hd:eisEmbedding (s.upper 0 0)*eisEmbedding (s.upper 1 1)=1 := by
     rw [←map_mul,upper_diagonal_product _ s.lower_zero,map_one]
   have hc:=eisEmbedding_ne_zero h
-  have ht:=eisEmbedding_ne_zero s.lower_unit.ne_zero
-  field_simp [hc,ht]
-  linear_combination (eisEmbedding (s.upper 0 0)*eisEmbedding (((g:SL(2,Eis))*H) 1 1)-
-    eisEmbedding (((g:SL(2,Eis))*H) 1 0)*eisEmbedding (s.upper 0 1))*hd
+  grind
 
 lemma datum_multiplier (h:((g:SL(2,Eis))*H) 1 0≠0) :
     (s.datum g h).multiplier=
@@ -413,10 +380,7 @@ lemma datum_multiplier (h:((g:SL(2,Eis))*H) 1 0≠0) :
   have ht:=eisEmbedding_ne_zero s.lower_unit.ne_zero
   have hd:eisEmbedding (s.upper 0 0)*eisEmbedding (s.upper 1 1)=1 := by
     rw [←map_mul,upper_diagonal_product _ s.lower_zero,map_one]
-  have hp:eisEmbedding (s.upper 0 0)^2*eisEmbedding (s.upper 1 1)^2=1 := by
-    rw [←mul_pow,hd,one_pow]
-  field_simp [hc,ht]
-  linear_combination (star (levelTwoComplexCharacter g)*star (levelTwoComplexCharacter s.gamma))*hp
+  grind
 
 lemma datum_additive_phase (h:((g:SL(2,Eis))*H) 1 0≠0) (freq:ℂ) (scale:ℂ) :
     ShortDraftTrace.breveE (-freq*(s.datum g h).dualPoint/scale)=
@@ -436,10 +400,10 @@ end FixedCuspShape
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups ContDiff
+open scoped Classical MatrixGroups ContDiff
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
+open CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 namespace ReflectedBranchData

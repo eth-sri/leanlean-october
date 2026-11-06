@@ -44,11 +44,11 @@ lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀
   filter_upwards [eventually_ge_atTop 2,
     tendsto_logLog.eventually_ge_atTop (max (max c 1) (max E (8 / c ^ 3 + 8)))]
     with x hx2 hT k hk u v B hslot hB
-  have hT1 : 1 ≤ logLog x := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hT
-  have hTc : c ≤ logLog x := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hT
-  have hTE : E ≤ logLog x := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hT
+  have hT1 : 1 ≤ logLog x := by grind
+  have hTc : c ≤ logLog x := by grind
+  have hTE : E ≤ logLog x := by grind
   have hT8 : 8 / c ^ 3 + 8 ≤ logLog x :=
-    le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hT
+    by grind
   set T := logLog x
   have hT0 : 0 < T := by linarith
   obtain ⟨hu, hv⟩ := hslot
@@ -64,7 +64,7 @@ lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀
       linarith
     calc |slotCount x u v B n| ≤ (2 * T ^ 20 / c) ^ (k + 1) := h
       _ ≤ (2 * T ^ 20 / c) ^ 3 := pow_le_pow_right₀ h1 (by omega)
-      _ = 8 / c ^ 3 * T ^ 60 := by field_simp; ring
+      _ = 8 / c ^ 3 * T ^ 60 := by ring
       _ ≤ T * T ^ 60 := by
           refine mul_le_mul_of_nonneg_right ?_ (by positivity)
           linarith
@@ -72,10 +72,10 @@ lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀
   · have hv1 : ∑ i, v i ≤ 1 := by linarith
     have h1 := sum_inv_slotTuples_le (x := x) (by linarith) hv1 (u := u)
     have h2 := sum_inv_primes_le_logLog hmert hx2 le_rfl
-    have h0 : 0 ≤ ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p := sum_nonneg fun _ _ => by positivity
+    have h0 : 0 ≤ ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p := by positivity
     have h3 : |slotMean x u v B| ≤ ∑ Q ∈ slotTuples x u v, 1 / ∏ i, (Q i : ℝ) := by
       refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun Q _ => ?_)
-      have h0 : (0 : ℝ) ≤ ∏ i, (Q i : ℝ) := prod_nonneg fun i _ => Nat.cast_nonneg _
+      have h0 : (0 : ℝ) ≤ ∏ i, (Q i : ℝ) := by positivity
       rw [abs_div, abs_of_nonneg h0]
       exact div_le_div_of_nonneg_right (hB _) h0
     calc |slotMean x u v B| ≤ (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := h3.trans h1
@@ -86,7 +86,7 @@ lemma eventually_slot_size {c : ℝ} (hc : 0 < c) : ∀ᶠ x : ℝ in atTop, ∀
           have h8 : 8 ≤ T := by
             have : 0 ≤ 8 / c ^ 3 := by positivity
             linarith
-          exact mul_le_mul_of_nonneg_right h8 (by positivity)
+          simp_all
       _ = T ^ 4 := by ring
 
 /-! ### Primes inject into the presieved integers -/
@@ -110,14 +110,14 @@ lemma sum_primes_le_presieved {κ x z : ℝ} (hκx : 0 ≤ κ * x) (f : ℕ → 
     simp only at h
     omega
   rw [hA, ← sum_image hinj]
-  refine sum_le_sum_of_subset_of_nonneg (fun u hu => ?_) fun u _ _ => hf u
+  refine sum_le_sum_of_subset_of_nonneg (fun u hu => ?_) (by grind)
   obtain ⟨p, hpA, rfl⟩ := mem_image.1 hu
   obtain ⟨hpP, hfp⟩ := mem_filter.1 hpA
   obtain ⟨hp, hpκ⟩ := mem_primesIcc_two.1 hpP
   have hp2 := hp.two_le
-  have hzp : z < ((p - 1 : ℕ) : ℝ) := hfz _ hfp
+  have hzp := hfz _ hfp
   refine mem_filter.2 ⟨mem_Icc.2 ⟨by omega, ?_⟩, fun q hq hqd => ?_⟩
-  · have : p ≤ ⌊κ * x + 1⌋₊ := Nat.le_floor hpκ
+  · have  := Nat.le_floor hpκ
     rw [floor_add_one_eq hκx] at this
     omega
   · obtain ⟨hqp, hqz⟩ := mem_primesIcc_two.1 hq
@@ -158,8 +158,7 @@ lemma eventually_level {c Ch κ : ℝ} (hc : 0 < c) (hCh : 0 < Ch) (hκ : 1 < κ
     nlinarith
   · rw [← rpow_natCast, ← rpow_mul hx0.le]
     refine rpow_le_rpow_of_exponent_le hx1 ?_
-    push_cast
-    linarith
+    simp_all
 
 /-- Combining the upper sieve with bounds on its main term and remainders. -/
 lemma combine_bound {sift main rem KB A B₁ B₂ : ℝ} (hup : sift ≤ KB * main + KB * rem)
@@ -174,7 +173,7 @@ lemma combine_bound {sift main rem KB A B₁ B₂ : ℝ} (hup : sift ≤ KB * ma
 /-- `a u + b w ≤ (a + b)(u + w)` for nonnegative numbers. -/
 lemma add_mul_le_add_mul_add {a b u w : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hu : 0 ≤ u) (hw : 0 ≤ w) :
     a * u + b * w ≤ (a + b) * (u + w) := by
-  nlinarith [mul_nonneg ha hw, mul_nonneg hb hu]
+  nlinarith
 
 /-! ### Mark removal (E10) -/
 
@@ -208,12 +207,12 @@ theorem eventually_mark_removal (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN
   set P := primesIcc 2 z
   have hPp : ∀ p ∈ P, p.Prime := fun p hp => (mem_primesIcc_two.1 hp).1
   set f : ℕ → ℝ := fun u => Φ (u / x) * (1 - inertPoly (1 / 2) (1 / 12) K CN x u)
-  have hf0 : ∀ u, 0 ≤ f u := fun u => mul_nonneg (hΦ.2.1 _) (by linarith [(hP u).2])
+  have hf0 : ∀ u, 0 ≤ f u := fun u => mul_nonneg (hΦ.2.1 _) (by grind)
   have hκx : 0 ≤ κ * x := by positivity
   -- the prime sum is at most the presieved sum
   have hfz : ∀ u : ℕ, f u ≠ 0 → z < u := by
     intro u hu
-    have hΦu : Φ (u / x) ≠ 0 := fun h0 => hu (by simp only [f, h0, zero_mul])
+    have hΦu : Φ (u / x) ≠ 0 := fun h0 => hu (by grind)
     have h1 := (hΦ.2.2.1 _ hΦu).1
     rw [inv_le_iff_one_le_mul₀ (by linarith)] at h1
     have h2 : x ≤ u * κ := by
@@ -303,7 +302,6 @@ theorem eventually_mark_removal (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN
         x * I * m * ∏ p ∈ D, 1 / (p : ℝ)| ≤ |CE| * x / Real.log x ^ 2 := by
     refine hrem.trans (le_trans (le_of_eq (sum_congr rfl fun r _ => ?_)) (hE.trans ?_))
     · congr 1
-      congr 1
       ring
     · gcongr
       exact le_abs_self _
@@ -343,8 +341,7 @@ lemma presieve_cancel {D₁ D₂ C main₂ e R₁ R₂ KB : ℝ}
   have h3 : |C * D₂| ≤ C * (|KB| * e * main₂ + |KB| * R₂) := by
     rw [abs_mul, abs_of_nonneg hC]
     exact mul_le_mul_of_nonneg_left (by linarith) hC
-  calc |D₁ - C * D₂| ≤ |D₁| + |C * D₂| := abs_sub _ _
-    _ ≤ _ := by nlinarith
+  grind
 
 /-- The bookkeeping of E2. -/
 lemma presieve_budget {KB C e m R₁ R₂ A T₄ T₂₂ B E₁ E₂ iL : ℝ} (hA : 0 ≤ A)
@@ -469,7 +466,7 @@ theorem eventually_presieve (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : �
       _ = _ := by ring
   have hmain0 : 0 ≤ x * I * mP * ∏ p ∈ P, (1 - 1 / (p : ℝ)) := by positivity
   -- the remainders
-  have hYY : z ^ (4 * h + 2) ≤ x ^ (c / logLog x ^ 20 / 4) := hlev
+  have hYY := hlev
   have hrem₁ := sum_powerset_rem_le hPp (Icc 1 ⌊κ * x⌋₊) f₁ (x * I * Cb * mP) hYY
   have hrem₂ := sum_powerset_rem_le hPp (Icc 1 ⌊κ * x⌋₊) f₂ (x * I * mP) hYY
   have hPb : ∀ n, |Pw n| ≤ 1 := fun n => by rw [abs_le]; constructor <;> linarith [hP n]
@@ -516,7 +513,7 @@ theorem eventually_presieve (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) (CN : �
   exact presieve_budget (by positivity) hCbT (one_le_pow₀ hT1) (exp_pos _).le hmain0
     (mul_nonneg (mul_nonneg (by linarith) (abs_nonneg _)) hCM.le) (by positivity)
     (by positivity) (abs_nonneg _) (abs_nonneg _) (sum_nonneg fun _ _ => abs_nonneg _)
-    (by simpa [mul_assoc] using hmain) hR₁ hR₂
+    (by omega) hR₁ hR₂
 
 end
 

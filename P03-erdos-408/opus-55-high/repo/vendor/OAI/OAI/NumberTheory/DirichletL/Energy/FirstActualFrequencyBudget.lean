@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
@@ -26,8 +26,7 @@ theorem eventually_frequency_loss (r:ℝ)(hr:0<r):
   rw [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hlog
   refine ⟨hZ,frequencyLoss_nonneg Z 32 (r/4) hZ (by norm_num) (by positivity),?_⟩
   unfold frequencyLoss
-  norm_num only [show (4:ℝ)*32=128 by norm_num]
-  linarith only [hlog]
+  linarith
 
 lemma paid_frequency_mono
     (sigma delta delta' reserveAmp Bcap emask ell er thetaSource thetaClip κ mesh
@@ -67,7 +66,7 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
   have hb:=bounds M Bcap κ ε hM hB hκ hε
   have hr:0<r:=hb.2.2.2.1
   have hrs:r≤amplification ε/100:=min_le_left _ _
-  refine ⟨hes,hes1,hem,by positivity,by linarith [hb.1],?_⟩
+  refine ⟨hes,hes1,hem,by positivity,by linarith,?_⟩
   filter_upwards [eventually_frequency_loss r hr] with Z hZ
   refine ⟨hZ.1,hZ.2.1,hZ.2.2,?_⟩
   intro k ell highReflection zeroReflection hell hhigh hzero j
@@ -75,8 +74,7 @@ theorem actual_frequency_four_budget (M A Bcap Bcommon κ ε:ℝ)
   have hmono:=paid_frequency_mono (amplification ε) (frequencyLoss Z 32 (r/4)) (r/4)
     (r/4) Bcap em ell (r/4) (r/4) (r/4) κ (mesh M Bcap κ ε) es A
     (2*amplification ε+1) hZ.2.2 j
-  change losses es (r/4) (r/4) Bcap j+_+es*Bcommon+r/4+r/4+highReflection+zeroReflection≤_ at hfixed ⊢
-  linarith only [hfixed,hmono]
+  linarith
 
 end SevenEighths.CenteredMomentEnergyFirstActualFrequencyBudget
 

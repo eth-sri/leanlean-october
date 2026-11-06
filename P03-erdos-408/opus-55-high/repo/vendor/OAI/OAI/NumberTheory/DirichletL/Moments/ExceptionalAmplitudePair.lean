@@ -8,22 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentExceptionalAmplitudePair
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentDetectorDictionary
-open CenteredMomentExceptionalAllocationShell ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
+open CenteredMomentExceptionalAllocationShell
 universe u
 
-structure Tests where
-  reverse : Fin 2→Bool
-  index : Fin 2→ℕ
-  index_le : ∀j,index j≤2
-  sigma : Fin 2→ℝ
-  sigma_mem : ∀j,sigma j∈Set.Icc (0:ℝ) 1
-  height : Fin 2→ℝ
 
 def volume {ι:Type u} [Fintype ι] (s:Data ι):ℝ:=s.X₁*s.X₂*∏i,s.P i
 
@@ -35,10 +26,10 @@ lemma norm_le_of_squared (x:ℂ) (H V d M:ℝ) (hH:0≤H) (hV:0≤V) (hd:0<d) (h
     ‖x‖≤H*Real.sqrt V/(d*M):=by
   apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
   convert hb using 1
-  rw [div_pow,mul_pow,mul_pow,Real.sq_sqrt hV]
+  grind
 
 lemma reduction_cap_identity {ι κ:Type u} [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
-    (s:Data ι) (v:Data κ) (D:Ideal O)
+    (s:Data ι) (v:Data κ) (D:Ideal HeckeFamily.O)
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
     (b:Allocation D (Finset.univ:Finset (κ⊕Fin 2))) (Z r:ℝ) (hZ:1<Z):
     1/(formalReductionFactor D a s.P*formalReductionFactor D b v.P*
@@ -52,7 +43,7 @@ lemma reduction_cap_identity {ι κ:Type u} [Fintype ι] [Fintype κ] [Decidable
         max (r-Real.logb Z (formalReductionFactor D a s.P)) 0) by ring,
     Real.rpow_neg hz.le,Real.rpow_add hz,Real.rpow_add hz,
     Real.rpow_logb hz hZ.ne' (s.reduction_pos D a),Real.rpow_logb hz hZ.ne' (v.reduction_pos D b)]
-  exact one_div _
+  simp
 
 end SevenEighths.CenteredMomentExceptionalAmplitudePair
 

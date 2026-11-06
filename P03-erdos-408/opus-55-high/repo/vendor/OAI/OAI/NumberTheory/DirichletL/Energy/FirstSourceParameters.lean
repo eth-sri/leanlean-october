@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMargins
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstSourceParameters
@@ -32,7 +32,7 @@ lemma source_cap_mono (es ds ts Bactual Bschedule sigma delta amp em child er θ
       lossVector sigma delta amp (sourcePaid Bschedule em child er delta amp θs θc κ mesh) es A saving j:=by
   fin_cases j <;>
     simp only [losses,lossVector,sourcePaid,Matrix.cons_val,Fin.reduceFinMk] <;>
-    nlinarith [mul_nonneg ht (sub_nonneg.mpr hB),mul_nonneg hem (sub_nonneg.mpr hB)]
+    nlinarith
 
 theorem parameter_gates (M A B κ ε:ℝ)(hM:0≤M)(hA:0≤A)(hB:0≤B)
     (hκ:(3/4:ℝ)≤κ)(hε:0<ε):
@@ -53,10 +53,10 @@ theorem parameter_gates (M A B κ ε:ℝ)(hM:0≤M)(hA:0≤A)(hB:0≤B)
   have hesr:sourceEpsilon M A B ε≤reserve M B ε:=by
     unfold sourceEpsilon
     apply (div_le_iff₀ (by positivity)).mpr
-    nlinarith [mul_nonneg hr.le hA]
+    nlinarith
   exact ⟨hb.1,hb.2.1,by positivity,by linarith,by linarith,
     hes,by linarith,by unfold maskEpsilon;positivity,hb.2.2.2.2.1,
-    by linarith,by linarith [hb.1],by linarith [hb.1],by linarith [hb.1],by linarith⟩
+    by linarith,by linarith,by linarith,by linarith,by linarith⟩
 
 lemma columnLoss_physical (M B ε:ℝ)(k:ℕ):
     columnLoss M B ε k+reserve M B ε/4=
@@ -80,7 +80,7 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
   have hκ0:0≤κ:=by linarith
   have h:=actual_frequency_four_budget M A B (A+1) κ ε hM hA hB (by linarith) hκ0 hε
   obtain ⟨_,_,hem,_,_,hevent⟩:=h
-  have hr:0<reserve M B ε:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
+  have hr:=(bounds M B κ ε hM hB hκ0 hε).2.2.2.1
   filter_upwards [hevent] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro k εchild hchild j
@@ -96,7 +96,7 @@ theorem eventually_actual_four_fit (M A P B κ ε:ℝ)
   dsimp only [sourcePaid] at hmono hfit
   unfold columnLoss
   dsimp only [sourceEpsilon,maskEpsilon] at hmono hfit ⊢
-  linarith only [hmono,hfit]
+  linarith
 
 end SevenEighths.CenteredMomentEnergyFirstSourceParameters
 

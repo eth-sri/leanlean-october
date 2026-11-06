@@ -11,7 +11,7 @@ namespace OAI
 namespace SevenEighths.PNT.RayAsymptotic
 
 open ActualEisensteinCubic RayOrthogonality Filter
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 noncomputable section
 
@@ -46,7 +46,7 @@ theorem principalRegularization_analyticAt_of_local (F R : ℂ → ℂ)
   · subst s
     simp only [principalRegularization, Function.update_self]
   · rw [principalRegularization, Function.update_of_ne hs1]
-    exact (hs hs1).symm
+    simp_all
 
 omit [Finite (O ⧸ M)] in
 theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
@@ -56,8 +56,7 @@ theorem principalRegularization_logDeriv (F : ℂ → ℂ) (residue : ℂ)
   have hd := (principalRegularization_eventuallyEq F residue hs).deriv_eq
   rw [hd, principalRegularization, Function.update_of_ne hs,
     deriv_fun_mul (by fun_prop) hF.differentiableAt, deriv_sub_const, deriv_id'', one_mul]
-  field_simp
-  ring
+  grind
 
 def regularizedFamily (F : rayCharacters M → ℂ → ℂ) (residue : ℂ)
     (χ : rayCharacters M) : ℂ → ℂ :=
@@ -84,7 +83,7 @@ theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {resi
       exact hF.pole_analytic
     · exact principalRegularization_analyticAt _ _ hs1 (hF.analytic 1 s hs (Or.inr hs1))
   · rw [regularizedFamily, ite_eq_right hχ]
-    exact hF.analytic χ s hs (Or.inl hχ)
+    exact hF.analytic χ s hs (by grind)
 
 theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
     (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
@@ -98,7 +97,7 @@ theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue
     · rw [principalRegularization, Function.update_of_ne hs1]
       exact mul_ne_zero (sub_ne_zero.mpr hs1) (hF.nonzero 1 s hs (Or.inr hs1))
   · rw [regularizedFamily, ite_eq_right hχ]
-    exact hF.nonzero χ s hs (Or.inl hχ)
+    exact hF.nonzero χ s hs (by grind)
 
 theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
     (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 < s.re) :
@@ -129,8 +128,8 @@ theorem quotient_sum_coeff (n : ℕ) :
   intro I hI
   rw [← Finset.mul_sum, RayQuotient.sum_idealCharacters]
   by_cases hI : I ∈ RayQuotient.identityClass M H
-  · simp only [hI, ite_true, one_mul, mul_comm]
-  · simp only [hI, ite_false, zero_mul, Complex.ofReal_zero, mul_zero]
+  · grind
+  simp_all
 
 theorem quotient_average_coeff (n : ℕ) :
     (quotientClassCoeff M H n : ℂ) =
@@ -140,7 +139,7 @@ theorem quotient_average_coeff (n : ℕ) :
   rw [quotient_sum_coeff]
   have hc : (RayQuotient.classNumber M H : ℂ) ≠ 0 := by
     exact_mod_cast (RayQuotient.classNumber_pos M H).ne'
-  exact (mul_div_cancel_left₀ _ hc).symm
+  simp_all
 
 theorem quotientClassCoeff_LSeries (s : ℂ) (hs : 1 < s.re) :
     LSeries (fun n => (quotientClassCoeff M H n : ℂ)) s =
@@ -154,7 +153,7 @@ theorem quotientClassCoeff_LSeries (s : ℂ) (hs : 1 < s.re) :
     rw [quotient_average_coeff M H hH]
     simp only [Pi.smul_apply, Finset.sum_apply, smul_eq_mul, div_eq_mul_inv, mul_comm]
   rw [heq, LSeries_smul, LSeries_sum]
-  · rw [div_eq_mul_inv, mul_comm]
+  · ring
   · intro χ _
     exact IdealLogDerivative.coeff_summable _ (RayQuotient.norm_idealCharacter_le_one M H hH χ) s hs
 
@@ -197,8 +196,7 @@ theorem quotientRemainder_eqOn {F : rayCharacters M → ℂ → ℂ} {residue : 
     rw [RayQuotient.idealCharacter_eq_fullRay]
     exact (IdealLogDerivative.coeff_LSeries_eq_neg_logDeriv_of_eq _
       (norm_idealCharacter_le_one M _) (F _) (hF.eq_series _) s hs).symm
-  simp_rw [hlog]
-  ring
+  grind
 
 include hH in
 

@@ -10,17 +10,16 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.ProbeDetectorInverseMarkedField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
+open HeckeFamily HeckeDyadic InverseMoment
+open HeckeDetectorBatch
 open ProbeHighRowFamily ProbeFinalAssembly Filter
 open DetectorDictionaryInverseMarkedReference DetectorDictionaryInverseClippedUniform
-local notation "O"=>HeckeFamily.O
 
-variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance:Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
 theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
@@ -71,7 +70,7 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
   intro d hd a ε tstar T allowance i B hdata hprofile0 hupper hwidths hz bin label left right hne
     height hheight F selected hselected hfirst hsecond n hn s hs t ht
   have hd0:0<d:=by linarith
-  have hUone:1<Z^d:=Real.one_lt_rpow hZ hd0
+  have hUone:=Real.one_lt_rpow hZ hd0
   have hUp:0<Z^d:=zero_lt_one.trans hUone
   have hprofile:B.profile=(fun _=>(S.W:ℝ→ℂ)) := by
     rw [hprofile0]
@@ -91,7 +90,7 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
     intro j hj
     rw [hfw]
     exact hlarge.2 d hd0 label j
-  have hr:0≤F.r:=Real.logb_nonneg hUone (one_le_pow₀ (by norm_num : (1:ℝ)≤2))
+  have hr:0≤F.r:=Real.logb_nonneg hUone (one_le_pow₀ (by simp))
   have href (v:ℝ):
       (∑u∈F.rows,‖polynomial (F.family u F.label) true (childLogTest referenceWindow v)
         ((Z^d)^F.r) 0 0*F.physicalProduct selected u‖^2)≤
@@ -103,10 +102,10 @@ theorem source_batch_inverse_marked {Δ:ℝ}{D:Parameters.HighData Δ}
 
     apply hh.trans
     apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
-    exact mul_le_mul_of_nonneg_right (hClabel label) (Real.rpow_nonneg hUp.le _)
+    exact mul_le_mul_of_nonneg_right (hClabel label) (by positivity)
   have hh:=hfourier F selected hUp (Csum*(Z^d)^(1+D.t)) (by positivity) href
     n hn s hs height t hheight ht
-  convert hh using 1 ; ring
+  linarith
 
 end SevenEighths.ProbeDetectorInverseMarkedField
 

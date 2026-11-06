@@ -9,16 +9,15 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge
 
 lemma norm_div_le_twice (A H : ℂ) (hH : 1/2≤‖H‖) : ‖A/H‖≤2*‖A‖ := by
   rw [norm_div]
-  apply (div_le_iff₀ (by linarith : 0<‖H‖)).mpr
+  apply (div_le_iff₀ (by positivity)).mpr
   nlinarith [norm_nonneg A]
 
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 include hc in
 theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : ℝ)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p}))
@@ -48,22 +47,22 @@ theorem ramifiedSelected_central_quotient (eta a rho x w z : ℂ) (alpha eps : �
   by_cases hj2 : 2≤j
   · rw [ite_eq_left hj2]
     have hs := ramifiedStrictSelected_central_norm p hp hg hc eta a rho x w z hQ heta ha hρ
-      (by rw [hx];linarith) (by rw [hz]) j hj
+      (by linarith) (by linarith) j hj
     have hb : ‖ramifiedSelected p hp hg eta a rho x w z j‖≤385*Q^(1/2:ℝ)+6*Q^(1-w.re) := by linarith
     have hprod : Q^(-1:ℝ)*Q^(1-w.re)=Q^(-w.re) := by rw [←Real.rpow_add hQ0];congr 1;ring
     calc
-      _≤Q^(-1:ℝ)*(2*(385*Q^(1/2:ℝ)+6*Q^(1-w.re))) := mul_le_mul_of_nonneg_left (hnorm.trans (by linarith)) hqi
-      _=770*Q^(-(1/2:ℝ))+12*Q^(-w.re) := by nlinarith [hpow,hprod]
+      _≤Q^(-1:ℝ)*(2*(385*Q^(1/2:ℝ)+6*Q^(1-w.re))) := mul_le_mul_of_nonneg_left (by linarith) hqi
+      _=770*Q^(-(1/2:ℝ))+12*Q^(-w.re) := by grind
       _≤_ := by nlinarith [Real.rpow_nonneg hQ0.le (-(1/2:ℝ))]
   · rw [ite_eq_right hj2,add_zero]
     have hs := ramifiedStrictSelected_boundary_norm p hp hg hc eta a rho x w z hQ heta ha hρ
-      (by rw [hx];linarith) (by rw [hz]) j (by omega)
-    have hqw : Q^(-w.re)≤Q^(1/2:ℝ) := Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith)
+      (by linarith) (by linarith) j (by omega)
+    have hqw : Q^(-w.re)≤Q^(1/2:ℝ) := Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
     have hb : ‖ramifiedSelected p hp hg eta a rho x w z j‖≤391*Q^(1/2:ℝ) := by nlinarith
     calc
-      _≤Q^(-1:ℝ)*(2*(391*Q^(1/2:ℝ))) := mul_le_mul_of_nonneg_left (hnorm.trans (by linarith)) hqi
-      _=782*Q^(-(1/2:ℝ)) := by nlinarith [hpow]
-      _≤_ := mul_le_mul_of_nonneg_right (by norm_num) (Real.rpow_nonneg hQ0.le _)
+      _≤Q^(-1:ℝ)*(2*(391*Q^(1/2:ℝ))) := mul_le_mul_of_nonneg_left (by linarith) hqi
+      _=782*Q^(-(1/2:ℝ)) := by linarith
+      _≤_ := mul_le_mul_of_nonneg_right (by norm_num) (by positivity)
 end SevenEighths.ProbeEuler
 end
 

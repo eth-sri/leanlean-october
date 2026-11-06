@@ -9,9 +9,9 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstSecondHeightCost
-open InverseMoment InverseAmbientProfileTower JointLogSeparation FourierBridge
+open InverseMoment InverseAmbientProfileTower JointLogSeparation
 open InverseMomentFirstOriginalProfile
 
 def firstDegree (degree : ℕ) : ℕ := 2*InverseClippingProfiles.momentOrder (2*degree)
@@ -62,21 +62,21 @@ lemma log_fourth_small_power (Cbin ε : ℝ) (hε : 0<ε) :
   obtain ⟨C,hC,he⟩ := log_eighth_small_power ε hε
   let b := 1+|Cbin|
   have hb : 0<b := by dsimp [b];positivity
-  refine ⟨b^4*C,mul_pos (pow_pos hb _) hC,?_⟩
+  refine ⟨b^4*C,by positivity,?_⟩
   intro Z hZ
   have hZ1 : 1≤Z := by linarith
-  have hl : 0≤Real.log Z := Real.log_nonneg hZ1
+  have hl := Real.log_nonneg hZ1
   have hn : |1+Cbin*Real.log Z|≤b*(1+Real.log Z) := by
     calc
       _≤1+|Cbin| *Real.log Z := by simpa [abs_mul,abs_of_nonneg hl] using abs_add_le (1:ℝ) (Cbin*Real.log Z)
-      _≤_ := by dsimp [b];nlinarith [abs_nonneg Cbin]
+      _≤_ := by grind
   calc
-    _ = |1+Cbin*Real.log Z|^4 := by rw [←abs_pow,abs_of_nonneg (by positivity)]
+    _ = |1+Cbin*Real.log Z|^4 := by grind
     _ ≤ (b*(1+Real.log Z))^4 := pow_le_pow_left₀ (abs_nonneg _) hn 4
     _≤b^4*(1+Real.log Z)^8 := by
       rw [mul_pow]
-      exact mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by linarith : 1≤1+Real.log Z) (by norm_num : 4≤8)) (by positivity)
-    _≤b^4*(C*Z^ε) := mul_le_mul_of_nonneg_left (he Z hZ1) (by positivity)
+      exact mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by linarith) (by omega)) (by positivity)
+    _≤b^4*(C*Z^ε) := mul_le_mul_of_nonneg_left (by grind) (by positivity)
     _=_ := by ring
 
 theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
@@ -96,10 +96,10 @@ theorem stepBudget_small_power (C Cbin Czero Ctail ε : ℝ)
   have h1 : C*A*(1+Cbin*Real.log Z)^4*Z^(F+48*eta+tau+pi+epschild)≤
       C*A*Clog*Z^(F+48*eta+tau+pi+epschild+ε) := by
     calc
-      _≤C*A*(Clog*Z^ε)*Z^(F+48*eta+tau+pi+epschild) := by gcongr;exact hlogs Z hZ
+      _≤C*A*(Clog*Z^ε)*Z^(F+48*eta+tau+pi+epschild) := by gcongr;simp_all
       _=_ := by rw [show C*A*(Clog*Z^ε)*Z^(F+48*eta+tau+pi+epschild)=
-          C*A*Clog*(Z^ε*Z^(F+48*eta+tau+pi+epschild)) by ring,←Real.rpow_add hZ0];congr 1;congr 1;ring
-  have h2 : Z^(-saving)≤Z^(F+48*eta+tau+pi+epschild+ε) :=
+          C*A*Clog*(Z^ε*Z^(F+48*eta+tau+pi+epschild)) by ring,←Real.rpow_add hZ0];ring
+  have h2 :=
     Real.rpow_le_rpow_of_exponent_le hZ1 hsaving
   have hsum := add_le_add (add_le_add (mul_le_mul_of_nonneg_left h0 hz) h1)
     (mul_le_mul_of_nonneg_left h2 ht)
@@ -129,7 +129,7 @@ theorem first_source_budget (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)
   intro A Z F eta tau pi epschild saving hA hZ heta heps hsaving negative z
   exact (second_step_first_height degree negative C Cbin Czero Ctail A Z F eta tau pi epschild saving
     hC hz ht hA (by linarith) z).trans
-    (mul_le_mul_of_nonneg_right (hbudget A Z F eta tau pi epschild saving hA hZ heta heps hsaving)
+    (mul_le_mul_of_nonneg_right (by grind)
       (le_trans zero_le_one (first_weight_one_le _ z)))
 
 theorem first_source_requested_loss (degree : ℕ) (C Cbin Czero Ctail ε : ℝ)

@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.DescentProfiles
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
+open scoped Classical SchwartzMap
+open FourierBridge EisensteinSchwartzPoisson JointLogSeparation
 noncomputable section
 
 def inverseNormWindow (V : ℝ → ℂ) (y : ℝ) : ℂ := V y / (Real.exp y : ℂ)

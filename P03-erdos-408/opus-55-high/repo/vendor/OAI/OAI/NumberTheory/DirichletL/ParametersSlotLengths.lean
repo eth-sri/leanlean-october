@@ -9,7 +9,6 @@ public import Mathlib.Algebra.BigOperators.Field
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.Parameters
 
 theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
@@ -42,14 +41,14 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
   refine ⟨N,hNnat,ell,?_,?_,?_⟩
   · intro j k he
     have hden : 6*A≠0 := by positivity
-    have hwjk : w j=w k := (div_left_inj' hden).mp he
+    have hwjk := (div_left_inj' hden).mp he
     have hjk : (j.val:ℝ)/(N:ℝ)=(k.val:ℝ)/(N:ℝ) := by dsimp [w] at hwjk;linarith
-    have he' : (j.val:ℝ)=(k.val:ℝ) := (div_left_inj' hNp.ne').mp hjk
+    have he' := (div_left_inj' hNp.ne').mp hjk
     apply Fin.ext
-    exact_mod_cast he'
+    simp_all
   · intro j
     constructor
-    · exact div_pos (by linarith [(hw j).1]) (by positivity)
+    · positivity
     · calc
         ell j < 2/(6*A) := (div_lt_div_iff_of_pos_right (by positivity)).mpr (hw j).2
         _ ≤ 2/(6*(N:ℝ)) := div_le_div_of_nonneg_left (by norm_num) (by positivity) (by linarith)
@@ -57,8 +56,7 @@ theorem exists_distinct_slot_lengths (L : ℝ) (hL : 0<L) :
         _ < L := hsmall
   · dsimp only [ell]
     rw [←Finset.sum_div]
-    change A/(6*A)=1/6
-    field_simp
+    grind
 
 theorem exists_physical_slot_lengths (dmin dmax mesh R : ℝ)
     (hdmin : 0<dmin) (hd : dmin≤dmax) (hm : 0<mesh) (hR : 0<R) :

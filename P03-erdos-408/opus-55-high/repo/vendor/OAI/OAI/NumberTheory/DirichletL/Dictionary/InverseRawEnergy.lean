@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical FourierTransform ContDiff
 open MeasureTheory
 namespace SevenEighths.DetectorDictionaryInverseRawFourier
 open HeckeFamily HeckeDyadic InverseMoment InverseInitialClippedColumns
@@ -73,10 +73,10 @@ theorem rawMoment_reference (data : RowData)
   intro H D hH hD hHD rows hrows
   have hh:=polynomial_clipped_energy rows data.character true (fun _=>1)
     W lo hi hlo hs hW Wref b 1 0 D (C*H*(H*max 1 D)^κ) J (by norm_num) hD
-    (by positivity) hWref (by simpa only [one_mul] using hagree) (by
+    (by positivity) hWref (by simp_all) (by
       intro s
       have hb:=he s H D hH hD hHD rows hrows
-      simpa only [mul_one,one_mul,mul_assoc,mul_left_comm,mul_comm] using hb)
+      grind)
   have heq : clippedTest W 1 0=W := by
     funext x
     simp [clippedTest,childLogTest,logPhase]

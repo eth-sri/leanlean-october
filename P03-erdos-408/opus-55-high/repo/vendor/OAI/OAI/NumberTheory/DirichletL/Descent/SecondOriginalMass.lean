@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondActualMass
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels
 open InverseInitialArithmetic (sourceIdeal)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → Eis)
+    ∃ C : ℝ, 0 < C ∧ ∀ {ι : Type} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
       (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : Eisˣ)
+      {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (u v : ActualEisensteinCubic.Oˣ)
       (Z ell R j t g theta eta : ℝ), 0 < Z →
       (∀ x ∈ source, x.quotient ≠ 0) →
       (∀ x ∈ source, x.second.divisor ⊆ x.second.sourceCommon) →
@@ -40,11 +39,10 @@ theorem actual_second_original_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
   calc
     _ = Z^c * (Z^(-c)*(∑ γ∈actualSecondTriples p u v source,tripleDivisorWeight K γ)) := by
       rw [←mul_assoc,←Real.rpow_add hZ,add_neg_cancel,Real.rpow_zero,one_mul]
-    _ ≤ Z^c*(C*Z^(c*ε)) := mul_le_mul_of_nonneg_left hm (Real.rpow_pos_of_pos hZ _).le
+    _ ≤ Z^c*(C*Z^(c*ε)) := mul_le_mul_of_nonneg_left hm (by positivity)
     _ = _ := by
       rw [mul_left_comm,←Real.rpow_add hZ]
       congr 2
-      dsimp only [c]
       ring
 
 end

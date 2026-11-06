@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Complex.Basic
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -54,13 +53,13 @@ lemma productWeight_total (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a 
   change (∑ x : ProductSample α, ∏ i, w i (x i)) = 1
   trans ∏ i, ∑ a : α i, w i a
   · exact (Fintype.prod_sum w).symm
-  · simp only [hsum, Finset.prod_const_one]
+  simp_all
 
 omit [Fintype ι] [(i : ι) → Fintype (α i)] in
 lemma mixCoords_union (A B : Finset ι) (x y z : ProductSample α) :
     mixCoords B (mixCoords A x y) z = mixCoords (A ∪ B) x (mixCoords B y z) := by
   funext i
-  by_cases ha : i ∈ A <;> by_cases hb : i ∈ B <;> simp [mixCoords, ha, hb]
+  by_cases ha : i ∈ A <;> by_cases hb : i ∈ B <;> simp [mixCoords, hb]
 
 lemma productAverage_union (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a = 1)
     (A B : Finset ι) (f : ProductSample α → ℂ) (x : ProductSample α) :
@@ -96,10 +95,8 @@ lemma productAverage_union (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a
       (productWeight w y : ℂ) * f (mixCoords (A ∪ B) x y) *
         ∑ z : ProductSample α, (productWeight w z : ℂ) := by
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro z _
-      ring
-    _ = _ := by rw [htotal, mul_one]
+      grind
+    _ = _ := by grind
 
 lemma productAverage_duality (w : ∀ i, α i → ℝ) (S : Finset ι)
     (f g : ProductSample α → ℂ) :
@@ -140,10 +137,7 @@ lemma productAverage_duality (w : ∀ i, α i → ℝ) (S : Finset ι)
   simp only [R, star_sum, star_mul, Complex.star_def, Complex.conj_ofReal]
   simp_rw [Finset.mul_sum, Finset.sum_mul]
   apply Finset.sum_congr rfl
-  intro x _
-  apply Finset.sum_congr rfl
-  intro y _
-  ring
+  grind
 
 end
 end Erdos821.P4Probe

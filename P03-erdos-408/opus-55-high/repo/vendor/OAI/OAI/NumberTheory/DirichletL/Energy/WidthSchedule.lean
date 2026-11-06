@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyWidthSchedule
 open CenteredMomentSuccessorPaidParameters CenteredMomentFirstSecondLossParameters
@@ -70,7 +70,6 @@ lemma reserve_cost (M B ε c:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε)
   have hre:reserve M B ε≤ε/(1000000*scale M B ε):=min_le_right _ _
   have hp:reserve M B ε*(1000000*scale M B ε)≤ε:=
     (le_div_iff₀ (by positivity)).mp hre
-  have hh:=mul_le_mul_of_nonneg_right hc hr.le
   nlinarith
 
 theorem one_time_losses (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)
@@ -82,9 +81,9 @@ theorem one_time_losses (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε
   have hb:=bounds M B κ ε hM hB hκ hε
   have hs:=hb.2.2.1
   have hr:=hb.2.2.2.1
-  have hx:=reserve_cost M B ε (10*B+7) hM hB hε (by unfold scale;linarith [Nat.cast_nonneg (α:=ℝ) (count M ε)])
-  have hy:=reserve_cost M B ε (M+2) hM hB hε (by unfold scale;linarith [Nat.cast_nonneg (α:=ℝ) (count M ε)])
-  have htheta:=mul_le_mul_of_nonneg_left ht (show 0≤2*(5*B+1) by positivity)
+  have hx:=reserve_cost M B ε (10*B+7) hM hB hε (by unfold scale;linarith)
+  have hy:=reserve_cost M B ε (M+2) hM hB hε (by unfold scale;linarith)
+  have htheta:=mul_le_mul_of_nonneg_left ht (by positivity)
   have hmul:es*A≤reserve M B ε*M:=
     (mul_le_mul_of_nonneg_left hA he0).trans (mul_le_mul_of_nonneg_right hes hM)
   constructor

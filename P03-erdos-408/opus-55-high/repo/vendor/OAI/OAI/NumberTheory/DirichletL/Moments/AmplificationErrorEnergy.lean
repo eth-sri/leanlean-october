@@ -8,42 +8,41 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationErrorPool
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationErrorEnergy
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationSourceError CenteredMomentAmplificationSourceDomain
 open CenteredMomentGaussEnergy CenteredMomentGaussNormalization
 open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
-local notation "O" => ActualEisensteinCubic.O
 
-def localErrorCost (p : O) (n : ℕ) : ℝ :=
+def localErrorCost (p : ActualEisensteinCubic.O) (n : ℕ) : ℝ :=
   if n=5 then (1-(Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹)^2
   else (Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹
 
-theorem localErrorCost_nonneg (p : O) (n : ℕ) : 0≤localErrorCost p n := by
+theorem localErrorCost_nonneg (p : ActualEisensteinCubic.O) (n : ℕ) : 0≤localErrorCost p n := by
   unfold localErrorCost
-  split_ifs <;> positivity
+  positivity
 
-theorem localErrorCost_exact (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+theorem localErrorCost_exact (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
-    (h : O) (hh : ¬p∣h) : ‖errorScalar p hp.ne_zero n h‖^2=localErrorCost p n := by
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
+    (h : ActualEisensteinCubic.O) (hh : ¬p∣h) : ‖errorScalar p hp.ne_zero n h‖^2=localErrorCost p n := by
   have he := errorScalar_norms p hp hs hg hc h hh
   rcases hn with rfl|rfl|rfl
   · simpa only [localErrorCost,show ¬(0:ℕ)=5 by decide,ite_false] using he.1
   · simpa only [localErrorCost,ite_true] using he.2.1
   · simpa only [localErrorCost,show ¬(6:ℕ)=5 by decide,ite_false] using he.2.2
 
-theorem finite_original_error_energy (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+theorem finite_original_error_energy (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2 ∣ p-1)
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2 ∣ p-1)
     (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) (T : ℝ) (hT : 0<T)
-    (rows : Finset O) (hrows : ∀ h∈rows,¬p∣h)
+    (rows : Finset ActualEisensteinCubic.O) (hrows : ∀ h∈rows,¬p∣h)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)
     (hmajor : ∀ z∈rows,1≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (∑ h∈rows,‖amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
@@ -71,7 +70,7 @@ theorem finite_original_error_energy (S : Finset (Ideal O)) (c : Ideal O → ℂ
     apply Finset.sum_congr rfl
     intro h hh
     rw [normalized_source_error_sq S c p hp hs hpp n h T hT,
-      localErrorCost_exact p hp hs hg hc n hn h (hrows h hh)]
+      localErrorCost_exact p hp hs hg hc n hn h (by grind)]
   rw [he]
   apply mul_le_mul_of_nonneg_left _ (localErrorCost_nonneg p n)
   have hh := finite_energy_le_gaussEnergy Finset.univ (sourceGenerator Q) (sourceGenerator_supported Q)

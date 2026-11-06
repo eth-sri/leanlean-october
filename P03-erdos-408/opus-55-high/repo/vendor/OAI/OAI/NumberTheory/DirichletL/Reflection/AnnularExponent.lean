@@ -45,7 +45,7 @@ theorem physical_scalar_hybrid_shape (F : PrimeFamily φ) (jF : φ→ℕ) (e : �
     (sq_nonneg (A*Real.sqrt kn*kb))
   dsimp only
   rw [hs]
-  convert hbnd using 1 <;> ring
+  linarith
 
 end
 end SevenEighths.InverseReflectedPhase

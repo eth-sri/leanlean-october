@@ -8,15 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentOriginalReflectionApproximation
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
 open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
 open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
-open CenteredMomentRetainedReflection CenteredMomentTwistedReflection
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
 def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ) : ℂ :=
   if hY : 0<Y then ∑n∈retainedAnnuli R Y hY,(Real.sqrt (dyadicScale n):ℂ)*

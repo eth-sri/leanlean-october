@@ -7,28 +7,26 @@ public import OAI.NumberTheory.DirichletL.Detector.GramMean
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CanonicalCoefficientClass
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss ConcretePrimeRowBridge
+open CenteredMomentCorrelation
 
-theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda∉P) (hchar : ringChar (O⧸P)≠2)
+theorem joint_mean_of_local_factor (Q P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : goodLambda∉P) (hchar : ringChar (ActualEisensteinCubic.O⧸P)≠2)
     (c e : ℕ) (hc : 1≤c) (he : ¬6∣e) (hcop : IsCoprime Q (P^c))
-    [Fintype (O⧸Q)] [Fintype (O⧸P^c)] [Fintype (O⧸Q*P^c)]
-    (F : O→O→ℂ) (hF : ∀x z y,x-z∈Q → F x y=F z y) (d : O) :
-    (∑x : O⧸Q*P^c,∑y : O⧸Q*P^c,
+    [Fintype (ActualEisensteinCubic.O⧸Q)] [Fintype (ActualEisensteinCubic.O⧸P^c)] [Fintype (ActualEisensteinCubic.O⧸Q*P^c)]
+    (F : ActualEisensteinCubic.O→ActualEisensteinCubic.O→ℂ) (hF : ∀x z y,x-z∈Q → F x y=F z y) (d : ActualEisensteinCubic.O) :
+    (∑x : ActualEisensteinCubic.O⧸Q*P^c,∑y : ActualEisensteinCubic.O⧸Q*P^c,
       (actualSextic P hg^e) (Ideal.Quotient.mk P (d*x.out))*F x.out y.out)=0 := by
   let E := Ideal.quotientMulEquivQuotientProd Q (P^c) hcop
-  have hE (x : O⧸Q*P^c) : E x=(Ideal.Quotient.mk Q x.out,Ideal.Quotient.mk (P^c) x.out) := by
+  have hE (x : ActualEisensteinCubic.O⧸Q*P^c) : E x=(Ideal.Quotient.mk Q x.out,Ideal.Quotient.mk (P^c) x.out) := by
     conv_lhs => rw [←Ideal.Quotient.mk_out x]
     rfl
-  have hf (x : O⧸Q*P^c) (y : O) : F x.out y=F (E x).1.out y := by
+  have hf (x : ActualEisensteinCubic.O⧸Q*P^c) (y : ActualEisensteinCubic.O) : F x.out y=F (E x).1.out y := by
     apply hF
     apply Ideal.Quotient.eq.mp
     rw [Ideal.Quotient.mk_out,hE]
-  have hp (x : O⧸Q*P^c) : Ideal.Quotient.mk P (d*x.out)=
+  have hp (x : ActualEisensteinCubic.O⧸Q*P^c) : Ideal.Quotient.mk P (d*x.out)=
       Ideal.Quotient.mk P d*primePowerReduction P hc (E x).2 := by
     rw [map_mul,hE]
     rfl

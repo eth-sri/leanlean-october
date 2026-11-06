@@ -62,12 +62,12 @@ theorem le_bandCount {x : ℝ} {d : Data K} {Y d₀ : ℝ} (s : State x d Y d₀
     have hsub : univ.image (s.1.2 i) ⊆ (band x (d.a i)).filter (· ∣ s.1.1.1) := by
       intro r hr
       obtain ⟨h, -, rfl⟩ := mem_image.1 hr
-      exact mem_filter.2 ⟨hband i h, hdvd i h⟩
+      exact by grind
     have := card_le_card hsub
     rwa [card_image_of_injective _ (hinj i), card_univ, Fintype.card_fin] at this
   calc K * (padCount x + 1) = ∑ _i : Fin K, (padCount x + 1) := by
-        rw [sum_const, card_univ, Fintype.card_fin, smul_eq_mul]
-    _ ≤ _ := sum_le_sum fun i _ => h i
+        simp
+    _ ≤ _ := sum_le_sum (by grind)
 
 open scoped Classical in
 /-- An entry of `𝒯` is at most `∏ V_i^{-1} ([t = b - a] + 4 L^{3A₀}/Y)` on its support, and
@@ -82,7 +82,7 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
       else 0 := by
   by_cases h0 : rowOp q A₀ x d Y d₀ s s' = 0
   · rw [h0, norm_zero]
-    split_ifs <;> positivity
+    positivity
   have hne := h0
   obtain ⟨hD₁, hD₂, hdvd, hηb, hψ⟩ := rowOp_ne_zero hne
   unfold rowOp at h0
@@ -90,7 +90,7 @@ theorem norm_rowOp_le {q A₀ x : ℝ} (hq : 0 < q) (hq₁ : q ≤ 1) (hL : 0 < 
   obtain ⟨hc, h0⟩ := h0
   set D := padProd s.1.2
   set t := det s.1.1 s'.1.1 / D
-  have hD0 : (0 : ℝ) < D := hd₀.trans_le hD₁
+  have hD0 : (0 : ℝ) < D := by linarith
   have hηa : dyadicBump (lastProd s'.1.2 / Y) ≠ 0 := by
     intro h
     apply h0
@@ -169,7 +169,7 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
       refine Nat.le_floor ?_
       rw [Nat.cast_natAbs, Int.cast_abs]
       exact ht.le
-    refine ⟨⟨by omega, by omega⟩, Nat.lt_succ_of_le (Nat.div_le_of_le_mul ?_)⟩
+    refine ⟨by omega, Nat.lt_succ_of_le (Nat.div_le_of_le_mul ?_)⟩
     have : (Q.1 : ℝ) ≤ P.1 * 16 := by linarith
     exact_mod_cast this
   have hinj : Set.InjOn f F := by
@@ -182,9 +182,9 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
       rw [← Int.mul_ediv_cancel' hdvd, ← Int.mul_ediv_cancel' hdvd', ht]
     unfold det at hdet
     -- `P₁ ∣ Q₁ - Q₁'`, and `Q₁, Q₁'` have the same quotient by `P₁`
-    have hdvd₁ : (P.1 : ℤ) ∣ P.2 * ((Q.1 : ℤ) - Q'.1) := ⟨Q.2 - Q'.2, by linear_combination -hdet⟩
+    have hdvd₁ : (P.1 : ℤ) ∣ P.2 * ((Q.1 : ℤ) - Q'.1) := ⟨Q.2 - Q'.2, by linarith⟩
     have hdvd₂ : (P.1 : ℤ) ∣ (Q.1 : ℤ) - Q'.1 :=
-      (Int.isCoprime_iff_gcd_eq_one.2 (by exact_mod_cast hcop)).dvd_of_dvd_mul_left hdvd₁
+      (Int.isCoprime_iff_gcd_eq_one.2 (by simp_all)).dvd_of_dvd_mul_left hdvd₁
     have h₁ : Q.1 = Q'.1 := by
       have e₁ := Nat.div_add_mod Q.1 P.1
       have e₂ := Nat.div_add_mod Q'.1 P.1
@@ -204,16 +204,16 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
         have h₁ : ((Q.1 % P.1 : ℕ) : ℤ) < P.1 := by exact_mod_cast hm₁
         have h₂ : ((Q'.1 % P.1 : ℕ) : ℤ) < P.1 := by exact_mod_cast hm₂
         have h₃ : |((Q.1 % P.1 : ℕ) : ℤ) - (Q'.1 % P.1 : ℕ)| < P.1 :=
-          abs_sub_lt_iff.2 ⟨by linarith [Int.natCast_nonneg (Q'.1 % P.1)],
-            by linarith [Int.natCast_nonneg (Q.1 % P.1)]⟩
+          abs_sub_lt_iff.2 ⟨by omega,
+            by omega⟩
         linarith
       rw [this, mul_zero] at hw
       omega
     have h₂ : Q.2 = Q'.2 := by
       rw [h₁] at hdet
       have : (P.1 : ℤ) * Q.2 = P.1 * Q'.2 := by linarith
-      exact_mod_cast mul_left_cancel₀ (by positivity : (P.1 : ℤ) ≠ 0) this
-    exact Prod.ext h₁ h₂
+      exact_mod_cast mul_left_cancel₀ (by positivity) this
+    exact by grind
   have hm : (m : ℝ) ≤ 5 * Y := Nat.floor_le (by positivity)
   calc (F.card : ℝ)
       ≤ ((Icc (-(m : ℤ)) m ×ˢ range 17).card : ℝ) := by
@@ -222,8 +222,7 @@ theorem card_det_le {U V : ℝ} (hU : 0 ≤ U) (hV : 0 ≤ V) {P : ℕ × ℕ} (
         rw [card_product, card_range, Int.card_Icc]
         push_cast
         rw [show ((m : ℤ) + 1 - -(m : ℤ)).toNat = 2 * m + 1 by omega]
-        push_cast
-        ring
+        simp
     _ ≤ 17 * (10 * Y + 1) := by linarith
 
 /-! ### Target lists -/
@@ -256,11 +255,11 @@ theorem card_lists_dvd_le {x : ℝ} {d : Data K} {J : ℕ} (p : Lists K J) {n : 
     funext i h
     refine Fin.lastCases ?_ (fun h => ?_) h
     · exact congrFun hf i
-    · rw [h₁, h₂]
+    · simp_all
   calc _ ≤ (Fintype.piFinset fun _ : Fin K => n.primeFactors).card :=
         card_le_card_of_injOn f hmaps hinj
     _ = n.primeFactors.card ^ K := by
-        rw [Fintype.card_piFinset, prod_const, card_univ, Fintype.card_fin]
+        simp
     _ ≤ Nat.log 2 n ^ K := Nat.pow_le_pow_left (card_primeFactors_le_log hn) K
 
 /-! ### Pairs with a fixed determinant -/
@@ -272,7 +271,7 @@ theorem dvd_sub_det_mul_rootC {P Q : ℕ × ℕ} (hP0 : 0 < P.1) (hcop : Nat.Cop
   refine ⟨Q.1 * w - Q.2 * rootC P.1 P.2, ?_⟩
   have hw' : ((rootC P.1 P.2 : ℕ) : ℤ) * P.2 + 1 = P.1 * w := by exact_mod_cast hw
   unfold det
-  linear_combination (Q.1 : ℤ) * hw'
+  grind
 
 /-- The pairs `(P, Q)` of the box with `G ∣ P₁`, `a ∣ Q₁`, `det(P, Q) = z` and `B P` inject into
 the `(P, k)` with `0 ≤ k ≤ 16`, `G ∣ P₁`, `a ∣ z c + (k - ⌊z r⌋) P₁` and `B P`:
@@ -389,12 +388,12 @@ theorem squarefree_listProd_mul_lastProd {x : ℝ} {d : Data K}
       (lists_group_injective hp)
     rintro (⟨i, h⟩ | i) (⟨i', h'⟩ | i') heq
     · exact congrArg Sum.inl (hinj heq)
-    · exact absurd heq.symm (hban i' i h)
-    · exact absurd heq (hban i i' h')
+    · grind
+    · grind
     · simp only [f, Sum.elim_inr] at heq
       by_contra hne
-      have hii : i ≠ i' := fun h => hne (congrArg Sum.inr h)
-      exact disjoint_left.1 (hdisj i i' hii) (lists_slot_mem_band hp' i _)
+      have hii : i ≠ i' := by grind
+      exact disjoint_left.1 (by grind) (lists_slot_mem_band hp' i _)
         (heq ▸ lists_slot_mem_band hp' i' _)
   have hprime : ∀ e, (f e).Prime := by
     rintro (⟨i, h⟩ | i)

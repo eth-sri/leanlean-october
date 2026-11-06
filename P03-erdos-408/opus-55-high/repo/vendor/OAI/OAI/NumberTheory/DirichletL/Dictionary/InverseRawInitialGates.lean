@@ -11,27 +11,26 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawInitialGates
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
 open InverseInitialRawDictionary InverseInitialRayAttachment InverseInitialExcludedPeriod
 open InverseInitialExcludedPool InverseInitialExcludedOverlap InverseInitialExcludedPolynomial
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve ConcreteTraceCRT
+open CanonicalRowCompletion CanonicalCoefficientClass
 open ConcretePrimeRowBridge UniqueFactorizationMonoid IdealMobiusDivisorSum
 open DetectorDictionaryInverseRawGeometry
-local notation "O"=>HeckeFamily.O
 
 def basePeriod (data:RowData):ℕ:=(baseCharacter data).period
 
-def excluded (data:RowData):Finset (Ideal O):=reflectionExcludedPrimes (basePeriod data)
+def excluded (data:RowData):Finset (Ideal HeckeFamily.O):=reflectionExcludedPrimes (basePeriod data)
 
 def deletedBase (data:RowData):Character:=
   (baseCharacter data).excludePrimes (excluded data) (reflectionExcludedPrimes_prime (basePeriod data))
 
 theorem basePeriod_ne_zero (data:RowData):basePeriod data≠0:=Nat.ne_of_gt (Character.period_pos _)
 
-theorem basePeriod_le (data:RowData):Ideal.span {(basePeriod data:O)}≤(baseCharacter data).modulus:=
+theorem basePeriod_le (data:RowData):Ideal.span {(basePeriod data:HeckeFamily.O)}≤(baseCharacter data).modulus:=
   Ideal.span_le.mpr (Set.singleton_subset_iff.mpr (Character.period_mem _))
 
 theorem raw_base_gates (data:RowData):
@@ -43,18 +42,18 @@ theorem raw_base_gates (data:RowData):
   deleted_physical_base_gates (baseCharacter data) (basePeriod data)
     (basePeriod_ne_zero data) (basePeriod_le data)
 
-theorem actual_row_fixed_base (data:RowData)(u:NonzeroElement)(I:Ideal O):
+theorem actual_row_fixed_base (data:RowData)(u:NonzeroElement)(I:Ideal HeckeFamily.O):
     idealCoeff (data.character u) I=idealCoeff (baseCharacter data) I*idealRowHom u.val I:=by
   rw [baseCharacter_coeff]
   exact fixedBase_row data.η (data.character u) data.m data.f u.val (data.character_spec u) I
 
-theorem actual_deleted_row (data:RowData)(u:NonzeroElement)(I:Ideal O):
+theorem actual_deleted_row (data:RowData)(u:NonzeroElement)(I:Ideal HeckeFamily.O):
     idealCoeff ((data.character u).excludePrimes (excluded data)
       (reflectionExcludedPrimes_prime (basePeriod data))) I=
       idealCoeff (deletedBase data) I*idealRowHom u.val I:=by
   unfold deletedBase excluded
   rw [idealCoeff_excludePrimes,idealCoeff_excludePrimes,actual_row_fixed_base]
-  split_ifs <;> simp
+  simp
 
 def completeCutoff (H b Btree cap:ℝ):ℕ:=⌈max (Btree*H^(cap+1)) (b*H)⌉₊
 
@@ -69,7 +68,7 @@ theorem completeCutoff_columns (H b Btree cap D n:ℝ)(hb:0≤b)(hD:0≤D)
   exact (mul_le_mul_of_nonneg_left (hdn.trans hDH) hb).trans
     ((le_max_right _ _).trans (Nat.le_ceil _))
 
-theorem excluded_divisor_norm (data:RowData)(j:Ideal O)
+theorem excluded_divisor_norm (data:RowData)(j:Ideal HeckeFamily.O)
     (hj:j∈idealDivisors (∏P∈excluded data,P)):
     1≤(j.absNorm:ℝ) ∧ (j.absNorm:ℝ)≤((∏P∈excluded data,P).absNorm:ℝ):=by
   have hP:Squarefree (∏P∈excluded data,P):=
@@ -105,8 +104,8 @@ theorem shifted_raw_geometry_eventually (data:RowData)(c eta:ℝ)(hc:0<c)(heta:0
     exact (Real.logb_le_iff_le_rpow hH hn0).mpr (hnB.trans ht)
   have hrlo:-eta≤r:=by rw [hr];linarith
   have hrup:r≤1-capacityGap c:=by rw [hr];linarith
-  refine ⟨hrlo,hrup,by rw [hr];linarith,
-    Real.rpow_logb hH0 hH.ne' (div_pos hD0 hn0),?_,?_⟩
+  refine ⟨hrlo,hrup,by linarith,
+    Real.rpow_logb hH0 hH.ne' (by positivity),?_,?_⟩
   · linarith [(capacityGap_pos c hc).le]
   · calc
       D=H^(Real.logb H D):=hex.symm
@@ -125,7 +124,7 @@ theorem deleted_row_complete_polynomial (data:RowData)(u:NonzeroElement)
   let χ:=(data.character u).excludePrimes (excluded data)
     (reflectionExcludedPrimes_prime (basePeriod data))
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (excluded data) Dpool
-  have hs:(∑'I:Ideal O,(moebius I:ℂ)*idealCoeff χ I*
+  have hs:(∑'I:Ideal HeckeFamily.O,(moebius I:ℂ)*idealCoeff χ I*
       (W ((I.absNorm:ℝ)/H^r)*(((I.absNorm:ℝ)/H^r:ℝ):ℂ)^(-HeckeDyadic.shift sigma freq)))=
       ∑I∈F,(moebius I:ℂ)*idealCoeff χ I*
         (W ((I.absNorm:ℝ)/H^r)*(((I.absNorm:ℝ)/H^r:ℝ):ℂ)^(-HeckeDyadic.shift sigma freq)):=by
@@ -134,19 +133,19 @@ theorem deleted_row_complete_polynomial (data:RowData)(u:NonzeroElement)
     by_cases hsq:Squarefree I
     · by_cases hout:outside (excluded data) I
       · by_cases hw:W ((I.absNorm:ℝ)/H^r)=0
-        · simp only [hw,zero_mul,mul_zero]
+        · simp_all
         · have hN:(I.absNorm:ℝ)≤(Dpool:ℝ):=
-            ((div_le_iff₀ (Real.rpow_pos_of_pos hH r)).mp (hW _ hw)).trans hbudget
+            ((div_le_iff₀ (by positivity)).mp (by grind)).trans hbudget
           have hmem:I∈F:=by
             apply Finset.mem_filter.mpr
             refine ⟨mem_outsideIdealsUpTo.mpr ⟨?_,?_,hout⟩,hsq⟩
             · exact Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hsq.ne_zero)
-            · exact_mod_cast hN
-          exact False.elim (hn hmem)
+            · simp_all
+          simp_all
       · have hz:=deleted_zero_outside (data.character u) (excluded data)
           (reflectionExcludedPrimes_prime (basePeriod data)) I hout
-        simp only [χ,hz,mul_zero,zero_mul]
-    · simp only [moebius_of_not_squarefree hsq,Int.cast_zero,zero_mul]
+        grind
+    · simp_all
   rw [polynomial_all_ideals,hs,normalization_eq H r hH]
   unfold InverseInitialConjugateEnergy.originalTotalPolynomial
   simp only [add_zero,map_one,mul_one]
@@ -155,11 +154,7 @@ theorem deleted_row_complete_polynomial (data:RowData)(u:NonzeroElement)
   intro I hI
   rw [actual_deleted_row]
   simp only [twistedProfile,InverseInitialPoissonBridge.heckeIdealCharacter_apply]
-  change (moebius I:ℂ) * (idealCoeff (deletedBase data) I * idealRowHom u.val I) *
-      (W ((I.absNorm:ℝ)/H^r)*(((I.absNorm:ℝ)/H^r:ℝ):ℂ)^(-shift sigma freq)) =
-    (moebius I:ℂ) * (idealCoeff (deletedBase data) I * idealRowHom u.val I) *
-      (W ((I.absNorm:ℝ)/H^r)*(((I.absNorm:ℝ)/H^r:ℝ):ℂ)^(-shift sigma freq))
-  ring
+  simp
 
 theorem raw_complete_pool (data:RowData)(H D c b Btree cap:ℝ)
     (hH:1<H)(hD:1≤D)(hc:0<c)(hcap:D^(1+c)≤H)(hb:0≤b)

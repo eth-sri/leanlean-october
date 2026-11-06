@@ -9,11 +9,10 @@ public import Mathlib.Algebra.BigOperators.Ring.Finset
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def spectralCompensatedHigh (S : Finset Id) (T : Finset PrimeIdeal)
     (η : HeckeFamily.Character) (x w z : ℂ) (B q : PrimeIdeal→ℂ) : ℂ :=
@@ -31,7 +30,7 @@ theorem spectralCompensatedHigh_eq_product (S : Finset Id) (hS : SourceExclusion
   apply Finset.sum_congr rfl
   intro J hJ
   rw [markedIdealHighSeries_eq_product S hS (T\J)
-    (fun P hP=>hT P (Finset.mem_sdiff.mp hP).1) η x w z hx hw hz]
+    (by grind) η x w z hx hw hz]
   simp only [mul_div_assoc,Finset.prod_mul_distrib]
   ring
 

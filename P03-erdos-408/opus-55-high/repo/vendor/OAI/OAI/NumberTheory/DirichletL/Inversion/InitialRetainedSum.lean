@@ -9,15 +9,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedSum
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseSecondChildWindows Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment InverseInitialArithmetic InverseInitialProfile
+open InverseInitialEnergyCallerWindows
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
+open InverseInitialDyadicAssembly Filter
 
 theorem retained_sum_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -40,11 +39,11 @@ theorem retained_sum_bound
       (all:Set σ).PairwiseDisjoint lists→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈lists i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
     ∀(D m r T:ℝ),0≤m→0<T→
@@ -64,17 +63,17 @@ theorem retained_sum_bound
         C*Z^(m+15*η+π+eps+loss)*
           ((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*degree)*
             (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*degree)) := by
-  have hb:0<max 1 b₀:=zero_lt_one.trans_le (le_max_left _ _)
+  have hb:0<max 1 b₀:=by positivity
   obtain ⟨J,Btree,Tclip,hBtree,hTclip,hwindow⟩:=
     InverseInitialRetainedWindow.retained_window_bound W₁ W₂ a₀ b₀ bcap ha₀ hbcap hs₁ hs₂ hW₁ hW₂ Φ
-      (fun _=>1/4) (fun _=>1) (by intros;norm_num) (by intros;norm_num)
+      (fun _=>1/4) (fun _=>1) (by simp) (by grind)
       cap gap eps (cap+3) π hcap hgap heps (by linarith) hπ K
   obtain ⟨A,hA,hcount⟩:=retained_card_subpower (max 1 b₀) cap (4*η+τ) loss hb hcap (by positivity) hloss
   have hpowers:∀ᶠZ:ℝ in atTop,(4:ℝ)≤Z^η:=
     (tendsto_rpow_atTop hη).eventually (eventually_ge_atTop 4)
   have hlogs:∀ᶠZ:ℝ in atTop,Tclip≤3*η*Real.log Z:=by
     filter_upwards [Real.tendsto_log_atTop.eventually (eventually_ge_atTop (Tclip/(3*η)))] with Z hZ
-    exact (div_le_iff₀ (by positivity : 0<3*η)).mp hZ |>.trans_eq (mul_comm _ _)
+    exact (div_le_iff₀ (by positivity)).mp hZ |>.trans_eq (by linarith)
   have hevent:=window_exponent_eventual_upper (max 1 b₀) 1 hb (by norm_num)
   obtain ⟨Zaux,haux⟩:=eventually_atTop.mp (hcount.and (hpowers.and (hlogs.and hevent)))
   refine ⟨J,Btree,hBtree,?_⟩
@@ -97,8 +96,8 @@ theorem retained_sum_bound
   have hdivc:∀x∈Sc,x.divisor⊆x.common:=fun x hx=>hdiv x (Finset.mem_filter.mp hx).1
   have hfc:∀x∈Sc,x.frequency≠0:=fun x hx=>hf x (Finset.mem_filter.mp hx).1
   have hlo:Z^(-η)≤(1/4:ℝ):=by
-    rw [Real.rpow_neg (zero_lt_one.trans hZp).le]
-    simpa only [one_div] using inv_anti₀ (by norm_num : (0:ℝ)<4) hpow
+    rw [Real.rpow_neg (by positivity)]
+    simpa only [one_div] using inv_anti₀ (by positivity) hpow
   have hnorm (k:Windows (fun _=>1) (physicalCaps (max 1 b₀) Z D T))
       (hk:k∈retainedWindows (fun _=>1) (physicalCaps (max 1 b₀) Z D T) Z D m (4*η+τ)):
       ‖windowBlock p hp hcop hg Finset.univ Sc w Ψ (assignedElement assigned qelem)
@@ -106,7 +105,7 @@ theorem retained_sum_bound
         (clippedSource W₂ c₂ θ₂) Φ Z D m (fun i=>(k i).val)‖≤
         C*Z^(m+15*η+π+eps)*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder (4*J)*
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder (4*J)):=by
-    have hsize:0<max 1 b₀*Z^D:=mul_pos hb (Real.rpow_pos_of_pos (zero_lt_one.trans hZp) D)
+    have hsize:0<max 1 b₀*Z^D:=by positivity
     have h0:=hexp.2 (max 1 b₀*Z^D) D hsize le_rfl (k 0).val (k 0).property
     have h1:=hexp.2 (max 1 b₀*Z^D) D hsize le_rfl (k 1).val (k 1).property
     apply hw Z hZq' Dpool hD all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac

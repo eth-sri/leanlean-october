@@ -9,7 +9,6 @@ public import Erdos821.S2.SpanUniqueness
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -69,12 +68,12 @@ theorem history_injective : Function.Injective (history (A := A) (n := n)) := by
   rcases d with ⟨q', s', y', tau⟩
   dsimp only at hq
   cases hq
-  have hs : s = s' := Subtype.ext (q.val.lifespan_eq_of_memories s.val s'.val
+  have hs := Subtype.ext (q.val.lifespan_eq_of_memories s.val s'.val
     s.property s'.property
     (fun i g => congrArg (fun H : MemoryHistory A n => (H.before i).2.2 g) he)
     (fun i g => congrArg (fun H : MemoryHistory A n => (H.after i).2.2 g) he))
   cases hs
-  have hy : y = y' := Subtype.ext (by
+  have hy := Subtype.ext (by
     have hv := congrArg (fun H : MemoryHistory A n => (H.before 0).1) he
     change translateSmallResidues (q.val.offset 0) y.val =
       translateSmallResidues (q.val.offset 0) y'.val at hv
@@ -83,8 +82,7 @@ theorem history_injective : Function.Injective (history (A := A) (n := n)) := by
   have ho : sigma = tau :=
     MemoryHistory.reorderBatches_injective _
       (fun i g => q.val.ghostBatchLabels_injective s.val i g) he
-  cases ho
-  rfl
+  simp_all
 
 end SpanConfiguration
 end Erdos821.S2Core

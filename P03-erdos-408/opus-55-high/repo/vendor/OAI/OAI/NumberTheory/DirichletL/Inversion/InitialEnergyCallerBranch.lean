@@ -8,32 +8,30 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open scoped Classical
+open CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerBranch
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
+open InverseMoment InverseInitialArithmetic
+open InverseInitialProfile
 open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
 open InverseInitialQuotientGeometry InverseInitialClippedColumns
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem actual_allocated_mode_bound
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)(hdiv:∀x∈S,x.divisor⊆x.common)
-    (pool:Finset ι)(Ψ:Eis→*ℂ)(hΨ:∀n,‖Ψ n‖≤1)(j:Eis)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+    (S:Finset (Source (ι:=ι) 0))(u:ActualEisensteinCubic.Oˣ)(hdiv:∀x∈S,x.divisor⊆x.common)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(hΨ:∀n,‖Ψ n‖≤1)(j:ActualEisensteinCubic.O)
     (slots J₁ J₂:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (ha₁:∀i∈J₁,∀q∈lists i,‖a i q‖≤1)(ha₂:∀i∈J₂,∀q∈lists i,‖a i q‖≤1)
     (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)(hZ:0<Z)
     (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))
     (w:Source (ι:=ι) 0→ℂ)(hw:∀x∈S,‖w x‖≤1)
-    (labels:Finset (Ideal Eis))(rows:Finset Eis)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)
     (hlabels:∀f∈labels,f≠0)(hneg:∀k∈rows,-k∈rows)
     (hchild:∀x∈S,(initialChild (toTuple p (sectorSource u x))).2.1∈labels ∧
       (initialChild (toTuple p (sectorSource u x))).2.2∈rows)
@@ -56,7 +54,7 @@ theorem actual_allocated_mode_bound
   have hcoeff (x:Source (ι:=ι) 0)(hx:x∈S) : ‖c x‖≤‖secondRayCoefficient ρ‖ := by
     dsimp only [c]
     rw [norm_mul]
-    exact (mul_le_of_le_one_left (norm_nonneg _) (hw x hx)).trans
+    exact (mul_le_of_le_one_left (norm_nonneg _) (by grind)).trans
       (modeCoefficient_norm_le p hp hcop hg hc Ψ hΨ j Z D B v θ H x ρ z)
   have he := InverseInitialEnergyCallerAssignedCanonical.original_assigned_canonical_pair
     p hp hcop hg hinj hpr S u J₁ J₂ lists lists a a ha₁ ha₂ hdiv labels rows hlabels hneg hchild

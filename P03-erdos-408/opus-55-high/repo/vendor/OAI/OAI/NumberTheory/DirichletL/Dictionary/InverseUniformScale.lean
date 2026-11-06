@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseUniform
 open HeckeInverseAmplification
 

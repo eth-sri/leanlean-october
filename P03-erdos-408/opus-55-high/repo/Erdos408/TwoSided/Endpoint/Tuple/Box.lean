@@ -43,9 +43,9 @@ noncomputable def boxPoly (Y P V : ℝ) (sP spN uR : Finset ℕ) {k : ℕ}
 theorem continuous_boxPoly {Y P V : ℝ} {sP spN uR : Finset ℕ} (hsP : ∀ n ∈ sP, 0 < n)
     (hspN : ∀ n ∈ spN, 0 < n) (huR : ∀ n ∈ uR, 0 < n) {k : ℕ} (χ : DirichletCharacter ℂ k)
     (c : ℕ → ℂ) : Continuous (boxPoly Y P V sP spN uR χ c) :=
-  (continuous_sum_cpow (fun n hn => (hsP n hn).ne') _).mul (continuous_const.mul
-    ((continuous_sum_cpow (fun n hn => (hspN n hn).ne') _).mul
-      (continuous_sum_cpow (fun n hn => (huR n hn).ne') _)))
+  (continuous_sum_cpow (by grind) _).mul (continuous_const.mul
+    ((continuous_sum_cpow (by grind) _).mul
+      (continuous_sum_cpow (by grind) _)))
 
 /-- `|c_l| ≤ U V ω(l)` for the coefficient `c_l = ∑_{mn = l} u_m v_n` of a product whose first
 factor is supported on primes, `l ≠ 0`: `m` is a prime factor of `l`, and it determines `n`. -/
@@ -56,9 +56,9 @@ theorem norm_mulCoeff_le_primeFactors {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m �
   have hcard : #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} ≤ #l.primeFactors := by
     refine card_le_card_of_injOn Prod.fst (fun mn hmn => ?_) fun mn hmn mn' hmn' h => ?_
     · rw [mem_coe, mem_filter, mem_product] at hmn
-      exact Nat.mem_primeFactors.2 ⟨hI₁ _ hmn.1.1, ⟨mn.2, hmn.2.symm⟩, hl⟩
+      exact Nat.mem_primeFactors.2 ⟨by grind, ⟨mn.2, hmn.2.symm⟩, hl⟩
     · rw [mem_coe, mem_filter, mem_product] at hmn hmn'
-      have h₁ : 0 < mn.1 := (hI₁ _ hmn.1.1).pos
+      have h₁ := (hI₁ _ hmn.1.1).pos
       have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by rw [hmn.2, h, hmn'.2]
       exact Prod.ext h (Nat.eq_of_mul_eq_mul_left h₁ h₂)
   unfold OneSided.mulCoeff
@@ -68,8 +68,8 @@ theorem norm_mulCoeff_le_primeFactors {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m �
         refine sum_le_sum fun mn hmn => ?_
         rw [mem_filter, mem_product] at hmn
         rw [norm_mul]
-        exact mul_le_mul (hu _ hmn.1.1) (hv _ hmn.1.2) (norm_nonneg _) hU
-    _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by rw [sum_const, nsmul_eq_mul]
+        exact mul_le_mul (by grind) (by grind) (norm_nonneg _) hU
+    _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by simp
     _ ≤ #l.primeFactors * (U * V) := by
         gcongr
     _ = U * V * #l.primeFactors := by ring
@@ -86,7 +86,7 @@ theorem mul_sum_mul_sum_eq {spN uR : Finset ℕ} {N₁ N₂ : ℕ}
   rw [← OneSided.sum_mul_sum_eq h₁ h₂, ← mul_assoc]
   congr 1
   rw [mul_sum]
-  simp_rw [mul_assoc]
+  ring
 
 /-- **The mean value of one box.** For `Q(τ) = ∑_{n ≤ N_q} q_n n^{iτ}` with
 `|q_n| ≤ (P/Y) L^{C_U} · 2 log n`, `N_q ≤ 4NR`, `PNR ≤ 2Y`, `log N_q ≤ 2L` and
@@ -105,16 +105,16 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
     calc ∑ n ∈ Icc 1 Nq, ‖cq n‖ ^ 2 ≤ ∑ _n ∈ Icc 1 Nq, B ^ 2 := by
           refine sum_le_sum fun n hn => pow_le_pow_left₀ (norm_nonneg _) ?_ 2
           refine (hcq n hn).trans (mul_le_mul_of_nonneg_left ?_ (by positivity))
-          have hn1 : 1 ≤ n := (mem_Icc.1 hn).1
+          have hn1 : 1 ≤ n := by grind
           have : Real.log n ≤ Real.log Nq :=
-            Real.log_le_log (by exact_mod_cast hn1) (by exact_mod_cast (mem_Icc.1 hn).2)
+            Real.log_le_log (by positivity) (by simp_all)
           linarith
-      _ = Nq * B ^ 2 := by rw [sum_const, Nat.card_Icc, nsmul_eq_mul]; simp
+      _ = Nq * B ^ 2 := by simp
   -- `N_q (P/Y) ≤ 8` and `N_q (P/Y)² ≤ 8 P/Y`
   have hNqP : (Nq : ℝ) * (P / Y) ≤ 8 := by
     rw [mul_div_assoc', div_le_iff₀ hY]
-    nlinarith [Nat.cast_nonneg (α := ℝ) Nq]
-  have hlog0 : 0 ≤ Real.log Nq := Real.log_natCast_nonneg Nq
+    nlinarith
+  have hlog0 := Real.log_natCast_nonneg Nq
   have hNq0 : (0 : ℝ) ≤ Nq := Nat.cast_nonneg _
   have hPY : 0 ≤ P / Y := by positivity
   set W := L ^ CU * (4 * L) with hW
@@ -134,7 +134,7 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
     have hτ' : (τ₂ - τ₁) * (P / Y) ≤ 1 := by
       rw [mul_div_assoc', div_le_one hY]
       exact hτ
-    have : 0 ≤ (τ₂ - τ₁) * (P / Y) := mul_nonneg (by linarith) hPY
+    have : 0 ≤ (τ₂ - τ₁) * (P / Y) := by positivity
     have : (τ₂ - τ₁) * (P / Y) * (Nq * (P / Y)) ≤ 1 * 8 :=
       mul_le_mul hτ' hNqP (by positivity) zero_le_one
     nlinarith [sq_nonneg W]
@@ -157,8 +157,8 @@ theorem boxMeanValue_le {L Y P N R CU τ₁ τ₂ : ℝ} (hL : 160 ≤ L) (hY : 
   calc (τ₂ - τ₁ + 8 * Nq * (1 + Real.log Nq)) * ∑ n ∈ Icc 1 Nq, ‖cq n‖ ^ 2
       ≤ (τ₂ - τ₁ + 8 * Nq * (1 + Real.log Nq)) * (Nq * B ^ 2) :=
         mul_le_mul_of_nonneg_left hsum (by positivity)
-    _ ≤ 8 * W ^ 2 + 512 * (1 + 2 * L) * W ^ 2 := by rw [add_mul]; linarith
-    _ = (8 + 512 * (1 + 2 * L)) * 16 * L ^ (2 * CU + 2) := by rw [hW2]; ring
+    _ ≤ 8 * W ^ 2 + 512 * (1 + 2 * L) * W ^ 2 := by linarith
+    _ = (8 + 512 * (1 + 2 * L)) * 16 * L ^ (2 * CU + 2) := by grind
     _ ≤ L ^ (2 * CU + 5) := by
         rw [hL5]
         have : (8 + 512 * (1 + 2 * L)) * 16 ≤ L ^ 3 := by
@@ -183,7 +183,7 @@ theorem norm_smallPoly_le {P V vlo : ℝ} (hP : 1 ≤ P) (hvlo : 0 < vlo) (hV : 
       = #sP * (P * V)⁻¹ := by
         rw [card_eq_sum_ones, Nat.cast_sum, sum_mul]
         refine sum_congr rfl fun p hp => ?_
-        rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (hsP p hp).1.pos, Complex.norm_real,
+        rw [norm_mul, norm_natCast_cpow_ofReal_mul_I (by grind), Complex.norm_real,
           Real.norm_of_nonneg (by positivity)]
         simp
     _ ≤ (P + 1) * (P * V)⁻¹ := by gcongr
@@ -219,7 +219,7 @@ theorem natFloor_le_of_le {a b : ℝ} (h : a ≤ b) (hb : 0 ≤ b) : (⌊a⌋₊
   rcases le_or_gt 0 a with ha | ha
   · exact (Nat.floor_le ha).trans h
   · rw [Nat.floor_of_nonpos ha.le, Nat.cast_zero]
-    exact hb
+    omega
 
 /-- The growth facts of one box: `L ≥ 160`, `x ≥ 2`, `4 L^{C_m + 2} e^{L^{0.36}} ≤ e^{L^{0.38}}`
 (so `4 T₀ P ≤ Y`), `16 e^{L^{0.47}} ≤ x` (so `log(8Y/P) ≤ 2L`) and `L^{C_m + 3} ≤ x`. -/
@@ -239,7 +239,7 @@ theorem eventually_boxScales (Cm : ℝ) : ∀ᶠ x : ℝ in atTop, BoxScales Cm 
     eventually_log_rpow_le_self (Cm + 3), eventually_gt_atTop 0] with x hL hx h₁ h₂ h₃ hx0
   refine ⟨hL, hx, h₁, ?_, h₃⟩
   rw [Real.rpow_zero, mul_one, Real.rpow_one, Real.exp_log hx0] at h₂
-  exact h₂
+  omega
 
 /-- The scales of one box: `T₀ ≥ 1`, `4 T₀ P ≤ Y`, `2 T₀ ≤ x³`, `Y ≤ x²` and
 `log N_q ≤ 2L` for `N_q ≤ 4NR`. -/
@@ -269,8 +269,7 @@ theorem boxScales_of {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k
       _ ≤ x * Real.exp (L ^ (0.38 : ℝ)) := mul_le_mul_of_nonneg_left h₁ hx0.le
       _ ≤ Y := hd.hY₁
   · have : 2 * (x * L ^ (Cm + 2)) ≤ 2 * (x * x) := by gcongr
-    have : 2 * (x * x) ≤ x ^ 3 := by nlinarith
-    linarith
+    nlinarith
   · calc Y ≤ x * Real.exp (L ^ (0.47 : ℝ)) := hd.hY₂
       _ ≤ x * x := mul_le_mul_of_nonneg_left hexp hx0.le
       _ = x ^ 2 := by ring
@@ -285,8 +284,8 @@ theorem boxScales_of {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k
       rw [div_le_iff₀ hP0]
       have : x * Real.exp (L ^ (0.47 : ℝ)) * 16 ≤ x * x := by nlinarith
       nlinarith [hd.hY₂, hd.hP₁]
-    rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; push_cast; ring]
-    exact Real.log_le_log (by exact_mod_cast hpos) (hNq.trans (hNR.trans hYP))
+    rw [show 2 * L = Real.log (x ^ 2) by rw [Real.log_pow]; ring]
+    exact Real.log_le_log (by positivity) (by linarith)
 
 /-- The collapsed coefficients `q_n` of `Q = (P/Y) P_l R`. -/
 noncomputable def boxCoeff (Y P : ℝ) (spN uR : Finset ℕ) {k : ℕ} (χ : DirichletCharacter ℂ k)
@@ -302,13 +301,10 @@ theorem boxPoly_eq {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k :
           boxCoeff Y P ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c n *
             (n : ℂ) ^ ((τ : ℂ) * Complex.I) := by
   rw [boxPoly, boxCoeff, mul_sum_mul_sum_eq]
-  · intro m hm
-    rw [mem_filter, mem_Ioc] at hm
-    omega
+  · grind
   · intro n hn
     have := hd.huR hn
-    rw [mem_Ioc] at this
-    omega
+    grind
 
 /-- The mean value of `Q` over an interval of length `≤ 4T₀` is `≤ L^{2C_U + 5}`. -/
 theorem boxMeanValue_le' {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ} {k : ℕ}
@@ -328,7 +324,7 @@ theorem boxMeanValue_le' {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ
   have hR0 : 0 < R := lt_of_lt_of_le (Real.exp_pos _) hd.hR₁
   have hNq : ((⌊hi⌋₊ * ⌊2 * R⌋₊ : ℕ) : ℝ) ≤ 4 * N * R := by
     push_cast
-    have h₁ : (⌊hi⌋₊ : ℝ) ≤ 2 * N := natFloor_le_of_le hd.hhi (by positivity)
+    have h₁ := natFloor_le_of_le hd.hhi (by positivity)
     have h₂ : (⌊2 * R⌋₊ : ℝ) ≤ 2 * R := Nat.floor_le (by positivity)
     calc (⌊hi⌋₊ : ℝ) * ⌊2 * R⌋₊ ≤ 2 * N * (2 * R) :=
           mul_le_mul h₁ h₂ (Nat.cast_nonneg _) (by positivity)
@@ -338,12 +334,12 @@ theorem boxMeanValue_le' {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset ℕ
   · intro n hn
     have hn0 : n ≠ 0 := by rw [mem_Icc] at hn; omega
     refine (norm_mulCoeff_le_primeFactors (U := P / Y) (V := Real.log x ^ CU)
-      (fun m hm => (mem_filter.1 hm).2) (by positivity) (by positivity) (fun m _ => ?_)
+      (by simp) (by positivity) (by positivity) (fun m _ => ?_)
       (fun u hu => hd.hc u hu) hn0).trans ?_
     · rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (by positivity)]
       exact mul_le_of_le_one_right (by positivity) (DirichletCharacter.norm_le_one χ _)
     · exact mul_le_mul_of_nonneg_left (card_primeFactors_le (Nat.one_le_iff_ne_zero.2 hn0))
-        (by positivity : 0 ≤ P / Y * Real.log x ^ CU)
+        (by positivity)
 
 /-- **The trivial bound of one box.** `∫_{τ₁}^{τ₂} |G|² ≤ (2/v₋)² L^{2C_U + 5}` for
 `τ₂ - τ₁ ≤ 4T₀`, since `|P_s| ≤ 2/v₋`. -/
@@ -356,7 +352,7 @@ theorem integral_boxPoly_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset 
       (2 / vlo) ^ 2 * Real.log x ^ (2 * CU + 5) := by
   have hx0 : 0 < x := by linarith [hs.2.1]
   have hP1 : 1 ≤ P := le_trans (by
-    rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 2)]
+    rw [le_div_iff₀ (by positivity)]
     have : 2 ≤ Real.exp (Real.log x ^ (0.27 : ℝ)) := by
       have h := Real.add_one_le_exp (Real.log x ^ (0.27 : ℝ))
       have : 1 ≤ Real.log x ^ (0.27 : ℝ) :=
@@ -371,8 +367,8 @@ theorem integral_boxPoly_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Finset 
   have hG : Continuous fun τ : ℝ =>
       ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c τ‖ ^ 2 :=
     (continuous_boxPoly (fun p hp => (hd.hsP p hp).1.pos)
-      (fun p hp => (mem_filter.1 hp).2.pos)
-      (fun u hu => by have := hd.huR hu; rw [mem_Ioc] at this; omega) χ c).norm.pow 2
+      (by grind)
+      (fun u hu => by have := hd.huR hu; grind) χ c).norm.pow 2
   calc ∫ τ in τ₁..τ₂, ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c τ‖ ^ 2
       ≤ ∫ τ in τ₁..τ₂, (2 / vlo) ^ 2 *
           ‖∑ n ∈ Icc 1 Nq, cq n * (n : ℂ) ^ ((τ : ℂ) * Complex.I)‖ ^ 2 := by

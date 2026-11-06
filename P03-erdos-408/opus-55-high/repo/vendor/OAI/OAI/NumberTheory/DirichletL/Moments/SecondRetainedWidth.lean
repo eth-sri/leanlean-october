@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondRetainedWidth
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
@@ -17,9 +17,8 @@ open CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalFrequency
 open CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentCanonicalFirst
 open CenteredMomentSupport
 open CenteredMomentHeckeColumnWindow CenteredMomentSectorLocalization RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-theorem retained_geometry (R : ℝ) (G V z : O)
+theorem retained_geometry (R : ℝ) (G V z : ActualEisensteinCubic.O)
     (hne : retainedWeight R (normValue ((G*V)*z))≠0) :
     0<R ∧ G≠0 ∧ V≠0 ∧ z≠0 ∧ 1≤normValue z ∧
       normValue z≤4*R/(normValue G*normValue V) ∧
@@ -31,9 +30,9 @@ theorem retained_geometry (R : ℝ) (G V z : O)
   rw [normValue_mul] at hrow
   have hn:=normValue_ge_one z hz
   have hr:=retainedWeight_enclosure R _ hne
-  refine ⟨by linarith,hg,hv,hz,hn,hrow,hn.trans hrow⟩
+  grind
 
-theorem retained_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
+theorem retained_log_budget (η τ : Character) (G V z : ActualEisensteinCubic.O) (U : Ideal ActualEisensteinCubic.O)
     (hU : U≠0)
     (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*U.absNorm*
       (Ideal.span {V}).absNorm)
@@ -56,7 +55,7 @@ theorem retained_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
     Real.logb_mul hg.ne' hv.ne',Real.logb_mul (by norm_num : (4:ℝ)≠0) hF]
   linarith
 
-theorem retained_row_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
+theorem retained_row_log_budget (η τ : Character) (G V z : ActualEisensteinCubic.O) (U : Ideal ActualEisensteinCubic.O)
     (hU : U≠0)
     (hN : τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*U.absNorm*
       (Ideal.span {V}).absNorm)
@@ -71,18 +70,18 @@ theorem retained_row_log_budget (η τ : Character) (G V z : O) (U : Ideal O)
   linarith
 
 theorem exists_retained_width_family (η : Character) (χ : RayCharacter)
-    (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
+    (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (U : Finset (CommonIndex C D)) :
     ∃τ : Character,
-      (∀n:O,elementCoeff τ n=rowTwist (HeckeRowClosure.elementHom (childCharacter η χ))
+      (∀n:ActualEisensteinCubic.O,elementCoeff τ n=rowTwist (HeckeRowClosure.elementHom (childCharacter η χ))
         fixedBadMask 1 (CenteredMomentSecondSixthReduction.reducedNumerator C D U) n) ∧
-      (∀I:Ideal O,Supported I → ∀t:ℝ,heightCoeff τ t I=heightCoeff η t I*
+      (∀I:Ideal ActualEisensteinCubic.O,Supported I → ∀t:ℝ,heightCoeff τ t I=heightCoeff η t I*
         idealRowHom (CenteredMomentSecondSixthReduction.reducedNumerator C D U) I*
         rayCharacter χ (primaryGenerator I)) ∧
       ∀hD : Supported D,CompletedGauss.primeSupport C=CompletedGauss.primeSupport D →
-      ∀w:O,idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0 →
+      ∀w:ActualEisensteinCubic.O,idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0 →
       τ.modulus.absNorm≤η.modulus.absNorm*fixedFactor*(∏P∈U,P.val).absNorm*
         (Ideal.span {nonunitFrequencyGenerator C D U}).absNorm ∧
-      ∀Z R:ℝ,1<Z → ∀z:O,
+      ∀Z R:ℝ,1<Z → ∀z:ActualEisensteinCubic.O,
         retainedWeight R (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))≠0 →
         0<R ∧ z≠0 ∧ 1≤normValue z ∧
         normValue z≤4*R/(normValue (commonFrequencyGenerator C D)*normValue (nonunitFrequencyGenerator C D U)) ∧

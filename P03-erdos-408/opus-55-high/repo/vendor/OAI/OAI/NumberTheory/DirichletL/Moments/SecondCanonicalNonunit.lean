@@ -7,26 +7,25 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondCanonicalFrequency
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalNonunit
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
+open CanonicalQuadraticSieve
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentCanonicalFirst
 open CenteredMomentSecondLedger CenteredMomentPartition CenteredMomentProductCRT
-open CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
-def equalActiveSet (C D : Ideal O) : Finset (CommonIndex C D) :=
+def equalActiveSet (C D : Ideal ActualEisensteinCubic.O) : Finset (CommonIndex C D) :=
   Finset.univ.filter (fun P=>leftExponent C D P=rightExponent C D P ∧ ¬6∣leftExponent C D P)
 
-def nonunitPartitionSet (C D : Ideal O) (U : Finset (CommonIndex C D)) : Finset (CommonIndex C D) :=
+def nonunitPartitionSet (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) : Finset (CommonIndex C D) :=
   equalActiveSet C D\U
 
-def nonunitFrequencyGenerator (C D : Ideal O) (U : Finset (CommonIndex C D)) : O :=
+def nonunitFrequencyGenerator (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) : ActualEisensteinCubic.O :=
   ∏ P∈nonunitPartitionSet C D U,commonPrime C D P
 
-theorem commonPrime_dividedFrequency_iff (C D : Ideal O) (hC : Supported C)
-    (w : O) (P : CommonIndex C D) :
+theorem commonPrime_dividedFrequency_iff (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
+    (w : ActualEisensteinCubic.O) (P : CommonIndex C D) :
     commonPrime C D P∣dividedFrequency (commonPrime C D) (leftExponent C D) (rightExponent C D) w P ↔
       commonPrime C D P∣w := by
   have hc : IsCoprime (commonPrime C D P)
@@ -34,13 +33,13 @@ theorem commonPrime_dividedFrequency_iff (C D : Ideal O) (hC : Supported C)
     unfold cofactor
     apply IsCoprime.prod_right
     intro Q hQ
-    exact (commonPrime_coprime C D hC (Finset.mem_erase.mp hQ).1.symm).pow_right
+    exact (commonPrime_coprime C D hC (by grind)).pow_right
   constructor
   · exact fun h=>hc.dvd_of_dvd_mul_left h
   · exact fun h=>h.trans (dvd_mul_left _ _)
 
-theorem nonunitPartitionSet_eq_actual (C D : Ideal O) (U : Finset (CommonIndex C D))
-    (w : O) (hpart : canonicalPartition C D U w) :
+theorem nonunitPartitionSet_eq_actual (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D))
+    (w : ActualEisensteinCubic.O) (hpart : canonicalPartition C D U w) :
     nonunitPartitionSet C D U=actualNonunitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w := by
   unfold canonicalPartition at hpart
   rw [nonunitPartitionSet,←hpart]
@@ -49,13 +48,13 @@ theorem nonunitPartitionSet_eq_actual (C D : Ideal O) (U : Finset (CommonIndex C
     Finset.mem_univ,true_and]
   tauto
 
-theorem nonunitFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C)
+theorem nonunitFrequencyGenerator_ne_zero (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (U : Finset (CommonIndex C D)) : nonunitFrequencyGenerator C D U≠0 :=
   Finset.prod_ne_zero_iff.mpr (fun P _=>
     CenteredMomentSupportedCorrelation.supported_element_ne_zero _ (commonPrime_supported C D hC P))
 
-theorem nonunitFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C)
-    (U : Finset (CommonIndex C D)) (w : O) (hpart : canonicalPartition C D U w) :
+theorem nonunitFrequencyGenerator_dvd (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C)
+    (U : Finset (CommonIndex C D)) (w : ActualEisensteinCubic.O) (hpart : canonicalPartition C D U w) :
     nonunitFrequencyGenerator C D U∣w := by
   apply Finset.prod_dvd_of_coprime ?_ ?_
   · intro P hP Q hQ hPQ

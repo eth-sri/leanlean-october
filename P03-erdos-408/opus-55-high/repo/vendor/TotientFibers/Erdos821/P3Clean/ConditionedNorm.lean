@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.MassPositivity
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -54,9 +53,9 @@ theorem normBound_bigAveragedConditionedKernel (A : Model F P J m) (n B : ℕ)
     (hbig : ∀ theta' : ℝ, NormBound (tiltedIdealMass F n) (tiltedBannedKernel A n theta' forward) C) :
     NormBound (betweenMass F n (B := B))
       (bigAveragedConditionedKernel A n theta forward (B := B) d) C := by
-  have hm (a : P.BigLabels (J + F.ell)) : 0 ≤ tiltedIdealMass F n a := by
-    exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ =>
-      (tiltedMu_pos F P n g.val (a g i) (hb g _)).le))
+  have hm (a : P.BigLabels (J + F.ell)) : 0 ≤ tiltedIdealMass F n a :=
+    Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ =>
+      (tiltedMu_pos F P n g.val (a g i) (by grind)).le))
   have hw (a : CutPendingState P B) : 0 ≤ pendingMass F n a.val := by
     unfold pendingMass
     exact mul_nonneg (by positivity) (Finset.prod_nonneg (fun g _ =>
@@ -66,9 +65,8 @@ theorem normBound_bigAveragedConditionedKernel (A : Model F P J m) (n B : ℕ)
     obtain ⟨theta', he⟩ := symmetricCycleKernel_ideal_frequency A n B theta forward d psi
     have h := normBound_mul_endpoints hm hC (hbig theta')
       (fun _ => smallSignedCoefficient A forward d) (fun _ => 1)
-      (fun _ => (smallSignedCoefficient_norm A forward d).le) (fun _ => by simp)
-    have hk : fourierFibre (symmetricCycleKernel A n B theta forward d) psi =
-        (fun a b => smallSignedCoefficient A forward d * tiltedBannedKernel A n theta' forward a b) :=
+      (fun _ => (smallSignedCoefficient_norm A forward d).le) (by simp)
+    have hk :=
       funext (fun a => funext (he a))
     rw [hk]
     simpa only [mul_one] using h

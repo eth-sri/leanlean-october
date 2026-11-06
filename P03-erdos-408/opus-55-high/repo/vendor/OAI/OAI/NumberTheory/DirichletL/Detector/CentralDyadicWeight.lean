@@ -8,9 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralExponent
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification ProbePhysical
 
 lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     (R : Finset FreeRow) (hcard : (R.card:ℝ)≤B)
@@ -24,18 +24,18 @@ lemma dyadic_weighted_rows_card (α r C U B : ℝ) (hC : 0≤C) (hU : 0<U)
     _ ≤ ∑u∈R,C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r) := by
       apply Finset.sum_le_sum
       intro u hu
-      have hN : 0<rowNorm u := hU.trans_le (hR u hu).1
+      have hN : 0<rowNorm u := by grind
       rw [frequencyWeight_ideal_norm,hz]
       change rowNorm u^(-r)*F u≤_
       calc
         _ ≤ rowNorm u^(-r)*(C*rowNorm u^α) :=
-          mul_le_mul_of_nonneg_left (hF u hu) (Real.rpow_nonneg hN.le _)
+          mul_le_mul_of_nonneg_left (by grind) (by positivity)
         _ = C*rowNorm u^(α-r) := by
           rw [show α-r=(-r)+α by ring,Real.rpow_add hN]; ring
         _ ≤ _ := by
           have hb := ProbeSelectedPrimeSums.annular_rpow 1 2 U (rowNorm u) (α-r)
-            (by norm_num) (by norm_num) hU (by simpa using (hR u hu).1) (hR u hu).2
-          simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hb hC
+            (by norm_num) (by norm_num) hU (by grind) (by grind)
+          nlinarith
     _ = (R.card:ℝ)*(C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r)) := by simp
     _ ≤ B*(C*ProbeSelectedPrimeSums.annularPower 1 2 (α-r)*U^(α-r)) :=
       mul_le_mul_of_nonneg_right hcard (by positivity)
@@ -64,8 +64,8 @@ lemma dyad_conductor_margin (Z v margin : ℝ) (hZ : 0<Z) (hmargin : 2≤Z^margi
   intro u hu
   calc
     rowNorm u≤2*Z^v := hR u hu
-    _ ≤ Z^margin*Z^v := mul_le_mul_of_nonneg_right hmargin (Real.rpow_nonneg hZ.le _)
-    _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
+    _ ≤ Z^margin*Z^v := mul_le_mul_of_nonneg_right hmargin (by positivity)
+    _ = _ := by rw [←Real.rpow_add hZ]; ring
 end SevenEighths.ProbeHighRowFamily
 
 end

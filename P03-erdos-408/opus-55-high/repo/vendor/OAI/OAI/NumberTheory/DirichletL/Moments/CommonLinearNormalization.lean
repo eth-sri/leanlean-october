@@ -8,28 +8,27 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonLinearNormalization
-open HeckeFamily CenteredMomentCommonLinearSource CenteredMomentCommonRadialData
-open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentEligibleEnergy
+open CenteredMomentCommonLinearSource CenteredMomentCommonRadialData
+open CenteredMomentCommonRawScale
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
 open CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def commonScalar (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):ℂ:=
+def commonScalar (s:Input ι)(C R:Ideal HeckeFamily.O)(B:actualAllocations s.pools C):ℂ:=
   (Real.sqrt (rawReduction B.val s.P):ℂ)⁻¹*frozenCoefficient B.val C R s.ν s.W s.P
 
 omit [DecidableEq ι] in
-theorem common_volume (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C):
+theorem common_volume (s:Input ι)(C R:Ideal HeckeFamily.O)(B:actualAllocations s.pools C):
     volume (commonData s C R B)=remainingRaw B.val (s.X₁*s.X₂) s.P:=by
   dsimp only [volume,commonData,remainingRaw,plainNorm]
   ring
 
-theorem source_normalized (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
-    (hseed:seed∣C)(z:O):
+theorem source_normalized (s:Input ι)(C:Ideal HeckeFamily.O)(hC:Supported C)(R seed L:Ideal HeckeFamily.O)
+    (hseed:seed∣C)(z:HeckeFamily.O):
     (Real.sqrt (volume s.toData):ℂ)⁻¹*sourceColumn s C hC R seed L z=
       ∑B:actualAllocations s.pools C,commonScalar s C R B*maskedAmplitude (commonData s C R B) L z:=by
   rw [source_column_allocation s C hC R seed L hseed z,Finset.mul_sum]

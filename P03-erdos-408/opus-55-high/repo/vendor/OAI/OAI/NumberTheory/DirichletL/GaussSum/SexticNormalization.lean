@@ -8,13 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
@@ -25,7 +21,7 @@ section
 
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 
-noncomputable def breveGamma1 (P : Ideal O) [P.IsMaximal]
+def breveGamma1 (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) : ℂ :=
   gaussSum (canonicalSextic P hgood)
@@ -33,7 +29,7 @@ noncomputable def breveGamma1 (P : Ideal O) [P.IsMaximal]
       ConcreteBreveE.breveE_period_coordinates p hp) /
       (‖eisEmbedding p‖ : ℂ)
 
-noncomputable def breveGamma3 (P : Ideal O) [P.IsMaximal]
+def breveGamma3 (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) : ℂ :=
   gaussSum (canonicalSextic P hgood ^ 3)
@@ -73,9 +69,9 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
       (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
         (by decide : (1 : ℕ) ≠ 0) (by decide : (1 : ℕ) < 6))
   have hχ2 : χ ^ 2 ≠ 1 := canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
-    (by decide : (2 : ℕ) ≠ 0) (by decide : (2 : ℕ) < 6)
+    (by positivity) (by omega)
   have hχ4 : χ ^ 4 ≠ 1 := canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
-    (by decide : (4 : ℕ) ≠ 0) (by decide : (4 : ℕ) < 6)
+    (by positivity) (by omega)
   have hχ3 : χ ^ 3 = (quadraticChar (O ⧸ Ideal.span {p})).ringHomComp
       (Int.castRingHom ℂ) := canonicalSextic_pow_three_quadratic (Ideal.span {p}) hgood
   have hχ6 : χ ^ 6 = 1 := canonicalSextic_pow_six (Ideal.span {p}) hgood
@@ -104,20 +100,13 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
     breveGamma2 (Ideal.span {p}) hgood p rfl hp =
     (χ 4)⁻¹ * breveGamma3 (Ideal.span {p}) hgood p rfl hp *
       breveGamma2 (Ideal.span {p}) hgood p rfl hp ^ 3
-  calc
-    breveGamma1 (Ideal.span {p}) hgood p rfl hp *
-        breveGamma2 (Ideal.span {p}) hgood p rfl hp =
-      (χ 4)⁻¹ * (χ 4 * breveGamma1 (Ideal.span {p}) hgood p rfl hp *
-        breveGamma2 (Ideal.span {p}) hgood p rfl hp) := by field_simp
-    _ = (χ 4)⁻¹ * (breveGamma3 (Ideal.span {p}) hgood p rfl hp *
-        breveGamma2 (Ideal.span {p}) hgood p rfl hp ^ 3) := by rw [hmul]
-    _ = _ := by ring
+  grind
 
 end
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT IdealGaussCRT
+open EisensteinEmbedding ConcreteTraceCRT
 
 end
 
@@ -125,7 +114,7 @@ section
 
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 
-noncomputable def breveLocalG (P : Ideal O) [P.IsMaximal]
+def breveLocalG (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) : ℂ :=
   (canonicalSextic P hgood (Ideal.Quotient.mk P (4 : O)))⁻¹ *
@@ -145,7 +134,7 @@ theorem breveGamma1_gamma2_eq_neg_alpha_G (P : Ideal O) [P.IsMaximal]
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
+open EisensteinEmbedding ConcreteTraceCRT
 
 end ActualEisensteinCubic
 
@@ -153,7 +142,7 @@ namespace ConcreteBreveE
 
 open EisensteinEmbedding ConcreteTraceCRT
 
-noncomputable def normalizedTraceGauss
+def normalizedTraceGauss
     (a : O) (ha : a ≠ 0) (χ : MulChar (O ⧸ Ideal.span {a}) ℂ) : ℂ := by
   letI : Finite (O ⧸ Ideal.span {a}) := finite_quotient_span ha
   letI : Fintype (O ⧸ Ideal.span {a}) := Fintype.ofFinite _
@@ -164,7 +153,6 @@ end ConcreteBreveE
 
 namespace FixedRayActiveSet
 
-open scoped BigOperators
 
 end FixedRayActiveSet
 
@@ -176,7 +164,7 @@ namespace ActualEisensteinCubic
 
 open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
 
-noncomputable def breveGammaMinus1 (P : Ideal O) [P.IsMaximal]
+def breveGammaMinus1 (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
     (hp : p ≠ 0) : ℂ :=
   gaussSum (canonicalSextic P hgood)⁻¹
@@ -236,9 +224,7 @@ theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
     dsimp [s]
     exact_mod_cast (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp))
   change (gaussSum χ ψ / s) * (gaussSum χ⁻¹ ψ / s) = χ (-1)
-  field_simp
-  rw [hs]
-  simpa only [mul_comm] using hprod
+  grind
 
 end ActualEisensteinCubic
 

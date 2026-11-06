@@ -39,16 +39,14 @@ private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r 
   | zero => rfl
   | succ j ih =>
     simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+    simp_all
 
 /-- The end of a history is the end of its tail from the state after its first edge. -/
 private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N) :
     chainEnd (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) =
       chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by
-  rw [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
-  rfl
+  simp [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
 
 /-- A history with no edges is a single ghost choice. -/
 private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
@@ -57,17 +55,16 @@ private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℂ) :
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
   · intro h hh
     simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+    simp_all
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
-    exact ⟨fun _ => hc, fun i => i.elim0⟩
+    simp_all
   · intro h _
-    exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-  · intro c _
-    rfl
+    exact Prod.ext (funext (by simp)) (Subsingleton.elim _ _)
+  · simp
   · intro h _
     congr 1
-    exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
+    exact Prod.ext (funext (by simp)) (Subsingleton.elim _ _)
 
 /-- A history with `N + 1` edges is a first ghost choice, a first edge choice, and a history
 with `N` edges. -/
@@ -84,12 +81,9 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
   · intro t ht
     simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
     exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
-  · intro h _
-    simp
-  · intro t _
-    simp
-  · intro h _
-    simp
+  · simp
+  · simp
+  simp
 
 /-- The history expansion with visit-dependent coefficients: with ghost coefficients `G j` at
 the visits and edge coefficients `E j` at the edges, `𝒢^{G₀} ℰ^{E₀} ⋯ ℰ^{E_{N-1}} 𝒢^{G_N} f (s)`
@@ -128,7 +122,7 @@ theorem foldr_finRange_eq_sum_history (f : ChainState x d Y d₀ u v r B → ℂ
     simp only [choiceOp, Fin.prod_univ_succ (n := N + 1), Fin.prod_univ_succ (n := N),
       ← Fin.succ_castSucc, Fin.castSucc_zero, chainVisit_cons_succ, chainEnd_cons, Fin.cons_succ,
       Fin.cons_zero, h0, mul_sum]
-    exact sum_congr rfl fun c _ => sum_congr rfl fun e _ => sum_congr rfl fun h _ => by ring
+    exact sum_congr rfl fun c _ => sum_congr rfl fun e _ => by ring
 
 end History
 

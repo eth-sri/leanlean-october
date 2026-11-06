@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedTuples
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
-    (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis)
+lemma supported_inactive_sum_eq (rows : Finset (Ideal ActualEisensteinCubic.O))
+    (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ) (F : φ→Ideal ActualEisensteinCubic.O)
     (K : rows) (w : ∀ i,L i→ℂ)
     (f : supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val→ℂ) :
     (∑ b : supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val,
@@ -35,13 +34,12 @@ lemma supported_inactive_sum_eq (rows : Finset (Ideal Eis))
       apply Finset.sum_congr rfl
       intro b hb
       by_cases hc : ok b
-      · have hk : K.val∈inactiveRowSet rows L T F b := Finset.mem_filter.mpr ⟨K.property,hc⟩
-        simp only [dite_eq_left hc,dite_eq_left hk,wt]
-      · have hk : K.val∉inactiveRowSet rows L T F b := fun h => hc (Finset.mem_filter.mp h).2
-        simp only [dite_eq_right hc,dite_eq_right hk,mul_zero]
+      · have hk : K.val∈inactiveRowSet rows L T F b := Finset.mem_filter.mpr (by grind)
+        grind
+      grind
 
-theorem supported_inactive_source_energy (rows : Finset (Ideal Eis))
-    (L : σ→Finset (Ideal Eis)) (T : Finset σ) (F : φ→Ideal Eis) (H : σ→ℝ)
+theorem supported_inactive_source_energy (rows : Finset (Ideal ActualEisensteinCubic.O))
+    (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ) (F : φ→Ideal ActualEisensteinCubic.O) (H : σ→ℝ)
     (hzero : ∀ i,∀ P∈L i,P≠0) (hH : ∀ i,∀ P∈L i,(Ideal.absNorm P:ℝ)≤H i)
     (w : ∀ i,L i→ℂ) (hw : ∀ i P,‖w i P‖≤1)
     (f : ∀ K : rows,supportedSlotChoices (fun i : {i // i∉T} => L i.val) F K.val→ℂ)
@@ -64,7 +62,7 @@ theorem supported_inactive_source_energy (rows : Finset (Ideal Eis))
     apply Finset.sum_congr rfl
     intro K hK
     rw [supported_inactive_sum_eq rows L T F K w (f K)]
-  exact hh.trans_le he
+  linarith
 end
 end SevenEighths.InverseReflectedPhase
 

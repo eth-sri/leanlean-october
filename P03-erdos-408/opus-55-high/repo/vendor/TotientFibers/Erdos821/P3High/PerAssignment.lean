@@ -12,7 +12,6 @@ tilted point mass for every prescribed address. -/
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
@@ -109,18 +108,14 @@ theorem prescribed_local {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
       true_and] at h1'
     exact ⟨h1', h2⟩
   unfold localFactorR
-  rw [hI, Finset.prod_eq_one (fun i _ => hG i), Finset.prod_eq_one (fun i _ => hE i)]
-  ring
+  simp_all
 
 theorem localFactor_nonneg {A : Model F P J m} {n B : ℕ} (H : MemoryHistory A n)
     (U : Finset (AddrIdx P (J + F.ell) n B)) (tgt : AddrIdx P (J + F.ell) n B → ℕ) :
     0 ≤ localFactorR A n (initMult U tgt) (fun i => ghostMult (slG F J U i) (valsG F J tgt i))
       (fun i => edgeMult A (slE F J U i) (valsE F J tgt i)) H := by
   unfold localFactorR initMult ghostMult edgeMult
-  apply mul_nonneg (mul_nonneg _ _) _
-  · split_ifs <;> norm_num
-  · exact Finset.prod_nonneg fun i _ => by dsimp only; split_ifs <;> norm_num
-  · exact Finset.prod_nonneg fun i _ => by dsimp only; split_ifs <;> norm_num
+  positivity
 
 theorem bms_sum_le_tsum {M B : ℕ} (f : P.MemoryState M → ℝ) (hf : ∀ t, 0 ≤ f t)
     (hs : Summable f) :
@@ -131,7 +126,7 @@ theorem bms_sum_le_tsum {M B : ℕ} (f : P.MemoryState M → ℝ) (hf : ∀ t, 0
     rw [Finset.sum_map]
     rfl
   rw [h1]
-  exact hs.sum_le_tsum _ (fun t _ => hf t)
+  exact hs.sum_le_tsum _ (by grind)
 
 theorem prod_slots_le (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B))
     (tgt : AddrIdx P (J + F.ell) n B → ℕ)
@@ -189,19 +184,18 @@ theorem prod_slots_le (n B : ℕ) (U : Finset (AddrIdx P (J + F.ell) n B))
   simp only [hG, hE]
   have hle1 : (∏ x ∈ slI F J U, muHat F P n x.1 (valsI F J tgt x)) ≤
       ∏ x ∈ slI F J U, 2 * muHat F P n x.1 (valsI F J tgt x) :=
-    Finset.prod_le_prod₀ (fun x _ => h0 _ _) (fun x _ => by linarith [h0 x.1 (valsI F J tgt x)])
+    Finset.prod_le_prod₀ (by grind) (fun x _ => by grind)
   have hle2 : (∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) ≤
       ∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, 2 * muHat F P n x.1 (valsG F J tgt i x) :=
-    Finset.prod_le_prod₀ (fun i _ => Finset.prod_nonneg fun x _ => h0 _ _)
-      (fun i _ => Finset.prod_le_prod₀ (fun x _ => h0 _ _)
-        (fun x _ => by linarith [h0 x.1 (valsG F J tgt i x)]))
+    Finset.prod_le_prod₀ (fun i _ => Finset.prod_nonneg (by grind))
+      (fun i _ => Finset.prod_le_prod₀ (by grind)
+        (fun x _ => by grind))
   have hn1 : 0 ≤ ∏ x ∈ slI F J U, muHat F P n x.1 (valsI F J tgt x) :=
-    Finset.prod_nonneg fun x _ => h0 _ _
+    Finset.prod_nonneg (by grind)
   have hn2 : 0 ≤ ∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x) :=
-    Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ => h0 _ _
+    Finset.prod_nonneg fun i _ => Finset.prod_nonneg (by grind)
   have hn3 : 0 ≤ ∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) :=
-    Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ =>
-      mul_nonneg two_pos.le (h0 _ _)
+    Finset.prod_nonneg fun i _ => Finset.prod_nonneg (by grind)
   have hn1' : 0 ≤ ∏ x ∈ slI F J U, 2 * muHat F P n x.1 (valsI F J tgt x) := hn1.trans hle1
   calc _ ≤ (∏ x ∈ slI F J U, 2 * muHat F P n x.1 (valsI F J tgt x)) *
         (∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, 2 * muHat F P n x.1 (valsG F J tgt i x)) *
@@ -245,15 +239,15 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
   let cE : Fin n → ℝ := fun i =>
     (∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x)) * CE
   have hcG : ∀ i, 0 ≤ cG i := fun i =>
-    mul_nonneg (Finset.prod_nonneg fun x _ => h0 _ _) hCG
+    mul_nonneg (Finset.prod_nonneg (by grind)) hCG
   have hcE : ∀ i, 0 ≤ cE i := fun i =>
-    mul_nonneg (Finset.prod_nonneg fun x _ => mul_nonneg two_pos.le (h0 _ _)) hCE
+    mul_nonneg (Finset.prod_nonneg (by grind)) hCE
   have step1 : ∑' H : MemoryHistory A n,
       (if H.Valid ∧ H.Truncated B ∧ Prescribed B H U tgt then ‖H.Weight rho theta‖ else 0) ≤
       ∑ d : BoundedHistoryData A n B,
         (if (mkH d).Valid then ‖(mkH d).Weight rho theta‖ * localFactorR A n Φ0 φG φE (mkH d)
           else 0) := by
-    rw [tsum_truncR A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
+    rw [tsum_truncR A n B _ (by grind)]
     apply Finset.sum_le_sum
     intro d _
     by_cases hc : (mkH d).Valid ∧ (mkH d).Truncated B ∧ Prescribed B (mkH d) U tgt
@@ -261,7 +255,7 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
     · rw [ite_eq_right hc]
       split_ifs
       · exact mul_nonneg (norm_nonneg _) (localFactor_nonneg (mkH d) U tgt)
-      · exact le_rfl
+      simp
   rw [history_sum_eq] at step1
   have hrowG : ∀ (i : Fin (n + 1)) (s : BoundedMemoryState P (J + F.ell) B),
       ∑ t : BoundedMemoryState P (J + F.ell) B,
@@ -274,16 +268,14 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
       (fun t => absoluteScaledMemoryGhostKernel F J n rho 1 i s.val t * P.memoryWeight v t)
       (fun t => mul_nonneg (by
         unfold absoluteScaledMemoryGhostKernel
-        split_ifs
-        · exact Finset.sum_nonneg fun c _ => by split_ifs <;> positivity
-        · exact le_rfl) (hw0 t)) (hG i s.val).1
+        positivity) (hw0 t)) (hG i s.val).1
     have hP : 0 ≤ ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x) :=
-      Finset.prod_nonneg fun x _ => h0 _ _
+      Finset.prod_nonneg (by grind)
     calc _ ≤ _ := h1
       _ ≤ (∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) *
             (CG * P.memoryWeight v s.val) :=
           mul_le_mul_of_nonneg_left (h2.trans (hG i s.val).2) hP
-      _ = _ := by simp only [cG]; ring
+      _ = _ := by linarith
   have hrowE : ∀ (i : Fin n) (s : BoundedMemoryState P (J + F.ell) B),
       ∑ t : BoundedMemoryState P (J + F.ell) B,
         edgeK A n rho theta i (φE i) s.val t.val * P.memoryWeight v t.val ≤
@@ -297,33 +289,31 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
       (fun t => mul_nonneg (Erdos821.P3Tail.edgeKernel_nonneg _ n rho theta i _ _) (hw0 t))
       (hE i s.val).1
     have hP : 0 ≤ ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) :=
-      Finset.prod_nonneg fun x _ => mul_nonneg two_pos.le (h0 _ _)
+      Finset.prod_nonneg (by grind)
     calc _ ≤ _ := h1
       _ ≤ (∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x)) *
             (CE * P.memoryWeight v s.val) :=
           mul_le_mul_of_nonneg_left (h2.trans (hE i s.val).2) hP
-      _ = _ := by simp only [cE]; ring
+      _ = _ := by linarith
   have hpath := pathSumR_le (fun s : BoundedMemoryState P (J + F.ell) B => P.memoryWeight v s.val)
     n
     (fun i (s t : BoundedMemoryState P (J + F.ell) B) => ghostK F J n rho i (φG i) s.val t.val)
     (fun i (s t : BoundedMemoryState P (J + F.ell) B) => edgeK A n rho theta i (φE i) s.val t.val)
     cG cE
     (fun i s t => ghostK_nonneg F J n rho i _ (fun s t c => by
-      simp only [φG, ghostMult]; split_ifs <;> norm_num) _ _)
+      simp only [φG, ghostMult]; grind) _ _)
     (fun i s t => edgeK_nonneg A n rho theta i _ (fun s t c => by
-      simp only [φE, edgeMult]; split_ifs <;> norm_num) _ _)
+      simp only [φE, edgeMult]; grind) _ _)
     hcG hcE hrowG hrowE
     (fun s => if ∀ g, s.val.2.2 g = 0 then |P.memoryMass F J n s.val| * Φ0 s.val else 0)
     (fun s => if ∀ g, s.val.2.2 g = 0 then 1 else 0)
     (fun s => by
       split_ifs
-      · exact mul_nonneg (abs_nonneg _) (by simp only [Φ0, initMult]; split_ifs <;> norm_num)
-      · exact le_rfl)
-    (fun s => by split_ifs <;> norm_num)
+      · exact mul_nonneg (abs_nonneg _) (by simp only [Φ0, initMult]; grind)
+      simp)
+    (fun s => by positivity)
     (fun s => by
-      split_ifs
-      · exact hw1 s.val
-      · exact hw0 s.val)
+      grind)
   have hstart : ∑ s : BoundedMemoryState P (J + F.ell) B,
       (if ∀ g, s.val.2.2 g = 0 then |P.memoryMass F J n s.val| * Φ0 s.val else 0) *
         P.memoryWeight v s.val ≤
@@ -341,17 +331,17 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
           simp [PrimeGroups.memoryWeight, hsz]
         rw [ite_eq_left hem, hw, mul_one]
         simp only [Φ0, initMult, initTerm, ite_eq_left hem]
-        split_ifs <;> ring
+        simp
       · rw [ite_eq_right hem, zero_mul]
         simp only [initTerm, ite_eq_right hem]
-        split_ifs <;> rfl
+        simp
     rw [Finset.sum_congr rfl (fun s _ => hrw s)]
     have hI0 : 0 ≤ ∏ x ∈ slI F J U, muHat F P n x.1 (valsI F J tgt x) :=
-      Finset.prod_nonneg fun x _ => h0 _ _
+      Finset.prod_nonneg (by grind)
     exact (init_slots F J n B hμ hmass1 (valsI F J tgt) (slI F J U)).trans
       (mul_le_mul_of_nonneg_left (initTerm_sum_le A n B) hI0)
   have hIBM : 0 ≤ initialMemoryBoundaryMass A n :=
-    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
+    Finset.sum_nonneg fun _ _ => by positivity
   have hprodG : (∏ i, cG i) = (∏ i : Fin (n + 1),
       ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) * CG ^ (n + 1) := by
     simp only [cG, Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
@@ -360,14 +350,13 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
     simp only [cE, Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
   have hslots := prod_slots_le n B U tgt hμ
   have hK : 0 ≤ CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n :=
-    mul_nonneg (mul_nonneg (pow_nonneg hCG _) (pow_nonneg hCE _)) hIBM
+    by positivity
   have hn2 : 0 ≤ ∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x) :=
-    Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ => h0 _ _
+    Finset.prod_nonneg fun i _ => Finset.prod_nonneg (by grind)
   have hn3 : 0 ≤ ∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x) :=
-    Finset.prod_nonneg fun i _ => Finset.prod_nonneg fun x _ =>
-      mul_nonneg two_pos.le (h0 _ _)
+    Finset.prod_nonneg fun i _ => Finset.prod_nonneg (by grind)
   have hcGE : 0 ≤ (∏ i, cG i) * (∏ i, cE i) :=
-    mul_nonneg (Finset.prod_nonneg fun i _ => hcG i) (Finset.prod_nonneg fun i _ => hcE i)
+    mul_nonneg (Finset.prod_nonneg (by grind)) (Finset.prod_nonneg (by grind))
   calc _ ≤ _ := step1
     _ ≤ _ := hpath
     _ ≤ (∏ i, cG i) * (∏ i, cE i) *
@@ -377,7 +366,7 @@ theorem prescribed_sum_le (A : Model F P J m) (n B : ℕ) (rho theta v CG CE : �
           ((∏ x ∈ slI F J U, muHat F P n x.1 (valsI F J tgt x)) *
             (∏ i : Fin (n + 1), ∏ x ∈ slG F J U i, muHat F P n x.1 (valsG F J tgt i x)) *
             (∏ i : Fin n, ∏ x ∈ slE F J U i, 2 * muHat F P n x.1 (valsE F J tgt i x))) := by
-        rw [hprodG, hprodE]; ring
+        grind
     _ ≤ _ := mul_le_mul_of_nonneg_left hslots hK
 
 end Erdos821.P3High

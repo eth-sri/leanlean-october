@@ -11,7 +11,6 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-open scoped BigOperators
 
 noncomputable section
 
@@ -30,10 +29,9 @@ theorem fiber_energy_bound {ι κ : Type*} [DecidableEq κ]
       intro j hj
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
-      intro i hi
-      rw [(Finset.mem_filter.mp hi).2]
+      simp_all
     _ ≤ ∑ j ∈ t, D j * E j :=
-      Finset.sum_le_sum fun j hj => mul_le_mul_of_nonneg_right (hD j hj) (hE j hj)
+      Finset.sum_le_sum fun j hj => mul_le_mul_of_nonneg_right (by grind) (by grind)
 
 theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
     (rows : Finset κ) (terms : Finset ι) (active : κ → Finset ι)
@@ -61,10 +59,10 @@ theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
       intro i hi
       apply pow_le_pow_left₀ (norm_nonneg _)
       rw [norm_mul]
-      exact mul_le_of_le_one_left (norm_nonneg _) (hw k hk i hi)
-    exact hb.trans (mul_le_mul (hcard k hk) hsum
+      exact mul_le_of_le_one_left (norm_nonneg _) (by grind)
+    exact hb.trans (mul_le_mul (by grind) hsum
       (Finset.sum_nonneg fun _ _ => sq_nonneg _)
-      (le_trans (Nat.cast_nonneg _) (hcard k hk)))
+      (by grind))
   calc
     _ ≤ ∑ k ∈ rows, C * ∑ i ∈ active k, ‖F k i‖ ^ 2 :=
       Finset.sum_le_sum hlocal
@@ -74,10 +72,7 @@ theorem finite_expansion_energy {κ ι : Type*} [DecidableEq ι]
       apply Finset.sum_congr rfl
       intro k hk
       rw [← Finset.sum_filter]
-      congr 1
-      ext i
-      simp only [Finset.mem_filter]
-      exact ⟨fun hi => ⟨hsub k hk hi, hi⟩, And.right⟩
+      simp_all
     _ = _ := by rw [Finset.sum_comm]
 
 end

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblySourceCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeFinalAssembly
 open ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -25,7 +24,7 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
     (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
@@ -96,7 +95,7 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
   let rows' := amplitudeRows rows Finset.univ (Z^d) ((2*a-1)/2) mesh hmesh (fun j=>ell j/d) Q bin
   let q := classMean Finset.univ ((2*a-1)/2) mesh (fun j=>ell j/d) bin
   have hsub : rows'⊆rows := Finset.filter_subset _ _
-  have hrowne : rows.Nonempty := hne.mono hsub
+  have hrowne := hne.mono hsub
   have hband : rows⊆rowBand (Z^(1/100:ℝ)) (2*Z^v+1) := by
     intro u hu
     exact mem_rowBand.mpr ⟨(hrows u hu).1,(hrows u hu).2.1,by linarith [(hnorm u hu).2]⟩
@@ -111,7 +110,7 @@ theorem actual_nonfloor_class_from_raw_moments (N n : ℕ) (e eps c b A R dmin d
     exact hFam u (hBr ▸ hu) j
   have hraw := hmom q B hBsub hBd hRev hSlots hWidths hW' hUpper hExternal hMesh hBin hBfam
   have hcard := hcount d hd hd' a ε Δ ν C0 q i hi ha ha' hε.le hε1 hΔ hΔ1 hν hC0 B
-    (by rw [hSlots];simp) hBin (hBr.symm ▸ hne) hMean hraw
+    (by simp [hSlots]) hBin (hBr.symm ▸ hne) hMean hraw
   rw [hBr,hMesh] at hcard
   have hqb := classMean_bounds rows Finset.univ (Z^d) (2*a-1) mesh hmesh (fun j=>ell j/d) Q bin
     (by linarith) (fun j _=>div_nonneg (hellpos j).le hd0.le)

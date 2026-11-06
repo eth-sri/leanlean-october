@@ -21,10 +21,7 @@ theorem actual_complete_step_cost (L eta epsChild:ℝ)(hL:0≤L)(heta:0<eta)
   have he:firstPassEpsilon L eta*(10*L+32)=eta:=by unfold firstPassEpsilon;field_simp
   have hb:2*L+7*eta≤10*L+32:=by linarith
   have hc:=mul_le_mul_of_nonneg_left hb hp.le
-  have hl:=mul_le_mul_of_nonneg_left (show 2*L≤10*L+32 by linarith) hp.le
-  constructor
-  · nlinarith
-  constructor <;> nlinarith
+  grind
 
 theorem actual_complete_height_merge (dshort dlong:ℕ)(Z F cstar loss Cs Cb A theta:ℝ)
     (hZ:1≤Z)(hcstar:0≤cstar)(hloss:0≤loss)(hCs:0≤Cs)(hCb:0≤Cb)(hA:0≤A):
@@ -33,9 +30,9 @@ theorem actual_complete_height_merge (dshort dlong:ℕ)(Z F cstar loss Cs Cb A t
     (Cs+Cb)*(1+A)*(1+‖theta‖)^(max dshort dlong)*Z^(F+loss) := by
   have hp:1≤1+‖theta‖:=by linarith [norm_nonneg theta]
   have hshort:(1+‖theta‖)^dshort≤(1+‖theta‖)^(max dshort dlong):=
-    pow_le_pow_right₀ hp (le_max_left _ _)
+    pow_le_pow_right₀ hp (by omega)
   have hlong:(1+‖theta‖)^dlong≤(1+‖theta‖)^(max dshort dlong):=
-    pow_le_pow_right₀ hp (le_max_right _ _)
+    pow_le_pow_right₀ hp (by omega)
   have hz:0<Z:=zero_lt_one.trans_le hZ
   have hs:Z^(F-cstar/256)≤Z^(F+loss):=
     Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
@@ -48,8 +45,7 @@ theorem actual_complete_height_merge (dshort dlong:ℕ)(Z F cstar loss Cs Cb A t
         exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hh (by positivity)) (by positivity)
   have hl':Cb*(1+A)*(1+‖theta‖)^dlong*Z^(F+loss)≤
       Cb*(1+A)*(1+‖theta‖)^(max dshort dlong)*Z^(F+loss):=by gcongr
-  have hh:=add_le_add hs' hl'
-  convert hh using 1 ; ring
+  linarith
 
 end SevenEighths.InverseMoment
 

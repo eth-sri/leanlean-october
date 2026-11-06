@@ -9,8 +9,8 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 theorem actual_central_unramified_normalized (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (hη : IsCoprime P.val η.modulus)
@@ -30,10 +30,10 @@ theorem actual_central_unramified_normalized (η : Character) (u : FreeRow) (P :
   · have hQ0 : (0:ℝ)<P.val.absNorm := by linarith
     have hV : ‖coordV P.val.absNorm z‖<1 := by
       rw [coordV_norm _ hQ0]
-      exact (rpow_le_half _ _ (by linarith) (by rw [hz];norm_num)).trans_lt (by norm_num)
+      exact (rpow_le_half _ _ (by linarith) (by linarith)).trans_lt (by norm_num)
     have hR : ‖coordR P.val.absNorm (actualAPhase η (primaryGenerator P.val)) x z‖<1 :=
       (coordR_norm_le _ hQ0 _ x z hA).trans_lt
-        ((rpow_le_half _ _ (by linarith) (by rw [hx,hz];linarith)).trans_lt (by norm_num))
+        ((rpow_le_half _ _ (by linarith) (by linarith)).trans_lt (by norm_num))
     rw [continuedCompensatedLocal_unramified η u P hs hn x w z hV hR]
     exact unramifiedSelected_central_quotient _ a e _ _ _ x w z hQ ha ha1 he he1 hA heta hv hx hw hz
 end SevenEighths.ProbeHighRowFamily

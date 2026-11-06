@@ -35,7 +35,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 /-! ### The circle distance -/
 
@@ -78,13 +78,13 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
       _ ≤ q' * δ + q' * η :=
           add_le_add (mul_le_mul_of_nonneg_left h₃ (Nat.cast_nonneg _))
             (mul_le_mul hsq hη (abs_nonneg _) (Nat.cast_nonneg _))
-      _ = R := by rw [hR]; ring
+      _ = R := by linarith
   -- `g` is injective on the block
   have hinj : Set.InjOn g T := by
     intro t₁ ht₁ t₂ ht₂ h
     simp only [hg] at h
     have hdvd : (q' : ℤ) ∣ (t₁ - t₂) * a' :=
-      ⟨round (t₁ * β) - round (t₂ * β), by linear_combination h⟩
+      ⟨round (t₁ * β) - round (t₂ * β), by linarith⟩
     have hdvd' : (q' : ℤ) ∣ t₁ - t₂ := hcop.symm.dvd_of_dvd_mul_right hdvd
     have hlt : |t₁ - t₂| < q' := by
       obtain ⟨a₁, b₁, -⟩ := hT t₁ ht₁
@@ -110,12 +110,11 @@ theorem card_block_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0 < q') (hcop
   have hlo' : -(t₀ * e) - R ≤ (lo : ℝ) := Int.le_ceil _
   have hR0 : 0 ≤ R := by positivity
   calc (T.card : ℝ) ≤ ((hi + 1 - lo).toNat : ℝ) := hcast
-    _ = max ((hi + 1 - lo : ℤ) : ℝ) 0 := by rw [← htoNat]; rfl
+    _ = max ((hi + 1 - lo : ℤ) : ℝ) 0 := by omega
     _ ≤ 2 * R + 1 := by
         refine max_le ?_ (by linarith)
-        push_cast
-        linarith
-    _ = 2 * q' * (δ + η) + 1 := by rw [hR]; ring
+        grind
+    _ = 2 * q' * (δ + η) + 1 := by linarith
 
 /-- **The small multiples**: if `|q' β - a'| ≤ η` with `(a', q') = 1`, then at most
 `(2M/q' + 1)(2q'(δ + η) + 1)` integers `|t| ≤ M` have `‖t β‖ ≤ δ`: split `[-M, M]` into
@@ -133,7 +132,7 @@ theorem card_filter_circleDist_le {β δ η : ℝ} {a' : ℤ} {q' : ℕ} (hq : 0
     intro t ht
     obtain ⟨h₁, h₂⟩ := mem_Icc.1 (mem_filter.1 ht).1
     have h0 : 0 ≤ (t + M) / q' := Int.ediv_nonneg (by omega) hq'.le
-    have hle : (t + M) / q' ≤ ((2 * M : ℕ) : ℤ) / q' := Int.ediv_le_ediv hq' (by push_cast; omega)
+    have hle : (t + M) / q' ≤ ((2 * M : ℕ) : ℤ) / q' := Int.ediv_le_ediv hq' (by omega)
     rw [mem_range, hnb, Nat.lt_succ_iff]
     have : (((t + M) / q').toNat : ℤ) ≤ ((2 * M / q' : ℕ) : ℤ) := by
       rw [Int.toNat_of_nonneg h0]
@@ -189,7 +188,7 @@ theorem exists_approx_of_good {α Y : ℝ} (hY : 1 ≤ Y)
   have hY0 : 0 < Y := by linarith
   have hY7 : 0 < Y ^ (7 / 10 : ℝ) := Real.rpow_pos_of_pos hY0 _
   set n := ⌈(p : ℝ) * Y ^ (7 / 10 : ℝ)⌉₊ with hn
-  have hn0 : 0 < n := Nat.ceil_pos.2 (by positivity)
+  have hn0 : 0 < n := by positivity
   have hnle : (p : ℝ) * Y ^ (7 / 10 : ℝ) ≤ n := Nat.le_ceil _
   obtain ⟨Q, hQ, hQden⟩ := Real.exists_rat_abs_sub_le_and_den_le β hn0
   have hd0 : (0 : ℝ) < Q.den := by exact_mod_cast Q.pos
@@ -225,7 +224,7 @@ theorem exists_approx_of_good {α Y : ℝ} (hY : 1 ≤ Y)
         ring
       calc circleDist (Q.den * α) ≤ |(Q.den : ℝ) * α - ((p * Q.num - Q.den * c₀ : ℤ) : ℝ)| :=
             circleDist_le_abs_sub' _ _
-        _ = p * |(Q.den : ℝ) * β - Q.num| := by rw [hid, abs_mul, Nat.abs_cast]
+        _ = p * |(Q.den : ℝ) * β - Q.num| := by simp_all
         _ ≤ p * (1 / ((n : ℝ) + 1)) := mul_le_mul_of_nonneg_left happ hp'.le
         _ < p * (1 / (p * Y ^ (7 / 10 : ℝ))) := by
             refine mul_lt_mul_of_pos_left (one_div_lt_one_div_of_lt (by positivity) ?_) hp'
@@ -251,24 +250,20 @@ theorem exists_lineForm {p : ℕ} (hp : p.Prime) (ℓ : ℕ) :
     rw [Int.natCast_dvd_ofNat]
     exact hp.not_dvd_one
   by_cases hℓ : ℓ < p
-  · refine ⟨ℓ, -1, fun h => hp1 (by simpa using h.2), fun z hz => ?_⟩
+  · refine ⟨ℓ, -1, fun h => hp1 (by simp_all), fun z hz => ?_⟩
     unfold lineOf at hz
     split_ifs at hz with h0
     · omega
     · rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
       have hℓ' : ((ℓ : ℕ) : ZMod p) = (z.2 : ZMod p) * (z.1 : ZMod p)⁻¹ := by
         rw [← hz, ZMod.natCast_zmod_val]
-      have hcast : (((ℓ : ℤ) * z.1 + -1 * z.2 : ℤ) : ZMod p) =
-          ((ℓ : ℕ) : ZMod p) * (z.1 : ZMod p) - (z.2 : ZMod p) := by
-        push_cast
-        ring
-      rw [hcast, hℓ', mul_assoc, inv_mul_cancel₀ h0, mul_one, sub_self]
-  · refine ⟨1, 0, fun h => hp1 h.1, fun z hz => ?_⟩
+      simp_all
+  · refine ⟨1, 0, by grind, fun z hz => ?_⟩
     unfold lineOf at hz
     split_ifs at hz with h0
     · rw [one_mul, zero_mul, add_zero, ← ZMod.intCast_zmod_eq_zero_iff_dvd]
-      exact h0
-    · exact absurd (hz ▸ ZMod.val_lt _) hℓ
+      omega
+    grind
 
 /-! ### The line count -/
 
@@ -287,7 +282,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
   classical
   set c := complement w with hc
   set α := (D : ℝ) * (tau r c / tau r w) with hα
-  have hp0 : 0 < p := hp.pos
+  have hp0 := hp.pos
   have hp' : (0 : ℝ) < p := by exact_mod_cast hp0
   have hY0 : 0 < Y := by linarith
   have hY45 : 1 ≤ Y ^ (4 / 5 : ℝ) := Real.one_le_rpow hY (by norm_num)
@@ -311,7 +306,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
   -- `z = m w + n c` with `m = det(z, c)` and `n = det(w, z)`
   have hdecomp : ∀ z : ℤ × ℤ, z.1 = (z.1 * c.2 - z.2 * c.1) * w.1 + (w.1 * z.2 - w.2 * z.1) * c.1 ∧
       z.2 = (z.1 * c.2 - z.2 * c.1) * w.2 + (w.1 * z.2 - w.2 * z.1) * c.2 := fun z =>
-    ⟨by linear_combination (-z.1) * hdetc, by linear_combination (-z.2) * hdetc⟩
+    ⟨by grind, by grind⟩
   -- the strip: `0 ≤ m + t α ≤ 16`
   have hstrip : ∀ z ∈ rootPositions U V u v r, ∀ t : ℤ, w.1 * z.2 - w.2 * z.1 = D * t →
       0 ≤ ((z.1 * c.2 - z.2 * c.1 : ℤ) : ℝ) + t * α ∧
@@ -368,7 +363,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           rw [this]
           exact dvd_sub (dvd_mul_of_dvd_right hAc0 _) (dvd_mul_of_dvd_right hAw0 _)
       refine ⟨1 / p, 0, 0, 1, p, hp0, isCoprime_one_left, ?_, le_rfl, ?_, ?_⟩
-      · rw [mul_one_div_cancel hp'.ne', Int.cast_one, sub_self, abs_zero]
+      · grind
       · intro z hz t ht hl
         have hdiv := hA z hl
         obtain ⟨h₁, h₂⟩ := hdecomp z
@@ -378,20 +373,19 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           linear_combination A₁ * h₁ + A₂ * h₂
         rw [hlin] at hdiv
         have hpt : (p : ℤ) ∣ D * t * Ac := (dvd_add_right (dvd_mul_of_dvd_right hAw0 _)).1 hdiv
-        have hpp : Prime (p : ℤ) := Nat.prime_iff_prime_int.1 hp
+        have hpp := Nat.prime_iff_prime_int.1 hp
         have hpD' : ¬ (p : ℤ) ∣ D := by exact_mod_cast hpD
         obtain ⟨k, hk⟩ : (p : ℤ) ∣ t := by
           rcases hpp.dvd_or_dvd hpt with h | h
           · exact (hpp.dvd_or_dvd h).resolve_left hpD'
-          · exact absurd h hAc0
+          omega
         rw [hk]
         have : ((p * k : ℤ) : ℝ) * (1 / p) = (k : ℝ) := by
           push_cast
           field_simp
         rw [this]
         have := circleDist_le_abs_sub' (k : ℝ) k
-        rw [sub_self, abs_zero] at this
-        exact this
+        grind
       · have hM' : (2 * M / p + 1 : ℝ) * (2 * p * (0 + 0) + 1) = 2 * M / p + 1 := by ring
         rw [hM']
         have h1 : 2 * (M : ℝ) / p ≤ 12 * Y / p :=
@@ -412,9 +406,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
       set c₀ : ℤ := -(D * Ac * μ) with hc₀
       obtain ⟨a', q', hq0, hcop, happ, hqY, hqp⟩ := exists_approx_of_good (α := α) hY
         (fun l hl hlY => by
-          have := hgood l hl hlY
-          rw [hα, ← mul_assoc]
-          exact this) hp0 c₀
+          grind) hp0 c₀
       refine ⟨(c₀ + α) / p, 16 / p, 1 / q', a', q', hq0, hcop, happ, by positivity, ?_, ?_⟩
       · intro z hz t ht hl
         have hdiv := hA z hl
@@ -431,7 +423,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
             rw [hc₀]
             linear_combination (-m) * hμκ
           rw [this]
-          exact dvd_add (dvd_mul_of_dvd_right hdiv _) (dvd_mul_right _ _)
+          exact dvd_add (dvd_mul_of_dvd_right hdiv _) (by simp)
         obtain ⟨k, hk⟩ := hmc
         obtain ⟨hs₁, hs₂⟩ := hstrip z hz t ht
         rw [← hm] at hs₁ hs₂
@@ -447,7 +439,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
         calc circleDist (t * ((c₀ + α) / p)) ≤ |(t : ℝ) * ((c₀ + α) / p) - ((-k : ℤ) : ℝ)| :=
               circleDist_le_abs_sub' _ _
           _ = ((m : ℝ) + t * α) / p := by
-              rw [hid, abs_of_nonneg (div_nonneg hs₁ hp'.le)]
+              rw [hid, abs_of_nonneg (by positivity)]
           _ ≤ 16 / p := div_le_div_of_nonneg_right hs₂ hp'.le
       · -- `(2M/q' + 1)(32 q'/p + 3) ≤ 384 Y/p + 103 Y^{0.8}`
         have hq' : (0 : ℝ) < q' := by exact_mod_cast hq0
@@ -477,9 +469,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
             64 * (M / p) + 6 * (M / q') + 32 * (q' / p) + 3 := by
           field_simp
           ring
-        rw [hexpand]
-        have : 6 * Y / p * 64 = 384 * Y / p := by ring
-        nlinarith
+        grind
   obtain ⟨β, δ, η, a', q', hq0, hcop, hη, hδ, hgoodt, hbound⟩ := hcount
   -- the positions sit over the admissible `t`, at most `16` over each
   set Tg := (Icc (-(M : ℤ)) M).filter fun t : ℤ => circleDist ((t : ℝ) * β) ≤ δ with hTg
@@ -489,7 +479,7 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
           w.1 * z.2 - w.2 * z.1 = D * t := by
     intro z hz
     obtain ⟨hzT, ⟨t, htI, ht⟩, hl⟩ := mem_filter.1 hz
-    exact mem_biUnion.2 ⟨t, mem_filter.2 ⟨htI, hgoodt z hzT t ht hl⟩, mem_filter.2 ⟨hzT, ht⟩⟩
+    exact mem_biUnion.2 ⟨t, by grind, by grind⟩
   have hcard := (card_le_card hsub).trans card_biUnion_le
   have h16 : ∑ t ∈ Tg, ((rootPositions U V u v r).filter fun z =>
       w.1 * z.2 - w.2 * z.1 = D * t).card ≤ ∑ _t ∈ Tg, 16 :=
@@ -499,12 +489,6 @@ theorem card_filter_line_le {U V u v r Y : ℝ} (hU : 0 < U) (hY : 1 ≤ Y) {w :
   have hfin : (((rootPositions U V u v r).filter fun z =>
       (∃ t ∈ Icc (-(M : ℤ)) M, w.1 * z.2 - w.2 * z.1 = D * t) ∧ lineOf p z = ℓ).card : ℝ) ≤
         Tg.card * 16 := by exact_mod_cast hcard.trans h16
-  calc _ ≤ (Tg.card : ℝ) * 16 := hfin
-    _ ≤ (384 * Y / p + 103 * Y ^ (4 / 5 : ℝ)) * 16 :=
-        mul_le_mul_of_nonneg_right (hTgc.trans hbound) (by norm_num)
-    _ ≤ 2 ^ 13 * (Y / p + Y ^ (4 / 5 : ℝ)) := by
-        have : 0 ≤ Y / p := by positivity
-        have : 384 * Y / p = 384 * (Y / p) := by ring
-        nlinarith
+  grind
 
 end Erdos408.OneSided

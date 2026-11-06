@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Detector.CentralClassPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorPhysicalSelection
+open HeckeInverseAmplification HeckeDetectorPhysicalSelection
 open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O)
-variable (H : Subgroup (O ⧸ M)ˣ)
+variable (M : Ideal HeckeFamily.O)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
 
 lemma source_physical_amplitude {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
     (Z d b : ℝ) (z : ℂ) (hZ : 0<Z) (hd : d≠0) (u : FreeRow) (j : Fin N) :
@@ -32,7 +31,7 @@ lemma source_rowMean_eq {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
           (HeckePrimeRow.canonicalPrimeAmplitude M H u.val (W j) b (Z^(ell j)) z)) := by
   unfold rowMean
   simp_rw [physical_slot_scale ell Z d hZ hd,source_physical_amplitude M H ell W Z d b z hZ hd]
-  rw [show (2*a-1)/2=a-1/2 by ring]
+  ring
 
 lemma source_amplitude_class_mean {N : ℕ} (ell : Fin N→ℝ) (W : Fin N→ℝ→ℂ)
     (Z d b a mesh : ℝ) (z : ℂ) (hZ : 0<Z) (hd : d≠0) (hm : 0<mesh)

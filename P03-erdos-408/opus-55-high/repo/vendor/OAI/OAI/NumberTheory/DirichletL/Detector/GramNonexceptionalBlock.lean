@@ -8,30 +8,28 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPeriodicPoisson
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open CanonicalQuadraticSieve CanonicalRowCompletion RayFourExpansion
 open ConcretePrimeRowBridge UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "Joint" => ProbeGramPeriodicPoisson.Joint
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
     (ha₀ : 0<a₀) (hab : a₀<b₀) :
     ∃H : Finset (ℕ×ℕ),∃K : ℝ,0<K ∧
       ∀{ι : Type*}[Fintype ι],∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
-      (C k : O)(_hC : C≠0)(_hk0 : k≠0)(u : Oˣ)(a b : ℕ)(r : O)
-      (hr : Supported (Ideal.span {r})),k=u.val*goodLambda^a*(2:O)^b*r→
+      (C k : ActualEisensteinCubic.O)(_hC : C≠0)(_hk0 : k≠0)(u : ActualEisensteinCubic.Oˣ)(a b : ℕ)(r : ActualEisensteinCubic.O)
+      (hr : Supported (Ideal.span {r})),k=u.val*goodLambda^a*(2:ActualEisensteinCubic.O)^b*r→
       ∀(P : ι→Id)[_hmax : ∀i,(P i).IsMaximal](hg : ∀i,goodLambda∉P i)(c : ι→ℕ),
       (∀i,1≤c i)→Ideal.span {C}=∏i,P i^c i→
       ∀(p : Id)[_hpmax : p.IsMaximal],p≠0→∀_hgp : goodLambda∉p,
-      ringChar (O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
+      ringChar (ActualEisensteinCubic.O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
       (¬6∣(normalizedFactors (Ideal.span {k})).count p)→
-      ∀(W : SchwartzMap Joint ℂ),ProbeGramAnnularLattice.AnnularSupport a₀ b₀ W→
-      ∀(d : O)(N : ℝ),0<N→
-      Summable (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+      ∀(W : SchwartzMap ProbeGramPeriodicPoisson.Joint ℂ),ProbeGramAnnularLattice.AnnularSupport a₀ b₀ W→
+      ∀(d : ActualEisensteinCubic.O)(N : ℝ),0<N→
+      Summable (fun m : ActualEisensteinCubic.O×ActualEisensteinCubic.O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         W (ProbeGramLatticeDecay.physicalPoint N m)) ∧
-      ‖∑'m : O×O,jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+      ‖∑'m : ActualEisensteinCubic.O×ActualEisensteinCubic.O,jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         W (ProbeGramLatticeDecay.physicalPoint N m)‖≤
         K*ProbeGramLatticeDecay.sourceControl H W*(Ideal.absNorm (Ideal.span {C}):ℝ)*N^2*
           min 1 (((Ideal.absNorm (jointFixedModulus S hS):ℝ)*Ideal.absNorm (Ideal.span {C})*
@@ -43,20 +41,20 @@ theorem literal_nonexceptional_block (A : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       (normalizedFactors (Ideal.span {r})).count p := by
     rw [hk]
     exact good_factor_count p hgp hchar u a b r hr
-  have heR : ¬6∣(normalizedFactors (Ideal.span {r})).count p := hcount ▸ he
+  have heR := hcount ▸ he
   obtain ⟨M,hM,hMN,hres⟩ := exists_nonexceptional_residue S hS σ C k hC hk0 u a b r hr hk
     P hg c hc hfac p hp0 hgp hchar hfixed hcommon heR
-  let : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient hM
-  let : Fintype (O⧸M) := Fintype.ofFinite _
+  let : Finite (ActualEisensteinCubic.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient hM
+  let : Fintype (ActualEisensteinCubic.O⧸M) := Fintype.ofFinite _
   obtain ⟨f,hf,hfn,hfm⟩ := hres d
-  have hmean : (∑'v : (O⧸M)×(O⧸M),f v.1 v.2)=0 := by
+  have hmean : (∑'v : (ActualEisensteinCubic.O⧸M)×(ActualEisensteinCubic.O⧸M),f v.1 v.2)=0 := by
     rw [tsum_fintype,Fintype.sum_prod_type]
     exact hfm
   have hh := hengine W hW M hM (fun v=>f v.1 v.2) (Ideal.absNorm (Ideal.span {C}))
     (Nat.cast_nonneg _) (fun v=>hfn v.1 v.2) hmean N hN
-  have hfun : (fun m : O×O=>f (ProbeGramPeriodicPoisson.idealQuotientPair M m).1
+  have hfun : (fun m : ActualEisensteinCubic.O×ActualEisensteinCubic.O=>f (ProbeGramPeriodicPoisson.idealQuotientPair M m).1
       (ProbeGramPeriodicPoisson.idealQuotientPair M m).2*W (ProbeGramLatticeDecay.physicalPoint N m))=
-      (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+      (fun m : ActualEisensteinCubic.O×ActualEisensteinCubic.O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         W (ProbeGramLatticeDecay.physicalPoint N m)) := by
     funext m
     rw [ProbeGramPeriodicPoisson.idealQuotientPair,hf]

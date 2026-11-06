@@ -29,7 +29,7 @@ lemma gaussianMellin_integral (y : ℝ) (hy : 0<y) (σ : ℝ) :
     simp only [Complex.I_sq]
     ring
   simp_rw [hi]
-  rw [integral_cexp_quadratic (by norm_num : (-1:ℂ).re<0)]
+  rw [integral_cexp_quadratic (by simp)]
   congr 1
   · norm_num
   · congr 1
@@ -46,13 +46,12 @@ lemma gaussianMellin_inversion (y : ℝ) (hy : 0<y) (σ : ℝ) :
 
 lemma gaussian_completed_norm_power (a b Z : ℝ) (ha : 0<a) (hb : 0<b) (hZ : 0<Z) (t : ℂ) :
     (Z:ℂ)^t*((a:ℂ)^(-t)*(b:ℂ)^(-(3*t)))=((a*b^3/Z:ℝ):ℂ)^(-t) := by
-  rw [Complex.ofReal_div,Complex.div_cpow_ofReal_nonneg (mul_pos ha (pow_pos hb 3)).le hZ.le]
-  rw [Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg ha.le (pow_pos hb 3).le]
+  rw [Complex.ofReal_div,Complex.div_cpow_ofReal_nonneg (by positivity) hZ.le]
+  rw [Complex.ofReal_mul,Complex.mul_cpow_ofReal_nonneg ha.le (by positivity)]
   have hp : ((b^3:ℝ):ℂ)^(-t)=(b:ℂ)^((3:ℂ)*(-t)) := by
     simpa only [Real.rpow_ofNat,Real.rpow_natCast,Complex.ofReal_pow,Complex.cpow_ofNat,Complex.ofReal_ofNat] using
       (Complex.cpow_mul_ofReal_nonneg hb.le (3:ℝ) (-t)).symm
   rw [hp,Complex.cpow_neg (Z:ℂ),div_inv_eq_mul]
-  rw [show (3:ℂ)*(-t)= -(3*t) by ring]
   ring
 
 end SevenEighths.ProbePhysical

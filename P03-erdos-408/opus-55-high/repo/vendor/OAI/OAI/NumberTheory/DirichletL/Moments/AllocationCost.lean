@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceLiveColumn
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAllocationCost
 open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
 open CenteredMomentAddedZeroUniform
-local notation "O" => ActualEisensteinCubic.O
 
  theorem actualAllocations_uniform_small_power (N : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ D : ℝ,0<D ∧ ∀ {ι : Type*} [Fintype ι],Fintype.card ι≤N →
-      ∀ (S : ι → Finset (Ideal O)) (C : Ideal O),C≠0 →
+      ∀ (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O),C≠0 →
         ((actualAllocations S C).card:ℝ)≤D*(Ideal.absNorm C:ℝ)^ε := by
   let δ := ε/(N+1:ℕ)
   have hδ : 0<δ := by dsimp [δ];positivity
@@ -40,7 +39,7 @@ local notation "O" => ActualEisensteinCubic.O
     _ = _ := by rw [mul_pow,←Real.rpow_mul_natCast (Nat.cast_nonneg _),hd]
 
  theorem frozenCoefficient_norm {ι : Type*} [Fintype ι]
-    (B : Tuple ι) (C R : Ideal O) (ν : ι → Ideal O → ℂ)
+    (B : Tuple ι) (C R : Ideal ActualEisensteinCubic.O) (ν : ι → Ideal ActualEisensteinCubic.O → ℂ)
     (Wslot : ι → ℝ → ℂ) (P M : ι → ℝ)
     (hν : ∀ i I,‖ν i I‖≤1) (hW : ∀ i x,‖Wslot i x‖≤M i)
     (hM : ∀ i,1≤M i) :

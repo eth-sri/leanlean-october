@@ -10,20 +10,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualUniformEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
 open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
-local notation "O"=>ActualEisensteinCubic.O
+open InverseMoment
+open InverseInitialQuotientGeometry
+open Filter
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
-open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
+open InverseInitialRayAttachment
+open InverseInitialCommonRatios
+open InverseInitialPoissonBridge InverseInitialExcludedPool
 open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_uniform_energy
     (Woriginal:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)(hab:ao≤bo)
@@ -35,15 +32,15 @@ theorem original_residual_uniform_energy
     ∀q:ℕ,q≠0→∃C Z₀:ℝ,0<C ∧ 1<Z₀ ∧
     ∀Z:ℝ,Z₀≤Z→
     ∀{σ:Type}[DecidableEq σ](all assigned:Finset σ),assigned⊆all→all.card≤K→
-    ∀(L:σ→Finset (Ideal O))(Hslot:σ→ℝ)(coeff:σ→Ideal O→ℂ),
+    ∀(L:σ→Finset (Ideal ActualEisensteinCubic.O))(Hslot:σ→ℝ)(coeff:σ→Ideal ActualEisensteinCubic.O→ℂ),
       (all:Set σ).PairwiseDisjoint L→(∀i∈all\assigned,1≤Hslot i)→
       (∀i∈all\assigned,∀P∈L i,(P.absNorm:ℝ)≤Hslot i)→
       (∀i∈all\assigned,∀P∈L i,‖coeff i P‖≤1)→
-    ∀(qelem:σ→O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
+    ∀(qelem:σ→ActualEisensteinCubic.O)(z al bl:σ→ℝ)(primeW:σ→ℝ→ℂ),
       (∀i∈all,0≤z i)→(∀i∈assigned,qelem i≠0)→
       (∀i∈assigned,Function.support (primeW i)⊆Set.Icc (al i) (bl i))→
       (∀i∈assigned,primeW i ((Ideal.absNorm (Ideal.span {qelem i}):ℝ)/Z^(z i))≠0)→
-    ∀χ:Ideal O→*ℂ,(∀u,‖elementCharacter χ u‖≤1)→
+    ∀χ:Ideal ActualEisensteinCubic.O→*ℂ,(∀u,‖elementCharacter χ u‖≤1)→
       FactorsModulo (fixedBaseConductor q) (elementCharacter χ)→
       (∀c,¬outside (reflectionExcludedPrimes q) c→χ c=0)→
     ∀(D m r:ℝ),0≤m→m≤cap→-cap≤D→
@@ -53,8 +50,8 @@ theorem original_residual_uniform_energy
       r+2*assignedCenter all z≤m-2*gap→
       2*r+8*assignedCenter all z≤3*m-2*gap→
       r+assignedCenter all z+7*η≤cap→
-    ∀(rows:Finset O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
-    ∀(j:Ideal O),Admissible j→Ideal.span {assignedElement assigned qelem}=j→
+    ∀(rows:Finset ActualEisensteinCubic.O),(∀u∈rows,‖eisEmbedding u‖^2≤Z^m)→
+    ∀(j:Ideal ActualEisensteinCubic.O),Admissible j→Ideal.span {assignedElement assigned qelem}=j→
       ((j.absNorm:ℝ)/Z^(assignedCenter assigned z))∈Set.Icc (1:ℝ) ((2:ℝ)^K)→
       (∀i∈all\assigned,∀P∈L i,Prime P)→
       (∀i∈all\assigned,∀P∈L i,coeff i P≠0→slotRatio Z z i P∈Set.Icc (1:ℝ) 2)→
@@ -84,10 +81,10 @@ theorem original_residual_uniform_energy
     qelem z al bl primeW hz hqe hprimeW hprimeLive χ hχ hperiod hout
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows
     j hj hspan hjratio hL hcoeff hP hcopTuple hPE θ
-  have hZp:0<Z:=zero_lt_one.trans (hZ₀.trans_le hZ)
+  have hZp:0<Z:=by linarith
   obtain ⟨Dpool,hfloor,hcover⟩:=InverseInitialResidualPool.exists_original_complete_pool
     q Z r bo cap Btree hZp (zero_le_one.trans hBtree) ((all\assigned).pi L)
-    (fun t=>j*survivingProduct (all\assigned) t) j hP (fun t _=>dvd_mul_right j _) hPE
+    (fun t=>j*survivingProduct (all\assigned) t) j hP (by simp) hPE
   exact henergy Z hZ Dpool hfloor all assigned hassigned hK L Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive χ hχ hperiod hout
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows

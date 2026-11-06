@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.PhysicalBranchMeasure
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open MeasureTheory FourierBridge
+open scoped Classical
+open MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma weightedKernelCoordinate_norm (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
     (hw : ∀ i y, ‖windows i y‖≤1) (hs : ∀ i y, windows i y≠0 → |y|≤M i)
@@ -36,8 +35,8 @@ lemma weightedKernelCoordinate_measurable (windows : Fin 4→ℝ→ℂ) (M : Fin
 lemma weightedKernelDual_measurable (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
     (a : ℂ) (Qn Qb n b : ℝ) :
     AEStronglyMeasurable (fun t : ℝ =>
-      a*kernelDualWeight (reciprocalKernelWindows windows M) Qn Qb t n b) := by
-  exact (((kernelCoordinateWeight_continuous _ _ _ _).mul
+      a*kernelDualWeight (reciprocalKernelWindows windows M) Qn Qb t n b) :=
+  (((kernelCoordinateWeight_continuous _ _ _ _).mul
     (kernelCoordinateWeight_continuous _ _ _ _)).const_mul a).aestronglyMeasurable
 
 end

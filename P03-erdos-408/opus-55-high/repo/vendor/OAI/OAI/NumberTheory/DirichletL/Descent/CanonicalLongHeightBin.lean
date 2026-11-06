@@ -9,12 +9,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_marked_bin_height
@@ -35,7 +34,7 @@ theorem actual_marked_bin_height
     ∀epsFirst epsSecond:ℝ,0<epsFirst → 0<epsSecond → ∀degree:ℕ,
       ∃Ccoef C:ℝ,0<Ccoef ∧ 0≤C ∧
     ∀theta:ℝ,
-    ∀{σ:Type}[DecidableEq σ](S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(hSp:∀P∈S,Prime P),
+    ∀{σ:Type}[DecidableEq σ](S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(hSp:∀P∈S,Prime P),
       let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
       let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad;
       letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
@@ -45,7 +44,7 @@ theorem actual_marked_bin_height
       let hcop:=poolPrimary_coprime F hF;
       let hg:=poolPrimary_good F hF;
       let om:=radialFromLog Vlog (Vlog.smooth ⊤) Alog hbox;
-      ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal O))(Ψ:O →* ℂ)(m:O)
+      ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(Ψ:ActualEisensteinCubic.O →* ℂ)(m:ActualEisensteinCubic.O)
         (slots:Finset σ)(lists:σ → Finset (primePool F))(weights:σ → primePool F → ℂ)
         (Z M r ell V H₀ pi epschild A loss lossFinal:ℝ),
         2≤Z → 2≤Z^eta → Real.exp 1≤Z^eta → 0≤M → r+3*ell+V≤Lcap → M≤Lcap →

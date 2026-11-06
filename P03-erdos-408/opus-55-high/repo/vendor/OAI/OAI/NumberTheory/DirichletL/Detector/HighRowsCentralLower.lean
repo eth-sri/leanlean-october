@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralDefect
 namespace OAI
 
 noncomputable section
-open scoped Topology
 open Filter
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge
 
 theorem central_correction_threshold (eps : ℝ) (heps : 0<eps) :
     ∃Q0 : ℝ,480≤Q0 ∧ ∀Q : ℝ,Q0≤Q→198*Q^(-10*eps)≤1/2 := by
@@ -21,11 +19,10 @@ theorem central_correction_threshold (eps : ℝ) (heps : 0<eps) :
   have he := hh.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1/2))
   obtain ⟨Q0,hQ0⟩ := Filter.eventually_atTop.mp he
   refine ⟨max 480 Q0,le_max_left _ _,?_⟩
-  intro Q hQ
-  exact (hQ0 Q ((le_max_right _ _).trans hQ)).le
+  grind
 
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 include hc in
 theorem ramifiedClosed_central_lower (eta a rho x w z : ℂ) (alpha eps : ℝ)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p}))

@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthSourceControlled
-open HeckeFamily QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
+open HeckeFamily QuadraticInitialBound CenteredMomentEnergyBands
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroGrowthHighBound
 open CenteredMomentEnergyZeroReferencePhysical (balancedInput)
-open CenteredMomentFirstSourceReduction CenteredMomentEnergyBandMonotonicity
-open CenteredMomentSecondHeightFamily
+open CenteredMomentEnergyBandMonotonicity
 local notation "O"=>HeckeFamily.O
 local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
@@ -31,7 +30,7 @@ theorem actual_growth_from_physical
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∀Jmass:ℕ,∀Smass:Finset (ℕ×ℕ),
     ∃Jout:ℕ,∃U:Finset (ℕ×ℕ),∃Cfixed:ℝ,0<Cfixed ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(e emass efinal:ℝ)(Q:Ideal O)(K Cmass Cprevious:ℝ),
+      ∀(e emass efinal:ℝ)(Q:Ideal HeckeFamily.O)(K Cmass Cprevious:ℝ),
       0≤e→0≤K→0≤Cmass→0≤Cprevious→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       ZeroAt Q a b bΦ Bmask L rho efinal Z degree S Cprevious→
       ZeroLowAt Q a b bΦ Bmask (max L (Mcap+Bmask+rho/100)) Mcap e Z degree S K→
@@ -63,7 +62,7 @@ theorem actual_growth_from_physical
     have hp:=profile_control_mono p hS
     have hp0:=p.control_nonneg S
     have hj:degree≤Jout:=Nat.le_add_right _ _
-    have hpow:=pow_le_pow_right₀ (show 1≤1+‖t‖ by linarith [norm_nonneg t]) hj
+    have hpow:=pow_le_pow_right₀ (show 1≤1+‖t‖ by omega) hj
     have hcoeff:Cprevious≤Cfixed*(K+Cmass+Cprevious+1):=by
       dsimp [Cfixed]
       nlinarith [mul_nonneg hCh.le hK,mul_nonneg hCh.le hCm,mul_nonneg hCh.le hCp]
@@ -88,7 +87,7 @@ theorem actual_growth_from_physical
   have hvolume:X₁*X₂≤Z^B:=by
     calc
       _≤Z^L*Z^L:=mul_le_mul hc₁ hc₂ hX₂.le (Real.rpow_nonneg hz.le _)
-      _=Z^(2*L):=by rw [←Real.rpow_add hz];congr 1;ring
+      _=Z^(2*L):=by rw [←Real.rpow_add hz];ring
       _≤Z^B:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLB
   have hp:=hmass s hQ (le_of_not_ge hsmall) hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ (le_of_not_ge hl)
   have hh:=hZ.2 e emass efinal Q K Cmass he hK hCm hef hmf hdf htf hlowR

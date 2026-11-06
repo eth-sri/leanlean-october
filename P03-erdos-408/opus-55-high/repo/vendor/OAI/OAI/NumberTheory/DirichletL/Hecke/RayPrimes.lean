@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.PrimeCounting.IdealPrimeMass
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Topology
 open Filter
 namespace SevenEighths.HeckeRayPrimes
 open HeckeFamily

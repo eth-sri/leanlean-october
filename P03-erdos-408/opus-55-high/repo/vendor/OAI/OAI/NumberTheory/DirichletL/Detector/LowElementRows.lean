@@ -11,35 +11,34 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+local notation "Id" => Ideal ActualEisensteinCubic.O
+local instance : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-def lowElementRowPoint (m : O) : Oˣ×Id :=
+def lowElementRowPoint (m : ActualEisensteinCubic.O) : ActualEisensteinCubic.Oˣ×Id :=
   (InitialMeanSquare.sourceLabelUnit m,Ideal.span {m})
 
-def lowIdealRowElement (p : Oˣ×Id) : O := p.1.val*idealGenerator p.2
+def lowIdealRowElement (p : ActualEisensteinCubic.Oˣ×Id) : ActualEisensteinCubic.O := p.1.val*idealGenerator p.2
 
-lemma lowIdealRowElement_point (m : O) : lowIdealRowElement (lowElementRowPoint m)=m :=
+lemma lowIdealRowElement_point (m : ActualEisensteinCubic.O) : lowIdealRowElement (lowElementRowPoint m)=m :=
   (InitialMeanSquare.sourceLabelUnit_spec m).symm
 
 lemma lowElementRowPoint_injective : Function.Injective lowElementRowPoint :=
   Function.LeftInverse.injective lowIdealRowElement_point
 
-def lowIdealRows (R : Finset O) : Finset Id := R.image (fun m=>Ideal.span {m})
+def lowIdealRows (R : Finset ActualEisensteinCubic.O) : Finset Id := R.image (fun m=>Ideal.span {m})
 
-lemma lowIdealRows_nonzero (R : Finset O) (hR : ∀m∈R,m≠0) (I : Id) (hI : I∈lowIdealRows R) : I≠0 := by
+lemma lowIdealRows_nonzero (R : Finset ActualEisensteinCubic.O) (hR : ∀m∈R,m≠0) (I : Id) (hI : I∈lowIdealRows R) : I≠0 := by
   obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hI
-  exact Ideal.span_singleton_eq_bot.not.mpr (hR m hm)
+  exact Ideal.span_singleton_eq_bot.not.mpr (by grind)
 
-lemma lowIdealRows_norm_bound (R : Finset O) (Q : ℝ) (hR : ∀m∈R,elementNorm m≤Q)
+lemma lowIdealRows_norm_bound (R : Finset ActualEisensteinCubic.O) (Q : ℝ) (hR : ∀m∈R,elementNorm m≤Q)
     (I : Id) (hI : I∈lowIdealRows R) : (Ideal.absNorm I:ℝ)≤Q := by
   obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hI
   exact hR m hm
 
-theorem low_element_energy_le_units (R : Finset O) (_hR : ∀m∈R,m≠0) (F : O→ℂ) :
-    (∑m∈R,‖F m‖^2)≤∑u : Oˣ,∑I∈lowIdealRows R,‖F (u.val*idealGenerator I)‖^2 := by
-  let P : Finset (Oˣ×Id) := Finset.univ×ˢlowIdealRows R
+theorem low_element_energy_le_units (R : Finset ActualEisensteinCubic.O) (_hR : ∀m∈R,m≠0) (F : ActualEisensteinCubic.O→ℂ) :
+    (∑m∈R,‖F m‖^2)≤∑u : ActualEisensteinCubic.Oˣ,∑I∈lowIdealRows R,‖F (u.val*idealGenerator I)‖^2 := by
+  let P : Finset (ActualEisensteinCubic.Oˣ×Id) := Finset.univ×ˢlowIdealRows R
   have hsub : R.image lowElementRowPoint⊆P := by
     intro p hp
     obtain ⟨m,hm,rfl⟩ := Finset.mem_image.mp hp
@@ -52,54 +51,54 @@ theorem low_element_energy_le_units (R : Finset O) (_hR : ∀m∈R,m≠0) (F : O
     (fun p _ _=>sq_nonneg ‖F (lowIdealRowElement p)‖)
   simpa only [P,Finset.sum_product,lowIdealRowElement] using hh
 
-lemma low_rowTwist_label_one (Ψ : O→*ℂ) (m : O) (u : Oˣ) (I : Id) :
+lemma low_rowTwist_label_one (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (u : ActualEisensteinCubic.Oˣ) (I : Id) :
     CanonicalRowCompletion.rowTwist Ψ m 1 (u.val*idealGenerator I)=
       CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id))
         (((InitialMeanSquare.sourceLabelUnit 1)^4*u).val*idealGenerator I) := by
-  have he : (InitialMeanSquare.sourceLabelUnit (1:O)).val*idealGenerator (1:Id)=1 := by
-    simpa only [Ideal.span_singleton_one,Ideal.one_eq_top] using (InitialMeanSquare.sourceLabelUnit_spec (1:O)).symm
+  have he : (InitialMeanSquare.sourceLabelUnit (1:ActualEisensteinCubic.O)).val*idealGenerator (1:Id)=1 := by
+    simpa only [Ideal.span_singleton_one,Ideal.one_eq_top] using (InitialMeanSquare.sourceLabelUnit_spec (1:ActualEisensteinCubic.O)).symm
   have harg : m^6*(idealGenerator (1:Id))^4*
       (((InitialMeanSquare.sourceLabelUnit 1)^4*u).val*idealGenerator I)=m^6*1^4*(u.val*idealGenerator I) := by
     simp only [Units.val_mul,Units.val_pow_eq_pow_val,one_pow]
     calc
-      _=m^6*((InitialMeanSquare.sourceLabelUnit (1:O)).val*idealGenerator (1:Id))^4*(u.val*idealGenerator I) := by ring
-      _=_ := by rw [he];ring
+      _=m^6*((InitialMeanSquare.sourceLabelUnit (1:ActualEisensteinCubic.O)).val*idealGenerator (1:Id))^4*(u.val*idealGenerator I) := by ring
+      _=_ := by simp_all
   unfold CanonicalRowCompletion.rowTwist
-  rw [harg]
+  simp_all
 
-lemma low_units_label_one_sum (F : (O→*ℂ)→ℝ) (Ψ : O→*ℂ) (m : O) (I : Id) :
-    (∑u : Oˣ,F (CanonicalRowCompletion.rowTwist Ψ m 1 (u.val*idealGenerator I)))=
-      ∑u : Oˣ,F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I)) := by
+lemma low_units_label_one_sum (F : (ActualEisensteinCubic.O→*ℂ)→ℝ) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (I : Id) :
+    (∑u : ActualEisensteinCubic.Oˣ,F (CanonicalRowCompletion.rowTwist Ψ m 1 (u.val*idealGenerator I)))=
+      ∑u : ActualEisensteinCubic.Oˣ,F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I)) := by
   simp_rw [low_rowTwist_label_one]
-  exact Equiv.sum_comp (Equiv.mulLeft ((InitialMeanSquare.sourceLabelUnit (1:O))^4))
-    (fun u : Oˣ=>F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I)))
+  exact Equiv.sum_comp (Equiv.mulLeft ((InitialMeanSquare.sourceLabelUnit (1:ActualEisensteinCubic.O))^4))
+    (fun u : ActualEisensteinCubic.Oˣ=>F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I)))
 
-lemma low_element_rowTwist_energy (R : Finset O) (hR : ∀z∈R,z≠0)
-    (Ψ : O→*ℂ) (m : O) (F : (O→*ℂ)→ℂ) :
+lemma low_element_rowTwist_energy (R : Finset ActualEisensteinCubic.O) (hR : ∀z∈R,z≠0)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (F : (ActualEisensteinCubic.O→*ℂ)→ℂ) :
     (∑z∈R,‖F (CanonicalRowCompletion.rowTwist Ψ m 1 z)‖^2)≤
-      ∑u : Oˣ,∑I∈lowIdealRows R,
+      ∑u : ActualEisensteinCubic.Oˣ,∑I∈lowIdealRows R,
         ‖F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I))‖^2 := by
   apply (low_element_energy_le_units R hR (fun z=>F (CanonicalRowCompletion.rowTwist Ψ m 1 z))).trans_eq
-  rw [Finset.sum_comm,Finset.sum_comm (f:=fun (u : Oˣ) (I : Id)=>
+  rw [Finset.sum_comm,Finset.sum_comm (f:=fun (u : ActualEisensteinCubic.Oˣ) (I : Id)=>
     ‖F (CanonicalRowCompletion.rowTwist Ψ m (idealGenerator (1:Id)) (u.val*idealGenerator I))‖^2)]
   apply Finset.sum_congr rfl
   intro I hI
   exact low_units_label_one_sum (fun Ψ=>‖F Ψ‖^2) Ψ m I
 
 lemma lowNumeratorRows_nonzero (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
-    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : z≠0 := by
+    (z : ActualEisensteinCubic.O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : z≠0 := by
   intro he
   have hh := (lowNumeratorRows_mem a b ha hb Q hQ z).mp hz
   rw [he,elementNorm,Ideal.span_singleton_zero,Ideal.absNorm_bot,Nat.cast_zero,zero_div] at hh
   exact hh (lowOuterCutoff_small a b ha 0 (by positivity))
 
 lemma lowNumeratorRows_norm_bound (a b : ℝ) (ha : 0<a) (hb : 0<b) (Q : ℝ) (hQ : 0<Q)
-    (z : O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : elementNorm z≤2*b*Q := by
+    (z : ActualEisensteinCubic.O) (hz : z∈lowNumeratorRows a b ha hb Q hQ) : elementNorm z≤2*b*Q := by
   have hh := (lowOuterCutoff_support a b ha hb ((lowNumeratorRows_mem a b ha hb Q hQ z).mp hz)).2
   exact (div_le_iff₀ hQ).mp hh
 
-lemma low_unit_card : Fintype.card Oˣ=6 := by
-  simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
+lemma low_unit_card : Fintype.card ActualEisensteinCubic.Oˣ=6 := by
+  simpa using PrimaryIdealUnitReindex.card_units_eq_six
 
 end SevenEighths.ProbePhysical
 end

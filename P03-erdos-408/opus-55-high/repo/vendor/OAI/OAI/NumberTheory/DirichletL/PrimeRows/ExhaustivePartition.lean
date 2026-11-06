@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
     (f : FreeRow→ℂ) (hf : Summable f) :
@@ -26,17 +26,17 @@ theorem nonprincipal_rows_partition (L U : ℝ) (hL : 1≤L) (hLU : L≤U)
   have hpoint (u : FreeRow) : (if u.val=1 then 0 else f u)=g1 u+g2 u+g3 u := by
     have hnorm := rowNorm_ge_one u
     by_cases hu : u.val=1
-    · simp [g1,g2,g3,mem_rowBand,hu]
+    · simp [g1, g2, g3, hu]
     · by_cases hsmall : rowNorm u<L
-      · have hU : ¬U≤rowNorm u := not_le.mpr (hsmall.trans_le hLU)
+      · have hU : ¬U≤rowNorm u := by linarith
         have hL' : ¬L≤rowNorm u := not_le.mpr hsmall
-        simp [g1,g2,g3,mem_rowBand,hu,hnorm,hsmall,hL',hU]
+        simp [g1, g2, g3, hu, hnorm, hsmall, hU]
       · have hL' : L≤rowNorm u := le_of_not_gt hsmall
         by_cases hlarge : U≤rowNorm u
         · have hU : ¬rowNorm u<U := not_lt.mpr hlarge
-          simp [g1,g2,g3,mem_rowBand,hu,hnorm,hsmall,hL',hlarge,hU]
+          simp [g1, g2, g3, hu, hL', hlarge]
         · have hU : rowNorm u<U := lt_of_not_ge hlarge
-          simp [g1,g2,g3,mem_rowBand,hu,hnorm,hsmall,hL',hlarge,hU]
+          simp [g1, g2, g3, hu, hL', hU]
   have hsum1 : (∑'u,g1 u)=∑u∈rowBand 1 L,f u := by
     rw [tsum_eq_sum (s:=rowBand 1 L) (fun u hu=>Set.indicator_of_notMem hu f)]
     apply Finset.sum_congr rfl

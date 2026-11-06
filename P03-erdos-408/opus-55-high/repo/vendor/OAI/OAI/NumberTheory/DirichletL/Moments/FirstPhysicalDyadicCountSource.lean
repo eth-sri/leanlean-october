@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
 open CenteredMomentCanonicalFirst CenteredMomentSectorLocalization
 open CenteredMomentSourceInputFirstTailUniform
-local notation "O"=>ActualEisensteinCubic.O
 
-lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
+lemma local_frequency_radius_cap (I J:Ideal ActualEisensteinCubic.O)(E:Finset (CommonIndex I J))
     (K V Z B ξ:ℝ)(hK:0<K)(hV:0≤V)(hZ:1≤Z)
     (hVcap:V≤Z^B)(hKcap:K⁻¹≤Z^B):
     frequencyRadius (firstNominalScale I J (∏P∈E,P.val) K V) Z ξ≤Z^(3*B+ξ/2) := by
@@ -33,13 +32,13 @@ lemma local_frequency_radius_cap (I J:Ideal O)(E:Finset (CommonIndex I J))
   unfold frequencyRadius
   calc
     _≤Z^(3*B)*Z^(ξ/2):=mul_le_mul_of_nonneg_right
-      ((first_nominal_scale_le I J E K V hK).trans hT) (Real.rpow_nonneg hz.le _)
+      ((first_nominal_scale_le I J E K V hK).trans hT) (by positivity)
     _=_:=by rw [←Real.rpow_add hz]
 
 theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
     (hB:0≤B)(hHcap:0≤Hcap)(hξ:0≤ξ)(hε:0<ε):
     ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
-      ∀(C D:Ideal O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K V H:ℝ),
+      ∀(C D:Ideal ActualEisensteinCubic.O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K V H:ℝ),
       0<K→0≤V→0<H→V≤Z^B→K⁻¹≤Z^B→H≤Z^Hcap→
       (Fintype.card (Blocks (effectiveScale C D E K)
         (frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K V) Z ξ)
@@ -50,7 +49,7 @@ theorem original_local_blocks_subpower (B Hcap ξ ε:ℝ)
   filter_upwards [hcount,Filter.eventually_ge_atTop (1:ℝ)] with Z hcount hZ
   intro C D hC hD E K V H hK hV hH hVcap hKcap hHbound
   exact hcount C D hC hD E K _ H hK hH
-    (by simpa only [one_mul] using (local_frequency_radius_cap C D E K V Z B ξ
+    (by simpa using (local_frequency_radius_cap C D E K V Z B ξ
       hK hV hZ hVcap hKcap)) hHbound
 
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
@@ -61,30 +60,30 @@ lemma input_radius_cap {ι:Type*}[Fintype ι][DecidableEq ι]
     (hhi:∀i,|s.hi i|≤hi i)(hb₁:|s.b₁|≤b₁)(hb₂:|s.b₂|≤b₂)
     (hZ:1≤Z)(hfixed:(∏i,hi i)*b₁*b₂≤Z)
     (hV:volume s.toData≤Z^B):sourceRadius s≤Z^(B+1) := by
-  have hVol:0<volume s.toData:=volume_pos s.toData
+  have hVol:=volume_pos s.toData
   have he:sourceRadius s=(∏i,s.hi i)*s.b₁*s.b₂*volume s.toData:=by
     unfold sourceRadius volume;ring
   rw [he]
   have hprod:|∏i,s.hi i|≤∏i,hi i:=by
     rw [Finset.abs_prod]
-    exact Finset.prod_le_prod₀ (fun i _=>abs_nonneg _) (fun i _=>hhi i)
-  have hb₁0:0≤b₁:=(abs_nonneg _).trans hb₁
-  have hp0:0≤∏i,hi i:=Finset.prod_nonneg (fun i _=>(abs_nonneg _).trans (hhi i))
+    exact Finset.prod_le_prod₀ (by simp) (by grind)
+  have hb₁0:0≤b₁:=by grind
+  have hp0:0≤∏i,hi i:=by grind
   have hbound:|(∏i,s.hi i)*s.b₁*s.b₂|≤(∏i,hi i)*b₁*b₂:=by
     simp only [abs_mul]
     exact mul_le_mul (mul_le_mul hprod hb₁ (abs_nonneg _) hp0) hb₂
-      (abs_nonneg _) (mul_nonneg hp0 hb₁0)
+      (abs_nonneg _) (by positivity)
   have hcoeff:(∏i,s.hi i)*s.b₁*s.b₂≤Z:=
-    (le_abs_self _).trans (hbound.trans hfixed)
+    by grind
   calc
     _≤Z*Z^B:=mul_le_mul hcoeff hV hVol.le (zero_le_one.trans hZ)
-    _=Z^(B+1):=by rw [Real.rpow_add_one (ne_of_gt (zero_lt_one.trans_le hZ))];ring
+    _=Z^(B+1):=by rw [Real.rpow_add_one (by positivity)];ring
 
 theorem original_input_local_blocks_subpower {ι:Type*}[Fintype ι][DecidableEq ι]
     (hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)(hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
     ∃C₀:ℝ,0<C₀ ∧ ∀ᶠZ:ℝ in Filter.atTop,
       ∀s:Input ι,(∀i,|s.hi i|≤hi i)→|s.b₁|≤b₁→|s.b₂|≤b₂→0<sourceRadius s→
-      ∀(C D:Ideal O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K:ℝ),
+      ∀(C D:Ideal ActualEisensteinCubic.O),C≠0→D≠0→∀(E:Finset (CommonIndex C D))(K:ℝ),
       0<K→volume s.toData≤Z^B→K⁻¹≤Z^B→
       (Fintype.card (Blocks (effectiveScale C D E K)
         (frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K (volume s.toData)) Z ξ)

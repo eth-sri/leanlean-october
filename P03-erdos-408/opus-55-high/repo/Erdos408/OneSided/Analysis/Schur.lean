@@ -69,17 +69,17 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
           ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c) := by
       refine sum_sq_le_sum_mul_sum_of_sq_le_mul _ (fun c _ => ?_) (fun c _ => ?_)
         (fun c _ => ?_)
-      · exact mul_nonneg (norm_nonneg _) (hh' _).le
+      · simp_all
       · exact div_nonneg (mul_nonneg (norm_nonneg _) (sq_nonneg _)) (hh' _).le
       · rw [show ‖a i c‖ * h' (out i c) * (‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c)) =
-            (‖a i c‖ * ‖f (out i c)‖) ^ 2 by field_simp [(hh' (out i c)).ne']]
+            (‖a i c‖ * ‖f (out i c)‖) ^ 2 by grind]
     have h3 : 0 ≤ ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c) :=
       sum_nonneg fun c _ => div_nonneg (mul_nonneg (norm_nonneg _) (sq_nonneg _)) (hh' _).le
     calc ‖choiceOp cs a out f i‖ ^ 2 ≤ (∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖) ^ 2 := by
           gcongr
       _ ≤ _ := h2
       _ ≤ R * h i * ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c) := by
-          gcongr; exact hrow i
+          gcongr; simp_all
   -- regroup the choices by their output
   calc wnormSq μ (choiceOp cs a out f)
       ≤ ∑ i, μ i * (R * h i * ∑ c ∈ cs, ‖a i c‖ * ‖f (out i c)‖ ^ 2 / h' (out i c)) :=
@@ -88,7 +88,6 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
         rw [Finset.mul_sum]
         refine sum_congr rfl fun i _ => ?_
         rw [Finset.mul_sum, Finset.mul_sum, Finset.mul_sum]
-        refine sum_congr rfl fun c _ => ?_
         ring
     _ = R * ∑ j, ‖f j‖ ^ 2 / h' j *
           ∑ i, ∑ c ∈ cs with out i c = j, μ i * ‖a i c‖ * h i := by
@@ -99,15 +98,13 @@ theorem normLe_choiceOp [DecidableEq κ] {cs : Finset γ} {a : ι → γ → ℂ
         rw [← sum_fiberwise cs (out i)
           (fun c => μ i * ‖a i c‖ * h i * (‖f (out i c)‖ ^ 2 / h' (out i c)))]
         refine sum_congr rfl fun j _ => sum_congr rfl fun c hc => ?_
-        rw [(mem_filter.1 hc).2]
-        ring
+        grind
     _ ≤ R * ∑ j, ‖f j‖ ^ 2 / h' j * (C * (ν j * h' j)) := by
         gcongr with j
         · exact div_nonneg (sq_nonneg _) (hh' j).le
-        · exact hcol j
+        simp_all
     _ = R * C * wnormSq ν f := by
         rw [wnormSq, mul_sum, mul_sum]
-        refine sum_congr rfl fun j _ => ?_
-        field_simp [(hh' j).ne']
+        grind
 
 end Erdos408.OneSided

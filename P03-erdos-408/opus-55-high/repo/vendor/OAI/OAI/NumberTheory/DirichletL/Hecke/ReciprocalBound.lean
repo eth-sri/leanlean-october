@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.Hecke.Reciprocal
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.HeckeReciprocalBound
 open HeckeFamily
 
@@ -20,7 +19,7 @@ theorem normWeight_le_of_re_ge {σ : ℝ} {s : ℂ} (hs : σ ≤ s.re) (I : Idea
   by_cases hI : I = 0
   · simp [hI, CubicEisenstein.fullIdealWeight]
   · have hN : (1 : ℝ) ≤ Ideal.absNorm I := by
-      have hpos : 0 < Ideal.absNorm I := Nat.pos_of_ne_zero ((Ideal.absNorm_ne_zero_iff I).mpr (Ring.HasFiniteQuotients.finiteQuotient hI))
+      have hpos := Nat.pos_of_ne_zero ((Ideal.absNorm_ne_zero_iff I).mpr (Ring.HasFiniteQuotients.finiteQuotient hI))
       exact_mod_cast hpos
     simp only [CubicEisenstein.fullIdealWeight, hI, ite_false]
     have hn : (0 : ℝ) < Ideal.absNorm I := lt_of_lt_of_le zero_lt_one hN
@@ -32,7 +31,7 @@ theorem normWeight_le_of_re_ge {σ : ℝ} {s : ℂ} (hs : σ ≤ s.re) (I : Idea
 
 theorem reciprocal_norm_le (χ : Character) {σ : ℝ} (hσ : 1 < σ)
     {s : ℂ} (hs : σ ≤ s.re) : ‖HeckeReciprocal.reciprocal χ s‖ ≤ bound σ := by
-  have hs1 : 1 < s.re := hσ.trans_le hs
+  have hs1 : 1 < s.re := by linarith
   have hs0 : s ≠ 0 := by intro h; norm_num [h] at hs1
   have hsp : s ≠ 1 := by intro h; norm_num [h] at hs1
   rw [HeckeReciprocal.reciprocal_eq_inv χ hs0 hsp, LFunction_eq_series χ hs1,
@@ -41,7 +40,7 @@ theorem reciprocal_norm_le (χ : Character) {σ : ℝ} (hσ : 1 < σ)
     (idealCoeff_norm_le_one χ) s hs1
   apply (norm_tsum_le_tsum_norm hsum).trans
   apply Summable.tsum_le_tsum _ hsum
-    (CubicEisenstein.fullIdealWeight_summable_norm (σ : ℂ) (by simpa using hσ))
+    (CubicEisenstein.fullIdealWeight_summable_norm (σ : ℂ) (by omega))
   intro I
   change ‖(UniqueFactorizationMonoid.moebius I : ℂ) *
     (idealCoeff χ I * CubicEisenstein.fullIdealWeight s I)‖ ≤ _

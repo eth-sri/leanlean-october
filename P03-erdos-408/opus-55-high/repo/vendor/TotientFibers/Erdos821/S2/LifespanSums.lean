@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanSumTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -84,7 +83,7 @@ theorem valid_spanProduct_sum_normalized (hSpan : SpanSumTask)
       intro g _
       apply Finset.prod_congr rfl
       intro p _
-      exact hSpan F P J m n A Q g p (hbp g p)
+      exact hSpan F P J m n A Q g p (by grind)
     _ = _ := by simp only [bigResidueExpectation, Finset.prod_mul_distrib]
 
 end ResiduePath
@@ -96,7 +95,7 @@ theorem bigBaseline_eq_subtypes (F : FixedData) (P : PrimeGroups) (n : ℕ) :
     P.bigGroups (by simp [PrimeGroups.bigGroups])]
   apply Finset.prod_congr rfl
   intro g _
-  exact Finset.prod_subtype (P.primes g.val) (fun _ => Iff.rfl) (baselinePrime F n)
+  exact Finset.prod_subtype (P.primes g.val) (by simp) (baselinePrime F n)
 
 namespace ResiduePath
 
@@ -117,8 +116,8 @@ theorem baseline_mul_valid_spanProduct_sum (hSpan : SpanSumTask)
     rw [← Finset.prod_mul_distrib]
     apply Finset.prod_eq_one
     intro p _
-    exact mul_inv_cancel₀ (hbp g p)
-  rw [← mul_assoc, hc, one_mul]
+    exact by grind
+  grind
 
 
 end ResiduePath

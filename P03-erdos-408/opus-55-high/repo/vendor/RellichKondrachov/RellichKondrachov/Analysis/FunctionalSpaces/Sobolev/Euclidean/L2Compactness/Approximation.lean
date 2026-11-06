@@ -40,7 +40,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution
+open scoped ENNReal MeasureTheory Convolution
 open MeasureTheory Set
 
 noncomputable section
@@ -64,7 +64,7 @@ variable (ψ : E → ℝ)
 
 /-- The measure with density `ψ` with respect to Lebesgue measure. This will be a probability
 measure once `ψ ≥ 0` and `∫ ψ = 1`. -/
-noncomputable def kernelMeasure : Measure E :=
+def kernelMeasure : Measure E :=
   (volume : Measure E).withDensity fun x => ENNReal.ofReal (ψ x)
 
 lemma kernelMeasure_univ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
@@ -83,9 +83,9 @@ lemma kernelMeasure_univ (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (
   have hwd :
       kernelMeasure (E := E) ψ Set.univ =
         ∫⁻ x, ENNReal.ofReal (ψ x) ∂(volume : Measure E) := by
-    simp [kernelMeasure, MeasureTheory.withDensity_apply, MeasurableSet.univ]
+    simp [kernelMeasure]
   -- Conclude using `∫ ψ = 1`.
-  simpa [hψint] using (hwd.trans hlin)
+  simp_all
 
 /-- The kernel measure `kernelMeasure ψ` is a probability measure when `ψ` is a continuous,
 compactly supported, nonnegative density integrating to `1`. -/
@@ -100,12 +100,12 @@ lemma integral_kernelMeasure_eq_integral_smul (hψc : Continuous ψ) (hψ0 : ∀
     (g : E → ℝ) :
     (∫ x, g x ∂kernelMeasure (E := E) ψ) =
       ∫ x, (ψ x) • (g x) ∂(volume : Measure E) := by
-  have hmeas : Measurable fun x => ENNReal.ofReal (ψ x) :=
+  have hmeas :=
     (hψc.measurable.ennreal_ofReal : Measurable fun x => ENNReal.ofReal (ψ x))
   have htop :
       (MeasureTheory.ae (volume : Measure E)).Eventually
         (fun x => ENNReal.ofReal (ψ x) < (⊤ : ℝ≥0∞)) :=
-    Filter.Eventually.of_forall (fun _ => by simp)
+    by simp
   have hwd :=
     (integral_withDensity_eq_integral_toReal_smul (μ := (volume : Measure E))
       (f := fun x => ENNReal.ofReal (ψ x)) hmeas htop g)
@@ -114,19 +114,13 @@ lemma integral_kernelMeasure_eq_integral_smul (hψc : Continuous ψ) (hψ0 : ∀
         ∫ x, (ENNReal.ofReal (ψ x)).toReal • (g x) ∂(volume : Measure E) := by
     simpa [kernelMeasure] using hwd
   -- Simplify `toReal (ofReal _)` using `ψ ≥ 0`.
-  refine hwd'.trans ?_
-  refine integral_congr_ae ?_
-  refine ae_of_all _ (fun x => ?_)
-  have hx : (ENNReal.ofReal (ψ x)).toReal = ψ x :=
-    ENNReal.toReal_ofReal (hψ0 x)
-  -- After rewriting `toReal (ofReal _)`, both sides are definitional.
-  simp [hx]
+  simp_all
 
 lemma integral_kernelMeasure_eq_integral_mul (hψc : Continuous ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
     (g : E → ℝ) :
     (∫ x, g x ∂kernelMeasure (E := E) ψ) =
       ∫ x, (ψ x) * (g x) ∂(volume : Measure E) := by
-  simpa [smul_eq_mul] using integral_kernelMeasure_eq_integral_smul (E := E) (ψ := ψ) hψc hψ0 g
+  simpa using integral_kernelMeasure_eq_integral_smul (E := E) (ψ := ψ) hψc hψ0 g
 
 lemma smoothFun_eq_integral_kernelMeasure (hψc : Continuous ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) (x : E) :
@@ -151,10 +145,10 @@ lemma smoothFun_eq_integral_kernelMeasure (hψc : Continuous ψ) (hψ0 : ∀ x, 
   -- Rewrite the convolution integral as an integral against the density measure.
   have hwd :
       (∫ t, extendByZeroFun (E := E) (K := K) u (x - t) ∂kernelMeasure (E := E) ψ) =
-        ∫ t, (ψ t) * extendByZeroFun (E := E) (K := K) u (x - t) ∂(volume : Measure E) := by
-    exact integral_kernelMeasure_eq_integral_mul (E := E) (ψ := ψ) hψc hψ0
+        ∫ t, (ψ t) * extendByZeroFun (E := E) (K := K) u (x - t) ∂(volume : Measure E) :=
+    integral_kernelMeasure_eq_integral_mul (E := E) (ψ := ψ) hψc hψ0
       (g := fun t => extendByZeroFun (E := E) (K := K) u (x - t))
-  exact hconv'.trans hwd.symm
+  linarith
 
 lemma sq_integral_le_integral_sq_of_isProbabilityMeasure {α : Type*} [MeasurableSpace α]
     (μ : Measure α) [MeasureTheory.IsProbabilityMeasure μ] (f : α → ℝ)
@@ -169,13 +163,13 @@ lemma sq_integral_le_integral_sq_of_isProbabilityMeasure {α : Type*} [Measurabl
 private lemma norm_sq_eq_integral_sq (v : (E →₂[(volume : Measure E)] ℝ)) :
     ‖v‖ ^ 2 = ∫ x, (v x) ^ 2 ∂(volume : Measure E) := by
   have hn : ‖v‖ ^ 2 = RCLike.re (inner ℝ v v) :=
-    norm_sq_eq_re_inner (𝕜 := ℝ) v
+    by simp
   -- Unfold the `L²` inner product as an integral; for `ℝ`, `re` is the identity.
   rw [hn]
   -- `L²` inner product is an integral of pointwise inner products.
   rw [MeasureTheory.L2.inner_def (𝕜 := ℝ) (μ := (volume : Measure E)) v v]
   -- For `ℝ`, `RCLike.re` is the identity and `inner` simplifies to a square.
-  simp [pow_two]
+  simp
 
 lemma norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq (t : E)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
@@ -193,9 +187,7 @@ lemma norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq (t : E)
   -- Translate AE equality along `x ↦ x - t`.
   have hF_shift :
       (fun x : E => (F : E → ℝ) (x - t)) =ᵐ[(volume : Measure E)] fun x => f (x - t) := by
-    have hmp :
-        MeasureTheory.MeasurePreserving (fun x : E => x - t)
-          (volume : Measure E) (volume : Measure E) :=
+    have hmp :=
       MeasureTheory.measurePreserving_sub_right (μ := (volume : Measure E)) t
     exact (hmp.quasiMeasurePreserving.ae_eq_comp hF_ae)
   -- TranslateL2 gives `F(x - t)` a.e.
@@ -205,8 +197,8 @@ lemma norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq (t : E)
     simpa [sub_eq_add_neg] using (translateL2_ae_eq (μ := (volume : Measure E)) (-t) F)
   have htrans' :
       ((translateL2 (μ := (volume : Measure E)) (-t)) F : E → ℝ) =ᵐ[(volume : Measure E)]
-        fun x => f (x - t) := by
-    exact htrans.trans hF_shift
+        fun x => f (x - t) :=
+    htrans.trans hF_shift
   have hdiff :
       (fun x => ((translateL2 (μ := (volume : Measure E)) (-t)) F - F) x) =ᵐ[(volume : Measure E)]
         fun x => f (x - t) - f x := by
@@ -231,7 +223,7 @@ lemma norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq (t : E)
       refine MeasureTheory.integral_congr_ae ?_
       exact hdiff.pow_const 2
     exact h1.trans h2
-  simpa [F, f] using hcalc
+  omega
 
 private lemma kernelMeasure_le_smul_volume (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
     (hψ0 : ∀ x, 0 ≤ ψ x) :
@@ -241,7 +233,7 @@ private lemma kernelMeasure_le_smul_volume (hψc : Continuous ψ) (hψcs : HasCo
   refine ⟨ENNReal.ofReal C, by simp, ?_⟩
   refine (Measure.le_iff).2 ?_
   intro s hs
-  have hC0 : 0 ≤ C := le_trans (norm_nonneg (ψ 0)) (hC 0)
+  have hC0 : 0 ≤ C := le_trans (by positivity) (hC 0)
   have hψle : ∀ x, ENNReal.ofReal (ψ x) ≤ ENNReal.ofReal C := by
     intro x
     have hx : ψ x ≤ C := by
@@ -256,9 +248,8 @@ private lemma kernelMeasure_le_smul_volume (hψc : Continuous ψ) (hψcs : HasCo
         ∫⁻ x in s, ENNReal.ofReal C ∂(volume : Measure E) := by
     refine MeasureTheory.lintegral_mono ?_
     intro x
-    exact hψle x
-  refine hle.trans ?_
-  simp
+    exact by grind
+  simp_all
 
 lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
     (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
@@ -287,13 +278,9 @@ lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
       MeasureTheory.MeasurePreserving (fun t : E => x - t)
         (volume : Measure E) (volume : Measure E) := by
     -- `t ↦ x - t = (-t) + x` is measure-preserving for Lebesgue (Haar) measure.
-    have hneg :
-        MeasureTheory.MeasurePreserving (Neg.neg : E → E)
-          (volume : Measure E) (volume : Measure E) :=
+    have hneg :=
       (volume : Measure E).measurePreserving_neg
-    have hadd :
-        MeasureTheory.MeasurePreserving (fun y : E => y + x)
-          (volume : Measure E) (volume : Measure E) :=
+    have hadd :=
       MeasureTheory.measurePreserving_add_right
         (μ := (volume : Measure E)) x
     have hcomp : ((fun y : E => y + x) ∘ fun t : E => -t) = fun t : E => x - t := by
@@ -307,8 +294,8 @@ lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
     hf_vol.comp_measurePreserving hmp
   have hf_shift :
       MeasureTheory.MemLp (fun t : E => f (x - t))
-        (2 : ℝ≥0∞) μ := by
-    exact MeasureTheory.MemLp.of_measure_le_smul
+        (2 : ℝ≥0∞) μ :=
+    MeasureTheory.MemLp.of_measure_le_smul
       (μ := (volume : Measure E)) (μ' := μ) (c := c)
       hc_top hμle hf_shift_vol
   have hf_const : MeasureTheory.MemLp (fun _ : E => f x) (2 : ℝ≥0∞) μ :=
@@ -321,8 +308,8 @@ lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
   have hdiff :
       smoothFun (E := E) (K := K) ψ u x - f x = ∫ t, (f (x - t) - f x) ∂μ := by
     have hconst : (∫ _t : E, f x ∂μ) = f x := by
-      simp [MeasureTheory.integral_const]
-    have hint : MeasureTheory.Integrable (fun t : E => f (x - t)) μ :=
+      simp
+    have hint :=
       hf_shift.integrable (by norm_num)
     have :
         (∫ t, f (x - t) ∂μ) - (∫ _t : E, f x ∂μ) =
@@ -333,7 +320,7 @@ lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
   have hJ :=
     sq_integral_le_integral_sq_of_isProbabilityMeasure
       (μ := μ) (f := fun t : E => f (x - t) - f x) hg
-  simpa [hdiff, μ, f] using hJ
+  grind
 
 lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_extendByZeroL2
     (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
@@ -504,20 +491,7 @@ lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_ex
     simpa [F, f] using
       (norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq
         (E := E) (K := K) (hKm := hKm) t u).symm
-  have hRHS_rewrite :
-      (∫ t, (∫ x, (f (x - t) - f x) ^ 2 ∂(volume : Measure E)) ∂μ) =
-        ∫ t, ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2 ∂μ := by
-    simp [hinner]
-  -- Assemble everything.
-  have hmain :
-      ‖S - F‖ ^ 2 ≤
-        ∫ t, ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2 ∂μ := by
-    -- Convert `‖S-F‖²` to an `x`-integral and apply the integral inequality chain.
-    have : ‖S - F‖ ^ 2 ≤ ∫ x, (∫ t, (f (x - t) - f x) ^ 2 ∂μ) ∂(volume : Measure E) := by
-      simpa [hnorm_sq] using hinterm
-    exact this.trans_eq (hswap.trans hRHS_rewrite)
-  -- Restore the original statement.
-  simpa [S, F, μ] using hmain
+  grind
 
 end Volume
 

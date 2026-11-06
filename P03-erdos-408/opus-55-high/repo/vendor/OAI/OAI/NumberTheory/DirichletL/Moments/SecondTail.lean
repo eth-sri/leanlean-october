@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondTail
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CompletedGauss
 open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentSectorLocalization
 open CenteredMomentSupportedCorrelation CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
 
-theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
+theorem actual_second_kernel_reference (I J : Ideal ActualEisensteinCubic.O) (hI : I≠0) (hJ : J≠0)
     (K X H Tsec : ℝ) (hK : 0<K) (hX : 0<X)
     (hi : (Ideal.absNorm I:ℝ)≤Real.exp H*X) (hj : (Ideal.absNorm J:ℝ)≤Real.exp H*X)
     (hsec : X^2/K≤Tsec) :
@@ -29,7 +28,7 @@ theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
     rw [show 2*H=H+H by ring,Real.exp_add]
     ring
   unfold kernelReference
-  apply (le_div_iff₀ (mul_pos hNi hNj)).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   calc
     _ ≤ (Real.exp (-2*H)/Tsec)*(Real.exp (2*H)*X^2) :=
       mul_le_mul_of_nonneg_left hprod (by positivity)
@@ -38,10 +37,10 @@ theorem actual_second_kernel_reference (I J : Ideal O) (hI : I≠0) (hJ : J≠0)
       field_simp
     _ ≤ K := (div_le_iff₀ hT).mpr (by simpa only [mul_comm] using (div_le_iff₀ hK).mp hsec)
 
-def secondDiscardedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+def secondDiscardedPair (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
     (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) : ℂ :=
   (K:ℂ)/((Real.sqrt (Ideal.absNorm I:ℝ):ℂ)*(Real.sqrt (Ideal.absNorm J:ℝ):ℂ))*
-    ∑' h : O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
+    ∑' h : ActualEisensteinCubic.O,(discardedWeight (frequencyRadius Tsec Z ξ) (normValue h):ℂ)*
       actualCorrelation (primaryGenerator I) (primaryGenerator J)
         ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ) (-h)*
       paperRadialFourier W (K*‖eisEmbedding h‖^2/
@@ -49,7 +48,7 @@ def secondDiscardedPair (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
 
 theorem second_discarded_pair_bound (Adec : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
-      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+      ∀ (W : 𝓢(ℝ,ℂ)) (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J)
         (K X H Tsec Z Csec ξ : ℝ),0<K → 0<X → 1<Z → 1≤Csec →
       (Ideal.absNorm I:ℝ)≤Real.exp H*X → (Ideal.absNorm J:ℝ)≤Real.exp H*X →
       X^2/K≤Tsec → (2*H/Real.log Z+Real.log (4*Csec)/Real.log Z<ξ/4) →
@@ -64,7 +63,7 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
     hT hZ hCs hthreshold (actual_second_kernel_reference I J hI.1 hJ.1 K X H Tsec hK hX hi hj hsec)
     (primaryGenerator I) (primaryGenerator J)
     ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ)
-  have he (h : O) : K*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator I*primaryGenerator J)‖^2=
+  have he (h : ActualEisensteinCubic.O) : K*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator I*primaryGenerator J)‖^2=
       (K/((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)))*normValue h := by
     rw [map_mul,norm_mul,mul_pow,primary_norm_sq I hI,primary_norm_sq J hJ,normValue_eq_embedding]
     ring
@@ -83,11 +82,11 @@ theorem second_discarded_pair_bound (Adec : ℕ) :
   simp_rw [he]
   rw [norm_mul]
   apply (mul_le_mul hnorm hb (norm_nonneg _) hK.le).trans
-  have hprod := mul_le_mul hi hj (Nat.cast_nonneg _) (by positivity : 0≤Real.exp H*X)
+  have hprod := mul_le_mul hi hj (Nat.cast_nonneg _) (by positivity)
   have hfac : 0≤(C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/
       ((min 1 (kernelReference Tsec H))^2*(1+Z^(ξ/4))^Adec) := by positivity
   have hb' := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hprod hfac) hK.le
-  convert hb' using 1 <;> ring
+  grind
 
 end SevenEighths.CenteredMomentSecondTail
 

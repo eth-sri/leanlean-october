@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorClassBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open HeckeDetectorAmplitudeFirst HeckeDetectorFiberPartition
@@ -55,7 +55,7 @@ theorem cubeArithmeticSum_class_uniform {N : ℕ} {Slot : Type*}
       apply Finset.sum_le_sum
       intro bin _
       by_cases hn : (amplitudeRows rows slots U cap mesh hm widths Q bin).Nonempty
-      · exact hclass bin hn
+      · grind
       · have he := Finset.not_nonempty_iff_eq_empty.mp hn
         simpa only [he,cubeArithmeticSum,Finset.sum_empty,norm_zero] using hA
     _ = (Fintype.card (BinLabel slots cap mesh):ℝ)*A := by simp

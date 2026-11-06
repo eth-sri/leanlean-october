@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorRetained
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSourceRectangleMask
 open HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSourceRow CenteredMomentHeckeExpansion CenteredMomentSourceRectangle
-open CenteredMomentDivisorRowEnergy CenteredMomentRectangle CenteredMomentExtraction
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorRowEnergy CenteredMomentExtraction
 
-theorem rowWeight_ideal_mask (η : Character) (m A z : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (R I : Ideal O) :
+theorem rowWeight_ideal_mask (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m) (R I : Ideal ActualEisensteinCubic.O) :
     (if IsCoprime I R then (1:ℂ) else 0)*rowWeight η m A z t I=
       rowWeight η (m*idealGenerator R) A z t I := by
   by_cases hI : Supported I
@@ -25,25 +24,24 @@ theorem rowWeight_ideal_mask (η : Character) (m A z : O) (t : ℝ)
     change (if IsCoprime I R then (1:ℂ) else 0)*
       ((idealCoeff η I*idealRowHom (m^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t))=
       (idealCoeff η I*idealRowHom ((m*idealGenerator R)^6*(A*z)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t)
-    rw [hm,idealRowHom_argument_mul ((idealGenerator R)^6) (m^6*(A*z)) I,
+    simp [hm,idealRowHom_argument_mul ((idealGenerator R)^6) (m^6*(A*z)) I,
       idealRowHom_sixth_mask (idealGenerator R) I hI,span_idealGenerator]
-    ring
   · rw [rowWeight_zero_of_not_supported η m A z t hmLam hm2 I hI,
       rowWeight_zero_of_not_supported η (m*idealGenerator R) A z t
-        (hmLam.trans (dvd_mul_right _ _)) (hm2.trans (dvd_mul_right _ _)) I hI,mul_zero]
+        (hmLam.trans (by simp)) (hm2.trans (by simp)) I hI,mul_zero]
 
 theorem fullMaskedRectangle_eq_maskedRectangle {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (η : Character) (m A z : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (ν Wslot : ι→Ideal O→ℂ)
-    (R L : Ideal O) (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
+    (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+    (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (ν Wslot : ι→Ideal ActualEisensteinCubic.O→ℂ)
+    (R L : Ideal ActualEisensteinCubic.O) (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) :
     fullMaskedRectangle η m A z t slots ν Wslot R L W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂=
       maskedRectangle η (m*idealGenerator R) A z t slots
         (fun i I=>ν i I*Wslot i I) L W₁ W₂
         (X₁/Ideal.absNorm B₁) (X₂/Ideal.absNorm B₂)
         (Y₁/Ideal.absNorm B₁) (Y₂/Ideal.absNorm B₂) := by
   unfold fullMaskedRectangle maskedRectangle
-  apply Finset.sum_congr (by ext;simp)
+  apply Finset.sum_congr (by grind)
   intro v hv
   congr 1
   apply tsum_congr
@@ -55,11 +53,11 @@ theorem fullMaskedRectangle_eq_maskedRectangle {ι : Type*} [Fintype ι] [Decida
   ring
 
 theorem source_polynomial_eq_maskedRectangle {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (η : Character) (m A z : O) (t : ℝ)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
-    (R L : Ideal O) (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
-    (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
+    (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
+    (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O))
+    (R L : Ideal ActualEisensteinCubic.O) (ν : ι→Ideal ActualEisensteinCubic.O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
+    (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O)
     (h₁ : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (h₂ : PlainCoverage S₂ W₂ B₂ X₂ Y₂) :
     (∑ I∈CenteredMomentSourceMass.finiteColumns (tuplePool slots S₁ S₂),
       CenteredMomentSourceMass.finiteColumnCoefficient (tuplePool slots S₁ S₂)

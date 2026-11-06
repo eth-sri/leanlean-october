@@ -57,7 +57,7 @@ theorem abs_trunc_le (h : ℕ) (E : Finset ℕ) : |trunc h E| ≤ 1 := by
 
 /-- `|layer h E| ≤ 1`. -/
 theorem abs_layer_le (h : ℕ) (E : Finset ℕ) : |layer h E| ≤ 1 := by
-  unfold layer; split_ifs <;> simp
+  unfold layer; grind
 
 /-- A truncated binomial sum, extended by zero past `t`. -/
 theorem sum_range_choose_trunc (t h : ℕ) :
@@ -69,12 +69,11 @@ theorem sum_range_choose_trunc (t h : ℕ) :
     intro N htN hhN
     rw [← sum_subset (range_subset_range.2 hhN)]
     · exact sum_congr rfl fun m hm => by
-        rw [ite_eq_left (by simpa [Nat.lt_succ_iff] using hm), mul_comm]
-    · intro m _ hm
-      rw [ite_eq_right (by simpa [Nat.lt_succ_iff] using hm)]
+        grind
+    · simp_all
   rw [← hN (t + h + 2) (by omega) (by omega)]
-  refine (sum_subset (range_subset_range.2 (by omega)) fun m _ hm => ?_)
-  rw [Nat.choose_eq_zero_of_lt (by simpa [Nat.lt_succ_iff] using hm)]
+  refine (sum_subset (by grind) fun m _ hm => ?_)
+  rw [Nat.choose_eq_zero_of_lt (by simp_all)]
   simp
 
 /-- Bonferroni at even depth `h` for the set `T` of bad conditions:
@@ -88,10 +87,9 @@ theorem bonferroni {h : ℕ} (hh : Even h) (T : Finset ℕ) :
   simp only [nsmul_eq_mul, mul_ite, mul_one, mul_zero, sum_ite_eq', mem_range] at hU hE
   simp only [trunc, layer, hU, hE, sum_range_choose_trunc]
   rcases Nat.eq_zero_or_pos T.card with h0 | h0
-  · rw [card_eq_zero.mp h0, sum_range_succ']
-    simp
+  · simp [card_eq_zero.mp h0, sum_range_succ']
   · obtain ⟨n, hn⟩ : ∃ n, T.card = n + 1 := ⟨T.card - 1, by omega⟩
-    have hT : T ≠ ∅ := fun hT => by simp [hT] at h0
+    have hT : T ≠ ∅ := fun hT => by simp_all
     have halt := Int.alternating_sum_range_choose_eq_choose (n := n) (m := h)
     have halt' : ∑ m ∈ range (h + 1), (-1 : ℝ) ^ m * ((n + 1).choose m : ℝ) =
         (n.choose h : ℝ) := by
@@ -103,8 +101,7 @@ theorem bonferroni {h : ℕ} (hh : Even h) (T : Finset ℕ) :
       · rfl
       · rw [Nat.choose_eq_zero_of_lt (by omega), Nat.cast_zero]
     rw [ite_eq_right hT, hn, halt', hlayer, Nat.choose_succ_succ, Nat.cast_add]
-    have : (0 : ℝ) ≤ n.choose (h + 1) := by positivity
-    exact ⟨by positivity, by linarith⟩
+    simp
 
 /-- Evaluating at the indicators of a predicate keeps the subsets on which it
 holds. -/
@@ -115,9 +112,7 @@ theorem sum_powerset_mul_prod_boole (B : Finset ℕ) (q : ℕ → Prop) [Decidab
   simp only [prod_boole, mul_ite, mul_one, mul_zero]
   rw [← sum_filter]
   congr 1
-  ext E
-  simp only [mem_filter, mem_powerset, subset_iff]
-  exact ⟨fun h p hp => ⟨h.1 hp, h.2 p hp⟩, fun h => ⟨fun p hp => (h hp).1, fun p hp => (h hp).2⟩⟩
+  grind
 
 /-- Bonferroni in one block `B`, evaluated at the bad conditions `q`. -/
 theorem bonferroni_boole {h : ℕ} (hh : Even h) (B : Finset ℕ) (q : ℕ → Prop) [DecidablePred q] :
@@ -134,15 +129,15 @@ theorem sum_prod_measure {B E : Finset ℕ} (hE : E ⊆ B) (g : ℕ → ℝ) :
     ∑ T ∈ B.powerset with E ⊆ T, (∏ p ∈ T, g p) * ∏ p ∈ B \ T, (1 - g p) = ∏ p ∈ E, g p := by
   have key := prod_add g (fun p => if p ∈ E then 0 else 1 - g p) B
   rw [prod_congr rfl fun p _ => show (g p + if p ∈ E then 0 else 1 - g p) =
-      if p ∈ E then g p else 1 by split_ifs <;> ring, prod_ite_mem, inter_eq_right.2 hE] at key
+      if p ∈ E then g p else 1 by grind, prod_ite_mem, inter_eq_right.2 hE] at key
   rw [key, sum_filter]
   refine sum_congr rfl fun T _ => ?_
   split_ifs with hET
   · congr 1
     refine prod_congr rfl fun p hp => ?_
-    rw [ite_eq_right fun hpE => (mem_sdiff.1 hp).2 (hET hpE)]
+    grind
   · obtain ⟨p, hpE, hpT⟩ := not_subset.1 hET
-    rw [prod_eq_zero (i := p) (mem_sdiff.2 ⟨hE hpE, hpT⟩) (by simp [hpE]), mul_zero]
+    rw [prod_eq_zero (i := p) (mem_sdiff.2 ⟨hE hpE, hpT⟩) (by simp_all), mul_zero]
 
 /-- Bonferroni in one block `B` for independent bad conditions of
 probabilities `g`. -/
@@ -153,8 +148,8 @@ theorem bonferroni_model {h : ℕ} (hh : Even h) (B : Finset ℕ) (g : ℕ → �
         ∏ p ∈ B, (1 - g p) + ∑ E ∈ B.powerset, layer h E * ∏ p ∈ E, g p := by
   set μ : Finset ℕ → ℝ := fun T => (∏ p ∈ T, g p) * ∏ p ∈ B \ T, (1 - g p)
   have hμ : ∀ T ∈ B.powerset, 0 ≤ μ T := fun T hT => mul_nonneg
-    (prod_nonneg fun p hp => (hg p (mem_powerset.1 hT hp)).1)
-    (prod_nonneg fun p hp => sub_nonneg.2 (hg p (mem_sdiff.1 hp).1).2)
+    (prod_nonneg (by grind))
+    (prod_nonneg (by grind))
   -- expectations are integrals against `μ`
   have hint : ∀ f : Finset ℕ → ℝ, ∑ E ∈ B.powerset, f E * ∏ p ∈ E, g p =
       ∑ T ∈ B.powerset, μ T * ∑ E ∈ T.powerset, f E := by
@@ -163,17 +158,15 @@ theorem bonferroni_model {h : ℕ} (hh : Even h) (B : Finset ℕ) (g : ℕ → �
     rw [sum_comm' (t' := B.powerset) (s' := fun E => B.powerset.filter (E ⊆ ·))]
     · refine sum_congr rfl fun E hE => ?_
       rw [← sum_prod_measure (mem_powerset.1 hE) g, mul_sum]
-      exact sum_congr rfl fun T _ => mul_comm _ _
-    · intro T E
-      simp only [mem_powerset, mem_filter]
-      exact ⟨fun h => ⟨⟨h.1, h.2⟩, h.2.trans h.1⟩, fun h => ⟨h.1.1, h.1.2⟩⟩
+      grind
+    · grind
   have hempty : ∏ p ∈ B, (1 - g p) = ∑ T ∈ B.powerset, μ T * if T = ∅ then 1 else 0 := by
-    simp [μ, mul_ite, sum_ite_eq']
+    simp [μ]
   rw [hint, hint, hempty, ← sum_add_distrib]
   constructor
-  · exact sum_le_sum fun T hT => mul_le_mul_of_nonneg_left (bonferroni hh T).1 (hμ T hT)
+  · exact sum_le_sum fun T hT => mul_le_mul_of_nonneg_left (bonferroni hh T).1 (by grind)
   · exact sum_le_sum fun T hT => by
-      rw [← mul_add]; exact mul_le_mul_of_nonneg_left (bonferroni hh T).2 (hμ T hT)
+      rw [← mul_add]; exact mul_le_mul_of_nonneg_left (bonferroni hh T).2 (by grind)
 
 /-! ### Sizes in the model -/
 
@@ -190,12 +183,10 @@ theorem sum_layer_le (B : Finset ℕ) (g : ℕ → ℝ) (hg : ∀ p ∈ B, 0 ≤
           refine sum_congr rfl fun E _ => ?_
           rw [prod_mul_distrib, prod_const]
           unfold layer
-          split_ifs with hE
-          · rw [hE, ← exp_nat_mul, mul_one]; ring
-          · ring
+          simp_all
       _ ≤ ∑ E ∈ B.powerset, ∏ p ∈ E, exp 1 * g p := sum_le_sum fun E hE => by
           have : 0 ≤ ∏ p ∈ E, exp 1 * g p :=
-            prod_nonneg fun p hp => mul_nonneg (exp_pos 1).le (hg p (mem_powerset.1 hE hp))
+            prod_nonneg fun p hp => mul_nonneg (by positivity) (by grind)
           unfold layer
           split_ifs <;> linarith
       _ = ∏ p ∈ B, (1 + exp 1 * g p) := (prod_one_add B).symm
@@ -211,14 +202,14 @@ theorem exp_le_prod_one_sub (B : Finset ℕ) (g : ℕ → ℝ) {η₀ : ℝ} (h�
     (hg : ∀ p ∈ B, 0 ≤ g p ∧ g p ≤ 1 - η₀) :
     exp (-(∑ p ∈ B, g p) / η₀) ≤ ∏ p ∈ B, (1 - g p) := by
   rw [neg_div, div_eq_mul_inv, sum_mul, ← sum_neg_distrib, exp_sum]
-  refine prod_le_prod₀ (fun p _ => (exp_pos _).le) fun p hp => ?_
+  refine prod_le_prod₀ (fun p _ => by positivity) fun p hp => ?_
   obtain ⟨h0, h1⟩ := hg p hp
   have hpos : 0 < 1 - g p := by linarith
   have hlog := one_sub_inv_le_log_of_pos hpos
   have hdiv : g p / (1 - g p) ≤ g p / η₀ := div_le_div_of_nonneg_left h0 hη (by linarith)
   have hinv : 1 - (1 - g p)⁻¹ = -(g p / (1 - g p)) := by field_simp; ring
   calc exp (-(g p * η₀⁻¹)) ≤ exp (log (1 - g p)) :=
-      exp_le_exp.2 (by rw [← div_eq_mul_inv]; linarith)
+      exp_le_exp.2 (by grind)
     _ = 1 - g p := exp_log hpos
 
 /-! ### Products over blocks -/
@@ -237,7 +228,7 @@ theorem prod_sub_prod_le (J : Finset ℕ) {a b e : ℕ → ℝ} (ha : ∀ j ∈ 
         b i * ∑ k ∈ J, e k * ∏ j ∈ J.erase k, b j := by
       rw [mul_sum]
       refine sum_congr rfl fun k hk => ?_
-      rw [erase_insert_of_ne fun h => hi (by rw [h]; exact hk),
+      rw [erase_insert_of_ne fun h => hi (by simp_all),
         prod_insert fun h => hi (mem_of_mem_erase h)]
       ring
     rw [prod_insert hi, prod_insert hi, sum_insert hi, erase_insert hi, hsum]
@@ -248,23 +239,21 @@ theorem prod_sub_prod_le (J : Finset ℕ) {a b e : ℕ → ℝ} (ha : ∀ j ∈ 
       (ha j (mem_insert_of_mem hj)).trans (hab j (mem_insert_of_mem hj))
     have hbJ : 0 ≤ ∏ j ∈ J, b j := prod_nonneg hb
     have hS : 0 ≤ ∑ k ∈ J, e k * ∏ j ∈ J.erase k, b j := sum_nonneg fun k hk =>
-      mul_nonneg (by linarith [he k (mem_insert_of_mem hk), hab k (mem_insert_of_mem hk)])
+      mul_nonneg (by grind)
         (prod_nonneg fun j hj => hb j (mem_of_mem_erase hj))
-    nlinarith [mul_le_mul_of_nonneg_right hei hbJ, mul_le_mul_of_nonneg_left ih hai,
-      mul_le_mul_of_nonneg_right hbi hS]
+    nlinarith
 
 /-- Expanding one factor of a product: `∏ (A + [j = k] B) = ∏ A + ∏ (A with B at k)`. -/
 theorem prod_add_ite {J : Finset ℕ} {k : ℕ} (hk : k ∈ J) (A B : ℕ → ℝ) :
     ∏ j ∈ J, (A j + if j = k then B j else 0) =
       ∏ j ∈ J, A j + ∏ j ∈ J, (if j = k then B j else A j) := by
   have h₁ : ∏ j ∈ J.erase k, (A j + if j = k then B j else 0) = ∏ j ∈ J.erase k, A j :=
-    prod_congr rfl fun j hj => by simp [ne_of_mem_erase hj]
+    prod_congr rfl fun j hj => by simp_all
   have h₂ : ∏ j ∈ J.erase k, (if j = k then B j else A j) = ∏ j ∈ J.erase k, A j :=
-    prod_congr rfl fun j hj => by simp [ne_of_mem_erase hj]
+    prod_congr rfl fun j hj => by simp_all
   rw [← mul_prod_erase J (fun j => A j + if j = k then B j else 0) hk,
     ← mul_prod_erase J A hk, ← mul_prod_erase J (fun j => if j = k then B j else A j) hk, h₁, h₂]
-  simp only [ite_true]
-  ring
+  grind
 
 /-- A sum over the subsets of `P` of a product over the blocks `β = j` factors
 over the blocks. -/
@@ -275,16 +264,16 @@ theorem sum_powerset_prod_blocks (β : ℕ → ℕ) (J P : Finset ℕ) (hP : ∀
   induction P using Finset.induction_on generalizing F with
   | empty => simp
   | insert a P ha ih =>
-    have hP' : ∀ p ∈ P, β p ∈ J := fun p hp => hP p (mem_insert_of_mem hp)
-    have hj : β a ∈ J := hP a (mem_insert_self a P)
+    have hP' := fun p hp => hP p (mem_insert_of_mem hp)
+    have hj := hP a (mem_insert_self a P)
     -- adding `a` changes only the block of `a`
     have hD : ∀ D ∈ P.powerset, ∏ j ∈ J, F j ((insert a D).filter (β · = j)) =
         ∏ j ∈ J, (if j = β a then fun E => F j (insert a E) else F j) (D.filter (β · = j)) :=
       fun D _ => prod_congr rfl fun j _ => by
         rw [filter_insert]
         by_cases h : j = β a
-        · rw [ite_eq_left h.symm, ite_eq_left h]
-        · rw [ite_eq_right (Ne.symm h), ite_eq_right h]
+        · simp_all
+        grind
     have hE : ∀ j ∈ J, ∑ E ∈ ((insert a P).filter (β · = j)).powerset, F j E =
         ∑ E ∈ (P.filter (β · = j)).powerset, F j E +
           if j = β a then ∑ E ∈ (P.filter (β · = j)).powerset, F j (insert a E) else 0 := by
@@ -292,8 +281,8 @@ theorem sum_powerset_prod_blocks (β : ℕ → ℕ) (J P : Finset ℕ) (hP : ∀
       rw [filter_insert]
       by_cases h : j = β a
       · rw [ite_eq_left h.symm, ite_eq_left h,
-          sum_powerset_insert fun h' => ha (mem_filter.1 h').1]
-      · rw [ite_eq_right (Ne.symm h), ite_eq_right h, add_zero]
+          sum_powerset_insert (by grind)]
+      · grind
     have hF : ∀ j ∈ J, ∑ E ∈ (P.filter (β · = j)).powerset,
         (if j = β a then fun E => F j (insert a E) else F j) E =
           if j = β a then ∑ E ∈ (P.filter (β · = j)).powerset, F j (insert a E)
@@ -322,12 +311,12 @@ theorem blk_spec {z : ℝ} {p : ℕ} (hp : p.Prime) (hpz : (p : ℝ) ≤ z) :
   · have h₁ : ((2 ^ blk z p : ℕ) : ℝ) ≤ Real.log z / Real.log p :=
       (Nat.cast_le.2 (Nat.pow_log_le_self 2 hn)).trans (Nat.floor_le (by linarith))
     rw [le_div_iff₀ hlogp] at h₁
-    exact_mod_cast h₁
+    simp_all
   · have h₂ : Real.log z / Real.log p < ((2 ^ (blk z p + 1) : ℕ) : ℝ) :=
       calc Real.log z / Real.log p < (⌊Real.log z / Real.log p⌋₊ : ℝ) + 1 := Nat.lt_floor_add_one _
         _ ≤ _ := by exact_mod_cast Nat.lt_pow_succ_log_self (b := 2) one_lt_two _
     rw [div_lt_iff₀ hlogp] at h₂
-    exact_mod_cast h₂
+    simp_all
 
 /-- Each block carries `g`-mass at most `C₀`: block `j` lies in
 `(w, w²]` for `w = z^{2^{-j-1}}`. -/
@@ -353,14 +342,14 @@ theorem sum_block_le {P : Finset ℕ} {z C₀ : ℝ} {g : ℕ → ℝ}
   have hp : (0 : ℝ) < p := by exact_mod_cast (hP p hpP).1.pos
   refine mem_filter.2 ⟨hpP, (Real.lt_log_iff_exp_lt hp).1 ?_, ?_⟩
   · rw [div_lt_iff₀ (by positivity), mul_comm]
-    exact hhi
+    omega
   · rw [sq, ← exp_add, ← Real.log_le_iff_le_exp hp]
     have : y + y = Real.log z / 2 ^ blk z p₀ := by
       simp only [y, pow_succ]
       field_simp
       ring
     rw [this, le_div_iff₀ (by positivity), mul_comm]
-    exact hlo
+    omega
 
 /-- `∑_{j < N} ((j + 1) h + 1) / 2^j ≤ 4h + 2`. -/
 theorem sum_range_div_two_pow_le (h N : ℕ) :
@@ -388,7 +377,7 @@ theorem sum_range_div_two_pow_le (h N : ℕ) :
     have : 0 ≤ (2 * (N : ℝ) + 4) / 2 ^ N := by positivity
     linarith [hid N]
   rw [hsplit]
-  nlinarith [sum_geometric_two_le N, (Nat.cast_nonneg h : (0 : ℝ) ≤ h)]
+  nlinarith [sum_geometric_two_le N]
 
 /-- A product of designated primes with at most `(j + 1) h + 1` of them in
 each block `j` is at most `z^{4h+2}`. -/
@@ -397,8 +386,8 @@ theorem prod_le_of_card_block_le {P D : Finset ℕ} {z : ℝ} (hz : 1 ≤ z)
     (hcard : ∀ j ∈ P.image (blk z), (D.filter (blk z · = j)).card ≤ (j + 1) * h + 1) :
     ((∏ p ∈ D, p : ℕ) : ℝ) ≤ z ^ (4 * h + 2) := by
   have hpos : ∀ p ∈ D, 0 < (p : ℝ) := fun p hp => by exact_mod_cast (hP p (hD hp)).1.pos
-  have hlogz : 0 ≤ Real.log z := Real.log_nonneg hz
-  have hmap : ∀ p ∈ D, blk z p ∈ P.image (blk z) := fun p hp => mem_image_of_mem _ (hD hp)
+  have hlogz := Real.log_nonneg hz
+  have hmap : ∀ p ∈ D, blk z p ∈ P.image (blk z) := by grind
   have hfib : ∀ j ∈ P.image (blk z), ∑ p ∈ D with blk z p = j, Real.log p ≤
       (((j + 1) * h + 1 : ℕ) : ℝ) / 2 ^ j * Real.log z := by
     intro j hj
@@ -406,9 +395,9 @@ theorem prod_le_of_card_block_le {P D : Finset ℕ} {z : ℝ} (hz : 1 ≤ z)
         ≤ ∑ p ∈ D with blk z p = j, Real.log z / 2 ^ j := sum_le_sum fun p hp => by
           obtain ⟨hpD, rfl⟩ := mem_filter.1 hp
           rw [le_div_iff₀ (by positivity), mul_comm]
-          exact (blk_spec (hP p (hD hpD)).1 (hP p (hD hpD)).2).1
+          exact (blk_spec (by grind) (by grind)).1
       _ = (D.filter (blk z · = j)).card * (Real.log z / 2 ^ j) := by
-          rw [sum_const, nsmul_eq_mul]
+          simp
       _ ≤ (((j + 1) * h + 1 : ℕ) : ℝ) * (Real.log z / 2 ^ j) :=
           mul_le_mul_of_nonneg_right (by exact_mod_cast hcard j hj) (by positivity)
       _ = _ := by ring
@@ -417,7 +406,7 @@ theorem prod_le_of_card_block_le {P D : Finset ℕ} {z : ℝ} (hz : 1 ≤ z)
   have hlog : Real.log (∏ p ∈ D, (p : ℝ)) ≤ ((4 * h + 2 : ℕ) : ℝ) * Real.log z :=
     calc Real.log (∏ p ∈ D, (p : ℝ))
         = ∑ j ∈ P.image (blk z), ∑ p ∈ D with blk z p = j, Real.log p := by
-          rw [Real.log_prod fun p hp => (hpos p hp).ne', sum_fiberwise_of_maps_to hmap]
+          rw [Real.log_prod (by grind), sum_fiberwise_of_maps_to hmap]
       _ ≤ ∑ j ∈ P.image (blk z), (((j + 1) * h + 1 : ℕ) : ℝ) / 2 ^ j * Real.log z :=
           sum_le_sum hfib
       _ = (∑ j ∈ P.image (blk z), (((j + 1) * h + 1 : ℕ) : ℝ) / 2 ^ j) * Real.log z := by
@@ -425,10 +414,10 @@ theorem prod_le_of_card_block_le {P D : Finset ℕ} {z : ℝ} (hz : 1 ≤ z)
       _ ≤ (4 * h + 2) * Real.log z := mul_le_mul_of_nonneg_right
           ((sum_le_sum_of_subset_of_nonneg hN fun _ _ _ => by positivity).trans
             (sum_range_div_two_pow_le h N)) hlogz
-      _ = _ := by push_cast; ring
+      _ = _ := by simp
   push_cast
   rw [← Real.exp_log (prod_pos hpos), ← Real.exp_log (by linarith : (0 : ℝ) < z), ← exp_nat_mul]
-  exact exp_le_exp.2 hlog
+  simp_all
 
 /-! ### The upper and lower polynomials -/
 
@@ -459,7 +448,7 @@ theorem sum_prod_blocks_mul {z : ℝ} {J P : Finset ℕ} (hJ : ∀ p ∈ P, blk 
       ∏ j ∈ J, ∑ E ∈ (P.filter (blk z · = j)).powerset, f j E * ∏ p ∈ E, x p := by
   rw [← sum_powerset_prod_blocks (blk z) J P hJ fun j E => f j E * ∏ p ∈ E, x p]
   refine sum_congr rfl fun D hD => ?_
-  rw [prod_mul_distrib, prod_fiberwise_of_maps_to fun p hp => hJ p (mem_powerset.1 hD hp)]
+  rw [prod_mul_distrib, prod_fiberwise_of_maps_to (by grind)]
 
 /-- `U` evaluated at `x` is `∏_j U_j(x)`. -/
 theorem sum_upperCoeff_mul {z : ℝ} {J P : Finset ℕ} (hJ : ∀ p ∈ P, blk z p ∈ J) (h : ℕ)
@@ -487,28 +476,24 @@ theorem sum_lowerCoeff_mul {z : ℝ} {J P : Finset ℕ} (hJ : ∀ p ∈ P, blk z
 /-- `trunc n E ≠ 0` only if `|E| ≤ n`. -/
 theorem trunc_ne_zero {n : ℕ} {E : Finset ℕ} (h : trunc n E ≠ 0) : E.card ≤ n := by
   unfold trunc at h
-  split_ifs at h with hE
-  · exact hE
-  · exact absurd rfl h
+  simp_all
 
 /-- `layer n E ≠ 0` only if `|E| = n + 1`. -/
 theorem layer_ne_zero {n : ℕ} {E : Finset ℕ} (h : layer n E ≠ 0) : E.card = n + 1 := by
   unfold layer at h
-  split_ifs at h with hE
-  · exact hE
-  · exact absurd rfl h
+  simp_all
 
 /-- `|U_D| ≤ 1`. -/
 theorem abs_upperCoeff_le (z : ℝ) (J : Finset ℕ) (h : ℕ) (D : Finset ℕ) :
     |upperCoeff z J h D| ≤ 1 := by
   rw [upperCoeff, abs_prod]
-  exact prod_le_one₀ (fun _ _ => abs_nonneg _) fun _ _ => abs_trunc_le _ _
+  exact prod_le_one₀ (by simp) fun _ _ => abs_trunc_le _ _
 
 /-- The coefficients of each correction have modulus at most one. -/
 theorem abs_corrCoeff_le (z : ℝ) (J : Finset ℕ) (h k : ℕ) (D : Finset ℕ) :
     |corrCoeff z J h k D| ≤ 1 := by
   rw [corrCoeff, abs_prod]
-  refine prod_le_one₀ (fun _ _ => abs_nonneg _) fun j _ => ?_
+  refine prod_le_one₀ (by simp) fun j _ => ?_
   split_ifs
   exacts [abs_layer_le _ _, abs_trunc_le _ _]
 
@@ -570,7 +555,7 @@ theorem abs_sum_coeff_mul_le {P : Finset ℕ} {c r : Finset ℕ → ℝ} {Z : �
   rw [← sum_filter_of_ne fun D hD h => hlev D hD (left_ne_zero_of_mul h)]
   refine (abs_sum_le_sum_abs _ _).trans (sum_le_sum fun D hD => ?_)
   rw [abs_mul]
-  exact mul_le_of_le_one_left (abs_nonneg _) (hc D (mem_filter.1 hD).1)
+  exact mul_le_of_le_one_left (abs_nonneg _) (by grind)
 
 /-! ### Assembly -/
 
@@ -590,10 +575,10 @@ theorem blockError_le {z K : ℝ} {P : Finset ℕ} (hK : 0 ≤ K) {h : ℕ} (h1 
         ≤ exp (-(h : ℝ) + ((j + 1 : ℕ) : ℝ) * (-1)) := exp_le_exp.2 (by
           have : (1 : ℝ) ≤ h := by exact_mod_cast h1
           push_cast
-          nlinarith [(Nat.cast_nonneg j : (0 : ℝ) ≤ j)])
+          nlinarith)
       _ = exp (-(h : ℝ)) * exp (-1) ^ (j + 1) := by rw [exp_add, exp_nat_mul]
       _ ≤ exp (-(h : ℝ)) * (1 / 2) ^ (j + 1) :=
-          mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (exp_pos _).le h2 _) (exp_pos _).le
+          mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) h2 _) (by positivity)
   obtain ⟨N, hN⟩ : ∃ N, P.image (blk z) ⊆ range N :=
     ⟨(P.image (blk z)).sup id + 1, fun j hj => mem_range.2 (Nat.lt_succ_of_le (le_sup (f := id) hj))⟩
   have hgeom : ∑ j ∈ range N, (1 / 2 : ℝ) ^ (j + 1) ≤ 1 := by
@@ -607,7 +592,7 @@ theorem blockError_le {z K : ℝ} {P : Finset ℕ} (hK : 0 ≤ K) {h : ℕ} (h1 
         sum_le_sum_of_subset_of_nonneg hN fun _ _ _ => by positivity
     _ = K * exp (-(h : ℝ)) * ∑ j ∈ range N, (1 / 2 : ℝ) ^ (j + 1) := by
         rw [mul_sum]
-        exact sum_congr rfl fun _ _ => by ring
+        ring
     _ ≤ K * exp (-(h : ℝ)) := mul_le_of_le_one_right (by positivity) hgeom
 
 /-- The block sieve at one even depth `h`, with `σ = blockError`:
@@ -645,7 +630,7 @@ theorem sifted_bounds {ι : Type} (objs : Finset ι) (wt : ι → ℝ) (P : Fins
     refine sum_congr rfl fun D _ => ?_
     rw [show ∀ G S : ℝ, X * (c D * G) + c D * (S - X * G) = c D * S from fun _ _ => by ring,
       sum_filter, mul_sum]
-    exact sum_congr rfl fun i _ => by split_ifs <;> ring
+    exact sum_congr rfl fun i _ => by grind
   have hR : ∀ c : Finset ℕ → ℝ, (∀ D ∈ P.powerset, |c D| ≤ 1) →
       (∀ D ∈ P.powerset, c D ≠ 0 → ∀ j ∈ J, (D.filter (blk z · = j)).card ≤ (j + 1) * h + 1) →
       |∑ D ∈ P.powerset, c D * ((∑ i ∈ objs with ∀ p ∈ D, bad p i, wt i) - X * ∏ p ∈ D, g p)| ≤ R :=
@@ -676,17 +661,17 @@ theorem sifted_bounds {ι : Type} (objs : Finset ι) (wt : ι → ℝ) (P : Fins
   set a : ℕ → ℝ := fun j => ∏ p ∈ P.filter (blk z · = j), (1 - g p)
   set ε : ℕ → ℝ := fun j => K₂ * exp (-(((j + 1) * h + 1 : ℕ) : ℝ))
   have hgB : ∀ j, ∀ p ∈ P.filter (blk z · = j), 0 ≤ g p ∧ g p ≤ 1 := fun j p hp =>
-    ⟨(hg p (mem_filter.1 hp).1).1, by linarith [(hg p (mem_filter.1 hp).1).2]⟩
+    ⟨(hg p (mem_filter.1 hp).1).1, by grind⟩
   have hmodel : ∀ j, a j ≤ blockU z P h j g ∧ blockU z P h j g ≤ a j + blockE z P h j g :=
     fun j => bonferroni_model (hev j) (P.filter (blk z · = j)) g (hgB j)
-  have ha : ∀ j, 0 ≤ a j := fun j => prod_nonneg fun p hp => by linarith [(hgB j p hp).2]
+  have ha : ∀ j, 0 ≤ a j := fun j => prod_nonneg fun p hp => by grind
   have hε : ∀ j, 0 ≤ ε j := fun j => by positivity
   have hmass := sum_block_le hP (fun p hp => (hg p hp).1) hC
   have he : ∀ j, blockE z P h j g ≤ ε j * a j := by
     intro j
     have h₁ := sum_layer_le (P.filter (blk z · = j)) g (fun p hp => (hgB j p hp).1) ((j + 1) * h)
     have h₂ := exp_le_prod_one_sub (P.filter (blk z · = j)) g hη fun p hp => hg p (mem_filter.1 hp).1
-    have h₃ : exp (exp 1 * ∑ p ∈ P.filter (blk z · = j), g p) ≤ exp (exp 1 * C₀) :=
+    have h₃ :=
       exp_le_exp.2 (mul_le_mul_of_nonneg_left (hmass j) (exp_pos 1).le)
     have h₄ : exp (-C₀ / η₀) ≤ exp (-(∑ p ∈ P.filter (blk z · = j), g p) / η₀) :=
       exp_le_exp.2 (div_le_div_of_nonneg_right (neg_le_neg (hmass j)) hη.le)
@@ -707,7 +692,7 @@ theorem sifted_bounds {ι : Type} (objs : Finset ι) (wt : ι → ℝ) (P : Fins
   have hMhi : ∏ j ∈ J, blockU z P h j g ≤ (∏ j ∈ J, a j) * exp σ :=
     calc ∏ j ∈ J, blockU z P h j g ≤ ∏ j ∈ J, (a j * (1 + ε j)) :=
           prod_le_prod₀ (fun j _ => hu0 j) fun j _ => by
-            linarith [(hmodel j).2, he j, mul_comm (ε j) (a j)]
+            grind
       _ = (∏ j ∈ J, a j) * ∏ j ∈ J, (1 + ε j) := prod_mul_distrib
       _ ≤ (∏ j ∈ J, a j) * exp σ :=
           mul_le_mul_of_nonneg_left (prod_one_add_le_exp_sum J hε) hA0
@@ -727,7 +712,7 @@ theorem sifted_bounds {ι : Type} (objs : Finset ι) (wt : ι → ℝ) (P : Fins
           rw [hsift]
           refine sum_le_sum fun i hi => mul_le_mul_of_nonneg_left ?_ (hwt i hi)
           rw [sum_upperCoeff_mul hJ]
-          exact prod_le_prod₀ (fun j _ => by split_ifs <;> norm_num) fun j _ => (hobj i j).1
+          exact prod_le_prod₀ (fun j _ => by positivity) fun j _ => (hobj i j).1
       _ ≤ X * (∏ p ∈ P, (1 - g p)) * exp σ + R := by
           rw [heval, sum_upperCoeff_mul hJ, ← hA, mul_assoc]
           exact add_le_add (mul_le_mul_of_nonneg_left hMhi hX) ((le_abs_self _).trans hRU)
@@ -739,14 +724,14 @@ theorem sifted_bounds {ι : Type} (objs : Finset ι) (wt : ι → ℝ) (P : Fins
               ((∑ i ∈ objs with ∀ p ∈ D, bad p i, wt i) - X * ∏ p ∈ D, g p) := by
           rw [sum_lowerCoeff_mul hJ, ← hA, mul_assoc, sub_eq_add_neg]
           refine add_le_add (mul_le_mul_of_nonneg_left ?_ hX) (neg_le_of_abs_le hRV)
-          nlinarith [mul_le_mul_of_nonneg_right hMlo (sub_nonneg.2 hσ)]
+          nlinarith
       _ = ∑ i ∈ objs, wt i * ∑ D ∈ P.powerset, lowerCoeff z J h D *
             ∏ p ∈ D, (if bad p i then (1 : ℝ) else 0) := (heval _).symm
       _ ≤ (∑ i ∈ objs with ∀ p ∈ P, ¬ bad p i, wt i) := by
           rw [hsift]
           refine sum_le_sum fun i hi => mul_le_mul_of_nonneg_left ?_ (hwt i hi)
           rw [sum_lowerCoeff_mul hJ, sub_le_comm]
-          exact prod_sub_prod_le J (fun j _ => by split_ifs <;> norm_num)
+          exact prod_sub_prod_le J (fun j _ => by positivity)
             (fun j _ => (hobj i j).1) fun j _ => by linarith [(hobj i j).2]
 
 end BlockSieve
@@ -763,7 +748,7 @@ theorem blockSieve : BlockSieve := by
   have hK₂ : 0 < K₂ := exp_pos _
   have hK : 1 ≤ 2 * K₂ + exp K₂ := by linarith [one_le_exp hK₂.le]
   have hmain : 0 ≤ X * ∏ p ∈ P, (1 - g p) :=
-    mul_nonneg hX (prod_nonneg fun p hp => by linarith [(hg p hp).2])
+    mul_nonneg hX (prod_nonneg fun p hp => by grind)
   have hσ0 : ∀ h, 0 ≤ blockError z P K₂ h := fun h => sum_nonneg fun _ _ => by positivity
   have hR0 : ∀ Z : ℝ, 0 ≤ ∑ D ∈ P.powerset with ((∏ p ∈ D, p : ℕ) : ℝ) ≤ Z,
       |(∑ i ∈ objs with ∀ p ∈ D, bad p i, wt i) - X * ∏ p ∈ D, g p| :=
@@ -783,7 +768,7 @@ theorem blockSieve : BlockSieve := by
       linarith [add_one_le_exp (h : ℝ)]
     have hσ1 := hσ.trans hKh
     have hexp : exp (blockError z P K₂ h) - 1 ≤ 2 * blockError z P K₂ h := by
-      have := abs_exp_sub_one_le (x := blockError z P K₂ h) (by rw [abs_of_nonneg (hσ0 h)]; exact hσ1)
+      have := abs_exp_sub_one_le (x := blockError z P K₂ h) (by grind)
       rw [abs_of_nonneg (hσ0 h)] at this
       exact (le_abs_self _).trans this
     have hV := hV hσ1
@@ -792,15 +777,13 @@ theorem blockSieve : BlockSieve := by
     have p₃ : 0 ≤ exp K₂ * exp (-(h : ℝ)) * (X * ∏ p ∈ P, (1 - g p)) := by positivity
     have p₅ : 0 ≤ K₂ * exp (-(h : ℝ)) * (X * ∏ p ∈ P, (1 - g p)) := by positivity
     have p₄ := le_mul_of_one_le_left (hR0 (z ^ (4 * h + 2))) hK
-    rw [abs_le]
-    constructor <;> linarith
+    grind
   · obtain ⟨hU, -⟩ := sifted_bounds objs wt P z X bad g hη hwt hz hP hX hg hC (h := 2) even_two
     rw [← hK₂_def, show 4 * 2 + 2 = 10 from rfl] at hU
     have hσ : blockError z P K₂ 2 ≤ K₂ := (blockError_le hK₂.le (by norm_num)).trans
       (mul_le_of_le_one_right hK₂.le (exp_le_one_iff.2 (by norm_num)))
     have p₁ := mul_le_mul_of_nonneg_left (exp_le_exp.2 hσ) hmain
     have p₂ := le_mul_of_one_le_left (hR0 (z ^ 10)) hK
-    have p₃ : 0 ≤ 2 * K₂ * (X * ∏ p ∈ P, (1 - g p)) := by positivity
     nlinarith
 
 end Erdos408

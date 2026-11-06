@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedRestriction
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open CubicEisenstein CompletedGauss InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
 omit [Fintype ι] in
 lemma mixed_inactive_coefficient (P : PrimeFamily ι)
-    (hodd : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
+    (hodd : ∀ i, ringChar (ActualEisensteinCubic.O⧸P.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (i : ι) :
     finiteAdditiveFourierCoeff (quotientTrace (P.generator i) (P.generator_ne_zero i))
       (mixedPrimeFunction P.generator P.generator_good j S i) 0 =
@@ -25,18 +24,18 @@ lemma mixed_inactive_coefficient (P : PrimeFamily ι)
     (fun x => if i∈S then zeroMark x else (actualSextic (Ideal.span {P.generator i}) (P.generator_good i)^j i) x) 0 = _
   by_cases hi : i∈S
   · simp only [hi,ite_true,zeroMark,finiteAdditiveFourierCoeff_zero_delta]
-    have hcard : Fintype.card (Eis⧸Ideal.span {P.generator i})=Ideal.absNorm (P.ideal i) := by
+    have hcard : Fintype.card (ActualEisensteinCubic.O⧸Ideal.span {P.generator i})=Ideal.absNorm (P.ideal i) := by
       rw [← P.generator_span i,Ideal.absNorm_apply,Submodule.cardQuot_apply,Nat.card_eq_fintype_card]
-    rw [hcard]
+    simp_all
   · simp only [hi,ite_false]
-    have ho : ringChar (Eis⧸Ideal.span {P.generator i})≠2 := by
+    have ho : ringChar (ActualEisensteinCubic.O⧸Ideal.span {P.generator i})≠2 := by
       rw [P.generator_span]
       exact hodd i
     rw [prime_zeroFourier_norm_formula (P.generator i) (P.generator_ne_zero i)
       (P.generator_good i) ho (j i) (hj i),P.generator_span]
 
 lemma mixed_inactive_weight (P : PrimeFamily ι)
-    (hodd : ∀ i, ringChar (Eis⧸P.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
+    (hodd : ∀ i, ringChar (ActualEisensteinCubic.O⧸P.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S A : Finset ι) :
     localInactiveWeight P.generator P.generator_ne_zero
       (mixedPrimeFunction P.generator P.generator_good j S) A =

@@ -52,7 +52,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
     refine ⟨0, 0, fun E κ' B' _ _ => ⟨0, le_rfl, ?_⟩⟩
     filter_upwards [Real.tendsto_log_atTop.eventually_gt_atTop 1] with x hL
     intro _ _ s V A B cf ψ₁ Y σ k h _ _ _ _ _ _ _ _ _ _ _ hk₁ hk₂
-    have : Real.log x ^ Cm < 1 := Real.rpow_lt_one_of_one_lt_of_neg hL (lt_of_not_ge hCm)
+    have  := Real.rpow_lt_one_of_one_lt_of_neg hL (lt_of_not_ge hCm)
     have : (1 : ℝ) ≤ k := by exact_mod_cast hk₁
     linarith
   set D := 6 * Cm + 6 + 2 * K + 2 * CU + 5 with hD
@@ -123,8 +123,8 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
         _ ≤ Y := le_trans (le_mul_of_one_le_right hx0.le (Real.one_le_exp (by positivity)))
             hY₁)
     ψ₁ hψs cf σ hk₁ h
-    (fun p hp => hbox p (by linarith [(hs p hp).2.2]))
-    (fun p hp => hbox p (by linarith [(hspP p hp).2.2]))
+    (fun p hp => hbox p (by grind))
+    (fun p hp => hbox p (by grind))
     (fun u hu => hbox u (by
       have := (mem_Ioc.1 hu).2
       have : (u : ℝ) ≤ 2 * Y := (Nat.cast_le.2 this).trans (Nat.floor_le (by linarith))
@@ -135,8 +135,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
       have hpk := Nat.le_of_dvd (by omega) hdvd
       have : (p : ℝ) ≤ k := by exact_mod_cast hpk
       have : 2 * L ^ Cm ≤ e := hf.mCm
-      have : 0 < L ^ Cm := by positivity
-      linarith [(hspP p hp).2.1])
+      grind)
   simp_rw [hdecomp]
   -- Cauchy–Schwarz over the indices, and each term
   have : NeZero k := ⟨by omega⟩
@@ -177,7 +176,7 @@ theorem exists_integral_tupleSum_high_le (vlo c Cm CU A₀ : ℝ) (hvlo : 0 < vl
       _ ≤ (4 * L) ^ 3 * L ^ (3 * Cm) := mul_le_mul h₃ h₂ (by positivity) (by positivity)
       _ = 64 * L ^ (3 * Cm + 3) := h₄
   exact tupleBound_le hL1 hvlo hKA.le (Nat.cast_nonneg _) hcard
-    (by rw [hAs]; linarith [le_max_left ((A₀ + D) / 2) 1]) (by rw [hD]; ring)
+    (by rw [hAs]; linarith [le_max_left ((A₀ + D) / 2) 1]) (by linarith)
     (le_max_left _ _)
 
 end Erdos408.TwoSided.TupleHigh

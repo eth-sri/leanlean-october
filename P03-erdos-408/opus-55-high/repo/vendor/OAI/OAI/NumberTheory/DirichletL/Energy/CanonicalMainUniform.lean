@@ -12,46 +12,35 @@ public import OAI.NumberTheory.DirichletL.Energy.AmplifiedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalMainUniform
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open HeckeFamily
+open CenteredMomentAllocatedNaturalSource
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentSecondNonexceptionalChosenBlock
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
+open CenteredMomentAllocatedRayDictionary
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+open CenteredMomentSectorLocalization
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-open CenteredMomentEnergyCanonicalUniformReference CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentFirstAmplifiedPaidAdmission CenteredMomentFirstAmplifiedCapacityCommon
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
+open CenteredMomentFirstAmplifiedCapacityCommon
+open CenteredMomentAmplificationChildInput
 open CenteredMomentCanonicalFirst CenteredMomentSecondExceptionalFamily CenteredMomentSourceLiveColumn
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CanonicalQuadraticSieve CompletedGauss
-open CanonicalRowCompletion ConcretePrimeRowBridge ActualEisensteinCubic
+open CenteredMomentSecondPhysicalBlock CanonicalQuadraticSieve CompletedGauss
+open ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
+open CenteredMomentFirstScale CenteredMomentAmplifiedRetainedRadius
 
 theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
     (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(L:ℝ)(hL:0≤L)
@@ -63,7 +52,7 @@ theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
     (hlower:0<lower)(ha0:0<a0)(hθsource:0<θsource):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∃Z₀:ℝ,1<Z₀ ∧
     ∀θ:α→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
-    ∀εchild:ℝ,∀Q:Ideal O,Q≤M → ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
+    ∀εchild:ℝ,∀Q:Ideal HeckeFamily.O,Q≤M → ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
@@ -72,10 +61,10 @@ theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     Fintype.card α≤N → lower≤src.lower → src.upper≤upper →
-    ∀(C D R0:Ideal O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
+    ∀(C D R0:Ideal HeckeFamily.O),∀_hC:Supported C,∀_hD:Supported D,primeSupport C=primeSupport D →
     ∀(E:Finset (CommonIndex C D))(B:actualAllocations src.pools C)(τ:Character)(t:ℝ),
     frozenCoefficient B.val C R0 src.ν src.W src.P≠0 →
-    τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    τ.modulus=src.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D} →
     ∀K sigma delta reserve cost asource:ℝ,0<K → 0≤sigma → 1≤cost → 0<asource →
     0≤delta → 0≤reserve → a0≤asource →
@@ -84,19 +73,19 @@ theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
       (Real.logb Z (firstNominalScale C D
         (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume src)))
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve
-    ∀(Scols:Finset (Ideal O))(βsource:Ideal O→ℂ)(C₂ D₂:Ideal O),
+    ∀(Scols:Finset (Ideal HeckeFamily.O))(βsource:Ideal HeckeFamily.O→ℂ)(C₂ D₂:Ideal HeckeFamily.O),
     ∀hC₂:Supported C₂,∀hD₂:Supported D₂,primeSupport C₂=primeSupport D₂ →
-    ∀(U:Finset (CommonIndex C₂ D₂))(Rwindow:ℝ)(rows:Finset O)(Wkernel:𝓢(ℝ,ℂ))(dyad:Fin 4→ℤ),
-    (∀I:Ideal O,βsource I≠0 → asource*volume input≤(I.absNorm:ℝ)) →
+    ∀(U:Finset (CommonIndex C₂ D₂))(Rwindow:ℝ)(rows:Finset HeckeFamily.O)(Wkernel:𝓢(ℝ,ℂ))(dyad:Fin 4→ℤ),
+    (∀I:Ideal HeckeFamily.O,βsource I≠0 → asource*volume input≤(I.absNorm:ℝ)) →
     physicalBlock τ t Scols βsource C₂ D₂ hC₂ hD₂ U Rwindow rows Wkernel Kmain dyad≠0 →
     ∀family:RayFourExpansion.RayCharacter→Character,Family τ C₂ D₂ hC₂ hD₂ U family →
     ∀χ:RayFourExpansion.RayCharacter,
     Real.logb Z (dyadicScale (dyad 1))+Real.logb Z ((family χ).modulus.absNorm:ℝ)≤Mcap →
-    ∀Cpick Rpick:Ideal O,Cpick=C₂ ∨ Cpick=D₂ → Rpick≠0 →
+    ∀Cpick Rpick:Ideal HeckeFamily.O,Cpick=C₂ ∨ Cpick=D₂ → Rpick≠0 →
     (Rpick.absNorm:ℝ)≤Z^BR → (Cpick.absNorm:ℝ)≤Z^BC →
     ∀B₂:actualAllocations input.pools Cpick,
     frozenCoefficient B₂.val Cpick Rpick input.ν input.W input.P≠0 →
-    ∀Dalloc:Ideal O,∀alloc:Allocation Dalloc
+    ∀Dalloc:Ideal HeckeFamily.O,∀alloc:Allocation Dalloc
       (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B₂.val⊕Fin 2)),
     ∀p:Profiles a b,p.profile 0=src.W₁ → p.profile 1=src.W₂ →
     src.X₁≤Z^L → src.X₂≤Z^L → src.Y₁≤Z^L → src.Y₂≤Z^L →
@@ -121,7 +110,7 @@ theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
   refine ⟨n,T,dc,Cc,hCc,?_⟩
   intro η₀
   obtain ⟨Zi,hZi,hi⟩:=hbound η₀
-  refine ⟨max Zi Zr,lt_of_lt_of_le hZi (le_max_left _ _),?_⟩
+  refine ⟨max Zi Zr,lt_of_lt_of_le hZi (by simp),?_⟩
   intro θ Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq src hmatch hhi hMs
     hcard hlowerSrc hupperSrc C D R0 hC hD hCD E B τ t hB hmod
@@ -139,8 +128,7 @@ theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
     hK hsigma hcost hasource Scols βsource C₂ D₂ hC₂ hD₂ hCD₂ U Rwindow rows Wkernel dyad
     hlowerBeta hphysical family hfamily χ hwidth Cpick Rpick hside hRpick B₂ hB₂ Dalloc alloc
     p hp₁ hp₂ hX₁ hX₂ hY₁ hY₂ Mdecl θclip hθclip hcap hMdecl hclip
-  have hsmall:sourceReserve src (child src C R0 B τ t) C D Z delta reserve cost asource≤
-      delta+reserve+θsource:=
+  have hsmall:=
     (hr Z hZrZ src hcard hlowerSrc hupperSrc C D R0 hC.1 hD.1 B τ t delta reserve cost asource
       hdelta hreserve hcost haSource).1
   have hCp:Cpick≠0:=by rcases hside with rfl|rfl;exact hC₂.1;exact hD₂.1
@@ -152,7 +140,7 @@ theorem actual_main_uniform_child (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove 
     (family χ) (internalQ Q η₀) dyad v height (dc+degree+4*n) Z BR BC εmask
     _ _ _ _ hCc.le hC₀ hC₁ hheight hz.le hεmask.le hRN hCN
   · linarith
-  · exact href.le
+  · linarith
   · exact zero_le_one.trans (le_max_left _ _)
 
 end SevenEighths.CenteredMomentEnergyCanonicalMainUniform

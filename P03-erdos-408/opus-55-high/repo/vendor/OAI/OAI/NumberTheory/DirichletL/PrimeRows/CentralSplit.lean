@@ -11,7 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 def centralNormalizedSlot (η : Character) (u : FreeRow) (P : PrimeIdeal)
@@ -83,7 +83,7 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
           rw [←mul_assoc,hpow,one_mul] at hm
           rw [mul_left_comm (P.val.absNorm:ℝ) 800,hp2] at hm
           exact hm
-        exact hn.trans (mul_le_mul_of_nonneg_right (by norm_num) (Real.rpow_nonneg hQ0.le _))
+        exact hn.trans (mul_le_mul_of_nonneg_right (by norm_num) (by positivity))
     · by_cases hj : 2≤multiplicity (primaryGenerator P.val) u.val
       · have hp : repeatedRowPrime u P := ⟨hd,hj⟩
         rw [centralRepeatedTerm,ite_eq_left hp,ite_eq_left hp]
@@ -104,8 +104,7 @@ theorem central_actual_local_bounds (η : Character) (u : FreeRow) (P : PrimeIde
           conv_lhs => lhs;rw [←Real.rpow_one (P.val.absNorm:ℝ)]
           rw [←Real.rpow_add hQ0]; congr 1
         rw [←mul_assoc,hi,one_mul] at hm
-        rw [mul_left_comm (P.val.absNorm:ℝ) 812,heq] at hm
-        exact hm
+        linarith
       · have hp : ¬repeatedRowPrime u P := fun h=>hj h.2
         simp only [centralRepeatedTerm,ite_eq_right hp,norm_zero,le_refl]
   · have hb := actual_central_unramified_normalized η u P hs hd hη a e x w z hQ

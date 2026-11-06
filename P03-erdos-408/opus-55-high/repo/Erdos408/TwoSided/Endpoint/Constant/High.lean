@@ -45,31 +45,25 @@ theorem classBound_nonneg {x δ θ c C₈ CNN Nexp JB Hc : ℝ} (hx : 1 ≤ x) (
     0 ≤ classBound x δ θ c C₈ CNN Nexp JB Hc := by
   have hL := Real.log_nonneg hx
   have h1 : 0 ≤ 17 + 48 * Real.log x := by linarith
-  have h2 : 0 ≤ CNN * Real.log x ^ (-Nexp) := mul_nonneg hCNN (Real.rpow_nonneg hL _)
+  have h2 : 0 ≤ CNN * Real.log x ^ (-Nexp) := by positivity
   have h3 : 0 ≤ JB * (Real.log x ^ C₈ * (24 / x ^ (1 / 300 : ℝ) + x ^ (-(1 / 150 : ℝ)))) ^ 2 :=
-    mul_nonneg hJB (sq_nonneg _)
+    by positivity
   have h4 : 0 ≤ (Real.log x ^ C₈) ^ 2 * (2304 / c + 4 * (x ^ (-(1 / 150 : ℝ))) ^ 2 *
       x ^ (1 / 300 : ℝ)) := by
-    have : 0 ≤ x ^ (1 / 300 : ℝ) := Real.rpow_nonneg (by linarith) _
+    have : 0 ≤ x ^ (1 / 300 : ℝ) := by positivity
     positivity
   have h5 : 0 ≤ θ ^ 2 * ((17 + 48 * Real.log x) * (3 * δ * Hc ^ 2)) :=
-    mul_nonneg (sq_nonneg _) (mul_nonneg h1 (by positivity))
+    by positivity
   have h6 : 0 ≤ (17 + 48 * Real.log x) * (CNN * Real.log x ^ (-Nexp)) := mul_nonneg h1 h2
   rw [classBound]
-  have : 0 ≤ 2 * (3 * δ) ^ 2 := by positivity
-  have := mul_nonneg this (add_nonneg (add_nonneg h4 h3) h6)
-  linarith
+  positivity
 
 /-- The corner-error bound is nonnegative. -/
 theorem errBound_nonneg {x δ Kc M Hc : ℝ} (hx : 1 ≤ x) (hδ : 0 ≤ δ) :
     0 ≤ errBound x δ Kc M Hc := by
   have hL := Real.log_nonneg hx
   rw [errBound]
-  have h1 : 0 ≤ 66 + 192 * Real.log x := by linarith
-  have h2 : 0 ≤ 3888 * δ ^ 5 * Kc ^ 2 * M ^ 2 * Hc ^ 2 :=
-    mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) (pow_nonneg hδ 5))
-      (sq_nonneg _)) (sq_nonneg _)) (sq_nonneg _)
-  exact mul_nonneg h2 h1
+  positivity
 
 section Fixed
 
@@ -91,8 +85,8 @@ theorem boxPrimes_scale (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
   rw [exp_succ_mul] at hp₂
   have heδ : Real.exp δ ≤ 2 := by linarith [exp_sub_one_le_two_mul hδ0 (by linarith)]
   have : (p₀ : ℝ) ≤ 2 * Real.exp (j * δ) :=
-    hp₂.trans (mul_le_mul_of_nonneg_right heδ (Real.exp_pos _).le)
-  constructor <;> linarith
+    hp₂.trans (mul_le_mul_of_nonneg_right heδ (by positivity))
+  grind
 
 /-- A nonempty box `j` has at most `3δ e^{jδ}` primes. -/
 theorem card_boxPrimes_le (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
@@ -127,19 +121,14 @@ theorem length_factor_le (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (hba : b - a ≤
     (hix : 2 * Real.exp (i * δ) ≤ x ^ 3) :
     b - a + 8 * grid δ (i + 1) * (1 + Real.log (grid δ (i + 1))) ≤
       Real.exp (i * δ) * (17 + 48 * Real.log x) := by
-  have hN2 : (grid δ (i + 1) : ℝ) ≤ 2 * Real.exp (i * δ) := grid_succ_le hδ0 hδ i
+  have hN2 := grid_succ_le hδ0 hδ i
   have hN1 : (1 : ℝ) ≤ grid δ (i + 1) := by exact_mod_cast one_le_grid hδ0 (i + 1)
   have hlogN : Real.log (grid δ (i + 1)) ≤ 3 * Real.log x := by
     calc Real.log (grid δ (i + 1)) ≤ Real.log (x ^ 3) :=
           Real.log_le_log (by linarith) (hN2.trans hix)
-      _ = 3 * Real.log x := by rw [Real.log_pow]; push_cast; ring
+      _ = 3 * Real.log x := by simp
   have hlog0 := Real.log_nonneg hN1
-  have h1 : 8 * (grid δ (i + 1) : ℝ) * (1 + Real.log (grid δ (i + 1))) ≤
-      8 * (2 * Real.exp (i * δ)) * (1 + 3 * Real.log x) := by
-    gcongr
-  have h2 : 8 * (2 * Real.exp (i * δ)) * (1 + 3 * Real.log x) + Real.exp (i * δ) =
-      Real.exp (i * δ) * (17 + 48 * Real.log x) := by ring
-  linarith
+  nlinarith
 
 /-- **E10.2 in a box.** The model part of the residual,
 `|e^{-iδ} ∑_{n ≡ β} (∑_{d ∣ n} A_d) n^{iσ} n^{it}| ≤ L^{C₈} (24/|t| + x^{-1/150})`, at times
@@ -162,7 +151,7 @@ theorem norm_boxResidual_model_le
           (n : ℂ) ^ (((t + σ : ℝ) : ℂ) * Complex.I) := by
     rw [boxResidual, mul_sum]
     refine sum_congr rfl fun n hn => ?_
-    have hn0 : (n : ℂ) ≠ 0 := by exact_mod_cast gridPiece_pos (mem_filter.1 hn).1
+    have hn0 : (n : ℂ) ≠ 0 := by exact_mod_cast (by grind)
     rw [show ((t + σ : ℝ) : ℂ) * Complex.I = (σ : ℂ) * Complex.I + (t : ℂ) * Complex.I by
       push_cast; ring, Complex.cpow_add _ _ hn0, Complex.ofReal_inv]
     ring
@@ -174,7 +163,7 @@ theorem norm_boxResidual_model_le
   have hts1 : 1 ≤ |t + σ| := by linarith
   have hts2 : |t + σ| ≤ x ^ 3 := by
     have := abs_add_le t σ
-    linarith [abs_nonneg t]
+    linarith
   rw [hrepr]
   refine (hE10 (Real.exp (i * δ)) β (grid δ i) (grid δ (i + 1)) (t + σ) hi
     (Nat.lt_floor_add_one _).le (grid_succ_le hδ0 hδ i) hts1 hts2).trans ?_
@@ -197,7 +186,7 @@ theorem exists_mem_exceptional {θ' : ℝ} (A : ℝ → ℂ) {P : ℝ} {s : Fins
   have htT := hint t (Set.Ioc_subset_Icc_self ht)
   have hfl := Int.floor_le t
   have hfl' := Int.lt_floor_add_one t
-  refine ⟨⌊t⌋, mem_filter.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, t, hfl, hfl'.le, htT, by rwa [← hA]⟩,
+  refine ⟨⌊t⌋, mem_filter.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, t, hfl, hfl'.le, htT, by simp_all⟩,
     hfl, hfl'.le⟩
   · have h1 : -(T₀ : ℝ) ≤ t := by linarith [neg_abs_le t]
     have h2 : (-⌈T₀⌉ - 1 : ℤ) ≤ ⌊t⌋ := by
@@ -207,9 +196,9 @@ theorem exists_mem_exceptional {θ' : ℝ} (A : ℝ → ℂ) {P : ℝ} {s : Fins
       exact_mod_cast (show ((-⌈T₀⌉ - 1 : ℤ) : ℝ) ≤ ⌊t⌋ by
         have h3 : (-⌈T₀⌉ - 1 : ℤ) < ⌊t⌋ + 1 := by exact_mod_cast this
         exact_mod_cast Int.lt_add_one_iff.1 h3)
-    exact h2
+    omega
   · have : (⌊t⌋ : ℝ) ≤ ⌈T₀⌉ := by linarith [le_abs_self t, Int.le_ceil T₀]
-    exact_mod_cast this
+    simp_all
 
 /-- **E7 in a box.** The ordinary times of one class:
 `∫_{|A_β| ≤ θ} |A_β B_β|² ≤ θ² (17 + 48L) 3δ H_max²`. -/
@@ -256,14 +245,14 @@ theorem setIntegral_boxOrdinary_le
                 mul_le_mul (mul_le_mul_of_nonneg_left (hH n) h2) h1 (norm_nonneg _)
                   (mul_nonneg h2 ((norm_nonneg _).trans (hH n)))
             _ = ei⁻¹ * Hc := mul_one _
-      _ = S.card * (ei⁻¹ * Hc) ^ 2 := by rw [sum_const, nsmul_eq_mul]
+      _ = S.card * (ei⁻¹ * Hc) ^ 2 := by simp
   have hθ : 0 ≤ θ ^ 2 := sq_nonneg θ
   refine mul_le_mul_of_nonneg_left ?_ hθ
   calc (b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ Icc 1 N, ‖cq n‖ ^ 2
       ≤ (ei * (17 + 48 * Real.log x)) * (3 * δ * ei * (ei⁻¹ * Hc) ^ 2) := by
-        refine mul_le_mul hfac (hcn.trans ?_) (sum_nonneg fun _ _ => sq_nonneg _)
-          (le_trans hfac0 hfac)
-        exact mul_le_mul_of_nonneg_right hcS (sq_nonneg _)
+        refine mul_le_mul hfac (hcn.trans ?_) (by positivity)
+          (by linarith)
+        nlinarith
     _ = (17 + 48 * Real.log x) * (3 * δ * Hc ^ 2) := by
         field_simp
 
@@ -323,7 +312,7 @@ theorem integral_boxResidual_error_le
       _ = ei⁻¹ ^ 2 * ∑ n ∈ S, ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 := by rw [mul_sum]
       _ ≤ ei⁻¹ ^ 2 * ∑ n ∈ Finset.Ioc ⌊ei⌋₊ ⌊2 * ei⌋₊, ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 := by
           gcongr
-      _ ≤ ei⁻¹ ^ 2 * (CNN * ei * Real.log x ^ (-Nexp)) := by gcongr; exact hmodel ei hei1
+      _ ≤ ei⁻¹ ^ 2 * (CNN * ei * Real.log x ^ (-Nexp)) := by simp_all
   calc (b - a + 8 * N * (1 + Real.log N)) * ∑ n ∈ S, ‖((ei⁻¹ : ℝ) : ℂ) *
         (H n - ∑ d ∈ n.divisors, A₀ d) * (n : ℂ) ^ ((σ : ℂ) * Complex.I)‖ ^ 2
       ≤ (ei * (17 + 48 * Real.log x)) * (ei⁻¹ ^ 2 * (CNN * ei * Real.log x ^ (-Nexp))) :=
@@ -514,7 +503,7 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
     have h1 : Y / 4 ≤ Real.exp (L ^ (0.36 : ℝ)) * ei :=
       hr₁.trans (mul_le_mul_of_nonneg_right hej₂ hei0.le)
     have h2 : x / 4 * Real.exp (L ^ (0.36 : ℝ)) ≤ ei * Real.exp (L ^ (0.36 : ℝ)) := by
-      linarith [mul_comm ei (Real.exp (L ^ (0.36 : ℝ)))]
+      linarith
     exact le_of_mul_le_mul_right h2 hE36
   have hei₂ : ei ≤ 4 * Y := by
     have h1 : (1 : ℝ) / 2 ≤ ej := by
@@ -532,7 +521,7 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
   have hN1 : (1 : ℝ) ≤ N := by exact_mod_cast one_le_grid hδ0.le (i + 1)
   have hlogN : Real.log N ≤ 3 * L := by
     calc Real.log N ≤ Real.log (x ^ 3) := Real.log_le_log (by linarith) (by linarith)
-      _ = 3 * L := by rw [Real.log_pow]; push_cast; ring
+      _ = 3 * L := by simp_all
   have hlog0 := Real.log_nonneg hN1
   have hfac : b - a + 8 * N * (1 + Real.log N) ≤ T₀ + 16 * ei * (1 + 3 * L) := by
     have : 8 * (N : ℝ) * (1 + Real.log N) ≤ 8 * (2 * ei) * (1 + 3 * L) := by gcongr
@@ -542,11 +531,11 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
     linarith
   refine (integral_boxErr_le hab hY0 hδ0.le hδ hψ hψd hM hκ hH j i).trans ?_
   set c₀ := Kc * Y⁻¹ * (12 * δ * M) * Hc with hc₀
-  have hT₀0 : 0 ≤ T₀ := (sub_nonneg.2 hab).trans hba
+  have hT₀0 : 0 ≤ T₀ := by linarith
   -- `e^{jδ} T₀ ≤ Y` and `r ≤ 2Y`
   have hejT : ej * T₀ ≤ Y := by
     calc ej * T₀ ≤ Real.exp (L ^ (0.36 : ℝ)) * T₀ := mul_le_mul_of_nonneg_right hej₂ hT₀0
-      _ ≤ Y := by linarith [mul_comm T₀ (Real.exp (L ^ (0.36 : ℝ)))]
+      _ ≤ Y := by linarith
   calc ((boxPrimes δ Ps j).card : ℝ) ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) *
         ((gridPiece δ i).card * c₀ ^ 2))
       ≤ (3 * δ * ej) ^ 2 * ((T₀ + 16 * ei * (1 + 3 * L)) * (3 * δ * ei * c₀ ^ 2)) := by
@@ -556,9 +545,7 @@ theorem integral_boxErr_le_of_corner {κ : ℂ} {ψ : ℝ → ℂ} {M Kc : ℝ} 
     _ ≤ 27 * δ ^ 3 * c₀ ^ 2 * ((2 * Y) * Y + 16 * (1 + 3 * L) * (2 * Y) ^ 2) := by
         gcongr
     _ = 3888 * δ ^ 5 * Kc ^ 2 * M ^ 2 * Hc ^ 2 * (66 + 192 * L) := by
-        rw [hc₀]
-        field_simp
-        ring
+        grind
 
 open scoped Classical in
 /-- **One box (E6, E7, E10).** Every box `(j, i)` has
@@ -604,7 +591,7 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
   have hCNN : 0 ≤ CNN := by
     have h1 := hmodel 1 le_rfl
     have h0 : 0 ≤ ∑ n ∈ Finset.Ioc ⌊(1 : ℝ)⌋₊ ⌊2 * (1 : ℝ)⌋₊,
-        ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 := sum_nonneg fun _ _ => sq_nonneg _
+        ‖H n - ∑ d ∈ n.divisors, A₀ d‖ ^ 2 := by positivity
     have h2 := h0.trans h1
     rw [mul_one] at h2
     exact nonneg_of_mul_nonneg_left h2 (Real.rpow_pos_of_pos (Real.log_pos hx) _)
@@ -624,10 +611,8 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
       intro t
       refine boxSum_eq_zero hY0 hδ hψ ?_ t
       rcases not_and_or.1 hrel with h1 | h1
-      · exact Or.inl (Finset.not_nonempty_iff_eq_empty.1 h1)
-      · rcases not_and_or.1 h1 with h2 | h2
-        · exact Or.inr (Or.inl (lt_of_not_ge h2))
-        · exact Or.inr (Or.inr (lt_of_not_ge h2))
+      · grind
+      · grind
     simp_rw [h0, norm_zero]
     simpa using hBB
   obtain ⟨hs, hr₁, hr₂⟩ := hrel
@@ -652,7 +637,7 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
     rw [hW, norm_zero]
     have : 0 ≤ (2 * Kc * M₀) ^ 2 * (k * (k * classBound x δ θ c C₈ CNN Nexp JB Hc)) := by
       positivity
-    simpa using this
+    linarith
   have hr₃ : Y ≤ r := by
     have := (hψ _ hψr).1
     rwa [le_div_iff₀ hY0, one_mul] at this
@@ -663,8 +648,8 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
     have hM₀0 : 0 ≤ M₀ := (norm_nonneg _).trans (hM₀ 0)
     have hYi : 0 ≤ Y⁻¹ := inv_nonneg.2 hY0.le
     calc ‖κ‖ * Y⁻¹ * ‖ψ (r / Y)‖ * r ≤ Kc * Y⁻¹ * M₀ * (2 * Y) :=
-          mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_right hκ hYi) (hM₀ _) (norm_nonneg _)
-            (mul_nonneg hKc hYi)) hr₂ (by positivity) (mul_nonneg (mul_nonneg hKc hYi) hM₀0)
+          mul_le_mul (mul_le_mul (mul_le_mul_of_nonneg_right hκ hYi) (by grind) (norm_nonneg _)
+            (by positivity)) hr₂ (by positivity) (by positivity)
       _ = 2 * Kc * M₀ := by field_simp
   have hcls : ∀ β ∈ range k, ∫ t in a..b,
       ‖boxSmall σ δ h k Ps j β t * boxResidual σ δ k H i β t‖ ^ 2 ≤
@@ -679,7 +664,7 @@ theorem integral_boxSum_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ Kc : ℝ} (h
   have hI0 : 0 ≤ ∑ β ∈ range k, ∫ t in a..b,
       ‖boxSmall σ δ h k Ps j β t * boxResidual σ δ k H i β t‖ ^ 2 :=
     sum_nonneg fun β _ => intervalIntegral.integral_nonneg hab fun t _ => by positivity
-  exact mul_le_mul hW2 (mul_le_mul_of_nonneg_left hsum hk') (mul_nonneg hk' hI0) (sq_nonneg _)
+  exact mul_le_mul hW2 (mul_le_mul_of_nonneg_left hsum hk') (by positivity) (sq_nonneg _)
 
 open scoped Classical in
 /-- **The constant part at high times, for fixed `x` (S19).** With the inputs E7, S16, E10.2
@@ -725,11 +710,11 @@ theorem integral_twistedPoly_const_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ K
     obtain ⟨hpr, -, hp36⟩ := hPs p hp
     refine ⟨hpr.two_le, ?_⟩
     have : 2 * Real.exp (Real.log x ^ (0.36 : ℝ)) ≤ x * Real.exp (Real.log x ^ (0.36 : ℝ)) :=
-      mul_le_mul_of_nonneg_right hx2 (Real.exp_pos _).le
+      mul_le_mul_of_nonneg_right hx2 (by positivity)
     linarith
   simp_rw [twistedPoly_eq_sum_boxSum hδ0.le hψ hPs2 hI, ← Finset.sum_product']
   have hCS := integral_norm_sum_sq_le (range I ×ˢ range I) (fun _ => 1)
-    (fun _ _ => norm_one.le) (fun z t => boxSum Y σ δ h k Ps κ H ψ z.1 z.2 t)
+    (by simp) (fun z t => boxSum Y σ δ h k Ps κ H ψ z.1 z.2 t)
     (fun z _ => continuous_boxSum z.1 z.2) hab
   simp only [one_mul] at hCS
   refine hCS.trans ?_
@@ -748,8 +733,7 @@ theorem integral_twistedPoly_const_le {κ : ℂ} {ψ : ℝ → ℂ} {M₀ M₁ K
         mul_le_mul_of_nonneg_left hsum hI0
     _ = (I : ℝ) ^ 2 * ((I : ℝ) ^ 2 * boxBound x δ θ c C₈ CNN Nexp JB Hc Kc M₀ M₁ k) := by
         rw [card_product, card_range]
-        push_cast
-        ring
+        grind
 
 end Fixed
 

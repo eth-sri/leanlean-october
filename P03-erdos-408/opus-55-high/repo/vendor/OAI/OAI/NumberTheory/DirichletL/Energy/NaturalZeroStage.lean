@@ -10,20 +10,19 @@ public import OAI.NumberTheory.DirichletL.Energy.StageMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalZeroStage
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyBandMonotonicity
 open CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyWidthSchedule
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_zero_stage
     (W:ℝ→ℂ)(aslot bslot Lslot lo hi κ a b bΦ Bmask Lgoal Mparent Mchild
@@ -42,8 +41,8 @@ theorem actual_zero_stage
     ∀Lchild:ℝ,0≤Lchild→max Mparent (2*Lgrow)≤Lchild→
       readyBudget (max Mparent (2*Lgrow)) Bmask≤Bschedule→
     ∀degree degreeLow:ℕ,∀S Slow:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
-      internalQ Q η₀≤Ideal.span {(72:O)}→
+    ∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+      internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
     ∀εchild C₀ C₁ Clow:ℝ,εchild≤stageLoss Mschedule Bschedule ε k→
       0≤C₀→0≤C₁→0≤Clow→
@@ -64,12 +63,7 @@ theorem actual_zero_stage
       a b bΦ r Mparent Bmask Lgoal ha hlo hhi hrad hr hMparent hBmask
   let Llow:=max Lgrow (Mparent+Bmask+rho/100)
   refine ⟨d,Lgrow,Llow,hd,hd1,hLg,hgoal,hLexact,rfl,?_,?_⟩
-  · apply max_le
-    · apply hLupper.trans
-      exact add_le_add (max_le_max (le_refl Lgoal)
-        (show Mparent+Bmask+2≤Mparent+Bmask+rho/100+2 by linarith only [hrho])) (le_refl (1:ℝ))
-    · have hh:=le_max_right Lgoal (Mparent+Bmask+rho/100+2)
-      linarith
+  · grind
   intro Lchild hLc hcap hready degree degreeLow S Slow
   obtain ⟨Ψ,hsΨ,hnΨ,hgrowth⟩:=
     CenteredMomentEnergyZeroGrowthSourceControlled.actual_growth_from_physical
@@ -86,7 +80,7 @@ theorem actual_zero_stage
   intro η₀ Q hQM hQ0 hQt hQ72
   obtain ⟨Cmass,hCm,Zmass,hZm,hmass⟩:=hphysical η₀ Q hQM hQ0 hQt hQ72
   let C:=Csharp*(Cgrowth*(Cmass+2)+1)
-  refine ⟨C,by dsimp [C];positivity,?_⟩
+  refine ⟨C,by positivity,?_⟩
   filter_upwards [eventually_ge_atTop Zmass,hgrowth,hsharp] with Z hZmZ hg hs
   have hZ:1<Z:=hZm.trans_le hZmZ
   refine ⟨hZ,?_⟩
@@ -95,7 +89,7 @@ theorem actual_zero_stage
   have hpLoss:0≤physicalLoss Mschedule Bschedule ε k:=hmarg.1.le
   have hrLoss:0≤reflectedLoss Mschedule Bschedule ε k:=hpLoss.trans hmarg.2.2.2.1
   have hlength:Lgrow≤Lchild:=by linarith [le_max_right Mparent (2*Lgrow)]
-  have hap:a/max 1 b≤a:=div_le_self ha.le (le_max_left _ _)
+  have hap:a/max 1 b≤a:=div_le_self ha.le (by simp)
   have hzero:=zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ 2 0 _ _ _
     degree degree S S C₀ C₀ hZ.le le_rfl le_rfl hbΦ hBmask le_rfl le_rfl le_rfl
     le_rfl (Finset.Subset.refl _) hC₀ le_rfl hz
@@ -106,19 +100,19 @@ theorem actual_zero_stage
   have hprevious:=zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z a b bΦ Bmask Lgrow rho
     (reflectedLoss Mschedule Bschedule ε k) degree (degree+degreeLow) S (S∪Slow) C₀ C₀
     hZ.le hap le_rfl le_rfl le_rfl hlength hrhoChild
-    (hchild.trans (hmarg.2.1.trans hmarg.2.2.2.1)) (Nat.le_add_right _ _)
+    (by linarith) (by omega)
     Finset.subset_union_left hC₀ le_rfl hz
   have hlow:=zeroLowAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ _ _ _ _ _
     degreeLow (degree+degreeLow) Slow (S∪Slow) Clow Clow hZ.le
-    le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (Nat.le_add_left _ _)
+    le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl (by omega)
     Finset.subset_union_right hClow le_rfl hl
   have hgrowthNow:=hg.2 (physicalLoss Mschedule Bschedule ε k)
     (physicalLoss Mschedule Bschedule ε k) (reflectedLoss Mschedule Bschedule ε k)
     (internalQ Q η₀) Clow (Cmass*(C₀+C₁+1)) C₀ hpLoss hClow (by positivity) hC₀
-    (by unfold reflectedLoss;exact le_rfl) hmarg.2.2.2.1
+    (by unfold reflectedLoss;linarith) hmarg.2.2.2.1
     (hmarg.2.2.1.trans hmarg.2.2.2.1)
     (by have hh:= (bounds Mschedule Bschedule κ ε hMschedule hBschedule hκ0 hε).1
-        linarith only [hrLoss,hh]) hprevious hlow hmassNow
+        linarith) hprevious hlow hmassNow
   have hfinal:=hs.2 (reflectedLoss Mschedule Bschedule ε k) (internalQ Q η₀) Jgrowth
     (Cgrowth*(Clow+Cmass*(C₀+C₁+1)+C₀+1)) hrLoss (by positivity) hgrowthNow
   rw [reflected_then_zero] at hfinal
@@ -129,7 +123,7 @@ theorem actual_zero_stage
       _≤Csharp*(Cgrowth*((Cmass+2)*(Clow+C₀+C₁+1))+(Clow+C₀+C₁+1)):=by
         gcongr
         linarith
-      _=_:=by dsimp [C];ring
+      _=_:=by linarith
   exact zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ _ _ _ _ _
     J J U U _ _ hZ.le le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl le_rfl
     le_rfl (Finset.Subset.refl _) (by positivity) hfront hfinal

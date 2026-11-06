@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Contractions
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -21,8 +20,7 @@ theorem normBound_relabel {α : Type*} (mass : α → ℝ)
   intro s t f g
   have h := hK (s.map e.toEmbedding) (t.map d.toEmbedding)
     (fun a => f (e.symm a)) (fun b => g (d.symm b))
-  simpa only [Finset.sum_map, Equiv.toEmbedding_apply,
-    e.symm_apply_apply, d.symm_apply_apply, he, hd] using h
+  simp_all
 
 theorem normBound_convex_sum {α β : Type*} [Fintype β]
     (mass : α → ℝ) (K : β → α → α → ℂ) (w : β → ℝ) (C : ℝ)

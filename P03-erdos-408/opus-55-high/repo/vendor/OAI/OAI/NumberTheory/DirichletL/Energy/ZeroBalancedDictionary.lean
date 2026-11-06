@@ -9,19 +9,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAnnularInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentFiniteProfileExceptional
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
+open HeckeFamily
+open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
+open CenteredMomentCommonRadialData
 open CenteredMomentEnergyOriginalSource CenteredMomentEnergyNaturalInputMatches
-open CenteredMomentAmplificationChildInput CenteredMomentFirstSourceReduction
-local notation "O"=>HeckeFamily.O
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+open CenteredMomentAmplificationChildInput
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable {Z Bmask bΦ a b:ℝ}(s:NaturalState Z Bmask bΦ)(p:Profiles a b)(ha:0<a)
 variable (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)
 local notation "zeroInput"=>CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂
@@ -57,7 +56,7 @@ theorem declared_capacity (hZ:1<Z):
   have hV:Real.logb Z (volume zeroInput)≤length Z X₁+length Z X₂:=by
     rw [CenteredMomentEnergyZeroReferencePhysical.balanced_volume,
       Real.logb_mul hX₁.ne' hX₂.ne']
-    exact add_le_add (hlog X₁ hX₁) (hlog X₂ hX₂)
+    exact by grind
   have hdecl:=hV.trans (le_max_right s.width (length Z X₁+length Z X₂))
   refine ⟨hdecl,CenteredMomentEnergyPositiveHighParameters.actual_width_le s hZ,
     CenteredMomentEnergyPositiveHighParameters.actual_conductor_scale s hZ,?_⟩
@@ -68,9 +67,9 @@ lemma declared_capacity_upper (Mcap Lgoal:ℝ)(hZ:1<Z)(hL:0≤Lgoal)
     max s.width (length Z X₁+length Z X₂)≤max Mcap (2*Lgoal):=by
   have hlen (X:ℝ)(hcap:X≤Z^Lgoal):length Z X≤Lgoal:=by
     unfold length
-    exact (Real.logb_le_iff_le_rpow hZ (zero_lt_one.trans_le (le_max_left 1 X))).mpr
+    exact (Real.logb_le_iff_le_rpow hZ (by positivity)).mpr
       (max_le (Real.one_le_rpow hZ.le hL) hcap)
-  exact max_le_max hs (by linarith [hlen X₁ hc₁,hlen X₂ hc₂])
+  grind
 
 end SevenEighths.CenteredMomentEnergyZeroBalancedDictionary
 

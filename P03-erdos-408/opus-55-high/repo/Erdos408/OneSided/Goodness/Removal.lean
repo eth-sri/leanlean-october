@@ -49,7 +49,7 @@ private noncomputable def goodVec (x : ℝ) (d : Data K) (Y d₀ : ℝ) (s : Sta
 private theorem star_goodVec {x : ℝ} {d : Data K} {Y d₀ : ℝ} (s : State x d Y d₀) :
     star (goodVec x d Y d₀ s) = goodVec x d Y d₀ s := by
   unfold goodVec
-  split_ifs <;> simp
+  simp
 
 open scoped Classical in
 /-- The good indicator is slot invariant, because goodness is. -/
@@ -75,16 +75,14 @@ private theorem norm_one_sub_goodVec_le {x : ℝ} {d : Data K} {Y d₀ : ℝ}
 private theorem norm_endVec_le {C CX alo ahi g x : ℝ} {d : Data K}
     (hd : Admissible C CX alo ahi g x d) (hL : 0 ≤ Real.log x) {Y d₀ : ℝ}
     (s : State x d Y d₀) : ‖endVec x d Y d₀ s‖ ≤ (Real.log x ^ C) ^ 2 := by
-  have hB : 0 ≤ Real.log x ^ C := Real.rpow_nonneg hL C
+  have hB := Real.rpow_nonneg hL C
   have hα : ‖d.α (s.1.1.1 / listProd s.1.2)‖ ≤ Real.log x ^ C := by
     by_cases h : d.α (s.1.1.1 / listProd s.1.2) = 0
-    · rw [h, norm_zero]
-      exact hB
+    · simp_all
     · exact (hd.α_supp _ h).2.2.2
   have hβ : ‖d.β s.1.1.2‖ ≤ Real.log x ^ C := by
     by_cases h : d.β s.1.1.2 = 0
-    · rw [h, norm_zero]
-      exact hB
+    · simp_all
     · exact (hd.β_supp _ h).2.2.2
   rw [endVec, norm_mul, norm_star, sq]
   exact mul_le_mul hα hβ (norm_nonneg _) hB
@@ -139,7 +137,7 @@ theorem norm_rowPairing_sub_pairing_le {q C CX alo ahi g x : ℝ} {d : Data K}
     ‖rowPairing q A₀ x d Y d₀ - pairing q A₀ x d Y d₀‖ ≤
       stateMass x d * Real.log x ^ (4 * C) * badMass q A₀ x d Y d₀ := by
   classical
-  have hL : 0 ≤ Real.log x := Real.log_nonneg hx
+  have hL := Real.log_nonneg hx
   have hm := stateMass_nonneg x d
   have hL4 : Real.log x ^ (4 * C) = (Real.log x ^ C) ^ 4 := by
     rw [mul_comm, Real.rpow_mul hL, ← Real.rpow_natCast]

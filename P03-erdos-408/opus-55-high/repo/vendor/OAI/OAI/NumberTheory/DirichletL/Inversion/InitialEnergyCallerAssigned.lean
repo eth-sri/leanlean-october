@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerAssigned
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -40,7 +40,7 @@ theorem attach_injective {J : ℕ} :
     Function.Injective (fun z : Source (ι:=ι) 0 × (Fin J→ι) => attach z.1 z.2) := by
   intro x y h
   apply Prod.ext
-  · simpa only [erase_attach] using congrArg erase h
+  · simpa using congrArg erase h
   · exact congrArg Source.assigned h
 
 def attachPair (J₁ J₂ : Finset σ)
@@ -54,9 +54,9 @@ theorem attachPair_injective (J₁ J₂ : Finset σ) :
   intro x y h
   have he := @attach_injective ι (J₁.card + J₂.card)
     (x.1,pairedSlotAssignment J₁ J₂ x.2) (y.1,pairedSlotAssignment J₁ J₂ y.2) h
-  exact Prod.ext (congrArg (fun z : Source (ι:=ι) 0 × (Fin (J₁.card+J₂.card)→ι)=>z.1) he)
+  exact Prod.ext (by grind)
     (pairedSlotAssignment_injective J₁ J₂
-      (congrArg (fun z : Source (ι:=ι) 0 × (Fin (J₁.card+J₂.card)→ι)=>z.2) he))
+      (by grind))
 
 def assignedSource (S : Finset (Source (ι:=ι) 0)) (J₁ J₂ : Finset σ)
     (L₁ L₂ : σ→Finset ι) : Finset (Source (ι:=ι) (J₁.card+J₂.card)) :=
@@ -128,7 +128,7 @@ theorem coefficient_norm_le_one (S : Finset (Source (ι:=ι) 0))
   obtain ⟨hmem,hq⟩ := Finset.mem_filter.mp hy
   have hq' : q∈(J₁.pi L₁ ×ˢ J₂.pi L₂).filter
       (fun q=>∀ i,pairedSlotAssignment J₁ J₂ q i∈y.common∪y.overlap) :=
-    Finset.mem_filter.mpr ⟨(Finset.mem_product.mp hmem).2,hq⟩
+    by grind
   rw [paired_assignment_filter] at hq'
   rw [coefficient_attach]
   exact pairedSlotWeight_norm_le_one J₁ J₂ L₁ L₂ a₁ a₂ _ q hq' ha₁ ha₂

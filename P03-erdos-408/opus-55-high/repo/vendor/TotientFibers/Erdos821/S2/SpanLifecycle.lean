@@ -7,7 +7,6 @@ public import Erdos821.S2.HistoryAnchors
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -123,23 +122,21 @@ theorem pendingPrimes_memoryBefore (S : LifespanAssignment P n) (i : Fin (n + 1)
     pendingPrimes (Q.memoryBefore S i g) = (Q.pendingBeforePrimes S i g).val := by
   rw [memoryBefore_eq_map]
   simp only [pendingPrimes, Multiset.map_map]
-  exact Multiset.map_id _
+  simp
 
 theorem pendingPrimes_memoryAfter (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup) :
     pendingPrimes (Q.memoryAfter S i g) = (Q.pendingAfterPrimes S i g).val := by
   rw [memoryAfter_eq_map]
   simp only [pendingPrimes, Multiset.map_map]
-  exact Multiset.map_id _
+  simp
 
 theorem memoryBefore_card (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup) :
     (Q.memoryBefore S i g).card = (Q.pendingBeforePrimes S i g).card := by
-  rw [memoryBefore_eq_map, Multiset.card_map]
-  rfl
+  simp [memoryBefore_eq_map, Multiset.card_map]
 
 theorem memoryAfter_card (S : LifespanAssignment P n) (i : Fin (n + 1)) (g : P.BigGroup) :
     (Q.memoryAfter S i g).card = (Q.pendingAfterPrimes S i g).card := by
-  rw [memoryAfter_eq_map, Multiset.card_map]
-  rfl
+  simp [memoryAfter_eq_map, Multiset.card_map]
 
 theorem pendingBefore_zero (g : P.BigGroup) (p : P.Prime g.val) (span : PrimeSpan n) :
     ¬ Q.pendingBefore g p span 0 := by
@@ -153,9 +150,7 @@ theorem pendingAfter_last (g : P.BigGroup) (p : P.Prime g.val) (span : PrimeSpan
   · simp [pendingAfter]
   · intro hs
     have hlt := hs.2.1
-    change n < stop.val at hlt
-    have hstop := stop.isLt
-    omega
+    grind
 
 theorem memoryBefore_zero (S : LifespanAssignment P n) (g : P.BigGroup) : Q.memoryBefore S 0 g = 0 := by
   apply Finset.sum_eq_zero
@@ -177,8 +172,7 @@ theorem coincident_span_active (g : P.BigGroup) (p : P.Prime g.val) (birth stop 
     exact lt_irrefl _ hlt
   obtain ⟨i, hi⟩ := Finset.nonempty_iff_ne_empty.mpr hn
   have hc := hs.2.2.1 i hi
-  have hie : i = birth := le_antisymm (he.symm ▸ hc.2) hc.1
-  exact hie ▸ hi
+  grind
 
 /-- Termination uses old pending particles; a new ghost starts only afterwards. -/
 theorem ghost_occupancy_update (g : P.BigGroup) (p : P.Prime g.val) (span : PrimeSpan n)
@@ -186,9 +180,9 @@ theorem ghost_occupancy_update (g : P.BigGroup) (p : P.Prime g.val) (span : Prim
     ((Q.pendingBefore g p span i ∧ ¬ Q.ghostStopAt g p span i) ∨ Q.ghostBirthAt g p span i) ↔
       Q.pendingAfter g p span i := by
   rcases span with _ | ⟨birth, stop⟩
-  · simp [pendingBefore, pendingAfter, ghostStopAt, ghostBirthAt]
+  · simp [pendingBefore, pendingAfter, ghostBirthAt]
   · by_cases hi : i ∈ Q.activeVisits g p
-    · simp [pendingBefore, pendingAfter, ghostStopAt, ghostBirthAt, hi]
+    · simp [pendingBefore, pendingAfter, ghostBirthAt, hi]
     · have hord := hs.1
       have hbad : ¬ (birth = stop ∧ birth = i) := by
         rintro ⟨he, rfl⟩

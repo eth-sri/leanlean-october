@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SectorLocalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstDiscarded
 open SevenEighths CenteredMomentFirstScale CenteredMomentSectorLocalization
 open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CanonicalQuadraticSieve
 open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFirstReduced
 open CenteredMomentSupportedCorrelation
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic
 
-theorem actual_first_kernel_reference (I J E : Ideal O)
+theorem actual_first_kernel_reference (I J E : Ideal ActualEisensteinCubic.O)
     (hI : I≠0) (hJ : J≠0) (hE : E≠0) (K X HN Tsec : ℝ)
     (hK : 0<K) (hX : 0<X)
     (hi : (Ideal.absNorm I:ℝ)≤Real.exp HN*X)

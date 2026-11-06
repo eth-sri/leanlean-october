@@ -8,32 +8,31 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
+open scoped Classical
+open CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAssignedCanonical
 open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
 open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem original_assigned_canonical_pair
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)
+    (S:Finset (Source (ι:=ι) 0))(u:ActualEisensteinCubic.Oˣ)
     (J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι)(a₁ a₂:σ→ι→ℂ)
     (ha₁:∀i∈J₁,∀q∈L₁ i,‖a₁ i q‖≤1)
     (ha₂:∀i∈J₂,∀q∈L₂ i,‖a₂ i q‖≤1)
     (hdiv:∀x∈S,x.divisor⊆x.common)
-    (labels:Finset (Ideal Eis))(rows:Finset Eis)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)
     (hlabels:∀f∈labels,f≠0)(hneg:∀k∈rows,-k∈rows)
     (hchild:∀x∈S,(initialChild (toTuple p (sectorSource u x))).2.1∈labels ∧
       (initialChild (toTuple p (sectorSource u x))).2.2∈rows)
     (c:Source (ι:=ι) 0→ℂ)(A:ℝ)(hA:0≤A)(hc:∀x∈S,‖c x‖≤A)
-    (pool:Finset ι)(Ψ₁ Ψ₂:Eis→*ℂ)(j:Eis)(slots₁ slots₂:Finset σ)
+    (pool:Finset ι)(Ψ₁ Ψ₂:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(slots₁ slots₂:Finset σ)
     (W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ){Z:ℝ}(hZ:0<Z)(F B₁ B₂:ℝ)
     (hmoment₁:∀t∈quotientSet p (assignedSource S J₁ J₂ L₁ L₂),
       normalizedColumnEnergy p hp hcop hg pool Ψ₁ (j*primaryGenerator t)
@@ -69,8 +68,7 @@ theorem original_assigned_canonical_pair
       mul_le_mul_of_nonneg_left (mul_le_mul (Real.sqrt_le_sqrt h₁)
         (Real.sqrt_le_sqrt h₂) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)) hA
     _=_ := by
-      rw [sqrt_pair_mass _ B₁ B₂ (mul_nonneg (Real.rpow_nonneg hZ.le _)
-        (Finset.sum_nonneg fun t ht=>by positivity))]
+      rw [sqrt_pair_mass _ B₁ B₂ (by positivity)]
       ring
 
 end SevenEighths.InverseInitialEnergyCallerAssignedCanonical

@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorBranchBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff ComplexConjugate
+open scoped Classical
 open Set
 namespace SevenEighths.HeckeDetectorRawFiber
 open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorWitnessRows

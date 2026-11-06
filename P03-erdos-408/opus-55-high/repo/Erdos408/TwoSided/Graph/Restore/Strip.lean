@@ -39,7 +39,7 @@ def sharedSlots (C : ι → Finset (Fin J)) (g : ι) : Finset (Fin J) :=
 /-- A slot of the first `J` is unshared exactly when it is free. -/
 lemma castSucc_mem_unsharedSlots {C : ι → Finset (Fin J)} {g : ι} {i : Fin J} :
     i.castSucc ∈ unsharedSlots C g ↔ i ∈ C g := by
-  simp [unsharedSlots, Fin.castSucc_ne_last]
+  simp [unsharedSlots]
 
 /-- The final slot is unshared. -/
 lemma last_mem_unsharedSlots (C : ι → Finset (Fin J)) (g : ι) :
@@ -132,14 +132,14 @@ lemma eq_one_of_mem_unsharedLists {P : ι → Finset ℕ} {C : ι → Finset (Fi
     {l : ι → Fin (J + 1) → ℕ} (hl : l ∈ unsharedLists P C) {g : ι} {j : Fin (J + 1)}
     (hj : j ∉ unsharedSlots C g) : l g j = 1 := by
   have := mem_unsharedLists.1 hl g j
-  rwa [ite_eq_right hj, mem_singleton] at this
+  simp_all
 
 /-- Unshared parts lie in `P g` in the unshared slots. -/
 lemma mem_of_mem_unsharedLists {P : ι → Finset ℕ} {C : ι → Finset (Fin J)}
     {l : ι → Fin (J + 1) → ℕ} (hl : l ∈ unsharedLists P C) {g : ι} {j : Fin (J + 1)}
     (hj : j ∈ unsharedSlots C g) : l g j ∈ P g := by
   have := mem_unsharedLists.1 hl g j
-  rwa [ite_eq_left hj] at this
+  simp_all
 
 /-- The unshared part of a merged list. -/
 lemma pad_merge {P : ι → Finset ℕ} {C : ι → Finset (Fin J)} {s : ι → Fin J → ℕ}
@@ -174,15 +174,15 @@ lemma sum_allLists_eq {R : Type*} [AddCommMonoid R] (P : ι → Finset ℕ)
     · dsimp only
       by_cases hi : i ∈ C g
       · rw [ite_eq_right (by simp [sharedSlots, hi]), shared, ite_eq_left hi]
-        exact mem_singleton_self 1
+        simp
       · rw [ite_eq_left (by simp [sharedSlots, hi]), shared, ite_eq_right hi]
-        exact hp g _
+        simp_all
     · dsimp only
       by_cases hj : j ∈ unsharedSlots C g
       · rw [ite_eq_left hj, pad, ite_eq_left hj]
-        exact hp g j
+        simp_all
       · rw [ite_eq_right hj, pad, ite_eq_right hj]
-        exact mem_singleton_self 1
+        simp
   · rintro ⟨s, l⟩ hsl
     obtain ⟨hs, hl⟩ := mem_product.1 hsl
     refine mem_allLists.2 fun g j => ?_
@@ -227,8 +227,7 @@ lemma sharedProduct_dvd {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, 
   · refine prod_primes_dvd n (fun q hq => ?_) fun q hq => ?_
     · obtain ⟨⟨g, i⟩, hx, rfl⟩ := mem_image.1 hq
       exact (hprime g _ (hmem g i (mem_sigma.1 hx).2)).prime
-    · obtain ⟨⟨g, i⟩, hx, rfl⟩ := mem_image.1 hq
-      exact hdvd g i (mem_sigma.1 hx).2
+    grind
   · rintro ⟨g, i⟩ hx ⟨g', i'⟩ hy heq
     have hx' := (mem_sigma.1 (mem_coe.1 hx)).2
     have hy' := (mem_sigma.1 (mem_coe.1 hy)).2
@@ -237,7 +236,7 @@ lemma sharedProduct_dvd {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, 
       by_contra hne
       exact disjoint_left.1 (hdisj g g' hne) (hmem g i hx') (heq ▸ hmem g' i' hy')
     have : i = i' := hinj g hx' hy' heq
-    rw [this]
+    simp_all
 
 /-- Shared labels have a positive product. -/
 lemma sharedProduct_pos {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
@@ -256,16 +255,12 @@ lemma sum_Icc_eq_sum_mul {R : Type*} [AddCommMonoid R] {D N : ℕ} (hD : 0 < D) 
   · obtain ⟨w, hw, rfl⟩ := mem_image.1 hn
     obtain ⟨hw, hwN⟩ := mem_filter.1 hw
     exact mem_Icc.2 ⟨Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero hD.ne' (by
-      have := (mem_Icc.1 hw).1; omega)), hwN⟩
+      grind)), hwN⟩
   · by_contra h
     obtain ⟨w, rfl⟩ := hf _ h
-    refine hn' (mem_image.2 ⟨w, mem_filter.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, (mem_Icc.1 hn).2⟩, rfl⟩)
-    · have := (mem_Icc.1 hn).1
-      rcases Nat.eq_zero_or_pos w with hw | hw
-      · rw [hw, mul_zero] at this
-        omega
-      · exact hw
-    · exact (Nat.le_mul_of_pos_left w hD).trans (mem_Icc.1 hn).2
+    refine hn' (mem_image.2 ⟨w, mem_filter.2 ⟨mem_Icc.2 ⟨?_, ?_⟩, by grind⟩, rfl⟩)
+    · grind
+    · exact (Nat.le_mul_of_pos_left w hD).trans (by grind)
 
 /-! ### The cutoff pairing over all lists -/
 
@@ -326,11 +321,7 @@ lemma physSum_eq_sum_allLists (x q₀ : ℝ) (P : ι → Finset ℕ) (C : ι →
     rw [filter_filter, sum_filter]
     refine sum_congr rfl fun p' _ => ?_
     unfold physTerm PhysCond
-    by_cases hp' : (∀ h, Function.Injective (p' h) ∧ ∀ i, p' h i ∣ n + edgeProduct C p a) ∧
-        ∀ h, (∀ i, i ∉ C h → p' h i.castSucc = p h i.castSucc) ∧
-          ∀ i ∈ C h, ∀ j, a h i ≠ p h j ∧ a h i ≠ p' h j
-    · rw [ite_eq_left hp', ite_eq_left ⟨hp, hp'⟩]
-    · rw [ite_eq_right hp', ite_eq_right fun h => hp' h.2]
+    simp_all
   · rw [ite_eq_right hp]
     exact (sum_eq_zero fun a _ => sum_eq_zero fun p' _ =>
       ite_eq_right fun h => hp h.1).symm
@@ -367,8 +358,8 @@ theorem physSum_eq_sum_strip (x q₀ : ℝ) {P : ι → Finset ℕ}
     · have hi' : i ∉ C g := by simpa [sharedSlots] using hi
       have hj' : j ∉ C g := by simpa [sharedSlots] using hj
       have := (hc.1 g).1 (a₁ := i.castSucc) (a₂ := j.castSucc)
-        (by rw [merge_castSucc_of_notMem hi', merge_castSucc_of_notMem hj']; exact hij)
-      exact Fin.castSucc_injective _ this
+        (by rw [merge_castSucc_of_notMem hi', merge_castSucc_of_notMem hj']; omega)
+      simp_all
     · have hi' : i ∉ C g := by simpa [sharedSlots] using hi
       have := (hc.1 g).2 i.castSucc
       rwa [merge_castSucc_of_notMem hi'] at this

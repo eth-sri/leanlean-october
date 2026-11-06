@@ -18,7 +18,7 @@ theorem presentation_cost (χ : Character) (U H ε : ℝ)
   have hbase : 1≤3+H := by linarith
   have hc := presentationComplexity_le_of_modulus_le χ U H hQ
   rw [abs_of_nonneg hH] at hc
-  have hp : (presentationComplexity χ H)^ε≤(2*U^2*(3+H)^2)^ε :=
+  have hp :=
     Real.rpow_le_rpow (by unfold presentationComplexity complexity; positivity) hc hε
   have he : (2*U^2*(3+H)^2)^ε=(2 : ℝ)^ε*U^(2*ε)*(3+H)^(2*ε) := by
     rw [Real.mul_rpow (by positivity) (by positivity),Real.mul_rpow (by norm_num) (by positivity)]
@@ -26,12 +26,12 @@ theorem presentation_cost (χ : Character) (U H ε : ℝ)
       ←Real.rpow_mul (by linarith : 0≤3+H),Nat.cast_ofNat]
   rw [he] at hp
   have h2 : (2 : ℝ)^ε≤2 := by
-    simpa using Real.rpow_le_rpow_of_exponent_le (by norm_num : (1 : ℝ)≤2) hε'
+    simpa using Real.rpow_le_rpow_of_exponent_le (by simp) hε'
   have hh : (3+H)^(2*ε)≤(3+H)^2 := by
     rw [←Real.rpow_natCast]
-    exact Real.rpow_le_rpow_of_exponent_le hbase (by norm_num; linarith)
-  exact hp.trans (mul_le_mul (mul_le_mul_of_nonneg_right h2 (Real.rpow_nonneg (by linarith) _))
-    hh (Real.rpow_nonneg (by linarith) _) (by positivity))
+    exact Real.rpow_le_rpow_of_exponent_le hbase (by simp_all)
+  exact hp.trans (mul_le_mul (mul_le_mul_of_nonneg_right h2 (by positivity))
+    hh (by positivity) (by positivity))
 
 theorem positive_central_cost (χ : Character) (U H a e ε η r : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hε : 0≤ε) (hε' : ε≤1)
@@ -41,7 +41,7 @@ theorem positive_central_cost (χ : Character) (U H a e ε η r : ℝ)
   have hU : 0<U := lt_of_lt_of_le zero_lt_one ((HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ)
   have hh : (3+H)^2≤U^η := by
     apply le_trans _ hheight
-    exact pow_le_pow_right₀ (by linarith) (by decide : 2≤4)
+    exact pow_le_pow_right₀ (by linarith) (by omega)
   calc
     _ ≤ (U^r)^(a+6*e-1/2)*(2*U^(2*ε)*U^η) :=
       mul_le_mul_of_nonneg_left ((presentation_cost χ U H ε hQ hH hε hε').trans
@@ -76,7 +76,7 @@ theorem reflected_central_cost (χ : Character) (U H a e ε η m : ℝ)
         _ = 2*(U^((a-1/2)*(1-m)+6*e*(2-m)+2*ε)*U^(2*ε)*U^η) := by ring
         _ = 2*U^(((a-1/2)*(1-m)+6*e*(2-m)+2*ε)+2*ε+η) := by
           rw [←Real.rpow_add hU,←Real.rpow_add hU]
-        _ = _ := by congr 2; ring
+        _ = _ := by ring
 
 theorem direct_external_cost (χ : Character) (U H κ η r R : ℝ)
     (hQ : (χ.modulus.absNorm : ℝ)≤U) (hH : 0≤H) (hκ : 0≤κ) (hκ' : κ≤1)
@@ -84,7 +84,7 @@ theorem direct_external_cost (χ : Character) (U H κ η r R : ℝ)
     (U^r)^(3/2 : ℝ)*(presentationComplexity χ H)^κ≤2*U^(2*R+2+η) := by
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one χ).trans hQ
   have h := positive_central_cost χ U H 2 0 κ η r hQ hH hκ hκ' hheight
-  norm_num only [mul_zero,add_zero] at h
+  norm_num only at h
   apply h.trans
   apply mul_le_mul_of_nonneg_left _ (by norm_num)
   apply Real.rpow_le_rpow_of_exponent_le hU
@@ -99,7 +99,7 @@ theorem reflected_external_cost (χ : Character) (U H κ η r R : ℝ)
   have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
   have hR := (radical_norm_le_modulus χ).trans hQ
   have hh : (3+H)^2≤U^η :=
-    (pow_le_pow_right₀ (by linarith) (by decide : 2≤4)).trans hheight
+    (pow_le_pow_right₀ (by linarith) (by omega)).trans hheight
   calc
     _ ≤ (U^r)^(3/2 : ℝ)*U^(3/5 : ℝ)*U^(1/10+κ)*U^η := by
       gcongr

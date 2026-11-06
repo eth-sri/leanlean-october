@@ -8,28 +8,26 @@ public import OAI.NumberTheory.DirichletL.Energy.BackwardSourceRanges
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyZeroGrowth
 open CenteredMomentNaturalRowSource QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
 
 private lemma ledger_loss_mono (Z d ell A B P w:ℝ)(hZ:1≤Z)(hd:0≤d)(hell:0≤ell)
     (hA:0≤A)(hB:0≤B)(hP:0≤P):
     P*(A*Z^(w+ell+d+d)+B)≤Z^ell*(P*(A*Z^(w+d+d+d)+B)):=by
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hp:1≤Z^ell:=Real.one_le_rpow hZ hell
+  have hp:=Real.one_le_rpow hZ hell
   have hm:Z^(w+ell+d+d)≤Z^ell*Z^(w+d+d+d):=by
     rw [←Real.rpow_add hz]
     exact Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
   calc
     _≤P*(A*(Z^ell*Z^(w+d+d+d))+Z^ell*B):=by
       apply mul_le_mul_of_nonneg_left _ hP
-      exact add_le_add (mul_le_mul_of_nonneg_left hm hA)
-        (le_mul_of_one_le_left hB hp)
+      nlinarith
     _=_:=by ring
 
 theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
@@ -46,7 +44,7 @@ theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
   let d:=min 1 (ε/(8*(Bmask+Mcap+4)))
   let L:=max Loriginal (Mcap+Bmask+2*d)+1
   let saving:=L+Bmask*d+2*Mcap*d+1
-  have hd:0<d:=lt_min (by norm_num) (by positivity)
+  have hd:0<d:=by positivity
   have hd1:d≤1:=min_le_left _ _
   have hdε:d*(Bmask+Mcap+4)≤ε/8:=by
     have hh: d≤ε/(8*(Bmask+Mcap+4)):=min_le_right _ _
@@ -58,12 +56,12 @@ theorem bounded_growth_reserve (ε Mcap Bmask bΦ Loriginal:ℝ)
   have hmain:d*(Bmask+Mcap+1)+d+d+d≤ε:=by linarith
   have herr:Bmask*d+Mcap*(2*d)-2*saving+L≤ε:=by
     dsimp only [saving]
-    nlinarith [mul_nonneg hB hd.le,mul_nonneg hM hd.le]
+    nlinarith
   obtain ⟨C,hC,hbound⟩:=CenteredMomentEnergyZeroGrowthReserve.ledger_bound
     Mcap Bmask bΦ L d d d d saving ε hM hB hL.le hd hmain herr
   refine ⟨d,L,saving,C,hd,hd1,hL,hs,hC,rfl,?_,?_,hbound⟩
-  · dsimp only [L];linarith [le_max_left Loriginal (Mcap+Bmask+2*d)]
-  · dsimp only [L];linarith [le_max_right Loriginal (Mcap+Bmask+2*d)]
+  · grind
+  grind
 
 theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Loriginal:ℝ)
     (ha:0<a)(hlo:a≤1/4)(hhi:1≤b)(hbΦ:0<bΦ)
@@ -73,16 +71,14 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
       L≤max Loriginal (Mcap+Bmask+2)+1 ∧
       ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(ell:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤ell→0≤K→
+      ∀(ell:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤ell→0≤K→
         ZeroGrowthAt Q a b bΦ Bmask L Mcap ell Z degree S K→
         ZeroAt Q a b bΦ Bmask Loriginal Mcap (ell+ε) Z J U (C*(K+1)):=by
   obtain ⟨d,L,saving,Cledger,hd,hd1,hL,hsaving,hCledger,hLexact,hLoriginal,hroom,hledger⟩:=
     bounded_growth_reserve
       ε Mcap Bmask bΦ Loriginal hε hM hB
   refine ⟨d,L,hd,hd1,hL,hLoriginal,hLexact,?_,?_⟩
-  · rw [hLexact]
-    gcongr
-    linarith only [hd1]
+  · grind
   intro S
   obtain ⟨J,U,Csource,hCsource,hsource⟩:=
     CenteredMomentEnergyZeroGrowthOriginal.original_from_growth
@@ -92,7 +88,7 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
   refine ⟨hZ.1,?_⟩
   intro ell Q degree K hell hK hgrowth s hQ hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂
   have hz:0<Z:=zero_lt_one.trans hZ.1
-  have hscale:Z^Loriginal≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLoriginal
+  have hscale:=Real.rpow_le_rpow_of_exponent_le hZ.1.le hLoriginal
   have hh:=hZ.2 Bmask L Mcap ell Q degree K hK hgrowth hB hroom
     (by linarith) s hQ hs p t X₁ X₂ hX₁ hX₂ (hc₁.trans hscale) (hc₂.trans hscale)
   let Rcap:=max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width)
@@ -110,7 +106,7 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
     calc
       _≤Z^ell*(Cledger*Z^(s.width+ε)):=hl
       _=Cledger*(Z^ell*Z^(s.width+ε)):=by ring
-      _=Cledger*Z^(s.width+(ell+ε)):=by rw [←Real.rpow_add hz];congr 2;ring
+      _=Cledger*Z^(s.width+(ell+ε)):=by rw [←Real.rpow_add hz];ring
   have hfront:0≤Csource*(K+1)*diagonalControl s.radial.profile*
       (p.control U)^2*(1+|t|)^J:=by
     have hd:=diagonalControl_nonneg s.radial.profile
@@ -119,7 +115,7 @@ theorem zero_from_growth_additional_loss_bounded (a b bΦ ε Mcap Bmask Lorigina
     _≤Csource*(K+1)*diagonalControl s.radial.profile*(p.control U)^2*(1+|t|)^J*
         (Cledger*Z^(s.width+(ell+ε))):=by
       apply hh.trans
-      convert mul_le_mul_of_nonneg_left htotal hfront using 1 ; dsimp only [P,A,B,Rcap] ; ring
+      convert mul_le_mul_of_nonneg_left htotal hfront using 1 ; linarith
     _=_:=by rw [Real.norm_eq_abs];ring
 
 end SevenEighths.CenteredMomentEnergyZeroGrowthContourBounded

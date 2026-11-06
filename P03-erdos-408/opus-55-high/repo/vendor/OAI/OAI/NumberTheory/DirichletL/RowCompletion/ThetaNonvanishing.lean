@@ -8,31 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open EisensteinEmbedding ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -52,47 +43,39 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical ContDiff Topology
+open scoped Classical ContDiff Topology
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open ShortDraftHeckeBridge
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open SixthPowerAverage CompactMellinBridge InitialMeanSquare
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace QuadraticAllOddCRT
 
 section
-open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
 open ActualEisensteinCoordinates hiding O omega
 open CanonicalQuadraticSieve hiding O
@@ -119,8 +102,8 @@ lemma character_lambda_primary (p : ActualEisensteinCubic.O) (hp : lambda^2∣p-
     character (Ideal.span {lambda}) (Ideal.Quotient.mk (Ideal.span {lambda}) p)=1 := by
   have hm : Ideal.Quotient.mk (Ideal.span {lambda}) p=Ideal.Quotient.mk (Ideal.span {lambda}) (1:ActualEisensteinCubic.O) :=
     Ideal.Quotient.eq.mpr (Ideal.mem_span_singleton.mpr
-      ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hp))
-  rw [hm,map_one,map_one]
+      ((dvd_pow_self lambda (by positivity)).trans hp))
+  simp_all
 
 def lambdaQuadraticRay (r : EisensteinEPrimaryPhase.Coord) : ℂ:=
   quadraticRayValue (EisensteinEPrimaryPhase.mul (residue lambda) r)/
@@ -136,29 +119,28 @@ theorem character_lambda_eq_ray (p : ActualEisensteinCubic.O) (hp : p≠0) [(Ide
     intro he
     apply hg
     rw [←he]
-    exact Ideal.subset_span (by simp)
+    exact by simp
   have h:=quadratic_ray_cross lambda p PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero hp hcop lambda_odd hc
   rw [character_lambda_primary p hprimary,one_mul] at h
   have hodd : EisensteinEPrimaryPhase.odd (residue p) := by
     have hn : ‖quadraticRayValue (residue p)‖=1 := by
       let pp : Unit→ActualEisensteinCubic.O:=fun _=>p
-      have hpp : ∀i,pp i≠0:=fun _=>hp
+      have hpp : ∀i,pp i≠0:=by grind
       have hcp : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {pp i})):=by
         intro i j hij
-        exact False.elim (hij (Subsingleton.elim _ _))
-      have hh:=FiniteGaussPhase.norm_canonicalProductGauss pp hpp hcp (fun _=>hg) (fun _=>hc)
-        (fun _=>3) (by intro i;decide) (by intro i;decide)
-      rw [QuadraticGaussRay.canonicalProductGauss_three_eq_rayValue pp hpp hcp (fun _=>hg) (fun _=>hc)] at hh
+        exact by grind
+      have hh:=FiniteGaussPhase.norm_canonicalProductGauss pp hpp hcp (by grind) (fun _=>hc)
+        (fun _=>3) (by omega) (by omega)
+      rw [QuadraticGaussRay.canonicalProductGauss_three_eq_rayValue pp hpp hcp (by grind) (fun _=>hc)] at hh
       simpa [pp] using hh
     exact QuadraticUnitInvariance.odd_of_quadraticRayValue_norm_eq_one _ hn
   unfold lambdaQuadraticRay
   rw [←residue_mul]
   apply (eq_div_iff (mul_ne_zero lambda_quadratic_ray_ne_zero (quadraticRayValue_ne_zero_of_odd _ hodd))).mpr
-  simpa only [mul_assoc] using h.symm
+  grind
 
 end
 
-open ActualEisensteinCubic
 open QuadraticGaussRay hiding O
 open ActualEisensteinCoordinates hiding O omega
 
@@ -173,7 +155,7 @@ lemma lambdaQuadraticTable_mul (r s : EisensteinEPrimaryPhase.Coord) :
   have h : ∀r s : EisensteinEPrimaryPhase.Coord,
       lambdaQuadraticTable (EisensteinEPrimaryPhase.mul r s)=
         lambdaQuadraticTable r*lambdaQuadraticTable s := by decide
-  exact h r s
+  simp_all
 
 lemma lambdaQuadraticTable_eq_ray (r : EisensteinEPrimaryPhase.Coord)
     (hr : EisensteinEPrimaryPhase.odd r) :
@@ -185,19 +167,15 @@ lemma lambdaQuadraticTable_eq_ray (r : EisensteinEPrimaryPhase.Coord)
   have hcases : ∀ x : ZMod 4, x = 0 ∨ x = 1 ∨ x = 2 ∨ x = 3 := by decide
   rcases hcases a with rfl | rfl | rfl | rfl <;>
     rcases hcases b with rfl | rfl | rfl | rfl <;>
-    norm_num [EisensteinEPrimaryPhase.odd,ZMod.val_zero,ZMod.val_one_eq_one_mod,ZMod.val_ofNat] at hr <;>
-    norm_num [lambdaQuadraticTable,lambdaQuadraticRay,lambda_residue,EisensteinEPrimaryPhase.mul,
-      EisensteinEPrimaryPhase.odd,quadraticRayValue,breveGaussianFourTerms_formula,
-      Prod.mk.injEq,hcmp,hn3,ZMod.val_zero,ZMod.val_one_eq_one_mod,ZMod.val_ofNat,
-      ZMod.val_neg_one,ZMod.val_mul,ZMod.val_add,ZMod.val_sub,
-      Complex.I_sq,Complex.I_pow_three,Complex.inv_I,zpow_neg] <;>
-    ring_nf <;> norm_num [Complex.I_sq,Complex.I_pow_three]
+    norm_num [EisensteinEPrimaryPhase.odd, ZMod.val_one_eq_one_mod, ZMod.val_ofNat] at hr <;>
+    norm_num [lambdaQuadraticTable, lambdaQuadraticRay, lambda_residue, EisensteinEPrimaryPhase.mul, EisensteinEPrimaryPhase.odd, quadraticRayValue, breveGaussianFourTerms_formula, hcmp, ZMod.val_one_eq_one_mod, ZMod.val_ofNat] <;>
+    ring_nf <;> norm_num
   all_goals
-    field_simp [Complex.I_ne_zero]
+    field_simp
     change (-2 : ℂ) = Complex.I * (Complex.I ^ (1 : ℤ) + Complex.I ^ (2 - 1 : ℤ))
-    norm_num [Complex.I_sq]
+    norm_num
     ring_nf
-    norm_num [Complex.I_sq]
+    simp
 
 def lambdaQuadraticCharacter : ActualEisensteinCubic.O→*ℂ where
   toFun n:=(lambdaQuadraticTable (residue n):ℂ)
@@ -220,15 +198,13 @@ lemma lambdaQuadraticCharacter_periodic (x y : ActualEisensteinCubic.O) (h : (4:
 
 end QuadraticAllOddCRT
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open CubicJacobiGlobal hiding O
 open QuadraticAllOddCRT
 open CanonicalQuadraticSieve hiding O
 open ConcreteTraceCRT (eisEmbedding)
-open UniqueFactorizationMonoid
 
 lemma localRowValue_square (x : ActualEisensteinCubic.O) (P : Ideal ActualEisensteinCubic.O) :
     localRowValue x P^2=eisEmbedding (primeValue P x) := by
@@ -236,9 +212,8 @@ lemma localRowValue_square (x : ActualEisensteinCubic.O) (P : Ideal ActualEisens
   split_ifs with h
   · let : P.IsMaximal:=h.1
     change (actualSextic P h.2 (Ideal.Quotient.mk P x))^2=_
-    rw [←MulChar.pow_apply' _ (by decide : (2:ℕ)≠0),canonicalSextic_pow_two]
-    rfl
-  · simp
+    simp [←MulChar.pow_apply' _ (by decide : (2:ℕ)≠0),canonicalSextic_pow_two]
+  simp
 
 theorem idealRowHom_square (x : ActualEisensteinCubic.O) (I : Ideal ActualEisensteinCubic.O) :
     idealRowHom x I^2=eisEmbedding (idealSymbol I x) := by
@@ -252,8 +227,7 @@ theorem idealRowHom_square (x : ActualEisensteinCubic.O) (I : Ideal ActualEisens
   · subst I
     simp only [map_zero,idealSymbol_zero,zero_pow (by decide : (2:ℕ)≠0)]
   · change (if I=0 then 0 else _)^2=eisEmbedding (if I=0 then 0 else _)
-    simp only [ite_eq_right hI]
-    exact hm _
+    simp_all
 
 lemma actualSextic_cube_quadratic (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : lambda∉P) :
     actualSextic P hg^3=character P := by
@@ -277,7 +251,7 @@ lemma idealRowHom_lambda_prime_cube (p : ActualEisensteinCubic.O) (hp : Prime p)
   obtain ⟨hg,hc⟩:=hs.2 _ hmem
   rw [idealRowHom_prime lambda _ hg]
   change (actualSextic _ hg (Ideal.Quotient.mk _ lambda))^3=_
-  rw [←MulChar.pow_apply' _ (by decide : (3:ℕ)≠0),actualSextic_cube_quadratic]
+  rw [←MulChar.pow_apply' _ (by positivity),actualSextic_cube_quadratic]
   have he:=character_lambda_eq_ray p hp.ne_zero hg hc hprimary
   have ho:=ActualEisensteinCoordinates.odd_residue_iff_not_two_dvd p
   have hs' := (supported_span_iff p).mp hs
@@ -300,7 +274,7 @@ theorem idealRowHom_lambda_cube (y : ActualEisensteinCubic.O) (hy : lambda^2∣y
     simp only [Multiset.prod_zero,Ideal.span_singleton_one,←Ideal.one_eq_top,map_one,one_pow]
   | @cons p s ih=>
     have hp:=hfactors p (Multiset.mem_cons_self _ _)
-    have htail : ∀q∈s,Prime q ∧ lambda^2∣q-1:=
+    have htail:=
       fun q hq=>hfactors q (Multiset.mem_cons_of_mem hq)
     have hsplit : Supported (Ideal.span {p}) ∧ Supported (Ideal.span {s.prod}) := by
       simpa only [Multiset.prod_cons,←Ideal.span_singleton_mul_span_singleton,supported_mul_iff] using hs
@@ -321,16 +295,7 @@ theorem idealRowHom_lambda_formula (y : ActualEisensteinCubic.O) (hy : lambda^2�
     unfold lambdaQuadraticTable
     rw [ite_eq_right (not_not.mpr ho)]
     split_ifs <;> norm_num
-  have hsix : idealRowHom lambda (Ideal.span {y})^6=1 := by
-    calc
-      _ = (idealRowHom lambda (Ideal.span {y})^3)^2:=by ring
-      _ = 1:=by rw [hthree,hq]
-  calc
-    _ = (idealRowHom lambda (Ideal.span {y})^2)^2*(idealRowHom lambda (Ideal.span {y})^3):=by
-      calc
-        _ = idealRowHom lambda (Ideal.span {y})*idealRowHom lambda (Ideal.span {y})^6:=by rw [hsix,mul_one]
-        _ = _:=by ring
-    _ = _:=by rw [htwo,hthree]
+  grind
 
 theorem idealRowHom_lambda_mod_thirty_six (x y : ActualEisensteinCubic.O)
     (hx : lambda^2∣x-1) (hy : lambda^2∣y-1)
@@ -347,9 +312,8 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped Classical Topology ContDiff MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma cuspRemainder_absolute_chart (a b : ℝ) (ha : 1≤a) (hab : a<b)
@@ -369,10 +333,10 @@ lemma cuspRemainder_absolute_chart (a b : ℝ) (ha : 1≤a) (hab : a<b)
     intro r
     simpa only [norm_mul,norm_inv,norm_cosetCharacter,inv_one,one_mul] using
       translated_remainder_majorant a b s hab (by linarith) (by linarith) M z hz v hv hv0 r
-  have hr : Summable R := (hg.comp_injective hi).of_nonneg_of_le (fun _ => norm_nonneg _) hb
+  have hr : Summable R := (hg.comp_injective hi).of_nonneg_of_le (by grind) hb
   refine ⟨hr,?_⟩
   have hsum : (∑'r,R r)≤∑'n,G n :=
-    Summable.tsum_le_tsum_of_inj f hi (fun _ _ => by dsimp [G]; positivity) hb hr hg
+    Summable.tsum_le_tsum_of_inj f hi (fun _ _ => by positivity) hb hr hg
   simpa only [G,tsum_mul_left,eisensteinRemainderBound] using hsum
 
 theorem cuspRemainder_absolute_bound (a b : ℝ) (ha : 1≤a) (hab : a<b)
@@ -382,7 +346,7 @@ theorem cuspRemainder_absolute_bound (a b : ℝ) (ha : 1≤a) (hab : a<b)
   obtain ⟨M,z,v,hv,hMw,hz,hfloor⟩ := bianchi_reduction_height_floor w
   have hz1 : ‖z‖≤1 := by
     rw [Complex.normSq_eq_norm_sq] at hz
-    nlinarith [norm_nonneg z]
+    nlinarith
   have hv1 : 1/2≤v := by
     have hh := Real.sq_sqrt (by norm_num : (0:ℝ)≤2/3)
     have hh0 := Real.sqrt_nonneg (2/3 : ℝ)
@@ -410,12 +374,12 @@ lemma cuspRemainder_row_scaled_deriv_aux_bound (a b : ℝ) (hab : a<b) (s : ℂ)
       (cuspRemainderProfile_contDiffAt a b s) u hu p hp j).1
     rw [hd.deriv,cuspRemainderProfile_deriv_zero a b s _ hab hh (lt_of_not_ge hb)]
     simp only [zero_mul,mul_zero,norm_zero]
-    exact mul_nonneg (add_nonneg (norm_nonneg s) hC0) (norm_nonneg _)
+    positivity
 
 end
 
 open Filter
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 def weightedHeightProfile (F : ℝ→ℂ) (r : CuspCosets) (p : SpatialCoordinates) : ℂ :=
   (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) p)
@@ -442,8 +406,8 @@ lemma heightPoincare_axis_termwise (F : ℝ→ℂ) (hzero : ∀v≤1,F v=0)
     have he : axisSlice (weightedHeightProfile F r) p j=ᶠ[𝓝 (p j)] (fun _ => 0) := by
       filter_upwards [hn] with t ht
       change (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) (Function.update p j t))=0
-      rw [hzero _ ((hrows _ ht).2 r hr).le,mul_zero]
-    exact he.deriv_eq.trans (deriv_const _ _)
+      rw [hzero _ (by grind),mul_zero]
+    exact he.deriv_eq.trans (by simp)
   refine ⟨summable_of_ne_finset_zero hz,?_⟩
   rw [tsum_eq_sum hz]
   have hd := HasDerivAt.sum (u := S) (fun r hr =>
@@ -456,7 +420,7 @@ lemma heightPoincare_axis_termwise (F : ℝ→ℂ) (hzero : ∀v≤1,F v=0)
   apply tsum_eq_sum
   intro r hr
   change (cosetCharacter r)⁻¹*F (rowHeight (embeddedRow r) (Function.update p j t))=0
-  rw [hzero _ ((hrows _ ht).2 r hr).le,mul_zero]
+  grind
 
 lemma weightedRemainder_axis_deriv (a b : ℝ) (s : ℂ) (r : CuspCosets)
     (p : SpatialCoordinates) (hp : 0<p 2) (j : Fin 3) :
@@ -509,7 +473,7 @@ theorem eisensteinRemainder_axis_termwise (a b : ℝ) (ha : 1<a) (hab : a<b)
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold
+open scoped Classical Topology ContDiff Manifold
 
 namespace CubicEisenstein
 
@@ -529,7 +493,7 @@ lemma weightedRemainder_scaled_deriv_bound (a b : ℝ) (hab : a<b) (s : ℂ)
   rw [he]
   calc
     ‖(p 2:ℂ)*((cosetCharacter r)⁻¹*deriv (axisSlice g p j) (p j))‖
-      = ‖(cosetCharacter r)⁻¹*((p 2:ℂ)*deriv (axisSlice g p j) (p j))‖ := by congr 1; ring
+      = ‖(cosetCharacter r)⁻¹*((p 2:ℂ)*deriv (axisSlice g p j) (p j))‖ := by ring
     _ = ‖(p 2:ℂ)*deriv (axisSlice g p j) (p j)‖ := by
       rw [norm_mul,norm_inv,norm_cosetCharacter,inv_one,one_mul]
     _ ≤ _ := cuspRemainder_row_scaled_deriv_aux_bound a b hab s C hC0 hC _ (embeddedRow_ne_zero r) p hp j
@@ -540,7 +504,7 @@ theorem eisensteinRemainder_scaled_axis_bound (a b : ℝ) (ha : 1<a) (hab : a<b)
       ‖(p 2:ℂ)*deriv (axisSlice (eisensteinRemainderField a b s) p j) (p j)‖≤B := by
   obtain ⟨C,hC0,hC⟩ := cuspTransition_euler_bounded a b hab
   refine ⟨(‖s‖+C)*eisensteinRemainderBound (b+2) s,
-    mul_nonneg (add_nonneg (norm_nonneg s) hC0) (eisensteinRemainderBound_nonneg _ _),?_⟩
+    mul_nonneg (by positivity) (eisensteinRemainderBound_nonneg _ _),?_⟩
   intro p hp j
   have hA : Summable (fun r : CuspCosets =>
       ‖cuspRemainderProfile (b+1) (b+2) s (rowHeight (embeddedRow r) p)‖) ∧
@@ -551,14 +515,13 @@ theorem eisensteinRemainder_scaled_axis_bound (a b : ℝ) (ha : 1<a) (hab : a<b)
         (upperPoint ((p 0:ℂ)+(p 1:ℂ)*Complex.I) (p 2) hp)
   have hB := hA.1.mul_left (‖s‖+C)
   have hb (r : CuspCosets) := weightedRemainder_scaled_deriv_bound a b hab s C hC0 hC r p hp j
-  have hnorm := hB.of_nonneg_of_le (fun r => norm_nonneg
-    ((p 2:ℂ)*deriv (axisSlice (weightedHeightProfile (cuspRemainderProfile a b s) r) p j) (p j))) hb
+  have hnorm := hB.of_nonneg_of_le (by grind) hb
   have ht := eisensteinRemainder_axis_termwise a b ha hab s (by linarith) p hp j
   rw [ht.2.deriv,←tsum_mul_left]
   apply (norm_tsum_le_tsum_norm hnorm).trans
   apply (Summable.tsum_le_tsum hb hnorm hB).trans
   rw [tsum_mul_left]
-  exact mul_le_mul_of_nonneg_left hA.2 (add_nonneg (norm_nonneg s) hC0)
+  exact mul_le_mul_of_nonneg_left hA.2 (by positivity)
 
 def kernelEisensteinRemainder (a b : ℝ) (s : ℂ) (hs : 2<s.re) : KernelQuotient→ℂ :=
   fun q => kernelQuotientEisenstein s hs q-kernelQuotientSeed a b s q
@@ -601,7 +564,7 @@ theorem kernelEisensteinRemainder_scaled_fderiv_bound (a b : ℝ) (ha : 1<a) (ha
   have heq := axisSlice_eventuallyEq_of_positive _ _ he p.ofLp hp j
   change ‖(p 2:ℂ)*fderiv ℝ f p (euclideanCoordinateVector j)‖≤B
   rw [←(euclideanAxisSlice_derivatives f hf p hp j).1,heq.deriv_eq]
-  exact hbound p.ofLp hp j
+  simp_all
 
 end CubicEisenstein
 

@@ -49,8 +49,7 @@ theorem memSize_chainEdgeOut_le (s : ChainState x d Y d₀ u v r B)
       calc ∑ i ∈ c.2.1, ∑ xp : Particle x d, (if edgeStored s c i = xp.1 then 1 else 0)
           ≤ ∑ _i ∈ c.2.1, 1 := sum_le_sum fun i _ => by
             rw [← card_filter]
-            exact card_le_one.2 fun a ha b hb =>
-              Subtype.ext ((mem_filter.1 ha).2.symm.trans (mem_filter.1 hb).2)
+            exact card_le_one.2 (by grind)
         _ = c.2.1.card := by simp
         _ ≤ K := card_le_univ _ |>.trans_eq (Fintype.card_fin K)
     calc memSize (edgeMem s c)
@@ -60,7 +59,7 @@ theorem memSize_chainEdgeOut_le (s : ChainState x d Y d₀ u v r B)
       _ ≤ memSize s.2.2.1 + K := by
           rw [sum_add_distrib]
           exact Nat.add_le_add_left hstored _
-  · exact Nat.le_add_right _ _
+  omega
 
 /-- **The edge rows with prescribed labels** (PD `mem:edge-atoms`): with weight `v₀^{size}`,
 the absolute edge coefficients against `∏_i [β_i = π_i]` sum to at most
@@ -116,11 +115,11 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
     have hwt : crudeWeight q x d Y d₀ u v r B N s c ≤ ∏ i, ω (c.2.2.2.1 i) := by
       refine prod_le_prod₀ (fun i _ => ?_) (fun i _ => ?_)
       · split_ifs
-        · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
+        · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
             (sum_nonneg fun i _ => by
               split_ifs
-              · exact sum_nonneg fun p _ => by positivity
-              · exact le_rfl)
+              · exact sum_nonneg (by simp)
+              simp)
         · exact hν _
       · have hVi := hV i _ (mem_band_of_mem_edgeChoices hc i)
         simp only [hω]
@@ -130,10 +129,10 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
                 primeMult x d s.2.2.1 (c.2.2.2.1 i).1 := by
             refine sum_le_sum fun xp _ => ?_
             split_ifs with h₁ h₂ h₂
-            · exact le_rfl
+            · simp
             · exact absurd (congrArg Prod.fst h₁) h₂
             · positivity
-            · exact le_rfl
+            · simp
           rw [div_le_iff₀ (by linarith)]
           have hm0 := primeMult_nonneg s.2.2.1 (c.2.2.2.1 i).1
           calc (∑ xp : Particle x d,
@@ -142,7 +141,7 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
             _ ≤ 2 * primeMult x d s.2.2.1 (c.2.2.2.1 i).1 * (1 / 2) := by linarith
             _ ≤ 2 * primeMult x d s.2.2.1 (c.2.2.2.1 i).1 * primeMass x d (c.2.2.2.1 i).1 :=
                 mul_le_mul_of_nonneg_left hVi (by linarith)
-        · exact le_rfl
+        simp
     have hcoef := (norm_chainEdgeCoef_le_crude (A₀ := A₀) hq hq₁ hd₀ hν s c).trans
       (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hwt hr0)
         (crudeKernel_nonneg _ _ _ _ _ _ _))
@@ -156,7 +155,7 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
             crudeKernel A₀ x Y (edgePad s c) (∏ i, edgeSrc s c i (Fin.last _))
               (∏ i, (c.2.2.2.1 i).1) (edgeDet s c) *
             (∏ i, presInd (π i) (β (c.2.2.2.1 i))) * W :=
-          mul_le_mul (mul_le_mul_of_nonneg_right hcoef hpres0) hsize (pow_nonneg hv0 _)
+          mul_le_mul (mul_le_mul_of_nonneg_right hcoef hpres0) hsize (by positivity)
             (mul_nonneg (mul_nonneg (mul_nonneg hr0 (prod_nonneg fun i _ => hω0 _))
               (crudeKernel_nonneg _ _ _ _ _ _ _)) hpres0)
       _ = W * F c.1 c.2.2.1 c.2.2.2.1 := by
@@ -183,17 +182,15 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
       -- only the fresh draw of `p` survives
       simp only [presInd_some, atomCost, Option.elim]
       rw [sum_product]
-      simp only [Fintype.sum_bool, hβ, ite_true, Bool.false_eq_true, ite_false,
-        reduceCtorEq, mul_zero, Option.some.injEq, hω, zero_add, mul_ite, mul_one,
-        sum_ite_eq']
+      simp only [Fintype.sum_bool, hβ, ite_true, ite_false, reduceCtorEq, mul_zero, Option.some.injEq, hω, zero_add, mul_ite, mul_one, sum_ite_eq']
       have h1 : (1 : ℝ) ≤ (2 * B + 4) * c₀ :=
-        one_le_mul_of_one_le_of_one_le (by linarith [(B.cast_nonneg : (0 : ℝ) ≤ B)]) hc₀
+        one_le_mul_of_one_le_of_one_le (by linarith) hc₀
       calc (if p ∈ band x (d.a i) then primeWeight q x d N p else 0)
           ≤ primeWeight q x d N p := by
             split_ifs
             exacts [le_rfl, hν p]
         _ ≤ (2 * B + 4) * c₀ * primeWeight q x d N p := le_mul_of_one_le_left (hν p) h1
-        _ = (2 * B + 4) * (c₀ * primeWeight q x d N p) := mul_assoc _ _ _
+        _ = (2 * B + 4) * (c₀ * primeWeight q x d N p) := by linarith
   -- the inner sum over the target, the labels and `σ'`
   have hinner : ∀ σ, ∑ z' : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r),
       ∑ lab ∈ Fintype.piFinset (fun i => band x (d.a i) ×ˢ (univ : Finset Bool)),
@@ -225,7 +222,7 @@ theorem sum_chainEdge_pres_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (h
       _ ≤ r₀ * Kz * ∏ i, ((2 * (B : ℝ) + 4) * atomCost c₀ (primeWeight q x d N) (π i)) :=
           mul_le_mul_of_nonneg_left (prod_le_prod₀ (fun i _ => sum_nonneg fun pf _ =>
             mul_nonneg (hω0 pf) (presInd_nonneg _ _)) fun i _ => hlab i)
-            (mul_nonneg hr0 (by positivity))
+            (by positivity)
       _ = r₀ * ((2 * B + 4) ^ K * Kz * ∏ i, atomCost c₀ (primeWeight q x d N) (π i)) := by
           rw [prod_mul_distrib, prod_const, card_univ, Fintype.card_fin]
           ring

@@ -8,38 +8,36 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
+open scoped Classical
+open CompletedGauss SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerRays
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
-local notation "Eis"=>ActualEisensteinCubic.O
-local instance initialEnergyUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+open InverseInitialProfile
+open InverseInitialQuotientGeometry InverseInitialClippedColumns
+local instance initialEnergyUnits : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem all_rays_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (_hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (S:Finset (Source (ι:=ι) 0))(_hdiv:∀x∈S,x.divisor⊆x.common)
-      (pool:Finset ι)(Ψ:Eis→*ℂ)(_hΨ:∀n,‖Ψ n‖≤1)(j:Eis)
+      (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(_hΨ:∀n,‖Ψ n‖≤1)(j:ActualEisensteinCubic.O)
       (slots:Finset σ)(_hslots:slots.card≤N)(lists:σ→Finset ι)(a:σ→ι→ℂ)
       (_ha:∀i∈slots,∀q∈lists i,‖a i q‖≤1)
       (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H R:ℝ)(_hZ:1≤Z)(_hR:R≤U)
       (_hn:∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R)
       (z:JointLogSeparation.Frequency×(Fin 6→ℝ))
       (w:Source (ι:=ι) 0→ℂ)(_hw:∀x∈S,‖w x‖≤1)
-      (labels:Finset (Ideal Eis))(rows:Finset Eis)
+      (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)
       (_hlabels:∀f∈labels,f≠0)(_hneg:∀k∈rows,-k∈rows)
       (_hchild:∀x∈S,(initialChild (toTuple p (sectorSource (unitSector p hp hpr (sourcePoint x ∅ ∅)) x))).2.1∈labels ∧
         (initialChild (toTuple p (sectorSource (unitSector p hp hpr (sourcePoint x ∅ ∅)) x))).2.2∈rows)
@@ -58,8 +56,8 @@ theorem all_rays_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
         Z D B v θ H x ρ z‖≤C*Z^(F+R+π)*E := by
   obtain ⟨C,hC,hbound⟩ := InverseInitialEnergyCallerUnits.all_units_bound N U π hU hπ
   let A : ℝ := ∑ρ:SecondRayIndex,‖secondRayCoefficient ρ‖
-  have hA : 0≤A := Finset.sum_nonneg fun _ _=>norm_nonneg _
-  refine ⟨C*(1+A),mul_pos hC (by linarith),?_⟩
+  have hA : 0≤A := by positivity
+  refine ⟨C*(1+A),by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hinj hpr hc S hdiv pool Ψ hΨ j slots hslots lists a ha ω₁ ω₂
     Z D B v θ H R hZ hR hn z w hw labels rows hlabels hneg hchild F E hE hmoment
   have hb (ρ:SecondRayIndex) := hbound p hp hcop hg hinj hpr hc S hdiv pool Ψ hΨ j

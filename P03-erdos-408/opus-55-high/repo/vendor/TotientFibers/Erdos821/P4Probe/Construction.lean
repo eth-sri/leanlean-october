@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.CostParameters
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -37,9 +36,9 @@ lemma eventual_group_bounds (F : FixedData) :
       _ = F.c₀ * (3 / F.c₀) := by field_simp [F.c₀_pos.ne']
       _ ≤ F.c₀ * T x := mul_le_mul_of_nonneg_left htx F.c₀_pos.le
       _ ≤ _ := hP.2.2.1
-  exact ⟨by exact_mod_cast hn,
+  exact ⟨by simp_all,
     fun g => F.vMin_pos.trans_le (hP.2.2.2.2.1 g).1,
-    by simpa only [bigGroup_card] using hP.2.2.2.1⟩
+    by simpa using hP.2.2.2.1⟩
 
 /-- Assembly of the exact construction once the two pure finite tasks are
 proved. Parameters and C1 precede J0, as required by thm:ideal. -/
@@ -49,10 +48,10 @@ theorem symmetricProbeTask_of_finite (hsym : SymmetricFullComponentTask)
   obtain ⟨m, hm, hbpos, hb1, hblog⟩ :=
     exists_small_probe_beta F.ell F.ell_pos F.c₀ E F.c₀_pos hE
   let A : ℝ := E + 2 + (m : ℝ) * F.C₀ * Real.log 3
-  have hC₀ : 0 < F.C₀ := F.C₀_pos
+  have hC₀ := F.C₀_pos
   have hA : 0 < A := by
     have : 0 ≤ (m : ℝ) * F.C₀ * Real.log 3 :=
-      mul_nonneg (by positivity) (Real.log_nonneg (by norm_num))
+      by positivity
     dsimp [A]
     linarith
   obtain ⟨q, h, ξ, hq, hh, hξ, hcomp⟩ :=
@@ -75,14 +74,14 @@ theorem symmetricProbeTask_of_finite (hsym : SymmetricFullComponentTask)
   · intro θ ζ hζ
     have hB := hcancel hsym F P J m hmJ block ⌊L x ^ q⌋₊
       (L x ^ (-h)) (L x ^ (-ξ)) θ ζ (L x ^ (-A)) hv hm hlarge
-      (Real.rpow_nonneg (by linarith [hbounds.1]) _) (hx P hP hint ζ hζ)
+      (Real.rpow_nonneg (by linarith) _) (by grind)
     apply normBound_mono _ _ hB
     have hfull (side : Bool) :
         Real.sqrt (probeBeta F.ell m ^
           (Finset.univ.filter (fun g : P.BigGroup => block g = side)).card) ≤
         L x ^ (-(E + 2)) := by
       apply sqrt_beta_power_le _ F.c₀ E _ _ hbpos hb1
-        (by linarith [hbounds.1]) hblog
+        (by linarith) hblog
       calc
         _ ≤ (Fintype.card P.BigGroup : ℝ) / 3 := by
           apply div_le_div_of_nonneg_right _ (by norm_num)
@@ -91,15 +90,13 @@ theorem symmetricProbeTask_of_finite (hsym : SymmetricFullComponentTask)
     have herr : (3 : ℝ) ^ (m * Fintype.card P.BigGroup) * L x ^ (-A) ≤
         L x ^ (-(E + 2)) := by
       have hpow := probe_power_le 3 F.C₀ m (Fintype.card P.BigGroup) (L x)
-        (by norm_num) (by linarith [hbounds.1]) hnupper
+        (by norm_num) (by linarith) hnupper
       calc
         _ ≤ L x ^ ((m : ℝ) * F.C₀ * Real.log 3) * L x ^ (-A) :=
-          mul_le_mul_of_nonneg_right hpow (Real.rpow_nonneg (by linarith [hbounds.1]) _)
+          mul_le_mul_of_nonneg_right hpow (Real.rpow_nonneg (by linarith) _)
         _ = _ := by
-          rw [← Real.rpow_add (by linarith [hbounds.1] : 0 < L x)]
-          congr 1
-          dsimp [A]
-          ring
+          rw [← Real.rpow_add (by linarith : 0 < L x)]
+          grind
     have hsum := add_le_add (add_le_add (hfull false) (hfull true)) herr
     exact hsum.trans (by
       convert three_errors_le (L x) E hbounds.1 using 1; ring)

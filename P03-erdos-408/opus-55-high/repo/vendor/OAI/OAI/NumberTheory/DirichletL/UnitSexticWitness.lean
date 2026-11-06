@@ -12,12 +12,10 @@ namespace SevenEighths.UnitSexticWitness
 
 open ActualEisensteinCubic CanonicalRowCompletion CanonicalUnitEuler
 open ConcreteTraceCRT
-open scoped Classical
 noncomputable section
-local notation "lambda" => ConcretePrimeRowBridge.goodLambda
 
 lemma idealRowHom_unit_eq_of_norm_mod_seven (P : Ideal O) [P.IsMaximal]
-    (hg : lambda ∉ P) (hodd : ringChar (O ⧸ P) ≠ 2)
+    (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (hodd : ringChar (O ⧸ P) ≠ 2)
     (hmod : Ideal.absNorm P % 36 = 7) (u : Oˣ) :
     idealRowHom u.val P = eisEmbedding u.val := by
   rw [idealRowHom_prime _ P hg, actualSextic_unit_euler P hg hodd]
@@ -28,16 +26,16 @@ lemma idealRowHom_unit_eq_of_norm_mod_seven (P : Ideal O) [P.IsMaximal]
     dsimp [Nat.ModEq]
     omega
   have he := pow_eq_pow_of_modEq hm (unit_pow_six u)
-  simpa only [pow_one] using congrArg eisEmbedding he
+  simp_all
 
 lemma prime_norm_good {p : ℕ} (_hp : p.Prime) (hp3 : 3 < p)
-    (P : Ideal O) (hP : Ideal.absNorm P = p) : lambda ∉ P := by
+    (P : Ideal O) (hP : Ideal.absNorm P = p) : ConcretePrimeRowBridge.goodLambda ∉ P := by
   intro hl
   have hd := Ideal.absNorm_dvd_absNorm_of_le
     ((Ideal.span_singleton_le_iff_mem P).mpr hl)
-  have hlambda : Ideal.absNorm (Ideal.span {lambda}) = 3 := CubicEisenstein.absNorm_span_lambda
+  have hlambda : Ideal.absNorm (Ideal.span {ConcretePrimeRowBridge.goodLambda}) = 3 := CubicEisenstein.absNorm_span_lambda
   rw [hP, hlambda] at hd
-  have := Nat.le_of_dvd (by decide : 0 < 3) hd
+  have := Nat.le_of_dvd (by positivity) hd
   omega
 
 lemma prime_norm_ringChar {p : ℕ} (hp : p.Prime)
@@ -54,8 +52,8 @@ lemma prime_norm_ringChar {p : ℕ} (hp : p.Prime)
 lemma exists_primeIdeal_norm {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
     ∃ P : Ideal O, P.IsMaximal ∧ Ideal.absNorm P = p := by
   have hc := ShortDraftHeckeBridge.split_count_of_mod_one hp hmod
-  have hne : ((Ideal.span {(p : ℤ)}).primesOver O).Nonempty := by
-    exact Set.nonempty_of_ncard_ne_zero (by rw [hc]; decide)
+  have hne : ((Ideal.span {(p : ℤ)}).primesOver O).Nonempty :=
+    Set.nonempty_of_ncard_ne_zero (by linarith)
   obtain ⟨P, hP⟩ := hne
   let : P.IsPrime := hP.1
   let : P.LiesOver (Ideal.span {(p : ℤ)}) := hP.2
@@ -68,44 +66,41 @@ lemma exists_primeIdeal_norm {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
 
 theorem exists_prime_unit_embedding (S : Finset (Ideal O)) (B : ℕ) :
     ∃ P : Ideal O, P.IsMaximal ∧ P ∉ S ∧ B < Ideal.absNorm P ∧
-      Ideal.absNorm P % 36 = 7 ∧ lambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2 ∧
+      Ideal.absNorm P % 36 = 7 ∧ ConcretePrimeRowBridge.goodLambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2 ∧
       ∀ u : Oˣ, idealRowHom u.val P = eisEmbedding u.val := by
   obtain ⟨p, hpB, hp, hmod⟩ := Nat.forall_exists_prime_gt_and_modEq
     (max (max B 3) (S.sup Ideal.absNorm)) (q := 36) (a := 7) (by decide) (by decide)
   have hp36 : p % 36 = 7 := by simpa only [Nat.ModEq, Nat.reduceMod] using hmod
-  have hp3 : 3 < p := lt_of_le_of_lt ((le_max_right B 3).trans (le_max_left _ _)) hpB
+  have hp3 : 3 < p := by omega
   have hpmod : p % 3 = 1 := by omega
   obtain ⟨P, hmax, hn⟩ := exists_primeIdeal_norm hp hpmod
   let : P.IsMaximal := hmax
-  have hg : lambda ∉ P := prime_norm_good hp hp3 P hn
+  have hg := prime_norm_good hp hp3 P hn
   have hodd : ringChar (O ⧸ P) ≠ 2 := by
     rw [prime_norm_ringChar hp P hn]
     omega
   refine ⟨P, hmax, ?_, ?_, hn ▸ hp36, hg, hodd, ?_⟩
   · intro hPS
     have hle := Finset.le_sup (f := Ideal.absNorm) hPS
-    rw [hn] at hle
-    have := le_max_right (max B 3) (S.sup Ideal.absNorm)
     omega
-  · rw [hn]
-    exact lt_of_le_of_lt ((le_max_left B 3).trans (le_max_left _ _)) hpB
-  · exact idealRowHom_unit_eq_of_norm_mod_seven P hg hodd (hn ▸ hp36)
+  · omega
+  · exact idealRowHom_unit_eq_of_norm_mod_seven P hg hodd (by omega)
 
 theorem exists_unit_witness (u : Oˣ) (hu : u ≠ 1)
     (S : Finset (Ideal O)) (B : ℕ) :
     ∃ P : Ideal O, P.IsMaximal ∧ P ∉ S ∧ B < Ideal.absNorm P ∧
-      lambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2 ∧
+      ConcretePrimeRowBridge.goodLambda ∉ P ∧ ringChar (O ⧸ P) ≠ 2 ∧
       idealRowHom u.val P ≠ 0 ∧ idealRowHom u.val P ≠ 1 := by
   obtain ⟨P, hp, hs, hb, hm, hg, ho, he⟩ := exists_prime_unit_embedding S B
   refine ⟨P, hp, hs, hb, hg, ho, ?_, ?_⟩
   · rw [he u]
     intro hz
-    exact Units.ne_zero u (eisEmbedding_injective (by simpa using hz))
+    exact Units.ne_zero u (eisEmbedding_injective (by simp_all))
   · rw [he u]
     intro hh
     apply hu
     apply Units.ext
-    exact eisEmbedding_injective (by simpa using hh)
+    exact eisEmbedding_injective (by simp_all)
 
 end
 end SevenEighths.UnitSexticWitness

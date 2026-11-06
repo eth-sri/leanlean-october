@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Descent.DescentProfiles
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
+open scoped Classical SchwartzMap FourierTransform
+open MeasureTheory FourierBridge JointLogSeparation
 noncomputable section
 
 theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
@@ -32,7 +32,7 @@ theorem frequencyTwist_fourier_moment (J : ℕ) (g : 𝓢(ℝ, ℂ)) :
     exact (source_le_profileSourceBound (frequencyTwist g θ) K i hi).trans
       (profileSourceBound_frequencyTwist g θ K)
   have hh := uniform_fourier_one_plus_moment (frequencyTwist g θ) J 1 (D * H)
-    (by norm_num) (mul_nonneg hD hH) (fun i hi => by simpa only [one_mul] using hs i hi)
+    (by norm_num) (by positivity) (fun i hi => by grind)
   have hlin (j : ℕ) : coefficientMomentBound j (D * H) = coefficientMomentBound j D * H := by
     unfold coefficientMomentBound
     ring

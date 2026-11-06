@@ -17,7 +17,6 @@ lemma low_inverse_power_cancel (Z d α : ℝ) (hZ : 0<Z) :
     push_cast
     ring
   rw [hp,←Real.rpow_add hZ,←Real.rpow_sub hZ]
-  congr 1
   ring
 
 lemma low_inverse_sqrt_normalized (q C B Z L d α H E : ℝ) (n : ℕ)

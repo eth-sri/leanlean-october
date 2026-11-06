@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSource
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
@@ -69,8 +69,8 @@ theorem paired_assignment_filter (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Fin
   · intro hq
     obtain ⟨hq₁,hq₂⟩ := Finset.mem_product.mp hq
     refine Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨?_,?_⟩,?_⟩
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₁ i hi)).1)
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₂ i hi)).1)
+    · simp_all
+    · simp_all
     · intro j
       refine Fin.addCases (fun k => ?_) (fun k => ?_) j
       · simpa only [pairedSlotAssignment,Fin.addCases_left] using

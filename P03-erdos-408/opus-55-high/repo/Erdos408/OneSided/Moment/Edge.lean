@@ -70,9 +70,8 @@ theorem chainEdgeCoef_eq (N : ℕ) (s : ChainState x d Y d₀ u v r B)
   unfold chainEdgeCoef edgeAmp edgeShift
   by_cases hv : EdgeValid x d Y d₀ u v r B s c
   · -- `t = b - a ↔ t - b + a = 0`
-    have hk : ∀ t b a : ℤ, (t = b - a) = (t - b + a = 0) := fun t b a => propext (by omega)
-    simp only [hv, ↓reduceIte, hk]
-  · simp [hv]
+    grind
+  simp_all
 
 /-- The edge choices with stored groups `S` and promoted groups `I`. -/
 def edgePartChoices (S I : Finset (Fin K)) : Finset (EdgeChoice x d Y d₀ u v r) :=
@@ -136,7 +135,7 @@ theorem wnormSq_eq_norm_sq {ι : Type*} [Fintype ι] {μ : ι → ℝ} (hμ : �
   rw [EuclideanSpace.norm_sq_eq, wnormSq]
   refine sum_congr rfl fun i _ => ?_
   rw [PiLp.toLp_apply, norm_mul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs,
-    Real.sq_sqrt (hμ i)]
+    Real.sq_sqrt (by grind)]
 
 /-- Norm bounds add (Minkowski): `‖∑_k T_k f‖ ≤ ∑_k c_k ‖f‖`. -/
 theorem NormLe.sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
@@ -157,23 +156,22 @@ theorem NormLe.sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ
     have : φ (∑ k ∈ s, T k f) = ∑ k ∈ s, φ (T k f) := by
       rw [hφ, ← WithLp.toLp_sum]
       refine congrArg (WithLp.toLp 2) (funext fun i => ?_)
-      simp [Finset.sum_apply, Finset.mul_sum]
+      simp [Finset.mul_sum]
     rw [this, Finset.sum_mul]
     exact (norm_sum_le _ _).trans (sum_le_sum hk)
   have hsq := pow_le_pow_left₀ (norm_nonneg _) hsum 2
   rw [hφ, ← wnormSq_eq_norm_sq hμ, mul_pow] at hsq
   by_cases hW : 0 ≤ wnormSq ν f
-  · rwa [Real.sq_sqrt hW] at hsq
+  · simp_all
   · -- a negative `‖f‖²_ν` forces every `c_k = 0`
     push Not at hW
     have hc0 : ∀ k ∈ s, c k = 0 := by
       intro k hk
       have h0 : 0 ≤ c k ^ 2 * wnormSq ν f :=
-        (sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)).trans (hT k hk f)
+        (sum_nonneg fun i _ => mul_nonneg (by grind) (sq_nonneg _)).trans (hT k hk f)
       have : c k ^ 2 ≤ 0 := nonpos_of_mul_nonneg_left h0 hW
       exact pow_eq_zero_iff (n := 2) (by norm_num) |>.1 (le_antisymm this (sq_nonneg _))
-    rw [sum_eq_zero hc0] at hsq ⊢
-    simpa using hsq
+    simp_all
 
 /-- Norm bounds add: `‖(S + T) f‖ ≤ (a + b) ‖f‖`. -/
 theorem NormLe.add {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
@@ -181,16 +179,16 @@ theorem NormLe.add {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {
     (hS : NormLe μ ν S a) (hT : NormLe μ ν T b) :
     NormLe μ ν (fun f => S f + T f) (a + b) := by
   have h := NormLe.sum hμ (univ : Finset Bool) (T := fun k => bif k then S else T)
-    (c := fun k => bif k then a else b) (fun k _ => by cases k <;> assumption)
+    (c := fun k => bif k then a else b) (fun k _ => by grind)
     (fun k _ => by cases k <;> assumption)
-  simpa [Fintype.sum_bool] using h
+  simp_all
 
 /-- A norm bound can be raised, for a nonnegative input measure. -/
 theorem NormLe.mono {ι κ : Type*} [Fintype ι] [Fintype κ] {μ : ι → ℝ} {ν : κ → ℝ}
     (hν : ∀ j, 0 ≤ ν j) {T : (κ → ℂ) → ι → ℂ} {a b : ℝ} (ha : 0 ≤ a) (hab : a ≤ b)
     (hT : NormLe μ ν T a) : NormLe μ ν T b := fun f =>
   (hT f).trans (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ ha hab 2)
-    (sum_nonneg fun j _ => mul_nonneg (hν j) (sq_nonneg _)))
+    (sum_nonneg fun j _ => mul_nonneg (by grind) (sq_nonneg _)))
 
 /-- M6, the clean edge: for `B ≤ L³`, its norm is at most `L^{-G - 1/2}`, uniformly in the root
 box. -/
@@ -270,7 +268,7 @@ private theorem eventually_edgeParts_le (G M : ℝ) :
   calc L ^ (-G) * L ^ (-(1 / 2 : ℝ)) + M * (2 * (L ^ (-G) * L ^ (-1 : ℝ)))
       = L ^ (-G) * (L ^ (-(1 / 2 : ℝ)) + 2 * (M * L ^ (-1 : ℝ))) := by ring
     _ ≤ L ^ (-G) * 1 :=
-        mul_le_mul_of_nonneg_left (by linarith) (Real.rpow_nonneg hL0.le _)
+        mul_le_mul_of_nonneg_left (by linarith) (by positivity)
     _ = L ^ (-G) := mul_one _
 
 /-- M9 from M6–M8: for `K ≥ K₀` and `B ≤ L³`, the edge has norm at most `L^{-G}`. Split it by
@@ -309,14 +307,13 @@ theorem eventually_chainEdge_normLe_of_parts {q C CX alo ahi Dstar g : ℝ} (hq 
       (hraw d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁ B _ hB rfl SI.1 SI.2 (ne_of_mem_erase hSI))
       (hcomp d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁ B _ hB rfl SI.1 SI.2 (ne_of_mem_erase hSI))
   -- add the clean edge and the dirty pieces by Minkowski
-  have hsum := NormLe.add hμ' (Real.rpow_nonneg hL _)
-    (sum_nonneg fun SI _ => add_nonneg hc₁ hc₁)
+  have hsum := NormLe.add hμ' (by positivity)
+    (by positivity)
     (hclean d hd j k u v r hu₁ hu₂ hv₁ hv₂ hr₀ hr₁ B _ hB rfl)
-    (NormLe.sum hμ' dirty (fun SI _ => add_nonneg hc₁ hc₁) hdirty)
+    (NormLe.sum hμ' dirty (by grind) hdirty)
   rw [sum_const, nsmul_eq_mul, ← two_mul] at hsum
   rw [show chainEdge q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B (2 * momentPower x) =
       fun f => _ from funext (chainEdge_eq_parts q (arcExp Dstar C) x d (2 ^ j) (2 ^ k) u v r B _)]
-  exact NormLe.mono hμ' (add_nonneg (Real.rpow_nonneg hL _)
-    (mul_nonneg (Nat.cast_nonneg _) (mul_nonneg zero_le_two hc₁))) hfin hsum
+  exact NormLe.mono hμ' (by positivity) hfin hsum
 
 end Erdos408.OneSided

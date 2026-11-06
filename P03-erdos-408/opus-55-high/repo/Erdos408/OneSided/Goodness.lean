@@ -31,7 +31,7 @@ in the lists and the varying data.
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real MeasureTheory
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -53,7 +53,7 @@ theorem sum_freshWeight {x : ℝ} {d : Data K} (I : Finset (Fin K))
   rw [← h]
   refine prod_eq_one fun i _ => ?_
   by_cases hi : i ∈ I
-  · simp [hi]
+  · simp_all
   · simp only [hi, ite_false, not_false_eq_true, ite_true]
     -- `∑_{q ∈ 𝒫_i} 1 / (q V_i) = V_i / V_i`
     rw [sum_congr rfl fun (q : ℕ) _ => (div_div (1 : ℝ) (q : ℝ) _).symm, ← sum_div]
@@ -63,7 +63,7 @@ theorem sum_freshWeight {x : ℝ} {d : Data K} (I : Finset (Fin K))
 theorem freshWeight_nonneg {x : ℝ} {d : Data K} (I : Finset (Fin K))
     (hV : ∀ i, 0 < harmonicMass (band x (d.a i))) (T : Fin K → ℕ) :
     0 ≤ freshWeight x d I T :=
-  prod_nonneg fun i _ => div_nonneg zero_le_one (mul_nonneg (Nat.cast_nonneg _) (hV i).le)
+  prod_nonneg fun i _ => div_nonneg zero_le_one (mul_nonneg (Nat.cast_nonneg _) (by grind))
 
 /-- With `i_* = max I`, the selections number at most `exp(2 L^{a_{i_*} - g})^K`: every
 selected group lies at least `g` below `i_*`, by the gap (B6). -/
@@ -76,7 +76,7 @@ theorem card_selections_le {C CX alo ahi g x : ℝ} {d : Data K}
   rw [Fintype.card_piFinset, Nat.cast_prod]
   calc ∏ j, ((if j ∈ I.erase (I.max' hI) then band x (d.a j) else {1}).card : ℝ)
       ≤ ∏ _j : Fin K, Real.exp (2 * Real.log x ^ (d.a (I.max' hI) - g)) := by
-        refine prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) fun j _ => ?_
+        refine prod_le_prod₀ (by simp) fun j _ => ?_
         split_ifs with hj
         · -- `j < i_*`, so `a_j ≤ a_{i_*} - g`
           have hlt : j < I.max' hI :=
@@ -87,7 +87,7 @@ theorem card_selections_le {C CX alo ahi g x : ℝ} {d : Data K}
         · rw [card_singleton, Nat.cast_one]
           exact Real.one_le_exp (by positivity)
     _ = Real.exp (2 * Real.log x ^ (d.a (I.max' hI) - g)) ^ K := by
-        rw [prod_const, card_univ, Fintype.card_fin]
+        simp
 
 /-! ### Both tests -/
 

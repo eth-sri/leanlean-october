@@ -38,16 +38,16 @@ theorem contDiff_logGap (X : ℝ) : ContDiff ℝ ∞ (logGap X) :=
 theorem norm_iteratedFDeriv_comp_clm_le {L : ℝ × ℝ →L[ℝ] ℝ} (hL : ‖L‖ ≤ 1) {h : ℝ → ℝ}
     (hh : ContDiff ℝ ∞ h) (j : ℕ) (p : ℝ × ℝ) :
     ‖iteratedFDeriv ℝ j (h ∘ L) p‖ ≤ ‖iteratedDeriv j h (L p)‖ := by
-  rw [L.iteratedFDeriv_comp_right hh p (by exact_mod_cast le_top),
+  rw [L.iteratedFDeriv_comp_right hh p (by simp),
     ← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
   refine (ContinuousMultilinearMap.norm_compContinuousLinearMap_le _ _).trans ?_
   exact mul_le_of_le_one_right (norm_nonneg _)
-    (Finset.prod_le_one₀ (fun _ _ => norm_nonneg _) fun _ _ => hL)
+    (Finset.prod_le_one₀ (by simp) (by grind))
 
 /-- `|e^t - 1| ≤ |t| e^{|t|}`. -/
 theorem abs_exp_sub_one_le_mul (t : ℝ) : |exp t - 1| ≤ |t| * exp |t| := by
   rcases le_total 0 t with ht | ht
-  · rw [abs_of_nonneg ht, abs_of_nonneg (by linarith [add_one_le_exp t])]
+  · rw [abs_of_nonneg ht, abs_of_nonneg (by simp_all)]
     have h := add_one_le_exp (-t)
     have h' := exp_pos t
     rw [exp_neg] at h
@@ -55,7 +55,7 @@ theorem abs_exp_sub_one_le_mul (t : ℝ) : |exp t - 1| ≤ |t| * exp |t| := by
       calc (-t + 1) * exp t ≤ (exp t)⁻¹ * exp t := by gcongr
         _ = 1 := inv_mul_cancel₀ h'.ne'
     nlinarith
-  · rw [abs_of_nonpos ht, abs_of_nonpos (by linarith [exp_le_one_iff.2 ht])]
+  · rw [abs_of_nonpos ht, abs_of_nonpos (by simp_all)]
     nlinarith [add_one_le_exp t, one_le_exp (neg_nonneg.2 ht)]
 
 /-- The derivatives of `g(ζ) = X(e^{ζ/X} - 1)` are at most `20 e^{10}` for `|ζ| ≤ 20`. -/
@@ -101,7 +101,7 @@ theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i
       ((fun ζ => X * (exp (ζ / X) - 1)) ∘ ContinuousLinearMap.fst ℝ ℝ ℝ) p := rfl
   rw [hy]
   refine (norm_iteratedFDeriv_mul_le (contDiff_exp.comp (ContinuousLinearMap.snd ℝ ℝ ℝ).contDiff)
-    (hg.comp (ContinuousLinearMap.fst ℝ ℝ ℝ).contDiff) p (by exact_mod_cast le_top)).trans ?_
+    (hg.comp (ContinuousLinearMap.fst ℝ ℝ ℝ).contDiff) p (by simp)).trans ?_
   have hterm : ∀ j ∈ Finset.range (i + 1), (i.choose j : ℝ) *
       ‖iteratedFDeriv ℝ j (exp ∘ ContinuousLinearMap.snd ℝ ℝ ℝ) p‖ *
       ‖iteratedFDeriv ℝ (i - j)
@@ -109,13 +109,13 @@ theorem norm_iteratedFDeriv_logGap_le {X : ℝ} (hX : 2 ≤ X) {i : ℕ} (hi : i
       (i.choose j : ℝ) * (exp 20 * (20 * exp 10)) := by
     intro j _
     rw [mul_assoc]
-    refine mul_le_mul_of_nonneg_left (mul_le_mul ?_ ?_ (norm_nonneg _) (exp_pos _).le)
+    refine mul_le_mul_of_nonneg_left (mul_le_mul ?_ ?_ (norm_nonneg _) (by positivity))
       (Nat.cast_nonneg _)
-    · refine (norm_iteratedFDeriv_comp_clm_le (ContinuousLinearMap.norm_snd_le ℝ ℝ ℝ)
+    · refine (norm_iteratedFDeriv_comp_clm_le (by simp)
         contDiff_exp j p).trans ?_
       rw [iteratedDeriv_eq_iterate, iter_deriv_exp, Real.norm_eq_abs, abs_of_pos (exp_pos _)]
       exact exp_le_exp.2 ((le_abs_self _).trans h2)
-    · exact (norm_iteratedFDeriv_comp_clm_le (ContinuousLinearMap.norm_fst_le ℝ ℝ ℝ) hg _ p).trans
+    · exact (norm_iteratedFDeriv_comp_clm_le (by simp) hg _ p).trans
         (norm_iteratedDeriv_gap_le hX _ h1)
   refine (Finset.sum_le_sum hterm).trans ?_
   rw [← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
@@ -170,7 +170,7 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
     have h20 := add_one_le_exp 20
     have h10 := add_one_le_exp 10
     calc (1 : ℝ) ≤ 16 * 1 * (20 * 1) := by norm_num
-      _ ≤ 16 * exp 20 * (20 * exp 10) := by gcongr <;> linarith
+      _ ≤ 16 * exp 20 * (20 * exp 10) := by nlinarith
   refine ⟨16 * (24 * A ^ 4) * Q, by positivity, fun φ X K hφ hX hK n hn p => ?_⟩
   have hK0 : 0 ≤ K := (norm_nonneg _).trans (hK 0 (Nat.zero_le _) 0)
   rcases le_or_gt ‖p‖ 20 with hp | hp
@@ -178,11 +178,11 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
     have hcomp : ∀ j ≤ 4, ‖iteratedFDeriv ℝ j (φ ∘ logGap X) p‖ ≤ 24 * A ^ 4 * K := by
       intro j hj
       refine (norm_iteratedFDeriv_comp_le hφ (contDiff_logGap X)
-        (by exact_mod_cast le_top) p (fun i hi => hK i (hi.trans hj) _)
+        (by simp) p (fun i hi => hK i (hi.trans hj) _)
         fun i hi1 hi => (norm_iteratedFDeriv_logGap_le hX (hi.trans hj) hp).trans
           (le_self_pow₀ hA1 (by omega))).trans ?_
       have hf : (j.factorial : ℝ) ≤ 24 := by
-        have : j.factorial ≤ (4 : ℕ).factorial := Nat.factorial_le hj
+        have  := Nat.factorial_le hj
         exact_mod_cast this
       have hAj : A ^ j ≤ A ^ 4 := pow_le_pow_right₀ hA1 hj
       calc (j.factorial : ℝ) * K * A ^ j ≤ 24 * K * A ^ 4 := by gcongr
@@ -191,15 +191,15 @@ theorem exists_norm_iteratedFDeriv_gapKernel_le : ∃ B : ℝ, 0 ≤ B ∧ ∀ (
     have hk : gapKernel φ X = fun p => (φ ∘ logGap X) p * c p := rfl
     rw [hk]
     refine (norm_iteratedFDeriv_mul_le (hφ.comp (contDiff_logGap X))
-      hcd p (by exact_mod_cast le_top)).trans ?_
+      hcd p (by simp)).trans ?_
     have hterm : ∀ j ∈ Finset.range (n + 1), (n.choose j : ℝ) *
         ‖iteratedFDeriv ℝ j (φ ∘ logGap X) p‖ *
         ‖iteratedFDeriv ℝ (n - j) c p‖ ≤ (n.choose j : ℝ) * (24 * A ^ 4 * K * Q) := by
       intro j hj
-      have hj' : j ≤ n := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
+      have hj' := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
       rw [mul_assoc]
-      exact mul_le_mul_of_nonneg_left (mul_le_mul (hcomp j (hj'.trans hn))
-        (hQ _ ((Nat.sub_le n j).trans hn) p) (norm_nonneg _) (by positivity)) (Nat.cast_nonneg _)
+      exact mul_le_mul_of_nonneg_left (mul_le_mul (by grind)
+        (by grind) (norm_nonneg _) (by positivity)) (Nat.cast_nonneg _)
     refine (Finset.sum_le_sum hterm).trans ?_
     rw [← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
     have h16 : (2 : ℝ) ^ n ≤ 16 := by
@@ -227,12 +227,7 @@ theorem abs_log_sub_log_le {w w' : ℝ} (hw : 1 ≤ w) (hw' : 1 ≤ w') :
     · rw [abs_of_nonneg hab]
       nlinarith
     · nlinarith [abs_nonneg (a - b)]
-  rw [abs_le]
-  constructor
-  · have := h w' w hw' hw
-    rw [abs_sub_comm] at this
-    linarith
-  · exact h w w' hw hw'
+  grind
 
 /-- For `w, w' ≥ 1` and `w' ≤ 16`, the cut-off kernel is `φ(X(w - w'))`, when `φ` vanishes
 outside `(-5, 5)`. -/
@@ -247,23 +242,23 @@ theorem gapKernel_log {φ : ℝ → ℂ} (hφ : ∀ y, 5 ≤ |y| → φ y = 0) {
     field_simp
   have hz : plateau (log w' / 4) = 1 := by
     refine plateau_eq_one ?_
-    have h0 : 0 ≤ log w' := log_nonneg hw'
+    have h0 := log_nonneg hw'
     have h1 : log w' ≤ w' - 1 := log_le_sub_one_of_pos (by positivity)
     rw [abs_of_nonneg (by positivity)]
     linarith
   rw [gapKernel, hy, hz, mul_one]
   by_cases h : φ (X * (w - w')) = 0
-  · rw [h, zero_mul]
+  · simp_all
   · -- `|ζ| ≤ X |w - w'| < 5`
     have h5 : |X * (w - w')| < 5 := by
       by_contra h'
-      exact h (hφ _ (not_lt.1 h'))
+      exact by grind
     have hζ : plateau (X * (log w - log w') / 4) = 1 := by
       refine plateau_eq_one ?_
       rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 4), abs_mul, abs_of_pos hX]
       rw [abs_mul, abs_of_pos hX] at h5
       have := mul_le_mul_of_nonneg_left (abs_log_sub_log_le hw hw') hX.le
       linarith
-    rw [hζ, Complex.ofReal_one, mul_one]
+    simp_all
 
 end Erdos408.OneSided.Mellin

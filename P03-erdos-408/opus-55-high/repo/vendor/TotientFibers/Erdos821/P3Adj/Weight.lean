@@ -7,7 +7,6 @@ public import Erdos821.Blueprint.Graph
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -27,12 +26,12 @@ lemma eta_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) : 0 < eta F n i := by
     unfold visitQ
     by_cases h : i.val = 0 ∨ i.val = n
     · rw [ite_eq_left h]
-      have hq0 : 0 < F.q := F.q_pos
-      have hq1 : F.q < 1 := F.q_lt
+      have hq0 := F.q_pos
+      have hq1 := F.q_lt
       have hsqrt : Real.sqrt F.q < 1 := by
         have h := Real.sqrt_lt_sqrt hq0.le hq1
         simpa only [Real.sqrt_one] using h
-      exact hsqrt
+      omega
     · rw [ite_eq_right h]
       exact F.q_lt
   linarith
@@ -55,9 +54,9 @@ lemma tiltedMu_pos {P : PrimeGroups} {F : FixedData} {n : ℕ} {g : P.Group}
   apply inv_pos.mpr
   apply mul_pos
   apply mul_pos
-  · exact hV
+  · omega
   · exact Nat.cast_pos.mpr (P.prime g q.val q.property).pos
-  · exact hbase
+  omega
 
 /-- Absolute single weight in positive form. -/
 lemma abs_singleWeight_eq {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho : ℝ)
@@ -74,20 +73,20 @@ lemma abs_singleWeight_eq {P : PrimeGroups} (F : FixedData) (n : ℕ) (rho : ℝ
     (eta F n i * P.V g.val / rho) ^ b.val *
     ∏ h : Fin b.val, tiltedMu F P n g.val (p h) := by
   unfold singleWeight
-  have heta : 0 < eta F n i := eta_pos F n i
-  have hQ : 0 < visitQ F.q n i := visitQ_pos F n i
+  have heta := eta_pos F n i
+  have hQ := visitQ_pos F n i
   have hrho2 : 0 < rho ^ (2 : ℕ) := pow_pos hrho 2
   have hQr : 0 < visitQ F.q n i / rho ^ (2 : ℕ) := div_pos hQ hrho2
   have hfact : 0 < ((b.val.factorial : ℝ)⁻¹) := by
     apply inv_pos.mpr
-    exact Nat.cast_pos.mpr (Nat.factorial_pos b.val)
+    exact by positivity
   have hmu : 0 < ∏ h : Fin b.val, tiltedMu F P n g.val (p h) := by
     apply Finset.prod_pos
     intro h _
     exact tiltedMu_pos hV (hbase _)
   have her : 0 < eta F n i / rho := div_pos heta hrho
   have heVr : 0 < eta F n i * P.V g.val / rho :=
-    div_pos (mul_pos heta hV) hrho
+    by positivity
   -- Rewrite negatives as negations
   have hneg1 : (-eta F n i / rho) = -(eta F n i / rho) := by ring
   have hneg2 : (-eta F n i * P.V g.val / rho) = -(eta F n i * P.V g.val / rho) := by ring

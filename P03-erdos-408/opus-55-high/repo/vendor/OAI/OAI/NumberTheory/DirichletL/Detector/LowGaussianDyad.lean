@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianCommon
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff SchwartzMap
+open scoped Classical ContDiff
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowCommonDyad {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset ActualEisensteinCubic.O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (J : Finset (Fin K)) (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) : ℂ :=
   ∫t : ℝ,(∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
@@ -25,7 +24,7 @@ def lowCommonDyad {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
       selectedSlotFactor W Yp (fun i=>(p i).val) J t)*gaussianJointDensity V hV (U/R) t
 
 lemma lowCommonDyad_eq_family {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset ActualEisensteinCubic.O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (J : Finset (Fin K)) (X Y U R : ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) :
     lowCommonDyad η C W0 W1 slots W Yp J X Y U R V hV=
@@ -38,7 +37,7 @@ lemma lowCommonDyad_eq_family {K : ℕ} (η : HeckeFamily.Character) (C : Calibr
       (fun p i=>elementNorm (p i.val).val/Yp i.val) V hV U R := rfl
 
 lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : CalibrationData)
-    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
+    (W0 W1 : ℝ→ℂ) (slots : Fin K→Finset ActualEisensteinCubic.O) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (J : Finset (Fin K)) (X Y U R B : ℝ) (degree : ℕ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ))
     (hb : ∀t : ℝ,‖∑p : ∀i,slots i,compensationSubsetWeight η W Yp (fun i=>(p i).val) J*
@@ -54,7 +53,7 @@ lemma lowCommonDyad_norm_of_bound {K : ℕ} (η : HeckeFamily.Character) (C : Ca
     dsimp only [f]
     rw [norm_mul]
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hb t)
-      (norm_nonneg (gaussianJointDensity V hV (U/R) t))
+      (by positivity)
   have hh := norm_integral_le_of_norm_le hi (Filter.Eventually.of_forall hmajor)
   simpa only [f,lowCommonDyad,gaussianJointMoment,integral_const_mul] using hh
 

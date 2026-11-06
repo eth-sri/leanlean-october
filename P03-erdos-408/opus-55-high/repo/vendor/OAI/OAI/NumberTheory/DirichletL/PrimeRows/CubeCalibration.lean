@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set
+open scoped Classical
+open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 
 lemma centralCubeIntegral_calibration_zero {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (hc : (calibrationForSet S hmax).residueMonoid u.val=0)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z a e H : ℝ) :
@@ -22,7 +21,7 @@ lemma centralCubeIntegral_calibration_zero {K : ℕ}
   simp [centralCubeIntegral,continuedRowOnLines,continuedPhysicalRowKernel,hc]
 
 theorem finiteCentralCubeRows_filter_calibration {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→P.val∉S) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z e : ℝ) (a H : FreeRow→ℝ) :
@@ -34,8 +33,8 @@ theorem finiteCentralCubeRows_filter_calibration {K : ℕ}
   apply Finset.sum_congr rfl
   intro u hu
   by_cases hc : (calibrationForSet S hmax).residueMonoid u.val=0
-  · simp [hc,centralCubeIntegral_calibration_zero S hS hmax _ _ η u hc]
-  · simp [hc]
+  · simp [centralCubeIntegral_calibration_zero S hS hmax _ _ η u hc]
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 
 theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
-    ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
-      (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
+    ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
+      (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ)
       (D : ControlledStratumArithmetic (F.reflected K hK S).generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸(F.reflected K hK S).ideal i)≠2) →
-    ∀ jF : φ→ℕ, (∀ i, jF i<6) → ∀ (u : Eisˣ) (θ X T QK QP : ℝ),
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸(F.reflected K hK S).ideal i)≠2) →
+    ∀ jF : φ→ℕ, (∀ i, jF i<6) → ∀ (u : ActualEisensteinCubic.Oˣ) (θ X T QK QP : ℝ),
       0<X → 0<T → 0<QK → 0<QP →
       (Ideal.absNorm K:ℝ)≤QK → (Ideal.absNorm (∏ i,S.ideal i):ℝ)≤QP →
       ‖∑' i : ℕ×ℕ×ℕ, if i∉retainedDyads (familyRawScale F s X QK QP) (16*T) then
@@ -48,7 +47,7 @@ theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A
     rcases i with f | k | p
     · exact hj f
     · norm_num [reflectedExponent]
-    · norm_num [reflectedExponent]
+    · positivity
   have hh := hbound (N:=N) (a:=a) (c:=c) (mode:=mode) (F.reflected K hK S) D s hc hN hbase hchar (reflectedExponent jF) hj'
     (slotIndices φ (PrimeIndex K) σ) u θ X T hX hT
     (fun i => i∉retainedDyads (familyRawScale F s X QK QP) (16*T)) hcut
@@ -62,7 +61,7 @@ theorem original_family_dyadic_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A
     congr 1
     apply tsum_congr
     intro i
-    by_cases hi : i∈retainedDyads (familyRawScale F s X QK QP) (16*T) <;> simp [hi]
+    by_cases hi : i∈retainedDyads (familyRawScale F s X QK QP) (16*T) <;> simp
   apply hleft.trans
   have hnorm := reflected_norm_le_centers F K hK S QK QP hKr hPr
   gcongr

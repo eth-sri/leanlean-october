@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedRequests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedLowStage
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyWidthInduction
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule
 open CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_capped_low
     (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
@@ -34,8 +33,8 @@ theorem actual_capped_low
     (hκbeta:2*HeckeZeroSupremum.beta-1≤κ)(k:ℕ)(hk:k<count Mcap ε)
     (hold:CenteredMomentEnergyCappedWidthInduction.CertifiedBand (α:=α) M H hH
       W bslot a b radial Bmask L lo hi Mcap κ ε k):
-    ∃U:Finset (ℕ×ℕ),∃J:ℕ,∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+    ∃U:Finset (ℕ×ℕ),∃J:ℕ,∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M→
+      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)}→
       ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
         PositiveLowAt (α:=α) M H hH W bslot (lowerAt a b Mcap ε (k+1)) b radial Bmask
           (requestLength Mcap Bmask (lengthAt Mcap Bmask L ε (k+1)))
@@ -64,7 +63,7 @@ theorem actual_capped_low
   have hκ0:0≤κ:=by linarith
   have hbounds:=bounds Mcap Bs κ ε hMcap hBs hκ0 hε
   have hmesh:0≤fineMesh Mcap Bmask L κ ε:=hbounds.2.2.2.2.1.le
-  have hr:0<reserve Mcap Bs ε:=hbounds.2.2.2.1
+  have hr:=hbounds.2.2.2.1
   have hr4:reserve Mcap Bs ε/4≤1:=by
     have hh:reserve Mcap Bs ε≤amplification ε/100:=min_le_left _ _
     have hs:=hbounds.2.1
@@ -103,7 +102,7 @@ theorem actual_capped_low
       _ _ _ _ _ _ _ η₀ Q degree degree S S Cp Cp hold.1.le
       le_rfl le_rfl le_rfl le_rfl hlength le_rfl le_rfl le_rfl (Finset.Subset.refl _)
       hCp.le le_rfl hp
-  exact ⟨hs.1,hs.2 (stageLoss Mcap Bs ε k) Cz Cp le_rfl hCz.le hCp.le hz' hp'⟩
+  grind
 
 end SevenEighths.CenteredMomentEnergyCappedLowStage
 

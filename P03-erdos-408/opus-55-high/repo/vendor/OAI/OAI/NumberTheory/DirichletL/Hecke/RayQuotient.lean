@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.RayQuotient
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeRayQuotient
 open HeckeFamily
 variable (M : Ideal O) [NeZero M]

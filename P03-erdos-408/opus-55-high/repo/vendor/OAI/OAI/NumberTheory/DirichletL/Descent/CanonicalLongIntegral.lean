@@ -8,17 +8,16 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_long_bin_normalized_energy
     {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S) (hSp : ∀P∈S,Prime P)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S) (hSp : ∀P∈S,Prime P)
     (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ))
-    (labels : Finset (Ideal O)) (Ψ : O →* ℂ) (m : O) (W : ℝ → ℂ)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hb : 0≤b) (hs : Function.support W ⊆ Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (V : 𝓢(ℝ,ℂ))
     (hV : ∀ u, |u| ≤ columnWindowRadius a b → V u = 1)
@@ -81,10 +80,7 @@ theorem actual_long_bin_normalized_energy
     convert Real.rpow_zero Z using 2 ; ring
   have hh:=mul_le_mul_of_nonneg_left hbnd (Real.rpow_nonneg hZ.le (-Vheight))
   apply hh.trans_eq
-  calc
-    _=(Z^(-Vheight)*((Z^cubeLength)^2*Z^r)⁻¹*Z^(r+2*cubeLength+Vheight))*
-      E*(∫ξ:ℝ,‖reopeningCoefficient W a b ha hs hW ξ‖*(1+|ξ|)^d)^2 := by ring
-    _=_:=by rw [hc,one_mul]
+  grind
 
 end
 end SevenEighths.InverseMoment

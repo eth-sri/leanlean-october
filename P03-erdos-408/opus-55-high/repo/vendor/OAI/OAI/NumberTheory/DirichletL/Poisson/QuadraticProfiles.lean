@@ -9,33 +9,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open scoped SchwartzMap
+open Finset
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,40 +32,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap
 namespace EisensteinSchwartzPoisson
 
-open ActualEisensteinCubic ConcreteTraceCRT
 
 def quadraticSquareProfileCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLM ℝ
@@ -118,13 +99,12 @@ def quadraticTransformedSquareProfileCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, �
     squareFrequencyScaleCLM, quadraticTransformedSquareProfile]
   rfl
 
-open ActualEisensteinCubic ConcreteTraceCRT QuadraticInitialBound
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic MixedCrossSeparation FirstCauchyArithmetic RayFourExpansion
+open MixedCrossSeparation FirstCauchyArithmetic RayFourExpansion
 
 theorem supportRay_star {ι : Type*} (p : ι → ActualEisensteinCubic.O) (χ : RayCharacter) (S : Finset ι) :
     supportRay p (star χ) S = star (supportRay p χ S) := by
@@ -142,8 +122,8 @@ theorem columnG_ray_expansion {ι : Type*} [DecidableEq ι]
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
     columnG p hp hcop hg S = ∑ χ : RayCharacter, gCoeff χ * supportRay p χ S := by
   have h := canonicalProductG_character_expansion (fun i : S => p i.val)
-    (fun i => hp i.val) (columnPrimeCoprime p hcop S) (fun i => hg i.val)
-    (fun i => hc i.val) (fun i => hpr i.val)
+    (by grind) (columnPrimeCoprime p hcop S) (by grind)
+    (fun i => hc i.val) (by grind)
   simpa only [columnG, supportRay, Finset.prod_coe_sort] using h
 
 def coreRayCharacter (negative : Bool) (χ ξ : RayCharacter) : RayCharacter :=
@@ -172,20 +152,12 @@ theorem core_phase_ray_expansion {ι : Type*} [DecidableEq ι]
     apply Finset.sum_congr rfl
     intro χ _
     conv_lhs => rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro η _
-    apply Finset.sum_congr rfl
-    intro ξ _
-    ring
+    grind
   · conv_lhs => rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
     intro χ _
     conv_lhs => rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro η _
-    apply Finset.sum_congr rfl
-    intro ξ _
-    ring
+    grind
 
 theorem coreRayCoefficient_norm_le {ι : Type*} (p : ι → ActualEisensteinCubic.O) (F : Finset ι) (negative : Bool)
     (χ η ξ : RayCharacter) :
@@ -228,18 +200,14 @@ def coreRayTwist (negative : Bool) (χ ξ : RayCharacter) : ActualEisensteinCubi
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical SchwartzMap
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical SchwartzMap
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportConjugateSum)
 open RayFourExpansion (RayCharacter crossCoeff)
 

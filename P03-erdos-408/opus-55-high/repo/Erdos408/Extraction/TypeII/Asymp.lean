@@ -72,7 +72,7 @@ theorem eventually_exp_le_log_rpow (A ε : ℝ) (hε : 0 < ε) :
     ∀ᶠ x : ℝ in atTop, Real.exp (A * (logLogLog x ^ 2 + 1)) ≤ Real.log x ^ ε := by
   filter_upwards [eventually_sq_le_logLog A ε hε, eventually_le_log 1] with x hx hL
   rw [log_rpow_eq_exp (by linarith)]
-  exact Real.exp_le_exp.2 hx
+  simp_all
 
 /-- `T^A = exp(A s) ≤ exp(|A| (s² + 1))` once `s ≥ 0`. -/
 theorem logLog_rpow_le_exp {x : ℝ} (hT : 0 < logLog x) (hs : 0 ≤ logLogLog x) (A : ℝ) :
@@ -192,6 +192,6 @@ theorem eventually_exp_pow_le_log_rpow (k : ℕ) (A ε : ℝ) (hε : 0 < ε) :
     ∀ᶠ x : ℝ in atTop, Real.exp (A * (logLogLog x ^ k + 1)) ≤ Real.log x ^ ε := by
   filter_upwards [eventually_pow_le_logLog k A ε hε, eventually_le_log 1] with x hx hL
   rw [log_rpow_eq_exp (by linarith)]
-  exact Real.exp_le_exp.2 hx
+  simp_all
 
 end Erdos408.TypeII

@@ -6,7 +6,6 @@ public import Erdos821.P4Bridge.FiniteComparison
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe
@@ -20,8 +19,7 @@ lemma sum_labels {R : Type*} [AddCommMonoid R] (ν : Pattern P J ell m)
   calc
     _ = ∑ z, H ((labelSplit ν block).symm z) := by
       apply Fintype.sum_equiv (labelSplit ν block)
-      intro a
-      simp only [Equiv.symm_apply_apply]
+      grind
     _ = _ := by simp only [Fintype.sum_prod_type]; rfl
 
 def conditionalF (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
@@ -57,7 +55,7 @@ lemma conditionalF_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bo
       apply mul_le_mul_of_nonneg_left _ (rowWeight_pos hV _ s).le
       apply Finset.sum_le_sum
       intro y _
-      exact mul_le_mul_of_nonneg_left (hmean s y) (sideWeight_pos hV _ y).le
+      exact mul_le_mul_of_nonneg_left (by grind) (sideWeight_pos hV _ y).le
     _ = ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
       rw [sum_labels ν block]
       simp only [idealMass_labelJoin]
@@ -65,14 +63,7 @@ lemma conditionalF_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bo
       apply Finset.sum_congr rfl
       intro s _
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro x _
-      apply Finset.sum_congr rfl
-      intro y _
-      apply Finset.sum_congr rfl
-      intro t _
-      dsimp only [wx, wy]
-      ring
+      grind
 
 lemma conditionalG_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (hV : ∀ g, 0 < P.V g) (g : P.BigLabels (J + ell) → ℂ) :
@@ -95,21 +86,12 @@ lemma conditionalG_energy_le (ν : Pattern P J ell m) (block : P.BigGroup → Bo
       apply mul_le_mul_of_nonneg_left _ (rowWeight_pos hV _ s).le
       apply Finset.sum_le_sum
       intro x _
-      exact mul_le_mul_of_nonneg_left (hmean s x) (sideWeight_pos hV _ x).le
+      exact mul_le_mul_of_nonneg_left (by grind) (sideWeight_pos hV _ x).le
     _ = ∑ a, P.idealMass a * ‖g a‖ ^ 2 := by
       rw [sum_labels ν block]
       simp only [idealMass_labelJoin]
       simp_rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro s _
-      apply Finset.sum_congr rfl
-      intro x _
-      apply Finset.sum_congr rfl
-      intro y _
-      apply Finset.sum_congr rfl
-      intro t _
-      dsimp only [wx, wy]
-      ring
+      grind
 
 end
 end Erdos821.P4Bridge

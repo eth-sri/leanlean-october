@@ -8,7 +8,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -32,7 +31,7 @@ theorem normBound_mul_endpoints {α : Type*} {mass : α → ℝ} {K : α → α 
     apply mul_le_mul_of_nonneg_left _ (hm a)
     apply pow_le_pow_left₀ (norm_nonneg _) _
     simpa only [norm_mul, norm_star, one_mul] using
-      mul_le_mul_of_nonneg_right (hu a) (norm_nonneg (f a))
+      mul_le_mul_of_nonneg_right (hu a) (by positivity)
   have hg : (∑ b ∈ t, mass b * ‖v b * g b‖ ^ 2) ≤
       ∑ b ∈ t, mass b * ‖g b‖ ^ 2 := by
     apply Finset.sum_le_sum
@@ -40,7 +39,7 @@ theorem normBound_mul_endpoints {α : Type*} {mass : α → ℝ} {K : α → α 
     apply mul_le_mul_of_nonneg_left _ (hm b)
     apply pow_le_pow_left₀ (norm_nonneg _) _
     simpa only [norm_mul, one_mul] using
-      mul_le_mul_of_nonneg_right (hv b) (norm_nonneg (g b))
+      mul_le_mul_of_nonneg_right (hv b) (by positivity)
   have h := hK s t (fun a => star (u a) * f a) (fun b => v b * g b)
   simp only [star_mul, star_star] at h
   have heq : (∑ a ∈ s, ∑ b ∈ t,
@@ -56,7 +55,7 @@ theorem normBound_mul_endpoints {α : Type*} {mass : α → ℝ} {K : α → α 
   exact h.trans (mul_le_mul
     (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hf) hC)
     (Real.sqrt_le_sqrt hg) (Real.sqrt_nonneg _)
-    (mul_nonneg hC (Real.sqrt_nonneg _)))
+    (by positivity))
 
 theorem normBound_iff_univ {α : Type*} [Fintype α] (mass : α → ℝ)
     (K : α → α → ℂ) (C : ℝ) : NormBound mass K C ↔

@@ -8,7 +8,6 @@ public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -43,7 +42,7 @@ theorem integral_phase_int (n : ℤ) :
     have hnc : (n : ℂ) ≠ 0 := by exact_mod_cast hn
     have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
     have hc : c ≠ 0 :=
-      mul_ne_zero (mul_ne_zero (mul_ne_zero (by norm_num) hpi) hnc) Complex.I_ne_zero
+      mul_ne_zero (by grind) Complex.I_ne_zero
     have hf (theta : ℝ) : phase (theta * (n : ℝ)) = Complex.exp (c * theta) := by
       unfold phase
       congr 1
@@ -56,8 +55,7 @@ theorem integral_phase_int (n : ℤ) :
       exact Complex.exp_int_mul_two_pi_mul_I n
     simp_rw [hf]
     rw [integral_exp_mul_complex hc]
-    simp only [Complex.ofReal_one, Complex.ofReal_zero, mul_one, mul_zero, hexp,
-      Complex.exp_zero, sub_self, zero_div]
+    simp_all
 
 namespace ResiduePath
 
@@ -66,9 +64,7 @@ variable {F : FixedData} {P : PrimeGroups} {J m n : ℕ} {A : Model F P J m}
 
 theorem offset_last : Q.offset (Fin.last n) = ∑ i : Fin n, Q.step i := by
   unfold offset
-  apply Finset.sum_congr rfl
-  intro i _
-  simp only [Fin.val_last, ite_eq_left i.isLt]
+  simp
 
 theorem edgeCoefficient_phase (theta : ℝ) (i : Fin n) :
     Q.edgeCoefficient theta i = Q.edgeCoefficient 0 i * phase (theta * (Q.step i : ℝ)) := by
@@ -82,8 +78,7 @@ theorem weight_phase_factor (theta : ℝ) :
   rw [Finset.prod_mul_distrib, phase_prod]
   have hs : (∑ i : Fin n, theta * (Q.step i : ℝ)) = theta * (Q.offset (Fin.last n) : ℝ) := by
     rw [← Finset.mul_sum, Q.offset_last, Int.cast_sum]
-  rw [hs]
-  ac_rfl
+  grind
 
 theorem weight_continuous : Continuous (fun theta : ℝ => Q.Weight theta) := by
   have he : (fun theta : ℝ => Q.Weight theta) =
@@ -100,7 +95,7 @@ theorem integral_weight :
     funext Q.weight_phase_factor
   rw [he]
   rw [intervalIntegral.integral_const_mul, integral_phase_int]
-  by_cases h : Q.offset (Fin.last n) = 0 <;> simp [h]
+  simp
 
 end ResiduePath
 
@@ -115,13 +110,12 @@ theorem integral_residueExpression {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     by_cases hq : Q.Valid
     · simp only [hq, ite_true, Q.integral_weight]
       by_cases hc : Q.offset (Fin.last n) = 0 <;>
-        simp [closedPathCoefficient, hq, hc, ResiduePath.Weight]
+        simp [closedPathCoefficient, hq, ResiduePath.Weight]
     · simp [hq, closedPathCoefficient]
   · intro Q _
     by_cases hq : Q.Valid
     · simp only [hq, ite_true]
       exact Q.weight_continuous.intervalIntegrable 0 1
-    · simp only [hq, ite_false]
-      exact intervalIntegrable_const
+    simp_all
 
 end Erdos821.S2Core

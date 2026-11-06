@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.Rows
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def reflectedExponent {φ ρ σ : Type*} (jF : φ → ℕ) : φ ⊕ (ρ ⊕ σ) → ℕ :=
   Sum.elim jF (Sum.elim (fun _ => 1) (fun _ => 0))
@@ -31,17 +30,7 @@ lemma reflected_indices_partition (φ ρ σ : Type*) [Fintype φ] [Fintype ρ] [
   classical
   simp only [residualIndices, slotIndices, frozenIndices, Finset.disjoint_left,
     Finset.mem_image, Finset.mem_univ, true_and, Finset.mem_union, Function.comp_apply]
-  constructor
-  · rintro i ⟨r, rfl⟩ ⟨s, h⟩
-    cases h
-  constructor
-  · rintro i (⟨r, rfl⟩ | ⟨s, rfl⟩) ⟨f, h⟩ <;> cases h
-  · ext i
-    cases i with
-    | inl f => simp
-    | inr i => cases i with
-      | inl r => simp
-      | inr s => simp
+  grind
 
 lemma reflected_residual_exponent {φ ρ σ : Type*} [Fintype ρ] (jF : φ → ℕ) :
     ∀ i ∈ residualIndices φ ρ σ, reflectedExponent jF i = 1 := by
@@ -52,7 +41,7 @@ lemma reflected_residual_exponent {φ ρ σ : Type*} [Fintype ρ] (jF : φ → �
 
 namespace PrimeFamily
 lemma reflected_residual_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ) :
     (∏ i ∈ residualIndices φ (PrimeIndex K) σ,
       Ideal.span {(F.reflected K hK S).generator i}) = K := by
   classical
@@ -62,7 +51,7 @@ lemma reflected_residual_product {φ σ : Type*} [Fintype φ] [Fintype σ]
   exact residual_product K hK
 
 lemma reflected_slot_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ) :
     (∏ i ∈ slotIndices φ (PrimeIndex K) σ,
       Ideal.span {(F.reflected K hK S).generator i}) = ∏ i, S.ideal i := by
   classical

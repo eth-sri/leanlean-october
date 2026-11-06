@@ -9,7 +9,6 @@ public import Erdos821.P4Probe.PairingSums
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Cancel
@@ -48,11 +47,11 @@ variable {P M}
 
 @[simp] lemma toRows_apply (a : P.BigLabels M) (g : Fin (rowCount P)) (i : Fin M) :
     toRows P M a g i = a (rowEquiv P g) i := by
-  simp [toRows, Equiv.piCongrLeft_symm_apply]
+  simp [toRows]
 
 @[simp] lemma toRows_symm_apply (x : ProbeSample (rowAlpha P) M) (g : Fin (rowCount P)) :
     (toRows P M).symm x (rowEquiv P g) = x g := by
-  simp [toRows, Equiv.piCongrLeft_apply_apply]
+  simp [toRows]
 
 @[simp] lemma toFlat_apply (a : P.BigLabels M) (z : RowSite (rowCount P) M) :
     toFlat P M a z = a (rowEquiv P z.1) z.2 := by
@@ -116,9 +115,9 @@ lemma toFlat_mix (T : Finset (RowSite (rowCount P) M)) (a b : P.BigLabels M) :
   funext z
   by_cases hz : z ∈ T
   · have hz' : ((rowEquiv P).symm (rowEquiv P z.1), z.2) ∈ T := by simpa using hz
-    simp [mixCoords, siteMix, hz]
+    simp [mixCoords, siteMix]
   · have hz' : ((rowEquiv P).symm (rowEquiv P z.1), z.2) ∉ T := by simpa using hz
-    simp [mixCoords, siteMix, hz]
+    simp [mixCoords, siteMix]
 
 /-- Average over a flat site set, on big labels. -/
 def siteAvg (T : Finset (RowSite (rowCount P) M)) (F : P.BigLabels M → ℂ)
@@ -157,7 +156,7 @@ lemma siteAvg_empty (hV : ∀ g, 0 < P.V g) (F : P.BigLabels M → ℂ) (a : P.B
   rw [← Finset.sum_mul]
   have ht : (∑ y : P.BigLabels M, (P.idealMass y : ℂ)) = 1 := by
     exact_mod_cast idealMass_sum P M hV
-  rw [ht, one_mul]
+  grind
 
 /-- Row symmetry of a big test transports to the flat row world. -/
 lemma rows_symmetric (F : P.BigLabels M → ℂ)
@@ -170,7 +169,7 @@ lemma rows_symmetric (F : P.BigLabels M → ℂ)
     rw [Equiv.apply_symm_apply]
     funext g i
     simp [PrimeGroups.actBig]
-  rw [h, hF]
+  grind
 
 /-! The two side sets and the tail set, in the exact form of
 `SymmetricFullComponentTask`. -/
@@ -190,10 +189,10 @@ lemma blockSet_card (block : P.BigGroup → Bool) (side : Bool) :
       (Finset.univ.filter (fun g : P.BigGroup => block g = side)).card := by
   unfold blockSet
   apply Finset.card_bij (fun g _ => rowEquiv P g)
-  · intro g hg; simpa using hg
-  · intro g _ h _ hgh; exact (rowEquiv P).injective hgh
+  · simp
+  · simp
   · intro g hg
-    exact ⟨(rowEquiv P).symm g, by simpa using hg, by simp⟩
+    exact ⟨(rowEquiv P).symm g, by simp_all, by simp⟩
 
 lemma siteSet_tail (J ell : ℕ) :
     siteSet (P := P) (tailCoordinates P J ell) = tailSites J ell := by
@@ -218,8 +217,7 @@ lemma sub_sideFull (hV : ∀ g, 0 < P.V g) (I : Finset (RowSite (rowCount P) M))
   simp_rw [flat_average]
   rw [← Finset.add_sum_erase _ _ (Finset.empty_mem_powerset I)]
   simp only [Finset.card_empty, pow_zero, one_mul, siteAvg_empty hV]
-  rw [sub_add_cancel_left, ← Finset.sum_neg_distrib]
-  simp only [neg_mul]
+  simp
 
 lemma sub_sideFull_norm_le (hV : ∀ g, 0 < P.V g) (I : Finset (RowSite (rowCount P) M))
     (F : P.BigLabels M → ℂ) :

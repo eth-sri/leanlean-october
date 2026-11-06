@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondExceptionalFamilyUniform
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceCaps
 open HeckeFamily CenteredMomentSecondExceptionalFamily
 open CenteredMomentSecondExceptionalFamilyUniform
-local notation "O" => HeckeFamily.O
 
 theorem eventually_source_caps :
-    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(η:Character)(R0:Ideal O)(H R B:ℝ),
+    ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(η:Character)(R0:Ideal HeckeFamily.O)(H R B:ℝ),
       0≤B → 0≤H → 0≤R → (η.modulus.absNorm:ℝ)≤Z^B →
       (R0.absNorm:ℝ)≤Z^B → H≤Z^B → R≤Z^B →
       H≤Z^(5*B+1) ∧
@@ -35,10 +34,9 @@ theorem eventually_source_caps :
     _=Z^(5*B+1):=by
       rw [show (Z^B)^2=Z^B*Z^B by ring]
       calc
-        _=Z^(1:ℝ)*Z^B*Z^B*(Z^B*Z^B)*Z^B:=by rw [Real.rpow_one]
+        _=Z^(1:ℝ)*Z^B*Z^B*(Z^B*Z^B)*Z^B:=by simp
         _=Z^(5*B+1):=by
           repeat rw [←Real.rpow_add hz]
-          congr 1
           ring
 
 end SevenEighths.CenteredMomentSecondExceptionalSourceCaps

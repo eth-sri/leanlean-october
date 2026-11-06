@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondFixedFamily
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -38,17 +37,17 @@ theorem primaryGenerator_primeProduct
     rw [he]
     exact dvd_add (dvd_mul_of_dvd_left hpow _) ih
 
-def actualSecondPuncture (m : Eis) (γ : OuterTriple) : Eis :=
+def actualSecondPuncture (m : ActualEisensteinCubic.O) (γ : OuterTriple) : ActualEisensteinCubic.O :=
   (m*primaryGenerator γ.q0)*primaryGenerator γ.residual
 
-def actualSecondRawLabel {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : Eis :=
+def actualSecondRawLabel {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : ActualEisensteinCubic.O :=
   ((∏ i ∈ x.firstCommon,p i)*jLabel p x.cube.support
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)*
     primeSubsetGenerator (fun i => Ideal.span {p i}) x.second.divisor * ∏ i ∈ x.second.overlap,p i
 
 omit [DecidableEq σ] in
-theorem finiteCanonicalMarkedRow_mask_span (F : Finset ι) (Ψ : Eis →* ℂ)
-    (m₁ m₂ f k : Eis) (he : Ideal.span {m₁}=Ideal.span {m₂})
+theorem finiteCanonicalMarkedRow_mask_span (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ)
+    (m₁ m₂ f k : ActualEisensteinCubic.O) (he : Ideal.span {m₁}=Ideal.span {m₂})
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ) :
     finiteCanonicalMarkedRow p hp hcop hg F Ψ m₁ f k slots lists a W X =
       finiteCanonicalMarkedRow p hp hcop hg F Ψ m₂ f k slots lists a W X :=
@@ -57,7 +56,7 @@ theorem finiteCanonicalMarkedRow_mask_span (F : Finset ι) (Ψ : Eis →* ℂ)
 theorem actual_second_puncture_span
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
-    (hE : x.second.divisor ⊆ x.second.sourceCommon) (u v : Eisˣ) (m : Eis) :
+    (hE : x.second.divisor ⊆ x.second.sourceCommon) (u v : ActualEisensteinCubic.Oˣ) (m : ActualEisensteinCubic.O) :
     Ideal.span {((m*b0Label p x.cube.support
       (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)*
       secondExpansionQuotient p x.second)} =
@@ -76,11 +75,11 @@ theorem actual_second_puncture_span
 theorem actual_second_generator_sectors
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) :
-    ∃ u v : Eisˣ,
-      actualSecondRawLabel p x = (u:Eis)*primaryGenerator (actualSecondChild p u v x).2.1 ∧
+    ∃ u v : ActualEisensteinCubic.Oˣ,
+      actualSecondRawLabel p x = (u:ActualEisensteinCubic.O)*primaryGenerator (actualSecondChild p u v x).2.1 ∧
       primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor *
         primeSubsetGenerator (fun i => Ideal.span {p i}) x.second.divisor =
-        (v:Eis)*(primaryGenerator (sourceIdeal p x.firstDivisor)*primaryGenerator (sourceIdeal p x.second.divisor)) := by
+        (v:ActualEisensteinCubic.O)*(primaryGenerator (sourceIdeal p x.firstDivisor)*primaryGenerator (sourceIdeal p x.second.divisor)) := by
   let L := (markedSecondOriginal p x).J * sourceIdeal p x.firstCommon *
     sourceIdeal p x.second.divisor * sourceIdeal p x.second.overlap
   have hs (S : Finset ι) : Ideal.span {primeSubsetGenerator (fun i => Ideal.span {p i}) S} = sourceIdeal p S := by
@@ -92,7 +91,7 @@ theorem actual_second_generator_sectors
     ring
   have hgp (S : Finset ι) : primaryGenerator (sourceIdeal p S) ≠ 0 := by
     rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+    exact Finset.prod_ne_zero_iff.mpr (by grind)
   have hL : primaryGenerator L ≠ 0 := by
     dsimp only [L]
     rw [primaryGenerator_mul,primaryGenerator_mul,primaryGenerator_mul]
@@ -114,7 +113,7 @@ theorem actual_second_canonical_child
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) :
-    ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m k : Eis)
+    ∃ u v : ActualEisensteinCubic.Oˣ, ∀ (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m k : ActualEisensteinCubic.O)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ),
     finiteCanonicalMarkedRow p hp hcop hg F Ψ
       ((m*b0Label p x.cube.support (fun i => x.cube.leftExponent i+x.cube.rightExponent i)

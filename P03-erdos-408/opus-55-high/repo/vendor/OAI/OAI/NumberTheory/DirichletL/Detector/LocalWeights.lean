@@ -11,12 +11,11 @@ noncomputable section
 namespace SevenEighths.ProbeEuler
 
 lemma even_diagonal_exponent (r : ℕ) : r + (2*r).choose 2 = 2*r*r := by
-  rw [Nat.choose_two_right, mul_assoc, Nat.mul_div_cancel_left _ (by decide : 0 < 2)]
+  rw [Nat.choose_two_right, mul_assoc, Nat.mul_div_cancel_left _ (by positivity)]
   cases r with
   | zero => simp
   | succ r =>
-    rw [show 2*(r+1)-1 = 2*r+1 by omega]
-    ring
+    grind
 
 def localCubePhase (C omega : ℂ) (e l k : ℕ) : ℂ :=
   C^l * omega^((e+3*l)*k+e*l+l.choose 2)

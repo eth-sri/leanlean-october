@@ -8,13 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainChildEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondDescent
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFixedRay
+open RayFourExpansion
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
     (r : ℝ) (hr : 0 ≤ r) (B : α → ℝ)
@@ -22,8 +20,8 @@ private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ
     r*‖∑ i ∈ S, a i*f i‖ ≤ ∑ i ∈ S, ‖a i‖*B i := by
   calc
     _ ≤ r*∑ i ∈ S, ‖a i*f i‖ := mul_le_mul_of_nonneg_left (norm_sum_le _ _) hr
-    _ = ∑ i ∈ S, ‖a i‖*(r*‖f i‖) := by simp only [Finset.mul_sum,norm_mul]; congr 1; funext i; ring
-    _ ≤ _ := Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (hB i hi) (norm_nonneg _))
+    _ = ∑ i ∈ S, ‖a i‖*(r*‖f i‖) := by simp only [Finset.mul_sum,norm_mul]; ring
+    _ ≤ _ := Finset.sum_le_sum (fun i hi => mul_le_mul_of_nonneg_left (by grind) (norm_nonneg _))
 
 theorem finite_ray_divisor_bound (L : Finset (Ideal O)) (D E : O)
     (F : Ideal O → RayCharacter → RayCharacter → ℂ)
@@ -43,20 +41,18 @@ theorem finite_ray_divisor_bound (L : Finset (Ideal O)) (D E : O)
           (fun χ => ∑ ξ : RayCharacter, pairCoeff (phaseTable D E) χ ξ*F I χ ξ) r hr
           (fun χ => ∑ ξ : RayCharacter, ‖pairCoeff (phaseTable D E) χ ξ‖*(C*(B₁ I*B₂ I)))
           (fun χ _ => weighted_norm_sum Finset.univ _ _ r hr _ (fun ξ _ => hF I hI χ ξ))
-        simpa only [one_mul,norm_one] using h
+        simp_all
       _ = (∑ χ : RayCharacter, ∑ ξ : RayCharacter, ‖pairCoeff (phaseTable D E) χ ξ‖)*
           (C*(B₁ I*B₂ I)) := by simp only [Finset.sum_mul]
       _ ≤ _ := by
         have h := mul_le_mul_of_nonneg_right (phaseTable_mass D E)
           (mul_nonneg hC (mul_nonneg (hB₁ I hI) (hB₂ I hI)))
-        convert h using 1 ; ring
+        linarith
   have h := weighted_norm_sum L (fun I => (UniqueFactorizationMonoid.moebius I : ℂ))
     (fun I => ∑ χ : RayCharacter, ∑ ξ : RayCharacter, pairCoeff (phaseTable D E) χ ξ*F I χ ξ)
     r hr (fun I => (256*C)*(B₁ I*B₂ I)) he
   convert h using 1
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro I hI
   ring
 
 end SevenEighths.CenteredMomentSecondDescent

@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTailBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
-open MeasureTheory CompletedGauss FourierBridge
+open scoped Classical
+open MeasureTheory FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def gaussianCompletedFamilyIntegral {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→ActualEisensteinCubic.O→*ℂ)
     (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) : ℂ :=
   ∫t : ℝ,(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
@@ -34,7 +33,7 @@ lemma gaussianCompletedFamilyMass_nonneg {α ι : Type*} [Fintype ι]
   positivity
 
 lemma gaussianCompletedFamily_integrable {α ι : Type*} [Fintype ι]
-    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→O→*ℂ)
+    (F : Finset α) (a : α→ℂ) (S : Finset Id) (D : α→Id) (Ψ : α→ActualEisensteinCubic.O→*ℂ)
     (W : ι→ℝ→ℂ) (q : α→ι→ℝ) (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (T Z : ℝ) (hT : 0<T) :
     Integrable (fun t : ℝ=>(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
@@ -46,7 +45,7 @@ lemma gaussianCompletedFamily_integrable {α ι : Type*} [Fintype ι]
 
 theorem gaussianCompletedFamily_crude :
     ∃C : ℝ,0<C ∧ ∀{α ι : Type*} [Fintype ι],∀F : Finset α,∀a : α→ℂ,
-      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→O→*ℂ,
+      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→ActualEisensteinCubic.O→*ℂ,
       (∀k∈F,∀n,‖Ψ k n‖≤1)→∀W : ι→ℝ→ℂ,∀q : α→ι→ℝ,
       ∀V : SchwartzMap ℝ ℂ,∀hV : HasCompactSupport (V:ℝ→ℂ),∀T Z : ℝ,0<T→
       ‖gaussianCompletedFamilyIntegral F a S D Ψ W q V hV T Z‖≤
@@ -71,9 +70,9 @@ theorem gaussianCompletedFamily_crude :
         intro k hk
         simp only [norm_mul,norm_prod,logPhase_norm,mul_one]
         exact mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left (hb S (D k) (Ψ k) (hΨ k hk) T t hT) (norm_nonneg _))
-          (Finset.prod_nonneg (fun _ _=>norm_nonneg _))
-      _ = _ := by unfold gaussianCompletedFamilyMass;rw [Finset.mul_sum];congr 1;funext k;ring
+          (mul_le_mul_of_nonneg_left (by grind) (norm_nonneg _))
+          (by positivity)
+      _ = _ := by unfold gaussianCompletedFamilyMass;rw [Finset.mul_sum];grind
   calc
     _ ≤ ∫t : ℝ,‖(∑k∈F,a k*correctedCompletedT S (D k) (Ψ k)
         (CompletedHeight.normTwistedSource gaussianFixedWindow t) T*
@@ -86,7 +85,7 @@ theorem gaussianCompletedFamily_crude :
 theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ) :
     ∃C : ℝ,0<C ∧ ∀{α ι : Type*} [Fintype ι],∀F : Finset α,∀a : α→ℂ,
-      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→O→*ℂ,
+      ∀S : Finset Id,∀D : α→Id,∀Ψ : α→ActualEisensteinCubic.O→*ℂ,
       (∀k∈F,∀n,‖Ψ k n‖≤1)→∀W : ι→ℝ→ℂ,∀q : α→ι→ℝ,
       ∀Z A : ℝ,0<Z→1≤A→
       Summable (fun j : ℕ=>if (2:ℝ)^j/Z≤A⁻¹ ∨ A≤(2:ℝ)^j/Z then
@@ -117,8 +116,8 @@ theorem gaussianCompletedFamily_remote (V : SchwartzMap ℝ ℂ)
   calc
     _ ≤ ∑'j : ℕ,(Cr*M)*gaussianRemoteMoment V hV 0 2 Z A j := hsum.tsum_le_tsum hb (hs.mul_left (Cr*M))
     _ = (Cr*M)*∑'j : ℕ,gaussianRemoteMoment V hV 0 2 Z A j := tsum_mul_left
-    _ ≤ (Cr*M)*(Cg*Z^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (mul_nonneg hCr.le hM)
-    _ = _ := by rw [Real.rpow_two];dsimp only [M];ring
+    _ ≤ (Cr*M)*(Cg*Z^(2:ℝ)/A^N) := mul_le_mul_of_nonneg_left ht (by positivity)
+    _ = _ := by rw [Real.rpow_two];ring
 
 end SevenEighths.ProbePhysical
 end

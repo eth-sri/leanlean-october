@@ -10,31 +10,21 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -54,35 +44,29 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -95,8 +79,8 @@ lemma cuspWhittakerHeightFactor_analyticAt (h : ActualEisensteinCubic.O) (s : �
 
 lemma kernelCuspFourierFamily_analyticAt_nonreal (h : ActualEisensteinCubic.O) (a b : ℝ)
     (ha : 0<a) (hab : a<b) (s : ℂ) (hs : s.re≠1) (hi : s.im≠0) :
-    AnalyticAt ℂ (kernelCuspFourierFamily h a b ha hab) s := by
-  exact (ContinuousLinearMap.analyticAt (𝕜 := ℂ) (E := KernelQuotientL2) (F := ℂ)
+    AnalyticAt ℂ (kernelCuspFourierFamily h a b ha hab) s :=
+  (ContinuousLinearMap.analyticAt (𝕜 := ℂ) (E := KernelQuotientL2) (F := ℂ)
     (kernelCuspFourier h) _).comp_of_eq
       (kernelLocalCorrectedSeed_analyticAt_nonreal kernelCuspAverageCompact
         kernelCuspAverageCompact_isCompact a b ha hab s hs hi) rfl
@@ -120,12 +104,12 @@ lemma kernelCuspFourierFamily_eq_upper (h : ActualEisensteinCubic.O) (hh : h≠0
   have hleft : AnalyticOnNhd ℂ (kernelCuspFourierFamily h 2 3 (by norm_num) (by norm_num)) domain := by
     intro s hs
     exact kernelCuspFourierFamily_analyticAt_nonreal h 2 3 (by norm_num) (by norm_num)
-      s (by linarith [hs.1]) hs.2.ne'
+      s (by grind) hs.2.ne'
   have hright : AnalyticOnNhd ℂ
       (fun s => ((9*Real.sqrt 3/2:ℝ):ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h) domain := by
     intro s hs
     exact (analyticAt_const.mul (scatteringCoefficient_analyticOnNhd h s hs.1)).mul
-      (cuspWhittakerHeightFactor_analyticAt h s (by linarith [hs.1]))
+      (cuspWhittakerHeightFactor_analyticAt h s (by grind))
   have hstart : (5+Complex.I:ℂ)∈domain := by norm_num [domain]
   have hopen : IsOpen {s : ℂ | 4<s.re ∧ 0<s.im} :=
     (isOpen_lt continuous_const Complex.continuous_re).inter
@@ -135,18 +119,18 @@ lemma kernelCuspFourierFamily_eq_upper (h : ActualEisensteinCubic.O) (hh : h≠0
         (fun s => ((9*Real.sqrt 3/2:ℝ):ℂ)*scatteringCoefficient s h*cuspWhittakerHeightFactor s h) := by
     filter_upwards [hopen.mem_nhds (by norm_num)] with s hs
     exact kernelCuspFourierFamily_nonzero_of_initial_overlap h hh 2 3
-      (by norm_num) (by norm_num) s (by linarith [hs.1])
+      (by norm_num) (by norm_num) s (by linarith)
       (kernelEisensteinL2Correction_initial_overlap 2 3 (by norm_num) (by norm_num) s hs.1 hs.2)
   exact hleft.eqOn_of_preconnected_of_eventuallyEq hright hconvex.isPreconnected hstart hevent
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+open scoped Classical Topology ENNReal
 
 theorem kernelCompact_projection_measure_bound (K : Set HyperbolicSpace) (hK : IsCompact K) :
     ∃N : ℕ,Measure.map (integralOrbitProjection globalKubotaKernel) (hyperbolicVolume.restrict K)≤
@@ -171,7 +155,7 @@ theorem kernelCompact_projection_measure_bound (K : Set HyperbolicSpace) (hK : I
       apply measure_mono
       rintro w ⟨hw,hK⟩
       obtain ⟨v,hv,hwv⟩ := Set.mem_iUnion₂.mp (ht hK)
-      exact Set.mem_iUnion₂.mpr ⟨v,hv,hw,hwv⟩
+      exact Set.mem_iUnion₂.mpr (by grind)
     _ ≤ ∑w∈t,hyperbolicVolume ((integralOrbitProjection globalKubotaKernel) ⁻¹' B ∩ (e w).source) :=
       measure_biUnion_finset_le _ _
     _ ≤ ∑_w∈t,integralQuotientVolume globalKubotaKernel B := by
@@ -181,7 +165,7 @@ theorem kernelCompact_projection_measure_bound (K : Set HyperbolicSpace) (hK : I
       rw [←Measure.restrict_apply ((measurable_integralOrbitProjection _) hB),
         ←Measure.map_apply (measurable_integralOrbitProjection _) hB,hm.map_eq]
       exact Measure.restrict_le_self B
-    _ = _ := by simp [nsmul_eq_mul]
+    _ = _ := by simp
 
 section DominatedComplexL2
 variable {α : Type*} [MeasurableSpace α] {«μ» ν : Measure α} {c : ℝ≥0∞}
@@ -209,7 +193,7 @@ lemma dominatedComplexL2_norm_le (hc : c≠⊤) (h : ν≤c•«μ») (f : Lp �
   have hn := Lp.norm_LpToLpOfMeasureLeSMul_le (E := ℂ) (p := 2) hc h
   apply hb.trans
   apply mul_le_mul_of_nonneg_right _ (norm_nonneg _)
-  simpa only [ENNReal.toReal_div,ENNReal.toReal_one,ENNReal.toReal_ofNat] using hn
+  simp_all
 
 end DominatedComplexL2
 
@@ -237,7 +221,7 @@ theorem kernelCompactPullbackCLM_ae (K : Set HyperbolicSpace) (hK : IsCompact K)
       (Measure.map (integralOrbitProjection globalKubotaKernel) (hyperbolicVolume.restrict K)) :=
     ⟨measurable_integralOrbitProjection _,rfl⟩
   have he := dominatedComplexL2_ae
-    (by simp : (kernelCompactMultiplicity K hK:ℝ≥0∞)≠⊤) (kernelCompactMultiplicity_spec K hK) F
+    (by simp) (kernelCompactMultiplicity_spec K hK) F
   exact (Lp.coeFn_compMeasurePreserving _ hm).trans (hm.quasiMeasurePreserving.ae_eq_comp he)
 
 lemma whittaker_bound_integrable_finite («μ» : Measure ℝ) [IsFiniteMeasure «μ»]
@@ -249,7 +233,7 @@ lemma whittaker_bound_integrable_finite («μ» : Measure ℝ) [IsFiniteMeasure 
     simp only [hyperbolicKernel,Complex.norm_cpow_eq_rpow_re_of_pos
       (by positivity : 0<1+‖z‖^2),Complex.neg_re,Complex.ofReal_re]
   have hv : Integrable (fun _ : ℝ => (1:ℝ)) «μ» := integrable_const _
-  simpa only [one_mul] using hv.mul_prod hk
+  simpa using hv.mul_prod hk
 
 lemma scaledWhittakerIntegrand_integrable («μ» : Measure ℝ) [IsFiniteMeasure «μ»]
     (ρ : BoundedContinuousFunction ℝ ℂ) (c : ℝ) (freq s : ℂ) (hs : 1<s.re) :
@@ -306,10 +290,7 @@ lemma whittakerIntegrand_scale (c v : ℝ) (hc : 0<c) (hv : 0<v) (hcv : 5≤c*v)
   rw [he]
   have hp : (c:ℂ)^(s+1)*(c:ℂ)^(-s-1)=1 := by
     rw [←Complex.cpow_add _ _ hcn,show s+1+(-s-1)=0 by ring,Complex.cpow_zero]
-  calc
-    _ = ((c:ℂ)^(s+1)*(c:ℂ)^(-s-1))*
-      ((v:ℂ)^(-s-1)*(hyperbolicKernel s z*ShortDraftTrace.breveE (-(freq*v)*z))) := by ring
-    _ = _ := by rw [hp,one_mul]
+  grind
 
 lemma scaledWhittakerProduct_eq_average (ρ : BoundedContinuousFunction ℝ ℂ)
     (a b : ℝ) (ha : 0<a) (freq s : ℂ) (hs : 1<s.re) :
@@ -342,7 +323,7 @@ theorem cuspWeightedWhittakerInterval_differentiableAt (ρ : BoundedContinuousFu
     (a b : ℝ) (ha : 0<a) (freq s : ℂ) (hs : 1<s.re) :
     DifferentiableAt ℂ
       (fun w => ∫v in Set.Icc a b,ρ v*(v:ℂ)^(-w-1)*sourceFourierKernel w (freq*v)) s := by
-  have hc : ((5/a:ℝ):ℂ)≠0 := by exact_mod_cast (show (5/a:ℝ)≠0 by positivity)
+  have hc : ((5/a:ℝ):ℂ)≠0 := by exact_mod_cast (by positivity)
   have hd := ((differentiableAt_id.add_const (1:ℂ)).const_cpow (Or.inl hc)).mul
     (scaledWhittakerProduct_differentiableAt (volume.restrict (Set.Icc a b)) ρ (5/a) (freq/(5/a:ℝ)) s hs)
   apply hd.congr_of_eventuallyEq
@@ -352,8 +333,7 @@ theorem cuspWeightedWhittakerInterval_differentiableAt (ρ : BoundedContinuousFu
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ComplexConjugate MatrixGroups ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology ENNReal
 
 local notation "O" => ActualEisensteinCubic.O
 

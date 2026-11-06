@@ -8,7 +8,7 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Complex Filter Topology
+open Complex Filter
 
 noncomputable def logRiesz (f : ℂ → ℂ) (s : ℂ) : ℂ := (-deriv f s / f s)/(s*(s+1))
 
@@ -43,7 +43,7 @@ lemma near_line_denominator {z w : ℂ} {r : ℝ} (hz : 1 ≤  z.re) (hr : r ≤
   have ha' : |z.im|+2 ≤ 4*‖w‖ := by linarith
   have hb' : |z.im|+2 ≤ 4*‖w+1‖ := by linarith
   refine ⟨hw0,hw1,?_⟩
-  have hp := mul_le_mul ha' hb' (by positivity : 0 ≤ |z.im|+2) (by positivity : 0 ≤ 4*‖w‖)
+  have hp := mul_le_mul ha' hb' (by positivity) (by positivity)
   nlinarith
 
 lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
@@ -63,18 +63,18 @@ lemma logRiesz_local {f : ℂ → ℂ} {z : ℂ} {r m M : ℝ}
     have ht := norm_add_le (f z-f w) (f w)
     rw [sub_add_cancel] at ht
     linarith
-  have hne (w : ℂ) (hw : w∈Metric.closedBall z r) : f w≠0 := by
-    exact norm_pos_iff.mp ((by positivity : 0 < m/2).trans_le (hlo w hw))
+  have hne (w : ℂ) (hw : w∈Metric.closedBall z r) : f w≠0 :=
+    norm_pos_iff.mp (by grind)
   refine ⟨hne,?_,?_⟩
   · apply DifferentiableOn.diffContOnCl
     rw [closure_ball _ hr.ne']
     intro w hw
     obtain ⟨hw0,hw1,_⟩ := near_line_denominator hz hr1 hw
-    exact (((hf w hw).deriv.neg.div (hf w hw) (hne w hw)).div
+    exact (((hf w hw).deriv.neg.div (by grind) (by grind)).div
       (analyticAt_id.mul (analyticAt_id.add analyticAt_const)) (mul_ne_zero hw0 hw1)).differentiableWithinAt
   · intro w hw
     obtain ⟨hw0,hw1,hden⟩ := near_line_denominator hz hr1 hw
-    have hnorm : 0 < ‖w‖*‖w+1‖ := mul_pos (norm_pos_iff.mpr hw0) (norm_pos_iff.mpr hw1)
+    have hnorm : 0 < ‖w‖*‖w+1‖ := by positivity
     have hb₀ : ‖deriv f w‖/‖f w‖ ≤ 2*M/m := by
       apply (div_le_div₀ hM (hb w hw) (by positivity : 0 < m/2) (hlo w hw)).trans_eq
       ring
@@ -113,8 +113,8 @@ lemma logRiesz_power_bound {f : ℂ → ℂ} {z : ℂ} {P W c K d : ℝ} (n : �
       _ = (K*d)*W/P := by field_simp
       _ ≤ (c/2)*W/P := div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hKd hW.le) hP0.le
       _ = _ := by ring
-  have hh := logRiesz_iteratedDeriv_bound n (by positivity : 0 < d/P^2) hr1
-    (by positivity : 0 < c*W/P) (by positivity : 0 ≤ K*W*P) hz hf hb hl hMr
+  have hh := logRiesz_iteratedDeriv_bound n (by positivity) hr1
+    (by positivity) (by positivity) hz hf hb hl hMr
   apply hh.trans_eq
   rw [div_pow,pow_add,pow_mul]
   field_simp
@@ -127,15 +127,12 @@ lemma near_strip_geometry {σ t d P η : ℝ} (hσ : 1 ≤ σ) (hσ2 : σ ≤ 2)
   have hdist : ‖w-((σ:ℂ)+I*t)‖ ≤ d/P^2 := by
     simpa only [Metric.mem_closedBall,dist_eq_norm] using hw
   have hre := Complex.re_le_norm (((σ:ℂ)+I*t)-w)
-  simp only [Complex.sub_re,Complex.add_re,Complex.ofReal_re,Complex.mul_re,
-    Complex.I_re,Complex.I_im,Complex.ofReal_im,mul_zero,zero_mul,sub_self,add_zero,norm_sub_rev] at hre
+  simp only [Complex.sub_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, Complex.ofReal_im, mul_zero, zero_mul, sub_self, add_zero, norm_sub_rev] at hre
   have hnorm := norm_add_le (w-((σ:ℂ)+I*t)) ((σ:ℂ)+I*t)
   rw [sub_add_cancel] at hnorm
   have hnz := Complex.norm_le_abs_re_add_abs_im ((σ:ℂ)+I*t)
-  simp only [Complex.add_re,Complex.add_im,Complex.ofReal_re,Complex.ofReal_im,
-    Complex.mul_re,Complex.mul_im,Complex.I_re,Complex.I_im,zero_mul,mul_zero,
-    one_mul,sub_self,zero_add,add_zero,abs_of_nonneg (by linarith : 0 ≤ σ)] at hnz
-  constructor <;> linarith [abs_nonneg t]
+  simp only [Complex.add_re, Complex.add_im, Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re, Complex.mul_im, Complex.I_re, Complex.I_im, zero_mul, one_mul, sub_self, zero_add, add_zero, abs_of_nonneg (by linarith : 0 ≤ σ)] at hnz
+  grind
 
 lemma nonprincipal_logRiesz_bound (n : ℕ) :
     ∃ D : ℝ, 0 < D ∧ ∀ (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q),
@@ -146,7 +143,7 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
   have hε : 0 < ε := by dsimp [ε]; positivity
   have hε1 : ε ≤ 1 := by
     dsimp [ε]
-    apply (div_le_one (by positivity : 0 < 4*((n+1:ℕ):ℝ))).mpr
+    apply (div_le_one (by positivity)).mpr
     have hn : (1:ℝ) ≤ (n+1:ℕ) := by exact_mod_cast (Nat.succ_pos n)
     linarith
   obtain ⟨c,hc,hl⟩ := nonprincipal_strip_lower hε hε1
@@ -155,8 +152,8 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
   have hK : 0 < K := by dsimp [K]; positivity
   let d := min (min (1/4) (ε/4)) (c/(2*K))
   have hd : 0 < d := by dsimp [d]; positivity
-  have hd1 : d ≤ 1/4 := (min_le_left _ _).trans (min_le_left _ _)
-  have hdε : d ≤ ε/4 := (min_le_left _ _).trans (min_le_right _ _)
+  have hd1 : d ≤ 1/4 := by grind
+  have hdε : d ≤ ε/4 := by grind
   have hKd : K*d ≤ c/2 := by
     have h := min_le_right (min (1/4) (ε/4)) (c/(2*K))
     change d ≤ c/(2*K) at h
@@ -169,7 +166,7 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
   intro q _ χ hχp hχ σ t hσ hσ2
   let X : ℝ := ((q:ℝ)+2)*(|t|+2)
   let P : ℝ := X^ε
-  have hX : 1 ≤ X := by dsimp [X]; nlinarith [Nat.cast_nonneg (α:=ℝ) q,abs_nonneg t]
+  have hX : 1 ≤ X := by dsimp [X]; nlinarith [abs_nonneg t]
   have hX0 : 0 < X := by linarith
   have hP : 1 ≤ P := Real.one_le_rpow hX hε.le
   have hlow : c*1/P ≤ ‖χ.LFunction (σ+I*t)‖ := by
@@ -183,11 +180,11 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
     rw [show 2*(ε/2)=ε by ring] at h
     have hn : ((q:ℝ)+2)*(‖w‖+2) ≤ 3*X := by
       dsimp [X]
-      nlinarith [mul_nonneg (show (0:ℝ) ≤ q+2 by positivity) (sub_nonneg.mpr hnorm)]
+      nlinarith [mul_nonneg (by positivity) (sub_nonneg.mpr hnorm)]
     calc
       _ ≤ K₀*((q+2)*(‖w‖+2))^ε := h
       _ ≤ K₀*(3*X)^ε := mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hn hε.le) hK₀.le
-      _ = K*1*P := by rw [Real.mul_rpow (by norm_num) hX0.le]; dsimp [K,P]; ring
+      _ = K*1*P := by rw [Real.mul_rpow (by norm_num) hX0.le]; linarith
   have hh := logRiesz_power_bound n hP zero_lt_one hc hK hd hd1 hKd (by simpa using hσ)
     (fun w _ => (DirichletCharacter.differentiable_LFunction hχ).analyticAt w) hbound hlow
   have he : ε*(2*n+2:ℕ)=1/2 := by
@@ -204,12 +201,12 @@ lemma nonprincipal_logRiesz_bound (n : ℕ) :
   rw [hpow] at hh
   apply hh.trans_eq
   dsimp [X]
-  rw [Real.mul_rpow (by positivity) (by positivity),Real.rpow_neg (by positivity : 0 ≤ |t|+2)]
+  rw [Real.mul_rpow (by positivity) (by positivity),Real.rpow_neg (by positivity)]
   have ht : (|t|+2)^(1/2:ℝ)*(|t|+2)^(3/2:ℝ)=(|t|+2)^2 := by
     rw [←Real.rpow_add (by positivity),show (1/2:ℝ)+3/2=2 by norm_num]
     norm_num
   field_simp
-  rw [←ht]
+  omega
 
 end LargePrimeGaps
 

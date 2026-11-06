@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputFirstSectorTailNatu
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputFirstRemainder
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
 open CenteredMomentExceptionalAmplitudePair CenteredMomentSourceInputTailUniform
 open CenteredMomentSourceInputZeroUniform CenteredMomentSourceInputFirstSectorTail
-open CenteredMomentFirstEnergy EisensteinSchwartzPoisson
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -28,8 +27,8 @@ theorem original_first_remainder (hi:ι→ℝ)(wlo whi B ε ξ saving:ℝ)
       ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),
       s.W₁=W₁→s.W₂=W₂→Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→(∀i,s.hi i≤hi i)→
-      ∀(m A:O),ConcretePrimeRowBridge.goodLambda∣m→(2:O)∣m→
-      ∀(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0<K→
+      ∀(m A:HeckeFamily.O),ConcretePrimeRowBridge.goodLambda∣m→(2:HeckeFamily.O)∣m→
+      ∀(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0<K→
       volume s.toData≤Z^B→K⁻¹≤Z^B→
       ‖finiteHeckeEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
           (coefficient s R seed) Φ K-
@@ -49,7 +48,7 @@ theorem original_first_remainder (hi:ι→ℝ)(wlo whi B ε ξ saving:ℝ)
   rw [CenteredMomentFirstSectorLocalization.finiteHeckeEnergy_sector_localized
     s.η m A s.t hml hm2 (finiteColumns (Fintype.piFinset s.pools))
     (coefficient s R seed) Φ K (volume s.toData) Z ξ hK]
-  rw [show ∀a b c:ℂ,a+b+c-b=a+c by intros;ring]
+  rw [show ∀a b c:ℂ,a+b+c-b=a+c by grind]
   exact ((div_le_div_of_nonneg_right (norm_add_le _ _) (volume_pos s).le).trans_eq
     (add_div _ _ _)).trans (add_le_add hd ht)
 

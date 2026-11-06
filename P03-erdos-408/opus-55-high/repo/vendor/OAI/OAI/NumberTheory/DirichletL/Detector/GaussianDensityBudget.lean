@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 
@@ -44,8 +44,7 @@ lemma gaussianJointMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
     apply hh.trans
     apply (le_div_iff₀ hden).mpr
     have hp : (1+R)^N≤(2:ℝ)^N := pow_le_pow_left₀ (by linarith) (by linarith) _
-    have hb := mul_le_mul_of_nonneg_left hp hB.le
-    nlinarith [mul_nonneg hC.le (pow_nonneg (by norm_num : (0:ℝ)≤2) N)]
+    nlinarith
   · have hh := hdecay R hR
     rw [Real.rpow_neg hR.le,Real.rpow_natCast] at hh
     apply hh.trans

@@ -37,17 +37,14 @@ private theorem card_filter_dvd_Ico_le {a b d : ℕ} (hd : 0 < d) (hab : a ≤ b
     refine max_le ?_ ?_
     · have h₁ := Int.ceil_lt_add_one ((b : ℚ) / d)
       have h₂ := Int.le_ceil ((a : ℚ) / d)
-      simp only [sub_zero]
-      rw [sub_div]
-      linarith
+      grind
     · have : (0 : ℚ) ≤ ((b : ℚ) - a) / d :=
-        div_nonneg (sub_nonneg.2 (by exact_mod_cast hab)) hd'.le
+        div_nonneg (sub_nonneg.2 (by simp_all)) hd'.le
       linarith
   have key' : ((#{n ∈ Ico a b | d ∣ n} : ℕ) : ℚ) ≤ ((b : ℚ) - a) / d + 1 := by
     exact_mod_cast key
   have := (Rat.cast_le (K := ℝ)).2 key'
-  push_cast at this
-  exact this
+  simp_all
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
@@ -58,13 +55,9 @@ theorem card_physicalLists_le (P : ι → Finset ℕ) (M n : ℕ) :
       ≤ #(Fintype.piFinset fun g => Fintype.piFinset fun _ : Fin M => (P g).filter (· ∣ n)) := by
         refine card_le_card fun p hp => ?_
         obtain ⟨hp, hdvd⟩ := mem_filter.1 hp
-        rw [Fintype.mem_piFinset] at hp ⊢
-        intro g
-        have hg := hp g
-        rw [Fintype.mem_piFinset] at hg ⊢
-        exact fun i => mem_filter.2 ⟨hg i, (hdvd g).2 i⟩
+        simp_all
     _ = ∏ g, primeCount (P g) n ^ M := by
-        simp [Fintype.card_piFinset, primeCount]
+        simp [primeCount]
 
 /-- The product `Π(p) = ∏_g ∏_i p_{g,i}` of the labels of a list. -/
 def listProduct {M : ℕ} (p : ι → Fin M → ℕ) : ℕ :=
@@ -75,15 +68,14 @@ theorem listProduct_dvd {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h → Di
     (hprime : ∀ g, ∀ p ∈ P g, p.Prime) {M n : ℕ} {p : ι → Fin M → ℕ}
     (hp : p ∈ physicalLists P M n) : listProduct p ∣ n := by
   obtain ⟨hmem, hlist⟩ := mem_filter.1 hp
-  have hmem' : ∀ g i, p g i ∈ P g := fun g i =>
+  have hmem' := fun g i =>
     Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hmem g) i
   set e : ι × Fin M → ℕ := fun gi => p gi.1 gi.2
   have hinj : Set.InjOn e (univ : Finset (ι × Fin M)) := by
     rintro ⟨g, i⟩ - ⟨h, j⟩ - hgh
     simp only [e] at hgh
     by_cases hg : g = h
-    · subst hg
-      rw [(hlist g).1 hgh]
+    · grind
     · exact absurd (hmem' h j) (Finset.disjoint_left.1 (hdisj g h hg) (hgh ▸ hmem' g i))
   have heq : listProduct p = ∏ y ∈ univ.image e, y := by
     rw [prod_image hinj, listProduct, ← Fintype.prod_prod_type']
@@ -91,8 +83,7 @@ theorem listProduct_dvd {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h → Di
   refine Finset.prod_primes_dvd n (fun y hy => ?_) fun y hy => ?_
   · obtain ⟨⟨g, i⟩, -, rfl⟩ := mem_image.1 hy
     exact (hprime g _ (hmem' g i)).prime
-  · obtain ⟨⟨g, i⟩, -, rfl⟩ := mem_image.1 hy
-    exact (hlist g).2 i
+  grind
 
 /-- **The physical list sum.** Over `[a, b)` with `b - a ≤ Y + 1`,
 `∑_n #lists(n) ∏_g V_g^{-M} ≤ Y + 2 ∏_g (|P_g| V_g⁻¹)^M`: each list `p` is counted at the
@@ -163,14 +154,14 @@ theorem physicalNormSq_Ico_le {P : ι → Finset ℕ} (hdisj : ∀ g h, g ≠ h 
     physicalNormSq P M (Ico a b) f ≤
       B ^ 2 * (Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M) := by
   have hW : 0 ≤ ∏ g, (harmonicMass (P g))⁻¹ ^ M :=
-    prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV g).le) _
+    prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (by grind)) _
   calc physicalNormSq P M (Ico a b) f
       ≤ ∑ n ∈ Ico a b, B ^ 2 * ((#(physicalLists P M n) : ℝ) *
           ∏ g, (harmonicMass (P g))⁻¹ ^ M) := by
         refine sum_le_sum fun n hn => ?_
         rw [← mul_assoc]
         refine mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right ?_ (Nat.cast_nonneg _)) hW
-        exact pow_le_pow_left₀ (norm_nonneg _) (hf n hn) 2
+        exact pow_le_pow_left₀ (norm_nonneg _) (by grind) 2
     _ ≤ B ^ 2 * (Y + 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M) := by
         rw [← mul_sum]
         exact mul_le_mul_of_nonneg_left (sum_card_physicalLists_le hdisj hprime hV M hab hba)
@@ -181,7 +172,7 @@ private theorem card_le_of_subset_primesIcc {S : Finset ℕ} {lo hi : ℝ} (hhi 
     (hS : S ⊆ primesIcc lo hi) : (#S : ℝ) ≤ hi := by
   have hsub : S ⊆ Icc 1 ⌊hi⌋₊ := fun p hp => by
     obtain ⟨hp₁, hp₂⟩ := mem_filter.1 (hS hp)
-    exact mem_Icc.2 ⟨hp₂.one_lt.le, (mem_Icc.1 hp₁).2⟩
+    exact mem_Icc.2 ⟨hp₂.one_lt.le, by grind⟩
   have := card_le_card hsub
   rw [Nat.card_Icc, Nat.add_sub_cancel] at this
   exact (Nat.cast_le.2 this).trans (Nat.floor_le hhi)
@@ -197,7 +188,7 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
   set C := max C₀ 0
   set K := M * (2 * C) * (1 + Real.log β)
   have hβ : 1 ≤ β := le_max_left _ _
-  have hlogβ : 0 ≤ Real.log β := Real.log_nonneg hβ
+  have hlogβ := Real.log_nonneg hβ
   have hK : 0 ≤ K := by positivity
   have hlog := (isLittleO_log_rpow_atTop (show (0 : ℝ) < 0.04 by norm_num)).bound one_pos
   have hL := Real.tendsto_log_atTop
@@ -251,7 +242,7 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
       _ ≤ E ^ ((M : ℝ) * (2 * C * T)) := by
           refine Real.rpow_le_rpow_of_exponent_le hE1 ?_
           push_cast
-          exact mul_le_mul_of_nonneg_left hs (Nat.cast_nonneg _)
+          nlinarith
   -- `log 2 + log E · M · 2CT ≤ L / 2`
   have hlogE : Real.log E = L ^ (0.46 : ℝ) + Real.log β := by
     rw [Real.log_mul (Real.exp_pos _).ne' (by linarith), Real.log_exp]
@@ -277,7 +268,7 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
             refine mul_le_mul h₁ (mul_le_mul_of_nonneg_left hT hMC) (by positivity)
               (by positivity)
         _ = K * (L ^ (0.46 : ℝ) * L ^ (0.04 : ℝ)) := by ring
-        _ = K * L ^ (0.5 : ℝ) := by rw [h50]
+        _ = K * L ^ (0.5 : ℝ) := by simp_all
     have h₃ : 2 * (K + 1) * L ^ (0.5 : ℝ) ≤ L := by
       calc 2 * (K + 1) * L ^ (0.5 : ℝ) ≤ L ^ (0.5 : ℝ) * L ^ (0.5 : ℝ) :=
             mul_le_mul_of_nonneg_right hL5 (by linarith)
@@ -286,14 +277,13 @@ theorem eventually_two_mul_prod_card_le_sqrt (c₀ C₀ vlo vhi : ℝ) (hvlo : 0
   calc 2 * ∏ g, ((#(P g) : ℝ) * (harmonicMass (P g))⁻¹) ^ M
       ≤ Real.exp (Real.log 2) * Real.exp (Real.log E * ((M : ℝ) * (2 * C * T))) := by
         rw [Real.exp_log (by norm_num), ← Real.rpow_def_of_pos (by linarith)]
-        exact mul_le_mul_of_nonneg_left hprod (by norm_num)
+        linarith
     _ ≤ Real.exp (L / 2) := by
         rw [← Real.exp_add]
-        exact Real.exp_le_exp.2 hkey
+        simp_all
     _ = √x := by
         rw [Real.sqrt_eq_rpow, Real.rpow_def_of_pos hx0]
-        congr 1
-        ring
+        grind
 
 end GraphBounds
 

@@ -10,13 +10,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
-open SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseInitialEnergyCallerSelector
+open scoped Classical
 namespace SevenEighths.InverseInitialEnergyCallerPool
-local notation "Eis" => ActualEisensteinCubic.O
 
 end SevenEighths.InverseInitialEnergyCallerPool
 

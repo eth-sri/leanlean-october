@@ -8,35 +8,34 @@ public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRowNorm
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
 open CanonicalRowCompletion CanonicalQuadraticSieve
-open CenteredMomentCorrelation CenteredMomentFourier CenteredMomentSupportedCorrelation
+open CenteredMomentFourier CenteredMomentSupportedCorrelation
 open CenteredMomentCommonSupport
-local notation "O" => ActualEisensteinCubic.O
 
-def pairResidue (a b : O) (ha : Supported (Ideal.span {a}))
+def pairResidue (a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (x : Residue (a * b)) : ℂ :=
   supportedModulusCharacter a ha (frequencyReduction a (a * b) (dvd_mul_right a b) x) *
     star (supportedModulusCharacter b hb
       (frequencyReduction b (a * b) (dvd_mul_left b a) x))
 
-@[simp] theorem pairResidue_mk (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) (z : O) :
+@[simp] theorem pairResidue_mk (a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a}))
+    (hb : Supported (Ideal.span {b})) (z : ActualEisensteinCubic.O) :
     pairResidue a b ha hb (Ideal.Quotient.mk _ z) =
       idealRowHom z (Ideal.span {a}) * star (idealRowHom z (Ideal.span {b})) := by
   simp only [pairResidue, frequencyReduction_mk, supportedModulusCharacter_mk]
 
-def pairFourier (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) (h : O) : ℂ :=
+def pairFourier (a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a}))
+    (hb : Supported (Ideal.span {b})) (h : ActualEisensteinCubic.O) : ℂ :=
   ∑' x : Residue (a * b), pairResidue a b ha hb x *
     quotientTrace (a * b) (mul_ne_zero (supported_element_ne_zero a ha)
       (supported_element_ne_zero b hb)) (Ideal.Quotient.mk _ h * x)
 
-theorem row_pair_summable (a b : O) (ha : Supported (Ideal.span {a}))
+theorem row_pair_summable (a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a}))
     (hb : Supported (Ideal.span {b})) (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
-    Summable (fun z : O =>
+    Summable (fun z : ActualEisensteinCubic.O =>
       (idealRowHom z (Ideal.span {a}) * star (idealRowHom z (Ideal.span {b}))) *
         W (‖eisEmbedding z‖ ^ 2 / K)) := by
   let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
@@ -44,18 +43,18 @@ theorem row_pair_summable (a b : O) (ha : Supported (Ideal.span {a}))
   let : Fintype (Residue (a * b)) := Fintype.ofFinite _
   have h := actual_eisenstein_periodic_summable (scaledRadialTest W K hK)
     (Ideal.Quotient.mk (Ideal.span {a * b})) (pairResidue a b ha hb)
-  simpa only [pairResidue_mk, scaledRadialTest_apply] using h
+  simp_all
 
-def rowPolynomial {α : Type*} (S : Finset α) (a : α → O) (c : α → ℂ) (z : O) : ℂ :=
+def rowPolynomial {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O) (c : α → ℂ) (z : ActualEisensteinCubic.O) : ℂ :=
   ∑ i ∈ S, c i * idealRowHom z (Ideal.span {a i})
 
-def rowEnergy {α : Type*} (S : Finset α) (a : α → O) (c : α → ℂ)
+def rowEnergy {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O) (c : α → ℂ)
     (W : 𝓢(ℝ, ℂ)) (K : ℝ) : ℂ :=
-  ∑' z : O, ((‖rowPolynomial S a c z‖ ^ 2 : ℝ) : ℂ) *
+  ∑' z : ActualEisensteinCubic.O, ((‖rowPolynomial S a c z‖ ^ 2 : ℝ) : ℂ) *
     W (‖eisEmbedding z‖ ^ 2 / K)
 
-theorem rowPolynomial_norm_sq {α : Type*} (S : Finset α) (a : α → O)
-    (c : α → ℂ) (z : O) :
+theorem rowPolynomial_norm_sq {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
+    (c : α → ℂ) (z : ActualEisensteinCubic.O) :
     ((‖rowPolynomial S a c z‖ ^ 2 : ℝ) : ℂ) =
       ∑ i ∈ S, ∑ j ∈ S, (c i * star (c j)) *
         (idealRowHom z (Ideal.span {a i}) * star (idealRowHom z (Ideal.span {a j}))) := by
@@ -63,18 +62,14 @@ theorem rowPolynomial_norm_sq {α : Type*} (S : Finset α) (a : α → O)
   simp only [rowPolynomial, map_sum, map_mul, Finset.sum_mul, Finset.mul_sum,
     Complex.star_def]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
-  ring
+  grind
 
-theorem rowEnergy_expand {α : Type*} (S : Finset α) (a : α → O) (c : α → ℂ)
+theorem rowEnergy_expand {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O) (c : α → ℂ)
     (ha : ∀ i, Supported (Ideal.span {a i}))
     (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
     rowEnergy S a c W K =
       ∑ i ∈ S, ∑ j ∈ S, (c i * star (c j)) *
-        ∑' z : O, (idealRowHom z (Ideal.span {a i}) *
+        ∑' z : ActualEisensteinCubic.O, (idealRowHom z (Ideal.span {a i}) *
           star (idealRowHom z (Ideal.span {a j}))) * W (‖eisEmbedding z‖ ^ 2 / K) := by
   have hs (i j : α) := (row_pair_summable (a i) (a j) (ha i) (ha j) W K hK).mul_left
     (c i * star (c j))

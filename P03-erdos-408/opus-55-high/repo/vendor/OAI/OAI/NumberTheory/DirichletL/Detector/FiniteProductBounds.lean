@@ -9,11 +9,11 @@ public import OAI.NumberTheory.DirichletL.PrincipalSlotEstimate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open Complex Set MeasureTheory
+open scoped Classical
+open Complex Set
 namespace SevenEighths.ProbeFiniteProductBounds
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
+open CompletedGauss ProbePhysical ProbeEuler ProbeLocal
+open HeckeFamily PrincipalMellinResidues
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def localMultiplier (η : Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
@@ -51,7 +51,7 @@ theorem correction_inverse_bound (η : Character) (S : Finset Id) (hS : Correcti
     ‖(idealClosedCorrection η P x w z)⁻¹‖ ≤ 2 := by
   have hh := correction_lower_bound η S hS P hP x w z hx hw hz
   rw [norm_inv, inv_eq_one_div]
-  exact (div_le_iff₀ (by linarith : 0 < ‖idealClosedCorrection η P x w z‖)).mpr (by linarith)
+  exact (div_le_iff₀ (by positivity)).mpr (by linarith)
 
 lemma marked_differentiableAt_w (η : Character) (P : PrimeIdeal) (x w z : ℂ)
     (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
@@ -103,7 +103,7 @@ theorem local_analytic_w (η : Character) (S : Finset Id) (hS : CorrectionTail S
   apply DifferentiableAt.differentiableWithinAt
   unfold localMultiplier compensatedReplacement
   dsimp only
-  fun_prop (disch := first | assumption | exact hd.2.2 | exact Or.inl hn)
+  fun_prop (disch := simp_all)
 
 theorem local_analytic_z (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (P : PrimeIdeal) (hP : P.val ∉ S) (x w : ℂ)
@@ -128,7 +128,7 @@ theorem local_analytic_z (η : Character) (S : Finset Id) (hS : CorrectionTail S
   apply DifferentiableAt.differentiableWithinAt
   unfold localMultiplier compensatedReplacement
   dsimp only
-  fun_prop (disch := first | assumption | exact hd.2.2 | exact Or.inl hn)
+  fun_prop (disch := simp_all)
 
 lemma marked_bound (Q : ℝ) (A η x w z : ℂ) (hQ : 4 ≤ Q)
     (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hx : 7/8 ≤ x.re)
@@ -142,12 +142,12 @@ lemma marked_bound (Q : ℝ) (A η x w z : ℂ) (hQ : 4 ≤ Q)
     rw [coordV_norm Q hQ0]; exact rpow_le_half Q _ hQ (by linarith)
   have hW : ‖coordW Q 1 w‖ ≤ 1 := by
     apply (coordW_norm_le Q hQ0 1 w (by simp)).trans
-    exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith : -w.re ≤ 0)).trans_eq (Real.rpow_zero Q)
+    exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)).trans_eq (Real.rpow_zero Q)
   have hD : ‖coordD Q η 1 x‖ ≤ 1/2 :=
     (coordD_norm_le Q hQ0 η 1 x hη (by simp)).trans (rpow_le_half Q _ hQ (by linarith))
   have hK : ‖coordK Q η x w‖ ≤ 1 := by
     apply (coordK_norm_le Q hQ1 η x w hη).trans
-    exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith : 1-x.re-w.re ≤ 0)).trans_eq (Real.rpow_zero Q)
+    exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)).trans_eq (Real.rpow_zero Q)
   have hqi : ‖(Q : ℂ)⁻¹‖ ≤ 1 := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0]
     exact inv_le_one_of_one_le₀ hQ1
@@ -179,7 +179,7 @@ lemma replacement_bound (V W D P B q : ℂ) (R : ℝ) (hR : 0 ≤ R)
     have := norm_sub_le (1 : ℂ) W
     simp only [norm_one] at this
     linarith
-  have hBq : ‖B-q‖ ≤ R+1 := (norm_sub_le B q).trans (add_le_add hB hq)
+  have hBq : ‖B-q‖ ≤ R+1 := (norm_sub_le B q).trans (by linarith)
   have hVW : ‖1-V*W‖ ≤ 2 := by
     have hn := norm_sub_le (1 : ℂ) (V*W)
     rw [norm_one,norm_mul] at hn
@@ -194,7 +194,7 @@ lemma replacement_bound (V W D P B q : ℂ) (R : ℝ) (hR : 0 ≤ R)
   calc
     _ ≤ (‖B-q‖*‖1-V‖*‖1-W‖*‖P‖ + ‖q‖*‖1-V*W‖)*2 := by
       apply mul_le_mul _ hi (norm_nonneg _) (by positivity)
-      simpa only [norm_mul] using norm_sub_le ((B-q)*(1-V)*(1-W)*P) (q*(1-V*W))
+      simpa using norm_sub_le ((B-q)*(1-V)*(1-W)*P) (q*(1-V*W))
     _ ≤ ((R+1)*2*2*16+1*2)*2 := by gcongr
     _ ≤ 200*(1+R) := by linarith
 
@@ -216,22 +216,22 @@ theorem local_norm_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S
   have hQ1 : 1 ≤ Q := by linarith
   have hB : ‖star (idealCoeff η P.val)*(Q : ℂ)^x‖ ≤ Q^Bx := by
     rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact (mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) (idealCoeff_norm_le_one η _)).trans
+    exact (mul_le_of_le_one_left (by positivity) (idealCoeff_norm_le_one η _)).trans
       (Real.rpow_le_rpow_of_exponent_le hQ1 hx.2)
   have hq : ‖(Q : ℂ)^(-w)‖ ≤ 1 := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
-    exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith : -w.re ≤ 0)).trans_eq (Real.rpow_zero Q)
+    exact (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)).trans_eq (Real.rpow_zero Q)
   have hV : ‖coordV Q z‖ ≤ 1/2 := by
-    rw [coordV_norm Q hQ0]; exact rpow_le_half Q _ hQ (by linarith [hz.1])
+    rw [coordV_norm Q hQ0]; exact rpow_le_half Q _ hQ (by grind)
   have hW : ‖coordW Q 1 w‖ ≤ 1 := by simpa only [coordW,one_mul] using hq
   have hD : ‖coordD Q (idealCoeff η P.val) 1 x‖ ≤ 1/2 :=
     (coordD_norm_le Q hQ0 _ 1 x (idealCoeff_norm_le_one η _) (by simp)).trans
-      (rpow_le_half Q _ hQ (by linarith [hx.1]))
+      (rpow_le_half Q _ hQ (by grind))
   have hm : ‖idealMarkedClosed η P x w z‖ ≤ 16 :=
     marked_bound Q (actualAPhase η (primaryGenerator P.val)) (idealCoeff η P.val) x w z hQ
       (actualAPhase_norm_le_one η _) (idealCoeff_norm_le_one η _) hx.1 hw hz.1
-  have hr := replacement_bound _ _ _ _ _ _ (Q^Bx) (Real.rpow_nonneg hQ0.le _) hV hW hD hm hB hq
-  have hi := correction_inverse_bound η S hS P hP x w z hx.1 (by linarith) (by linarith [hz.1])
+  have hr := replacement_bound _ _ _ _ _ _ (Q^Bx) (by positivity) hV hW hD hm hB hq
+  have hi := correction_inverse_bound η S hS P hP x w z hx.1 (by linarith) (by grind)
   have hp : ‖(Q : ℂ)^(z-1)‖ ≤ Q^(Bz-1) := by
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
     apply Real.rpow_le_rpow_of_exponent_le hQ1
@@ -263,7 +263,7 @@ theorem slot_analytic_w {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro j hj
   apply (T j).analyticOnNhd_fun_sum
   intro P hp
-  exact analyticOnNhd_const.mul (local_analytic_w η S hS P (hT j hj P hp) x z hx hz)
+  exact analyticOnNhd_const.mul (local_analytic_w η S hS P (by grind) x z hx hz)
 
 theorem slot_analytic_z {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
@@ -274,7 +274,7 @@ theorem slot_analytic_z {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro j hj
   apply (T j).analyticOnNhd_fun_sum
   intro P hp
-  exact analyticOnNhd_const.mul (local_analytic_z η S hS P (hT j hj P hp) x w hx hw)
+  exact analyticOnNhd_const.mul (local_analytic_z η S hS P (by grind) x w hx hw)
 
 theorem slot_norm_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
@@ -282,14 +282,14 @@ theorem slot_norm_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
     (hx : x.re ∈ Icc (7/8) Bx) (hw : 19/20 ≤ w.re) (hz : z.re ∈ Icc (33/200) Bz) :
     ‖slotMultiplier η J T b x w z‖ ≤ slotBound J T b Bx Bz := by
   simp only [slotMultiplier,slotBound,norm_prod]
-  apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
+  apply Finset.prod_le_prod₀ (by simp)
   intro j hj
   apply (norm_sum_le _ _).trans
   apply Finset.sum_le_sum
   intro P hp
   rw [norm_mul]
   exact mul_le_mul_of_nonneg_left
-    (local_norm_bound η S hS P (hT j hj P hp) x w z Bx Bz hx hw hz) (norm_nonneg _)
+    (local_norm_bound η S hS P (by grind) x w z Bx Bz hx hw hz) (norm_nonneg _)
 
 lemma global_norm_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (x w z : ℂ) (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
@@ -322,7 +322,7 @@ theorem combined_slot_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : 
     ‖globalClosedCorrection η S x w z * slotMultiplier η J T b x w z‖ ≤
       (3/2)*slotBound J T b Bx Bz := by
   rw [norm_mul]
-  exact mul_le_mul (global_norm_bound η S hS x w z hx.1 (by linarith) (by linarith [hz.1]))
+  exact mul_le_mul (global_norm_bound η S hS x w z hx.1 (by linarith) (by grind))
     (slot_norm_bound η S hS J T b hT x w z Bx Bz hx hw hz) (norm_nonneg _) (by norm_num)
 
 theorem source_w_boundary {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S)
@@ -342,10 +342,10 @@ theorem source_w_boundary {ι : Type*} (η : Character) (S : Finset Id) (hS : So
     (AH := (3/2)*slotBound J T b s.re z.re) hcw
     (mul_nonneg (by norm_num) (slotBound_nonneg J T b _ _)) 0
   · exact (combined_slot_analytic_w η S hS.tail J T b hT s z hs (by linarith)).continuousOn.mono
-      (by intro w hw; change (9/10:ℝ)<w.re; linarith [hw.1])
+      (by grind)
   · intro x hx t _
     simpa only [pow_zero,mul_one] using combined_slot_bound η S hS.tail J T b hT s
-      ((x : ℂ)+t*I) z s.re z.re ⟨hs,le_rfl⟩ (by simpa using hx.1) ⟨hz,le_rfl⟩
+      ((x : ℂ)+t*I) z s.re z.re ⟨hs,le_rfl⟩ (by simp_all) ⟨hz,le_rfl⟩
 
 theorem source_multiplier_differentiable_w {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
@@ -357,7 +357,7 @@ theorem source_multiplier_differentiable_w {ι : Type*} (η : Character) (S : Fi
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) {w : ℂ | 9/10 < w.re} := by
   have hM := CubicReflectionKernel.compact_source_mellin_differentiable W1 a1 b1 ha1 hW1 (W1.smooth ⊤)
   have hH := (combined_slot_analytic_w η S hS.tail J T b hT s z hs hz).differentiableOn
-  have hYn : (Y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hYn := Complex.ofReal_ne_zero.mpr hY.ne'
   have he : (fun w => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) =
     (fun w => ((X:ℂ)^(1/2-z)*(Z:ℂ)^(s+z-1)*Complex.exp ((s+z-1)^2)*
@@ -377,10 +377,10 @@ theorem source_multiplier_differentiable_z {ι : Type*} (η : Character) (S : Fi
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) {z : ℂ | 4/25 < z.re} := by
   have hM : DifferentiableOn ℂ (mellin (EisensteinSchwartzPoisson.paperRadialFourier W0))
       {z : ℂ | 4/25 < z.re} :=
-    (ProbeRadialMellin.radial_mellin_differentiable W0).mono (by intro z hz; change 0 < z.re; change (4/25:ℝ)<z.re at hz; linarith)
+    (ProbeRadialMellin.radial_mellin_differentiable W0).mono (by grind)
   have hH := (combined_slot_analytic_z η S hS.tail J T b hT s w hs hw).differentiableOn
-  have hXn : (X : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hZn : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hXn := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hZn := Complex.ofReal_ne_zero.mpr hZ.ne'
   have he : (fun z => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) =
     (fun z => ((Y:ℂ)^(w-1)*mellin W1 w / LFunction (η.excludePrimes S hS.prime) s) *
@@ -433,12 +433,12 @@ theorem slot_norm_bound_sharp {ι : Type*} (η : Character) (J : Finset ι)
       ∏ j ∈ J, (1+1440*Pmin^(-(7/8 : ℝ))) *
         ∑ P ∈ T j, b j P*(Ideal.absNorm P.val : ℝ)^(z.re-1) := by
   simp only [slotMultiplier,local_eq_regionSlot,norm_prod]
-  apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
+  apply Finset.prod_le_prod₀ (by simp)
   intro j hj
   simpa only [mul_assoc,Complex.ofReal_natCast] using PrincipalSlotEstimate.weighted_region_slot_norm (T j) (b j)
     (fun P => (Ideal.absNorm P.val : ℝ)) (fun P => actualAPhase η (primaryGenerator P.val))
-    (fun P => idealCoeff η P.val) s w z Pmin hPmin (hb j hj) (hQ j hj)
-    (fun P _ => actualAPhase_norm_le_one η _) (hη j hj) hs hw hz
+    (fun P => idealCoeff η P.val) s w z Pmin hPmin (by grind) (by grind)
+    (fun P _ => actualAPhase_norm_le_one η _) (by grind) hs hw hz
 
 theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℝ) (Pmin : ℝ)
@@ -460,8 +460,8 @@ theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) 
 lemma boundary_mul_const (F : ℂ → ℂ) (a b : ℝ) (h : BoundaryControl F a b) (c : ℂ) :
     BoundaryControl (fun z => F z*c) a b := by
   refine ⟨h.left.mul_const c,h.right.mul_const c,?_,?_⟩
-  · simpa only [intervalIntegral.integral_mul_const,zero_mul] using h.lower.mul_const c
-  · simpa only [intervalIntegral.integral_mul_const,zero_mul] using h.upper.mul_const c
+  · simpa using h.lower.mul_const c
+  · simpa using h.upper.mul_const c
 
 end SevenEighths.ProbeFiniteProductBounds
 end

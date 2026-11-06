@@ -51,9 +51,8 @@ private theorem card_arcSet_le (A₀ x : ℝ) (hL : 0 < Real.log x) :
   have hcard : #(arcSet A₀ x) ≤ N * N := by
     rw [arcSet, card_sigma]
     calc ∑ k ∈ Icc 1 N, #((range k).filter fun h => Nat.Coprime h k)
-        ≤ ∑ _k ∈ Icc 1 N, N := sum_le_sum fun k hk =>
-          (card_filter_le _ _).trans ((card_range k).le.trans (mem_Icc.1 hk).2)
-      _ = N * N := by rw [sum_const, Nat.card_Icc, smul_eq_mul, Nat.add_sub_cancel]
+        ≤ ∑ _k ∈ Icc 1 N, N := sum_le_sum (by grind)
+      _ = N * N := by simp
   have hN : (N : ℝ) ≤ Real.log x ^ A₀ := Nat.floor_le (by positivity)
   calc (#(arcSet A₀ x) : ℝ) ≤ (N : ℝ) * N := by exact_mod_cast hcard
     _ ≤ Real.log x ^ A₀ * Real.log x ^ A₀ := mul_le_mul hN hN (by positivity) (by positivity)
@@ -83,15 +82,15 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
   -- the mean-value term on `[-T, T]`: `ε⁻¹ L^{C₄} L^B = L^{-3P - 2C₄} ≤ L^{-P}`
   have e₂ : (L ^ (A' - P))⁻¹ * L ^ C₄ * L ^ B ≤ u := by
     rw [hu, ← Real.rpow_neg hL0.le, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
-    exact Real.rpow_le_rpow_of_exponent_le hL (by rw [hB, hA']; linarith)
-  have hLB : 1 ≤ L ^ B := Real.one_le_rpow hL (by rw [hB]; linarith)
+    exact Real.rpow_le_rpow_of_exponent_le hL (by linarith)
+  have hLB : 1 ≤ L ^ B := Real.one_le_rpow hL (by linarith)
   have e₃ : 1 + 2 * (X * L ^ B) / X ≤ 3 * L ^ B := by
     have h : 2 * (X * L ^ B) / X = 2 * L ^ B := by field_simp
     rw [h]
     linarith
   -- the `τ`-tail: `L^{C₄} X / T = L^{C₄ - B} = L^{-P}`
   have e₄ : L ^ C₄ * X / (X * L ^ B) = u := by
-    rw [hu, show -P = C₄ - B by rw [hB]; ring, Real.rpow_sub hL0]
+    rw [hu, show -P = C₄ - B by linarith, Real.rpow_sub hL0]
     field_simp
   have hΦ : (L ^ (A' - P) * (n ^ 2 * (|CE| * L ^ (-A'))) +
         (L ^ (A' - P))⁻¹ * (n ^ 2 * (165888 * L ^ C₄) * (1 + 2 * (X * L ^ B) / X))) / 2 +
@@ -114,15 +113,13 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
   have hcoef : |C₀| * (2 * L ^ A₀) ^ 4 / X * (X * Y) ^ 2 =
       16 * |C₀| * L ^ (4 * A₀) * X * Y ^ 2 := by
     rw [mul_pow, show (L ^ A₀) ^ 4 = L ^ (4 * A₀) by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]; congr 1; push_cast; ring]
+      rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]; ring]
     field_simp
     ring
   have hn2 : n ^ 2 ≤ L ^ (6 * A₀) :=
     calc n ^ 2 ≤ (L ^ (3 * A₀)) ^ 2 := pow_le_pow_left₀ hn0 hn 2
       _ = L ^ (6 * A₀) := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-        congr 1
-        push_cast
         ring
   have hexp : L ^ (4 * A₀) * L ^ (6 * A₀) * u = L ^ (10 * A₀ - P) := by
     rw [hu, ← Real.rpow_add hL0, ← Real.rpow_add hL0]
@@ -139,7 +136,7 @@ private theorem arcBound_le {L X Y C₀ CE n A₀ P C₄ B A' : ℝ} (hL : 1 ≤
           (π * (L ^ (6 * A₀) * (|CE| / 2 + 3 * 165888 / 2 + 8 * 165888) * u)) := by gcongr
     _ = 16 * π * |C₀| * (|CE| / 2 + 3 * 165888 / 2 + 8 * 165888) * X * Y ^ 2 *
           (L ^ (4 * A₀) * L ^ (6 * A₀) * u) := by ring
-    _ = _ := by rw [hexp]
+    _ = _ := by simp_all
 
 /-! ### The major term -/
 
@@ -209,9 +206,9 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
     obtain ⟨hp, hm, hn⟩ := hmem u hu
     have hl : sideLabel u ≠ 0 := Finset.prod_ne_zero_iff.2 fun i _ =>
       (TypeII.band_prime (Fintype.mem_piFinset.1 hp i)).ne_zero
-    have hm0 : u.2.1 ≠ 0 :=
+    have hm0 :=
       (lt_of_lt_of_le (Nat.ceil_pos.2 hHm) (Finset.mem_Icc.1 hm).1).ne'
-    have hn0 : u.2.2 ≠ 0 :=
+    have hn0 :=
       (lt_of_lt_of_le (Nat.ceil_pos.2 hHn) (Finset.mem_Icc.1 hn).1).ne'
     exact Nat.pos_of_ne_zero (Nat.mul_ne_zero (Nat.mul_ne_zero hl hm0) hn0)
   have hcoeff : ∀ u, sideCoeff x d Y u ≠ 0 → dyadicBump (sideLabel u / Y) ≠ 0 ∧
@@ -302,11 +299,9 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
             pow_le_pow_left₀ (Nat.cast_nonneg _) h₁ 3
         _ = L ^ (3 * A₀) := by
           rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le]
-          congr 1
-          push_cast
           ring
     have hXT : d.X ≤ d.X * L ^ B :=
-      le_mul_of_one_le_right hX.le (Real.one_le_rpow hL (by rw [hBP]; linarith))
+      le_mul_of_one_le_right hX.le (Real.one_le_rpow hL (by linarith))
     refine (norm_arcTerm_le hY hHm hHn k h lam (c := |C₀| * (2 * L ^ A₀) ^ 4 / d.X) hKi
       (fun τ σ => (hKb τ σ).trans (by gcongr; exact le_abs_self _)) hK hsupp hpos hunit hXT
       (Real.rpow_pos_of_pos hL0 (A' - P)) hE hM).trans ?_
@@ -333,9 +328,7 @@ theorem eventually_majorSquare {C CX alo ahi Dstar g c₄ cG : ℝ} (hC : 0 < C)
         gcongr
         exact card_arcSet_le A₀ x hL0
     _ = 64 * π * |C₀| * c₁ * d.X * Y * (L ^ (2 * A₀) * L ^ (10 * A₀ - P) * L ^ A₀) := by
-        rw [hU]
-        field_simp
-        ring
-    _ = 64 * π * |C₀| * c₁ * d.X * Y * L ^ (-(squarePrec Dstar + 1)) := by rw [hexp]
+        grind
+    _ = 64 * π * |C₀| * c₁ * d.X * Y * L ^ (-(squarePrec Dstar + 1)) := by grind
 
 end Erdos408.OneSided

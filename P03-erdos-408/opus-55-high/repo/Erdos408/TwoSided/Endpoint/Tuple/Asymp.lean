@@ -70,7 +70,7 @@ theorem eventually_mul_exp_rpow_le_margin {a : ℝ} (ha : 0 ≤ a) (ha₁ : a < 
   rcases le_or_gt D 0 with hD | hD
   · have : D * Real.exp (L ^ a) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hD (by positivity)
     linarith [Real.exp_pos (c * L / Real.log L ^ 20)]
-  have hLa : 1 ≤ L ^ a := Real.one_le_rpow hL1 ha
+  have hLa := Real.one_le_rpow hL1 ha
   -- `T²⁰ (|log D| + 1) L^a ≤ c L`
   have h₂ : (|Real.log D| + 1) * Real.log L ^ 20 ≤ c * L ^ (1 - a) := by
     have h₁' : (|Real.log D| + 1) / c * Real.log L ^ (20 : ℕ) ≤ L ^ (1 - a) := by
@@ -91,7 +91,7 @@ theorem eventually_mul_exp_rpow_le_margin {a : ℝ} (ha : 0 ≤ a) (ha₁ : a < 
         ≤ (|Real.log D| + 1) * L ^ a * Real.log L ^ 20 := this
       _ = (|Real.log D| + 1) * Real.log L ^ 20 * L ^ a := by ring
       _ ≤ c * L ^ (1 - a) * L ^ a := by gcongr
-      _ = c * L := by rw [mul_assoc, hLL]
+      _ = c * L := by grind
   calc D * Real.exp (L ^ a) = Real.exp (Real.log D + L ^ a) := by
         rw [Real.exp_add, Real.exp_log hD]
     _ ≤ _ := Real.exp_le_exp.2 h₃

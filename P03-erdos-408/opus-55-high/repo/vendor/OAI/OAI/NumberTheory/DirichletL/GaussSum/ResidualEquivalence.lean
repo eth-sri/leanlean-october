@@ -9,33 +9,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,51 +31,42 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical ContDiff
+open scoped Classical
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein
+open CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι]
 
 end CompletedGauss
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
@@ -97,12 +75,12 @@ variable {α β ι:Type*} [Fintype α] [Fintype β] [Fintype ι] {p:ι→Eis} {N
 end FixedFourierGeometry
 end CubicEisenstein
 
-open scoped BigOperators Classical MatrixGroups
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 noncomputable local instance primeQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
@@ -128,8 +106,7 @@ def activeStratumDatum {ι:Type*} [Fintype ι]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
-open CanonicalRowCompletion
+open CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 noncomputable local instance fixedActiveQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
@@ -153,12 +130,12 @@ def fixedActiveCuspDatum (t:FixedActiveCuspIndex c p) : SourceCuspDatum :=
 
 end CubicEisenstein
 
-open scoped BigOperators Classical ContDiff
+open scoped Classical
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein CubicJacobiGlobal
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
@@ -185,7 +162,7 @@ def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
 end
 section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 structure GoodMaskRowData (m f z:Eis) where
@@ -208,10 +185,10 @@ theorem exists_goodMaskRowData (m f z:Eis) (hm:m≠0) (hf:f≠0) (hz:z≠0) :
     Nonempty (GoodMaskRowData m f z) := by
   obtain ⟨um,am,bm,g,hg,hpg,hmf⟩:=exists_supported_numerator_factorization m hm
   obtain ⟨u,a,b,r,hr,hpr,hxf⟩:=exists_supported_numerator_factorization (f^4*z)
-    (mul_ne_zero (pow_ne_zero _ hf) hz)
+    (by positivity)
   exact ⟨⟨um,am,bm,g,hg,hpg,hmf,u,a,b,r,hr,hpr,hxf⟩⟩
 
-noncomputable def goodMaskRowData (m f z:Eis) (hm:m≠0) (hf:f≠0) (hz:z≠0) :
+def goodMaskRowData (m f z:Eis) (hm:m≠0) (hf:f≠0) (hz:z≠0) :
     GoodMaskRowData m f z := Classical.choice (exists_goodMaskRowData m f z hm hf hz)
 
 namespace GoodMaskRowData
@@ -231,7 +208,7 @@ lemma numeratorFactor_norm (Ψ:Eis→*ℂ) (hΨ:∀n,‖Ψ n‖≤1) (n:Eis) :
       D.numeratorSupported) n‖≤1 := by
   change ‖Ψ n*numeratorBadTwist _ _ _ _ _ n‖≤1
   rw [norm_mul]
-  exact (mul_le_of_le_one_left (norm_nonneg _) (hΨ n)).trans (numeratorBadTwist_norm _ _ _ _ _ n)
+  exact (mul_le_of_le_one_left (norm_nonneg _) (by grind)).trans (numeratorBadTwist_norm _ _ _ _ _ n)
 
 lemma fixedFactor_periodic (Ψ:Eis→*ℂ) (Q:Ideal Eis)
     (hΨ:CanonicalCoefficientClass.FactorsModulo Q Ψ) :
@@ -274,7 +251,7 @@ end GoodMaskRowData
 
 end
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -286,7 +263,7 @@ variable (R I F Q0:Ideal Eis) (hR:R≠0) (hI:I≠0) (hF:Squarefree F)
     (hT:rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
 include R I F Q0 hR hI hF hm hf hz hbad hcop hA hT
 
-noncomputable def primeFiberEquiv :
+def primeFiberEquiv :
     PrimeIndex (rowResidualPart I (Ideal.span {m}*F)) ⊕ FreeReflection.pool R (Ideal.span {m}*F) Q0 ≃
       FreePrimeIndex D.movingIdeal Q0 :=
   goodMaskFreePrimeFiberEquiv R I F Q0 hR hI hF m f z hm hf hz
@@ -314,7 +291,7 @@ local notation "splitIndex" => D.primeFiberEquiv R I F Q0 hR hI hF hm hf hz hbad
 
 end GoodMaskRowData
 
-noncomputable def fiberGoodMaskRowData (rows:Finset (Ideal Eis)) (R F:Ideal Eis) (m:Eis)
+def fiberGoodMaskRowData (rows:Finset (Ideal Eis)) (R F:Ideal Eis) (m:Eis)
     (hm:m≠0) (hF:F≠0) (hrows:∀I∈rows,I≠0) (u:Eisˣ)
     (I:representativeRowFiber rows R (Ideal.span {m}*F)) :
     GoodMaskRowData m (ConcretePrimeRowBridge.idealGenerator F)

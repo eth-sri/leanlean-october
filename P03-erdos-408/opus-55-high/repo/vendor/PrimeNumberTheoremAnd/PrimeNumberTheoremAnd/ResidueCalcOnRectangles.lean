@@ -9,8 +9,8 @@ public import PrimeNumberTheoremAnd.Rectangle
 
 @[expose] public section
 
-open Complex BigOperators Nat Classical Real Topology Filter
-open Set MeasureTheory intervalIntegral Asymptotics
+open Complex Nat Classical Real Topology Filter
+open Set MeasureTheory intervalIntegral
 
 open scoped Interval
 
@@ -71,7 +71,7 @@ theorem existsDifferentiableOn_of_bddAbove [CompleteSpace E]
   ⟨Function.update f c (limUnder (𝓝[{c}ᶜ] c) f),
     differentiableOn_update_limUnder_of_bddAbove hc hd hb,
     fun z hz ↦ if h : z = c then (hz.2 h).elim
-      else by simp [h]⟩
+      else by simp_all⟩
 
 theorem HolomorphicOn.vanishesOnRectangle [CompleteSpace E]
     {U : Set ℂ} (f_holo : HolomorphicOn f U)
@@ -159,31 +159,7 @@ lemma RectangleIntegralHSplit {a x₀ x₁ y₀ y₁ : ℝ}
     Complex.I_im, mul_one, mul_zero, add_zero, zero_add, sub_self]
   have h₁ := integral_add_adjacent_intervals f_int_x₀_a_bot f_int_a_x₁_bot
   have h₂ := integral_add_adjacent_intervals f_int_x₀_a_top f_int_a_x₁_top
-  have h₁' :
-      (∫ (x : ℝ) in x₀..a, f (↑x + ↑y₀ * I)) +
-          ∫ (x : ℝ) in a..x₁, f (↑y₀ * I + ↑x) =
-        ∫ (x : ℝ) in x₀..x₁, f (↑x + ↑y₀ * I) := by
-    simpa [add_comm] using h₁
-  have h₂' :
-      (∫ (x : ℝ) in x₀..a, f (↑x + ↑y₁ * I)) +
-          ∫ (x : ℝ) in a..x₁, f (↑y₁ * I + ↑x) =
-        ∫ (x : ℝ) in x₀..x₁, f (↑x + ↑y₁ * I) := by
-    simpa [add_comm] using h₂
-  rw [← h₁', ← h₂']
-  have hcomm₁ :
-      ∫ (x : ℝ) in a..x₁, f (↑y₀ * I + ↑x) =
-        ∫ (x : ℝ) in a..x₁, f (↑x + ↑y₀ * I) := by
-    apply intervalIntegral.integral_congr
-    intro x _
-    exact congrArg f (by ring)
-  have hcomm₂ :
-      ∫ (x : ℝ) in a..x₁, f (↑y₁ * I + ↑x) =
-        ∫ (x : ℝ) in a..x₁, f (↑x + ↑y₁ * I) := by
-    apply intervalIntegral.integral_congr
-    intro x _
-    exact congrArg f (by ring)
-  rw [hcomm₁, hcomm₂]
-  abel
+  grind
 
 lemma RectangleIntegralHSplit' {a x₀ x₁ y₀ y₁ : ℝ}
     (ha : a ∈ [[x₀, x₁]])
@@ -240,10 +216,10 @@ lemma RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
     (uIoo_of_le hz₁_re) ▸ (uIoo_of_le hz₁_im) ▸ rectangle_mem_nhds_iff.mp hp
   obtain ⟨_, _, _, _⟩ := show
       p.re < z₂.re ∧ p.re < z₃.re ∧ p.im < z₂.im ∧ p.im < z₃.im from
-    ⟨by linarith, by linarith, by linarith, by linarith⟩
+    by grind
   obtain ⟨_, _, _, _⟩ := show
       z₀.re < p.re ∧ z₁.re < p.re ∧ z₀.im < p.im ∧ z₁.im < p.im from
-    ⟨by linarith, by linarith, by linarith, by linarith⟩
+    by grind
   have fCont := fHolo.continuousOn
   have hbot : RectangleBorderIntegrable f (↑z₀.re + ↑z₀.im * I)
       (↑z₃.re + ↑z₃.im * I) := ?_
@@ -257,7 +233,7 @@ lemma RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
     refine ContinuousOn.rectangleBorder_integrable
       (fCont.mono (rectangleBorder_subset_punctured_rect ?_ ?_))
     · simp_all
-    · simpa using ⟨by linarith, by linarith, by linarith, by linarith⟩
+    · simpa using (by grind)
   }
   have hbot' : z₁.im ∈ [[z₀.im, z₃.im]] := ?_
   have htop' : z₂.im ∈ [[z₁.im, z₃.im]] := ?_
@@ -285,12 +261,8 @@ lemma RectanglePullToNhdOfPole' [CompleteSpace E] {z₀ z₁ z₂ z₃ p : ℂ}
   have h₆ := fHolo.vanishesOnRectangle hleft''
   have h₇ := RectangleIntegralHSplit' hright' hright
   have h₈ := fHolo.vanishesOnRectangle hright''
-  simp only [re_add_im] at *
-  linear_combination (norm := module) h₁ + h₂ + h₃ + h₄ + h₅ + h₆ + h₇ + h₈
+  simp_all
 
-theorem RectangleIntegral.const_smul (f : ℂ → E) (z w c : ℂ) :
-    RectangleIntegral (fun s => c • f s) z w = c • RectangleIntegral f z w := by
-  simp [RectangleIntegral, HIntegral, VIntegral, smul_add, smul_sub, smul_smul, mul_comm]
 
 theorem RectangleIntegral.translate (f : ℂ → E) (z w p : ℂ) :
     RectangleIntegral (fun s => f (s - p)) z w = RectangleIntegral f (z - p) (w - p) := by
@@ -304,10 +276,10 @@ theorem RectangleIntegral.translate' (f : ℂ → E) (z w p : ℂ) :
 
 lemma Complex.inv_re_add_im : (x + y * I)⁻¹ = (x - I * y) / (x ^ 2 + y ^ 2) := by
   rw [Complex.inv_def, div_eq_mul_inv]
-  congr <;> simp [conj_ofReal, normSq] <;> ring
+  congr <;> simp [normSq] <;> ring
 
 lemma sq_add_sq_ne_zero (hy : y ≠ 0) : x ^ 2 + y ^ 2 ≠ 0 := by
-  linarith [sq_nonneg x, sq_pos_iff.mpr hy]
+  positivity
 
 lemma continuous_self_div_sq_add_sq (hy : y ≠ 0) :
     Continuous fun x => x / (x ^ 2 + y ^ 2) :=
@@ -331,9 +303,7 @@ lemma integral_const_div_sq_add_sq (hy : y ≠ 0) :
   nth_rewrite 1 [← div_mul_cancel₀ x₁ hy, ← div_mul_cancel₀ x₂ hy]
   simp_rw [← mul_integral_comp_mul_right, ← intervalIntegral.integral_const_mul,
     ← integral_one_div_one_add_sq]
-  exact integral_congr fun x _ => by
-    field_simp
-    ring
+  grind
 
 set_option backward.isDefEq.respectTransparency false in
 lemma integral_const_div_self_add_im (hy : y ≠ 0) :
@@ -370,7 +340,7 @@ lemma integral_const_div_re_add_self (hx : x ≠ 0) :
     have e2 : y + I * ↑(-x) ≠ 0 := by
       contrapose! hx
       simpa using congr_arg im hx
-    field_simp [*]
+    field_simp
     push_cast
     ring_nf
     simp
@@ -409,7 +379,7 @@ theorem ResidueTheoremInRectangle
   have : 1 / (2 * ↑π * I) * (2 * I * ↑π * c) = c := by
     field_simp
   rwa [ResidueTheoremAtOrigin']
-  all_goals simp [*]
+  all_goals simp_all
 
 lemma ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : ℂ}
     (zRe_le_wRe : z.re ≤ w.re) (zIm_le_wIm : z.im ≤ w.im)
@@ -418,25 +388,22 @@ lemma ResidueTheoremOnRectangleWithSimplePole {f g : ℂ → ℂ} {z w p A : ℂ
     RectangleIntegral' f z w = A := by
   have principalPart' : Set.EqOn f (g + (fun s ↦ A / (s - p))) (Rectangle z w \ {p}) :=
     fun s hs => by rw [Pi.add_apply, ← principalPart hs, Pi.sub_apply, sub_add_cancel]
-  have : Set.EqOn f (g + (fun s ↦ A / (s - p))) (RectangleBorder z w) :=
+  have  :=
     principalPart'.mono <| Set.subset_sdiff.mpr
       ⟨rectangleBorder_subset_rectangle z w,
         disjoint_singleton_right.mpr
           (not_mem_rectangleBorder_of_rectangle_mem_nhds pInRectInterior)⟩
   rw [RectangleIntegral'_congr this]
-  have t1 : RectangleBorderIntegrable g z w :=
+  have t1 :=
     gHolo.rectangleBorderIntegrable
   have t2 : HolomorphicOn (fun s ↦ A / (s - p)) (Rectangle z w \ {p}) := by
     apply DifferentiableOn.mono (t := {p}ᶜ)
     · apply DifferentiableOn.div
-      · exact differentiableOn_const _
+      · simp
       · exact DifferentiableOn.sub differentiableOn_id (differentiableOn_const _)
-      · exact fun x hx => by
-          rw [sub_ne_zero]
-          exact hx
-    · rintro s ⟨_, hs⟩
-      exact hs
-  have t3 : RectangleBorderIntegrable (fun s ↦ A / (s - p)) z w :=
+      grind
+    · simp
+  have t3 :=
     HolomorphicOn.rectangleBorderIntegrable' t2 pInRectInterior
   rw [RectangleIntegral', RectangleBorderIntegrable.add t1 t3, smul_add]
   rw [gHolo.vanishesOnRectangle (by rfl), smul_zero, zero_add]
@@ -448,21 +415,7 @@ The simple-pole `residue`, `sumResiduesIn`, the `HasSimplePolesOn` scaffold, and
 residue theorem `RectangleIntegral'_eq_sumResiduesIn`. Extracted from `CH2.lean` as general,
 reusable contour-integration lemmas (see issue #1537). -/
 
-/-- Every pole of `f` in `s` is at most simple: the meromorphic order is `≥ -1` everywhere on `s`
-(no poles of order `≤ -2`).
 
-**Temporary scaffold.** The placeholder `residue` below (and Mathlib's current residue-theorem API)
-is only correct for simple poles, so this hypothesis is added to Lemma 5.1 / Proposition 5.2 and
-their sub-lemmas to make them provable with the present API. It holds in the intended applications
-(e.g. `ζ'/ζ`, whose poles are all simple) and is to be removed once Mathlib gains general
-higher-order residue support. -/
-def HasSimplePolesOn (f : ℂ → ℂ) (s : Set ℂ) : Prop :=
-  ∀ z ∈ s, (-1 : ℤ) ≤ meromorphicOrderAt f z
-
-lemma HasSimplePolesOn.mono {f : ℂ → ℂ} {s t : Set ℂ}
-    (h : HasSimplePolesOn f t) (hst : s ⊆ t) : HasSimplePolesOn f s := by
-  intro z hz
-  exact h z (hst hz)
 
 -- If two functions `f g : ℂ → ℂ` agree on a `codiscreteWithin R` full set, and `φ : ℝ → ℂ` is
 -- an analytic non-constant path mapping `[a,b]` into `R`, then `∫ f(φ x) dx = ∫ g(φ x) dx`.

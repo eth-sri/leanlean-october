@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralTerms
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 include hc in
 lemma rowBaseFinite_central_remainder (eta a rho x w z : ℂ) (alpha eps : ℝ)
@@ -30,7 +29,7 @@ lemma rowBaseFinite_central_remainder (eta a rho x w z : ℂ) (alpha eps : ℝ)
   let Q : ℝ := Ideal.absNorm (Ideal.span {p})
   let T := fun k m=>rowMarkedTerm p hp hg eta a ((Q:ℂ)^(-x)) ((Q:ℂ)^(-w)) (coordV Q z) rho j e l k m
   have hpow : 0≤Q^(1/2-x.re) := by positivity
-  have hv := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z (by rw [hz]))
+  have hv := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_V_half _ hQ z (by linarith))
   have ht (k m : ℕ) (hk : k≤1) (hstrict : ¬(e=1 ∧ l=0 ∧ k=1 ∧ m=0)) :
       ‖T k m‖≤2*Q^(1/2-x.re) := by
     have ht0 : e+3*l≠0 := by rcases hf with h|h|h|h <;> omega
@@ -58,7 +57,7 @@ lemma rowBaseFinite_central_remainder (eta a rho x w z : ℂ) (alpha eps : ℝ)
     have hn := (norm_add_le _ _).trans (add_le_add
       ((norm_add_le _ _).trans (add_le_add
         ((norm_add_le _ _).trans (add_le_add ((norm_add_le _ _).trans (add_le_add h00 h01)) (hd 0 (by omega)))) h11)) (hd 1 (by omega)))
-    exact hn.trans (by linarith)
+    linarith
   · rw [ite_eq_right hb,sub_zero]
     unfold rowBaseFinite
     apply (norm_sum_le _ _).trans
@@ -90,7 +89,7 @@ theorem rowClosedMarked_central_remainder (eta a rho x w z : ℂ) (alpha eps : �
   have h11 := rowBaseFinite_central_remainder p hp hg hc eta a rho x w z alpha eps hQ heta ha hρ halpha halpha1 heps heps1 hx hw hz j 1 1 hj (by omega)
   dsimp only at h02 h10 h01 h11
   norm_num only [and_true,true_and,and_false,false_and,Nat.reduceEqDiff,ite_true,ite_false,sub_zero] at h02 h10 h01 h11
-  have hr := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha (by rw [hx];linarith) (by rw [hz]))
+  have hr := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha (by linarith) (by linarith))
   simp only [Complex.ofReal_natCast] at *
   unfold rowClosedMarked
   rw [←sub_div,div_eq_mul_inv,norm_mul]

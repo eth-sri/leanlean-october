@@ -11,7 +11,6 @@ from the proved mean-square input on unit-scale intervals. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory
 
 namespace Erdos821.P5Marked
@@ -36,7 +35,6 @@ theorem wt_le_of_le_abs (h t d : ℝ) (hd : 0 ≤ d) (hdt : d ≤ |h * t|) :
     wt h t ≤ ((1 + d) ^ 2)⁻¹ := by
   unfold wt
   apply inv_anti₀ (by positivity)
-  have : 1 + d ≤ 1 + |h * t| := by linarith
   nlinarith
 
 theorem integrable_inv_one_add_sq_mul {h : ℝ} (hh : h ≠ 0) :
@@ -54,14 +52,13 @@ theorem intervalIntegral_inv_one_add_sq_mul {h : ℝ} (hh : 0 < h) (T : ℝ) :
   have := intervalIntegral.integral_comp_mul_left (fun x : ℝ => (1 + x ^ 2)⁻¹)
     (a := -T) (b := T) hh.ne'
   rw [this, integral_inv_one_add_sq, smul_eq_mul, mul_neg, Real.arctan_neg]
-  field_simp
   ring
 
 theorem norm_dp_le_sum (s : Finset ℕ) (g : ℕ → ℂ) (t : ℝ) :
     ‖dp s g t‖ ≤ ∑ n ∈ s, ‖g n‖ := by
   unfold dp
   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun n _ => ?_)
-  rw [norm_mul, P5Core.norm_mellin, mul_one]
+  simp
 
 theorem sum_norm_sq_le_card (s : Finset ℕ) (g : ℕ → ℂ) :
     (∑ n ∈ s, ‖g n‖) ^ 2 ≤ (s.card : ℝ) * sqNorm s g := by
@@ -94,7 +91,7 @@ theorem sum_inv_succ_sq_le_two (n : ℕ) :
 
 theorem nat_mul_log_nonneg' (N : ℕ) : 0 ≤ (N : ℝ) * Real.log (2 * N) := by
   by_cases hN : N = 0
-  · simp [hN]
+  · simp_all
   · have hN' : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
     exact mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg (by linarith))
 
@@ -110,18 +107,18 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   set D : ℝ → ℂ := fun t => dp s g (t + c) with hD
   set M := ∑ n ∈ s, ‖g n‖ with hMdef
   set q := sqNorm s g with hqdef
-  have hq : 0 ≤ q := Finset.sum_nonneg (fun _ _ => by positivity)
+  have hq : 0 ≤ q := Finset.sum_nonneg (by simp)
   have hNlog := nat_mul_log_nonneg' N
   have hDc : Continuous D := (P5Core.continuous_dp s g).comp (continuous_id.add continuous_const)
   have hDle : ∀ t, ‖D t‖ ≤ M := fun t => norm_dp_le_sum s g _
-  have hM0 : 0 ≤ M := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  have hM0 : 0 ≤ M := by positivity
   have hM2 : M ^ 2 ≤ N * q := by
     have := sum_norm_sq_le_card s g
     simpa [s, Nat.card_Icc] using this
   set f : ℝ → ℝ := fun t => wt h t * ‖D t‖ ^ 2 with hfdef
   have hfc : Continuous f := (continuous_wt h).mul (hDc.norm.pow 2)
   have hfnn : ∀ t, 0 ≤ f t := fun t => mul_nonneg (wt_nonneg h t) (by positivity)
-  have hv : Integrable (fun t : ℝ => (1 + (h * t) ^ 2)⁻¹) := integrable_inv_one_add_sq_mul hh.ne'
+  have hv := integrable_inv_one_add_sq_mul hh.ne'
   have hfle : ∀ t, f t ≤ M ^ 2 * (1 + (h * t) ^ 2)⁻¹ := by
     intro t
     have h1 := wt_le_inv_one_add_sq h t
@@ -202,16 +199,13 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
           have := ht.1; simp only [a] at this
           rw [div_le_iff₀ hh] at this; linarith
         rw [Nat.cast_sub hk]
-        exact this.trans (le_abs_self _)
+        grind
       · have hk' : k + 1 ≤ n := by omega
         have : h * t ≤ ((k : ℝ) + 1 - n) := by
           have := ht.2; simp only [a] at this
           rw [le_div_iff₀ hh] at this; push_cast at this; linarith
         rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]
-        have hk'' : ((k : ℝ) + 1) ≤ n := by exact_mod_cast hk'
-        rw [Nat.cast_one]
-        calc (n : ℝ) - 1 - k ≤ -(h * t) := by linarith
-          _ ≤ |h * t| := neg_le_abs _
+        grind
     calc ∫ t in (a k)..(a (k + 1)), f t ≤ ∫ t in (a k)..(a (k + 1)), sk k * ‖D t‖ ^ 2 :=
           intervalIntegral.integral_mono_on hak (hfc.intervalIntegrable _ _)
             ((continuous_const.mul (hDc.norm.pow 2)).intervalIntegrable _ _) hw
@@ -220,14 +214,9 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
           congr 1
           exact intervalIntegral.integral_comp_add_right (fun t => ‖dp s g t‖ ^ 2) c
       _ ≤ sk k * (KMS * ((a (k + 1) + c) - (a k + c) + N * Real.log (2 * N)) * q) :=
-          mul_le_mul_of_nonneg_left (hMS N g _ _ (by linarith)).1 (by positivity)
+          mul_le_mul_of_nonneg_left (by grind) (by positivity)
       _ = sk k * B := by
-          congr 1
-          simp only [hBdef, a]
-          congr 2
-          push_cast
-          field_simp
-          ring
+          grind
   have hsum : ∑ k ∈ Finset.range (n + n), sk k ≤ 4 := by
     rw [Finset.sum_range_add]
     have e1 : ∑ k ∈ Finset.range n, sk k = ∑ k ∈ Finset.range n, (((k : ℝ) + 1) ^ 2)⁻¹ := by
@@ -252,7 +241,7 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
       ← ha0, ← ha2, ← intervalIntegral.sum_integral_adjacent_intervals
         (fun k _ => hfc.intervalIntegrable _ _)]
     calc ∑ k ∈ Finset.range (n + n), ∫ t in (a k)..(a (k + 1)), f t
-        ≤ ∑ k ∈ Finset.range (n + n), sk k * B := Finset.sum_le_sum fun k _ => hpiece k
+        ≤ ∑ k ∈ Finset.range (n + n), sk k * B := Finset.sum_le_sum (by grind)
       _ = (∑ k ∈ Finset.range (n + n), sk k) * B := by rw [Finset.sum_mul]
       _ ≤ 4 * B := mul_le_mul_of_nonneg_right hsum hB0
   have hfin : 2 * q / h ≤ 2 * (1 / h + N * Real.log (2 * N)) * q := by
@@ -263,6 +252,6 @@ theorem weighted_mean_value : ∃ K : ℝ, 0 < K ∧ ∀ (N : ℕ) (g : ℕ → 
   calc (∫ t in Set.Icc (-T) T, f t) + ∫ t in (Set.Icc (-T) T)ᶜ, f t
       ≤ 4 * B + 2 * q / h := add_le_add hmid htail
     _ ≤ 4 * B + 2 * (1 / h + N * Real.log (2 * N)) * q := by linarith
-    _ = (4 * KMS + 2) * (1 / h + N * Real.log (2 * N)) * q := by rw [hBdef]; ring
+    _ = (4 * KMS + 2) * (1 / h + N * Real.log (2 * N)) * q := by linarith
 
 end Erdos821.P5Marked

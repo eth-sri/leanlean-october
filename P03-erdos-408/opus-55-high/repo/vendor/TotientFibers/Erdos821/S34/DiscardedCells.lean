@@ -7,7 +7,7 @@ public import Erdos821.S34.BilinearBlocks
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -24,9 +24,7 @@ theorem discarded_cell_mass {α κ : Type*} [Fintype α] [DecidableEq κ]
       · calc
           _ = ∑ x ∈ Finset.univ.filter (fun x => cell x = j), w x := by
             apply Finset.sum_congr rfl
-            intro x hx
-            have heq := (Finset.mem_filter.mp hx).2
-            simp [heq, hj]
+            simp_all
           _ = frameCellMass w cell j := by rw [Finset.sum_filter]; rfl
           _ ≤ ξ := hj.le
       · have hz : (∑ x ∈ Finset.univ.filter (fun x => cell x = j),
@@ -35,8 +33,7 @@ theorem discarded_cell_mass {α κ : Type*} [Fintype α] [DecidableEq κ]
           intro x hx
           have heq := (Finset.mem_filter.mp hx).2
           simp [heq, hj]
-        rw [hz]
-        exact hξ
+        linarith
     _ = _ := by simp
 
 end Erdos821.S34Core

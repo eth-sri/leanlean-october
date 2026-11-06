@@ -24,7 +24,7 @@ open Finset
 /-- `z^M q₀^{z/2} ≤ c q₀^{M/2}` for all `z`, for some `c ≥ 1`. -/
 theorem exists_pow_mul_sqrt_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ < 1) (M : ℕ) :
     ∃ c : ℝ, 1 ≤ c ∧ ∀ z : ℕ, (z : ℝ) ^ M * Real.sqrt q₀ ^ z ≤ c * Real.sqrt q₀ ^ M := by
-  have hs0 : 0 < Real.sqrt q₀ := Real.sqrt_pos.2 hq₀
+  have hs0 := Real.sqrt_pos.2 hq₀
   have hs1 : Real.sqrt q₀ < 1 := (Real.sqrt_lt' one_pos).2 (by rw [one_pow]; exact hq₀₁)
   have ht := tendsto_pow_const_mul_const_pow_of_abs_lt_one M
     (show |Real.sqrt q₀| < 1 by rw [abs_of_pos hs0]; exact hs1)
@@ -34,7 +34,7 @@ theorem exists_pow_mul_sqrt_pow_le {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q
   calc (z : ℝ) ^ M * Real.sqrt q₀ ^ z ≤ K := hK ⟨z, rfl⟩
     _ = K / Real.sqrt q₀ ^ M * Real.sqrt q₀ ^ M := by field_simp
     _ ≤ max 1 (K / Real.sqrt q₀ ^ M) * Real.sqrt q₀ ^ M :=
-        mul_le_mul_of_nonneg_right (le_max_right _ _) hpos.le
+        mul_le_mul_of_nonneg_right (by simp) hpos.le
 
 variable {ι : Type} [Fintype ι] [DecidableEq ι]
 
@@ -48,8 +48,8 @@ theorem card_physicalLists_mul_damping_le (P : ι → Finset ℕ) {q₀ : ℝ} (
       c ^ Fintype.card ι := by
   set r := Real.sqrt q₀
   have hr0 : 0 < r := Real.sqrt_pos.2 hq₀
-  have hr1 : r ≤ 1 := ((Real.sqrt_lt' one_pos).2 (by rw [one_pow]; exact hq₀₁)).le
-  have hpos : 0 < ∏ _g : ι, r ^ M := prod_pos fun _ _ => pow_pos hr0 M
+  have hr1 : r ≤ 1 := ((Real.sqrt_lt' one_pos).2 (by linarith)).le
+  have hpos : 0 < ∏ _g : ι, r ^ M := by positivity
   -- `q₀^{(ω - Ms)₊/2} q₀^{Ms/2} ≤ q₀^{ω/2} = ∏_g q₀^{ω_g/2}`
   have hdamp : r ^ (groupPrimeCount P n - M * Fintype.card ι) * ∏ _g : ι, r ^ M ≤
       ∏ g, r ^ primeCount (P g) n := by
@@ -65,14 +65,14 @@ theorem card_physicalLists_mul_damping_le (P : ι → Finset ℕ) {q₀ : ℝ} (
         ≤ (∏ g, (primeCount (P g) n : ℝ) ^ M) * ∏ g, r ^ primeCount (P g) n := by
           rw [mul_assoc]
           exact mul_le_mul hcard hdamp (by positivity)
-            (prod_nonneg fun _ _ => by positivity)
+            (by positivity)
       _ = ∏ g, (primeCount (P g) n : ℝ) ^ M * r ^ primeCount (P g) n :=
           prod_mul_distrib.symm
       _ ≤ ∏ _g : ι, c * r ^ M :=
-          prod_le_prod₀ (fun _ _ => by positivity) fun g _ => hc _
+          prod_le_prod₀ (fun _ _ => by positivity) (by grind)
       _ = c ^ Fintype.card ι * ∏ _g : ι, r ^ M := by
           rw [prod_mul_distrib, prod_const, card_univ]
-  exact le_of_mul_le_mul_right h₁ hpos
+  nlinarith
 
 /-- `‖D^{iζ}‖ ≤ 1` for a natural number `D`. -/
 theorem norm_natCast_cpow_mul_I_le (D : ℕ) (ζ : ℝ) :
@@ -80,11 +80,9 @@ theorem norm_natCast_cpow_mul_I_le (D : ℕ) (ζ : ℝ) :
   rcases Nat.eq_zero_or_pos D with hD | hD
   · subst hD
     by_cases hζ : (ζ : ℂ) * Complex.I = 0
-    · rw [hζ, Complex.cpow_zero, norm_one]
-    · rw [Nat.cast_zero, Complex.zero_cpow hζ, norm_zero]
-      exact zero_le_one
-  · rw [Complex.norm_natCast_cpow_of_pos hD]
-    simp
+    · simp_all
+    simp_all
+  · simp [Complex.norm_natCast_cpow_of_pos hD]
 
 /-- **The absolute pattern bound.** With `‖f‖ ≤ 1`, `‖g‖ ≤ L_g`, `‖K‖ ≤ κ_K`, `V_g ≥ v₋` and
 `z^M q₀^{z/2} ≤ c q₀^{M/2}` (`M = J + 1`),
@@ -104,15 +102,15 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
   set Λ : ℕ → ℝ := fun n => Real.sqrt q₀ ^ (groupPrimeCount P n - (J + 1) * s)
   set aux : (ι → Fin J → ℕ) → ℝ := fun a => ∏ h, ∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹
   set B := (β ^ (2 * (J + 1))) ^ s with hB
-  have hVpos : ∀ h, 0 < harmonicMass (P h) := fun h => hvlo.trans_le (hV h)
+  have hVpos : ∀ h, 0 < harmonicMass (P h) := by grind
   have hκ : 0 ≤ κK := (norm_nonneg _).trans (hK 0 0 0)
   have hLg : 0 ≤ Lg := (norm_nonneg _).trans (hg 0)
   have hc0 : 0 ≤ c := by linarith
   have hβ : 1 ≤ β := le_max_left _ _
-  have hBnn : 0 ≤ B := pow_nonneg (pow_nonneg (by linarith) _) _
-  have hΛ : ∀ n, 0 ≤ Λ n := fun n => pow_nonneg (Real.sqrt_nonneg _) _
+  have hBnn : 0 ≤ B := by positivity
+  have hΛ : ∀ n, 0 ≤ Λ n := fun n => by positivity
   have haux : ∀ a, 0 ≤ aux a := fun a => prod_nonneg fun h _ => prod_nonneg fun i _ =>
-    inv_nonneg.2 (mul_nonneg (hVpos h).le (Nat.cast_nonneg _))
+    inv_nonneg.2 (mul_nonneg (by grind) (Nat.cast_nonneg _))
   have hlist : ∀ n, (#(physicalLists P (J + 1) n) : ℝ) * Λ n ≤ c ^ s := fun n =>
     card_physicalLists_mul_damping_le P hq₀ hq₀₁ hc n
   -- the mass of one edge
@@ -122,15 +120,15 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
       (∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹) * (harmonicMass (P h))⁻¹ ^ ((C h).card + 1) ≤
       B * aux a := by
     intro a
-    have hinv : ∀ h, 0 ≤ (harmonicMass (P h))⁻¹ := fun h => inv_nonneg.2 (hVpos h).le
+    have hinv : ∀ h, 0 ≤ (harmonicMass (P h))⁻¹ := fun h => inv_nonneg.2 (by grind)
     have hβh : ∀ h, (harmonicMass (P h))⁻¹ ≤ β := fun h =>
-      (inv_anti₀ hvlo (hV h)).trans (le_max_right _ _)
+      (inv_anti₀ hvlo (hV h)).trans (by grind)
     have heq : ∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) *
         (∏ i ∈ C h, (harmonicMass (P h) * a h i)⁻¹) * (harmonicMass (P h))⁻¹ ^ ((C h).card + 1) =
         (∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) * (harmonicMass (P h))⁻¹ ^ ((C h).card + 1)) *
           aux a := by
       rw [← prod_mul_distrib]
-      exact prod_congr rfl fun h _ => by ring
+      exact by ring
     rw [heq]
     have hβ0 : 0 ≤ β := by linarith
     refine ⟨mul_nonneg (prod_nonneg fun h _ =>
@@ -145,9 +143,9 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
       rw [Fintype.card_fin] at this
       omega
     calc (harmonicMass (P h))⁻¹ ^ (J + 1) * (harmonicMass (P h))⁻¹ ^ ((C h).card + 1)
-        ≤ β ^ (J + 1) * β ^ (J + 1) := mul_le_mul (pow_le_pow_left₀ (hinv h) (hβh h) _)
-          ((pow_le_pow_left₀ (hinv h) (hβh h) _).trans (pow_le_pow_right₀ hβ hCh))
-          (pow_nonneg (hinv h) _) (pow_nonneg hβ0 _)
+        ≤ β ^ (J + 1) * β ^ (J + 1) := mul_le_mul (pow_le_pow_left₀ (hinv h) (by grind) _)
+          ((pow_le_pow_left₀ (hinv h) (by grind) _).trans (pow_le_pow_right₀ hβ hCh))
+          (pow_nonneg (hinv h) _) (by positivity)
       _ = β ^ (2 * (J + 1)) := by ring
   -- one term
   have hterm : ∀ n p a p', ‖((∏ h, (harmonicMass (P h))⁻¹ ^ (J + 1) *
@@ -160,16 +158,16 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
     intro n p a p'
     obtain ⟨hm0, hm⟩ := hmass a
     rw [norm_mul, norm_mul, norm_mul, norm_mul, norm_mul, Complex.norm_real, Complex.norm_real,
-      Complex.norm_conj, Real.norm_of_nonneg hm0, Real.norm_of_nonneg (mul_nonneg (hΛ n) (hΛ _))]
+      Complex.norm_conj, Real.norm_of_nonneg hm0, Real.norm_of_nonneg (by positivity)]
     have h₁ := norm_natCast_cpow_mul_I_le (edgeProduct C p a) ζ
-    have hBw : 0 ≤ B * aux a := mul_nonneg hBnn (haux a)
+    have hBw : 0 ≤ B * aux a := by linarith
     have hΛ2 := mul_nonneg (hΛ n) (hΛ (n + edgeProduct C p a))
     calc _ ≤ B * aux a * 1 * κK * 1 * (Λ n * Λ (n + edgeProduct C p a)) * Lg :=
           mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul (mul_le_mul
-            (mul_le_mul hm (hf n) (norm_nonneg _) hBw) (hK p p' a) (norm_nonneg _)
-            (by rw [mul_one]; exact hBw)) h₁ (norm_nonneg _)
-            (by rw [mul_one]; exact mul_nonneg hBw hκ)) hΛ2) (hg _) (norm_nonneg _)
-            (by rw [mul_one, mul_one]; exact mul_nonneg (mul_nonneg hBw hκ) hΛ2)
+            (mul_le_mul hm (hf n) (norm_nonneg _) hBw) (by grind) (norm_nonneg _)
+            (by linarith)) h₁ (norm_nonneg _)
+            (by positivity)) hΛ2) (hg _) (norm_nonneg _)
+            (by positivity)
       _ = B * aux a * κK * Lg * (Λ n * Λ (n + edgeProduct C p a)) := by ring
   -- the target lists, by all physical lists at `n + D`
   have hinner : ∀ n p a (T : Finset (ι → Fin (J + 1) → ℕ)),
@@ -182,7 +180,7 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
       exact_mod_cast card_le_card hT
     have hl := hlist (n + edgeProduct C p a)
     have h0 : 0 ≤ B * aux a * κK * Lg * Λ n :=
-      mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hBnn (haux a)) hκ) hLg) (hΛ n)
+      mul_nonneg (mul_nonneg (mul_nonneg (mul_nonneg hBnn (haux a)) hκ) hLg) (by positivity)
     have hΛ' := hΛ (n + edgeProduct C p a)
     calc (#T : ℝ) * (B * aux a * κK * Lg * (Λ n * Λ (n + edgeProduct C p a)))
         = (#T : ℝ) * Λ (n + edgeProduct C p a) * (B * aux a * κK * Lg * Λ n) := by ring
@@ -193,7 +191,7 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
           mul_le_mul_of_nonneg_right hl h0
       _ = κK * Lg * B * c ^ s * Λ n * aux a := by ring
   have hB0 : 0 ≤ κK * Lg * B * c ^ s :=
-    mul_nonneg (mul_nonneg (mul_nonneg hκ hLg) hBnn) (pow_nonneg hc0 _)
+    by positivity
   unfold patternPairing
   refine (norm_sum_le _ _).trans ?_
   refine (sum_le_sum fun n _ => (norm_sum_le _ _).trans (sum_le_sum fun p _ =>
@@ -201,7 +199,7 @@ theorem norm_patternPairing_le (P : ι → Finset ℕ) {vlo : ℝ} (hvlo : 0 < v
       (sum_le_sum fun p' _ => hterm n p a p')))).trans ?_
   refine (sum_le_sum fun n _ => sum_le_sum fun p _ => sum_le_sum fun a _ =>
     hinner n p a _ (filter_subset _ _)).trans ?_
-  have haux1 : ∑ a ∈ auxLabels P C, aux a = 1 := sum_labelMass (fun h => (hVpos h).ne') C
+  have haux1 : ∑ a ∈ auxLabels P C, aux a = 1 := sum_labelMass (by grind) C
   simp_rw [← mul_sum, haux1]
   simp only [sum_const, nsmul_eq_mul, mul_one]
   calc _

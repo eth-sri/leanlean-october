@@ -9,10 +9,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeBinPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 def sourceDyadExponent (Z : ℝ) (k : ℕ) : ℝ := Real.logb Z ((2:ℝ)^k)
 def sourceDyadConductor (Z margin : ℝ) (k : ℕ) : ℝ := sourceDyadExponent Z k+2*margin
@@ -33,8 +33,8 @@ lemma canonical_dyad_cost (loss : ℝ) (hl : 0<loss) :
     _ ≤ ∑k∈smallDyadicIndices (Z^v),((2:ℝ)^k)^loss := by
       apply Finset.sum_le_sum
       intro k hk
-      exact Real.one_le_rpow (one_le_pow₀ (by norm_num : (1:ℝ)≤2)) hl.le
-    _ ≤ C*(Z^v)^loss := hbound _ (by positivity) _ (fun k hk=>mem_smallDyadicIndices.mp hk)
+      exact Real.one_le_rpow (one_le_pow₀ (by simp)) hl.le
+    _ ≤ C*(Z^v)^loss := hbound _ (by positivity) _ (by simp)
     _ ≤ C*Z^loss := by
       apply mul_le_mul_of_nonneg_left _ hC.le
       rw [←Real.rpow_mul hZp.le]
@@ -75,7 +75,7 @@ lemma sourceDyad_geometry_eventually (dmin dmax margin vmax : ℝ)
     have hh : 2*Z^dmin≤Z^(1/100:ℝ) := by
       calc
         _ ≤ Z^((1/100:ℝ)-dmin)*Z^dmin := mul_le_mul_of_nonneg_right hsmall (by positivity)
-        _ = _ := by rw [←Real.rpow_add hZp];congr 1;ring
+        _ = _ := by rw [←Real.rpow_add hZp];simp
     linarith [(hrows u hur).2.1]
   have hnorm : ∀u∈rows∩dyadicRows 1 k,
       Z^(sourceDyadExponent Z k)≤rowNorm u ∧ rowNorm u≤2*Z^(sourceDyadExponent Z k) := by

@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
+open scoped Classical ContDiff
+open MeasureTheory InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 
 theorem surviving_physical_source_energy_type_uniform_uniform_degree
@@ -22,29 +20,29 @@ theorem surviving_physical_source_energy_type_uniform_uniform_degree
     (hwindowNorm : ∀ i y, ‖windows i y‖≤1)
     (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
     (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W) :
-    ∃ (degree : ℕ), ∀ {N a c : Eis} {mode : Bool},
+    ∃ (degree : ℕ), ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool},
     ∃ (C₀ C : ℝ), 0≤C₀ ∧ 0<C ∧
     ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1≤X → 1≤Y → 1≤B → 1≤L →
     ∀ (F : PrimeFamily φ) (jF : φ→ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c ∣ N → (if mode then λ₀^2∣a-1 else λ₀^2∣c-1) → IsCoprime a c →
+      (9:ActualEisensteinCubic.O)*c ∣ N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
-      (∀ f, ringChar (Eis⧸F.ideal f)≠2) → (∀ f, jF f<6) →
+      (∀ f, ringChar (ActualEisensteinCubic.O⧸F.ideal f)≠2) → (∀ f, jF f<6) →
     ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
       (D0 : ControlledStratumArithmetic G0.generator N a c mode)
-      (u : Eisˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
+      (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
       0<T → 0<QK → 0<QP → 0<Qn → 0<Qb →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)
       (hrows : ∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ)≤X)
       (D : ∀ K : rows, ∀ P : Pset, IsCoprime K.val P.val →
         ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property).1 (S P.val)).generator N a c mode)
-      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+      (r₀ aw₀ : Ideal ActualEisensteinCubic.O→ℂ) (w₀ : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
       (∀ P ∈ Pset, ∀ i, IsCoprime (Ideal.span {N}) ((F.sum (S P)).ideal i)) →
-      (∀ P ∈ Pset, ∀ i, ringChar (Eis⧸(F.sum (S P)).ideal i)≠2) →
+      (∀ P ∈ Pset, ∀ i, ringChar (ActualEisensteinCubic.O⧸(F.sum (S P)).ideal i)≠2) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n:ℝ)≤Y) →
       (∀ b ∈ bset, primaryGenerator b≠0 ∧ (Ideal.absNorm b:ℝ)≤B) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤2*L) →
@@ -86,11 +84,11 @@ theorem surviving_physical_source_energy_type_uniform_uniform_degree
       change IsCoprime ((F.sum (S P.val)).ideal (Sum.inr i)) ((F.sum (S P.val)).ideal (Sum.inr j))
       exact hScop P.val P.property (Sum.inr_injective.ne hij)
     · rw [hproducts P.val P.property]
-      exact hKP
+      omega
     · exact (hrowcop K.val K.property).1
     · intro f i
       change IsCoprime ((F.sum (S P.val)).ideal (Sum.inl f)) ((F.sum (S P.val)).ideal (Sum.inr i))
-      exact hScop P.val P.property (Sum.inl_ne_inr : (Sum.inl f : φ⊕σ)≠Sum.inr i)
+      exact hScop P.val P.property (by simp)
   have hn0 : ∀ n ∈ nset, n≠0 := fun n hn' => (hn n hn').1.1.ne_zero
   have hb0 : ∀ b ∈ bset, b≠0 := by
     intro b hb' hbzero
@@ -125,9 +123,9 @@ theorem surviving_physical_source_energy_type_uniform_uniform_degree
   have hl1' : (∫ t : ℝ, ‖density t‖)≤C₀*(1+‖θ‖)^degree := by
     simpa only [pow_zero,one_mul] using hl1
   have hsquare : (∫ t : ℝ, ‖density t‖)^2≤(C₀*(1+‖θ‖)^degree)^2 :=
-    (sq_le_sq₀ (integral_nonneg (fun _ => norm_nonneg _)) (by positivity)).mpr hl1'
+    (sq_le_sq₀ (by positivity) (by positivity)).mpr hl1'
   simp_rw [hidentity]
-  rw [Finset.sum_coe_sort rows (fun K : Ideal Eis => ‖(scalar:ℂ)*∫ t : ℝ, density t*∑ e∈branches,
+  rw [Finset.sum_coe_sort rows (fun K : Ideal ActualEisensteinCubic.O => ‖(scalar:ℂ)*∫ t : ℝ, density t*∑ e∈branches,
     weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor (actualCuspColumn D0 s hc u m)
       (r t) (aw t) (w t) u m Pset nset bset K‖^2)]
   apply hh.trans

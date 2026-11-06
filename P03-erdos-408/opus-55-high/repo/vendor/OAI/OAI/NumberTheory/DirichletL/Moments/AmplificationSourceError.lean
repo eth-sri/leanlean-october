@@ -10,20 +10,19 @@ public import OAI.NumberTheory.DirichletL.Moments.GaussNormalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourceError
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
-open CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool
+open CenteredMomentAmplificationSourcePolynomial
 open CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentGaussEnergy CenteredMomentSourceRow
 
- theorem source_error_residual (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) :
+ theorem source_error_residual (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
+    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : ActualEisensteinCubic.O) :
     amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h =
@@ -35,9 +34,9 @@ local notation "O" => ActualEisensteinCubic.O
   rw [source_error_shortening S c p hp hs hpp n h,
     remainder_polynomial S c p hp hpp (n+1) h]
 
-theorem normalized_source_error (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) (T : ℝ) (hT : 0<T) :
+theorem normalized_source_error (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
+    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : ActualEisensteinCubic.O) (T : ℝ) (hT : 0<T) :
     amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h =
@@ -53,9 +52,9 @@ theorem normalized_source_error (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   have hr := primeRoot_ne_zero p hp.ne_zero (n+1)
   field_simp
 
-theorem normalized_source_error_sq (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) (T : ℝ) (hT : 0<T) :
+theorem normalized_source_error_sq (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
+    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : ActualEisensteinCubic.O) (T : ℝ) (hT : 0<T) :
     ‖amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h‖^2 =

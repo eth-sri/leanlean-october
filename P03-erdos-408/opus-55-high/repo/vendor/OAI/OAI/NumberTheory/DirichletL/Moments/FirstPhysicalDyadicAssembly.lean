@@ -10,21 +10,20 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicAssembly
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
-open CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentRowNorm
+open CenteredMomentFirstReduced
+open CenteredMomentSupportedCorrelation
 open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentDyadicCount CenteredMomentPrimitive
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentDyadicCount
 
-def retainedBlock (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
-    (rows:Finset O)(W:𝓢(ℝ,ℂ))(K R:ℝ):ℂ:=
+def retainedBlock (η:Character)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(c:Ideal ActualEisensteinCubic.O→ℂ)
+    (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+    (rows:Finset ActualEisensteinCubic.O)(W:𝓢(ℝ,ℂ))(K R:ℝ):ℂ:=
   let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
   let k:=K/‖eisEmbedding e‖^2
   let r:=activeConductor C D
@@ -32,7 +31,7 @@ def retainedBlock (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→�
     ∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
       let na:=element C C hC.1 S a
       let nb:=element C D hD.1 S b
-      if IsCoprime (a:Ideal O) (b:Ideal O) then
+      if IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O) then
         (tripleRow na nb r (supportedModulusCharacter na (element_supported C C hC.1 S a))
           (supportedModulusCharacter nb (element_supported C D hD.1 S b))⁻¹ (activeFunction C D hC) e *
         ((k/‖eisEmbedding (na*(nb*r))‖^2:ℝ):ℂ)*
@@ -58,8 +57,8 @@ lemma retained_partition (R q:ℝ)(hq:1≤q):
   rw [tsum_eq_sum (s:=retainedIndices R) (fun n hn=>by
     split_ifs with hr
     · by_contra hh
-      exact hn ((mem_retainedIndices R n).mpr ⟨hr,q,hq,hh⟩)
-    · rfl)]
+      exact hn ((mem_retainedIndices R n).mpr (by grind))
+    simp)]
   apply Finset.sum_congr rfl
   intro n hn
   rw [ite_eq_left ((mem_retainedIndices R n).mp hn).1]
@@ -79,7 +78,7 @@ lemma product_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
     fin_cases i
     · change (∑n:indices K K,dyadicWeight n K)=1
       rw [Finset.sum_coe_sort (indices K K) (fun n:ℤ=>dyadicWeight n K)]
-      exact dyadic_partition_on_interval K K K hK ⟨le_rfl,le_rfl⟩
+      exact dyadic_partition_on_interval K K K hK (by simp)
     · change (∑n:retainedIndices R,dyadicWeight n h)=retainedWeight R h
       rw [Finset.sum_coe_sort (retainedIndices R) (fun n:ℤ=>dyadicWeight n h)]
       exact retained_partition R h hh
@@ -92,7 +91,7 @@ lemma product_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
   rw [←Fintype.prod_sum (fun (i:Fin 4)(n:bands K R A B i)=>
     dyadicWeight n (![K,h,a,b] i))]
   simp_rw [he]
-  norm_num [Fin.prod_univ_four]
+  simp
 
 lemma windows_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
     (ha:a∈Set.Icc (1:ℝ) A)(hb:b∈Set.Icc (1:ℝ) B):
@@ -109,29 +108,29 @@ lemma windows_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
     _ = _ :=by
       rw [←Complex.ofReal_sum,product_partition K R A B h a b hK hh ha hb]
 
-def effectiveScale (C D:Ideal O)(E:Finset (CommonIndex C D))(K:ℝ):ℝ:=
+def effectiveScale (C D:Ideal ActualEisensteinCubic.O)(E:Finset (CommonIndex C D))(K:ℝ):ℝ:=
   (K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2)/
     ‖eisEmbedding (activeConductor C D)‖^2
 
-lemma effectiveScale_pos (C D:Ideal O)(E:Finset (CommonIndex C D))(K:ℝ)(hK:0<K):
+lemma effectiveScale_pos (C D:Ideal ActualEisensteinCubic.O)(E:Finset (CommonIndex C D))(K:ℝ)(hK:0<K):
     0<effectiveScale C D E K:=by
   unfold effectiveScale
   apply div_pos (div_pos hK ?_) ?_
   · exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (primeSubsetGenerator_ne_zero _ _)))
   · exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero _)))
 
-lemma element_norm (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
-    ‖eisEmbedding (element C D hD S a)‖^2=((a:Ideal O).absNorm:ℝ):=by
+lemma element_norm (C D:Ideal ActualEisensteinCubic.O)(hD:D≠0)(S:Finset (Ideal ActualEisensteinCubic.O))(a:columns C D hD S):
+    ‖eisEmbedding (element C D hD S a)‖^2=((a:Ideal ActualEisensteinCubic.O).absNorm:ℝ):=by
   rw [eisEmbedding_norm_sq_eq_absNorm_span,element_span]
 
-lemma element_norm_ge_one (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_norm_ge_one (C D:Ideal ActualEisensteinCubic.O)(hD:D≠0)(S:Finset (Ideal ActualEisensteinCubic.O))(a:columns C D hD S):
     1≤‖eisEmbedding (element C D hD S a)‖^2:=by
   rw [element_norm]
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (column_supported C D hD S a).1)
 
-lemma element_norm_le (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S)
-    (c:Ideal O→ℂ)(H:ℝ)(hcap:∀I,c I≠0→(I.absNorm:ℝ)≤H)(ha:c (D*a)≠0):
+lemma element_norm_le (C D:Ideal ActualEisensteinCubic.O)(hD:D≠0)(S:Finset (Ideal ActualEisensteinCubic.O))(a:columns C D hD S)
+    (c:Ideal ActualEisensteinCubic.O→ℂ)(H:ℝ)(hcap:∀I,c I≠0→(I.absNorm:ℝ)≤H)(ha:c (D*a)≠0):
     ‖eisEmbedding (element C D hD S a)‖^2≤H/(D.absNorm:ℝ):=by
   have hDpos:(0:ℝ)<D.absNorm:=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
@@ -140,9 +139,9 @@ lemma element_norm_le (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D 
   simpa only [map_mul,Nat.cast_mul,mul_comm] using hcap (D*a) ha
 
 theorem retainedBlock_eq_blocks
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
-    (rows:Finset O)(hrows:∀h∈rows,h≠0)(W:𝓢(ℝ,ℂ))(K R H:ℝ)(hK:0<K)
+    (η:Character)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(c:Ideal ActualEisensteinCubic.O→ℂ)
+    (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+    (rows:Finset ActualEisensteinCubic.O)(hrows:∀h∈rows,h≠0)(W:𝓢(ℝ,ℂ))(K R H:ℝ)(hK:0<K)
     (hcap:∀I,c I≠0→(I.absNorm:ℝ)≤H):
     retainedBlock η m A t S c C D hC hD E rows W K R=
       ∑n:Blocks (effectiveScale C D E K) R (H/(C.absNorm:ℝ)) (H/(D.absNorm:ℝ)),
@@ -161,16 +160,16 @@ theorem retainedBlock_eq_blocks
   conv_rhs => rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro b hb
-  by_cases hab:IsCoprime (a:Ideal O) (b:Ideal O)
+  by_cases hab:IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O)
   · simp only [hab,ite_true]
-    by_cases hca:c (C*(a:Ideal O))=0
+    by_cases hca:c (C*(a:Ideal ActualEisensteinCubic.O))=0
     · simp [coefficient,hca]
-    by_cases hcb:c (D*(b:Ideal O))=0
+    by_cases hcb:c (D*(b:Ideal ActualEisensteinCubic.O))=0
     · simp [coefficient,hcb]
     have hnorm:1≤‖eisEmbedding h‖^2:=by
       rw [eisEmbedding_norm_sq_eq_absNorm_span]
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr
-        (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr (hrows h hh)))
+        (Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr (by grind)))
     have hpart:=windows_partition (effectiveScale C D E K) R
       (H/(C.absNorm:ℝ)) (H/(D.absNorm:ℝ)) (‖eisEmbedding h‖^2)
       (‖eisEmbedding (element C C hC.1 S a)‖^2) (‖eisEmbedding (element C D hD.1 S b)‖^2)
@@ -183,17 +182,17 @@ theorem retainedBlock_eq_blocks
     exact hpart.symm
   · simp [hab]
 
-def retainedInfiniteBlock (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+def retainedInfiniteBlock (η:Character)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(c:Ideal ActualEisensteinCubic.O→ℂ)
+    (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
     (W:𝓢(ℝ,ℂ))(K R:ℝ):ℂ:=
   let e:=primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E
   let k:=K/‖eisEmbedding e‖^2
   let r:=activeConductor C D
-  inactiveWeight C D E * ∑'h:O,
+  inactiveWeight C D E * ∑'h:ActualEisensteinCubic.O,
     ∑a:columns C C hC.1 S,∑b:columns C D hD.1 S,
       let na:=element C C hC.1 S a
       let nb:=element C D hD.1 S b
-      if IsCoprime (a:Ideal O) (b:Ideal O) then
+      if IsCoprime (a:Ideal ActualEisensteinCubic.O) (b:Ideal ActualEisensteinCubic.O) then
         (tripleRow na nb r (supportedModulusCharacter na (element_supported C C hC.1 S a))
           (supportedModulusCharacter nb (element_supported C D hD.1 S b))⁻¹ (activeFunction C D hC) e *
         ((k/‖eisEmbedding (na*(nb*r))‖^2:ℝ):ℂ)*
@@ -211,12 +210,11 @@ lemma retained_rows_nonzero (R:ℝ):
     ∀h∈CenteredMomentSecondRetainedRows.retainedRows R 1,h≠0:=by
   intro h hh hz
   have hn:=(mem_rowNormDisk.mp hh).1
-  subst h
-  simp at hn
+  simp_all
 
 theorem retainedInfiniteBlock_eq_finite
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+    (η:Character)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(c:Ideal ActualEisensteinCubic.O→ℂ)
+    (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
     (W:𝓢(ℝ,ℂ))(K R:ℝ):
     retainedInfiniteBlock η m A t S c C D hC hD E W K R=
       retainedBlock η m A t S c C D hC hD E
@@ -231,14 +229,14 @@ theorem retainedInfiniteBlock_eq_finite
     apply hh
     apply CenteredMomentSecondRetainedRows.retained_mem_rows R 1 h one_ne_zero
     simpa only [one_mul,normValue_eq_embedding] using hn
-  simp only [hz,Complex.ofReal_zero,mul_zero,zero_mul,ite_self,Finset.sum_const_zero]
+  simp_all
 
 theorem original_retained_dyadic
     {ι:Type*}[Fintype ι][DecidableEq ι]
-    (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
+    (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal ActualEisensteinCubic.O)
     (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
-    (m A:O)(t:ℝ)(S:Finset (Ideal O))
-    (C D:Ideal O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
+    (m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))
+    (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)(E:Finset (CommonIndex C D))
     (W:𝓢(ℝ,ℂ))(K R:ℝ)(hK:0<K):
     retainedInfiniteBlock s.η m A t S
       (CenteredMomentOriginalCommonHarmonic.coefficient s Rbad seed) C D hC hD E W K R=

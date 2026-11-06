@@ -16,7 +16,6 @@ with the explicit row bounds. -/
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Tail
@@ -41,7 +40,7 @@ def edgeTerm (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
 theorem ghostTerm_nonneg (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M : ℕ}
     {s t : P.MemoryState M} (c : GhostChoice s t) : 0 ≤ ghostTerm F n rho i c := by
   unfold ghostTerm
-  split_ifs <;> positivity
+  positivity
 
 theorem edgeTerm_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s) :
@@ -49,22 +48,22 @@ theorem edgeTerm_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin
   unfold edgeTerm
   split_ifs
   · exact mul_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell)) (norm_nonneg _)
-  · exact le_rfl
+  simp
 
 theorem ghostKernel_nonneg (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
     (s t : P.MemoryState (J + F.ell)) :
     0 ≤ absoluteScaledMemoryGhostKernel F J n rho 2 i s t := by
   unfold absoluteScaledMemoryGhostKernel
   split_ifs
-  · exact Finset.sum_nonneg fun c _ => by split_ifs <;> positivity
-  · exact le_rfl
+  · exact Finset.sum_nonneg fun c _ => by positivity
+  simp
 
 theorem edgeKernel_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) :
     0 ≤ absoluteMemoryEdgeKernel A n rho theta i .all s t := by
   unfold absoluteMemoryEdgeKernel
   apply mul_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell))
-  exact Finset.sum_nonneg fun c _ => by split_ifs <;> positivity
+  exact Finset.sum_nonneg fun c _ => by positivity
 
 theorem sum_ghostTerm_eq (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
     (s t : P.MemoryState (J + F.ell)) (h : s.1 = t.1 ∧ s.2.1 = t.2.1) :
@@ -82,7 +81,7 @@ theorem sum_edgeTerm_eq (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin
   apply Finset.sum_congr rfl
   intro c _
   unfold edgeTerm
-  split_ifs <;> simp
+  simp
 
 /-- The absolute history weight with every original ghost birth multiplied by 2. -/
 def doubledWeight {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n) (rho theta : ℝ) : ℝ :=
@@ -125,10 +124,10 @@ theorem tail_norm_le {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n) (rho 
   rw [← norm_weight_mul_pow H rho theta hH]
   have h1 : (1 : ℝ) ≤ (2 : ℝ) ^ (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) -
       (B : ℤ)) * (2 : ℝ) ^ H.totalGhostBirths := by
-    rw [← zpow_natCast (2 : ℝ) H.totalGhostBirths, ← zpow_add₀ (by norm_num : (2 : ℝ) ≠ 0)]
+    rw [← zpow_natCast (2 : ℝ) H.totalGhostBirths, ← zpow_add₀ (by positivity)]
     apply one_le_zpow₀ (by norm_num)
     linarith
-  calc ‖H.Weight rho theta‖ = ‖H.Weight rho theta‖ * 1 := (mul_one _).symm
+  calc ‖H.Weight rho theta‖ = ‖H.Weight rho theta‖ * 1 := by simp
     _ ≤ ‖H.Weight rho theta‖ * ((2 : ℝ) ^ (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) -
           (B : ℤ)) * (2 : ℝ) ^ H.totalGhostBirths) :=
         mul_le_mul_of_nonneg_left h1 (norm_nonneg _)
@@ -211,7 +210,7 @@ theorem fiber_sum_le (A : Model F P J m) (n : ℕ) (rho theta v : ℝ) (hv : 1 �
           ((∏ i, absoluteScaledMemoryGhostKernel F J n rho 2 i (H0.before i) (H0.after i)) *
           (∏ i : Fin n, absoluteMemoryEdgeKernel A n rho theta i .all
             (H0.after i.castSucc) (H0.before i.succ))) := by
-        rw [h1, h2]
+        grind
     _ ≤ |P.memoryMass F J n (H0.before 0)| *
           ((∏ i, absoluteScaledMemoryGhostKernel F J n rho 2 i (H0.before i) (H0.after i)) *
           (∏ i : Fin n, absoluteMemoryEdgeKernel A n rho theta i .all
@@ -238,10 +237,10 @@ theorem start_sum_le (A : Model F P J m) (n : ℕ) (T : Finset (P.MemoryState (J
     intro s hs
     rw [Finset.mem_image]
     exact ⟨(s.1, s.2.1), Finset.mem_univ _,
-      Prod.ext rfl (Prod.ext rfl (funext fun g => (hT s hs g).symm))⟩
+      Prod.ext rfl (Prod.ext rfl (by grind))⟩
   calc ∑ s ∈ T, |P.memoryMass F J n s|
       ≤ ∑ s ∈ Finset.univ.image emb, |P.memoryMass F J n s| :=
-        Finset.sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => abs_nonneg _
+        Finset.sum_le_sum_of_subset_of_nonneg hsub (by grind)
     _ = ∑ p, |P.memoryMass F J n (emb p)| := Finset.sum_image fun p _ q _ h => hinj h
     _ = initialMemoryBoundaryMass A n := by
         rw [Fintype.sum_prod_type]
@@ -289,37 +288,34 @@ theorem finite_doubled_sum_le (A : Model F P J m) (n : ℕ) (rho theta v CG CE :
     simp [w, PrimeGroups.memoryWeight, h0]
   calc ∑ H ∈ S, doubledWeight H rho theta
       = ∑ z ∈ Z, ∑ H ∈ S.filter (fun H => statePath H = z), doubledWeight H rho theta :=
-        (Finset.sum_fiberwise_of_maps_to (fun H hH => Finset.mem_image_of_mem statePath hH) _).symm
+        (Finset.sum_fiberwise_of_maps_to (by grind) _).symm
     _ ≤ ∑ z ∈ Z, |P.memoryMass F J n (z 0).1| * pathWeight w n G E z := by
         apply Finset.sum_le_sum
         intro z hz
         obtain ⟨H0, hH0, rfl⟩ := Finset.mem_image.1 hz
-        exact fiber_sum_le A n rho theta v hv S H0 (hS H0 hH0)
+        exact fiber_sum_le A n rho theta v hv S H0 (by grind)
     _ = ∑ s ∈ St, ∑ z ∈ Z.filter (fun z => (z 0).1 = s),
           |P.memoryMass F J n (z 0).1| * pathWeight w n G E z :=
         (Finset.sum_fiberwise_of_maps_to
-          (fun z hz => Finset.mem_image_of_mem (fun z => (z 0).1) hz) _).symm
+          (by grind) _).symm
     _ = ∑ s ∈ St, |P.memoryMass F J n s| *
           ∑ z ∈ Z.filter (fun z => (z 0).1 = s), pathWeight w n G E z := by
         apply Finset.sum_congr rfl
         intro s _
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
-        intro z hz
-        rw [(Finset.mem_filter.1 hz).2]
+        grind
     _ ≤ ∑ s ∈ St, |P.memoryMass F J n s| * (CG ^ (n + 1) * CE ^ n * w s) := by
         apply Finset.sum_le_sum
         intro s _
         apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
         exact path_bound w hw0 CG CE hCG hCE n G E
           (fun i => ghostKernel_nonneg F J n rho i) (fun i => edgeKernel_nonneg A n rho theta i)
-          hG hE _ s (fun z hz => (Finset.mem_filter.1 hz).2)
+          hG hE _ s (by simp)
     _ = (CG ^ (n + 1) * CE ^ n) * ∑ s ∈ St, |P.memoryMass F J n s| := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
-        intro s hs
-        rw [hw1 s hs]
-        ring
+        grind
     _ ≤ (CG ^ (n + 1) * CE ^ n) * initialMemoryBoundaryMass A n :=
         mul_le_mul_of_nonneg_left (start_sum_le A n St hempty) hK
 
@@ -328,17 +324,17 @@ end Erdos821.P3Tail
 open Erdos821.Blueprint.Graph Erdos821.S2Core Erdos821.P3Tail in
 theorem Erdos821.S2Core.MemoryTailTask_proof : Erdos821.S2Core.MemoryTailTask := by
   intro F P J m n A rho v theta CG CE hv hCG hCE hG hE B
-  have h0 : Set.Finite {H : MemoryHistory A n | H.Valid ∧ H.DistinctBirths} :=
+  have h0 :=
     @Set.toFinite (MemoryHistory A n) {H | H.Valid ∧ H.DistinctBirths}
       (MemoryHistory.valid_distinct_finite A n)
   have hfin : Set.Finite
       {H : MemoryHistory A n | H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B} :=
-    h0.subset fun H hH => ⟨hH.1, hH.2.1⟩
+    h0.subset (by grind)
   have hpow : 0 ≤ (2 : ℝ) ^ (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) -
-      (B : ℤ)) := zpow_nonneg (by norm_num) _
+      (B : ℤ)) := by positivity
   rw [tsum_eq_sum (s := hfin.toFinset) (fun H hH => by
     rw [Set.Finite.mem_toFinset] at hH
-    exact ite_eq_right hH)]
+    grind)]
   calc ∑ H ∈ hfin.toFinset,
         (if H.Valid ∧ H.DistinctBirths ∧ ¬ H.Truncated B then ‖H.Weight rho theta‖ else 0)
       = ∑ H ∈ hfin.toFinset, ‖H.Weight rho theta‖ :=

@@ -8,22 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialCanonicalState
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
+open InverseInitialArithmetic InverseInitialQuotientGeometry
 open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
 open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 
 theorem live_widths_nonnegative
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
     (Z D B v θ H η:ℝ)(hZ:1<Z)(hhi:∀i,hi i≤Z^η)
@@ -33,12 +31,12 @@ theorem live_widths_nonnegative
   have hz:=zero_lt_one.trans hZ
   obtain ⟨_,_,hd,hv,hh⟩:=retained_source_windows p S ψ lo hi hψ Z D B v θ H hz hx
   have bound (a c:ℝ)(i:Fin 4)(ha:a≤hi i*Z^c):a≤Z^(c+η):=by
-    apply (ha.trans (mul_le_mul_of_nonneg_right (hhi i) (Real.rpow_nonneg hz.le c))).trans_eq
+    apply (ha.trans (mul_le_mul_of_nonneg_right (hhi i) (by positivity))).trans_eq
     rw [←Real.rpow_add hz]
     congr 1
     ring
   obtain ⟨hlabel,hrow⟩:=initial_child_enclosures p hp hpr x 1 Z θ v H η hz
-    (bound _ _ 1 hd) (bound _ _ 2 hv) (bound _ _ 3 hh)
+    (by grind) (by grind) (by grind)
   have hI:(1:ℝ)≤Ideal.absNorm (initialChild (toTuple p (sectorSource 1 x))).2.1:=by
     have hne:(initialChild (toTuple p (sectorSource 1 x))).2.1≠0:=
       mul_ne_zero (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _)
@@ -55,21 +53,21 @@ theorem live_widths_nonnegative
     exact one_le_mul_of_one_le_of_one_le hdiv hfreq
   constructor
   · exact (Real.rpow_le_rpow_left_iff hZ).mp
-      (by simpa only [Real.rpow_zero] using hI.trans hlabel)
+      (by simpa using hI.trans hlabel)
   · exact (Real.rpow_le_rpow_left_iff hZ).mp
-      (by simpa only [Real.rpow_zero] using hr.trans hrow)
+      (by simpa using hr.trans hrow)
 
 include hp in
 omit [∀i,(Ideal.span {p i}).IsMaximal] in
 theorem retained_full_puncture
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(D v H aC bC ad bd Z B θ η G:ℝ)(hZ:1<Z)
     (hC:Function.support (ψ 0)⊆Set.Icc aC bC)
     (hd:Function.support (ψ 1)⊆Set.Icc ad bd)
     (hCup:bC≤Z^η)(hdlo:Z^(-η)≤ad)
     (hdiv:∀x∈S,x.divisor⊆x.common)
-    (j:O)(hj:j≠0)(hnj:(Ideal.absNorm (Ideal.span {j}):ℝ)≤Z^(G+η))
-    {t:Ideal O}(ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H)):
+    (j:ActualEisensteinCubic.O)(hj:j≠0)(hnj:(Ideal.absNorm (Ideal.span {j}):ℝ)≤Z^(G+η))
+    {t:Ideal ActualEisensteinCubic.O}(ht:t∈quotientSet p (windowSource p S ψ Z D B v θ H)):
     j*primaryGenerator t≠0 ∧ 0≤fullPunctureWidth Z t j ∧
     ‖eisEmbedding (j*primaryGenerator t)‖^2=Z^(fullPunctureWidth Z t j) ∧
     fullPunctureWidth Z t j≤B-θ+G+3*η := by

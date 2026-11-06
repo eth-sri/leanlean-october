@@ -10,20 +10,19 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-def canonicalSlotSupport (T : Finset PrimeIdeal) : Finset O :=
+def canonicalSlotSupport (T : Finset PrimeIdeal) : Finset ActualEisensteinCubic.O :=
   T.image (fun P=>primaryGenerator P.val)
 
 lemma primaryPrime_injective {P Q : PrimeIdeal} (hP : Supported P.val) (hQ : Supported Q.val)
     (h : primaryGenerator P.val=primaryGenerator Q.val) : P=Q := by
   apply Subtype.ext
-  have hh := congrArg (fun a : O=>Ideal.span {a}) h
+  have hh := congrArg (fun a : ActualEisensteinCubic.O=>Ideal.span {a}) h
   simpa only [span_primaryGenerator_of_supported _ hP,span_primaryGenerator_of_supported _ hQ] using hh
 
 lemma canonicalSlotSupport_nonzero (T : Finset PrimeIdeal) (hT : ∀P∈T,Supported P.val)
-    (a : O) (ha : a∈canonicalSlotSupport T) : a≠0 := by
+    (a : ActualEisensteinCubic.O) (ha : a∈canonicalSlotSupport T) : a≠0 := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp ha
   exact supported_primaryGenerator_ne_zero P.val (hT P hP)
 
@@ -61,14 +60,14 @@ def canonicalTupleEquiv {K : ℕ} (T : Fin K→Finset PrimeIdeal)
 
 theorem sum_canonical_element_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val)
-    (F : (Fin K→O)→ℂ) :
+    (F : (Fin K→ActualEisensteinCubic.O)→ℂ) :
     (∑p : (∀i,↥(canonicalSlotSupport (T i))),F (fun i=>(p i).val))=
       ∑P : (∀i,↥(T i)),F (fun i=>primaryGenerator (P i).val.val) := by
   exact ((canonicalTupleEquiv T hT).sum_comp (fun p=>F (fun i=>(p i).val))).symm
 
 theorem sum_canonical_weighted_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
-    (F : (Fin K→O)→ℂ) :
+    (F : (Fin K→ActualEisensteinCubic.O)→ℂ) :
     (∑p : (∀i,↥(canonicalSlotSupport (T i))),
       (∏i,W i (elementNorm (p i).val/Y i))*F (fun i=>(p i).val))=
       ∑P : (∀i,↥(T i)),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Y i))*

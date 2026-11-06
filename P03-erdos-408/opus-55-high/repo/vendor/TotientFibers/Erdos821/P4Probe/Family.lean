@@ -5,7 +5,7 @@ public import Erdos821.Blueprint.Ideal
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.P4Probe
 open Blueprint.Graph
@@ -19,13 +19,7 @@ lemma selectedProduct_aux_ext (ν : Pattern P J ell m)
     (huv : ∀ g i, i ∈ ν.changed g.val → u g i = v g i) :
     selectedProduct ν block side u = selectedProduct ν block side v := by
   unfold selectedProduct
-  apply Finset.prod_congr rfl
-  intro g _
-  apply Finset.prod_congr rfl
-  intro i _
-  split_ifs with h
-  · rw [huv g i h.2]
-  · rfl
+  simp_all
 
 def ProbeChoice (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bool) :=
   {c : P.BigGroup → Finset (Fin m) //
@@ -57,15 +51,12 @@ lemma liftChoice_bound (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
   unfold liftChoice
   split_ifs
   · exact Finset.card_image_le.trans (by simpa using Finset.card_le_univ (c ⟨g, by assumption⟩))
-  · simp
+  simp
 
 lemma liftChoice_probe (hj : m ≤ J) (c : P.BigGroup → Finset (Fin m))
     (g : P.Group) (i : Fin J) (hi : i ∈ liftChoice hj c g) : i.val < m := by
   unfold liftChoice at hi
-  split_ifs at hi with hg
-  · obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hi
-    exact j.isLt
-  · simp at hi
+  grind
 
 def rawPattern (P : PrimeGroups) (J ell m : ℕ) : Pattern P J ell m where
   changed := fun _ => ∅

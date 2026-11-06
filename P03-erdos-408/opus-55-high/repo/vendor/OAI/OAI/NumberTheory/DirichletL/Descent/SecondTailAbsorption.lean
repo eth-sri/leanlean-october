@@ -36,15 +36,13 @@ theorem choose_second_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau :
   intro Z Y L B P hZ hY hL0 hB hP hy hyi hl
   have hz : 0<Z := zero_lt_one.trans_le hZ
   have hb := second_tail_fixed_cap Y L (Z^Lcap) B P (Z^tau) order hY hL0
-    (Real.one_le_rpow hZ hL) hB hP (Real.rpow_pos_of_pos hz _).le hy hyi hl
+    (Real.one_le_rpow hZ hL) hB hP (by positivity) hy hyi hl
   have hdecay : (Z^Lcap)^13/(1+Z^tau)^order≤Z^(-saving) := by
     calc
       _ ≤ (Z^Lcap)^13/(Z^tau)^order := div_le_div_of_nonneg_left (by positivity)
         (by positivity) (pow_le_pow_left₀ (by positivity) (by linarith) order)
       _ = Z^(13*Lcap-tau*(order:ℝ)) := by
         rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le,←Real.rpow_sub hz]
-        congr 1
-        norm_num
         ring
       _ ≤ _ := by
         apply Real.rpow_le_rpow_of_exponent_le hZ

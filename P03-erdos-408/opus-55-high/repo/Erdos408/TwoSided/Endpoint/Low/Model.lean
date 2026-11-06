@@ -33,9 +33,7 @@ theorem sum_divisors_eq_sum_filter {A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ 
     exact hd' (mem_inter.2 ⟨hd, hA d h⟩)
   rw [h₁]
   congr 1
-  ext d
-  simp only [mem_inter, Nat.mem_divisors, mem_filter]
-  tauto
+  grind
 
 /-- **Steps 2–3, the algebra.** For `H(mn) = H(n)` and a model supported on `D`,
 `P_m = ∑_d A_d ∑_{w ≤ N, md ∣ w} Φ(w) + ∑_{w ≤ N, m ∣ w} Φ(w) (H - ∑_{d ∣ ·} A_d)(w/m)`. -/
@@ -63,8 +61,7 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
       by_cases hd : m * d ∣ w
       · rw [ite_eq_left ((Nat.dvd_div_iff_mul_dvd hmw).2 hd), ite_eq_left hd]
         ring
-      · rw [ite_eq_right fun h => hd ((Nat.dvd_div_iff_mul_dvd hmw).1 h), ite_eq_right hd]
-        ring
+      · simp_all
     rw [sum_congr rfl this]
     ring
   rw [sum_congr rfl hw, sum_add_distrib, sum_comm]
@@ -74,7 +71,7 @@ theorem sum_dvd_eq {Φ H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, A d ≠ 
   congr 2
   refine filter_congr fun w _ => ?_
   constructor
-  · exact fun h => h.2
+  · omega
   · exact fun h => ⟨(Dvd.intro d rfl).trans h, h⟩
 
 /-- **Step 2, the model error.** If `|Φ| ≤ M₀`, `Φ(w) ≠ 0 → Y < w`, `m ≤ Y` and the model
@@ -104,7 +101,7 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
     · have : Φ w = 0 := by
         by_contra h
         exact hw (hΦs w h)
-      rw [this, zero_mul, norm_zero]
+      simp_all
   have hinj : Set.InjOn (· / m) (F : Set ℕ) := by
     intro w₁ hw₁ w₂ hw₂ h
     have h₁ := (mem_filter.1 (mem_filter.1 hw₁).1).2
@@ -118,7 +115,6 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
     have hwN := (mem_Icc.1 hw₁).2
     have hcast : ((w / m : ℕ) : ℝ) = w / m := Nat.cast_div hmw hm'.ne'
     have hw2 : (w : ℝ) ≤ 2 * Y := (Nat.cast_le.2 hwN).trans (Nat.floor_le (by
-      have : (0 : ℝ) ≤ m := hm'.le
       linarith))
     refine mem_Ioc.2 ⟨?_, ?_⟩
     · rw [← Nat.cast_lt (α := ℝ), hcast]
@@ -152,9 +148,7 @@ theorem norm_sum_mul_sub_model_le {Φ E : ℕ → ℂ} {M₀ Y CNN ρ : ℝ} (hM
       ring
     rw [← hsq]
     exact Real.le_sqrt_of_sq_le h3
-  calc _ ≤ M₀ * ∑ w ∈ F, ‖E (w / m)‖ := h1
-    _ ≤ M₀ * ∑ n ∈ I, ‖E n‖ := mul_le_mul_of_nonneg_left h2 hM₀
-    _ ≤ _ := mul_le_mul_of_nonneg_left h4 hM₀
+  nlinarith
 
 /-- **Steps 2–3 for one modulus.** With the hypotheses of `sum_dvd_eq` and
 `norm_sum_mul_sub_model_le`, `m d` coprime to `k` on the support and `G(0) = 0`,
@@ -193,10 +187,10 @@ theorem norm_sum_dvd_sub_le {G H A : ℕ → ℂ} {D : Finset ℕ} (hA : ∀ d, 
     refine sum_le_sum fun d hd => ?_
     rw [← mul_sub, norm_mul]
     by_cases hAd : A d = 0
-    · rw [hAd, norm_zero, zero_mul, zero_mul]
+    · simp_all
     · refine mul_le_mul_of_nonneg_left ?_ (norm_nonneg _)
       have := norm_sum_dvd_twist_sub_le (Nat.mul_pos hm (hD d hd)) hk (hcop d hd hAd) h Nw
         hG0
-      exact this
+      omega
 
 end Erdos408.TwoSided.LowFreq

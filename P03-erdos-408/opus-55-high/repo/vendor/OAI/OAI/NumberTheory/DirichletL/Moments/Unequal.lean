@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Fourier
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentUnequal
 open CenteredMomentCorrelation CenteredMomentCommonSupport
 
@@ -63,7 +63,7 @@ theorem divisor_lift_constant (p v t k : A) (hpt : p ∣ t)
   rw [scaledResidue_mk, ← map_add, hχ, hχ, map_add, map_mul]
   have ht : Ideal.Quotient.mk (Ideal.span {p}) t = 0 :=
     Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr hpt)
-  rw [ht, zero_mul, zero_add]
+  simp_all
 
 omit [IsDomain A] in
 theorem lifted_character_sum_zero (p v : A) (hpv : p ∣ v)
@@ -97,24 +97,23 @@ section Eisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
 open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
 open ConcretePrimeRowBridge hiding O
-local notation "O" => ActualEisensteinCubic.O
 
-theorem supported_power (p : O) (hp : Supported (Ideal.span {p})) (i : ℕ) :
+theorem supported_power (p : ActualEisensteinCubic.O) (hp : Supported (Ideal.span {p})) (i : ℕ) :
     Supported (Ideal.span {p ^ i}) := by
   rw [← Ideal.span_singleton_pow]
   exact supported_pow hp i
 
-theorem supported_power_character_mk (p : O) [ (Ideal.span {p}).IsMaximal]
+theorem supported_power_character_mk (p : ActualEisensteinCubic.O) [ (Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {i : ℕ} (hi : 1 ≤ i) (x : O) :
+    {i : ℕ} (hi : 1 ≤ i) (x : ActualEisensteinCubic.O) :
     supportedModulusCharacter (p ^ i) (supported_power p hp i) (Ideal.Quotient.mk _ x) =
       (actualSextic (Ideal.span {p}) hg ^ i) (Ideal.Quotient.mk _ x) := by
   rw [supportedModulusCharacter_mk, ← Ideal.span_singleton_pow, map_pow,
     idealRowHom_prime x (Ideal.span {p}) hg, MulChar.pow_apply' _ (by omega)]
 
-theorem supported_product_power_character_mk (p : O) [(Ideal.span {p}).IsMaximal]
+theorem supported_product_power_character_mk (p : ActualEisensteinCubic.O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {j d : ℕ} (hj : 1 ≤ j) (x : O) :
+    {j d : ℕ} (hj : 1 ≤ j) (x : ActualEisensteinCubic.O) :
     supportedModulusCharacter (p ^ j * p ^ d)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (Ideal.Quotient.mk _ x) =
@@ -122,10 +121,10 @@ theorem supported_product_power_character_mk (p : O) [(Ideal.span {p}).IsMaximal
   rw [supportedModulusCharacter_mk, ← pow_add, ← Ideal.span_singleton_pow, map_pow,
     idealRowHom_prime x (Ideal.span {p}) hg, MulChar.pow_apply' _ (by omega)]
 
-theorem unequal_prime_power_zero_of_not_six (p : O) [(Ideal.span {p}).IsMaximal]
+theorem unequal_prime_power_zero_of_not_six (p : ActualEisensteinCubic.O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (hj6 : ¬ 6 ∣ j) (k : O) :
+    (hchar : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
+    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (hj6 : ¬ 6 ∣ j) (k : ActualEisensteinCubic.O) :
     actualCorrelation (p ^ j * p ^ d) (p ^ j)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (supported_power p hp j) (p ^ j * k) = 0 := by
@@ -148,9 +147,9 @@ theorem unequal_prime_power_zero_of_not_six (p : O) [(Ideal.span {p}).IsMaximal]
     hχ (supported_product_power_character_mk p hp hg hj)
     (supported_power_character_mk p hp hg hj)
 
-theorem unequal_prime_power_factor (p : O) [(Ideal.span {p}).IsMaximal]
+theorem unequal_prime_power_factor (p : ActualEisensteinCubic.O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : O) :
+    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : ActualEisensteinCubic.O) :
     actualCorrelation (p ^ j * p ^ d) (p ^ j)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (supported_power p hp j) (p ^ j * k) =
@@ -171,9 +170,9 @@ theorem unequal_prime_power_factor (p : O) [(Ideal.span {p}).IsMaximal]
   rw [supported_product_power_character_mk p hp hg hj k] at h
   simpa only [actualCorrelation, supportedCorrelation, tsum_fintype] using h
 
-theorem unequal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
+theorem unequal_prime_power_norm_le (p : ActualEisensteinCubic.O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : O) :
+    {j d : ℕ} (hj : 1 ≤ j) (hd : 1 ≤ d) (k : ActualEisensteinCubic.O) :
     ‖actualCorrelation (p ^ j * p ^ d) (p ^ j)
       (supported_mul_elements _ _ (supported_power p hp j) (supported_power p hp d))
       (supported_power p hp j) (p ^ j * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ j := by

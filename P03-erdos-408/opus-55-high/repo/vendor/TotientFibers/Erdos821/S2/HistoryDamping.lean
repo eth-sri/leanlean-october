@@ -7,7 +7,6 @@ public import Erdos821.S2.MemoryIndices
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -49,8 +48,7 @@ theorem interleaved_product {R : Type*} [CommMonoid R] (n : ℕ)
   have hV : (∏ i, v i) = ∏ i : Fin n, v i.castSucc := by
     rw [Fin.prod_univ_castSucc, hv, mul_one]
   simp only [Finset.prod_mul_distrib]
-  rw [hU, hV]
-  ac_rfl
+  grind
 
 namespace MemoryHistory
 
@@ -82,9 +80,7 @@ theorem weight_rho_independent (rho theta : ℝ) (hρ : rho ≠ 0) (hH : H.Valid
   unfold Weight
   simp_rw [hE]
   rw [mul_assoc, interleaved_product n u v g e hU hV]
-  simp_rw [hG]
-  dsimp only [e]
-  rw [mul_assoc]
+  grind
 
 end MemoryHistory
 

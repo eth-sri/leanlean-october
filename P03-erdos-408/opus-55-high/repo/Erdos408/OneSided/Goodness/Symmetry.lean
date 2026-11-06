@@ -52,7 +52,7 @@ theorem omitProd_permuteLists {J : ℕ} (p : Lists K J) (σ : Fin K → Equiv.Pe
     (o : Fin K → Fin (J + 1)) :
     omitProd (permuteLists p σ) o = omitProd p fun i => σ i (o i) :=
   prod_congr rfl fun i _ =>
-    prod_equiv (σ i) (by simp [(σ i).injective.ne_iff]) fun _ _ => rfl
+    prod_equiv (σ i) (by simp) fun _ _ => rfl
 
 /-! ### Goodness does not see the order -/
 
@@ -155,7 +155,7 @@ theorem card_filter_reorders (s : State x d Y d₀)
 theorem sum_symOp (s : State x d Y d₀) : ∑ s', symOp x d Y d₀ s s' = 1 := by
   unfold symOp
   rw [sum_ite, sum_const_zero, add_zero, sum_const, card_filter_reorders, nsmul_eq_mul]
-  exact mul_inv_cancel₀ (Nat.cast_ne_zero.2 (pow_ne_zero _ (Nat.factorial_ne_zero _)))
+  exact mul_inv_cancel₀ (Nat.cast_ne_zero.2 (by positivity))
 
 /-- `𝒮` is symmetric: reordering by `σ` is undone by `σ⁻¹`. -/
 theorem symOp_comm (s s' : State x d Y d₀) : symOp x d Y d₀ s s' = symOp x d Y d₀ s' s := by
@@ -174,7 +174,7 @@ theorem symOp_comm (s s' : State x d Y d₀) : symOp x d Y d₀ s s' = symOp x d
   · rfl
   · exact absurd (hsymm s s' h) h'
   · exact absurd (hsymm s' s h'') h
-  · rfl
+  simp
 
 /-- A vector on states is slot invariant when it does not see the order of the lists. -/
 def SlotInvariant (v : State x d Y d₀ → ℂ) : Prop :=
@@ -196,7 +196,7 @@ theorem sum_symOp_mul {v : State x d Y d₀ → ℂ} (hv : SlotInvariant v) (s :
         split_ifs with h
         · obtain ⟨h₁, σ, hσ⟩ := h
           rw [hv s s' σ h₁ hσ]
-        · rw [zero_mul, zero_mul]
+        simp
     _ = v s := by rw [← sum_mul, sum_symOp, one_mul]
 
 /-- `𝒮` fixes a slot-invariant vector acting from the left: `⟨u, 𝒮 w⟩ = ⟨u, w⟩` without the

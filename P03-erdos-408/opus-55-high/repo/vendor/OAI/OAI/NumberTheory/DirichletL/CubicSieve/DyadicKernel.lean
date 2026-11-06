@@ -9,33 +9,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,41 +30,31 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -93,7 +69,7 @@ lemma multiplicityRow_norm_le_one (B : Finset ι) (v : ι→ℕ) (z:O) :
   simp only [multiplicityRow,norm_prod,norm_pow]
   calc
     _ ≤ ∏i∈B,(1:ℝ) := by
-      apply Finset.prod_le_prod₀ (fun i hi=>by positivity)
+      apply Finset.prod_le_prod₀ (by simp)
       intro i hi
       apply pow_le_one₀ (norm_nonneg _)
       let : Fintype (O⧸Ideal.span {p i}) := Fintype.ofFinite _
@@ -107,22 +83,18 @@ lemma multiplicityRow_support (B : Finset ι) (v : ι→₀ℕ) (hv : v.support�
   unfold multiplicityRow
   symm
   apply Finset.prod_subset hv
-  intro i hi hn
-  have hv0 : v i=0 := by simpa only [Finsupp.mem_support_iff,not_not] using hn
-  simp only [hv0,pow_zero]
+  simp_all
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CompletedGauss
-open ActualEisensteinCubic
 
 def completedDualScale (X r C K U B : ℝ) (D E : Ideal O) : ℝ :=
   r^3*(Ideal.absNorm D:ℝ)*(Ideal.absNorm E:ℝ)^3*U*B^3*X/(K^2*C^2)
 
 end CompletedGauss
 
-open scoped BigOperators
 namespace CompletedDyadic
 
 def ramifiedScale (ρ q : ℝ) (m : ℕ) : ℝ := ρ*q^m
@@ -151,11 +123,11 @@ theorem finite_tsum_energy_bound {κ α : Type*} [Fintype κ]
     exact hbound i
   have hpoint (k : κ) (i : α) : ‖f i k‖≤g i := by
     apply (sq_le_sq₀ (norm_nonneg _) (hg0 i)).mp
-    exact (Finset.single_le_sum (fun j _ => sq_nonneg ‖f i j‖) (Finset.mem_univ k)).trans
+    exact (Finset.single_le_sum (by simp) (Finset.mem_univ k)).trans
       (hbound i)
   have hsum (k : κ) : Summable (fun i => ‖f i k‖) :=
-    hg.of_nonneg_of_le (fun i => norm_nonneg _) (hpoint k)
-  have hfp : Summable f := Pi.summable.mpr (fun k => (hsum k).of_norm)
+    hg.of_nonneg_of_le (by simp) (hpoint k)
+  have hfp := Pi.summable.mpr (fun k => (hsum k).of_norm)
   have he : (∑'i,F i)=e.symm (fun k => ∑'i,f i k) := by
     rw [show (fun i => F i)=(fun i => e.symm (f i)) from rfl,←e.symm.map_tsum]
     congr 1
@@ -169,7 +141,7 @@ theorem finite_tsum_energy_bound {κ α : Type*} [Fintype κ]
   rw [EuclideanSpace.norm_sq_eq] at hs
   exact hs
 
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open CanonicalQuadraticSieve CompletedDyadic
 
 def completedSmoothDyadicBlock (V₀ V₁ V₂ W : ℝ→ℂ) (K Y ρ q : ℝ)
     (S T : (ℕ×ℕ×ℕ)→Finset (Ideal O))

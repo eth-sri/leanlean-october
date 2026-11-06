@@ -8,7 +8,6 @@ public import Mathlib.GroupTheory.Perm.Cycle.Type
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2
 
@@ -35,11 +34,7 @@ theorem cycleFactors_support_injective {a : ℕ} (σ : Equiv.Perm (Fin a)) :
   intro c hc d hd hsd
   by_contra hcd
   have hdis := (σ.cycleFactorsFinset_pairwise_disjoint hc hd hcd).disjoint_support
-  have hempty : c.support = ∅ := by
-    have hdis' : Disjoint c.support c.support := by simpa only [← hsd] using hdis
-    exact disjoint_self.mp hdis'
-  have hcard := (Equiv.Perm.mem_cycleFactorsFinset_iff.mp hc).1.two_le_card_support
-  simp [hempty] at hcard
+  simp_all
 
 theorem cycleBirthBlocks_card {a : ℕ} (σ : Equiv.Perm (Fin a)) :
     (cycleBirthBlocks σ).card = σ.cycleFactorsFinset.card := by
@@ -64,8 +59,7 @@ theorem cycleBirthBlocks_sign {a : ℕ} (σ : Equiv.Perm (Fin a)) :
       birthRank (cycleBirthBlocks σ) + 2 * σ.cycleFactorsFinset.card := by
     have := cycleBirthBlocks_rank_add_card σ
     omega
-  rw [hs, he, pow_add, pow_mul]
-  simp
+  simp [hs, he, pow_add, pow_mul]
 
 
 end Erdos821.S2

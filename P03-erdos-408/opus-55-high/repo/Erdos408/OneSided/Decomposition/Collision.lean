@@ -18,7 +18,7 @@ Label tuples and pads drawn independently with the harmonic laws `μ_i(p) = 1/(p
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -30,7 +30,7 @@ noncomputable def labelWeight (x : ℝ) (d : Data K) (p : Fin K → ℕ) : ℝ :
 theorem sum_one_div_mul_harmonicMass {S : Finset ℕ} (hS : 0 < harmonicMass S) :
     ∑ y ∈ S, 1 / ((y : ℝ) * harmonicMass S) = 1 := by
   calc ∑ y ∈ S, 1 / ((y : ℝ) * harmonicMass S) = ∑ y ∈ S, 1 / (y : ℝ) * (harmonicMass S)⁻¹ :=
-        sum_congr rfl fun y _ => by ring
+        by grind
     _ = harmonicMass S * (harmonicMass S)⁻¹ := by rw [← sum_mul]; rfl
     _ = 1 := mul_inv_cancel₀ hS.ne'
 
@@ -71,21 +71,21 @@ theorem sum_labelWeight_shared_le {x : ℝ} {d : Data K}
     intro p p'
     split_ifs with hU
     · exact sum_nonneg fun i _ => sum_nonneg fun i' _ =>
-        mul_nonneg (hw0 p) (by split_ifs <;> simp [hw0])
+        mul_nonneg (hw0 p) (by grind)
     · unfold Unshared at hU
       push Not at hU
       obtain ⟨i, i', hii⟩ := hU
       refine le_trans ?_ (single_le_sum (fun i _ => sum_nonneg fun i' _ =>
-        mul_nonneg (hw0 p) (by split_ifs <;> simp [hw0])) (mem_univ i))
+        mul_nonneg (hw0 p) (by grind)) (mem_univ i))
       refine le_trans ?_ (single_le_sum (f := fun i' => labelWeight x d p *
         (if p' i' = p i then labelWeight x d p' else 0)) (fun i' _ =>
-          mul_nonneg (hw0 p) (by split_ifs <;> simp [hw0])) (mem_univ i'))
-      rw [ite_eq_left hii.symm]
+          mul_nonneg (hw0 p) (by grind)) (mem_univ i'))
+      simp_all
   calc ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x,
         (if Unshared p p' then 0 else labelWeight x d p * labelWeight x d p')
       ≤ ∑ p ∈ d.labels x, ∑ p' ∈ d.labels x, ∑ i, ∑ i', labelWeight x d p *
           (if p' i' = p i then labelWeight x d p' else 0) :=
-        sum_le_sum fun p _ => sum_le_sum fun p' _ => hind p p'
+        sum_le_sum fun p _ => sum_le_sum (by grind)
     _ = ∑ p ∈ d.labels x, labelWeight x d p * ∑ i, ∑ i',
           ∑ p' ∈ d.labels x, (if p' i' = p i then labelWeight x d p' else 0) := by
         refine sum_congr rfl fun p _ => ?_
@@ -114,16 +114,16 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
   have hw0 : ∀ z, 0 ≤ μ z := fun z =>
     prod_nonneg fun c _ => one_div_mul_harmonicMass_nonneg (hV c.1) _
   have hite : ∀ (P : Prop) [Decidable P] (z : Fin K × Fin J → ℕ), 0 ≤ if P then μ z else 0 :=
-    fun P _ z => by split_ifs <;> simp [hw0]
+    fun P _ z => by grind
   -- a failure is a coincidence of two pads, or of a pad with a label
   have hind : ∀ z, (if GoodPads p p' z then 0 else μ z) ≤
       ∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) +
         ∑ c, (if z c = p c.1 then μ z else 0) + ∑ c, (if z c = p' c.1 then μ z else 0) := by
     intro z
     have h₁ : 0 ≤ ∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) :=
-      sum_nonneg fun c _ => sum_nonneg fun c' _ => by split_ifs <;> simp [hw0]
-    have h₂ : 0 ≤ ∑ c, (if z c = p c.1 then μ z else 0) := sum_nonneg fun c _ => hite _ z
-    have h₃ : 0 ≤ ∑ c, (if z c = p' c.1 then μ z else 0) := sum_nonneg fun c _ => hite _ z
+      sum_nonneg fun c _ => sum_nonneg fun c' _ => by grind
+    have h₂ : 0 ≤ ∑ c, (if z c = p c.1 then μ z else 0) := sum_nonneg (by grind)
+    have h₃ : 0 ≤ ∑ c, (if z c = p' c.1 then μ z else 0) := sum_nonneg (by grind)
     split_ifs with hG
     · linarith
     · unfold GoodPads at hG
@@ -132,13 +132,13 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
       · obtain ⟨c, c', hzz, hcc⟩ : ∃ c c', z c = z c' ∧ c ≠ c' := by
           by_contra hno
           push Not at hno
-          exact hinj fun c c' h => hno c c' h
+          exact hinj fun c c' h => by grind
         have : μ z ≤ ∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) := by
           refine le_trans ?_ (single_le_sum (fun c _ => sum_nonneg fun c' _ => by
-            split_ifs <;> simp [hw0]) (mem_univ c))
+            grind) (mem_univ c))
           refine le_trans ?_ (single_le_sum (f := fun c' => if c ≠ c' then
             (if z c = z c' then μ z else 0) else 0) (fun c' _ => by
-              split_ifs <;> simp [hw0]) (mem_univ c'))
+              grind) (mem_univ c'))
           rw [ite_eq_left hcc, ite_eq_left hzz]
         linarith
       · push Not at hlab
@@ -146,12 +146,12 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
         by_cases hcp : z c = p c.1
         · have : μ z ≤ ∑ c, (if z c = p c.1 then μ z else 0) := by
             refine le_trans ?_ (single_le_sum (f := fun c => if z c = p c.1 then μ z else 0)
-              (fun c _ => hite _ z) (mem_univ c))
+              (by grind) (mem_univ c))
             rw [ite_eq_left hcp]
           linarith
         · have : μ z ≤ ∑ c, (if z c = p' c.1 then μ z else 0) := by
             refine le_trans ?_ (single_le_sum (f := fun c => if z c = p' c.1 then μ z else 0)
-              (fun c _ => hite _ z) (mem_univ c))
+              (by grind) (mem_univ c))
             rw [ite_eq_left (hc hcp)]
           linarith
   have hw0' : ∀ (c : Fin K × Fin J), ∀ y ∈ band x (d.a c.1),
@@ -161,12 +161,12 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
       1 / ((y : ℝ) * harmonicMass (band x (d.a c.1))) = 1 :=
     fun c => sum_one_div_mul_harmonicMass (hV c.1)
   have hεc : ∀ (c : Fin K × Fin J), ∀ y ∈ band x (d.a c.1),
-      1 / ((y : ℝ) * harmonicMass (band x (d.a c.1))) ≤ ε := fun c => hε c.1
+      1 / ((y : ℝ) * harmonicMass (band x (d.a c.1))) ≤ ε := by grind
   calc ∑ z ∈ padSet x d J, (if GoodPads p p' z then 0 else μ z)
       ≤ ∑ z ∈ padSet x d J,
           (∑ c, ∑ c', (if c ≠ c' then (if z c = z c' then μ z else 0) else 0) +
             ∑ c, (if z c = p c.1 then μ z else 0) + ∑ c, (if z c = p' c.1 then μ z else 0)) :=
-        sum_le_sum fun z _ => hind z
+        sum_le_sum (by grind)
     _ = ∑ c, ∑ c', (if c ≠ c' then ∑ z ∈ padSet x d J, (if z c = z c' then μ z else 0)
             else 0) +
           ∑ c, ∑ z ∈ padSet x d J, (if z c = p c.1 then μ z else 0) +
@@ -176,19 +176,17 @@ theorem sum_padWeight_bad_le {x : ℝ} {d : Data K}
         congr 2
         refine sum_congr rfl fun c _ => ?_
         rw [sum_comm]
-        refine sum_congr rfl fun c' _ => ?_
-        split_ifs <;> simp
+        simp
     _ ≤ ∑ _c : Fin K × Fin J, ∑ _c' : Fin K × Fin J, ε + ∑ _c : Fin K × Fin J, ε +
           ∑ _c : Fin K × Fin J, ε := by
         gcongr with c _ c' _ c _ c _
         · split_ifs with hcc
           · exact sum_piFinset_ite_eq_eq_le hw0' hw1 hεc hcc
-          · exact hε0
+          omega
         · exact sum_piFinset_ite_eq_le hw0' hw1 hε0 hεc c (p c.1)
         · exact sum_piFinset_ite_eq_le hw0' hw1 hε0 hεc c (p' c.1)
     _ = ((K * J : ℕ) ^ 2 + 2 * (K * J : ℕ)) * ε := by
         simp only [sum_const, card_univ, Fintype.card_prod, Fintype.card_fin, nsmul_eq_mul]
-        push_cast
-        ring
+        linarith
 
 end Erdos408.OneSided

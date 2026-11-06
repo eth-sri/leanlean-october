@@ -5,7 +5,6 @@ public import Erdos821.Blueprint.Classical
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P5Core
@@ -32,8 +31,7 @@ theorem occupied_witnesses (s : Finset ℕ) (b : ℕ → ℂ) (threshold Tmax : 
   classical
   choose t ht using fun j : occupied s b threshold Tmax => j.property
   refine ⟨fun j => if h : j ∈ occupied s b threshold Tmax then t ⟨j, h⟩ else 0, ?_⟩
-  intro j hj
-  simpa only [dite_eq_left hj] using ht ⟨j, hj⟩
+  simp_all
 
 /-- Selecting from cells with a common residue modulo three gives separated times. -/
 theorem cell_times_separated (t : ℤ → ℝ) (j k : ℤ)
@@ -44,9 +42,8 @@ theorem cell_times_separated (t : ℤ → ℝ) (j k : ℤ)
   have hgap : j + 3 ≤ k ∨ k + 3 ≤ j := by omega
   rcases hgap with hgap | hgap
   · have hgap' : (j : ℝ) + 3 ≤ k := by exact_mod_cast hgap
-    have h : t j - t k ≤ -1 := by linarith
-    exact (le_abs_self (-(t j - t k))).trans' (by linarith) |>.trans_eq (abs_neg _)
+    grind
   · have hgap' : (k : ℝ) + 3 ≤ j := by exact_mod_cast hgap
-    exact (le_abs_self (t j - t k)).trans' (by linarith)
+    grind
 
 end Erdos821.P5Core

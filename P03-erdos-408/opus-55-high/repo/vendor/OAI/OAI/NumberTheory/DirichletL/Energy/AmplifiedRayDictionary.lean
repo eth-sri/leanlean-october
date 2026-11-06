@@ -9,16 +9,15 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedRayDictionary
-open HeckeFamily CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
+open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentAllocatedRayDictionary
-open CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentEligibleEnergy CenteredMomentCommonHeightEnvelope
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open CenteredMomentFirstAnnularInput CenteredMomentHeckeSlots
+open CenteredMomentCommonMaskEnergy
+open CenteredMomentEligibleEnergy
 local notation "O" => HeckeFamily.O
 variable {α : Type*} [Fintype α]
 local instance {β : Type*} : DecidableEq β := Classical.decEq _
@@ -30,22 +29,22 @@ lemma active_pools_subset (s : Input α) (j : α⊕Fin 2) :
   | inr j => exact Finset.Subset.refl _
 
 lemma actualAllocations_mono {β : Type*} [Fintype β]
-    (S T : β→Finset (Ideal O)) (h : ∀i,S i⊆T i) (C : Ideal O) :
+    (S T : β→Finset (Ideal HeckeFamily.O)) (h : ∀i,S i⊆T i) (C : Ideal HeckeFamily.O) :
     actualAllocations S C⊆actualAllocations T C := by
   intro B hB
   obtain ⟨hlabel,hprod⟩ := Finset.mem_filter.mp hB
   obtain ⟨v,hv,hvB⟩ := Finset.mem_image.mp hlabel
   refine Finset.mem_filter.mpr ⟨Finset.mem_image.mpr ⟨v,?_,hvB⟩,hprod⟩
-  exact Fintype.mem_piFinset.mpr (fun i=>h i (Fintype.mem_piFinset.mp hv i))
+  grind
 
-abbrev restoreAllocation (s : Input α) (C : Ideal O)
+abbrev restoreAllocation (s : Input α) (C : Ideal HeckeFamily.O)
     (B : actualAllocations (activeInput s).pools C) : actualAllocations s.pools C :=
   ⟨B.val,actualAllocations_mono _ _ (active_pools_subset s) C B.property⟩
 
-@[simp] lemma restoreAllocation_val (s : Input α) (C : Ideal O)
+@[simp] lemma restoreAllocation_val (s : Input α) (C : Ideal HeckeFamily.O)
     (B : actualAllocations (activeInput s).pools C) : (restoreAllocation s C B).val=B.val := rfl
 
-lemma rowSlot_active (s : Input α) (i : α) (η : Character) (m A z : O) (t v : ℝ) :
+lemma rowSlot_active (s : Input α) (i : α) (η : Character) (m A z : HeckeFamily.O) (t v : ℝ) :
     rowSlot η m A z ((activeInput s).slots i)
       (heightCoefficient ((activeInput s).toData.coefficient i) v) t=
     rowSlot η m A z (s.slots i) (heightCoefficient (s.toData.coefficient i) v) t := by
@@ -57,28 +56,28 @@ lemma rowSlot_active (s : Input α) (i : α) (η : Character) (m A z : O) (t v :
     exact hn (Finset.mem_filter.mpr ⟨hI,hh⟩)
   simp only [heightCoefficient,Data.coefficient,activeInput,hz,mul_zero,zero_mul]
 
-def restoredError (s : Input α) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) (Q : Ideal O) (k : ℕ)
+def restoredError (s : Input α) (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C)
+    (τ : Character) (t : ℝ) (Q : Ideal HeckeFamily.O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) : Input (liveIndices Bp.val) :=
   twiceChild s C R B τ t Q k (restoreAllocation (child s C R B τ t) (Q^k) Bp) υ v
 
-lemma error_source_active (s : Input α) (C R : Ideal O) (B : actualAllocations s.pools C)
-    (τ : Character) (t : ℝ) (Q : Ideal O) (k : ℕ)
+lemma error_source_active (s : Input α) (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C)
+    (τ : Character) (t : ℝ) (Q : Ideal HeckeFamily.O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) :
     child (activeInput (child s C R B τ t)) (Q^k) (R*C) Bp υ v=
       activeInput (restoredError s C R B τ t Q k Bp υ v) := rfl
 
 section Ray
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 variable {s : Input α} {η₀ : Character} {θ : α→RayQuotient.Characters M H}
   {w σ freq : α→ℝ} {W : ℝ→ℂ} {bslot Z : ℝ}
 
 theorem matches_child (h : Matches M H hH s η₀ θ w σ freq W bslot Z)
-    (C R : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
+    (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
     Matches M H hH (child s C R B τ t) η₀
       (fun i=>θ i.val) (fun i=>w i.val) (fun i=>σ i.val)
       (fun i=>freq i.val) W bslot Z := by
@@ -89,8 +88,8 @@ theorem matches_child (h : Matches M H hH s η₀ θ w σ freq W bslot Z)
   · intro i;exact h.scale i.val
 
 theorem matches_twiceChild (h : Matches M H hH s η₀ θ w σ freq W bslot Z)
-    (C R : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (k : ℕ)
+    (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+    (Q : Ideal HeckeFamily.O) (k : ℕ)
     (Bp : actualAllocations (child s C R B τ t).pools (Q^k)) (υ : Character) (v : ℝ) :
     Matches M H hH (twiceChild s C R B τ t Q k Bp υ v) η₀
       (fun i=>θ i.val.val) (fun i=>w i.val.val) (fun i=>σ i.val.val)
@@ -98,8 +97,8 @@ theorem matches_twiceChild (h : Matches M H hH s η₀ θ w σ freq W bslot Z)
   matches_child M H hH (matches_child M H hH h C R B τ t) (Q^k) (R*C) Bp υ v
 
 theorem restoredError_matches (h : Matches M H hH s η₀ θ w σ freq W bslot Z)
-    (C R : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (k : ℕ)
+    (C R : Ideal HeckeFamily.O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+    (Q : Ideal HeckeFamily.O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) :
     Matches M H hH (restoredError s C R B τ t Q k Bp υ v) η₀

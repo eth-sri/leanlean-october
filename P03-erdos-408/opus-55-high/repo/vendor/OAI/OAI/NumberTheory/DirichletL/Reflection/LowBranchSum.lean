@@ -9,20 +9,19 @@ public import OAI.NumberTheory.DirichletL.Reflection.BranchCount
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+open scoped Classical
+open CubicEisenstein CompletedGauss InverseTerminalWidths
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {a c₀ : Eis} {mode : Bool}
+variable {a c₀ : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem original_surviving_low_energy_sum
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
     (ρ : ℝ) (hρ : 0<ρ) (kK kP η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hηpos : 0<η) :
     ∃ Z₀ C : ℝ, 1<Z₀ ∧ 0<C ∧
-    ∀ (J I F Q Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
+    ∀ (J I F Q Q₀ : Ideal ActualEisensteinCubic.O) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
     ∀ (A : Finset (FreeReflection.pool J Q Q₀))
-      (column : Ideal Eis→Ideal Eis→ℂ)
+      (column : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ)
       (Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot : ℝ) (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<X → 0<QK → 0<QP →
       (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d) →
@@ -62,7 +61,7 @@ theorem original_surviving_low_energy_sum
   let branches := survivingFrozenBranches G j column (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
   have hcbr := hcount G ((poolPrimeFamily J Q Q₀).restrict_pairwise
     (poolPrimeFamily_pairwise J Q Q₀) A) j column (reflectedNDyad i.2.2) (reflectedBDyad i.2.1)
-  have hz' : 1<Z := lt_of_lt_of_le hZ₀ hZ
+  have hz' : 1<Z := by linarith
   have hb (e : A→Fin 3) (he : e∈branches) := hsave J I F Q Q₀ hJ hI hQ hpower hmask A e column
     Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot i
     hZ hCk hCO hCH hX hQK hQP hk hpow hrow hlogH hPowUpper hQwidth hd hd1 hell0 hO hzcap hshift
@@ -74,12 +73,11 @@ theorem original_surviving_low_energy_sum
       intro e he
       apply Real.rpow_le_rpow_of_exponent_le hz'.le
       have hh := hb e he
-      dsimp only at hh
       linarith
     _ = ((branches.card:ℝ)^2)*Z^((5/6-2*d)+200*η+π-O₀/2) := by
       simp only [Finset.sum_const,nsmul_eq_mul]
       ring
-    _ ≤ _ := mul_le_mul_of_nonneg_right hcbr (Real.rpow_nonneg (lt_trans zero_lt_one hz').le _)
+    _ ≤ _ := mul_le_mul_of_nonneg_right hcbr (by positivity)
 end
 end SevenEighths.InverseReflectedPhase
 

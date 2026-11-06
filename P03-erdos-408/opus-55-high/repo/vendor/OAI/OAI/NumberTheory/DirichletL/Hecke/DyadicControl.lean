@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.HeckeDyadicControl
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
@@ -29,7 +29,7 @@ theorem original_disk_control (e ε : ℝ)
   intro χ hχ a t ha ha' hzero z hz
   obtain ⟨ψ,_,hp,hn,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have hregular : regular ψ = LFunction ψ := regular_eq_nonprincipal ψ hψ
+  have hregular := regular_eq_nonprincipal ψ hψ
   have hzeroψ : ∀ w ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular ψ w ≠ 0 := by
     intro w hw
     rw [hregular]
@@ -48,7 +48,7 @@ theorem original_disk_control (e ε : ℝ)
     linarith
   have hzpos : 0 < z.re := by linarith
   have hdel := hdelete χ.modulus ψ z hzre
-  have hL : LFunction χ z = LFunction ψ z*factors χ.modulus ψ z :=
+  have hL :=
     LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hzpos
   have hR : HeckeReciprocal.reciprocal χ z =
       (LFunction ψ z)⁻¹*(factors χ.modulus ψ z)⁻¹ := by
@@ -93,7 +93,7 @@ theorem buffered_original_control (e ε : ℝ)
   obtain ⟨C,hC,hbound⟩ := original_disk_control e ε he he' hε
   refine ⟨C,hC,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j t ht z hz
-  exact hbound (χ j) (hχ j) a t (by linarith) ha'
+  exact hbound (χ j) (by grind) a t (by linarith) ha'
     (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
       hmax j t ht (ball_subset_closedBall hw)) z hz
 

@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPrefactor
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CompletedGauss RayFourExpansion
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma normalized_double_sum_bound (F G : Finset SupportedIdeal) (α V : SupportedIdeal→SupportedIdeal→ℂ)
     (hα : ∀C∈F,∀D∈G,‖α C D‖≤1) (p : ℝ) (hp : 0≤p) :
@@ -28,7 +27,7 @@ lemma normalized_double_sum_bound (F G : Finset SupportedIdeal) (α V : Supporte
       apply Finset.sum_le_sum
       intro D hD
       rw [norm_mul]
-      exact (mul_le_mul_of_nonneg_right (hα C hC D hD) (norm_nonneg _)).trans_eq (one_mul _)
+      exact (mul_le_mul_of_nonneg_right (by grind) (norm_nonneg _)).trans_eq (one_mul _)
     _=_ := by simp only [Finset.mul_sum]
 
 theorem canonical_nonexceptional_ideal_sum (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
@@ -76,7 +75,7 @@ theorem canonical_nonexceptional_ideal_sum (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
       _=(K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J)*
         ((Q/Y^3)*gramIdealNorm C*(Y/(gramIdealNorm C*gramIdealNorm D))^2*(P/gramIdealNorm C)*
         min 1 ((M*gramIdealNorm C*(P/gramIdealNorm C)/(Y/(gramIdealNorm C*gramIdealNorm D)))^A)) := by ring
-      _=_ := by rw [supported_nonexceptional_prefactor C D M P Y Q hM hP hY A];dsimp [B];ring
+      _=_ := by rw [supported_nonexceptional_prefactor C D M P Y Q hM hP hY A];linarith
   calc
     _≤∑C∈F,∑D∈G,(Q/Y^3)*‖V C D‖ := normalized_double_sum_bound F G α V hα _ (by positivity)
     _≤∑C∈F,∑D∈G,B*(gramIdealNorm C^(-2:ℝ)*gramIdealNorm D^(-2:ℝ)*
@@ -84,7 +83,7 @@ theorem canonical_nonexceptional_ideal_sum (δ : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
     _=B*(∑C∈F,∑D∈G,gramIdealNorm C^(-2:ℝ)*gramIdealNorm D^(-2:ℝ)*
         min 1 ((gramIdealNorm C*gramIdealNorm D/(Y/(M*P)))^A)) := by simp only [Finset.mul_sum]
     _≤B*(L*(Y/(M*P))^(-1+δ)) := mul_le_mul_of_nonneg_left (hideal A (by omega) _ (by positivity) F G) hB
-    _=_ := by dsimp [B,M];ring
+    _=_ := by linarith
 
 theorem canonical_exceptional_ideal_sum (ε : ℝ) (hε : 0<ε) (hε1 : ε<1/6)
     (a b M₀ : ℝ) (ha : 0<a) (hb : 0≤b) (hM₀ : 0≤M₀) :
@@ -126,14 +125,14 @@ theorem canonical_exceptional_ideal_sum (ε : ℝ) (hε : 0<ε) (hε1 : ε<1/6)
     calc
       _=(K*H₀.sup (schwartzSeminormFamily ℝ ℝ ℂ) U)*
         ((Q/Y^3)*gramIdealNorm C*(Y/(gramIdealNorm C*gramIdealNorm D))^2*(M*gramIdealNorm C)^ε*(P/gramIdealNorm C)^(1/6:ℝ)) := by ring
-      _=_ := by rw [supported_exceptional_prefactor C D M P Y Q ε hM hP hY];dsimp [B];ring
+      _=_ := by rw [supported_exceptional_prefactor C D M P Y Q ε hM hP hY];linarith
   calc
     _≤∑C∈F,∑D∈G,(Q/Y^3)*‖V C D‖ := normalized_double_sum_bound F G α V hα _ (by positivity)
     _≤∑C∈F,∑D∈G,B*(gramIdealNorm C^(-7/6+ε:ℝ)*gramIdealNorm D^(-2:ℝ)) :=
       Finset.sum_le_sum (fun C hC=>Finset.sum_le_sum (fun D hD=>ht C D hC hD))
     _=B*(∑C∈F,∑D∈G,gramIdealNorm C^(-7/6+ε:ℝ)*gramIdealNorm D^(-2:ℝ)) := by simp only [Finset.mul_sum]
     _≤B*L := mul_le_mul_of_nonneg_left (hideal F G) hB
-    _=_ := by dsimp [B,M];ring
+    _=_ := by linarith
 
 end SevenEighths.ProbeGramCommon
 end

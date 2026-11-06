@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondParentAssembly
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseFirstPriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic
-local notation "O" => ActualEisensteinCubic.O
 
 @[ext] structure Source (ι : Type*) (Jo : ℕ) where
   cube : CubeCoordinates ι
@@ -28,7 +27,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 def extractedSupport (negative : Bool) (x : Source ι Jo) : Finset ι :=
   ((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪x.quotientSupport
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def parent (x : Source ι Jo) : SecondParentSource ι Jo where
   cube := x.cube
@@ -75,7 +74,7 @@ theorem appendParent_injective {Jn : ℕ} :
       appendParent q.1 q.2) := by
   intro q r h
   apply Prod.ext
-  · simpa only [forget_append] using congrArg forgetAppended h
+  · simpa using congrArg forgetAppended h
   · funext i
     simpa only [appendParent,Fin.addCases_right] using
       congrArg (fun x : SecondParentSource ι (Jo+Jn)=>x.oldAssigned (Fin.natAdd Jo i)) h
@@ -92,7 +91,7 @@ theorem attach_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) (
     (parent p q.1,fun i=>sourcePrime p (pairedSlotAssignment J J q.2 i))
     (parent p r.1,fun i=>sourcePrime p (pairedSlotAssignment J J r.2 i)) h
   apply Prod.ext
-  · exact parent_injective p hinj (congrArg Prod.fst he)
+  · exact parent_injective p hinj (by grind)
   · apply pairedSlotAssignment_injective J J
     funext i
     exact hinj (congrArg (fun q : SecondParentSource ι Jo ×
@@ -141,7 +140,7 @@ def fixedPoint (b : CubeCoordinates ι) (C E : Finset ι)
 
 variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
+def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (selector : Finset ι→ℂ) (r : RayFourExpansion.RayCharacter×RayFourExpansion.RayCharacter)
     (core : FirstCoreIndex) (D : Finset ι) : ℝ :=
   (‖RayFourExpansion.crossCoeff r.1 r.2‖*‖selector D‖) *

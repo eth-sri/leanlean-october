@@ -8,35 +8,34 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic CanonicalRowCompletion
-local notation "O"=>HeckeFamily.O
+open InverseInitialConjugateEnergy InverseInitialPoissonBridge
+open InverseInitialOverlap UniqueFactorizationMonoid CanonicalRowCompletion
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-def remainingResidual (S:Finset (Ideal O))(L:ι→Finset (Ideal O))(J:Finset ι)
-    (x:Assigned L J)(coeff:ι→Ideal O→ℂ)(η:Ideal O→*ℂ)(a:Ideal O→ℂ)
-    (W:ℝ→ℂ)(Z r z G:ℝ)(u:O) : ℂ :=
+def remainingResidual (S:Finset (Ideal HeckeFamily.O))(L:ι→Finset (Ideal HeckeFamily.O))(J:Finset ι)
+    (x:Assigned L J)(coeff:ι→Ideal HeckeFamily.O→ℂ)(η:Ideal HeckeFamily.O→*ℂ)(a:Ideal HeckeFamily.O→ℂ)
+    (W:ℝ→ℂ)(Z r z G:ℝ)(u:HeckeFamily.O) : ℂ :=
   ∑y:Remaining L J,star ((∏i:{i:ι // i∉J},coeff i.val (y i).val)*
     (moebius (remainingIdeal L J y):ℂ))*
     conjugatedResidual S (assignedIdeal L J x*remainingIdeal L J y)
       (assignedIdeal L J x) η a W Z r z G u
 
-theorem assigned_remaining_squarefree (L:ι→Finset (Ideal O))
+theorem assigned_remaining_squarefree (L:ι→Finset (Ideal HeckeFamily.O))
     (hprime:∀i,∀P∈L i,Prime P)
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
     (J:Finset ι)(x:Assigned L J)(y:Remaining L J) :
     Squarefree (assignedIdeal L J x*remainingIdeal L J y) := by
   rw [←joinTuple_product]
-  exact tuple_product_squarefree _ (fun i=>hprime i _ (joinTuple L J x y i).property)
+  exact tuple_product_squarefree _ (by grind)
     (tuple_injective L hdis _)
 
-theorem assigned_source_eq_remainingResidual (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
+theorem assigned_source_eq_remainingResidual (S:Finset (Ideal HeckeFamily.O))
+    (L:ι→Finset (Ideal HeckeFamily.O))(hprime:∀i,∀P∈L i,Prime P)
     (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
-    (J:Finset ι)(x:Assigned L J)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(u:O) :
+    (J:Finset ι)(x:Assigned L J)(coeff:ι→Ideal HeckeFamily.O→ℂ)
+    (η:Ideal HeckeFamily.O→*ℂ)(a:Ideal HeckeFamily.O→ℂ)(W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(u:HeckeFamily.O) :
     (∑y:Remaining L J,(∏i:{i:ι // i∉J},coeff i.val (y i).val)*
       originalFixedPolynomial S (assignedIdeal L J x*remainingIdeal L J y)
         (assignedIdeal L J x) η a W Z r z u)=
@@ -48,15 +47,15 @@ theorem assigned_source_eq_remainingResidual (S:Finset (Ideal O))
   apply Finset.sum_congr rfl
   intro y hy
   rw [originalFixedPolynomial_eq_conjugatedResidual S
-    (assigned_remaining_squarefree L hprime hdis J x y) (dvd_mul_right _ _) η a W hZ r z G,
+    (assigned_remaining_squarefree L hprime hdis J x y) (by simp) η a W hZ r z G,
     InverseInitialOverlap.residual,quotient_mul_cancel (assignedIdeal_ne_zero L hprime J x)]
   ring
 
-theorem original_selected_overlap (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(G:Finset ι→ℝ)
-    (hZ:0<Z)(u:O) :
+theorem original_selected_overlap (S:Finset (Ideal HeckeFamily.O))
+    (L:ι→Finset (Ideal HeckeFamily.O))(hprime:∀i,∀P∈L i,Prime P)
+    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal HeckeFamily.O→ℂ)
+    (η:Ideal HeckeFamily.O→*ℂ)(a:Ideal HeckeFamily.O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(G:Finset ι→ℝ)
+    (hZ:0<Z)(u:HeckeFamily.O) :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
       originalTotalPolynomial S (∏i,(q i).val) η a W Z r z u)=
     ∑J∈Finset.univ.powerset,∑x:Assigned L J,

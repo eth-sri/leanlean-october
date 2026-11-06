@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceEncoding
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-theorem secondChildColumn_drop_puncture (Ψ : Eis →* ℂ) (m d f k : Eis)
+theorem secondChildColumn_drop_puncture (Ψ : ActualEisensteinCubic.O →* ℂ) (m d f k : ActualEisensteinCubic.O)
     (hd : d ∣ m*f) (H : Finset ι → ℂ) (S : Finset ι) :
     secondChildColumn p hp hcop hg Ψ (m*d) f k H S =
       secondChildColumn p hp hcop hg Ψ m f k H S := by
@@ -26,8 +25,8 @@ theorem secondChildColumn_drop_puncture (Ψ : Eis →* ℂ) (m d f k : Eis)
       obtain ⟨a,ha⟩ := hd
       rw [ha]
       exact Ideal.mul_mem_right _ _ hdI
-    have hl : (m*d)*f ∈ Ideal.span {p i} := by
-      exact Ideal.mul_mem_right _ _ (Ideal.mul_mem_left _ _ hdI)
+    have hl : (m*d)*f ∈ Ideal.span {p i} :=
+      Ideal.mul_mem_right _ _ (Ideal.mul_mem_left _ _ hdI)
     rw [secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ (m*d) f k H S i hi hl,
       secondChildColumn_zero_of_mask_label_mem p hp hcop hg Ψ m f k H S i hi hr]
   · have hm : rowCoprimeMask (fun i => Ideal.span {p i}) S d = 1 := by
@@ -35,8 +34,8 @@ theorem secondChildColumn_drop_puncture (Ψ : Eis →* ℂ) (m d f k : Eis)
     simp only [secondChildColumn,FirstPassCubeLabels.mask_mul _ hg S,hm,mul_one]
 
 omit [DecidableEq σ] in
-theorem finiteCanonicalMarkedRow_drop_puncture (F : Finset ι) (Ψ : Eis →* ℂ)
-    (m d f k : Eis) (hd : d ∣ m*f)
+theorem finiteCanonicalMarkedRow_drop_puncture (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ)
+    (m d f k : ActualEisensteinCubic.O) (hd : d ∣ m*f)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ) :
     finiteCanonicalMarkedRow p hp hcop hg F Ψ (m*d) f k slots lists a W X =
       finiteCanonicalMarkedRow p hp hcop hg F Ψ m f k slots lists a W X := by
@@ -46,7 +45,7 @@ omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem actual_first_divisor_dvd_child
     (B C D V : Finset ι) (hCB : Disjoint C B) (hD : D ⊆ C∪B)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v i)
-    (m r e : Eis) :
+    (m r e : ActualEisensteinCubic.O) :
     primeSubsetGenerator (fun i => Ideal.span {p i}) D ∣
       ((m*b0Label p B v ε₁ ε₂)*r)*
         (((∏ i ∈ C,p i)*jLabel p B v ε₁ ε₂)*e*∏ i ∈ V,p i) := by
@@ -61,7 +60,7 @@ theorem actual_first_divisor_dvd_child
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem actual_second_extracted_support_killed
     (B C G E V A : Finset ι) (hEG : E ⊆ G) (hA : A ⊆ (B∪C)∪G)
-    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v i) (m : Eis) :
+    (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v i) (m : ActualEisensteinCubic.O) :
     ∀ i ∈ A,
       ((m*b0Label p B v ε₁ ε₂)*secondMaskQuotient p E G hEG)*
         (((∏ j ∈ C,p j)*jLabel p B v ε₁ ε₂)*
@@ -97,7 +96,7 @@ theorem actual_second_split_fixed_family
     (F B C D G E V A : Finset ι) (hCB : Disjoint C B) (hD : D ⊆ C∪B)
     (hEG : E ⊆ G) (hA : A ⊆ (B∪C)∪G)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v i)
-    (Ψ : Eis →* ℂ) (m k : Eis) (slots : Finset σ) (lists : σ → Finset ι)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (m k : ActualEisensteinCubic.O) (slots : Finset σ) (lists : σ → Finset ι)
     (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ) :
     let d := primeSubsetGenerator (fun i => Ideal.span {p i}) D
     let e := primeSubsetGenerator (fun i => Ideal.span {p i}) E

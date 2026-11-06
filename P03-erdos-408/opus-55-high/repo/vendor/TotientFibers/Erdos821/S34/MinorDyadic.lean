@@ -7,7 +7,7 @@ public import Erdos821.S34.KernelReindex
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -36,8 +36,7 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
   let A := cellTransposeApply G a Q h ξ g
   let B := cellTransposeApply G b Q h ξ (fun Y => star (f Y))
   have hdecomp : comparisonError G a b Q h ξ θ ζ f g = R - C := by
-    simp only [comparisonError, R, C, phase, tuplePhase, expect, mul_sub,
-      Finset.sum_sub_distrib, Finset.mul_sum, mul_assoc]
+    simp only [comparisonError, R, C, phase, tuplePhase, expect, mul_sub, Finset.sum_sub_distrib, mul_assoc]
   have hR_eq : R = expect G a (fun X => expect G b (fun Y => g X * star (f Y) * phase X Y)) := by
     simp only [R, expect, Finset.mul_sum]
     rw [Finset.sum_comm]
@@ -82,14 +81,14 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
     constructor <;> linarith
   have hf' (Y : Tuple G b) (hY : star (f Y) ≠ 0) :
       V / 2 ≤ (product G b Y : ℝ) ∧ (product G b Y : ℝ) ≤ 4 * V := by
-    have hy := hf Y (by intro hz; simp [hz] at hY)
+    have hy := hf Y (by grind)
     constructor <;> linarith
   have hA (D : Tuple G a) (hD : A D ≠ 0) := transpose_apply_dyadic_support G a Q h ξ U hh hh2 g hg D hD
   have hB (E : Tuple G b) (hE : B E ≠ 0) :
       V / 2 ≤ (product G b E : ℝ) ∧ (product G b E : ℝ) ≤ 4 * V := by
     apply transpose_apply_dyadic_support G b Q h ξ V hh hh2 (fun Y => star (f Y)) _ E hE
     intro Y hY
-    exact hf Y (by intro hz; simp [hz] at hY)
+    exact hf Y (by grind)
   have hrb := supported_tuple_bilinear G a b g (fun Y => star (f Y)) U V H θ η ζ u r
     hU hV hH hr hu hθ hη hg' hf' hρa hρb
   rw [← hR_eq, tupleNorm_star] at hrb
@@ -99,14 +98,14 @@ theorem dyadic_comparison_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
   have hAn : tupleNorm G a A ≤ 2 * tupleNorm G a g := hFrameA g
   have hBn : tupleNorm G b B ≤ 2 * tupleNorm G b f := by
     simpa only [B, tupleNorm_star] using hFrameB (fun Y => star (f Y))
-  have hk : 0 ≤ 4 * integerBilinearConstant * H * Real.sqrt (bilinearDecay U V r) := by
-    exact mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) integerBilinearConstant_pos.le) hH) (Real.sqrt_nonneg _)
+  have hk : 0 ≤ 4 * integerBilinearConstant * H * Real.sqrt (bilinearDecay U V r) :=
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) integerBilinearConstant_pos.le) hH) (Real.sqrt_nonneg _)
   have hc_bound := hcb.trans (mul_le_mul
     (mul_le_mul_of_nonneg_left hAn hk) hBn (tuple_norm_nonneg G b B)
       (mul_nonneg hk (mul_nonneg (by norm_num) (tuple_norm_nonneg G a g))))
   rw [hdecomp]
   have hn := (norm_sub_le R C).trans (add_le_add hrb hc_bound)
-  convert hn using 1; ring
+  linarith
 
 end
 end Erdos821.S34Core

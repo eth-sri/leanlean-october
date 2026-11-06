@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.MarkedValuations
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeEulerFinsupp
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeEulerFinsupp
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def excludedHighArray (S : Finset Id) (η : HeckeFamily.Character) (x w z : ℂ) (a : HighIdeal) : ℂ :=
   markedIdealHighSummand S 1 η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2
@@ -77,7 +76,7 @@ theorem markedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
       ((⟨a.1.1,hc.2.1.1⟩,⟨a.1.2,hc.2.2.1.1⟩),(⟨a.2.1,hc.2.2.2.1.1⟩,⟨a.2.2,hc.2.2.2.2.1⟩))
     refine ⟨highValuationEquiv b,?_⟩
     rw [highIdeals_eq_equiv,highValuationEquiv.symm_apply_apply]
-  simpa only [hsum] using he
+  simp_all
 
 end SevenEighths.ProbePhysical
 end

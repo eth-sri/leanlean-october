@@ -9,19 +9,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFamilyInclusion
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorPrimeFamily
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily
 
-structure RowData (M : Ideal O) where
-  m : O
-  u : O
-  m_ne_zero : m≠0
-  u_ne_zero : u≠0
-  lambda_dvd : λ₀∣m
-  two_dvd : (2 : O)∣m
-  modulus_le : M≤Ideal.span {m}
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

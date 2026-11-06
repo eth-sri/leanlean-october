@@ -5,7 +5,6 @@ public import Erdos821.P4Bridge.SignedPairing
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe
@@ -33,12 +32,7 @@ lemma signedRaw_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
         selectedKernel ν block true Q h ξ (selectedProduct ν block true u)
           (selectedEndpoint ν block true a)) * imaginaryPower (ν.DBig a u) ζ *
         phase (θ * ν.DBig a u) else 0) = _
-  by_cases hm : ν.matchesBig a b
-  · dsimp only [ν] at hm ⊢
-    simp only [hm, ite_true]
-    ring
-  · dsimp only [ν] at hm ⊢
-    simp only [hm, ite_false, mul_zero]
+  grind
 
 lemma signedFullPair_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
     (Q : ℕ) (h ξ θ ζ : ℝ) (c : ProbeChoice P m block)
@@ -53,8 +47,6 @@ lemma signedFullPair_eq (hj : m ≤ J) (block : P.BigGroup → Bool)
   apply Finset.sum_congr rfl
   intro a _
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro b _
   ring
 
 lemma analytic_mellin_norm (n ζ : ℝ) : ‖Blueprint.Analytic.mellin n ζ‖ = 1 := by
@@ -161,7 +153,7 @@ theorem PatternComparisonBridgeTask_proof : PatternComparisonBridgeTask := by
   apply hbound.trans
   unfold idealVectorNorm
   exact mul_le_mul (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hEf) hε)
-    (Real.sqrt_le_sqrt hEg) (Real.sqrt_nonneg _) (mul_nonneg hε (Real.sqrt_nonneg _))
+    (Real.sqrt_le_sqrt hEg) (Real.sqrt_nonneg _) (by positivity)
 
 end
 end Erdos821.P4Probe

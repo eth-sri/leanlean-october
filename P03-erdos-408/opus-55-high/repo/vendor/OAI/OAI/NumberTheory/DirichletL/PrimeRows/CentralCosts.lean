@@ -10,18 +10,17 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth
-local notation "O" => HeckeFamily.O
 
-def centralRemainingScalar (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def centralRemainingScalar (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
   LFunction (fixedSourcePrincipal S hS.prime) (6*z)*
     HeckeReciprocal.reciprocal ((targetRow η u).excludePrimes S hS.prime) x*
     continuedCorrection S hS η u x w z
 
-lemma centralRowScalar_split (S : Finset (Ideal O)) (hS : SourceExclusions S)
+lemma centralRowScalar_split (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow) (x w z : ℂ) :
     centralRowScalar S hS hmax η u x w z=
       (star ((calibrationForSet S hmax).residueMonoid u.val)*
@@ -50,16 +49,16 @@ theorem centralRemainingScalar_bound (e eps : ℝ)
     (HeckeStripActual.LFunction_norm_le _ (by norm_num : (1:ℝ)<2)
       (by simp only [Complex.mul_re];rw [hz];norm_num)).trans (by linarith)
   have hc := hh (4*e) S hS hfirst η u x w z
-    (by rw [hx];linarith) (by rw [hw];linarith) (by rw [hz]) (by rw [hx,hw];linarith)
+    (by linarith) (by linarith) (by linarith) (by linarith)
   have hrec := hr (sourceDetectorFamily S hS.prime η u ψ) B a H i hB ha ha1 hH hbin
-    (Sum.inl false) x (by rw [hx]) (by rw [hx];linarith) hxi
+    (Sum.inl false) x (by linarith) (by linarith) hxi
   simp only [sourceDetectorFamily_denominator] at hrec
   unfold centralRemainingScalar
   rw [norm_mul,norm_mul]
   apply (mul_le_mul (mul_le_mul hl hrec (norm_nonneg _) (by linarith)) hc (norm_nonneg _)
     (mul_nonneg (by linarith) (mul_nonneg hCr.le (Real.rpow_nonneg (by
       unfold presentationComplexity HeckeLogarithmic.complexity;positivity) _)))).trans
-  exact le_of_eq (by ring)
+  linarith
 
 end SevenEighths.ProbeHighRowFamily
 

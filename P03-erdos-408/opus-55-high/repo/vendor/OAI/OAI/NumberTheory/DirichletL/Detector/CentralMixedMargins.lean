@@ -20,7 +20,7 @@ lemma balanced_count_range (δ x Δ loss : ℝ) (hδ : 0≤δ) (hd : δ≤5/6)
   have hp1 := mul_le_mul_of_nonneg_left ht.2 (show 0≤5/6-δ by linarith)
   dsimp only
   unfold Endpoint.balancedRowCount
-  constructor <;> nlinarith
+  grind
 
 lemma balanced_mixed_margin (δ x Δ loss ζ μ v d : ℝ)
     (hδ : 0≤δ) (hd : δ≤5/6) (hx : 0≤x) (hx' : x≤1/2)
@@ -36,7 +36,7 @@ lemma balanced_mixed_margin (δ x Δ loss ζ μ v d : ℝ)
   have hhi : R+δ/2-17/50≤2 := by dsimp [R]; linarith [hr.2]
   have hm := balanced_source_margin δ x R Δ loss ζ v hδ hd hx hx' le_rfl hζ hv hlo hhi
   have hs := mixed_source_slack ((1+δ)/2) v d R (δ*x) μ (3/2)
-    (by dsimp [R];linarith [hr.1]) hr.2 hμ hdv
+    (by grind) hr.2 hμ hdv
   linarith
 
 lemma high_mixed_margin (δ q Δ loss ζ μ v d : ℝ)

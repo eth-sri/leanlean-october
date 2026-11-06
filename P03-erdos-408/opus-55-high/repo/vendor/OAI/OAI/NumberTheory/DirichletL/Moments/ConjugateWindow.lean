@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentConjugateWindow
 open FourierBridge CenteredMomentSmooth
@@ -15,9 +15,7 @@ open FourierBridge CenteredMomentSmooth
 theorem star_logPhase (t u : ℝ) : star (logPhase t u)=logPhase (-t) u := by
   simp only [logPhase,Complex.star_def,← Complex.exp_conj,map_mul,
     Complex.conj_ofReal,Complex.conj_I]
-  congr 1
-  push_cast
-  ring
+  simp
 
 theorem star_columnPhase (V : ℝ → ℂ) (u t : ℝ) :
     star (columnPhase V u t)=columnPhase (fun x => star (V x)) u (-t) := by

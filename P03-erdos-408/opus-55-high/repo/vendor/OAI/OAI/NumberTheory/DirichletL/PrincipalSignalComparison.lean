@@ -12,8 +12,8 @@ public import OAI.NumberTheory.DirichletL.Detector.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open MeasureTheory Set Filter Asymptotics Complex
+open scoped Classical
+open MeasureTheory Complex
 namespace SevenEighths.PrincipalSignalComparison
 open HeckeFamily PrincipalSlotEstimate ProbeEuler ProbeLocal Continuation HeckeSignal
 
@@ -74,8 +74,8 @@ theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
     DifferentiableAt ℂ (principalSlot Q A η) s := by
   have hQ0 : 0 < Q := by linarith
   have hQ4 : 4 ≤ Q := by linarith
-  have hQnz : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ0.ne'
-  have hQslit : (Q : ℂ) ∈ slitPlane := Complex.ofReal_mem_slitPlane.mpr hQ0
+  have hQnz := Complex.ofReal_ne_zero.mpr hQ0.ne'
+  have hQslit := Complex.ofReal_mem_slitPlane.mpr hQ0
   have hg := principal_geometric_bounds hQ hη hs
   have hV := one_sub_ne_zero_of_norm_le_half _ hg.1
   have hD := one_sub_ne_zero_of_norm_le_half _ hg.2.2
@@ -92,10 +92,10 @@ theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
     unfold principalMarked markedFactor
     fun_prop (disch := first | assumption | exact Or.inl hQnz)
   have hb : Differentiable ℂ (fun s : ℂ => star η * (Q : ℂ)^s) :=
-    (differentiable_id.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hQ0.ne'))).const_mul _
+    (differentiable_id.const_cpow (by grind)).const_mul _
   have hrep : DifferentiableAt ℂ (principalReplacement Q A η) s := by
     unfold principalReplacement compensatedReplacement
-    fun_prop (disch := first | assumption | exact Or.inl hQnz)
+    fun_prop (disch := simp_all)
   exact hrep.div (unramifiedClosed_differentiableAt Q hQ0 A η 1 s 1 (1/6) hR hV hD)
     (principal_correction_ne_zero hQ hA hη hs)
 
@@ -109,14 +109,14 @@ theorem slotRatio_continuous_line (S : Finset κ) (T : κ → Finset ι)
     intro t
     exact (principalSlot_differentiableAt (h.lower.trans (h.norm_lower j hj p hp))
       (h.phase_bound j hj p hp) (h.target_unit j hj p hp).le
-      (by simpa using ha)).continuousAt.comp (by fun_prop)
+      (by simp_all)).continuousAt.comp (by fun_prop)
   unfold slotRatio slotProduct
   apply Continuous.div_const
   apply continuous_finsetProd
   intro j hj
   apply continuous_finsetSum
   intro p hp
-  exact continuous_const.mul (hc j hj p hp)
+  exact continuous_const.mul (by grind)
 
 def slotResidue (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) : ℂ :=
@@ -152,7 +152,7 @@ theorem kernel_continuous (χ : Character) (H : ℂ → ℂ)
   have hh := gaussianContourIntegrand_differentiableOn
     (HeckeSignalShift.quotient_holomorphic χ H hH ha hβ) (-11/16) hZ
   exact hh.continuousOn.comp_continuous (by fun_prop)
-    (by intro t; simpa using And.intro (le_refl a) ha2)
+    (by simp_all)
 
 theorem kernel_norm_bound (χ : Character) (H : ℂ → ℂ)
     (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
@@ -160,7 +160,7 @@ theorem kernel_norm_bound (χ : Character) (H : ℂ → ℂ)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2))
     (t : ℝ) : ‖kernel χ H a Z t‖ ≤ kernelEnvelope a C Z * polynomialGaussian 2 t := by
   have hq := HeckeSignalShift.quotient_polynomial_bound χ H hb 2 ha hC
-    (fun s hs _ => hR s hs) (s := (a : ℂ)+t*I) (by simpa using And.intro (le_refl a) ha2)
+    (by grind) (s := (a : ℂ)+t*I) (by simp_all)
   simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_im,
     Complex.ofReal_re, mul_one, Complex.I_re, mul_zero, add_zero, zero_add] at hq
   unfold kernel
@@ -286,20 +286,20 @@ theorem idealCoeff_norm_one_of_coprime (χ : Character) (J : Ideal HeckeFamily.O
   let : Fintype (HeckeFamily.O ⧸ χ.modulus) := Fintype.ofFinite _
   have hu : IsUnit (Ideal.Quotient.mk χ.modulus (Submodule.IsPrincipal.generator J)) :=
     (IdealCharacter.isUnit_mk_iff_isCoprime χ.modulus _).mpr (by
-      simpa only [Ideal.span_singleton_generator] using hc)
+      simp_all)
   obtain ⟨u, hu⟩ := hu
   change ‖IdealCharacter.value χ.modulus χ.residue J‖ = 1
   rw [IdealCharacter.value, ite_eq_right hJ, ← hu]
   exact FiniteRayExpansion.norm_char_unit χ.residue u
 
-open ProbePhysical ActualEisensteinCubic CompletedGauss
+open ProbePhysical CompletedGauss
 
 theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
     (hN : Ideal.absNorm η.modulus < Ideal.absNorm P.val) : IsCoprime P.val η.modulus := by
   let : P.val.IsPrime := Ideal.isPrime_of_prime P.property
   let : P.val.IsMaximal := Ideal.IsPrime.isMaximal inferInstance P.property.ne_zero
   rw [Ideal.isCoprime_iff_codisjoint,
-    ← (Ideal.isMaximal_def.mp (inferInstance : P.val.IsMaximal)).not_le_iff_codisjoint]
+    ← (Ideal.isMaximal_def.mp (by omega)).not_le_iff_codisjoint]
   intro hle
   have hn : 0 < Ideal.absNorm η.modulus := Nat.pos_of_ne_zero
     (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot)
@@ -338,7 +338,7 @@ theorem source_normalizer_ne_zero (S : Finset κ) (T : κ → Finset ι)
 theorem source_power_identity {Z : ℝ} (hZ : 0 < Z) (s : ℂ) :
     ((Z^(17/48 : ℝ) : ℝ) : ℂ)^(1/3 : ℂ) * (Z : ℂ)^(s-5/6) =
       (Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)) * (Z : ℂ)^(s-11/16) := by
-  have hz : (Z : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hz := Complex.ofReal_ne_zero.mpr hZ.ne'
   rw [← Complex.cpow_mul_ofReal_nonneg hZ.le (17/48) (1/3),
     ← Complex.cpow_add _ _ hz, ← Complex.cpow_add _ _ hz]
   congr 1
@@ -362,14 +362,7 @@ theorem normalized_source_double_residue (W0 W1 : SchwartzMap ℝ ℂ)
     (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [hZ.ne'])
   rw [hp]
   simp only [slotRatio, div_eq_mul_inv, mul_inv_rev]
-  calc
-    _ = (sourceResidueConstant W0 W1 M * (sourceResidueConstant W0 W1 M)⁻¹) *
-        ((Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)) *
-          ((Z : ℂ)^(((-(1/6 : ℝ)/6 : ℝ) : ℂ)))⁻¹) *
-        ((Z : ℂ)^(s-11/16) * Complex.exp ((s-5/6)^2) * H 1 (1/6) *
-          (LFunction χ s)⁻¹ * (slotProduct S T w Q A η s *
-            (PrincipalSlotEstimate.principalScalar S (slotMass T w))⁻¹)) := by ring_nf
-    _ = _ := by rw [mul_inv_cancel₀ hc, mul_inv_cancel₀ hz]; ring_nf
+  grind
 
 def sourceResidueIntegral (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal HeckeFamily.O) [NeZero M]
     (χ : Character) (a X Y Z : ℝ) (H B : ℂ → ℂ → ℂ → ℂ) : ℂ :=
@@ -457,7 +450,7 @@ theorem exists_normalized_actual_source_bound (E : Finset (Ideal HeckeFamily.O))
   have hslots : SlotBounds S T w (fun _ p => (Ideal.absNorm p.val : ℝ))
       (fun _ p => actualAPhase η (primaryGenerator p.val)) (fun _ p => idealCoeff η p.val) P :=
     ⟨hP, hsmall, hw, hnorm, fun _ _ p _ => actualAPhase_norm_le_one η _,
-      fun j hj p hp => idealCoeff_norm_one_of_coprime η p.val p.property.ne_zero (hcop j hj p hp), hmass⟩
+      fun j hj p hp => idealCoeff_norm_one_of_coprime η p.val p.property.ne_zero (by grind), hmass⟩
   have hbnd := hb T w (fun _ p => Ideal.absNorm p.val)
     (fun _ p => actualAPhase η (primaryGenerator p.val)) (fun _ p => idealCoeff η p.val) P Z hslots hZ
   refine ⟨he.1, ?_, ?_⟩

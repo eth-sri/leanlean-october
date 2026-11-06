@@ -8,15 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstSecondHeightCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseAmbientProfileTower JointLogSeparation FourierBridge
+open JointLogSeparation
 open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_live_first_height
     (old:ℝ → ℂ)(oldb:ℝ)(hsold:∀y,old y≠0 → y≤oldb)
@@ -26,13 +24,13 @@ theorem actual_live_first_height
     ∃(ω₁ ω₂:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (ω₁:ℝ → ℂ) ∧ HasCompactSupport (ω₂:ℝ → ℂ) ∧
       tsupport (ω₁:ℝ → ℂ)⊆Set.Icc af bf ∧ tsupport (ω₂:ℝ → ℂ)⊆Set.Icc af bf ∧
     ∀degree:ℕ,∀eps:ℝ,0<eps → ∃C:ℝ,0<C ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι → O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι → ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (pool:Finset ι)(Q:Finset (ι →₀ ℕ))(labels:Finset (Ideal O))(β:Ideal O → (ι →₀ ℕ) → ℂ)
-      (Ψ:O →* ℂ)(m:O)(slots:Finset σ)(lists:σ → Finset ι)(weights:σ → ι → ℂ)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (pool:Finset ι)(Q:Finset (ι →₀ ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(β:Ideal ActualEisensteinCubic.O → (ι →₀ ℕ) → ℂ)
+      (Ψ:ActualEisensteinCubic.O →* ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ → Finset ι)(weights:σ → ι → ℂ)
       (Φ:𝓢(ℝ,ℂ))(Z M r ell V eta pi epschild A theta Kphysical loss:ℝ),
       2≤Z → 2≤Z^eta → 0≤M → M≤F →  (-eta≤r)  → r≤F → 0≤ell → ell≤F → 0≤V → V≤F →
       0≤eta → eta≤1 → tau≤1 → Real.exp window≤Z^eta → 0≤pi → 6*eta≤pi →
@@ -41,7 +39,7 @@ theorem actual_live_first_height
       (∀I∈labels,I≠0) → (∀u,‖Ψ u‖≤1) → (slots:Set σ).PairwiseDisjoint lists → slots.card≤K →
       (∀i∈slots,∀q∈lists i,‖weights i q‖≤1) → 0≤A → 0≤epschild → -saving≤r+3*ell+V+48*eta+tau+pi+epschild+eps →
       48*eta+tau+pi+epschild+eps≤loss →
-      let cutoff:=fun (q:CubeCoordinates ι)(C:Finset ι)(_I:Ideal O)(D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+      let cutoff:=fun (q:CubeCoordinates ι)(C:Finset ι)(_I:Ideal ActualEisensteinCubic.O)(D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
       let W:=fun y=>normTwistedSource old theta (y/Z^r);
       let mark:=fun v U=>primeMark slots lists weights (v.support∪U);
       let S:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) (Z^(2*F+15*eta+tau));

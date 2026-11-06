@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.Hecke.Coordinates
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.HeckeCharacterAnalytic
 
 def additiveFiberEquiv {A B : Type*} [AddCommGroup A] [AddCommGroup B]
@@ -84,7 +83,7 @@ theorem residue_zero_of_nonprincipal (χ : HeckeFamily.Character) (hχ : χ.resi
     apply MulChar.ext'
     intro a
     have ha : a = 1 := Subsingleton.elim _ _
-    simp [ha]
+    simp_all
   · let := h
     exact χ.residue.map_zero
 
@@ -102,9 +101,8 @@ theorem completed_entire_nonprincipal (χ : HeckeFamily.Character) (hχ : χ.res
     (Or.inr (HeckeTheta.pair_g₀_eq_zero _ (coefficients_sum_eq_zero χ hχ)))
 
 theorem continuedLattice_entire_nonprincipal (χ : HeckeFamily.Character)
-    (hχ : χ.residue ≠ 1) : Differentiable ℂ (HeckeFamily.continuedLattice χ) := by
-  exact ((differentiable_id.const_cpow (Or.inl
-    (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).mul
+    (hχ : χ.residue ≠ 1) : Differentiable ℂ (HeckeFamily.continuedLattice χ) :=
+  ((differentiable_id.const_cpow (by simp)).mul
       Complex.differentiable_one_div_Gamma).mul (completed_entire_nonprincipal χ hχ)
 
 end SevenEighths.HeckeCharacterAnalytic

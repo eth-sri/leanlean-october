@@ -13,16 +13,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseMomentFirstLabelCell
+open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell
 open InverseMomentFirstSecondHeightCost
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open JointLogSeparation CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_two_pass_energy
     (om:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b)
@@ -38,14 +37,14 @@ theorem original_two_pass_energy
       1≤bw ∧ b≤bw ∧ bw=Real.exp window ∧
     ∀epsFirst epsSecond:ℝ,0<epsFirst→0<epsSecond→∀degree:ℕ,
       ∃C Czero Ctail:ℝ,0≤C ∧ 0≤Czero ∧ 0≤Ctail ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-      (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
+      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+      (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
       (Z M r ell V Γ theta pi epschild A loss:ℝ)
       (_hZ:2≤Z)(_hbin:2≤Z^eta)(_hM:0≤M)(_hF:r+3*ell+V≤Lcap)(_hMcap:M≤Lcap)(_hell:0≤ell)(_hV:0≤V)(_hr: -eta≤r)
@@ -63,7 +62,7 @@ theorem original_two_pass_energy
       (_hslots:(slots:Set σ).PairwiseDisjoint lists)(_hweights:∀i∈slots,∀q∈lists i,‖weights i q‖≤1),
       let mark:=fun v U=>primeMark slots lists weights (v.support∪U);
       let Y:=Z^(2*Lcap+15*eta+tau);
-      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal ActualEisensteinCubic.O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
       let W:=fun y=>normTwistedSource om theta (y/Z^r);
       let source:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y;
       let keys:=liveJointKeys p source pool (sourceSummand p hp hcop hg β cutoff Ψ m mark W rowMajorant (Z^M));
@@ -97,7 +96,7 @@ theorem original_two_pass_energy
   obtain ⟨Cf,Cz,Ct,hCf,hCz,hCt,hfull⟩:=hfull epsFirst hepsF (firstDegree degree)
   obtain ⟨Cl,hCl,hleft⟩:=hleft degree epsSecond hepsS
   obtain ⟨Cr,hCr,hright⟩:=hright degree epsSecond hepsS
-  refine ⟨Cf*(Cl+Cr),Cz,Ct,mul_nonneg hCf (by positivity),hCz,hCt,?_⟩
+  refine ⟨Cf*(Cl+Cr),Cz,Ct,by positivity,hCz,hCt,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc hpr pool Q labels β Ψ m slots lists weights
     Z M r ell V Γ theta pi epschild A loss hZ hbin hM hF hMcap hell hV hr hbZ hQpool hQ hrcap hellcap
     hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hΨ hΓ hA hsf hn hβ hlabels hslots hweights
@@ -149,7 +148,7 @@ theorem original_two_pass_energy
     linarith
   have hall:=hfull p hp hg hinj hcop hc hpr pool Q labels β Ψ m slots lists weights Z M r ell V Γ theta Be
     hZ hbin hM hF hMcap hell hV hr hbZ hQpool hQ hrcap hellcap hΨ hΓ hBe hsf hn hβ hlabels hslots hweights left right
-  convert hall using 1 ; dsimp[Be] ; ring
+  linarith
 
 end SevenEighths.InverseMoment
 

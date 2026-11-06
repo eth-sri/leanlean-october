@@ -8,24 +8,23 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondScaled
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondChildProfile
-open HeckeFamily HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentChildAssembly
-open CenteredMomentSecondScaled CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
-open ConcretePrimeRowBridge CenteredMomentCommonSupport
+open HeckeFamily CenteredMomentChildRows
+open CenteredMomentSourceRow
+open CanonicalQuadraticSieve RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 theorem child_ideal_primary (η : Character) (χ : RayCharacter)
-    (I : Ideal O) (hI : Supported I) :
+    (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) :
     idealCoeff (childCharacter η χ) I=idealCoeff η I*rayCharacter χ (CompletedGauss.primaryGenerator I) := by
   have hn := supported_primaryGenerator_ne_zero I hI
   have hs := primary_span_supported I hI
   have hc := idealCoeff_span (childCharacter η χ) hn
   have he := idealCoeff_span η hn
   rw [hs] at hc he
-  rw [hc,childCharacter_primary η χ _ (by rw [hs];exact hI)
+  rw [hc,childCharacter_primary η χ _ (by simp_all)
     (CompletedGauss.primaryGenerator_spec I hn).2,←he]
 
 end SevenEighths.CenteredMomentSecondChildProfile

@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsLive
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment
 open InverseMomentFirstChildWindows InverseSecondSourceBlocks
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def originalNorms (x : OriginalIndex ι) : Fin 6→ℝ :=
   sourceNorms (leftNorm p) (rightNorm p) (commonNorm p) (activeNorm p)
@@ -29,11 +28,11 @@ omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma originalNorms_outer (x : OriginalIndex ι) (i : Fin 5) :
     originalNorms p ⟨x.1,(1,1)⟩ i.castSucc=originalNorms p x i.castSucc := by
   unfold originalNorms sourceNorms
-  fin_cases i <;> simp [Fin.castSucc,leftNorm,rightNorm,commonNorm,activeNorm]
+  fin_cases i <;> simp [leftNorm, rightNorm, commonNorm, activeNorm]
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem original_cell_subset (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (Y : ℝ) (k : SourceIndex) :
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ) (k : SourceIndex) :
     sourceCell (originalNorms p)
       (firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y) k ⊆
     firstGlobalRetainedSource p (originalOuterCell p pool Q k) (fun _=>labels) (fun x=>x.1) Y := by

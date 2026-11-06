@@ -34,12 +34,12 @@ theorem lineAverage_prod (x : ℝ) (d : Data K) (φ : ℕ → ℕ → ℂ) :
     funext p hp
     simpa only [hp, dite_true] using congrFun h p
   have hcard : ((lineAssignments x d).card : ℂ) = ∏ p ∈ bandPrimes x d, ((p : ℂ) + 1) := by
-    rw [lineAssignments, card_image_of_injOn (by convert hinj), card_pi]
+    rw [lineAssignments, card_image_of_injOn (by omega), card_pi]
     push_cast [card_range]
     rfl
   rw [lineAverage, hcard, prod_mul_distrib, prod_inv_distrib, prod_sum, lineAssignments,
-    sum_image (by convert hinj)]
+    sum_image (by omega)]
   congr 1
   refine sum_congr rfl fun f _ => ?_
   rw [← prod_attach]
-  exact prod_congr rfl fun p _ => by simp only [p.2, dite_true]
+  simp

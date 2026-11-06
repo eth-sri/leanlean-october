@@ -8,11 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCrudeMass
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
-open MeasureTheory CompletedGauss
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def gaussianPhysicalScaleMass {α ι : Type*} [Fintype ι]
     (C : CalibrationData) (F : Finset α) (a : α→ℂ) (X Y : α→ℝ)
@@ -39,7 +37,7 @@ theorem gaussianPhysicalFamily_mass_bound (a0 b0 a1 b1 B0 B1 : ℝ)
   intro k hk
   calc
     _ ≤ (‖a k‖*(∏i,‖W i (q k i)‖))*(K*lowPhysicalScale (calibrationForSet S hS) (X k) (Y k)) :=
-      mul_le_mul_of_nonneg_left (hb S hS W0 W1 hW1c hW0 hW1 hWB0 hWB1 (X k) (Y k) (hX k hk) (hY k hk)) (by positivity)
+      mul_le_mul_of_nonneg_left (by grind) (by positivity)
     _ = _ := by ring
 
 theorem gaussianPhysicalFamily_remote_polynomial (V : SchwartzMap ℝ ℂ)

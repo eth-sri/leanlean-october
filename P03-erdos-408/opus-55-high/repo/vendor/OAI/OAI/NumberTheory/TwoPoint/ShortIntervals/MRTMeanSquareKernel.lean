@@ -17,7 +17,7 @@ has quadratic decay, so the ensuing row sum loses no logarithm.
 
 namespace TwoPointCorrelations
 
-open Complex MeasureTheory Set
+open MeasureTheory Set
 
 /-- The integrable exponential time weight, with angular frequency `ω`. -/
 noncomputable def mrtMeanSquareKernel (T ω t : ℝ) : ℂ :=
@@ -29,7 +29,6 @@ lemma mrtMeanSquareKernel_right {T : ℝ} (ω : ℝ) {t : ℝ} (ht : 0 ≤ t) :
   simp only [mrtMeanSquareKernel, abs_of_nonneg ht,
     Complex.ofReal_exp, ← Complex.exp_add, Complex.ofReal_div,
     Complex.ofReal_neg, Complex.ofReal_mul, Complex.ofReal_one]
-  congr 1
   ring
 
 lemma mrtMeanSquareKernel_left {T : ℝ} (ω : ℝ) {t : ℝ} (ht : t ≤ 0) :
@@ -38,7 +37,6 @@ lemma mrtMeanSquareKernel_left {T : ℝ} (ω : ℝ) {t : ℝ} (ht : t ≤ 0) :
   simp only [mrtMeanSquareKernel, abs_of_nonpos ht, neg_neg,
     Complex.ofReal_exp, ← Complex.exp_add, Complex.ofReal_div,
     Complex.ofReal_mul, Complex.ofReal_one]
-  congr 1
   ring
 
 lemma mrtMeanSquareKernel_integrable {T : ℝ} (hT : 0 < T) (ω : ℝ) :
@@ -46,16 +44,16 @@ lemma mrtMeanSquareKernel_integrable {T : ℝ} (hT : 0 < T) (ω : ℝ) :
   have hr : IntegrableOn (mrtMeanSquareKernel T ω) (Ioi 0) := by
     apply (integrableOn_exp_mul_complex_Ioi
       (a := ((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
-      (by simpa using neg_lt_zero.mpr (one_div_pos.mpr hT)) 0).congr_fun
+      (by simp_all) 0).congr_fun
         (fun t ht => ?_) measurableSet_Ioi
     simpa using (mrtMeanSquareKernel_right ω ht.le).symm
   have hl : IntegrableOn (mrtMeanSquareKernel T ω) (Iic 0) := by
     apply (integrableOn_exp_mul_complex_Iic
       (a := ((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
-      (by simpa using one_div_pos.mpr hT) 0).congr_fun
+      (by simp_all) 0).congr_fun
         (fun t ht => ?_) measurableSet_Iic
     exact (mrtMeanSquareKernel_left ω ht).symm
-  simpa only [Iic_union_Ioi, integrableOn_univ] using hl.union hr
+  simpa using hl.union hr
 
 /-- Exact quadratic-decay Fourier transform, without an asymptotic constant. -/
 theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
@@ -73,7 +71,7 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
       _ = _ := by
         simpa using integral_exp_mul_complex_Ioi
           (a := ((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
-          (by simpa using neg_lt_zero.mpr (one_div_pos.mpr hT)) 0
+          (by simp_all) 0
   have hl : (∫ t in Iic (0 : ℝ), mrtMeanSquareKernel T ω t) =
       1 / (((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I) := by
     calc
@@ -85,19 +83,19 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
       _ = _ := by
         simpa using integral_exp_mul_complex_Iic
           (a := ((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I)
-          (by simpa using one_div_pos.mpr hT) 0
+          (by simp_all) 0
   rw [← integral_add_compl measurableSet_Iic hi, compl_Iic, hl, hr]
   have hTp : (T : ℂ) ≠ 0 := by exact_mod_cast hT.ne'
   have hp : (((1 / T : ℝ) : ℂ) + (ω : ℂ) * Complex.I) ≠ 0 := by
     intro h
     have := congrArg Complex.re h
     have he : (1 / T : ℝ) = 0 := by simpa using this
-    exact (one_div_pos.mpr hT).ne' he
+    exact by grind
   have hm : (((-(1 / T) : ℝ) : ℂ) + (ω : ℂ) * Complex.I) ≠ 0 := by
     intro h
     have := congrArg Complex.re h
     have he : -(1 / T : ℝ) = 0 := by simpa using this
-    exact (neg_lt_zero.mpr (one_div_pos.mpr hT)).ne he
+    exact by grind
   have hp1 : (1 + (T : ℂ) * (ω : ℂ) * Complex.I) ≠ 0 := by
     intro h
     have := congrArg Complex.re h
@@ -111,7 +109,7 @@ theorem integral_mrtMeanSquareKernel {T : ℝ} (hT : 0 < T) (ω : ℝ) :
   push_cast
   field_simp
   ring_nf
-  field_simp [hp1, hm1, hdc]
+  field_simp
   ring_nf
   simp only [Complex.I_sq]
   ring

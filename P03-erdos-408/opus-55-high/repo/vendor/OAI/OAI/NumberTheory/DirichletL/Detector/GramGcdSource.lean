@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramPoisson
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
+open CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 lemma gcd_generator_left (I J : SupportedIdeal) :

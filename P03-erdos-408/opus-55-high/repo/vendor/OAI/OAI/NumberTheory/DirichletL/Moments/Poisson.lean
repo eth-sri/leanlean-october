@@ -7,23 +7,22 @@ public import OAI.NumberTheory.DirichletL.Moments.Fourier
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentPoisson
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CubicEisenstein
 open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
 open CenteredMomentFourier
 
-theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
+theorem full_gauss_pair_poisson (u v : ActualEisensteinCubic.O) (hu : u ≠ 0) (hv : v ≠ 0)
     (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
     (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
     letI := finite_quotient_span hu
     letI := finite_quotient_span hv
     letI : Fintype (Residue u) := Fintype.ofFinite _
     letI : Fintype (Residue v) := Fintype.ofFinite _
-    (∑' z : O, residueGauss u hu χu (Ideal.Quotient.mk _ z) *
+    (∑' z : ActualEisensteinCubic.O, residueGauss u hu χu (Ideal.Quotient.mk _ z) *
       star (residueGauss v hv χv (Ideal.Quotient.mk _ z)) * W (‖eisEmbedding z‖ ^ 2 / K)) =
-      (K : ℂ) * ∑' j : O, fullModulusCorrelation u v χu χv (-j) *
+      (K : ℂ) * ∑' j : ActualEisensteinCubic.O, fullModulusCorrelation u v χu χv (-j) *
         paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2) := by
   let := finite_quotient_span hu
   let := finite_quotient_span hv
@@ -34,7 +33,7 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
   let P := fun h : Residue (u * v) =>
     residueGauss u hu χu (frequencyReduction u (u * v) (dvd_mul_right u v) h) *
       star (residueGauss v hv χv (frequencyReduction v (u * v) (dvd_mul_left v u) h))
-  have hcoeff (j : O) :
+  have hcoeff (j : ActualEisensteinCubic.O) :
       (∑ r : Residue (u * v), P r * quotientTrace (u * v) (mul_ne_zero hu hv)
         (Ideal.Quotient.mk _ j * r)) =
       (Fintype.card (Residue (u * v)) : ℂ) * fullModulusCorrelation u v χu χv (-j) := by
@@ -50,15 +49,15 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
       Submodule.cardQuot_apply, Nat.card_eq_fintype_card]
     norm_cast
   have hpoisson := actual_radial_paper_poisson_trace W K hK (u * v) (mul_ne_zero hu hv) P
-  change (∑' z : O, P (Ideal.Quotient.mk _ z) * W (‖eisEmbedding z‖ ^ 2 / K)) =
+  change (∑' z : ActualEisensteinCubic.O, P (Ideal.Quotient.mk _ z) * W (‖eisEmbedding z‖ ^ 2 / K)) =
     (K / ‖eisEmbedding (u * v)‖ ^ 2 : ℝ) •
-      ∑' j : O, (∑ r : Residue (u * v), P r * quotientTrace (u * v) (mul_ne_zero hu hv)
+      ∑' j : ActualEisensteinCubic.O, (∑ r : Residue (u * v), P r * quotientTrace (u * v) (mul_ne_zero hu hv)
         (Ideal.Quotient.mk _ j * r)) *
           paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2) at hpoisson
   simp only [P, frequencyReduction_mk] at hpoisson ⊢
   rw [hpoisson]
   change (K / ‖eisEmbedding (u * v)‖ ^ 2 : ℝ) •
-    (∑' j : O, (∑ r : Residue (u * v), P r * quotientTrace (u * v) (mul_ne_zero hu hv)
+    (∑' j : ActualEisensteinCubic.O, (∑ r : Residue (u * v), P r * quotientTrace (u * v) (mul_ne_zero hu hv)
       (Ideal.Quotient.mk _ j * r)) *
       paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2)) = _
   simp_rw [hcoeff, hcard, mul_assoc]
@@ -68,18 +67,18 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
       (eisEmbedding_ne_zero (mul_ne_zero hu hv))))
   rw [Complex.ofReal_pow, div_mul_cancel₀ _ hn]
 
-theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
+theorem normalized_gauss_pair_poisson (u v : ActualEisensteinCubic.O) (hu : u ≠ 0) (hv : v ≠ 0)
     (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
     (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
     letI := finite_quotient_span hu
     letI := finite_quotient_span hv
     letI : Fintype (Residue u) := Fintype.ofFinite _
     letI : Fintype (Residue v) := Fintype.ofFinite _
-    (∑' z : O, normalizedResidueGauss u hu χu (Ideal.Quotient.mk _ z) *
+    (∑' z : ActualEisensteinCubic.O, normalizedResidueGauss u hu χu (Ideal.Quotient.mk _ z) *
       star (normalizedResidueGauss v hv χv (Ideal.Quotient.mk _ z)) * W (‖eisEmbedding z‖ ^ 2 / K)) =
       ((K : ℂ) / ((Real.sqrt (Ideal.absNorm (Ideal.span {u}) : ℝ) : ℂ) *
         (Real.sqrt (Ideal.absNorm (Ideal.span {v}) : ℝ) : ℂ))) *
-      ∑' j : O, fullModulusCorrelation u v χu χv (-j) *
+      ∑' j : ActualEisensteinCubic.O, fullModulusCorrelation u v χu χv (-j) *
         paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2) := by
   let := finite_quotient_span hu
   let := finite_quotient_span hv
@@ -87,7 +86,7 @@ theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
   let : Fintype (Residue v) := Fintype.ofFinite _
   let ru : ℂ := Real.sqrt (Ideal.absNorm (Ideal.span {u}) : ℝ)
   let rv : ℂ := Real.sqrt (Ideal.absNorm (Ideal.span {v}) : ℝ)
-  have hterm (z : O) :
+  have hterm (z : ActualEisensteinCubic.O) :
       normalizedResidueGauss u hu χu (Ideal.Quotient.mk _ z) *
         star (normalizedResidueGauss v hv χv (Ideal.Quotient.mk _ z)) * W (‖eisEmbedding z‖ ^ 2 / K) =
       (ru * rv)⁻¹ * (residueGauss u hu χu (Ideal.Quotient.mk _ z) *
@@ -97,21 +96,20 @@ theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
     ring
   simp_rw [hterm]
   rw [tsum_mul_left, full_gauss_pair_poisson u v hu hv χu χv W K hK]
-  dsimp only [ru, rv]
   ring
 
-theorem sextic_gauss_pair_poisson (u v : O)
+theorem sextic_gauss_pair_poisson (u v : ActualEisensteinCubic.O)
     (hu : CanonicalQuadraticSieve.Supported (Ideal.span {u}))
     (hv : CanonicalQuadraticSieve.Supported (Ideal.span {v}))
     (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
-    (∑' z : O,
+    (∑' z : ActualEisensteinCubic.O,
       (ProbePhysical.sexticGauss u (supported_element_ne_zero u hu) z /
         (Real.sqrt (Ideal.absNorm (Ideal.span {u}) : ℝ) : ℂ)) *
       star (ProbePhysical.sexticGauss v (supported_element_ne_zero v hv) z /
         (Real.sqrt (Ideal.absNorm (Ideal.span {v}) : ℝ) : ℂ)) * W (‖eisEmbedding z‖ ^ 2 / K)) =
       ((K : ℂ) / ((Real.sqrt (Ideal.absNorm (Ideal.span {u}) : ℝ) : ℂ) *
         (Real.sqrt (Ideal.absNorm (Ideal.span {v}) : ℝ) : ℂ))) *
-      ∑' j : O, actualCorrelation u v hu hv (-j) *
+      ∑' j : ActualEisensteinCubic.O, actualCorrelation u v hu hv (-j) *
         paperRadialFourier W (K * ‖eisEmbedding j‖ ^ 2 / ‖eisEmbedding (u * v)‖ ^ 2) := by
   have h := normalized_gauss_pair_poisson u v
     (supported_element_ne_zero u hu) (supported_element_ne_zero v hv)

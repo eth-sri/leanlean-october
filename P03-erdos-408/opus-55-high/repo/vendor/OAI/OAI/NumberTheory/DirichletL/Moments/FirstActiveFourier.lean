@@ -7,20 +7,19 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstReduced
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
+open CenteredMomentCommonSupport CenteredMomentFourier
 open CenteredMomentFirstMixed CenteredMomentFirstReduced
-local notation "O" => ActualEisensteinCubic.O
 
 theorem shifted_active_fourier {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6) (v h : O) :
+    (hchar : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ P i)≠2)
+    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6) (v h : ActualEisensteinCubic.O) :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     (∑' x : Residue r,G (Ideal.Quotient.mk _ v*x)*
@@ -30,8 +29,8 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
   let := finite_quotient_span (finitePrimeModulus_ne_zero P)
   let : Fintype (Residue (finitePrimeModulus P)) := Fintype.ofFinite _
   let e := Ideal.quotEquivOfEq (span_finitePrimeModulus P)
-  let : Fintype (O ⧸ ∏ i,P i) := Fintype.ofEquiv (Residue (finitePrimeModulus P)) e.toEquiv
-  let (i : ι) : Fintype (O ⧸ P i) := Fintype.ofFinite _
+  let : Fintype (ActualEisensteinCubic.O ⧸ ∏ i,P i) := Fintype.ofEquiv (Residue (finitePrimeModulus P)) e.toEquiv
+  let (i : ι) : Fintype (ActualEisensteinCubic.O ⧸ P i) := Fintype.ofFinite _
   rw [tsum_fintype]
   simp_rw [CenteredMomentFirstReduced.principalSexticRow_mul P hcop hg j
     (finitePrimeModulus P) (span_finitePrimeModulus P),
@@ -42,14 +41,14 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
   ring
 
 theorem tripleFourier_active {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
+    (hchar : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ P i)≠2)
     (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
-    (a b : O) (ha : a≠0) (hb : b≠0)
+    (a b : ActualEisensteinCubic.O) (ha : a≠0) (hb : b≠0)
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (h : O) :
+    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (h : ActualEisensteinCubic.O) :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     tripleFourier a b r ha hb (finitePrimeModulus_ne_zero P) χa χb G h =
@@ -72,9 +71,7 @@ theorem tripleFourier_active {ι : Type*} [Fintype ι]
     (finitePrimeModulus_ne_zero P) har hbr]
   simp only [frequencyReduction_mk]
   have hs := shifted_active_fourier P hcop hg hchar j hj0 hj6 (a*b) h
-  dsimp only at hs
-  rw [tsum_fintype] at hs
-  rw [hs]
+  simp_all
 
 end SevenEighths.CenteredMomentFirstActiveFourier
 

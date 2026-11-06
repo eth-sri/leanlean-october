@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ActualLiveSlotRemoval
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentLiveCapacity
 
  def excess {ι:Type*} (J:Finset ι) (w:ι→ℝ) (n₁ n₂ M κ:ℝ) : ℝ :=

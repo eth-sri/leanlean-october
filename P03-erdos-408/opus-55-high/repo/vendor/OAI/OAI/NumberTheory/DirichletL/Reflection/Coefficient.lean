@@ -9,40 +9,38 @@ public import OAI.NumberTheory.DirichletL.Reflection.FrozenSplit
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
+open scoped Classical
+open CubicEisenstein CompletedGauss LocalReflectionBrackets
 open InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance coefficientFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+variable {ι : Type*} [Fintype ι] {p : ι → ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
+noncomputable local instance coefficientFinite (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
 def sourceRowPhase [∀ i, (Ideal.span {p i}).IsMaximal]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (R F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (R F : Finset ι) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) : ℂ :=
   residualWithFrozen hp hg c R F * ramifiedBlock hg (fun _ => 1) R
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m) * frozenArgument hg j F (∏ i ∈ R, p i)
 
 def sourceSlotPhase [∀ i, (Ideal.span {p i}).IsMaximal]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (S F : Finset ι) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) : ℂ :=
   markedWithFrozen hp hg c S F * ramifiedBlock hg (fun _ => 0) S
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m) * frozenArgument hg j F (∏ i ∈ S, p i)
 
 def sourceFrozenPhase [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (j : ι → ℕ) (F : Finset ι) (u : ActualEisensteinCubic.Oˣ) (m : ℕ) : ℂ :=
   star D.fixedFactor * frozenCore hp hg c j F * ramifiedBlock hg j F
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m)
 
 def sourceColumn [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι)
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι)
+    (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (n b : Ideal ActualEisensteinCubic.O) : ℂ :=
   fixedCuspArrayWithPhase s.index u
     (s.reflectionStaticPhase c hc (Ideal.Quotient.mk _ (-(D.matrix (fun _ => 1) 1 1)*D.U))
       (s.modelDualNumerator u) u) m n b *
@@ -52,13 +50,13 @@ def sourceColumn [∀ i, (Ideal.span {p i}).IsMaximal]
 theorem mixed_coefficient_hybrid [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hc : c ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hc : c ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R S F : Finset ι)
+    (hprimary : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) (R S F : Finset ι)
     (hRS : Disjoint R S) (hF : Disjoint (R ∪ S) F) (hu : (R ∪ S) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1)
     (hR : CanonicalQuadraticSieve.Admissible (∏ i ∈ R, Ideal.span {p i}))
-    (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) (hb : primaryGenerator b ≠ 0) :
+    (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (n b : Ideal ActualEisensteinCubic.O) (hb : primaryGenerator b ≠ 0) :
     s.amplitude u m n b *
       (star D.fixedFactor * ShortDraftCusp.A4BadPhase c hc (D.matrix (fun _ => 1) 1 1) D.U
         (s.modelDualNumerator u m n b)) *
@@ -83,7 +81,7 @@ theorem mixed_coefficient_hybrid [∀ i, (Ideal.span {p i}).IsMaximal]
     intro i hi
     apply IsCoprime.prod_right
     intro k hk
-    exact hcop (fun h => Finset.disjoint_left.mp hRS hi (h ▸ hk))
+    exact hcop (by grind)
   rw [mixed_model_coefficient,modelRowPhase_three_blocks D s hp hg hcop hprimary R S F hRS hF hu
       (markedActiveExponent S j) hrj hsj,
     frozenPhase_split D hp hg (markedActiveExponent S j) R S F hRS hF hu,← Finset.mul_sum,

@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Detector.CalibrationRemoval
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
 open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
 open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
 
-theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
+theorem coprime_function_fourier (a b : ActualEisensteinCubic.O) (ha : a ≠ 0) (hb : b ≠ 0)
     (hcop : IsCoprime a b)
     [Fintype (Residue a)] [Fintype (Residue b)] [Fintype (Residue (a * b))]
     (Fa : Residue a → ℂ) (F : Residue b → ℂ)
@@ -70,9 +69,9 @@ theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   intro y _
   ring
 
-theorem sexticGauss_coprime_product (a b : O)
+theorem sexticGauss_coprime_product (a b : ActualEisensteinCubic.O)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
-    (hcop : IsCoprime a b) (H : O) :
+    (hcop : IsCoprime a b) (H : ActualEisensteinCubic.O) :
     sexticGauss (a*b) (mul_ne_zero (supportedElement_ne_zero a ha) (supportedElement_ne_zero b hb)) H =
       idealRowHom b (Ideal.span {a}) * idealRowHom a (Ideal.span {b}) *
         sexticGauss a (supportedElement_ne_zero a ha) H *
@@ -98,12 +97,12 @@ theorem sexticGauss_coprime_product (a b : O)
   congr 1
   rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
 
-lemma elementFourier_const_mul (c : O) (hc : c≠0) (F : O → ℂ) (H : O) (B : ℂ) :
+lemma elementFourier_const_mul (c : ActualEisensteinCubic.O) (hc : c≠0) (F : ActualEisensteinCubic.O → ℂ) (H : ActualEisensteinCubic.O) (B : ℂ) :
     elementFourier c hc (fun m => B*F m) H = B*elementFourier c hc F H := by
   simp only [elementFourier, mul_assoc, tsum_mul_left]
 
-lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
-    (hr : Supported (Ideal.span {r})) (hcop : IsCoprime s r) (m : O) :
+lemma bareMoving_product (A B s r : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {s}))
+    (hr : Supported (Ideal.span {r})) (hcop : IsCoprime s r) (m : ActualEisensteinCubic.O) :
     idealRowHom m (Ideal.span {A*B}) *
       sexticGauss (s*r) (mul_ne_zero (supportedElement_ne_zero s hs) (supportedElement_ne_zero r hr)) (-m) =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
@@ -113,9 +112,9 @@ lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
   rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
   ring
 
-theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
+theorem barePhysicalFourier_product (A B s r : ActualEisensteinCubic.O) (hA : A≠0) (hB : B≠0)
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+    (hcop : IsCoprime (A*s) (B*r)) (H : ActualEisensteinCubic.O) :
     barePhysicalFourier (A*B) (s*r) (mul_ne_zero hA hB)
       (mul_ne_zero (supportedElement_ne_zero s hs) (supportedElement_ne_zero r hr)) H =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
@@ -123,9 +122,9 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
       (idealRowHom (A*s) (Ideal.span {B}) * (idealRowHom (A*s) (Ideal.span {r}))⁻¹) *
       barePhysicalFourier A s hA (supportedElement_ne_zero s hs) H *
       barePhysicalFourier B r hB (supportedElement_ne_zero r hr) H := by
-  have hsc : IsCoprime s r := hcop.of_mul_left_right.of_mul_right_right
-  have hc1 : IsCoprime (B*r) s := hcop.of_mul_left_right.symm
-  have hc2 : IsCoprime (A*s) r := hcop.of_mul_right_right
+  have hsc := hcop.of_mul_left_right.of_mul_right_right
+  have hc1 := hcop.of_mul_left_right.symm
+  have hc2 := hcop.of_mul_right_right
   have hAs := mul_ne_zero hA (supportedElement_ne_zero s hs)
   have hBr := mul_ne_zero hB (supportedElement_ne_zero r hr)
   let := finite_quotient_span hAs
@@ -176,9 +175,9 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
   rw [elementFourier_const_mul, hexpand]
   ring
 
-theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0)
+theorem bareCongruenceCoefficient_product (A B s r : ActualEisensteinCubic.O) (hA : A≠0) (hB : B≠0)
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+    (hcop : IsCoprime (A*s) (B*r)) (H : ActualEisensteinCubic.O) :
     bareCongruenceCoefficient (A*B) (s*r) (mul_ne_zero hA hB) H =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
       (idealRowHom (B*r) (Ideal.span {A}) * (idealRowHom (B*r) (Ideal.span {s}))⁻¹) *
@@ -196,20 +195,18 @@ theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0
   have hnr : (Ideal.absNorm (Ideal.span {r}):ℂ)≠0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr (supportedElement_ne_zero r hr))
-  apply mul_left_cancel₀ (mul_ne_zero hns hnr)
-  rw [he]
-  ring
+  grind
 
-lemma idealRowHom_ne_zero_of_coprime (s a : O)
+lemma idealRowHom_ne_zero_of_coprime (s a : ActualEisensteinCubic.O)
     (hs : Supported (Ideal.span {s})) (hc : IsCoprime s a) :
     idealRowHom a (Ideal.span {s})≠0 := by
   rw [← supportedModulusCharacter_mk s hs a]
   exact (supportedModulusCharacter s hs).apply_ne_zero_iff.mpr
     ((isUnit_quotient_span_iff s a).mpr hc)
 
-theorem bareCongruenceCoefficient_product_reduced (A B s r : O) (hA : A≠0) (hB : B≠0)
+theorem bareCongruenceCoefficient_product_reduced (A B s r : ActualEisensteinCubic.O) (hA : A≠0) (hB : B≠0)
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+    (hcop : IsCoprime (A*s) (B*r)) (H : ActualEisensteinCubic.O) :
     bareCongruenceCoefficient (A*B) (s*r) (mul_ne_zero hA hB) H =
       (idealRowHom B (Ideal.span {A}) * idealRowHom r (Ideal.span {A}) *
        idealRowHom A (Ideal.span {B}) * idealRowHom s (Ideal.span {B})) /

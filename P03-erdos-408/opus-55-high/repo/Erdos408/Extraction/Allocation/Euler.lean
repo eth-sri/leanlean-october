@@ -50,13 +50,13 @@ lemma sum_inv_le_prod_of_factored (S : Finset ℕ) (F : Finset ℕ)
       rw [div_lt_one (by exact_mod_cast hp.pos)]
       exact_mod_cast hp.one_lt
     rw [← tsum_geometric_of_lt_one (by positivity) h1]
-    exact tsum_congr fun n => by push_cast; rw [one_div_pow]
+    exact tsum_congr fun n => by simp
   rw [prod_congr rfl hgeom] at hhas
   have hle := sum_le_hasSum (F.subtype (· ∈ Nat.factoredNumbers S))
     (fun i _ => by positivity) hhas
   rw [Finset.sum_subtype_eq_sum_filter (f := fun n : ℕ => (1 : ℝ) / n),
     filter_true_of_mem hF] at hle
-  exact hle
+  omega
 
 /-- `(1 - 1/p)⁻¹ ≤ exp(2/p)` for `p ≥ 2`. -/
 lemma inv_one_sub_le_exp {p : ℝ} (hp : 2 ≤ p) : (1 - 1 / p)⁻¹ ≤ Real.exp (2 / p) := by
@@ -82,7 +82,7 @@ lemma prod_inv_one_sub_le_exp (S : Finset ℕ) :
   refine prod_le_prod₀ (fun p hp => ?_) fun p hp => ?_
   · have h2 : (2 : ℝ) ≤ p := by exact_mod_cast (mem_filter.1 hp).2.two_le
     have : 1 / (p : ℝ) < 1 := by rw [div_lt_one (by linarith)]; linarith
-    exact (inv_pos.2 (by linarith)).le
+    positivity
   · have h2 : (2 : ℝ) ≤ p := by exact_mod_cast (mem_filter.1 hp).2.two_le
     rw [mul_one_div]
     exact inv_one_sub_le_exp h2
@@ -93,11 +93,10 @@ lemma exists_prod_one_sub_ge : ∃ C₁ : ℝ, 0 < C₁ ∧ ∀ Y : ℝ, 2 ≤ Y
   obtain ⟨E, hE, hM⟩ := mertens_second
   have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   refine ⟨Real.log 2 * Real.exp (-(5 / 2 + E / Real.log 2)), by positivity, fun Y hY => ?_⟩
-  have hlY : 0 < Real.log Y := Real.log_pos (by linarith)
+  have hlY := Real.log_pos (by linarith)
   have hp2 : ∀ p ∈ primesIcc 2 Y, (2 : ℝ) ≤ p := fun p hp => by
     have := (mem_filter.1 hp).1
-    rw [mem_Icc, Nat.ceil_le] at this
-    exact this.1
+    simp_all
   have hpos : ∀ p ∈ primesIcc 2 Y, 0 < 1 - (1 : ℝ) / p := fun p hp => by
     have := hp2 p hp
     rw [sub_pos, div_lt_one (by linarith)]
@@ -128,7 +127,7 @@ lemma exists_prod_one_sub_ge : ∃ C₁ : ℝ, 0 < C₁ ∧ ∀ Y : ℝ, 2 ≤ Y
       obtain ⟨hpr, h1, h2⟩ := (mem_primesIcc.1 hp)
       rcases eq_or_lt_of_le (show (2 : ℝ) ≤ p from h1) with h | h
       · rw [show p = 2 by exact_mod_cast h.symm]
-        exact mem_insert_self _ _
+        simp
       · exact mem_insert_of_mem (mem_primesIoc.2 ⟨hpr, h, h2⟩)
     calc ∑ p ∈ primesIcc 2 Y, (1 : ℝ) / p ≤ ∑ p ∈ insert 2 (primesIoc 2 Y), (1 : ℝ) / p :=
           sum_le_sum_of_subset_of_nonneg hsplit fun _ _ _ => by positivity

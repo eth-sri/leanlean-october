@@ -10,27 +10,26 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open scoped Classical SchwartzMap ContDiff
+open MeasureTheory FourierBridge ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonProfile
 open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios
 open InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
-def slotRatio (Z:ℝ)(ell:σ→ℝ)(i:σ)(P:Ideal Eis) : ℝ := (P.absNorm:ℝ)/Z^(ell i)
+def slotRatio (Z:ℝ)(ell:σ→ℝ)(i:σ)(P:Ideal ActualEisensteinCubic.O) : ℝ := (P.absNorm:ℝ)/Z^(ell i)
 
 omit [DecidableEq σ] in
-theorem slotRatio_pos (Z:ℝ)(hZ:0<Z)(ell:σ→ℝ)(i:σ){P:Ideal Eis}(hP:Prime P) :
+theorem slotRatio_pos (Z:ℝ)(hZ:0<Z)(ell:σ→ℝ)(i:σ){P:Ideal ActualEisensteinCubic.O}(hP:Prime P) :
     0<slotRatio Z ell i P := by
-  apply div_pos _ (Real.rpow_pos_of_pos hZ _)
+  apply div_pos _ (by positivity)
   exact_mod_cast Nat.pos_of_ne_zero (fun h=>hP.ne_zero (Ideal.absNorm_eq_zero_iff.mp h))
 
 theorem common_profile_separation
     (W:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
-    (F:Finset (Ideal Eis))(I:Finset σ)(L:σ→Finset (Ideal Eis))
-    (hL:∀i∈I,∀P∈L i,Prime P)(a:σ→Ideal Eis→ℂ)
+    (F:Finset (Ideal ActualEisensteinCubic.O))(I:Finset σ)(L:σ→Finset (Ideal ActualEisensteinCubic.O))
+    (hL:∀i∈I,∀P∈L i,Prime P)(a:σ→Ideal ActualEisensteinCubic.O→ℂ)
     (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime
       (fun i:I=>q i.val i.property)))
     (Z:ℝ)(hZ:0<Z)(ell:σ→ℝ)(A:Finset (primePool F))
@@ -51,7 +50,7 @@ theorem common_profile_separation
       (indexed_mark_active id I L _ _)
   simp_rw [hm]
   have he := actual_overlap_separation W a₀ b₀ ha₀ hs hW I L a (slotRatio Z ell)
-    (fun i hi P hP=>slotRatio_pos Z hZ ell i (hL i hi P hP))
+    (fun i hi P hP=>slotRatio_pos Z hZ ell i (by grind))
     (activeIndices id I L (∏i∈A,i.val)) yj yc hj hc
   rw [←he]
   apply Finset.sum_congr rfl
@@ -66,13 +65,12 @@ theorem common_profile_separation
         intro i hi
         simp only [activeIndices_mem id I L _ i.property ((Finset.mem_pi.mp hq) i.val i.property),id_eq]
       _ = _ := by
-        convert! tuple_gate_product id I a q (∏i∈A,i.val) (hcop q hq) using 1
-  rw [hprod]
-  split_ifs <;> simp
+        convert! tuple_gate_product id I a q (∏i∈A,i.val) (by grind) using 1
+  grind
 
 theorem common_profile_integrable (g:𝓢(ℝ,ℂ))
-    (F:Finset (Ideal Eis))(I:Finset σ)(L:σ→Finset (Ideal Eis))
-    (a:σ→Ideal Eis→ℂ)(Z:ℝ)(ell:σ→ℝ)(A:Finset (primePool F))(yj yc:ℝ) :
+    (F:Finset (Ideal ActualEisensteinCubic.O))(I:Finset σ)(L:σ→Finset (Ideal ActualEisensteinCubic.O))
+    (a:σ→Ideal ActualEisensteinCubic.O→ℂ)(Z:ℝ)(ell:σ→ℝ)(A:Finset (primePool F))(yj yc:ℝ) :
     Integrable (fun t:ℝ=>density g (Real.log yj) t*logPhase t (Real.log yc)*
       primeMark I (fun i=>poolList F (L i))
         (fun i q=>a i q.val*logPhase (-t) (Real.log (slotRatio Z ell i q.val))) A) :=

@@ -84,8 +84,7 @@ theorem compCoef_eq_zero {s : ChainState x d Y d₀ u v r B} {c : EdgeChoice x d
     (hv : ¬ EdgeValid x d Y d₀ u v r B s c) : compCoef q A₀ x d Y d₀ u v r B N s c = 0 := by
   classical
   unfold compCoef
-  rw [ite_eq_right fun h => absurd h hv]
-  simp
+  simp_all
 
 /-- `η(y) ≠ 0` only for `y < 4`. -/
 theorem lt_four_of_dyadicBump_ne_zero {y : ℝ} (h : dyadicBump y ≠ 0) : y < 4 := by
@@ -103,12 +102,12 @@ private theorem abs_dyadicBump_le' (y : ℝ) : |dyadicBump y| ≤ 1 := by
   have h₂ := smoothTransition.le_one (y - 1)
   have h₃ := smoothTransition.nonneg (y / 2 - 1)
   have h₄ := smoothTransition.le_one (y / 2 - 1)
-  exact abs_le.2 ⟨by linarith, by linarith⟩
+  grind
 
 /-- A product of a number at most one and a number in `[0, 1]` is at most one. -/
 private theorem mul_le_one_of_le' {a b : ℝ} (ha : a ≤ 1) (hb0 : 0 ≤ b) (hb : b ≤ 1) :
     a * b ≤ 1 :=
-  (mul_le_mul_of_nonneg_right ha hb0).trans (by rw [one_mul]; exact hb)
+  (mul_le_mul_of_nonneg_right ha hb0).trans (by linarith)
 
 /-- A nonzero admissible coefficient has label product `a < 4Y`. -/
 theorem labelProd_lt_of_compCoef_ne_zero {s : ChainState x d Y d₀ u v r B}
@@ -131,8 +130,7 @@ theorem labelProd_lt_of_compCoef_ne_zero {s : ChainState x d Y d₀ u v r B}
 theorem arcIntegral_eq_zero_of_lt_one {A x Y : ℝ} (h : Real.log x ^ A < 1) (n : ℤ) :
     arcIntegral A x Y n = 0 := by
   unfold arcIntegral
-  rw [Nat.floor_eq_zero.2 h]
-  simp
+  simp_all
 
 /-- **The comparison coefficient is a difference of edge coefficients**: at an arc parameter
 `A₁` with no arcs, `-w ∫_𝔐 = ℰ_{A₀} - ℰ_{A₁}`, since `ℰ_A = w ([t - b + a = 0] - ∫_{𝔐_A})`. -/
@@ -145,7 +143,7 @@ theorem compCoef_eq_sub {A₁ : ℝ} (h0 : ∀ n, arcIntegral A₁ x Y n = 0)
   by_cases hv : EdgeValid x d Y d₀ u v r B s c
   · simp only [hv, ↓reduceIte, h0]
     ring
-  · simp [hv]
+  simp_all
 
 /-- **The crude coefficient bound**: `|-w ∫_𝔐| ≤ |ℰ_{A₀}| + |ℰ_{A₁}|` for an arc parameter
 `A₁` with no arcs. -/
@@ -174,7 +172,7 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
   have hρ1 : pendingWeight q ≤ 1 := Real.rpow_le_one hq.le hq₁.le (by norm_num)
   have hv' := hv
   obtain ⟨-, -, hD₀, -, hdvd, -⟩ := hv
-  have hD : 0 < (edgePad s c : ℝ) := hd₀.trans_le hD₀
+  have hD : 0 < (edgePad s c : ℝ) := by linarith
   set r₀ := (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 with hr₀
   set ψ := plateau ((edgeDet s c / edgePad s c : ℤ) / Y) with hψ
   set Ω := 4 * Real.log x ^ (3 * A₀) / Y with hΩ
@@ -186,7 +184,7 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
   have hψI : ψ ≤ if ∃ t ∈ Icc (-(⌈5 * Y⌉₊ : ℤ)) ⌈5 * Y⌉₊, edgeDet s c = edgePad s c * t
       then 1 else 0 := by
     split_ifs with ht
-    · exact hψ1
+    · omega
     · by_contra hlt
       push Not at hlt
       apply ht
@@ -203,7 +201,7 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
       dyadicBump ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y) *
       dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y) * ψ| ≤
         r₀ * crudeWeight q x d Y d₀ u v r B N s c * ψ := by
-    have hdD0 : 0 ≤ d₀ / (edgePad s c : ℝ) := div_nonneg hd₀.le hD.le
+    have hdD0 : 0 ≤ d₀ / (edgePad s c : ℝ) := by positivity
     have hdD1 : d₀ / (edgePad s c : ℝ) ≤ 1 := (div_le_one hD).2 hD₀
     simp only [abs_mul, abs_of_nonneg hr0, abs_of_nonneg hW, abs_of_nonneg hψ0,
       abs_of_nonneg hdD0, abs_of_nonneg (pow_nonneg hρ0 _)]
@@ -214,8 +212,8 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
     have hfac : pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
         pendingWeight q ^ pendingHits x d c.2.2.1.1 (edgeMem s c) * (d₀ / (edgePad s c : ℝ)) *
           |dyadicBump ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) / Y)| *
-            |dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)| ≤ 1 := by
-      exact mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' hp₁
+            |dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)| ≤ 1 :=
+      mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' (mul_le_one_of_le' hp₁
         (pow_nonneg hρ0 _) hp₂) hdD0 hdD1) (abs_nonneg _) hη₁) (abs_nonneg _) hη₂
     calc _ = r₀ * crudeWeight q x d Y d₀ u v r B N s c * ψ *
           (pendingWeight q ^ pendingHits x d s.1.1 s.2.2.1 *
@@ -233,7 +231,7 @@ theorem norm_compCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY : 0
   refine (mul_le_mul hamp harc (norm_nonneg _) (by positivity)).trans ?_
   calc r₀ * crudeWeight q x d Y d₀ u v r B N s c * ψ * Ω
       = r₀ * crudeWeight q x d Y d₀ u v r B N s c * (ψ * Ω) := by ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hψI hΩ0) (mul_nonneg hr0 hW)
+    _ ≤ _ := mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hψI hΩ0) (by positivity)
 
 /-- The coefficient bound without the support condition: `|-w ∫_𝔐| ≤ M!^{-2K} ∏_i w_i ·
 4 L^{3A₀}/Y` at an admissible choice. -/
@@ -266,7 +264,7 @@ theorem exists_det_of_compCoef_ne_zero (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 <
     exact h (compCoef_eq_zero hv)
   have := norm_compCoef_le (A₀ := A₀) hq hq₁ hd₀ hY hL hν hv
   rw [ite_eq_right ht, zero_mul, mul_zero] at this
-  exact h (norm_le_zero_iff.1 this)
+  simp_all
 
 /-! ### Lists and products -/
 
@@ -274,7 +272,7 @@ theorem exists_det_of_compCoef_ne_zero (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 <
 theorem not_dvd_prod_of_ne {M : ℕ} {p : ℕ} (hp : p.Prime) (f : Fin K → Fin M → ℕ)
     (hf : ∀ i h, (f i h).Prime) (hne : ∀ i h, p ≠ f i h) : ¬ p ∣ ∏ i, ∏ h, f i h :=
   Prime.not_dvd_finsetProd hp.prime fun i _ => Prime.not_dvd_finsetProd hp.prime fun h _ hd =>
-    hne i h ((Nat.prime_dvd_prime_iff_eq hp (hf i h)).1 hd)
+    hne i h ((Nat.prime_dvd_prime_iff_eq hp (by grind)).1 hd)
 
 /-- The omission product at the last slots of a symmetrization is the product over the other
 slots. -/
@@ -289,7 +287,7 @@ theorem omitProd_last {M : ℕ} (p : Lists K M) (σ : Fin K → Equiv.Perm (Fin 
   have h₂ : ∏ h, p i h = p i (σ i (Fin.last M)) * ∏ h ∈ univ.erase (σ i (Fin.last M)), p i h :=
     (mul_prod_erase _ _ (mem_univ _)).symm
   rw [h₂, mul_comm] at h₁
-  exact mul_right_cancel₀ (hpos i _).ne' h₁
+  exact mul_right_cancel₀ (by grind) h₁
 
 /-! ### The row sums of a promoted group -/
 
@@ -351,16 +349,14 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
   have hΨ0 : ∀ σ z' pf, 0 ≤ Ψ σ z' pf := fun σ z' pf => by
     simp only [hΨ]
     split_ifs
-    · exact mul_nonneg (by norm_num) (sum_nonneg fun xp _ => by split_ifs <;> positivity)
-    · exact le_rfl
+    · exact mul_nonneg (by norm_num) (sum_nonneg fun xp _ => by positivity)
+    simp
   have hg0 : ∀ σ z' i pf, 0 ≤ g σ z' i pf := fun σ z' i pf => by
     simp only [hg']
     split_ifs
     exacts [hΨ0 _ _ _, hω0 _]
   have hkern0 : ∀ σ z', 0 ≤ kern σ z' := fun σ z' => by
-    simp only [hkern]
-    split_ifs
-    exacts [hΩ0, le_rfl]
+    positivity
   have hF0 : ∀ σ z' lab, 0 ≤ F σ z' lab := fun σ z' lab =>
     mul_nonneg (mul_nonneg hr0 (prod_nonneg fun i _ => hg0 _ _ _ _)) (hkern0 _ _)
   -- the pointwise bound
@@ -385,13 +381,13 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     · -- the weights
       refine prod_le_prod₀ (fun i _ => ?_) (fun i _ => ?_)
       · split_ifs
-        · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
+        · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
             (le_trans (by norm_num) (hV i _ (mem_band_of_mem_edgeChoices hc i)))
         · exact hν _
       · have hVi := hV i _ (mem_band_of_mem_edgeChoices hc i)
         have hnum0 : 0 ≤ ∑ xp : Particle x d,
             if xp.1 = edgePromoted c i then (s.2.2.1 xp : ℝ) else 0 :=
-          sum_nonneg fun xp _ => by split_ifs <;> positivity
+          sum_nonneg fun xp _ => by positivity
         by_cases hi : i = i₀
         · subst hi
           simp only [hg', hΨ, ↓reduceIte, hprom, hban, not_false_eq_true, and_self]
@@ -409,20 +405,20 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
                   primeMult x d s.2.2.1 (c.2.2.2.1 i).1 := by
               refine sum_le_sum fun xp _ => ?_
               split_ifs with h₁ h₂ h₂
-              · exact le_rfl
+              · simp
               · exact absurd (congrArg Prod.fst h₁) h₂
               · positivity
-              · exact le_rfl
+              · simp
             rw [div_le_iff₀ (by linarith)]
             nlinarith [primeMult_nonneg s.2.2.1 (c.2.2.2.1 i).1]
-          · exact le_rfl
+          simp
     · -- the kernel
       by_cases ht : ∃ t ∈ Icc (-(T : ℤ)) T, edgeDet s c = edgePad s c * t
       · rw [ite_eq_left ht, one_mul]
         have hk : kern c.1 c.2.2.1 = Ω := ite_eq_left ⟨hv.2.2.1, hv.2.2.2.1, ht⟩
-        rw [hk]
+        linarith
       · rw [ite_eq_right ht, zero_mul]
-        exact hkern0 _ _
+        positivity
   -- the targets on the prescribed line
   have hT6 : (T : ℝ) ≤ 6 * Y := by
     have := Nat.ceil_lt_add_one (show 0 ≤ 5 * Y by linarith)
@@ -434,7 +430,7 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     simp only [hΦ]
     split_ifs
     · exact mul_nonneg (mul_nonneg (by norm_num) (primeMult_nonneg _ _)) hΛ0
-    · exact le_rfl
+    simp
   have hkey : ∀ σ, ∀ pf ∈ band x (d.a i₀) ×ˢ (univ : Finset Bool),
       ∑ z', Ψ σ z' pf * kern σ z' ≤ Φ pf := by
     intro σ pf hpf
@@ -458,7 +454,7 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
         Y ^ (-(7 / 10 : ℝ)) <
           circleDist (l * (Dσ σ : ℕ) * (tau r (complement s.1.1) / tau r s.1.1)) := by
       intro l hl hlY
-      have := hg (fun i => σ i (Fin.last M)) (by rw [hom]; exact hDr.1) (by rw [hom]; exact hDr.2)
+      have := hg (fun i => σ i (Fin.last M)) (by rw [hom]; linarith) (by rw [hom]; linarith)
         l hl hlY
       rwa [hom] at this
     -- each particle sees at most `Λ` of kernel mass on its line
@@ -503,7 +499,7 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
               mul_le_mul_of_nonneg_right hcard hΩ0
           _ ≤ (2 ^ 13 * (Y / P + Y ^ (4 / 5 : ℝ))) * Ω := by
               gcongr
-          _ = Λ := by rw [hΛ]; ring
+          _ = Λ := by linarith
       · rw [ite_eq_right hxp]
         refine le_of_eq (sum_eq_zero fun z' _ => ?_)
         rw [ite_eq_right fun h => hxp (congrArg Prod.fst h), zero_mul]
@@ -560,7 +556,7 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
         ≤ ∑ lab ∈ Fintype.piFinset (fun i => band x (d.a i) ×ˢ (univ : Finset Bool)),
             r₀ * ∏ i, h i (lab i) := by
           refine sum_le_sum fun lab hlab' => ?_
-          have hlab₀' : lab i₀ ∈ band x (d.a i₀) ×ˢ (univ : Finset Bool) :=
+          have hlab₀' :=
             Fintype.mem_piFinset.1 hlab' i₀
           have hsplit : ∀ z', ∏ i, g σ z' i (lab i) =
               Ψ σ z' (lab i₀) * ∏ i ∈ univ.erase i₀, ω (lab i) := by
@@ -590,7 +586,7 @@ theorem sum_norm_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
           by_cases hi : i = i₀
           · subst hi
             simp only [hh, ↓reduceIte]
-            exact hlab₀
+            omega
           · simp only [hh, hi, ↓reduceIte, mul_one]
             exact hlab i
       _ = r₀ * ((2 * B + 4) ^ K * Λ) := by
@@ -737,11 +733,11 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
         band x (d.a i)) ×ˢ (univ : Finset ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r))
     with hParams
   have hcolF0 : ∀ st f b, 0 ≤ colFactor q x d N s'.2.2.1 st f b := fun st f b =>
-    mul_nonneg (by split_ifs; exacts [primeMult_nonneg _ _, hν _]) (by split_ifs <;> norm_num)
+    mul_nonneg (by split_ifs; exacts [primeMult_nonneg _ _, hν _]) (by positivity)
   have hΞ0 : ∀ σ' b z, 0 ≤ Ξ σ' b z := fun σ' b z => by
     simp only [hΞ]
     split_ifs
-    · exact le_rfl
+    · simp
     · exact sum_nonneg fun xp _ => by split_ifs <;> positivity
   have hkern0 : ∀ σ' z, 0 ≤ kern σ' z := fun σ' z => by
     simp only [hkern]
@@ -760,11 +756,11 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     obtain ⟨hσ, hσ', htr, hz⟩ := h
     have htr' := fun i => congrFun htr i
     simp only [Prod.mk.injEq] at htr'
-    have hst : c₁.2.1 = c₂.2.1 := Finset.ext fun i => by simpa using (htr' i).1
-    have hb : ∀ i, edgeSrc s₁ c₁ i (Fin.last _) = edgeSrc s₂ c₂ i (Fin.last _) :=
+    have hst := Finset.ext fun i => by simpa using (htr' i).1
+    have hb :=
       fun i => (htr' i).2.2
-    have htgt : edgeTgt s₁ c₁ = edgeTgt s₂ c₂ := htgt₁.symm.trans htgt₂
-    have hlab : c₁.2.2.2.1 = c₂.2.2.2.1 := funext fun i => Prod.ext
+    have htgt := htgt₁.symm.trans htgt₂
+    have hlab := funext fun i => Prod.ext
       (by rw [label_eq_tgt s₁ c₁, label_eq_tgt s₂ c₂, htgt, hσ']) (htr' i).2.1
     have hc : c₁ = c₂ :=
       Prod.ext hσ (Prod.ext hst (Prod.ext (hz₁.symm.trans hz₂) (Prod.ext hlab hσ')))
@@ -798,7 +794,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     rintro ⟨s, c⟩ hp
     obtain ⟨hc, hcS, hv, hz, htgt, hmem⟩ := hfacts _ hp
     dsimp only at hc hcS hv hz htgt hmem
-    have hi₀c : i₀ ∈ c.2.1 := hcS ▸ hi₀
+    have hi₀c := hcS ▸ hi₀
     have hD : edgePad s c = Dp c.2.2.2.2 := by
       rw [edgePad_eq_tgt]
       simp only [hDp, htgt]
@@ -873,8 +869,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
           mul_le_mul (mul_le_mul_of_nonneg_left hw hr0) hker hΩ0
             (mul_nonneg hr0 (mul_nonneg (hμ0 s') (prod_nonneg fun i _ => hcolF0 _ _ _)))
       _ = F (φ (s, c)) := by
-          simp only [hF, hφ]
-          ring
+          linarith
   -- the image of the parameters
   have himage : A.image φ ⊆ Params := by
     intro y hy
@@ -895,13 +890,13 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
     by_cases hbD : ¬ b ∣ Dp σ'
     swap
     · rw [sum_eq_zero fun z _ => by simp only [hΞ, ite_eq_right hbD, zero_mul]]
-      exact hR0
+      omega
     by_cases hDr : d₀ ≤ (Dp σ' : ℝ) ∧ (Dp σ' : ℝ) < 2 * d₀
     swap
     · rw [sum_eq_zero fun z _ => by
         simp only [hkern]
         rw [ite_eq_right fun h => hDr ⟨h.1, h.2.1⟩, mul_zero]]
-      exact hR0
+      omega
     -- test (i) at the target, at the omission product `D_{σ'}`
     have hom := omitProd_last s'.2.1.1 (fun i => (σ' i).symm)
       (fun i h => (TypeII.band_prime (mem_band_of_mem_lists s'.2.1.2 i h)).pos)
@@ -909,8 +904,8 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
         Y ^ (-(7 / 10 : ℝ)) <
           circleDist (l * (Dp σ' : ℕ) * (tau r (complement s'.1.1) / tau r s'.1.1)) := by
       intro l hl hlY
-      have := hg (fun i => (σ' i).symm (Fin.last M)) (by rw [hom]; exact hDr.1)
-        (by rw [hom]; exact hDr.2) l hl hlY
+      have := hg (fun i => (σ' i).symm (Fin.last M)) (by rw [hom]; linarith)
+        (by rw [hom]; linarith) l hl hlY
       rwa [hom] at this
     -- each particle sees at most `Λ` of kernel mass on its line
     have hinner : ∀ xp : Particle x d,
@@ -931,7 +926,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
             by_cases ht : ∃ t ∈ Icc (-(T : ℤ)) T, z.1.1 * s'.1.1.2 - z.1.2 * s'.1.1.1 = Dp σ' * t
             · obtain ⟨t, htI, ht⟩ := ht
               have hc : cond z.1 := by
-                refine ⟨⟨-t, ?_, by linear_combination -ht⟩, (congrArg Prod.snd h1).symm⟩
+                refine ⟨⟨-t, ?_, by linarith⟩, (congrArg Prod.snd h1).symm⟩
                 obtain ⟨h₁, h₂⟩ := mem_Icc.1 htI
                 exact mem_Icc.2 ⟨by omega, by omega⟩
               rw [ite_eq_left hc]
@@ -958,7 +953,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
               mul_le_mul_of_nonneg_right hcard hΩ0
           _ ≤ (2 ^ 13 * (Y / P + Y ^ (4 / 5 : ℝ))) * Ω := by
               gcongr
-          _ = Λ := by rw [hΛ]; ring
+          _ = Λ := by linarith
       · rw [ite_eq_right hxp]
         refine le_of_eq (sum_eq_zero fun z _ => ?_)
         rw [ite_eq_right fun h => hxp (congrArg Prod.fst h), zero_mul]
@@ -979,8 +974,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
           exact hinner xp
       _ = primeMult x d s'.2.2.1 b * Λ := by
           simp only [primeMult, mul_ite, mul_zero, sum_mul]
-          refine sum_congr rfl fun xp _ => ?_
-          split_ifs <;> ring
+          simp
   -- the group sums
   have hgroup : ∀ i, ∑ t ∈ (univ : Finset Bool) ×ˢ (univ : Finset Bool) ×ˢ band x (d.a i),
       colFactor q x d N s'.2.2.1 t.1 t.2.1 t.2.2 ≤ 3 * (B + 4) := by
@@ -1018,7 +1012,7 @@ theorem sum_col_compCoef_le_of_mem (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
             (univ : Finset Bool) ×ˢ band x (d.a i)),
             chainMeasure q x d Y d₀ u v r B N s' * r₀ * ∏ i, hh i (tr i) := by
           refine sum_le_sum fun tr htr => ?_
-          have hb₀ : (tr i₀).2.2 ∈ band x (d.a i₀) :=
+          have hb₀ :=
             (mem_product.1 (mem_product.1 (Fintype.mem_piFinset.1 htr i₀)).2).2
           have hsplit : ∏ i, colFactor q x d N s'.2.2.1 (tr i).1 (tr i).2.1 (tr i).2.2 =
               colFactor q x d N s'.2.2.1 (tr i₀).1 (tr i₀).2.1 (tr i₀).2.2 *
@@ -1105,26 +1099,24 @@ variable {q x : ℝ} {d : Data K} {N : ℕ}
 /-- A band prime is a band prime of the data. -/
 private theorem mem_bandPrimes_of_mem_band {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
     p ∈ bandPrimes x d :=
-  mem_biUnion.2 ⟨i, mem_univ i, hp⟩
+  mem_biUnion.2 (by grind)
 
 /-- `V(p) ≥ 0`. -/
 private theorem primeMass_nonneg (p : ℕ) : 0 ≤ primeMass x d p :=
   sum_nonneg fun i _ => by
     split_ifs
-    · exact sum_nonneg fun p _ => by positivity
-    · exact le_rfl
+    · exact sum_nonneg (by simp)
+    simp
 
 /-- With band masses at least `1/2`, a prime of a band has `V(p) ≥ 1/2`. -/
 private theorem half_le_primeMass (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) {i : Fin K}
     {p : ℕ} (hp : p ∈ band x (d.a i)) : 1 / 2 ≤ primeMass x d p :=
   calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := hV i
-    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := (ite_eq_left hp).symm
+    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := by grind
     _ ≤ primeMass x d p :=
         single_le_sum (f := fun i => if p ∈ band x (d.a i) then harmonicMass (band x (d.a i))
           else 0) (fun j _ => by
-            split_ifs
-            · exact sum_nonneg fun p _ => by positivity
-            · exact le_rfl) (mem_univ i)
+            grind) (mem_univ i)
 
 /-- With baselines at least `1/2` at the band primes, the birth weights are nonnegative. -/
 private theorem primeWeight_nonneg (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (p : ℕ) :
@@ -1136,8 +1128,7 @@ private theorem primeWeight_nonneg (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ bas
       (by linarith))
   · have h0 : primeMass x d p = 0 :=
       sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_bandPrimes_of_mem_band hpi)
-    rw [h0]
-    simp
+    simp_all
 
 /-- At a prime of a band, `0 < ν(p) ≤ 4/p`. -/
 private theorem primeWeight_pos_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
@@ -1148,13 +1139,13 @@ private theorem primeWeight_pos_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (
   have hb₁ := hb p (mem_bandPrimes_of_mem_band hp)
   have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hp).pos
   unfold primeWeight
-  refine ⟨one_div_pos.2 (mul_pos (mul_pos (by linarith) (by positivity)) (by linarith)), ?_⟩
+  refine ⟨by positivity, ?_⟩
   calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
       ≤ 1 / (1 / 2 * p * (1 / 2)) :=
         one_div_le_one_div_of_le (by positivity)
           (mul_le_mul (mul_le_mul hV₁ (by linarith) hp0.le (by linarith)) hb₁ (by norm_num)
-            (mul_nonneg (by linarith) (by linarith)))
-    _ = 4 * (1 / p) := by field_simp; norm_num
+            (by positivity))
+    _ = 4 * (1 / p) := by ring
 
 /-- With band masses in `[1/2, 1]`, the birth weights of a band sum to at most `4`. -/
 private theorem sum_primeWeight_band_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
@@ -1164,13 +1155,13 @@ private theorem sum_primeWeight_band_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (ban
   calc ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ ∑ p ∈ band x (d.a i), 4 * (1 / (p : ℝ)) :=
         sum_le_sum fun p hp => (primeWeight_pos_le hV hb hp).2
     _ = 4 * harmonicMass (band x (d.a i)) := (mul_sum _ _ _).symm
-    _ ≤ 4 * 1 := mul_le_mul_of_nonneg_left (hV₁ i) (by norm_num)
+    _ ≤ 4 * 1 := by grind
     _ = 4 := mul_one 4
 
 /-- The damping defects are in `[0, 1]`. -/
 private theorem dampDefect_mem_Icc (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  have hs := Real.sqrt_le_one.2 hq₁.le
   unfold dampDefect
   split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
 
@@ -1178,8 +1169,8 @@ private theorem dampDefect_mem_Icc (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
 private theorem half_le_baseline (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
     (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
   have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
+  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (by omega)
+  have hsum :=
     calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
           sum_le_sum fun j _ => (dampDefect_mem_Icc hq hq₁ N j).2
       _ = (N : ℝ) + 1 := by simp
@@ -1226,11 +1217,11 @@ private theorem normLe_choiceOp_of_eq_zero {ι κ γ : Type*} [Fintype ι] [Fint
     NormLe μ ν (choiceOp cs a out) c := by
   intro f
   have h0 : choiceOp cs a out f = 0 := funext fun i => sum_eq_zero fun c hc => by
-    rw [ha i c hc, zero_mul]
+    simp_all
   rw [h0]
   simp only [wnormSq, Pi.zero_apply, norm_zero, ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true,
     zero_pow, mul_zero, sum_const_zero]
-  exact mul_nonneg (sq_nonneg _) (sum_nonneg fun j _ => mul_nonneg (hν j) (sq_nonneg _))
+  exact mul_nonneg (sq_nonneg _) (sum_nonneg fun j _ => mul_nonneg (by grind) (sq_nonneg _))
 
 /-- The final comparison: for `c₁ ≤ L` and `e = 6K + 6A + 3`,
 `c₁ L^{6K + 6A + 3} L^{-(e + 2|G| + 3)} ≤ (L^{-(G + 1)})²`. -/
@@ -1253,15 +1244,14 @@ private theorem final_le {L c₁ A G : ℝ} (hL : 1 ≤ L) (hc : c₁ ≤ L) (K 
     ring
   calc c₁ * (L ^ 3) ^ K * (L ^ 3) ^ K * L ^ (3 * A) * L ^ (3 * A) * L ^ 3 *
         L ^ (-(6 * (K : ℝ) + 6 * A + 3 + 2 * |G| + 3))
-      = c₁ * L ^ (-(2 * |G| + 3)) := by rw [← hpow]; ring
+      = c₁ * L ^ (-(2 * |G| + 3)) := by grind
     _ ≤ L * L ^ (-(2 * |G| + 3)) := mul_le_mul_of_nonneg_right hc (by positivity)
     _ = L ^ (-(2 * |G| + 2)) := by
         rw [show L * L ^ (-(2 * |G| + 3)) = L ^ (1 : ℝ) * L ^ (-(2 * |G| + 3)) by
-          rw [Real.rpow_one], ← Real.rpow_add hL0]
-        congr 1
+          simp, ← Real.rpow_add hL0]
         ring
     _ ≤ L ^ (-(2 * G + 2)) :=
-        Real.rpow_le_rpow_of_exponent_le hL (by linarith [le_abs_self G])
+        Real.rpow_le_rpow_of_exponent_le hL (by grind)
     _ = _ := hsq.symm
 
 /-- **M8, the dirty comparison parts** (PD `mem:comparison-small`): eventually, for `B ≤ L³`,
@@ -1297,9 +1287,9 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
   have hL0 : 0 < L := by linarith
   have hY0 : 0 < Y := by linarith
   -- the band facts
-  have hV₀ : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) := fun i => (hV _ (hd.window i).1).1
-  have hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1 := fun i => (hV _ (hd.window i).1).2
-  have hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p :=
+  have hV₀ := fun i => (hV _ (hd.window i).1).1
+  have hV₁ := fun i => (hV _ (hd.window i).1).2
+  have hb :=
     fun p hp => half_le_baseline hq hq₁ (hbig d hd p hp)
   have hdisj' : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)) := by
     intro i j hij
@@ -1367,7 +1357,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
     linarith
   set Λ := 4 * L ^ (3 * A₀) / Y * (2 ^ 13 * (Y / L ^ E + Y ^ (4 / 5 : ℝ))) with hΛ
   have hLA : L ^ (3 * A₀) ≤ L ^ (3 * Am) :=
-    Real.rpow_le_rpow_of_exponent_le hL1 (by rw [hAm]; linarith [le_max_left A₀ 0])
+    Real.rpow_le_rpow_of_exponent_le hL1 (by grind)
   have hΛ0 : 0 ≤ Λ := by positivity
   have hΛle : Λ ≤ 2 ^ 17 * L ^ (3 * Am) * δ := by
     have hsplit : Λ = 2 ^ 15 * L ^ (3 * A₀) * (1 / L ^ E + 1 / Y ^ (1 / 5 : ℝ)) := by
@@ -1402,7 +1392,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
           rw [sum_add_distrib]
           exact add_le_add (sum_norm_chainEdgeCoef_le hq hq₁ hd₀ hY hU hL0 hν hνi hVp s)
             (sum_norm_chainEdgeCoef_le hq hq₁ hd₀ hY hU hL0 hν hνi hVp s)
-      _ = 2 ^ K * (2 * B + 4) ^ K * κ := by rw [hκ]; ring
+      _ = 2 ^ K * (2 * B + 4) ^ K * κ := by linarith
   have hcolc : ∀ s', ∑ s, ∑ c ∈ compChoices x d Y d₀ u v r S I with
       chainEdgeOut x d Y d₀ u v r B s c = s',
         chainMeasure q x d Y d₀ u v r B N s * ‖compCoef q A₀ x d Y d₀ u v r B N s c‖ ≤
@@ -1429,7 +1419,7 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
           exact add_le_add
             (sum_col_chainEdgeCoef_le hq hq₁ hd₀ hY hU hL0 hdisj' hVp hν hνpos hνi s')
             (sum_col_chainEdgeCoef_le hq hq₁ hd₀ hY hU hL0 hdisj' hVp hν hνpos hνi s')
-      _ = 3 ^ K * (B + 4) ^ K * κ * chainMeasure q x d Y d₀ u v r B N s' := by rw [hκ]; ring
+      _ = 3 ^ K * (B + 4) ^ K * κ * chainMeasure q x d Y d₀ u v r B N s' := by linarith
   -- the weighted Schur test with weight one, and the final comparison
   have hB0 : (0 : ℝ) ≤ B := Nat.cast_nonneg B
   have hL3 : 1 ≤ L ^ 3 := one_le_pow₀ hL1
@@ -1500,12 +1490,12 @@ theorem eventually_compOp_normLe {q C CX alo ahi g A₀ G : ℝ} (hq : 0 < q) (h
                 mul_le_mul h2 (le_mul_of_one_le_right h1 hL3) h1 (by positivity)
             _ = _ := by ring
   · -- a stored group: the columns are small
-    have hS : i₀ ∈ S := hi₀.resolve_right hI
+    have hS := hi₀.resolve_right hI
     refine hfin (2 ^ K * (2 * B + 4) ^ K * κ) (3 ^ K * (B + 4) ^ K * (B * Λ)) (by positivity)
       (by positivity) ?_ (hR0 _ (by positivity) hrowc) (hC0 _ fun s' =>
         sum_col_compCoef_le_of_mem hq hq₁ hd₀ hY hU hL0 hdisj' hVp hν hνpos hνi hS
           (by positivity) (hPi i₀) s')
-    have hBL : (B : ℝ) ≤ L ^ 3 := hB
+    have hBL := hB
     calc 2 ^ K * (2 * (B : ℝ) + 4) ^ K * κ * (3 ^ K * ((B : ℝ) + 4) ^ K * (B * Λ))
         ≤ 2 ^ K * (6 * L ^ 3) ^ K * (1696 * L ^ (3 * Am)) *
             (3 ^ K * (5 * L ^ 3) ^ K * (L ^ 3 * (2 ^ 17 * L ^ (3 * Am) * δ))) := by

@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
 
 theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
@@ -21,7 +21,7 @@ theorem actual_long_coefficient_cost (Z ell L epsilon Ccoef:ℝ)
   have hex2:(Real.exp epsilon)^2=Real.exp (2*epsilon):=by rw [←Real.exp_nat_mul];norm_num
   have hid:(Ccoef*(Real.exp 1*Z^ell)^epsilon)^2=
       Ccoef^2*Real.exp (2*epsilon)*Z^(2*ell*epsilon) := by
-    rw [Real.mul_rpow (Real.exp_pos _).le (Real.rpow_nonneg hz.le _),hex,
+    rw [Real.mul_rpow (by positivity) (by positivity),hex,
       ←Real.rpow_mul hz.le,mul_pow,mul_pow,hex2,
       ←Real.rpow_mul_natCast hz.le]
     ring_nf
@@ -42,10 +42,7 @@ theorem actual_long_uniform_parent_cost (Z ell N V L epsilon Ccoef C A loss:ℝ)
   apply hh.trans_eq
   have hpow:Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)=Z^(N+V+loss+2*L*epsilon):=by
     rw [←Real.rpow_add hz];congr 1;ring
-  calc
-    _=(C*Ccoef^2*Real.exp (2*epsilon))*(1+A)*
-        (Z^(2*L*epsilon)*Z^((N-3*ell)+3*ell+V+loss)):=by ring
-    _=_:=by rw [hpow]
+  grind
 
 end SevenEighths.InverseMoment
 

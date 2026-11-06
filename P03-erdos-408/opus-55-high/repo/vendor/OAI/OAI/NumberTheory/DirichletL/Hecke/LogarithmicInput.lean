@@ -7,8 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrincipalStrip
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
-open Set
+open scoped Classical
 namespace SevenEighths.HeckeLogarithmicInput
 open HeckeFamily
 
@@ -51,7 +50,7 @@ theorem regular_ne_zero (η : Character) {s : ℂ}
       exact mul_ne_zero (sub_ne_zero.mpr h1)
         (HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inl h1))
   · rw [regular_eq_nonprincipal η hη]
-    exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (Or.inr hη)
+    exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt η hs (by grind)
 
 theorem principal_regular_factor_bound {s : ℂ} (hs : 0 ≤ s.re) :
     ‖s-1‖ ≤ ‖s+1‖ := by
@@ -59,7 +58,7 @@ theorem principal_regular_factor_bound {s : ℂ} (hs : 0 ≤ s.re) :
     simp only [Complex.sq_norm, Complex.normSq_apply, Complex.add_re, Complex.add_im,
       Complex.sub_re, Complex.sub_im, Complex.one_re, Complex.one_im]
     ring
-  nlinarith [norm_nonneg (s-1), norm_nonneg (s+1)]
+  nlinarith [norm_nonneg (s+1)]
 
 theorem regular_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
     {s : ℂ} (hs : σ ≤ s.re) : ‖regular η s‖ ≤ HeckeReciprocalBound.bound σ := by
@@ -83,7 +82,7 @@ def uniformConstant : ℝ :=
 
 theorem uniformConstant_nonneg : 0 ≤ uniformConstant := by
   have hc := HeckeStrip.leftConstant_pos
-  have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (fun _ => norm_nonneg _)
+  have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (by simp)
   unfold uniformConstant
   positivity
 
@@ -102,7 +101,7 @@ theorem regular_strip_bound (η : Character)
   · rw [regular_eq_nonprincipal η hη]
     apply (HeckePresentation.uniform_strip_bound η hp hη z hz).trans
     have hc := HeckeStrip.leftConstant_pos
-    have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (fun _ => norm_nonneg _)
+    have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (by simp)
     unfold uniformConstant
     gcongr ; norm_num
 
@@ -113,8 +112,8 @@ theorem regular_right_growth (η : Character)
       (3+|z.im|)^2 := by
   by_cases hright : z.re ≤ 11/10
   · exact regular_strip_bound η hp z ⟨hz, hright⟩
-  · apply (regular_norm_le η (by norm_num : (1 : ℝ)<11/10) (le_of_not_ge hright)).trans
-    have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (fun _ => norm_nonneg _)
+  · apply (regular_norm_le η (by linarith) (le_of_not_ge hright)).trans
+    have hD : 0 ≤ HeckeReciprocalBound.bound (11/10) := tsum_nonneg (by simp)
     have hc := HeckeStrip.leftConstant_pos
     have hC : HeckeReciprocalBound.bound (11/10) ≤ uniformConstant := by
       unfold uniformConstant; nlinarith
@@ -122,7 +121,7 @@ theorem regular_right_growth (η : Character)
       Real.one_le_rpow (modulus_norm_ge_one η) (by norm_num)
     have hT : 1 ≤ (3+|z.im|)^2 := by nlinarith [abs_nonneg z.im]
     exact hC.trans ((le_mul_of_one_le_right uniformConstant_nonneg hQ).trans
-      (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by linarith : 0 ≤ (η.modulus.absNorm : ℝ)^(3/5 : ℝ))) hT))
+      (le_mul_of_one_le_right (mul_nonneg uniformConstant_nonneg (by positivity)) hT))
 
 theorem regular_ne_zero_on_disk (η : Character) (a e t : ℝ)
     (ha : HeckeZeroSupremum.beta ≤ a) (he : 0 < e) {z : ℂ}
@@ -145,7 +144,7 @@ theorem reciprocal_norm_le_regular_inverse (η : Character) {s : ℂ}
   · by_cases h1 : s = 1
     · subst s
       rw [HeckeReciprocal.reciprocal_principal_one η hη, norm_zero]
-      exact norm_nonneg _
+      simp
     have hp : s+1 ≠ 0 := by
       intro h
       have he := congrArg Complex.re h

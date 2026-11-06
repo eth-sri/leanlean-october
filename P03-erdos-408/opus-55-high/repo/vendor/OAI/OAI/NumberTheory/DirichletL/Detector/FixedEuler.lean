@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.ModulusRefinement
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open HeckeFamily
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma fixedPrimeProduct_ne_zero (S : Finset Id) (hS : ∀P∈S,Prime P) :
     (∏P∈S,P)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>(hS P hP).ne_zero)
@@ -27,9 +26,9 @@ lemma prime_coprime_fixedProduct (S : Finset Id) (hS : ∀P∈S,Prime P) (P : Pr
   rw [IsCoprime.prod_right_iff]
   constructor
   · intro h hP
-    exact P.property.not_isUnit (isCoprime_self.mp (h P.val hP))
+    exact P.property.not_isUnit (isCoprime_self.mp (by grind))
   · intro h Q hQ
-    exact primeIdeal_coprime P ⟨Q,hS Q hQ⟩ (fun he=>h ((congrArg Subtype.val he).symm ▸ hQ))
+    exact primeIdeal_coprime P ⟨Q,hS Q hQ⟩ (by grind)
 
 lemma fixedSourcePrincipal_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
     idealCoeff (fixedSourcePrincipal S hS) P.val=if P.val∈S then 0 else 1 := by
@@ -37,7 +36,7 @@ lemma fixedSourcePrincipal_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : Pr
   rw [HeckeRayFamily.idealCoeff_character,RayOrthogonality.idealCharacter_one]
   change (if P.val=0 then (0:ℂ) else if IsCoprime P.val (∏Q∈S,Q) then 1 else 0)=_
   simp only [P.property.ne_zero,ite_false,prime_coprime_fixedProduct S hS P]
-  split_ifs <;> simp_all
+  simp
 
 lemma excludedTarget_prime (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
     idealCoeff (η.excludePrimes S hS) P.val=if P.val∈S then 0 else idealCoeff η P.val := by
@@ -45,8 +44,7 @@ lemma excludedTarget_prime (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime
   have he : (∀Q∈S,IsCoprime P.val Q) ↔ P.val∉S := by
     rw [←IsCoprime.prod_right_iff]
     exact prime_coprime_fixedProduct S hS P
-  simp only [he]
-  split_ifs <;> simp_all
+  simp_all
 
 theorem LFunction_hasProd_outside (χ : Character) (S : Finset Id) (a : Id→ℂ)
     (ha : ∀P : PrimeIdeal,idealCoeff χ P.val=if P.val∈S then 0 else a P.val)
@@ -66,7 +64,7 @@ theorem LFunction_hasProd_outside (χ : Character) (S : Finset Id) (a : Id→ℂ
   convert h using 1
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
-  split_ifs <;> simp_all
+  simp
 
 theorem fixedSourcePrincipal_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     (s : ℂ) (hs : 1<s.re) :

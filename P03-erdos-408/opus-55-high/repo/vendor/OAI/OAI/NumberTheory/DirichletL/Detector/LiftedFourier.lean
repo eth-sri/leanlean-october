@@ -9,11 +9,10 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePrimePower
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition
-local notation "O" => ActualEisensteinCubic.O
+open CubicEisenstein GaussianShiftedPartition
 
-theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
+theorem primePowerGauss_lift_add (p : ActualEisensteinCubic.O) (hp : Prime p)
+    (χ : MulChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : ActualEisensteinCubic.O) :
     primePowerGauss p hp.ne_zero χ (n+k) (p^k*h) =
       (Ideal.absNorm (Ideal.span {p}):ℂ)^k * primePowerGauss p hp.ne_zero χ n h := by
   by_cases hd : p^n ∣ h
@@ -27,8 +26,8 @@ theorem primePowerGauss_lift_add (p : O) (hp : Prime p)
     rw [primePowerGauss_zero_off_support _ _ _ _ _ hbig,
       primePowerGauss_zero_off_support _ _ _ _ _ hd, mul_zero]
 
-theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : O) :
+theorem gauss_exactQuotient_lift (p : ActualEisensteinCubic.O) (hp : Prime p)
+    (χ : MulChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ℂ) (n k : ℕ) (h : ActualEisensteinCubic.O) :
     (if hd : p^k ∣ h then primePowerGauss p hp.ne_zero χ n (exactQuotient h (p^k) hd) else 0) =
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^k)⁻¹ * primePowerGauss p hp.ne_zero χ (n+k) h := by
   have hq : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
@@ -36,18 +35,18 @@ theorem gauss_exactQuotient_lift (p : O) (hp : Prime p)
   by_cases hd : p^k ∣ h
   · rw [dite_eq_left hd]
     conv_rhs => rw [exactQuotient_spec h (p^k) hd]
-    rw [primePowerGauss_lift_add p hp, ← mul_assoc, inv_mul_cancel₀ (pow_ne_zero _ hq), one_mul]
+    rw [primePowerGauss_lift_add p hp, ← mul_assoc, inv_mul_cancel₀ (by positivity), one_mul]
   · rw [dite_eq_right hd]
     have hnd : ¬p^(n+k) ∣ h := by
       intro he
-      exact hd ((show p^k ∣ p^(n+k) from ⟨p^n, by rw [pow_add]; ring⟩).trans he)
+      exact hd ((show p^k ∣ p^(n+k) from ⟨p^n, by ring⟩).trans he)
     rw [primePowerGauss_zero_off_support _ _ _ _ _ hnd, mul_zero]
 
-theorem positiveScalar_full_lift (p : O) (hp : Prime p)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n k j : ℕ) (hk : k ≠ 0) :
+theorem positiveScalar_full_lift (p : ActualEisensteinCubic.O) (hp : Prime p)
+    (χ : MulChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ℂ) (n k j : ℕ) (hk : k ≠ 0) :
     positiveScalar p hp.ne_zero χ n k j =
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^k)⁻¹ *
-        ∑' d : O ⧸ Ideal.span {p^k},
+        ∑' d : ActualEisensteinCubic.O ⧸ Ideal.span {p^k},
           (χ^k) (Ideal.Quotient.mk _ (representative (p^k) d)) *
             primePowerGauss p hp.ne_zero (χ^(n+1)) (n+k)
               (p^j-p^(n+1)*representative (p^k) d) := by
@@ -56,15 +55,10 @@ theorem positiveScalar_full_lift (p : O) (hp : Prime p)
   intro d
   have he := gauss_exactQuotient_lift p hp (χ^(n+1)) n k
     (p^j-p^(n+1)*representative (p^k) d)
-  by_cases hd : p^k ∣ p^j-p^(n+1)*representative (p^k) d
-  · rw [dite_eq_left hd] at he ⊢
-    rw [he]
-    ring
-  · rw [dite_eq_right hd] at he ⊢
-    linear_combination (χ^k) (Ideal.Quotient.mk _ (representative (p^k) d)) * he
+  grind
 
-lemma quotientTrace_split_frequency (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
-    (H d v : O) :
+lemma quotientTrace_split_frequency (a b : ActualEisensteinCubic.O) (ha : a ≠ 0) (hb : b ≠ 0)
+    (H d v : ActualEisensteinCubic.O) :
     quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ ((H-b*d)*v)) =
       quotientTrace (a*b) (mul_ne_zero ha hb) (Ideal.Quotient.mk _ (H*v)) *
         quotientTrace a ha (Ideal.Quotient.mk _ ((-v)*d)) := by
@@ -72,19 +66,18 @@ lemma quotientTrace_split_frequency (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   simp only [mul_one, map_one] at hs
   rw [show (H-b*d)*v = H*v+b*((-v)*d) by ring, map_add, AddChar.map_add_eq_mul, hs]
 
-def quotientFourier (p c : O) (hc : c ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (H : O) : ℂ :=
-  ∑' d : O ⧸ Ideal.span {c}, χ (Ideal.Quotient.mk _ (representative c d)) *
+def quotientFourier (p c : ActualEisensteinCubic.O) (hc : c ≠ 0)
+    (χ : MulChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ℂ) (H : ActualEisensteinCubic.O) : ℂ :=
+  ∑' d : ActualEisensteinCubic.O ⧸ Ideal.span {c}, χ (Ideal.Quotient.mk _ (representative c d)) *
     quotientTrace c hc (Ideal.Quotient.mk _ (H*representative c d))
 
-lemma quotientFourier_congr (p a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (H : O) (he : a=b) :
+lemma quotientFourier_congr (p a b : ActualEisensteinCubic.O) (ha : a ≠ 0) (hb : b ≠ 0)
+    (χ : MulChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ℂ) (H : ActualEisensteinCubic.O) (he : a=b) :
     quotientFourier p a ha χ H = quotientFourier p b hb χ H := by
-  subst b
-  rfl
+  simp_all
 
-lemma primePowerGauss_eq_quotientFourier (p : O) (hp : p ≠ 0)
-    (χ : MulChar (O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (H : O) :
+lemma primePowerGauss_eq_quotientFourier (p : ActualEisensteinCubic.O) (hp : p ≠ 0)
+    (χ : MulChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ℂ) (n : ℕ) (H : ActualEisensteinCubic.O) :
     primePowerGauss p hp χ n H =
       quotientFourier p (p*p^n) (mul_ne_zero hp (pow_ne_zero _ hp)) χ H := by
   unfold primePowerGauss conductorFourier quotientFourier
@@ -96,7 +89,7 @@ lemma primePowerGauss_eq_quotientFourier (p : O) (hp : p ≠ 0)
     rfl
   have hm : Ideal.Quotient.mk (Ideal.span {p*p^n}) (H*representative (p*p^n) d) =
       Ideal.Quotient.mk _ H*d := by rw [map_mul, representative_spec]
-  rw [hr, hm]
+  simp_all
 
 end SevenEighths.ProbePrimePower
 end

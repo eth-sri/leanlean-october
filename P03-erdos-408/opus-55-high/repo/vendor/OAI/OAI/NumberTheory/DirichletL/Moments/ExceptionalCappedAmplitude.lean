@@ -9,28 +9,23 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAllocationShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentExceptionalCappedAmplitude
 open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentCounting CenteredMomentHeckeTwist CenteredMomentTwist CenteredMomentHeight CenteredMomentLattice
-open CenteredMomentNaturalFixedRaySource CenteredMomentSecondExceptionalCount
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalFrequency CenteredMomentForcing CenteredMomentChildRows
-open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge UniqueFactorizationMonoid
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
+open CenteredMomentCounting
 local notation "O" => HeckeFamily.O
 
-theorem rowTwistedSum_absolute (η : Character) (m A z : O) (W : ℝ→ℂ)
+theorem rowTwistedSum_absolute (η : Character) (m A z : HeckeFamily.O) (W : ℝ→ℂ)
     (b M t X : ℝ) (hb : 0≤b) (hM : 0≤M) (hX : 0<X)
     (hs : Function.support W⊆Set.Iic b) (hW : ∀x,‖W x‖≤M) :
     ‖rowTwistedSum η m A z W t X‖≤(128*b*M)*X := by
   have hh := norm_tsum_ideal_ball
-    (fun I : Ideal O => (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A*z)) I)*
+    (fun I : Ideal HeckeFamily.O => (idealCoeff η I*CanonicalRowCompletion.idealRowHom (m^6*(A*z)) I)*
       (Ideal.absNorm I:ℂ)^(Complex.I*t)*W ((Ideal.absNorm I:ℝ)/X)) (b*X) M
-    (mul_nonneg hb hX.le) hM (by
-      change (idealCoeff η (0:Ideal O)*_)*_*_=0
-      rw [map_zero,zero_mul,zero_mul,zero_mul]) (by
+    (by positivity) hM (by
+      change (idealCoeff η (0:Ideal HeckeFamily.O)*_)*_*_=0
+      grind) (by
       intro I
       by_cases hI : I=0
       · subst I; simpa only [map_zero,zero_mul,mul_zero,norm_zero] using hM
@@ -41,7 +36,7 @@ theorem rowTwistedSum_absolute (η : Character) (m A z : O) (W : ℝ→ℂ)
       exact (div_le_iff₀ hX).mp (hs (right_ne_zero_of_mul hI)))
   exact hh.trans_eq (by ring)
 
-theorem normalized_rectangle_absolute (η : Character) (m A z : O)
+theorem normalized_rectangle_absolute (η : Character) (m A z : HeckeFamily.O)
     (W₁ W₂ : ℝ→ℂ) (b₁ b₂ M₁ M₂ : ℝ)
     (hb₁ : 0≤b₁) (hb₂ : 0≤b₂) (hM₁ : 0≤M₁) (hM₂ : 0≤M₂)
     (hs₁ : Function.support W₁⊆Set.Iic b₁) (hs₂ : Function.support W₂⊆Set.Iic b₂)
@@ -52,8 +47,8 @@ theorem normalized_rectangle_absolute (η : Character) (m A z : O)
       (rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂-
        rowTwistedSum η m A z W₁ t Y₁*rowTwistedSum η m A z W₂ t Y₂)‖≤
       (2*(128*b₁*M₁)*(128*b₂*M₂))*Real.sqrt T := by
-  have hT : 0<T := hpX ▸ mul_pos hX₁ hX₂
-  have hsq : 0<Real.sqrt T := Real.sqrt_pos.2 hT
+  have hT : 0<T := hpX ▸ (by positivity)
+  have hsq := Real.sqrt_pos.2 hT
   have hprod (U V : ℝ) (hU : 0<U) (hV : 0<V) :
       ‖rowTwistedSum η m A z W₁ t U*rowTwistedSum η m A z W₂ t V‖≤
         ((128*b₁*M₁)*(128*b₂*M₂))*(U*V) := by
@@ -69,10 +64,7 @@ theorem normalized_rectangle_absolute (η : Character) (m A z : O)
   rw [hpX,hpY] at hraw
   rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_of_nonneg hsq.le]
   apply (mul_le_mul_of_nonneg_left hraw (inv_nonneg.mpr hsq.le)).trans_eq
-  have he := Real.sq_sqrt hT.le
-  field_simp
-  rw [he]
-  ring
+  grind
 
 theorem max_raw_reduction (Z Rred r : ℝ) (hZ : 1<Z) (hR : 0<Rred) :
     max 1 (Z^r/Rred)=Z^(max (r-Real.logb Z Rred) 0) := by

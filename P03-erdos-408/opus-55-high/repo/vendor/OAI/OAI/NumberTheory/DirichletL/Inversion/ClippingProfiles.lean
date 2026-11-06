@@ -12,7 +12,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation
 namespace SevenEighths.InverseClippingProfiles
 
@@ -22,8 +22,8 @@ def rootedWindow (v : ℝ → ℂ) (L ρ a H : ℝ) (y : ℝ) : ℂ :=
   (Real.exp (a * y - H * L) : ℂ) * logWindow v L ρ y
 
 lemma logWindow_contDiff (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (L ρ : ℝ) :
-    ContDiff ℝ ∞ (logWindow v L ρ) := by
-  exact hv.comp ((contDiff_id.add contDiff_const).div_const L)
+    ContDiff ℝ ∞ (logWindow v L ρ) :=
+  hv.comp ((contDiff_id.add contDiff_const).div_const L)
 
 lemma rootedWindow_contDiff (v : ℝ → ℂ) (hv : ContDiff ℝ ∞ v) (L ρ a H : ℝ) :
     ContDiff ℝ ∞ (rootedWindow v L ρ a H) := by
@@ -40,8 +40,7 @@ lemma logWindow_support (v : ℝ → ℂ) (M B L ρ : ℝ)
   change -M ≤ (y+ρ)/L ∧ (y+ρ)/L ≤ M at hy'
   have hl := (le_div_iff₀ hL).mp hy'.1
   have hu := (div_le_iff₀ hL).mp hy'.2
-  have hr := abs_le.mp hρ
-  constructor <;> nlinarith
+  grind
 
 lemma rootedWindow_compact (v : ℝ → ℂ) (M B L ρ a H : ℝ)
     (hL : 0 < L) (hρ : |ρ| ≤ B * L)
@@ -74,16 +73,16 @@ theorem clipping_ratio_of_column_witness (w : ℝ → ℂ) (Z N q a b : ℝ)
     (hwitness : w (q / Z^N) ≠ 0) :
     1 ≤ Z^(max 0 N-N) ∧ Z^(max 0 N-N) ≤ b := by
   have hz : 0 < Z := by linarith
-  have hn : 0 ≤ max 0 N-N := sub_nonneg.mpr (le_max_right _ _)
+  have hn : 0 ≤ max 0 N-N := by simp
   refine ⟨Real.one_le_rpow hZ.le hn, ?_⟩
   by_cases hN : 0 ≤ N
-  · simpa [max_eq_right hN] using hb
-  · have hN' : N ≤ 0 := le_of_lt (lt_of_not_ge hN)
+  · simp_all
+  · have hN' : N ≤ 0 := by linarith
     rw [max_eq_left hN', zero_sub, Real.rpow_neg hz.le]
     have hsupport := (hw hwitness).2
     calc
-      _ = 1 / Z^N := (one_div _).symm
-      _ ≤ q / Z^N := div_le_div_of_nonneg_right hq (Real.rpow_nonneg hz.le _)
+      _ = 1 / Z^N := by simp
+      _ ≤ q / Z^N := div_le_div_of_nonneg_right hq (by positivity)
       _ ≤ b := hsupport
 
 open InverseMoment
@@ -109,15 +108,13 @@ lemma inverseRootWindow_exp (V : ℝ → ℂ) (y : ℝ) :
 
 theorem firstRootWindows_exp (V : Fin 9 → ℝ → ℂ) (i : Fin 9) (y : ℝ) :
     firstRootWindows V i y = (Real.exp (firstRootSlope i*y) : ℂ)*V i y := by
-  fin_cases i <;> simp [firstRootWindows, firstRootSlope, inverseNormWindow_exp,
-    inverseRootWindow_exp, neg_mul]
-  all_goals left; congr 1; ring
+  fin_cases i <;> simp [firstRootWindows, firstRootSlope, inverseNormWindow_exp, inverseRootWindow_exp]
+  all_goals grind
 
 theorem secondRootWindows_exp (V : Fin 6 → ℝ → ℂ) (i : Fin 6) (y : ℝ) :
     secondRootWindows V i y = (Real.exp (secondRootSlope i*y) : ℂ)*V i y := by
-  fin_cases i <;> simp [secondRootWindows, secondRootSlope, inverseNormWindow_exp,
-    inverseRootWindow_exp, neg_mul]
-  all_goals left; congr 1; ring
+  fin_cases i <;> simp [secondRootWindows, secondRootSlope, inverseNormWindow_exp, inverseRootWindow_exp]
+  all_goals grind
 
 theorem firstRootWindows_prod (V : Fin 9 → ℝ → ℂ) (y : Fin 9 → ℝ) :
     (∏ i, firstRootWindows V i (y i)) =
@@ -164,7 +161,6 @@ theorem fourier_translate (f : ℝ → ℂ) (ρ t : ℝ) :
   simp only [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, logPhase]
   congr 2
   simp only [RCLike.inner_apply, conj_trivial]
-  push_cast
   ring
 
 theorem fourier_translated_twist (f : ℝ → ℂ) (ρ θ t : ℝ) :
@@ -190,7 +186,7 @@ theorem translated_twist_moment_uniform (g : 𝓢(ℝ, ℂ)) (J : ℕ) :
     rw [norm_fourier_translated_twist, congrFun (SchwartzMap.fourier_coe _) t]
     have hf : (frequencyTwist g θ : ℝ → ℂ) = fun y => logPhase θ y * g y := by
       funext y
-      exact frequencyTwist_apply g θ y
+      exact by simp
     rw [hf, fourier_phase_shift]
   simp_rw [he]
   exact ⟨AnalyticBridge.schwartz_fourier_one_plus_integrable _ _, hb θ⟩

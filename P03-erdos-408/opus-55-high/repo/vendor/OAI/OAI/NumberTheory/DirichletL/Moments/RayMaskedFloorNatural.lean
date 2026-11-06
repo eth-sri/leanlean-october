@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedNaturalRadial
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeDyadic HeckeZeroSupremum QuadraticInitialBound
@@ -19,11 +19,10 @@ open CenteredMomentAllocatedNaturalRadial CenteredMomentPrimeSlot
 open CenteredMomentPlainPositiveScale CenteredMomentOriginalRadialComparison
 open CenteredMomentPlainGlobalEnergy CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-local notation "O" => HeckeFamily.O
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_pair_slots {α : Type*} [DecidableEq α]
     (F : Finset α) (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -36,7 +35,7 @@ theorem natural_pair_slots {α : Type*} [DecidableEq α]
     ∀(θ : α→RayQuotient.Characters M H)(w σ v : α→ℝ)(t T : ℝ),
       (∀i∈F,0≤w i) → (∀i∈F,w i≤Lslot) →
       (∀i∈F,lo≤σ i) → (∀i∈F,σ i≤hi) → 0≤T → (∀i∈F,|v i|≤T) →
-    ∀(η : Character)(Q : Ideal O)(r : Radial)(Qbound : ℝ),Q≤M → 0≤Qbound →
+    ∀(η : Character)(Q : Ideal HeckeFamily.O)(r : Radial)(Qbound : ℝ),Q≤M → 0≤Qbound →
       (∀z,r.keep z→z≠0) →
       (∀z,r.keep z→¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z) →
       (∀z,r.keep z→((naturalCharacter η z).modulus.absNorm:ℝ)≤Z^Lmod) →
@@ -70,7 +69,7 @@ theorem natural_pair_slots {α : Type*} [DecidableEq α]
   have hB₂ : 0≤B₂ := apply_nonneg _ _
   let B := Cp^2*(B₁*B₂)*Qbound^2*3^4*Real.sqrt E
   have hB : 0≤B := by dsimp [B]; positivity
-  have hpoint (z : O) (hkeep : r.keep z) :
+  have hpoint (z : HeckeFamily.O) (hkeep : r.keep z) :
       ‖polynomial (naturalCharacter η z) false W₁ X₁ 0 0*
         polynomial (naturalCharacter η z) false W₂ X₂ 0 0*
         ∏i∈A,naturalSlot (naturalCharacter η z) (primePool M H b (Z^(w i)))
@@ -82,19 +81,19 @@ theorem natural_pair_slots {α : Type*} [DecidableEq α]
       rw [heq]
       exact CenteredMomentNonprincipalGate.actual_row_nonprincipal η
         (naturalRow η z hn).character (internalQ Q η₀) fixedBadMask 1 z
-        (by simpa only [one_mul] using (naturalRow η z hn).element) (hex z hkeep)
+        (by simpa using (naturalRow η z hn).element) (hex z hkeep)
     have h₁ : ‖polynomial (naturalCharacter η z) false W₁ X₁ 0 0‖≤Cp*B₁*Qbound*3^2 := by
       have he := hplain W₁ hs₁ _ hnon X₁ 0 hX₁
-      norm_num only [abs_zero,add_zero] at he
+      norm_num only at he
       apply he.trans
       simpa only [show (3:ℝ)^2=9 by norm_num] using (mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left (hQ z hkeep) (mul_nonneg hCp.le hB₁)) (show (0:ℝ)≤9 by norm_num))
+        (mul_le_mul_of_nonneg_left (hQ z hkeep) (by positivity)) (by positivity))
     have h₂ : ‖polynomial (naturalCharacter η z) false W₂ X₂ 0 0‖≤Cp*B₂*Qbound*3^2 := by
       have he := hplain W₂ hs₂ _ hnon X₂ 0 hX₂
-      norm_num only [abs_zero,add_zero] at he
+      norm_num only at he
       apply he.trans
       simpa only [show (3:ℝ)^2=9 by norm_num] using (mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left (hQ z hkeep) (mul_nonneg hCp.le hB₂)) (show (0:ℝ)≤9 by norm_num))
+        (mul_le_mul_of_nonneg_left (hQ z hkeep) (by positivity)) (by positivity))
     have hs := hZ θ w σ v t T hw hwL hσlo hσhi hT hv η z hn (naturalRow η z hn)
       (by simpa only [heq] using hmod z hkeep) Q hQM (hex z hkeep) A hAF
     rw [←heq] at hs
@@ -103,7 +102,7 @@ theorem natural_pair_slots {α : Type*} [DecidableEq α]
     apply (mul_le_mul (mul_le_mul h₁ h₂ (norm_nonneg _) (by positivity))
       hsroot (norm_nonneg _) (by positivity)).trans_eq
     dsimp [B,B₁,B₂]
-    norm_num only [abs_zero,add_zero]
+    norm_num only
     ring
   have he := radial_bound_on_keep _ r B hB hpoint
   apply he.trans_eq

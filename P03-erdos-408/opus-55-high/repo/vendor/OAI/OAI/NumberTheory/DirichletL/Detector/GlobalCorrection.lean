@@ -10,11 +10,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.Euler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeEuler CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeEuler
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def globalPrimeDefectBound (P : PrimeIdeal) : ℝ :=
   240*(Ideal.absNorm P.val:ℝ)^(-(17/10:ℝ))
@@ -34,8 +33,7 @@ lemma globalPrimeDefectBound_summable : Summable globalPrimeDefectBound := by
   change 240*‖CubicEisenstein.fullIdealWeight ((17/10:ℝ):ℂ) P.val‖=globalPrimeDefectBound P
   unfold globalPrimeDefectBound CubicEisenstein.fullIdealWeight
   simp only [P.property.ne_zero,ite_false]
-  rw [Complex.norm_natCast_cpow_of_pos (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero))]
-  norm_num
+  simp [Complex.norm_natCast_cpow_of_pos (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero))]
 
 structure CorrectionTail (S : Finset Id) : Prop where
   norm_four : ∀P : PrimeIdeal,P.val∉S → 4≤Ideal.absNorm P.val
@@ -55,13 +53,13 @@ lemma idealClosedCorrection_bound (η : HeckeFamily.Character) (P : PrimeIdeal)
     (hx : 7/8≤x.re) (hw : 9/10≤w.re) (hz : 4/25≤z.re) :
     ‖idealClosedCorrection η P x w z-1‖≤globalPrimeDefectBound P := by
   apply unramifiedClosed_open_region_bound
-  · exact_mod_cast hP
+  · simp_all
   · exact actualAPhase_norm_le_one η _
   · exact HeckeFamily.idealCoeff_norm_le_one η P.val
   · simp
-  · exact hx
-  · exact hw
-  · exact hz
+  · omega
+  · omega
+  omega
 
 theorem globalClosedCorrection_bound (η : HeckeFamily.Character) (S : Finset Id)
     (hS : CorrectionTail S) (x w z : ℂ)
@@ -96,7 +94,7 @@ theorem globalClosedCorrection_analytic_x (η : HeckeFamily.Character) (S : Fins
     · exact actualAPhase_norm_le_one η _
     · exact HeckeFamily.idealCoeff_norm_le_one η _
     · simp
-    · exact hz
+    omega
   · intro P x hx
     exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx.le hw hz
   · exact hS.half
@@ -111,8 +109,8 @@ theorem globalClosedCorrection_analytic_w (η : HeckeFamily.Character) (S : Fins
     · exact actualAPhase_norm_le_one η _
     · exact HeckeFamily.idealCoeff_norm_le_one η _
     · simp
-    · exact hx
-    · exact hz
+    · omega
+    omega
   · intro P w hw
     exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw.le hz
   · exact hS.half
@@ -127,7 +125,7 @@ theorem globalClosedCorrection_analytic_z (η : HeckeFamily.Character) (S : Fins
     · exact actualAPhase_norm_le_one η _
     · exact HeckeFamily.idealCoeff_norm_le_one η _
     · simp
-    · exact hx
+    omega
   · intro P z hz
     exact idealClosedCorrection_bound η P.val (hS.norm_four P.val P.property) x w z hx hw hz.le
   · exact hS.half
@@ -143,18 +141,17 @@ theorem exists_uniform_global_cutoff :
   let T := {P : PrimeIdeal // P.val∉S}
   have hnot (P : T) : P.val∉F := by
     intro hm
-    exact P.property (hS P.val ((Finset.le_sup (f:=fun P : PrimeIdeal=>Ideal.absNorm P.val) hm).trans (le_max_right _ _)))
+    exact P.property (hS P.val ((Finset.le_sup (f:=fun P : PrimeIdeal=>Ideal.absNorm P.val) hm).trans (by omega)))
   let inc : T→{P : PrimeIdeal // P∉F} := fun P=>⟨P.val,hnot P⟩
   have hi : Function.Injective inc := by
     intro P Q h
-    exact Subtype.ext (congrArg (fun P : {P : PrimeIdeal // P∉F}=>P.val) h)
+    exact by grind
   constructor
   · intro P hP
-    have hn : ¬Ideal.absNorm P.val≤N := fun hn=>hP (hS P hn)
-    exact (le_max_left _ _).trans (Nat.le_of_lt (Nat.lt_of_not_ge hn))
+    grind
   · apply le_trans ?_ hF.le
     exact Summable.tsum_le_tsum_of_inj inc hi
-      (fun P _=>globalPrimeDefectBound_nonneg P.val) (fun _=>le_rfl)
+      (fun P _=>globalPrimeDefectBound_nonneg P.val) (by grind)
       (globalPrimeDefectBound_summable.subtype _) (globalPrimeDefectBound_summable.subtype _)
 
 end SevenEighths.ProbePhysical

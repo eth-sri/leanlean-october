@@ -9,7 +9,6 @@ public import Mathlib.Data.Int.Star
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P5Core
 open Blueprint.Analytic
@@ -26,17 +25,17 @@ theorem three_class_sum_bound (E : Finset ℤ) (t : ℤ → ℝ) (v : ℝ → �
       ∑ k ∈ E.filter (fun k => k % 3 = i), v (t k) = ∑ k ∈ E, v (t k) := by
     apply Finset.sum_fiberwise_of_maps_to
     intro k _
-    exact Finset.mem_Ico.mpr ⟨Int.emod_nonneg _ (by norm_num), Int.emod_lt_of_pos _ (by norm_num)⟩
+    exact by grind
   rw [← hparts]
   calc
     _ ≤ ∑ _i ∈ Finset.Ico (0 : ℤ) 3, M := by
       apply Finset.sum_le_sum
       intro i _
-      apply hbound _ (Finset.filter_subset _ _)
+      apply hbound _ (by simp)
       intro k hk l hl hkl
       obtain ⟨hkE, hkmod⟩ := Finset.mem_filter.mp hk
       obtain ⟨hlE, hlmod⟩ := Finset.mem_filter.mp hl
-      exact cell_times_separated t k l (hcell k hkE) (hcell l hlE) hkl
+      exact cell_times_separated t k l (by grind) (by grind) hkl
         (hkmod.trans hlmod.symm)
     _ = _ := by norm_num
 
@@ -65,7 +64,7 @@ theorem occupied_moment_bound
       Nat.factorial m * (∑ p ∈ s, ‖b p‖ ^ 2 / (p : ℝ) ^ 2) ^ m
   have hsample : ∑ k ∈ E, ‖primePolynomial s b (t k)‖ ^ (2 * m) ≤ 3 * M := by
     apply three_class_sum_bound E t (fun u => ‖primePolynomial s b u‖ ^ (2 * m)) M
-      (fun k hk => ⟨(htE k hk).1, (htE k hk).2.1⟩)
+      (by grind)
     intro J hJE hsep
     have hinj : Set.InjOn t (J : Set ℤ) := by
       intro k hk l hl hkl
@@ -76,12 +75,12 @@ theorem occupied_moment_bound
     have htime : ∀ u ∈ J.image t, -Tmax ≤ u ∧ u ≤ Tmax := by
       intro u hu
       obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hu
-      exact abs_le.mp (htE k (hJE hk)).2.2.1
+      exact by grind
     have hsep' : ∀ u ∈ J.image t, ∀ v ∈ J.image t, u ≠ v → 1 ≤ |u - v| := by
       intro u hu v hv hne
       obtain ⟨k, hk, rfl⟩ := Finset.mem_image.mp hu
       obtain ⟨l, hl, rfl⟩ := Finset.mem_image.mp hv
-      exact hsep k hk l hl (fun h => hne (congrArg t h))
+      exact by grind
     have h := hmean s b m (-Tmax) Tmax (J.image t) hprime (by linarith) htime hsep'
     rw [Finset.sum_image hinj] at h
     simpa only [M, sub_neg_eq_add, ← two_mul] using h
@@ -90,14 +89,14 @@ theorem occupied_moment_bound
     calc
       _ = ∑ _k ∈ E, δ ^ (2 * m) := by simp
       _ ≤ _ := Finset.sum_le_sum (fun k hk =>
-        pow_le_pow_left₀ hδ (htE k hk).2.2.2.le _)
+        pow_le_pow_left₀ hδ (by grind) _)
   have h := hcard.trans hsample
   rw [Set.ncard_eq_toFinset_card _ hfinite]
-  simpa only [E, M, mul_assoc] using h
+  linarith
 
 theorem nat_log_two_nonneg (N : ℕ) : 0 ≤ Real.log (2 * N) := by
   by_cases hN : N = 0
-  · simp [hN]
+  · simp_all
   · have hN' : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
     exact Real.log_nonneg (by linarith)
 
@@ -122,21 +121,21 @@ theorem occupied_count_bound
   let B := 1 + Real.log (2 * Y)
   have hlogY : 0 ≤ Real.log (2 * Y) := Real.log_nonneg (by linarith)
   have hB : 0 ≤ B := by dsimp [B]; linarith
-  have hlogN : 0 ≤ Real.log (2 * N) := nat_log_two_nonneg N
+  have hlogN := nat_log_two_nonneg N
   have hlogNY : Real.log (2 * N) ≤ Real.log (2 * Y) := by
     by_cases hN : N = 0
     · simpa [hN] using hlogY
     · apply Real.log_le_log (by positivity)
-      exact mul_le_mul_of_nonneg_left hNY (by norm_num)
+      linarith
   have hbase : 2 * Tmax + 1 + N * Real.log (2 * N) ≤ 3 * Y * B := by
-    have hprod := mul_le_mul hNY hlogNY hlogN (by linarith : 0 ≤ Y)
+    have hprod := mul_le_mul hNY hlogNY hlogN (by positivity)
     dsimp [B]
     nlinarith
   have hsq : Real.log (2 * N) ^ 2 ≤ B ^ 2 :=
-    pow_le_pow_left₀ hlogN (by dsimp [B]; linarith) 2
+    pow_le_pow_left₀ hlogN (by linarith) 2
   have hpoly : (∑ p ∈ s, ‖b p‖ ^ 2 / (p : ℝ) ^ 2) ^ m ≤ (3 / P) ^ m :=
-    pow_le_pow_left₀ (Finset.sum_nonneg (fun p _ => by positivity))
-      (harmonic_coefficient_square s b P hP (fun p hp => (hs p hp).2) hb) m
+    pow_le_pow_left₀ (by positivity)
+      (harmonic_coefficient_square s b P hP (by grind) hb) m
   have hscale :
       3 * K * (2 * Tmax + 1 + N * Real.log (2 * N)) * Real.log (2 * N) ^ 2 *
         Nat.factorial m * (∑ p ∈ s, ‖b p‖ ^ 2 / (p : ℝ) ^ 2) ^ m ≤
@@ -147,15 +146,15 @@ theorem occupied_count_bound
         apply mul_le_mul
         · apply mul_le_mul_of_nonneg_right _ (by positivity)
           apply mul_le_mul
-          · exact mul_le_mul_of_nonneg_left hbase (by positivity)
-          · exact hsq
+          · nlinarith
+          · omega
           · positivity
-          · positivity
-        · exact hpoly
+          positivity
+        · omega
         · positivity
-        · positivity
+        positivity
       _ = _ := by ring
-  apply (le_div_iff₀ (pow_pos hδ (2 * m))).mpr
-  exact (hcount s b m δ Tmax (fun p hp => (hs p hp).1) hδ.le hT).trans hscale
+  apply (le_div_iff₀ (by positivity)).mpr
+  exact (hcount s b m δ Tmax (by grind) hδ.le hT).trans hscale
 
 end Erdos821.P5Core

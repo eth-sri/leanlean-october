@@ -8,26 +8,25 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawCost
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentRestrictedSourceNormalization
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentRestrictedSource
+open CanonicalQuadraticSieve CenteredMomentRestrictedSource
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentCommonRawScale CenteredMomentCommonRawCost CenteredMomentRestrictedEnergy
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
+open CenteredMomentCommonRawScale
 
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (C R s : Ideal O) (hC : Supported C) (hsC : s∣C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
+    (C R s : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hsC : s∣C)
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O)
     (Traw : ℝ) (hTraw : 0<Traw) (hP : ∀ i,0<P i)
-    (f : Ideal O → ℂ) (keep : O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (f : Ideal ActualEisensteinCubic.O → ℂ) (keep : ActualEisensteinCubic.O → Prop) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceRestrictedEnergy keep (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
       (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K)/(Traw*∏ i,P i)≤
@@ -40,7 +39,7 @@ theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal
               (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)) f W K)/remainingRaw B Traw P) := by
   have h := original_restricted_child_energy S hS hp C R s hC hsC ν Wslot P W₁ W₂
     X₁ X₂ Y₁ Y₂ B₁ B₂ f keep W K hK hW
-  have htotal : 0<Traw*∏ i,P i := mul_pos hTraw (Finset.prod_pos (fun i _ => hP i))
+  have htotal : 0<Traw*∏ i,P i := mul_pos hTraw (Finset.prod_pos (by grind))
   apply (div_le_div_of_nonneg_right h htotal.le).trans_eq
   rw [mul_div_assoc,Finset.sum_div]
   apply congrArg (fun x : ℝ => ((actualAllocations S C).card:ℝ)*x)
@@ -48,15 +47,7 @@ theorem normalized_restricted_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal
   intro B hB
   have hb := (allocation_data S C B (Finset.mem_filter.mp B.property).1).1
   have hr := raw_scale_identity B hb Traw P
-  have hpR := rawReduction_pos B hb P hP
-  have hpL : 0<remainingRaw B Traw P := by
-    apply (mul_pos_iff_of_pos_right hpR).mp
-    exact hr.symm ▸ htotal
-  have alg (d e n r l : ℝ) (hr : 0<r) (hl : 0<l) (hn : l*r=n) :
-      d*e/n=(d/r)*(e/l) := by
-    rw [←hn]
-    field_simp [hr.ne',hl.ne']
-  exact alg _ _ _ _ _ hpR hpL hr
+  grind
 
 end SevenEighths.CenteredMomentRestrictedSourceNormalization
 

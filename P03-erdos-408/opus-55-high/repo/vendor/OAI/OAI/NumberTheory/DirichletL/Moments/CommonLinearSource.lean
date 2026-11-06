@@ -8,31 +8,30 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalMaskedSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonLinearSource
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
-open CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
+open CanonicalQuadraticSieve
+open CenteredMomentCommonRadialData
 open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceLiveColumn
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+open CenteredMomentCommonAllocationSum
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentRowNorm
 open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalChildEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedDomain
-open CenteredMomentAmplificationLiveMask CenteredMomentExceptionalMaskedSource
-local notation "O" => HeckeFamily.O
+open CenteredMomentAmplificationLiveMask
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-def sourceColumn (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)(z:O):ℂ:=
+def sourceColumn (s:Input ι)(C:Ideal HeckeFamily.O)(hC:Supported C)(R seed L:Ideal HeckeFamily.O)(z:HeckeFamily.O):ℂ:=
   let Q:=residualPool C hC.1 (finiteColumns (Fintype.piFinset s.pools))
   let β:=finiteColumnCoefficient (Fintype.piFinset s.pools)
     (profileCoefficient R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
   rowPolynomial Finset.univ (sourceGenerator Q)
-    (fun I:supportedColumns Q=>(if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O)
+    (fun I:supportedColumns Q=>(if IsCoprime C (I:Ideal HeckeFamily.O) ∧ L∣(I:Ideal HeckeFamily.O)
       then β (C*I) else 0)*heightCoeff s.η s.t I) z
 
-def liveColumn (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.pools C)(z:O):ℂ:=
+def liveColumn (s:Input ι)(C R L:Ideal HeckeFamily.O)(B:actualAllocations s.pools C)(z:HeckeFamily.O):ℂ:=
   let S:=liveBox s.pools B.val (alloc_ne s C B)
   rowPolynomial Finset.univ (sourceGenerator (finiteColumns S))
     (fun I:supportedColumns (finiteColumns S)=>finiteColumnCoefficient S
@@ -40,8 +39,8 @@ def liveColumn (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.pools C)(z:O):�
         heightCoeff s.η s.t I) z
 
 omit [DecidableEq ι] in
-theorem source_column_allocation (s:Input ι)(C:Ideal O)(hC:Supported C)
-    (R seed L:Ideal O)(hseed:seed∣C)(z:O):
+theorem source_column_allocation (s:Input ι)(C:Ideal HeckeFamily.O)(hC:Supported C)
+    (R seed L:Ideal HeckeFamily.O)(hseed:seed∣C)(z:HeckeFamily.O):
     sourceColumn s C hC R seed L z=
       ∑B:actualAllocations s.pools C,frozenCoefficient B.val C R s.ν s.W s.P*
         liveColumn s C R L B z:=by
@@ -50,20 +49,20 @@ theorem source_column_allocation (s:Input ι)(C:Ideal O)(hC:Supported C)
   let d:=fun (B:actualAllocations s.pools C)(I:supportedColumns Q)=>
     finiteColumnCoefficient (liveBox s.pools B.val (alloc_ne s C B))
       (liveProfile B.val C R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1) I*
-      ((if L∣(I:Ideal O) then 1 else 0)*heightCoeff s.η s.t I)
+      ((if L∣(I:Ideal HeckeFamily.O) then 1 else 0)*heightCoeff s.η s.t I)
   have he (I:supportedColumns Q):
-      (if IsCoprime C (I:Ideal O) ∧ L∣(I:Ideal O) then
+      (if IsCoprime C (I:Ideal HeckeFamily.O) ∧ L∣(I:Ideal HeckeFamily.O) then
         finiteColumnCoefficient (Fintype.piFinset s.pools)
           (profileCoefficient R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed) (C*I)
           else 0)*heightCoeff s.η s.t I=∑B,b B*d B I:=by
     have hc:=original_source_punctured_column s.pools s.pools_ne (fun i J hJ=>s.prime i J hJ)
       C R seed I hC.1 (Finset.mem_filter.mp I.property).2.1 hseed
       s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1
-    by_cases hl:L∣(I:Ideal O)
+    by_cases hl:L∣(I:Ideal HeckeFamily.O)
     · simp only [hl,and_true]
       rw [hc,Finset.sum_mul]
-      simp only [b,d,hl,ite_true,one_mul,mul_assoc]
-    · simp only [hl,and_false,ite_false,zero_mul,b,d,mul_zero,Finset.sum_const_zero]
+      grind
+    · simp only [hl, and_false, ite_false, zero_mul, d, mul_zero, Finset.sum_const_zero]
   change rowPolynomial Finset.univ (sourceGenerator Q) _ z=_
   rw [funext he,rowPolynomial_allocation]
   apply Finset.sum_congr rfl
@@ -82,7 +81,7 @@ theorem source_column_allocation (s:Input ι)(C:Ideal O)(hC:Supported C)
   dsimp only [liveProfile]
   ring
 
-theorem live_column_rectangle (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.pools C)(z:O):
+theorem live_column_rectangle (s:Input ι)(C R L:Ideal HeckeFamily.O)(B:actualAllocations s.pools C)(z:HeckeFamily.O):
     liveColumn s C R L B z=
       CenteredMomentDivisorRowEnergy.maskedRectangle
         (commonData s C R B).η (commonData s C R B).m (commonData s C R B).A z
@@ -100,8 +99,8 @@ theorem live_column_rectangle (s:Input ι)(C R L:Ideal O)(B:actualAllocations s.
   have he:=CenteredMomentSourceRectangleMask.source_polynomial_eq_maskedRectangle
     s.η fixedBadMask 1 z s.t (dvd_mul_right _ _) (dvd_mul_left _ _)
     (commonData s C R B).slots
-    (residualPool (B.val (Sum.inr 0)) (alloc_ne s C B _) (s.pools (Sum.inr 0)))
-    (residualPool (B.val (Sum.inr 1)) (alloc_ne s C B _) (s.pools (Sum.inr 1)))
+    (residualPool (B.val (Sum.inr 0)) (by grind) (s.pools (Sum.inr 0)))
+    (residualPool (B.val (Sum.inr 1)) (by grind) (s.pools (Sum.inr 1)))
     (R*C) L (commonData s C R B).ν (commonData s C R B).W (commonData s C R B).P
     s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ (B.val (Sum.inr 0)) (B.val (Sum.inr 1)) hc₁ hc₂
   rw [height_source_row]

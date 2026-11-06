@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.Conjugation
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate BigOperators
+open scoped Classical
 namespace SevenEighths.HeckePrimeRow
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open HeckeFamily CanonicalRowCompletion
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
@@ -34,8 +33,8 @@ theorem identityClass_coprime_larger {I J : Ideal O}
   exact sup_le_sup_left hMJ I
 
 omit [NeZero M] in
-theorem identityClass_prime_good (m : O) (hmLam : λ₀∣m) (hMm : M≤Ideal.span {m})
-    (P : Ideal O) [P.IsMaximal] (hP : P∈RayQuotient.identityClass M H) : λ₀∉P := by
+theorem identityClass_prime_good (m : O) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hMm : M≤Ideal.span {m})
+    (P : Ideal O) [P.IsMaximal] (hP : P∈RayQuotient.identityClass M H) : ConcretePrimeRowBridge.goodLambda∉P := by
   have hm : m∉P := (SixthPowerAverage.prime_coprime_span_iff P m).mp
     (identityClass_coprime_larger M H hP hMm)
   intro hLam

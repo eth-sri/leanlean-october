@@ -90,7 +90,7 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
   have hY1 : (1 : ℝ) ≤ 2 ^ k * 2 ^ j :=
     one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by norm_num)) (one_le_pow₀ (by norm_num))
   have hmU : m ≤ 2 ^ k * 2 ^ j * d.Hm :=
-    (min_le_left _ _).trans (le_mul_of_one_le_left (by linarith [min_le_left d.Hm d.Hn]) hY1)
+    (min_le_left _ _).trans (le_mul_of_one_le_left (by grind) hY1)
   have hmV : m ≤ d.Hn := min_le_right _ _
   have hU2 : 2 ≤ (2 : ℝ) ^ k * 2 ^ j * d.Hm := hm2.trans hmU
   have hV2 : 2 ≤ d.Hn := hm2.trans hmV
@@ -114,7 +114,7 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
     calc ((bandPrimes x d).card : ℝ) ≤ ∑ i, ((band x (d.a i)).card : ℝ) := by
           exact_mod_cast card_biUnion_le
       _ ≤ ∑ _i : Fin K, pmax := sum_le_sum fun i _ => (card_band_le x (d.a i)).trans (hexp_le i)
-      _ = K * pmax := by rw [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul]
+      _ = K * pmax := by simp
   -- step: `N + 1 ≤ L^{1/2} + 3` and `J + 1 ≤ L^{1/100} + 1`
   have hN : ((2 * momentPower x + 1 : ℕ) : ℝ) ≤ L ^ (1 / 2 : ℝ) + 3 := by
     have := Nat.ceil_lt_add_one (show 0 ≤ L ^ (1 / 2 : ℝ) / 2 by positivity)
@@ -139,7 +139,7 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
   have hexp : 0 < Real.exp (L ^ (74 / 100 : ℝ)) := Real.exp_pos _
   rw [hX, hRS]
   refine (norm_sub_le_of_conf hq (by positivity) (by positivity) hR hdisj' hn
-    (div_nonneg (Real.exp_pos _).le hexp.le) (hmass d hd j k) fun ω hω hc => ?_).trans_eq
+    (by positivity) (hmass d hd j k) fun ω hω hc => ?_).trans_eq
     (mul_div_cancel₀ _ hexp.ne')
   -- step: one live configuration, by the grid estimate and the budget
   rw [le_div_iff₀' hexp]
@@ -149,7 +149,7 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
     (fun u v r => by
       obtain ⟨h₀, h₁⟩ := confInd_mem_Icc x d (2 ^ j) (2 ^ k) ω u v r
       rw [abs_le]
-      constructor <;> linarith)
+      grind)
     (fun p l => confLineFactor q p ω l) hlam (confActive ω) (confActive_subset ω)
     ⌈L ^ (76 / 100 : ℝ)⌉₊ hpmax₁ hpmax (badCubes x d (2 ^ j) (2 ^ k) n ω)
     (fun i hi hib P₀ hP₀ => by
@@ -160,9 +160,9 @@ theorem eventually_root_replacement {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁
   have ha := card_confActive_le ω
   refine hbud n (confActive ω).card m _ _ _ _ pmax _ hn hn₂ hn₁ hm hmU hmV
     (dampMass_nonneg fun p hp l => (hlam p hp l).2) (hσ.trans ?_) (Nat.cast_nonneg _)
-    (hnP.trans_eq (by rw [hpmaxdef])) hpmax₁ le_rfl ?_ (Nat.cast_nonneg _)
+    (hnP.trans_eq (by simp)) hpmax₁ le_rfl ?_ (Nat.cast_nonneg _)
     (hbad d hd j k n hn ω hω hc)
-  · exact mul_le_mul_of_nonneg_left (by exact_mod_cast hN) (Nat.cast_nonneg _)
+  · exact mul_le_mul_of_nonneg_left (by grind) (Nat.cast_nonneg _)
   · calc ((confActive ω).card : ℝ) ≤ ((2 * momentPower x + 1) * (K * (padCount x + 1)) : ℕ) := by
           exact_mod_cast ha
       _ ≤ (L ^ (1 / 2 : ℝ) + 3) * (K * (L ^ (1 / 100 : ℝ) + 1)) := by

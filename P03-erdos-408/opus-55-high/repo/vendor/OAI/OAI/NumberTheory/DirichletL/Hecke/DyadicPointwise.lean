@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicBuffered
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
-open Set MeasureTheory Complex
+open scoped Classical ContDiff
+open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
@@ -48,7 +48,7 @@ theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
       (1+|t|)^n*‖mellin W ((x : ℂ)+t*I)‖≤Cn := by
     apply le_trans _ (hmn x hx t)
     gcongr
-    · exact le_add_of_nonneg_right (abs_nonneg t)
+    · simp
     · omega
   have hbottom := horizontal_join_bound χ inverse W D σ freq l r (-T) Cn K n hD hlr hCn hK
     (fun x hx => hm x hx (-T)) (fun x hx => hs _ (hmem x (-T) hx ⟨le_rfl,by linarith⟩))
@@ -94,7 +94,7 @@ theorem polynomial_bound_of_rectangle_split (χ : Character) (hχ : χ.residue�
       (1+|t|)^n*‖mellin W ((x : ℂ)+t*I)‖≤Cn := by
     apply le_trans _ (hmn x hx t)
     gcongr
-    · exact le_add_of_nonneg_right (abs_nonneg t)
+    · simp
     · omega
   have hbottom := horizontal_join_bound χ inverse W D σ freq l r (-T) Cn K n hD hlr hCn hK
     (fun x hx => hm x hx (-T)) (fun x hx => hs _ (hmem x (-T) hx ⟨le_rfl,by linarith⟩))

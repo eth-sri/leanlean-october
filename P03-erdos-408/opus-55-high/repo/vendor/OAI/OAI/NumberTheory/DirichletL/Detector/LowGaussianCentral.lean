@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGaussianRemote
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff SchwartzMap
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma not_lowRemote_bounds (Z ell ε U : ℝ) (hZ : 0<Z)
     (h : ¬lowRemote Z ell ε U) :
@@ -20,9 +19,8 @@ lemma not_lowRemote_bounds (Z ell ε U : ℝ) (hZ : 0<Z)
   apply lowCentral_ratio_bounds Z U ell ε hZ
   · have he : Z^(-ε/2)=(Z^(ε/2))⁻¹ := by
       rw [show -ε/2=-(ε/2) by ring,Real.rpow_neg hZ.le]
-    rw [he]
-    exact h.1.le
-  · exact h.2.le
+    linarith
+  linarith
 
 theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
@@ -55,7 +53,7 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
     ‖lowCommonDyad η (calibrationForSet S hS) W0 W1 (fun i=>canonicalSlotSupport (T i))
       W (fun i=>Z^(ell i)) J (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) ((2:ℝ)^j) R V hV‖
   have hz : 0<Z := lt_trans zero_lt_one hZ.1
-  obtain ⟨hsm,hmb⟩ := hm R (by dsimp [R];positivity)
+  obtain ⟨hsm,hmb⟩ := hm R (by positivity)
   have hb (j : ℕ) : f j≤(C*Z^(3/16+254*ε))*
       (((2:ℝ)^j)^ε*gaussianJointMoment V hV degree ((2:ℝ)^j/R)) := by
     dsimp only [f]
@@ -81,7 +79,7 @@ theorem low_central_gaussian_dyads (η : HeckeFamily.Character) (S : Finset Id)
         _=(C*Cm)*(Z^(3/16+254*ε)*Z^((1+lowSelectedLength ell J)*ε)) := by ring
         _≤_ := by
           rw [←Real.rpow_add hz]
-          apply mul_le_mul_of_nonneg_left _ (mul_pos hC hCm).le
+          apply mul_le_mul_of_nonneg_left _ (by positivity)
           have hh := lowLength_bounds ell hell hsum J
           exact Real.rpow_le_rpow_of_exponent_le hZ.1.le (by nlinarith)
 

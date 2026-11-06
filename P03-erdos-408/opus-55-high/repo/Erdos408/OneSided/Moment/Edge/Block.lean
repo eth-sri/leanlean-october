@@ -29,7 +29,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 /-- `det(z, z') = z₁ z'₂ - z₂ z'₁`. -/
 def zdet (z z' : ℤ × ℤ) : ℤ := z.1 * z'.2 - z.2 * z'.1
@@ -61,28 +61,21 @@ theorem tau_mem_of_mem_rootPositions {U V u v r : ℝ} (hU : 0 < U) (hUu : U ≤
   obtain ⟨-, -, h1, h2, -⟩ := hz
   have hu0 : 0 < u := hU.trans_le hUu
   constructor
-  · by_contra h
-    push Not at h
-    have : u * tau r z < u * (1 / 16) := mul_lt_mul_of_pos_left h hu0
-    linarith
-  · by_contra h
-    push Not at h
-    have : u * 16 < u * tau r z := mul_lt_mul_of_pos_left h hu0
-    nlinarith
+  · nlinarith
+  nlinarith
 
 /-- Positions of the root box are primitive. -/
 theorem gcd_eq_one_of_mem_rootPositions {U V u v r : ℝ} {z : ℤ × ℤ}
     (hz : z ∈ rootPositions U V u v r) : Int.gcd z.1 z.2 = 1 := by
   unfold rootPositions at hz
-  exact (mem_filter.1 hz).2.1
+  simp_all
 
 /-- `det(z, w_z) = 1` for a primitive `z`. -/
 theorem zdet_complement {z : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1) : zdet z (complement z) = 1 := by
   have h := Int.gcd_eq_gcd_ab z.1 z.2
   rw [hz] at h
   simp only [zdet, complement]
-  push_cast at h
-  linarith
+  simp_all
 
 /-- `z'₂/τ(z') - z₂/τ(z) = det(z, z')/(τ(z) τ(z'))`. -/
 theorem div_tau_sub_div_tau (r : ℝ) {z z' : ℤ × ℤ} (hz : tau r z ≠ 0) (hz' : tau r z' ≠ 0) :
@@ -90,16 +83,13 @@ theorem div_tau_sub_div_tau (r : ℝ) {z z' : ℤ × ℤ} (hz : tau r z ≠ 0) (
   rw [div_sub_div _ _ hz' hz, mul_comm (tau r z') (tau r z)]
   congr 1
   unfold zdet tau
-  push_cast
-  ring
+  grind
 
 /-- With `det(z₀, w) = 1`, every `v` is `det(v, w) z₀ + det(z₀, v) w`. -/
 theorem eq_zdet_smul_add {z₀ w : ℤ × ℤ} (h : zdet z₀ w = 1) (v : ℤ × ℤ) :
     v = (zdet v w * z₀.1 + zdet z₀ v * w.1, zdet v w * z₀.2 + zdet z₀ v * w.2) := by
   unfold zdet at *
-  ext
-  · linear_combination (-v.1) * h
-  · linear_combination (-v.2) * h
+  grind
 
 /-! ### Line tuples -/
 
@@ -114,50 +104,25 @@ theorem lineOf_eq_iff {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ} (hz : Int.gcd
     have := Int.dvd_gcd h1 h2
     rw [hw] at this
     have hp1 := hp.one_lt
-    have : (p : ℤ) ≤ 1 := Int.le_of_dvd one_pos (by exact_mod_cast this)
+    have : (p : ℤ) ≤ 1 := Int.le_of_dvd one_pos (by simp_all)
     omega
   have hlt : ∀ w : ℤ × ℤ, (w.1 : ZMod p) ≠ 0 → lineOf p w < p := fun w hw => by
     simp only [lineOf, hw, ↓reduceIte]
-    exact ZMod.val_lt _
+    grind
   have heq : ∀ w : ℤ × ℤ, (w.1 : ZMod p) = 0 → lineOf p w = p := fun w hw => by
     simp only [lineOf, hw, ↓reduceIte]
   rw [← ZMod.intCast_zmod_eq_zero_iff_dvd]
   simp only [zdet, Int.cast_sub, Int.cast_mul]
   by_cases h1 : (z.1 : ZMod p) = 0 <;> by_cases h1' : (z'.1 : ZMod p) = 0
-  · rw [heq z h1, heq z' h1', h1, h1']
-    simp
-  · rw [heq z h1, h1]
-    have := hlt z' h1'
-    constructor
-    · intro h
-      omega
-    · intro h
-      have h2 := hprim z hz h1
-      simp only [zero_mul, zero_sub, neg_eq_zero] at h
-      rcases mul_eq_zero.1 h with h | h
-      · exact absurd h h2
-      · exact absurd h h1'
-  · rw [heq z' h1', h1']
-    have := hlt z h1
-    constructor
-    · intro h
-      omega
-    · intro h
-      have h2 := hprim z' hz' h1'
-      simp only [mul_zero, sub_zero] at h
-      rcases mul_eq_zero.1 h with h | h
-      · exact absurd h h1
-      · exact absurd h h2
+  · simp_all
+  · grind
+  · grind
   · simp only [lineOf, h1, h1', ↓reduceIte]
     constructor
     · intro h
       have h' := ZMod.val_injective p h
-      field_simp [h1, h1'] at h'
-      linear_combination -h'
-    · intro h
-      congr 1
-      field_simp [h1, h1']
-      linear_combination -h
+      grind
+    grind
 
 /-- For squarefree `D` and primitive `z, z'`, the line tuples agree iff `D ∣ det(z, z')`. -/
 theorem lineKey_eq_iff {D : ℕ} (hD : Squarefree D) {z z' : ℤ × ℤ} (hz : Int.gcd z.1 z.2 = 1)
@@ -180,7 +145,7 @@ theorem lineKey_eq_iff {D : ℕ} (hD : Squarefree D) {z z' : ℤ × ℤ} (hz : I
     split_ifs with hpD
     · exact (lineOf_eq_iff (Nat.prime_of_mem_primeFactors hpD) hz hz').2
         ((Int.natCast_dvd_natCast.2 (Nat.dvd_of_mem_primeFactors hpD)).trans h)
-    · rfl
+    omega
 
 /-! ### The block bound -/
 
@@ -192,7 +157,7 @@ def latConst : ℝ := 655616
 theorem zdet_eq_of_zdet_eq_one {z₀ w : ℤ × ℤ} (h : zdet z₀ w = 1) (z z' : ℤ × ℤ) :
     zdet z z' = zdet z w * zdet z₀ z' - zdet z₀ z * zdet z' w := by
   unfold zdet at *
-  linear_combination (-(z.1 * z'.2 - z.2 * z'.1)) * h
+  grind
 
 /-- A position is determined by `det(v, w)` and `det(z₀, v)` when `det(z₀, w) = 1`. -/
 theorem eq_of_zdet_eq {z₀ w : ℤ × ℤ} (h : zdet z₀ w = 1) {v v' : ℤ × ℤ}
@@ -200,7 +165,7 @@ theorem eq_of_zdet_eq {z₀ w : ℤ × ℤ} (h : zdet z₀ w = 1) {v v' : ℤ ×
   calc v = (zdet v w * z₀.1 + zdet z₀ v * w.1, zdet v w * z₀.2 + zdet z₀ v * w.2) :=
         eq_zdet_smul_add h v
     _ = (zdet v' w * z₀.1 + zdet z₀ v' * w.1, zdet v' w * z₀.2 + zdet z₀ v' * w.2) := by
-        rw [h₁, h₂]
+        simp_all
     _ = v' := (eq_zdet_smul_add h v').symm
 
 open scoped Classical in
@@ -216,7 +181,7 @@ theorem mem_blockSet {U V u v r H : ℝ} {D : ℕ} {δ : ℤ} {z₀ y : ℤ × �
     y ∈ blockSet U V u v r H D δ z₀ ↔ y ∈ rootPositions U V u v r ∧ lineKey D y = lineKey D z₀ ∧
       (rootCell H r y = rootCell H r z₀ ∨ rootCell H r y = rootCell H r z₀ + δ) := by
   unfold blockSet
-  exact mem_filter
+  simp
 
 /-- `|⌊a⌋ - ⌊b⌋| ≤ n` gives `|a - b| < n + 1`. -/
 private theorem abs_sub_lt_of_floor {a b : ℝ} {n : ℤ} (h : |⌊a⌋ - ⌊b⌋| ≤ n) :
@@ -226,10 +191,7 @@ private theorem abs_sub_lt_of_floor {a b : ℝ} {n : ℤ} (h : |⌊a⌋ - ⌊b�
   have h3 := Int.floor_le b
   have h4 := Int.lt_floor_add_one b
   have h' : |((⌊a⌋ - ⌊b⌋ : ℤ) : ℝ)| ≤ n := by exact_mod_cast h
-  rw [abs_le] at h'
-  push_cast at h'
-  rw [abs_lt]
-  constructor <;> linarith [h'.1, h'.2]
+  grind
 
 /-- **The coordinates of a lattice block** (PD `mem:lattice-shape`). Let `z₀` be a good source
 of the root box. The positions with the line tuple of `z₀` in its cell or in the cell shifted by
@@ -305,10 +267,8 @@ theorem exists_block_embedding {Y d₀ U V u v r : ℝ} {D : ℕ} {δ : ℤ} (h�
     -- the cells differ by at most `|δ|`
     have hcell : |rootCell H r v - rootCell H r z₀| ≤ (2560 : ℤ) := by
       rcases hv'.2.2 with h | h
-      · rw [h, sub_self, abs_zero]
-        norm_num
-      · rw [h, add_sub_cancel_left]
-        exact hδ
+      · grind
+      · grind
     have hab := abs_sub_lt_of_floor hcell
     rw [← sub_div, abs_div, abs_of_pos hH0, div_lt_iff₀ hH0] at hab
     rw [div_tau_sub_div_tau r hτ₀pos.ne' hτv.ne', abs_div,
@@ -344,14 +304,13 @@ theorem exists_block_embedding {Y d₀ U V u v r : ℝ} {D : ℕ} {δ : ℤ} (h�
         linear_combination (-(lc v')) * hdetL
       rw [this, h', he.1, he.2]
     refine eq_of_zdet_eq hdet1 e1 ?_
-    rw [hTdvd v hv, hTdvd v' hv', e2]
+    grind
   · -- the coordinates lie in the box
     obtain ⟨h1, h2⟩ := hreg (hc v) (lc v) (hTl v hv) (hTh v hv)
     exact mem_product.2 ⟨mem_Icc.2 (abs_le.1 h1), mem_Icc.2 (abs_le.1 h2)⟩
   · -- `det(z, z')/D` is the determinant of the coordinates
     rw [zdet_eq_of_zdet_eq_one hdet1 z z', hTdvd z hz, hTdvd z' hz']
-    simp only [hhc]
-    linear_combination (-(D : ℤ) * (zdet z w₀ * lc z' - lc z * zdet z' w₀)) * hdetL
+    grind
 
 open scoped Classical in
 /-- **The lattice blocks** (PD `mem:lattice-shape` and the tensor step): for `|δ| ≤ 2560`, the
@@ -381,7 +340,7 @@ theorem kerLe_shiftKernel_of_box {Y d₀ U V u v r ϑ n : ℝ} {D : ℕ} {δ : �
       exact hne (ite_eq_right_iff.2 fun h' => (h h').elim)
     simp only [Prod.mk.injEq]
     exact ⟨(lineKey_eq_iff hDsq (gcd_eq_one_of_mem_rootPositions hz)
-      (gcd_eq_one_of_mem_rootPositions hz')).2 hc.2.1, by rw [hc.2.2]; ring⟩
+      (gcd_eq_one_of_mem_rootPositions hz')).2 hc.2.1, by omega⟩
   · rintro ⟨kk, c⟩
     by_cases hex : ∃ z₀ ∈ (rootPositions U V u v r).filter
         (fun z => (lineKey D z, rootCell H r z) = (kk, c)), GoodPad Y D (posRatio r z₀)
@@ -413,25 +372,17 @@ theorem kerLe_shiftKernel_of_box {Y d₀ U V u v r ϑ n : ℝ} {D : ℕ} {δ : �
       have hzb := hsrc hz
       have hzb' := htgt hz'
       rw [mem_filter, Prod.mk.injEq] at hz hz'
-      have hdvd : (D : ℤ) ∣ zdet z z' :=
+      have hdvd :=
         (lineKey_eq_iff hDsq (gcd_eq_one_of_mem_rootPositions hz.1)
           (gcd_eq_one_of_mem_rootPositions hz'.1)).1 (hz.2.1.trans hz'.2.1.symm)
       have hcell : rootCell H r z' = rootCell H r z + δ := by
         have := hz'.2.2
         rw [hz.2.2]
         linarith
-      have hq : zdet z z' / D = (emb z).1 * (emb z').2 - (emb z).2 * (emb z').1 := by
-        rw [hdet z hzb z' hzb']
-        exact Int.mul_ediv_cancel_left _ hD0'
-      simp only [hdvd, hcell, and_true, mul_one]
-      split_ifs with hg
-      · rw [one_mul, hq]
-        push_cast
-        ring_nf
-      · rw [zero_mul]
+      simp_all
     · -- no good source: the block kernel vanishes
       push Not at hex
       refine ((kerLe_zero _ _).mono le_rfl hn).congr fun z hz z' _ => ?_
-      exact (ite_eq_right_iff.2 fun h => (hex z hz h.1).elim).symm
+      simp_all
 
 end Erdos408.OneSided

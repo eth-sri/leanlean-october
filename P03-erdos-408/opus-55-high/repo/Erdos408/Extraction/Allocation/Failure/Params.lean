@@ -29,13 +29,13 @@ lemma exists_sum_one_div_primesIcc_le : ∃ C : ℝ, ∀ Y : ℝ, 2 ≤ Y →
   obtain ⟨E, hE, hM⟩ := mertens_second
   have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
   refine ⟨3 / 2 + E / Real.log 2, fun Y hY => ?_⟩
-  have hlY : 0 < Real.log Y := Real.log_pos (by linarith)
+  have hlY := Real.log_pos (by linarith)
   have hsplit : primesIcc 2 Y ⊆ insert 2 (primesIoc 2 Y) := by
     intro p hp
     obtain ⟨hpr, h1, h2⟩ := mem_primesIcc.1 hp
     rcases eq_or_lt_of_le (show (2 : ℝ) ≤ p from h1) with h | h
     · rw [show p = 2 by exact_mod_cast h.symm]
-      exact mem_insert_self _ _
+      simp
     · exact mem_insert_of_mem (mem_primesIoc.2 ⟨hpr, h, h2⟩)
   have hlog2 : -Real.log (Real.log 2) ≤ 1 := by
     have := Real.add_one_le_exp (-Real.log (Real.log 2))
@@ -98,7 +98,7 @@ lemma card_lowSubsets_le (g : Finset ℕ) : ((lowSubsets g).card : ℝ) ≤ ((g.
 lemma sieveDepth_le {Ch x : ℝ} (hT : 1 ≤ logLog x) :
     4 * (sieveDepth Ch x : ℝ) + 3 ≤ (8 * |Ch| + 11) * logLog x := by
   have hs : logLogLog x ≤ logLog x := by
-    have := Real.log_le_sub_one_of_pos (show 0 < logLog x by linarith)
+    have := Real.log_le_sub_one_of_pos (by positivity)
     rw [logLogLog]
     linarith
   have hs0 : 0 ≤ logLogLog x := by rw [logLogLog]; exact Real.log_nonneg hT
@@ -111,7 +111,7 @@ lemma sieveDepth_le {Ch x : ℝ} (hT : 1 ≤ logLog x) :
       exact (Nat.ceil_lt_add_one (by positivity)).le
     have h2 : |Ch| * logLogLog x ≤ |Ch| * logLog x := mul_le_mul_of_nonneg_left hs (abs_nonneg _)
     linarith
-  nlinarith [abs_nonneg Ch]
+  linarith
 
 /-- `γ > 0` and `1/γ ≤ C_γ T^{21}`, with `C_γ = 4 (8 |C_h| + 11) / c`. -/
 lemma presieveExponent_facts {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
@@ -123,7 +123,7 @@ lemma presieveExponent_facts {c Ch x : ℝ} (hc : 0 < c) (hT : 1 ≤ logLog x) :
       c / (4 * logLog x ^ 20 * (4 * (sieveDepth Ch x : ℝ) + 3)) := by
     rw [presieveExponent]
     field_simp
-  refine ⟨by rw [hγ]; positivity, ?_⟩
+  refine ⟨by simp_all, ?_⟩
   rw [hγ, one_div_div, div_le_iff₀ hc]
   have := sieveDepth_le (Ch := Ch) hT
   have h20 : 0 < logLog x ^ 20 := by positivity

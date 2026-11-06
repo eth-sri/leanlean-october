@@ -10,21 +10,16 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
+open scoped ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
 section FourierNormalization
 
-open scoped FourierTransform SchwartzMap
 
 variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
   [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
@@ -51,9 +46,9 @@ end FourierNormalization
 def primePrefix (y : ℕ) : Finset Nat.Primes := (Nat.primesLE y).subtype Nat.Prime
 
 @[simp] theorem mem_primePrefix (y : ℕ) (p : Nat.Primes) :
-    p∈primePrefix y ↔ (p:ℕ)≤y := by
-  exact (Finset.mem_subtype (p := Nat.Prime) (s := Nat.primesLE y) (a := p)).trans
-    (by rw [Nat.mem_primesLE]; exact and_iff_left p.property)
+    p∈primePrefix y ↔ (p:ℕ)≤y :=
+  (Finset.mem_subtype (p := Nat.Prime) (s := Nat.primesLE y) (a := p)).trans
+    (by rw [Nat.mem_primesLE]; grind)
 
 noncomputable def primeReciprocalPrefix (y : ℕ) : ℝ :=
   ∑ p∈primePrefix y, (p:ℝ)⁻¹

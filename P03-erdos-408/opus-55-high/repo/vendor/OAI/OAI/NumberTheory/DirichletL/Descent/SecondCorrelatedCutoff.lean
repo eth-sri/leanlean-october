@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWholeCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
     (G E S T : Finset ι) (hGS : Disjoint G S) (hGT : Disjoint G T)
     (L : ℝ) (hL : 0 ≤ L)
     (hS : primeProductNorm p (G ∪ S) ≤ L)
@@ -29,19 +28,19 @@ theorem second_correlated_column_denominator {ι : Type*} [DecidableEq ι]
         field_simp
     _ ≤ _ := mul_le_mul_of_nonneg_left hbound (sq_nonneg _)
 
-def correlatedSecondRadius {ι : Type*} [DecidableEq ι] (p : ι → O)
-    (d : O) (G E : Finset ι) (L Y H : ℝ) : ℝ :=
+def correlatedSecondRadius {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
+    (d : ActualEisensteinCubic.O) (G E : Finset ι) (L Y H : ℝ) : ℝ :=
   ‖eisEmbedding d‖^2 * (primeProductNorm p E/primeProductNorm p G)^2 * L^2 * H / Y
 
 theorem full_second_correlated_tail (order : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+      (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
       (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
       (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-      (F : Finset ι) (Ψ : O →* ℂ) (_hΨ : ∀ a, ‖Ψ a‖ ≤ 1)
-      (m c d : O) (_hd : d ≠ 0) (Hcol : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ))
+      (_hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
+      (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (_hΨ : ∀ a, ‖Ψ a‖ ≤ 1)
+      (m c d : ActualEisensteinCubic.O) (_hd : d ≠ 0) (Hcol : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ))
       (B Y H L : ℝ) (R : Finset ι → Finset ι → ℝ), 0 ≤ B → 0 < Y → 0 ≤ H → 1 ≤ L →
       (∀ U, ‖Hcol U‖ ≤ B) →
       (∀ U, Hcol U ≠ 0 → primeProductNorm p U ≤ L) →
@@ -59,10 +58,10 @@ theorem full_second_correlated_tail (order : ℕ) :
   apply htail p hp hg hinj hc F Ψ hΨ m c d Hcol W B Y H L hB hY hH hL hcol hsupp
   intro G hG E S hS T hT hST hw k hk
   obtain ⟨hGS,hGT⟩ := residualPairWeight_test_ne_zero p hg Ψ Ψ m c d _ _ S T hw
-  have hdGS : Disjoint G S := Finset.disjoint_left.mpr (by
+  have hdGS := Finset.disjoint_left.mpr (by
     intro i hiG hiS
     exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hS) hiS)).2 hiG)
-  have hdGT : Disjoint G T := Finset.disjoint_left.mpr (by
+  have hdGT := Finset.disjoint_left.mpr (by
     intro i hiG hiT
     exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hT) hiT)).2 hiG)
   have hden := second_correlated_column_denominator p hp G E.val S T hdGS hdGT L (zero_le_one.trans hL)
@@ -91,7 +90,7 @@ theorem full_second_correlated_tail (order : ℕ) :
   rw [active_norm_sq_disjoint p S T hST,div_mul_eq_mul_div]
   apply (le_div_iff₀ (mul_pos heN (mul_pos (primeProductNorm_pos p hp S)
     (primeProductNorm_pos p hp T)))).mpr
-  exact hbound
+  omega
 
 end
 end SevenEighths.InverseMoment

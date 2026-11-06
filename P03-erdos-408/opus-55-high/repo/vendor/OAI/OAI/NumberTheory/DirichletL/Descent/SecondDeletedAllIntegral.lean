@@ -7,35 +7,34 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedAllModes
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic
 open JointLogSeparation MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local instance inverseSecondDeletedAllIntegralUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+local instance inverseSecondDeletedAllIntegralUnits : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 theorem actual_second_deleted_all_modes_integral
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
-    (sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ a,‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
+    (sector : MarkedSecondSource ι Jo 0 → ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ)
+    (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a,‖Ψ a‖ ≤ 1) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
     (hd₁ : ∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨
-      (Ideal.span {p i}:Ideal Eis)∣x.quotient)
+      (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient)
     (hd₂ : ∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨
-      (Ideal.span {p i}:Ideal Eis)∣x.quotient)
+      (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient)
     (ha₁ : ∀ i∈slots₁,∀ q∈lists₁ i,‖a₁ i q‖ ≤ 1)
     (ha₂ : ∀ i∈slots₂,∀ q∈lists₂ i,‖a₂ i q‖ ≤ 1)
     (ω₁ ω₂ : ℝ → ℂ) (G E V B X R : ℝ)
-    (labels : Finset (Ideal Eis))
+    (labels : Finset (Ideal ActualEisensteinCubic.O))
     (hlabels : ∀ x∈source,(actualSecondChild p 1 1 x).2.1 ∈ labels)
     (hrows : ∀ x∈source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R)
     (K : ℕ) (ho : Jo ≤ 2*K) (hslots₁ : slots₁.card ≤ K) (hslots₂ : slots₂.card ≤ K)
@@ -64,7 +63,7 @@ theorem actual_second_deleted_all_modes_integral
       slots₁ slots₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂ hd₁ hd₂ ha₁ ha₂ ω₁ ω₂ G E V B X R t labels hlabels hrows
       K ho hslots₁ hslots₂ w hw (A*(tripleHeight J t.1*coordinateHeight J t.2))
       (by unfold tripleHeight coordinateHeight; positivity) (hleft t) (hright t)
-    exact hh.trans_eq (by dsimp only [C]; ring)
+    exact hh.trans_eq (by linarith)
   calc
     _ ≤ ∫ t : Frequency × (Fin 6 → ℝ),C*(tripleHeight J t.1*coordinateHeight J t.2*‖density t‖) := by
       apply norm_integral_le_of_norm_le (hDensity.const_mul C)

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorZeros
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily
@@ -38,9 +38,9 @@ lemma detectorEntire_zero_iff (χ : Character) {s : ℂ} (hs : 0<s.re) :
     · subst s
       simp [HeckeOrigin.poleRemoved_one_ne_zero χ hχ,hχ]
     · rw [HeckeOrigin.poleRemoved_eq χ h0 h1]
-      simp [mul_eq_zero,sub_ne_zero.mpr h1,h1]
+      grind
   · rw [detectorEntire_eq_nonprincipal χ hχ]
-    simp [hχ]
+    simp_all
 
 lemma detectorEntire_ne_zero_of_one_lt_re (χ : Character) {s : ℂ} (hs : 1<s.re) :
     detectorEntire χ s≠0 := by
@@ -55,9 +55,9 @@ lemma detectorZeros_finite (χ : Character) (T : ℝ) : (detectorZeros χ T).Fin
     Complex.analyticOnNhd_univ_iff_differentiable.mpr (detectorEntire_entire χ)
   have hc := ha.preimage_zero_mem_codiscreteWithin
     (detectorEntire_ne_zero_of_one_lt_re χ (by norm_num : 1<(2:ℂ).re))
-    (Set.mem_univ (2:ℂ)) isConnected_univ
+    (by simp) isConnected_univ
   have hf := (HeckeDetectorZeros.rectangle_compact T).finite_sdiff_of_mem_codiscreteWithin
-    (codiscreteWithin_mono (Set.subset_univ (HeckeDetectorZeros.rectangle T)) hc)
+    (codiscreteWithin_mono (by simp) hc)
   convert hf using 1
   ext s
   by_cases hs : s∈HeckeDetectorZeros.rectangle T
@@ -104,7 +104,7 @@ lemma detectorMaximum_bounds (χ : ι→Character) (T : ℝ) :
     rcases Finset.mem_insert.mp hx with rfl|hx
     · norm_num
     · obtain ⟨⟨i,s⟩,hs,rfl⟩ := Finset.mem_image.mp hx
-      exact (mem_detectorFamilyZeros χ T i s |>.mp hs).2.1
+      simp_all
 
 lemma detector_zero_re_le_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s : ℂ}
     (hs : (51/100:ℝ)≤s.re) (ht : |s.im|≤T) (hz : LFunction (χ i) s=0)
@@ -114,7 +114,7 @@ lemma detector_zero_re_le_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s : 
     exact LFunction_ne_zero_of_one_lt_re (χ i) (lt_of_not_ge hn) hz
   apply Finset.le_max'
   exact Finset.mem_insert_of_mem (Finset.mem_image.mpr
-    ⟨(i,s),(mem_detectorFamilyZeros χ T i s).mpr ⟨hs,hle,ht,hz,hpole⟩,rfl⟩)
+    ⟨(i,s),(mem_detectorFamilyZeros χ T i s).mpr (by grind),rfl⟩)
 
 lemma detectorMaximum_attained (χ : ι→Character) (T : ℝ)
     (hmax : (51/100:ℝ)<detectorMaximum χ T) :
@@ -122,10 +122,10 @@ lemma detectorMaximum_attained (χ : ι→Character) (T : ℝ)
       |s.im|≤T ∧ s.re=detectorMaximum χ T := by
   have hm := detectorMaximum_mem χ T
   rcases Finset.mem_insert.mp hm with hm|hm
-  · exact False.elim ((ne_of_gt hmax) hm)
+  · linarith
   · obtain ⟨⟨i,s⟩,hs,heq⟩ := Finset.mem_image.mp hm
     have hz := (mem_detectorFamilyZeros χ T i s).mp hs
-    exact ⟨i,s,hz.2.2.2.1,hz.2.2.2.2,hz.2.2.1,heq⟩
+    grind
 
 lemma detector_nonzero_above_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s : ℂ}
     (hs : detectorMaximum χ T<s.re) (ht : |s.im|≤T)

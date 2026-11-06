@@ -23,7 +23,7 @@ The bookkeeping for the change of variables of PD Lemma 4.1
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -52,12 +52,12 @@ theorem padList_eq_iff {J : ℕ} {z : Fin K × Fin J → ℕ} {p : Fin K → ℕ
     padList z p = l ↔ (∀ c, z c = l c.1 c.2.castSucc) ∧ ∀ i, p i = l i (Fin.last J) := by
   constructor
   · rintro rfl
-    exact ⟨fun c => (padList_castSucc z p c.1 c.2).symm, fun i => (padList_last z p i).symm⟩
+    simp
   · rintro ⟨hz, hp⟩
     funext i h
     induction h using Fin.lastCases with
-    | last => rw [padList_last, hp]
-    | cast h => rw [padList_castSucc, hz]
+    | last => simp_all
+    | cast h => simp_all
 
 /-- The pad product of `padList z p` is `∏ z`. -/
 theorem padProd_padList {J : ℕ} (z : Fin K × Fin J → ℕ) (p : Fin K → ℕ) :
@@ -82,21 +82,20 @@ theorem listProd_pos {J : ℕ} {l : Lists K J} (hl : ∀ i h, (l i h).Prime) : 0
 theorem lists_slot_mem_band {x : ℝ} {d : Data K} {J : ℕ} {l : Lists K J}
     (hl : l ∈ lists x d J) (i : Fin K) (h : Fin (J + 1)) : l i h ∈ band x (d.a i) := by
   unfold lists at hl
-  rw [mem_filter, Fintype.mem_piFinset] at hl
-  exact Fintype.mem_piFinset.1 (hl.1 i) h
+  simp_all
 
 /-- The lists in `lists` are injective in each group. -/
 theorem lists_group_injective {x : ℝ} {d : Data K} {J : ℕ} {l : Lists K J}
     (hl : l ∈ lists x d J) (i : Fin K) : Function.Injective (l i) := by
   unfold lists at hl
-  exact (mem_filter.1 hl).2 i
+  simp_all
 
 /-- A prime dividing a list product is one of the labels. -/
 theorem exists_eq_of_prime_dvd_listProd {J : ℕ} {l : Lists K J} (hl : ∀ i h, (l i h).Prime)
     {r : ℕ} (hr : r.Prime) (hdvd : r ∣ listProd l) : ∃ i h, r = l i h := by
   obtain ⟨i, -, hi⟩ := (Prime.dvd_finsetProd_iff hr.prime _).1 hdvd
   obtain ⟨h, -, hh⟩ := (Prime.dvd_finsetProd_iff hr.prime _).1 hi
-  exact ⟨i, h, (Nat.prime_dvd_prime_iff_eq hr (hl i h)).1 hh⟩
+  exact ⟨i, h, (Nat.prime_dvd_prime_iff_eq hr (by grind)).1 hh⟩
 
 /-- With disjoint bands, the labels of a list in `lists` are distinct primes, so they all
 divide `N` exactly when their product does. -/
@@ -104,7 +103,7 @@ theorem listProd_dvd_of_mem_lists {x : ℝ} {d : Data K}
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
     {l : Lists K J} (hl : l ∈ lists x d J) {N : ℕ} (hN : ∀ i h, l i h ∣ N) :
     listProd l ∣ N := by
-  have hprime : ∀ i h, (l i h).Prime := fun i h =>
+  have hprime := fun i h =>
     (mem_filter.1 (lists_slot_mem_band hl i h)).2
   -- the labels are injective on `Fin K × Fin (J + 1)`
   have hinj : Function.Injective fun c : Fin K × Fin (J + 1) => l c.1 c.2 := by
@@ -122,8 +121,7 @@ theorem listProd_dvd_of_mem_lists {x : ℝ} {d : Data K}
   refine Finset.prod_primes_dvd N (fun r hr => ?_) fun r hr => ?_
   · obtain ⟨c, -, rfl⟩ := mem_image.1 hr
     exact (hprime c.1 c.2).prime
-  · obtain ⟨c, -, rfl⟩ := mem_image.1 hr
-    exact hN c.1 c.2
+  grind
 
 /-- With disjoint bands whose primes divide no rough integer, the band count of
 `(list product) m` with `m` rough is `K (J + 1)`: in band `i` the primes dividing it are the
@@ -133,7 +131,7 @@ theorem bandCount_listProd_mul {x : ℝ} {d : Data K}
     (hrough : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m) {J : ℕ}
     {l : Lists K J} (hl : l ∈ lists x d J) {m : ℕ} (hm : m ≠ 0) (hmr : IsRough x m) :
     bandCount x d (listProd l * m) = K * (J + 1) := by
-  have hprime : ∀ i h, (l i h).Prime := fun i h =>
+  have hprime := fun i h =>
     (mem_filter.1 (lists_slot_mem_band hl i h)).2
   have hband : ∀ i, primeCount (band x (d.a i)) (listProd l * m) = J + 1 := by
     intro i
@@ -143,14 +141,13 @@ theorem bandCount_listProd_mul {x : ℝ} {d : Data K}
       simp only [mem_filter, mem_image, mem_univ, true_and]
       constructor
       · rintro ⟨hr, hdvd⟩
-        have hrp : r.Prime := (mem_filter.1 hr).2
+        have hrp := (mem_filter.1 hr).2
         rcases (Nat.Prime.dvd_mul hrp).1 hdvd with hdl | hdm
         · obtain ⟨i', h, rfl⟩ := exists_eq_of_prime_dvd_listProd hprime hrp hdl
           by_cases hii : i = i'
-          · subst hii
-            exact ⟨h, rfl⟩
-          · exact absurd (lists_slot_mem_band hl i' h) (disjoint_left.1 (hdisj i i' hii) hr)
-        · exact absurd hdm (hrough i r hr m hm hmr)
+          · simp_all
+          · exact absurd (lists_slot_mem_band hl i' h) (disjoint_left.1 (by grind) hr)
+        grind
       · rintro ⟨h, rfl⟩
         refine ⟨lists_slot_mem_band hl i h, Dvd.dvd.mul_right ?_ _⟩
         exact (dvd_prod_of_mem _ (mem_univ h)).trans (dvd_prod_of_mem _ (mem_univ i))
@@ -169,10 +166,10 @@ theorem coprime_mul_of_isRough {x : ℝ} {N m s : ℕ} (hN : ∀ r, r.Prime → 
   by_contra hcop
   obtain ⟨r, hr, hrNm, hrs⟩ := Nat.Prime.not_coprime_iff_dvd.1 hcop
   rcases (Nat.Prime.dvd_mul hr).1 hrNm with hrN | hrm
-  · exact hN r hr hrN hrs
+  · simp_all
   -- a common prime of `m` and `s` exceeds `W > |t|` and divides `t`
-  have hW : roughLevel x < r := hsr r (Nat.mem_primeFactors.2 ⟨hr, hrs, hs⟩)
-  have hle : (r : ℤ) ≤ |t| := Int.le_of_dvd (abs_pos.2 ht) ((dvd_abs _ _).2 (hms r hr hrm hrs))
+  have hW := hsr r (by grind)
+  have hle : (r : ℤ) ≤ |t| := Int.le_of_dvd (abs_pos.2 ht) ((dvd_abs _ _).2 (by grind))
   have hle' : (r : ℝ) ≤ |(t : ℝ)| := by
     rw [← Int.cast_abs]
     exact_mod_cast hle

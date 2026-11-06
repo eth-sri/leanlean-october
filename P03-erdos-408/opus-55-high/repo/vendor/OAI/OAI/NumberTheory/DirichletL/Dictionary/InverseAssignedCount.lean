@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceMass
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.DetectorDictionaryInverseAssignedCount
-local notation "O" => ActualEisensteinCubic.O
 
 def assignedTuples {ι : Type*} [Fintype ι]
-    (L : ι → Finset (Ideal O)) : Finset (ι → Ideal O) := Fintype.piFinset L
+    (L : ι → Finset (Ideal ActualEisensteinCubic.O)) : Finset (ι → Ideal ActualEisensteinCubic.O) := Fintype.piFinset L
 
 @[simp] theorem mem_assignedTuples {ι : Type*} [Fintype ι]
-    (L : ι → Finset (Ideal O)) (q : ι → Ideal O) :
+    (L : ι → Finset (Ideal ActualEisensteinCubic.O)) (q : ι → Ideal ActualEisensteinCubic.O) :
     q ∈ assignedTuples L ↔ ∀ i, q i ∈ L i := by
   simp [assignedTuples]
 
@@ -27,18 +26,18 @@ theorem assignedConstant_pos (K : ℕ) {b : ℝ} (hb : 1 ≤ b) :
   unfold assignedConstant
   positivity
 
-theorem list_card_le (L : Finset (Ideal O)) {H : ℝ} (hH : 0 ≤ H)
+theorem list_card_le (L : Finset (Ideal ActualEisensteinCubic.O)) {H : ℝ} (hH : 0 ≤ H)
     (hL : ∀ I ∈ L, I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ H) :
     (L.card : ℝ) ≤ 128*H := by
   apply le_trans (Nat.cast_le.mpr (Finset.card_le_card (t :=
     CenteredMomentSourceMass.idealBall H) ?_))
     (CenteredMomentSourceMass.idealBall_card H hH)
   intro I hI
-  exact (CenteredMomentSourceMass.mem_idealBall H I).mpr (hL I hI)
+  simp_all
 
 theorem assigned_card_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
+    (ell : ι → ℝ) (L : ι → Finset (Ideal ActualEisensteinCubic.O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i)) :
     ((assignedTuples L).card : ℝ) ≤ assignedConstant K b * U^(∑ i, ell i) := by
   have hUp : 0 < U := lt_of_lt_of_le zero_lt_one hU
@@ -47,34 +46,33 @@ theorem assigned_card_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
   simp only [assignedTuples, Fintype.card_piFinset, Nat.cast_prod]
   calc
     (∏ i, ((L i).card : ℝ)) ≤ ∏ i, 128*(b*U^(ell i)) :=
-      Finset.prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _)
+      Finset.prod_le_prod₀ (by simp)
         (fun i _ => list_card_le (L i) (by positivity) (hL i))
     _ = (128*b)^(Fintype.card ι) * U^(∑ i, ell i) := by
       simp_rw [← mul_assoc]
-      rw [Finset.prod_mul_distrib, ← Real.rpow_sum_of_pos hUp]
-      simp
-    _ ≤ assignedConstant K b * U^(∑ i, ell i) := by
-      exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hbase hK)
-        (Real.rpow_nonneg hUp.le _)
+      simp [Finset.prod_mul_distrib, ← Real.rpow_sum_of_pos hUp]
+    _ ≤ assignedConstant K b * U^(∑ i, ell i) :=
+      mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hbase hK)
+        (by positivity)
 
 def assignedCoefficient {ι : Type*} [Fintype ι]
-    (a : ι → Ideal O → ℂ) (q : ι → Ideal O) : ℂ := ∏ i, a i (q i)
+    (a : ι → Ideal ActualEisensteinCubic.O → ℂ) (q : ι → Ideal ActualEisensteinCubic.O) : ℂ := ∏ i, a i (q i)
 
 theorem assignedCoefficient_norm_le_one {ι : Type*} [Fintype ι]
-    (L : ι → Finset (Ideal O)) (a : ι → Ideal O → ℂ)
+    (L : ι → Finset (Ideal ActualEisensteinCubic.O)) (a : ι → Ideal ActualEisensteinCubic.O → ℂ)
     (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (q : ι → Ideal O) (hq : q ∈ assignedTuples L) :
+    (q : ι → Ideal ActualEisensteinCubic.O) (hq : q ∈ assignedTuples L) :
     ‖assignedCoefficient a q‖ ≤ 1 := by
   rw [assignedCoefficient, norm_prod]
-  simpa using Finset.prod_le_prod₀ (fun i _ => norm_nonneg (a i (q i)))
+  simpa using Finset.prod_le_prod₀ (by simp)
     (fun i _ => ha i (q i) ((mem_assignedTuples L q).mp hq i))
 
 theorem restricted_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
+    (ell : ι → ℝ) (L : ι → Finset (Ideal ActualEisensteinCubic.O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
+    (a : ι → Ideal ActualEisensteinCubic.O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
+    (T : Finset (ι → Ideal ActualEisensteinCubic.O)) (hT : T ⊆ assignedTuples L) :
     (∑ q ∈ T, ‖assignedCoefficient a q‖) ≤
       assignedConstant K b * U^(∑ i, ell i) := by
   calc
@@ -86,25 +84,25 @@ theorem restricted_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
 
 theorem restricted_normalized_mass_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
+    (ell : ι → ℝ) (L : ι → Finset (Ideal ActualEisensteinCubic.O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
+    (a : ι → Ideal ActualEisensteinCubic.O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
+    (T : Finset (ι → Ideal ActualEisensteinCubic.O)) (hT : T ⊆ assignedTuples L) :
     (∑ q ∈ T, ‖assignedCoefficient a q‖) * U^(-(∑ i, ell i)) ≤
       assignedConstant K b := by
   have hUp : 0 < U := lt_of_lt_of_le zero_lt_one hU
   calc
     _ ≤ (assignedConstant K b * U^(∑ i, ell i)) * U^(-(∑ i, ell i)) :=
       mul_le_mul_of_nonneg_right (restricted_mass_le K hb hU hK ell L hL a ha T hT)
-        (Real.rpow_nonneg hUp.le _)
-    _ = _ := by rw [mul_assoc, ← Real.rpow_add hUp]; simp
+        (by positivity)
+    _ = _ := by simp [mul_assoc, ← Real.rpow_add hUp]
 
 theorem restricted_sum_normalized_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
+    (ell : ι → ℝ) (L : ι → Finset (Ideal ActualEisensteinCubic.O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
-    (T : Finset (ι → Ideal O)) (hT : T ⊆ assignedTuples L) :
+    (a : ι → Ideal ActualEisensteinCubic.O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1)
+    (T : Finset (ι → Ideal ActualEisensteinCubic.O)) (hT : T ⊆ assignedTuples L) :
     (∑ q ∈ T, ‖assignedCoefficient a q‖ * U^(-(∑ i, ell i))) ≤
       assignedConstant K b := by
   rw [← Finset.sum_mul]
@@ -112,9 +110,9 @@ theorem restricted_sum_normalized_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 
 
 theorem assigned_sum_normalized_le (K : ℕ) {b U : ℝ} (hb : 1 ≤ b) (hU : 1 ≤ U)
     {ι : Type*} [Fintype ι] (hK : Fintype.card ι ≤ K)
-    (ell : ι → ℝ) (L : ι → Finset (Ideal O))
+    (ell : ι → ℝ) (L : ι → Finset (Ideal ActualEisensteinCubic.O))
     (hL : ∀ i I, I ∈ L i → I ≠ 0 ∧ (Ideal.absNorm I : ℝ) ≤ b*U^(ell i))
-    (a : ι → Ideal O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1) :
+    (a : ι → Ideal ActualEisensteinCubic.O → ℂ) (ha : ∀ i I, I ∈ L i → ‖a i I‖ ≤ 1) :
     (∑ q ∈ assignedTuples L, ‖assignedCoefficient a q‖ * U^(-(∑ i, ell i))) ≤
       assignedConstant K b :=
   restricted_sum_normalized_le K hb hU hK ell L hL a ha _ (Finset.Subset.refl _)

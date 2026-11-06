@@ -10,33 +10,29 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCommonLiveFrozen
 open CenteredMomentCommonRadialSource CenteredMomentCommonRadialData CenteredMomentCommonRadialCost
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
+open CenteredMomentRadialEligibleEnergy
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 open CanonicalQuadraticSieve
 open CenteredMomentCommonRadialPointwise CenteredMomentCommonRawScale CenteredMomentCommonRawCost
-open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentFirstSectors CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceLiveColumn
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentRestrictedSourceNormalization CenteredMomentSecondLiveEnergy
-local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
-lemma source_mask_energy (keep:O→Prop) (Q:Finset (Ideal O)) (C L:Ideal O)
-    (c f:Ideal O→ℂ) (W:𝓢(ℝ,ℂ)) (K:ℝ):
+lemma source_mask_energy (keep:ActualEisensteinCubic.O→Prop) (Q:Finset (Ideal ActualEisensteinCubic.O)) (C L:Ideal ActualEisensteinCubic.O)
+    (c f:Ideal ActualEisensteinCubic.O→ℂ) (W:𝓢(ℝ,ℂ)) (K:ℝ):
     CenteredMomentRestrictedSource.sourceRestrictedEnergy keep Q
       (fun I=>if IsCoprime C I ∧ L∣I then c I else 0) f W K =
     CenteredMomentRestrictedSource.sourceRestrictedEnergy keep Q
       (fun I=>if IsCoprime C I then c I else 0)
       (fun I=>(if L∣I then 1 else 0)*f I) W K := by
   unfold CenteredMomentRestrictedSource.sourceRestrictedEnergy
-  congr 1
-  funext I
-  dsimp only
-  by_cases hc:IsCoprime C (I:Ideal O) <;> by_cases hl:L∣(I:Ideal O) <;> simp [hc,hl]
+  grind
 
 theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C)
     (R seed L:Ideal O) (hseed:seed∣C) :
@@ -117,10 +113,7 @@ theorem original_source_weighted (s:Input ι) (r:Radial) (C:Ideal O) (hC:Support
         (mul_nonneg (profileCost_nonneg s) hE)) (mul_nonneg hnC.le hnL.le))
     _=_:=by
       have hp:Z^(δ/2)*Z^(δ/2)=Z^δ:=by rw [←Real.rpow_add hz];congr 1;ring
-      calc
-        _=(C₁*C₂)*(Z^(δ/2)*Z^(δ/2))*(profileCost s*E)/
-          ((Ideal.absNorm C:ℝ)*Ideal.absNorm L):=by ring
-        _=_:=by rw [hp]
+      grind
 
 end SevenEighths.CenteredMomentCommonLiveFrozen
 

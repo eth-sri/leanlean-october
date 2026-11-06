@@ -9,20 +9,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
 open CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
+open HeckeFamily HeckeDetectorRawFiber
+open CenteredMomentDetectorEnergyInitialState
 open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
-open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
+open CenteredMomentDetectorPlainMomentParameters
+open CenteredMomentEnergyBands
 open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
 
 def radialSupportUpper : ℝ := Classical.choose radialMajorant_support_bound
 
@@ -43,19 +40,19 @@ lemma unmarked_power_eq (U m e:ℝ)(hU:1≤U):
   rw [hs]
   by_cases hm:1≤2*m
   · rw [max_eq_right hm,max_eq_right]
-    simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hU hm
+    simpa using Real.rpow_le_rpow_of_exponent_le hU hm
   · have hm':2*m≤1:=le_of_not_ge hm
     rw [max_eq_left hm',max_eq_left]
-    · exact Real.rpow_one U
-    · simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hU hm'
+    · simp
+    · simpa using Real.rpow_le_rpow_of_exponent_le hU hm'
 
 variable {Δ:ℝ}
 
 theorem retained_unmarked_bound (D:Parameters.HighData Δ)
-    {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label:Type*}
+    {M:Ideal HeckeFamily.O}[NeZero M]{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label:Type*}
     {U a tstar T heightAllowance:ℝ}{i:ℕ}
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)
-    (η:Character)(Q:Ideal O)(hU:1<U)
+    (η:Character)(Q:Ideal HeckeFamily.O)(hU:1<U)
     (hη:(η.modulus.absNorm:ℝ)≤U^(delta D))
     (degree:ℕ)(S:Finset (ℕ×ℕ))(A:ℝ)
     (hzero:ZeroAt Q (1/4) (9/4) radialSupportUpper 0 1 2 (stageError D) U degree S A)
@@ -69,13 +66,13 @@ theorem retained_unmarked_bound (D:Parameters.HighData Δ)
     radialSupportUpper_spec.2 radialMajorant_nonneg hη
   have hwidth:s.width=max 1 (2*F.m)+delta D:=hs.2.2.2.2.2.2.1
   have hband:s.width≤2:=hs.2.2.2.2.2.2.2.2.1
-  have hscale:1≤U^F.m ∧ U^F.m≤U:=⟨hs.2.2.2.2.2.2.2.2.2.1,hs.2.2.2.2.2.2.2.2.2.2.1⟩
+  have hscale:1≤U^F.m ∧ U^F.m≤U:=by grind
   have hz:=hzero s rfl hband (detectorProfiles F.reverse j k σ t) 0 (U^F.m) (U^F.m)
     (zero_lt_one.trans_le hscale.1) (zero_lt_one.trans_le hscale.1)
-    (by simpa only [Real.rpow_one] using hscale.2)
-    (by simpa only [Real.rpow_one] using hscale.2)
+    (by simp_all)
+    (by simp_all)
   rw [actual_source_eq F η Q radialMajorant radialSupportUpper (delta D) hU.le
-    (fixed_parameters D).1.le radialSupportUpper_spec.2 radialMajorant_nonneg hη j k σ t]
+    (by grind) radialSupportUpper_spec.2 radialMajorant_nonneg hη j k σ t]
   have hrad:s.radial.profile=radialMajorant:=rfl
   simpa only [hwidth,hrad,norm_zero,add_zero,one_pow,mul_one] using hz
 

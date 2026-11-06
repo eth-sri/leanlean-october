@@ -5,7 +5,6 @@ public import Erdos821.S2Empty.MassAssembly
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -26,11 +25,11 @@ theorem small_boundary_factor_le_one (P : PrimeGroups) (M : ℕ)
         if smallLocalGood g y a then (1 : ℝ) else 0)
   have hcard : (Fintype.card P.SmallResidues : ℝ) =
       ∏ g : P.SmallGroup, (Fintype.card (SmallLocalResidues P g) : ℝ) := by
-    simp [PrimeGroups.SmallResidues, SmallLocalResidues, Fintype.card_pi]
+    simp
   have hcardInv : (Fintype.card P.SmallResidues : ℝ)⁻¹ =
       ∏ g : P.SmallGroup, (Fintype.card (SmallLocalResidues P g) : ℝ)⁻¹ := by
     rw [hcard]
-    simp [Finset.prod_inv_distrib]
+    simp
   have hsum := small_choice_sum_eq_prod P M
   have hfactor :
       (Fintype.card P.SmallResidues : ℝ)⁻¹ *
@@ -76,20 +75,16 @@ theorem small_boundary_factor_le_one (P : PrimeGroups) (M : ℕ)
     apply mul_nonneg
     · apply mul_nonneg
       · positivity
-      · exact zpow_nonneg (hV g.val).le _
-    · apply Finset.sum_nonneg
-      intro a _
-      apply Finset.sum_nonneg
-      intro y _
-      split_ifs <;> positivity
+      · exact zpow_nonneg (by grind) _
+    · positivity
   rw [hfactor]
   calc
     ∏ g : P.SmallGroup, localFactor g ≤ ∏ _g : P.SmallGroup, (1 : ℝ) := by
       apply Finset.prod_le_prod₀
       · intro g _
-        exact hlocal_nonneg g
+        grind
       · intro g _
-        exact hlocal_le g
+        grind
     _ = 1 := by simp
 
 

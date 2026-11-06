@@ -30,8 +30,8 @@ def Character.inverse (χ : Character) : Character where
   period_mem := χ.period_mem
 
 theorem elementCoeff_inverse (χ : Character) (z : O) :
-    elementCoeff χ.inverse z = (elementCoeff χ z)⁻¹ := by
-  exact MulChar.inv_apply_eq_inv' _ _
+    elementCoeff χ.inverse z = (elementCoeff χ z)⁻¹ :=
+  MulChar.inv_apply_eq_inv' _ _
 
 def Character.power (χ : Character) (n : ℕ) : Character where
   modulus := χ.modulus

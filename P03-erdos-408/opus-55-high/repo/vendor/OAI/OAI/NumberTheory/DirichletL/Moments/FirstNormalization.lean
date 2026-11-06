@@ -9,16 +9,15 @@ public import OAI.NumberTheory.DirichletL.Moments.Primitive
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstNormalization
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT
+open CanonicalQuadraticSieve CenteredMomentFourier
 open CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier
 open CenteredMomentGaussEnergy CenteredMomentPrimitive CenteredMomentFirstPoisson
-local notation "O" => ActualEisensteinCubic.O
 
-theorem residueGauss_eq_norm_mul_gaussRow (a : O) (ha : Supported (Ideal.span {a})) (h : O) :
+theorem residueGauss_eq_norm_mul_gaussRow (a : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (h : ActualEisensteinCubic.O) :
     residueGauss a (supported_element_ne_zero a ha) (supportedModulusCharacter a ha) (Ideal.Quotient.mk _ h)=
       (‖eisEmbedding a‖:ℂ)*gaussRow a ha h := by
   have hn : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr
@@ -27,14 +26,14 @@ theorem residueGauss_eq_norm_mul_gaussRow (a : O) (ha : Supported (Ideal.span {a
   field_simp
 
 theorem normalized_active_coefficient {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
+    (hchar : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ P i)≠2)
     (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
-    (a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+    (a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
-    (h : O) :
+    (h : ActualEisensteinCubic.O) :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     tripleFourier a b r (supported_element_ne_zero a ha) (supported_element_ne_zero b hb)

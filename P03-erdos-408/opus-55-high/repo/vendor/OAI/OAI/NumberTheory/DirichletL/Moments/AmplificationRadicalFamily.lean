@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.RadicalFamily
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentAmplificationRadicalFamily
 open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
 open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
@@ -17,56 +17,53 @@ open CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy
 open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
 open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
 open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
+open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy
 open CenteredMomentSecondChildProfile
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy
 open CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool
 open CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentCommonAllocationSum
 open CenteredMomentFirstAmplificationChoice
 open CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
-local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-def radicalBound (η:Character)(m p:O)(k:ℕ):ℕ :=
-  η.modulus.absNorm*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm*
+def radicalBound (η:Character)(m p:ActualEisensteinCubic.O)(k:ℕ):ℕ :=
+  η.modulus.absNorm*(Ideal.span {m}).absNorm*(Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm*
     (if k=0 then 1 else (Ideal.span {p}).absNorm)
 
-theorem radicalBound_error_power (η:Character)(m p:O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)
+theorem radicalBound_error_power (η:Character)(m p:ActualEisensteinCubic.O)(hp:p≠0)(Z:ℝ)(hZ:1<Z)
     (n:ℕ)(hn:n=0∨n=5∨n=6):
     (radicalBound η m p (errorMovingExponent n):ℝ)=
-      ((η.modulus.absNorm:ℝ)*(Ideal.span {m}).absNorm*(Ideal.span {(72:O)}).absNorm)*
+      ((η.modulus.absNorm:ℝ)*(Ideal.span {m}).absNorm*(Ideal.span {(72:ActualEisensteinCubic.O)}).absNorm)*
         Z^(errorMoving p Z (n+1)):=by
   have hpow:=Real.rpow_logb (zero_lt_one.trans hZ) (ne_of_gt hZ) (normValue_pos p hp)
   rcases hn with rfl|rfl|rfl <;>
-    norm_num only [radicalBound,errorMovingExponent,errorMoving,Nat.cast_mul,
-      Nat.cast_one,Real.rpow_zero,mul_one]
-  all_goals simp only [ite_false,ite_true,Nat.one_ne_zero,eq_self,
-    Nat.cast_one,Real.rpow_zero,mul_one]
+    norm_num only [radicalBound, errorMovingExponent, errorMoving, Nat.cast_mul]
+  all_goals simp only [ite_false, ite_true, Nat.one_ne_zero, Nat.cast_one, Real.rpow_zero]
   all_goals rw [hpow]; rfl
 
-theorem exists_radical_row (η:Character)(m p:O)(hm:m≠0)
-    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
+theorem exists_radical_row (η:Character)(m p:ActualEisensteinCubic.O)(hm:m≠0)
+    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:ActualEisensteinCubic.O)∣m)(k:ℕ):
     ∃τ:Character,τ.modulus.absNorm≤radicalBound η m p k ∧
-      ∀n:O,elementCoeff τ n=rowTwist (elementHom η) m 1 (p^(2*k)) n:=by
+      ∀n:ActualEisensteinCubic.O,elementCoeff τ n=rowTwist (elementHom η) m 1 (p^(2*k)) n:=by
   by_cases hk:k=0
   · obtain ⟨τ,hN,hτ⟩:=exists_supported_row_presentation η m 1 hm
       CenteredMomentAddedZero.supported_one_element hmLam hm2
     refine ⟨τ,?_,?_⟩
     · simp [radicalBound,hk,hN]
-    · simpa [hk] using hτ
+    simp_all
   · obtain ⟨τ,hM,hN,hτ⟩:=exists_radical_row_presentation η m hm hmLam hm2
-      (fun _:Fin 1=>p) (fun _=>hs) (fun _=>2*k)
-      (fun _=>Nat.mul_pos (by omega) (Nat.pos_of_ne_zero hk))
+      (fun _:Fin 1=>p) (by grind) (fun _=>2*k)
+      (by omega)
     refine ⟨τ,?_,?_⟩
     · simpa [radicalBound,hk] using hN
-    · simpa using hτ
+    simp_all
 
-theorem exists_radical_height (η:Character)(χ:RayCharacter)(m p:O)(hm:m≠0)
-    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
+theorem exists_radical_height (η:Character)(χ:RayCharacter)(m p:ActualEisensteinCubic.O)(hm:m≠0)
+    (hs:Supported (Ideal.span {p}))(hmLam:goodLambda∣m)(hm2:(2:ActualEisensteinCubic.O)∣m)(k:ℕ):
     ∃τ:Character,τ.modulus.absNorm≤radicalBound (childCharacter η χ) m p k ∧
-      ∀I:Ideal O,Supported I→∀t:ℝ,
+      ∀I:Ideal ActualEisensteinCubic.O,Supported I→∀t:ℝ,
         heightCoeff τ t I=rowWeight η m 1 1 t I*idealRowHom (p^(2*k)) I*
           rayCharacter χ (primaryGenerator I):=by
   obtain ⟨τ,hN,hτ⟩:=exists_radical_row (childCharacter η χ) m p hm hs hmLam hm2 k
@@ -78,15 +75,14 @@ theorem exists_radical_height (η:Character)(χ:RayCharacter)(m p:O)(hm:m≠0)
     ((idealCoeff η I*idealRowHom (m^6*(1*1)) I)*(Ideal.absNorm I:ℂ)^(Complex.I*t))*
       idealRowHom (p^(2*k)) I*rayCharacter χ (primaryGenerator I)
   rw [he,child_ideal_primary η χ I hI,idealRowHom_argument_mul]
-  simp only [mul_one]
   ring
 
-theorem exists_radical_family (η:Character)(m p:O)(hm:m≠0)
+theorem exists_radical_family (η:Character)(m p:ActualEisensteinCubic.O)(hm:m≠0)
     (hs:Supported (Ideal.span {p}))(hpp:goodLambda^2∣p-1)
-    (hmLam:goodLambda∣m)(hm2:(2:O)∣m)(k:ℕ):
+    (hmLam:goodLambda∣m)(hm2:(2:ActualEisensteinCubic.O)∣m)(k:ℕ):
     ∃τ:RayCharacter→Character,
       (∀χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p k) ∧
-      ∀I:Ideal O,Supported I→∀t:ℝ,
+      ∀I:Ideal ActualEisensteinCubic.O,Supported I→∀t:ℝ,
         rowWeight η m 1 1 t I*residualCharacter p k (primaryGenerator I)=
           ∑χ:RayCharacter,phaseCoeff (amplificationPhase p k) χ*heightCoeff (τ χ) t I:=by
   choose τ hN hτ using fun χ:RayCharacter=>exists_radical_height η χ m p hm hs hmLam hm2 k
@@ -98,20 +94,17 @@ theorem exists_radical_family (η:Character)(m p:O)(hm:m≠0)
   rw [residualCharacter_moving p _ k hs hgen hpp (primaryGenerator_spec I hn).2,
     primary_span_supported I hI,amplificationPhase_expansion p _ k hgen]
   simp only [Finset.sum_mul,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro χ hχ
-  rw [hτ χ I hI t]
-  ring
+  grind
 
-theorem exists_actual_error_family (η:Character)(m p:O)
+theorem exists_actual_error_family (η:Character)(m p:ActualEisensteinCubic.O)
     (hm:m≠0)(hp:Prime p)(hs:Supported (Ideal.span {p}))
-    (hpp:goodLambda^2∣p-1)(hmLam:goodLambda∣m)(hm2:(2:O)∣m)
+    (hpp:goodLambda^2∣p-1)(hmLam:goodLambda∣m)(hm2:(2:ActualEisensteinCubic.O)∣m)
     (n:ℕ)(hn:n=0∨n=5∨n=6):
     ∃τ:RayCharacter→Character,
       (∀χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
-      ∀(S:Finset (Ideal O))(C:Ideal O),C≠0→∀(β:Ideal O→ℂ)(t:ℝ)
+      ∀(S:Finset (Ideal ActualEisensteinCubic.O))(C:Ideal ActualEisensteinCubic.O),C≠0→∀(β:Ideal ActualEisensteinCubic.O→ℂ)(t:ℝ)
         (W:𝓢(ℝ,ℂ))(K:ℝ),0<K→
-      (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
+      (∀z:ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
       (sourceGaussEnergy (residualColumns S p hp (n+1))
         (fun I=>β (C*I)*rowWeight η m 1 1 t (C*I))
         (fun I=>residualCharacter p (n+1) (primaryGenerator I)) W K).re≤
@@ -125,23 +118,23 @@ theorem exists_actual_error_family (η:Character)(m p:O)
   exact amplification_family_energy η m p (errorMovingExponent n) τ hτ
     (residualColumns S p hp (n+1)) C hC β t W K hK hW
 
-theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (m p : O)
+theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (m p : ActualEisensteinCubic.O)
     (hm : m≠0) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hPid : Prime (Ideal.span {p})) (hs : Supported (Ideal.span {p}))
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
-    (hpp : goodLambda^2 ∣ p-1) (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
+    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
+    (hpp : goodLambda^2 ∣ p-1) (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
     (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
     ∃ τ : RayCharacter → Character,
       (∀ χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
-      ∀ (S : (ι ⊕ Fin 2) → Finset (Ideal O)),
+      ∀ (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O)),
       (∀ i,∀ I∈S i,I≠0) → (∀ i,∀ I∈S (Sum.inl i),Prime I) →
       (∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime (Ideal.span {p}) I) →
-      ∀ (R s : Ideal O),IsCoprime s ((Ideal.span {p})^(n+1)) →
-      ∀ (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-        (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (t T : ℝ),0<T →
-      ∀ (rows : Finset O),(∀ h∈rows,¬p∣h) →
+      ∀ (R s : Ideal ActualEisensteinCubic.O),IsCoprime s ((Ideal.span {p})^(n+1)) →
+      ∀ (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+        (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (t T : ℝ),0<T →
+      ∀ (rows : Finset ActualEisensteinCubic.O),(∀ h∈rows,¬p∣h) →
       ∀ (W : 𝓢(ℝ,ℂ)) (K : ℝ),0<K →
-      (∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) →
+      (∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) →
       (∀ z∈rows,1≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) →
       let β := finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s)
@@ -202,11 +195,11 @@ theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (
   ring
 
 theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
-    (η : Character) (m p : O) (hm : m≠0) (hp : Prime p)
+    (η : Character) (m p : ActualEisensteinCubic.O) (hm : m≠0) (hp : Prime p)
     [(Ideal.span {p}).IsMaximal] (hPid : Prime (Ideal.span {p}))
     (hs : Supported (Ideal.span {p})) (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2∣p-1)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2∣p-1)
+    (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
     ∃ τ : RayCharacter → Character,
       (∀ χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
       ∀ (D : OriginalData ι),
@@ -223,7 +216,7 @@ theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
   refine ⟨τ,hN,?_⟩
   intro D hS hprime hslot t T Z sigma D0 cLog hT hZ hsigma j
   have hK : 0<Z^(Real.logb Z (dyadicScale j)+errorGain D0 cLog sigma Z p (n+1)) :=
-    Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _
+    by positivity
   by_cases he : ((dyadRows j).filter (fun h => eligible D.R D.s h p)).Nonempty
   · obtain ⟨h,hh⟩ := he
     have hsc := (eligible_coprime_divisor D.R D.s h p hPid (Finset.mem_filter.mp hh).2).pow_right (n:=n+1)
@@ -237,8 +230,7 @@ theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
         h (Finset.mem_filter.mp hh).1)
     rw [OriginalData.coefficient_eq]
     dsimp only at hfull
-    dsimp only [OriginalData.childEnergy,OriginalData.coefficient,OriginalData.beta,
-      OriginalData.columns,OriginalData.profile]
+    dsimp only [OriginalData.childEnergy, OriginalData.beta, OriginalData.columns, OriginalData.profile]
     exact hfull
   · rw [Finset.not_nonempty_iff_eq_empty.mp he,Finset.sum_empty]
     exact D.childEnergy_nonneg τ p n t T _ hT.le hK

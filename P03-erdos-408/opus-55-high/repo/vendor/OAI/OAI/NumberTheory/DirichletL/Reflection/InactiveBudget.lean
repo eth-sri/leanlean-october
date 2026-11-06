@@ -7,16 +7,16 @@ public import OAI.NumberTheory.DirichletL.Reflection.SlotMass
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
+open scoped Classical
+open CanonicalQuadraticSieve
 noncomputable section
 
 lemma subtype_product_le_full {σ : Type*} [Fintype σ] (p : σ→Prop) [DecidablePred p]
     (H : σ→ℝ) (hH : ∀ i,1≤H i) :
     (∏ i : {i // p i},H i.val)≤∏ i,H i := by
   rw [←Finset.prod_subtype (Finset.univ.filter p) (by simp) H]
-  exact Finset.prod_le_prod_of_subset_of_one_le₀ (Finset.filter_subset _ _)
-    (fun i _ => (zero_le_one.trans (hH i))) (fun i _ _ => hH i)
+  exact Finset.prod_le_prod_of_subset_of_one_le₀ (by simp)
+    (by grind) (by grind)
 
 theorem harmonic_product_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {σ : Type*} [Fintype σ] (H : σ→ℝ),
@@ -26,23 +26,21 @@ theorem harmonic_product_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
   have hD : 1≤D := le_max_left _ _
   refine ⟨D^(2*rmax),by positivity,?_⟩
   intro σ _ H hcard hH
-  have hp : 0<∏ i,H i := Finset.prod_pos (fun i _ => lt_of_lt_of_le zero_lt_one (hH i))
+  have hp : 0<∏ i,H i := Finset.prod_pos (by grind)
   have he (i : σ) : 256*(columnDyadicLength (H i)+1:ℝ)≤D*(H i)^(ε/2) := by
-    apply (mul_le_mul_of_nonneg_left (columnDyadicLength_small_power (ε/2) (by positivity) (H i) (hH i)) (by norm_num : (0:ℝ)≤256)).trans
+    apply (mul_le_mul_of_nonneg_left (columnDyadicLength_small_power (ε/2) (by positivity) (H i) (hH i)) (by positivity)).trans
     rw [←mul_assoc]
-    exact mul_le_mul_of_nonneg_right (le_max_right _ _) (Real.rpow_nonneg (zero_le_one.trans (hH i)) _)
+    exact mul_le_mul_of_nonneg_right (by grind) (Real.rpow_nonneg (by grind) _)
   calc
     _ ≤ (∏ i,D*(H i)^(ε/2))^2 := by
-      apply pow_le_pow_left₀ (Finset.prod_nonneg (fun i _ => by positivity))
-      exact Finset.prod_le_prod₀ (fun i _ => by positivity) (fun i _ => he i)
+      apply pow_le_pow_left₀ (by positivity)
+      exact Finset.prod_le_prod₀ (by grind) (by grind)
     _ = D^(2*Fintype.card σ)*(∏ i,H i)^ε := by
       rw [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,
-        Real.finsetProd_rpow Finset.univ H (fun i _ => zero_le_one.trans (hH i)),mul_pow,←pow_mul,
+        Real.finsetProd_rpow Finset.univ H (by grind),mul_pow,←pow_mul,
         ←Real.rpow_mul_natCast hp.le]
-      congr 1
-      · congr 1;omega
-      · congr 1;norm_num
-    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hD (Nat.mul_le_mul_left 2 hcard)) (Real.rpow_nonneg hp.le _)
+      ring
+    _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ hD (by omega)) (by positivity)
 
 end
 end SevenEighths.InverseReflectedPhase

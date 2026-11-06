@@ -140,19 +140,15 @@ theorem majorSquare_eq_sum_arcs (A₀ x : ℝ) (d : Data K) (Y : ℝ) :
 /-- `|w^{iτ}| = 1` for `w > 0`. -/
 private theorem norm_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
     ‖(w : ℂ) ^ ((τ : ℂ) * Complex.I)‖ = 1 := by
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hw]
-  simp
+  simp [Complex.norm_cpow_eq_rpow_re_of_pos hw]
 
 /-- `\overline{w^{-iτ}} = w^{iτ}` for `w > 0`. -/
 private theorem star_ofReal_cpow_neg_mul_I {w : ℝ} (hw : 0 < w) (τ : ℝ) :
     star ((w : ℂ) ^ (((-τ : ℝ) : ℂ) * Complex.I)) = (w : ℂ) ^ ((τ : ℂ) * Complex.I) := by
-  have hw' : (w : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hw.ne'
+  have hw' := Complex.ofReal_ne_zero.2 hw.ne'
   rw [Complex.cpow_def_of_ne_zero hw', Complex.cpow_def_of_ne_zero hw', Complex.star_def,
     ← Complex.exp_conj, ← Complex.ofReal_log hw.le]
-  congr 1
-  simp only [map_mul, Complex.conj_ofReal, Complex.conj_I]
-  push_cast
-  ring
+  simp
 
 /-- `t ↦ w^{iτ}` is continuous for `w > 0`. -/
 private theorem continuous_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) :
@@ -164,8 +160,7 @@ private theorem continuous_ofReal_cpow_mul_I {w : ℝ} (hw : 0 < w) :
 private theorem arcPhase_natCast (k h : ℕ) [NeZero k] {a m n N : ℕ} (hN : a * m * n = N) :
     arcPhase k h a m n = Complex.exp (2 * π * Complex.I * ((h * ((N : ℤ) - a) : ℤ) : ℂ) / k) := by
   rw [arcPhase, ← ZMod.toCircle_intCast, ← hN]
-  push_cast
-  rfl
+  simp
 
 /-- The phase identity of one pair of sides: `φ_u \bar φ_v ψ_λ(X(w_u - w_v))` is
 `c_u \bar c_v ψ((N_u - N_v)/Y) e((h/k + λ/Y)(N_u - N_v - a_u + a_v))`. -/
@@ -179,7 +174,7 @@ private theorem sidePhase_mul_star_mul_plateauTwist (x : ℝ) (d : Data K) {Y : 
             ((((sideProd u : ℤ) - sideProd v) - sideLabel u + sideLabel v : ℤ) : ℝ) : ℝ) :
               ℂ))) := by
   have hk : (k : ℂ) ≠ 0 := Nat.cast_ne_zero.2 (NeZero.ne k)
-  have hY' : (Y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.2 hY
+  have hY' := Complex.ofReal_ne_zero.2 hY
   have hy : d.X * ((sideProd u : ℝ) / (d.X * Y) - (sideProd v : ℝ) / (d.X * Y)) =
       (((sideProd u : ℤ) - sideProd v : ℤ) : ℝ) / Y := by
     push_cast
@@ -221,7 +216,7 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
       ∫ q : ℝ × ℝ, Kf q * (sidePoly x d Y lam k h q.1 * star (sidePoly x d Y lam k h (-q.2))) := by
   set w : (Fin K → ℕ) × ℕ × ℕ → ℝ := fun u => (sideProd u : ℝ) / (d.X * Y) with hw
   have hw0 : ∀ u ∈ sideSet x d, 0 < w u := fun u hu =>
-    div_pos (Nat.cast_pos.2 (hpos u hu)) (mul_pos hX hY)
+    div_pos (Nat.cast_pos.2 (by grind)) (by positivity)
   set φ := sidePhase x d Y lam k h with hφ
   -- the integrand is a double sum over pairs of sides
   set F : (Fin K → ℕ) × ℕ × ℕ → (Fin K → ℕ) × ℕ × ℕ → ℝ × ℝ → ℂ := fun u v q =>
@@ -237,27 +232,27 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
     refine Finset.sum_congr rfl fun u _ => ?_
     rw [Finset.mul_sum]
     refine Finset.sum_congr rfl fun v hv => ?_
-    rw [star_ofReal_cpow_neg_mul_I (w := (sideProd v : ℝ) / (d.X * Y)) (hw0 v hv)]
+    rw [star_ofReal_cpow_neg_mul_I (w := (sideProd v : ℝ) / (d.X * Y)) (by grind)]
   have hFi : ∀ u ∈ sideSet x d, ∀ v ∈ sideSet x d, Integrable (F u v) := by
     intro u hu v hv
     refine hKi.mul_bdd (c := ‖φ u‖ * ‖φ v‖) ?_ (Filter.Eventually.of_forall fun q => ?_)
-    · exact ((continuous_const.mul ((continuous_ofReal_cpow_mul_I (hw0 u hu)).comp
+    · exact ((continuous_const.mul ((continuous_ofReal_cpow_mul_I (by grind)).comp
         continuous_fst)).mul (continuous_const.mul ((continuous_ofReal_cpow_mul_I
-          (hw0 v hv)).comp continuous_snd))).aestronglyMeasurable
-    · rw [norm_mul, norm_mul, norm_mul, norm_ofReal_cpow_mul_I (hw0 u hu),
-        norm_ofReal_cpow_mul_I (hw0 v hv), norm_star, mul_one, mul_one]
+          (by grind)).comp continuous_snd))).aestronglyMeasurable
+    · rw [norm_mul, norm_mul, norm_mul, norm_ofReal_cpow_mul_I (by grind),
+        norm_ofReal_cpow_mul_I (by grind), norm_star, mul_one, mul_one]
   rw [show (fun q : ℝ × ℝ => Kf q * (sidePoly x d Y lam k h q.1 *
       star (sidePoly x d Y lam k h (-q.2)))) = fun q => ∑ v ∈ sideSet x d,
         ∑ u ∈ sideSet x d, F u v q from funext hexp,
-    integral_finsetSum _ fun v hv => integrable_finsetSum _ fun u hu => hFi u hu v hv]
+    integral_finsetSum _ fun v hv => integrable_finsetSum _ (by grind)]
   unfold arcTerm
   refine Finset.sum_congr rfl fun v hv => ?_
-  rw [integral_finsetSum _ fun u hu => hFi u hu v hv]
+  rw [integral_finsetSum _ (by grind)]
   refine Finset.sum_congr rfl fun u hu => ?_
   -- pull out the coefficients, then separate `ψ_λ`
   have hFc : ∀ q, F u v q = φ u * star (φ v) *
       (Kf q * (w u : ℂ) ^ ((q.1 : ℂ) * Complex.I) * (w v : ℂ) ^ ((q.2 : ℂ) * Complex.I)) :=
-    fun q => by simp only [hF]; ring
+    fun q => by ring
   simp only [hFc]
   rw [integral_const_mul]
   by_cases hc : sideCoeff x d Y u = 0 ∨ sideCoeff x d Y v = 0
@@ -265,9 +260,7 @@ theorem arcTerm_eq_integral {x Y : ℝ} {d : Data K} (hY : 0 < Y) (hX : 0 < d.X)
       rcases hc with hc | hc
       · simp [hφ, sidePhase, hc]
       · simp [hφ, sidePhase, hc]
-    have hc0 : sideCoeff x d Y u * star (sideCoeff x d Y v) = 0 := by
-      rcases hc with hc | hc <;> simp [hc]
-    rw [hφ0, hc0, zero_mul, zero_mul]
+    grind
   · push Not at hc
     obtain ⟨hu₁, hu₂⟩ := hsupp u hu hc.1
     obtain ⟨hv₁, hv₂⟩ := hsupp v hv hc.2
@@ -282,7 +275,7 @@ private theorem ofReal_div_cpow_mul_I {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (τ 
       (a : ℂ) ^ ((τ : ℂ) * Complex.I) * ((b : ℂ) ^ ((τ : ℂ) * Complex.I))⁻¹ := by
   rw [div_eq_mul_inv, Complex.ofReal_mul,
     Complex.mul_cpow_ofReal_nonneg ha.le (inv_nonneg.2 hb.le), Complex.ofReal_inv,
-    Complex.inv_cpow _ _ (by rw [Complex.arg_ofReal_of_nonneg hb.le]; exact Real.pi_pos.ne)]
+    Complex.inv_cpow _ _ (by rw [Complex.arg_ofReal_of_nonneg hb.le]; positivity)]
 
 /-- With the characters in place of the phase, the sum over sides factors as
 `(Y B_λ^{χ₁}) (H_m M^{χ₂}) (H_n N^{χ₃})`. -/

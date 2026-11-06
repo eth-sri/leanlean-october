@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.LowBandEmpty
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveLowBandSource
@@ -18,17 +18,16 @@ open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyRef
 open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentFiniteProfileExceptional
 open CenteredMomentFirstSourceReduction CenteredMomentAmplificationChildInput
 open CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PhysicalLowAt (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)
     (a b bΦ Bmask L Lslot rho Mcap κ ξ e Z:ℝ)(ha:0<a)
-    (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(η₀:Character)(Q:Ideal O)
+    (Ψ:(T:Finset α)→𝓢(ℝ,ℂ))(η₀:Character)(Q:Ideal HeckeFamily.O)
     (S:Finset (ℕ×ℕ))(J:ℕ)(C:ℝ):Prop:=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ freq:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→∀hσlo:∀i,lo≤σ i,∀hσhi:∀i,σ i≤hi,
@@ -54,7 +53,7 @@ theorem actual_low_stages_from_physical
       (∀T,Function.support (Ψ T:ℝ→ℂ)⊆Set.Icc (-1) (bΦ+1)) ∧
       (∀T x,0≤(Ψ T x).re) ∧∃Cfixed:ℝ,0<Cfixed ∧
     ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀(Bmask L Lslot rho κ e:ℝ)(η₀:Character)(Q:Ideal O)(S:Finset (ℕ×ℕ))(J:ℕ)(Cphysical:ℝ),
+    ∀(Bmask L Lslot rho κ e:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(S:Finset (ℕ×ℕ))(J:ℕ)(Cphysical:ℝ),
       1/6≤κ→0≤Cphysical→εdiag≤e→-saving≤e→
       PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi rho e κ Z η₀ Q
         J (insert (0,0) S) (Cfixed*(Cphysical+1))→
@@ -76,7 +75,7 @@ theorem actual_low_stages_from_physical
       (Finset.mem_univ T)
     dsimp [Cfixed];linarith
   refine ⟨Ψ,hΨs,hΨn,Cfixed,hCfixed,?_⟩
-  have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr hbound
+  have hall:=Filter.eventually_all.mpr hbound
   filter_upwards [hall,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   refine ⟨hZ1,?_⟩
   intro Bmask L Lslot rho κ e η₀ Q S J Cphysical hκ hCphysical he hsave hold hmass

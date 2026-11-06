@@ -6,7 +6,7 @@ public import Erdos821.S34.Probability
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -19,9 +19,9 @@ theorem group_law_sum (G : S34.Core.PrimeGroups) (g : Fin G.size)
   rw [← Finset.sum_mul]
   have hs : (∑ p : S34.Core.Label G g, (p.val : ℝ)⁻¹) = S34.Core.mass G g := by
     change (∑ p : ↥(G.primes g), (p.val : ℝ)⁻¹) = _
-    simp [S34.Core.mass, one_div]
+    simp [S34.Core.mass]
     exact Finset.sum_attach (G.primes g) (fun p : ℕ => (p : ℝ)⁻¹)
-  rw [hs, mul_inv_cancel₀ hV.ne']
+  grind
 
 theorem tuple_law_sum (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ)
     (hV : ∀ g, 0 < S34.Core.mass G g) :
@@ -39,7 +39,7 @@ theorem tuple_law_sum (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ)
         ∏ j, S34.Core.mu G g (row j).val :=
       (Fintype.prod_sum (fun g => fun row : Fin (k g) → S34.Core.Label G g =>
         ∏ j, S34.Core.mu G g (row j).val)).symm
-    _ = 1 := by simp only [hrow, Finset.prod_const_one]
+    _ = 1 := by simp_all
 
 end
 end Erdos821.S34Core

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedControl
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set MeasureTheory Complex
 namespace SevenEighths.CenteredMomentPlainGlobalBound
 open HeckeFamily HeckeDyadic

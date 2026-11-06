@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge
+open scoped Classical SchwartzMap FourierTransform ContDiff
+open MeasureTheory
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem canonical_clipped_uniform
     (W:ℝ→ℂ)(lo hi b:ℝ)(hlo:0<lo)(hb:1≤b)
@@ -20,12 +19,12 @@ theorem canonical_clipped_uniform
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       ∀J:ℕ,∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-      (labels:Finset (Ideal O))(rows:Finset O)(D:Ideal O→ℝ)(_hD:∀f∈labels,0≤D f)
+      (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+      (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)(D:Ideal ActualEisensteinCubic.O→ℝ)(_hD:∀f∈labels,0≤D f)
       (c θ X Z F E:ℝ),1≤c→c≤b→0<X→0≤E→
       (∀s,normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels rows D
         (childLogTest wFresh s) X Z F≤E*(1+‖s‖)^(2*J))→
@@ -35,11 +34,11 @@ theorem canonical_clipped_uniform
   refine ⟨wFresh,af,bf,haf,hab,hc,hsf,?_⟩
   intro J
   let M:=(∫t:ℝ,(1+‖t‖)^J*‖(𝓕 (CubicReflectionKernel.logSchwartz W lo hi hlo hs hW)) t‖)^2
-  refine ⟨M+1,by dsimp [M];positivity,?_⟩
+  refine ⟨M+1,by positivity,?_⟩
   intro ι σ _ _ p hp _ hcop hg hpr pool Ψ m slots lists a labels rows D hD c θ X Z F E hc1 hcb hX hE he
   have hh:=canonical_clipped_energy p hp hcop hg hpr pool Ψ m slots lists a labels rows D hD
     W lo hi hlo hs hW wFresh c θ X Z F E J (zero_lt_one.trans_le hc1) hX hE
-    (hagree c hc1 hcb) he
+    (by grind) he
   apply hh.trans
   change E*(1+‖θ‖)^(2*J)*M≤(M+1)*E*(1+‖θ‖)^(2*J)
   have hn:0≤E*(1+‖θ‖)^(2*J):=by positivity

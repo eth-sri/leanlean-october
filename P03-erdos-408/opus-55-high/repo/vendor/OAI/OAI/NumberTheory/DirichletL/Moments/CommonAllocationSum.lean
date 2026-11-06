@@ -7,44 +7,43 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonAllocationBox
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonAllocationSum
 open CenteredMomentCommonAllocation CenteredMomentCommonAllocationBox CenteredMomentSupport
 open IdealMobiusDivisorSum
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
-def allocationLabels (S : ι → Finset (Ideal O)) (C : Ideal O) : Finset (ι → Ideal O) :=
+def allocationLabels (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O) : Finset (ι → Ideal ActualEisensteinCubic.O) :=
   (Fintype.piFinset S).image (fun v i => supportExtract (v i) (primeSupport C))
 
-def actualAllocations (S : ι → Finset (Ideal O)) (C : Ideal O) : Finset (ι → Ideal O) :=
+def actualAllocations (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O) : Finset (ι → Ideal ActualEisensteinCubic.O) :=
   (allocationLabels S C).filter (fun B => ∏ i,B i=C)
 
-theorem allocation_data (S : ι → Finset (Ideal O)) (C : Ideal O)
-    (B : ι → Ideal O) (hB : B∈allocationLabels S C) :
+theorem allocation_data (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O)
+    (B : ι → Ideal ActualEisensteinCubic.O) (hB : B∈allocationLabels S C) :
     (∀ i,B i≠0) ∧ (∀ i,primeSupport (B i)⊆primeSupport C) := by
   obtain ⟨v,hv,rfl⟩ := Finset.mem_image.mp hB
   refine ⟨fun i => supportExtract_ne_zero _ _,?_⟩
   intro i
   rw [supportExtract_support]
-  exact Finset.inter_subset_right
+  simp
 
- theorem sum_source_fibers (S : ι → Finset (Ideal O)) (C : Ideal O)
-    (F : (ι → Ideal O) → ℂ) :
+ theorem sum_source_fibers (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O)
+    (F : (ι → Ideal ActualEisensteinCubic.O) → ℂ) :
     (∑ v∈Fintype.piFinset S,F v)=∑ B∈allocationLabels S C,∑ v∈sourceFiber S C B,F v := by
   have hh := Finset.sum_fiberwise_of_maps_to (s:=Fintype.piFinset S) (t:=allocationLabels S C)
     (g:=fun v i => supportExtract (v i) (primeSupport C))
-    (fun v hv => Finset.mem_image.mpr ⟨v,hv,rfl⟩) F
+    (fun v hv => Finset.mem_image.mpr (by grind)) F
   symm
   convert hh using 1
   apply Finset.sum_congr rfl
   intro B hB
   congr 1
 
-theorem sum_actual_allocations (S : ι → Finset (Ideal O))
-    (C a : Ideal O) (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a)
-    (F : (ι → Ideal O) → ℂ) :
+theorem sum_actual_allocations (S : ι → Finset (Ideal ActualEisensteinCubic.O))
+    (C a : Ideal ActualEisensteinCubic.O) (hC : C≠0) (ha : a≠0) (hCa : IsCoprime C a)
+    (F : (ι → Ideal ActualEisensteinCubic.O) → ℂ) :
     (∑ v∈Fintype.piFinset S,if (∏ i,v i)=C*a then F v else 0)=
       ∑ B∈actualAllocations S C,
         ∑ v∈sourceFiber S C B,if (∏ i,v i)=C*a then F v else 0 := by
@@ -55,14 +54,14 @@ theorem sum_actual_allocations (S : ι → Finset (Ideal O))
   obtain ⟨v,hv,hne⟩ := Finset.exists_ne_zero_of_sum_ne_zero hn
   have hp : (∏ i,v i)=C*a := by
     by_contra hh
-    exact hne (ite_eq_right hh)
+    exact by grind
   have he := (tuple_products v C a hC ha hCa hp).1
   have hb := (Finset.mem_filter.mp hv).2
-  simpa only [hb] using he
+  simp_all
 
-theorem original_coefficient_allocated (S : ι → Finset (Ideal O))
-    (hS : ∀ i,∀ I∈S i,I≠0) (C a : Ideal O) (hC : C≠0) (ha : a≠0)
-    (hCa : IsCoprime C a) (F : (ι → Ideal O) → ℂ) :
+theorem original_coefficient_allocated (S : ι → Finset (Ideal ActualEisensteinCubic.O))
+    (hS : ∀ i,∀ I∈S i,I≠0) (C a : Ideal ActualEisensteinCubic.O) (hC : C≠0) (ha : a≠0)
+    (hCa : IsCoprime C a) (F : (ι → Ideal ActualEisensteinCubic.O) → ℂ) :
     (∑ v∈Fintype.piFinset S,if (∏ i,v i)=C*a then F v else 0)=
       ∑ B : actualAllocations S C,
         ∑ u∈residualBoxes S C B
@@ -78,13 +77,13 @@ theorem original_coefficient_allocated (S : ι → Finset (Ideal O))
     (allocation_data S C B (Finset.mem_filter.mp B.property).1).2
     (Finset.mem_filter.mp B.property).2 a F
 
-theorem actualAllocations_card (S : ι → Finset (Ideal O)) (C : Ideal O) (hC : C≠0) :
+theorem actualAllocations_card (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O) (hC : C≠0) :
     (actualAllocations S C).card≤(idealDivisors C).card^(Fintype.card ι) := by
   let f (B : actualAllocations S C) : ι → idealDivisors C := fun i => ⟨B.val i,by
     apply (mem_idealDivisors hC).mpr
     have hh := Finset.dvd_prod_of_mem B.val (Finset.mem_univ i)
     rw [(Finset.mem_filter.mp B.property).2] at hh
-    exact hh⟩
+    omega⟩
   have hf : Function.Injective f := by
     intro B D he
     apply Subtype.ext
@@ -93,11 +92,11 @@ theorem actualAllocations_card (S : ι → Finset (Ideal O)) (C : Ideal O) (hC :
   simpa only [Fintype.card_coe,Fintype.card_fun] using Fintype.card_le_of_injective f hf
 
 theorem actualAllocations_small_power [Nonempty ι] (ε : ℝ) (hε : 0<ε) :
-    ∃ D : ℝ,0<D ∧ ∀ (S : ι → Finset (Ideal O)) (C : Ideal O),C≠0 →
+    ∃ D : ℝ,0<D ∧ ∀ (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (C : Ideal ActualEisensteinCubic.O),C≠0 →
       ((actualAllocations S C).card:ℝ)≤D*(Ideal.absNorm C:ℝ)^ε := by
   have hr : (0:ℝ)<Fintype.card ι := by exact_mod_cast Fintype.card_pos
   let δ := ε/(Fintype.card ι:ℝ)
-  have hδ : 0<δ := div_pos hε hr
+  have hδ : 0<δ := by positivity
   obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨D^(Fintype.card ι),pow_pos hD _,?_⟩
   intro S C hC

@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalPower
@@ -20,7 +20,6 @@ open CenteredMomentEnergyZeroUnbalancedOriginalSource CenteredMomentEnergyRefere
 open CenteredMomentEnergyStageReserveBounded
 open CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalRowSource
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
 
 theorem original_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
@@ -29,7 +28,7 @@ theorem original_from_zero_low
     ∃d xi L:ℝ,0<d ∧ 0<xi ∧ xi≤rho/100 ∧ Mcap+Bmask+xi≤L ∧ L≤Mcap+Bmask+rho/100 ∧
     ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
+      ∀(e:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →Real.logb Z X₁≤s.width/4 →1≤X₂ →
@@ -52,7 +51,7 @@ theorem original_from_zero_low
   intro e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂ hshort hlong
   have hxiM:xi≤s.width/6:=by linarith only [hxirho, hslo, hrho]
   have hh:=hZ.2 e Q degree K hK hlow s hQ hs hxiM p t X₁ X₂ hX₁ hX₂ hshort hlong
-  have hledger:=hscalar e he Z hZ.1.le s hs (Fin 0) (fun _=>0) (by simpa using hM)
+  have hledger:=hscalar e he Z hZ.1.le s hs (Fin 0) (fun _=>0) (by positivity)
   simp only [Finset.univ_eq_empty,Finset.prod_empty,mul_one] at hledger
   have hp:=hprofile (p.profile 0) (p.profile 1) (p.support 0) (p.support 1) t 0 (le_refl 0)
   simp only [add_zero,zero_add,pow_zero,mul_one] at hp
@@ -102,11 +101,7 @@ theorem original_from_zero_low
   have hfirst:=mul_le_mul_of_nonneg_left htotal
     (show 0≤Cweight*(s.puncture.radical.absNorm:ℝ)^d by positivity)
   have hlast:=mul_le_mul_of_nonneg_left hledger (mul_nonneg hCw.le hE)
-  refine le_trans ?_ (hlast.trans_eq ?_)
-  · dsimp only [P,Qmain,Qerror] at hfirst
-    convert hfirst using 1 <;> (try dsimp only [E,A]) <;> ring
-  · dsimp only [E,A]
-    ring
+  linarith
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalPower
 

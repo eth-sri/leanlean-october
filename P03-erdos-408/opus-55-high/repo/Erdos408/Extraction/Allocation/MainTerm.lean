@@ -86,12 +86,11 @@ lemma card_patternIndex_le (c₂ x : ℝ) :
   calc ∑ P ∈ (candidateGroups x).powerset.filter (ManySuccesses c₂ x),
         (candidateGroups x \ P).powerset.card
       ≤ ∑ _P ∈ (candidateGroups x).powerset, 2 ^ (candidateGroups x).card := by
-        refine (sum_le_sum_of_subset (filter_subset _ _)).trans (sum_le_sum fun P _ => ?_)
+        refine (sum_le_sum_of_subset (by simp)).trans (sum_le_sum fun P _ => ?_)
         rw [card_powerset]
         exact Nat.pow_le_pow_right (by norm_num) (card_le_card sdiff_subset)
     _ = 4 ^ (candidateGroups x).card := by
-        rw [sum_const, card_powerset, smul_eq_mul, ← mul_pow]
-        norm_num
+        simp [sum_const, card_powerset, smul_eq_mul, ← mul_pow]
 
 /-- There are at most `2^K 2^{K N/K}` monomials. -/
 lemma card_monomialIndex_le (K : ℕ) (CN x : ℝ) :
@@ -103,7 +102,7 @@ lemma card_monomialIndex_le (K : ℕ) (CN x : ℝ) :
         rw [card_powerset, card_product, card_range]
         refine Nat.pow_le_pow_right (by norm_num) (Nat.mul_le_mul_right _ ?_)
         simpa using card_le_card (mem_powerset.1 hU)
-    _ = _ := by rw [sum_const, card_powerset, card_range, smul_eq_mul]
+    _ = _ := by simp
 
 /-- With `0 ≤ c₁, c_w ≤ 1`, the coefficients are at most `1`. -/
 lemma abs_expansionCoeff_le {c₁ cw : ℝ} (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1) (hcw : 0 ≤ cw)

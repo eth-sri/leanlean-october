@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels
+open InverseMoment FirstPassCubeLabels
 open InverseSecondSourceBlocks (dyadIndex dyadScale dyadScale_pos dyadIndex_bounds)
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 abbrev SourceIndex := Fin 6→ℕ
 
-def sourceNorms {κ : Type*} (A₁ A₂ C R : κ→ℝ) (d h : κ→O) (x : κ) : Fin 6→ℝ :=
+def sourceNorms {κ : Type*} (A₁ A₂ C R : κ→ℝ) (d h : κ→ActualEisensteinCubic.O) (x : κ) : Fin 6→ℝ :=
   ![A₁ x,A₂ x,C x,‖eisEmbedding (d x)‖^2,R x,‖eisEmbedding (h x)‖^2]
 
 def sourceIndex {κ : Type*} (q : κ→Fin 6→ℝ) (x : κ) : SourceIndex := fun i=>dyadIndex (q x i)
 def sourceCell {κ : Type*} [DecidableEq κ] (q : κ→Fin 6→ℝ) (S : Finset κ) (k : SourceIndex) :=
   S.filter (fun x=>sourceIndex q x=k)
 
-def commonSelector {ι : Type*} [DecidableEq ι] (p : ι→O) (selector : Finset ι→ℂ) (l : ℕ) (D : Finset ι) : ℂ :=
+def commonSelector {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (selector : Finset ι→ℂ) (l : ℕ) (D : Finset ι) : ℂ :=
   if dyadIndex (primeProductNorm p D)=l then selector D else 0
 
 def rawScales (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ) : Fin 9→ℝ :=
@@ -34,9 +33,9 @@ def rawScales (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ) : Fin 9→ℝ :=
 lemma rawScales_pos (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ) (h₁ : 0<T₁) (h₂ : 0<T₂) :
     ∀i,0<rawScales k l T₁ T₂ i := by
   intro i
-  fin_cases i <;> first | exact dyadScale_pos _ | exact h₁ | exact h₂
+  fin_cases i <;> first | exact dyadScale_pos _ | exact h₁ | positivity
 
-lemma sourceNorms_ge_one {κ : Type*} (A₁ A₂ C R : κ→ℝ) (d h : κ→O) (x : κ)
+lemma sourceNorms_ge_one {κ : Type*} (A₁ A₂ C R : κ→ℝ) (d h : κ→ActualEisensteinCubic.O) (x : κ)
     (hA₁ : 1≤A₁ x) (hA₂ : 1≤A₂ x) (hC : 1≤C x) (hR : 1≤R x)
     (hd : d x≠0) (hh : h x≠0) : ∀i,1≤sourceNorms A₁ A₂ C R d h x i := by
   intro i
@@ -52,17 +51,17 @@ lemma sourceCell_ratios {κ : Type*} [DecidableEq κ] (q : κ→Fin 6→ℝ) (S 
     (hq : ∀x∈S,∀i,1≤q x i) (k : SourceIndex) (x : κ) (hx : x∈sourceCell q S k) (i : Fin 6) :
     q x i/dyadScale (k i)∈Set.Icc 1 2 := by
   obtain ⟨hxs,hindex⟩ := Finset.mem_filter.mp hx
-  have hh := dyadIndex_bounds (q x i) (hq x hxs i)
+  have hh := dyadIndex_bounds (q x i) (by grind)
   have he : dyadIndex (q x i)=k i := congrFun hindex i
   rw [he] at hh
-  exact ⟨(le_div_iff₀ (dyadScale_pos _)).mpr (by simpa using hh.1),
+  exact ⟨(le_div_iff₀ (dyadScale_pos _)).mpr (by linarith),
     (div_le_iff₀ (dyadScale_pos _)).mpr hh.2.le⟩
 
 theorem actual_original_cell_ratios {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (S : Finset κ) (selector C₁ C₂ : κ→Finset ι→ℂ)
-    (A₁ A₂ C R : κ→ℝ) (d h : κ→O)
+    (A₁ A₂ C R : κ→ℝ) (d h : κ→ActualEisensteinCubic.O)
     (hq : ∀x∈S,∀i,1≤sourceNorms A₁ A₂ C R d h x i)
     (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ) (x : κ)
     (hx : x∈sourceCell (sourceNorms A₁ A₂ C R d h) S k) (j : FirstCommonIndex ι)
@@ -74,7 +73,7 @@ theorem actual_original_cell_ratios {ι κ : Type*} [DecidableEq ι] [DecidableE
   have hh := dyadIndex_bounds _ (SecondPassArithmetic.primeProductNorm_ge_one p hp j.2.1)
   rw [hl] at hh
   have hD : primeProductNorm p j.2.1/dyadScale l∈Set.Icc 1 2 :=
-    ⟨(le_div_iff₀ (dyadScale_pos _)).mpr (by simpa using hh.1),
+    ⟨(le_div_iff₀ (dyadScale_pos _)).mpr (by linarith),
       (div_le_iff₀ (dyadScale_pos _)).mpr hh.2.le⟩
   intro i
   fin_cases i

@@ -5,7 +5,6 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 @[expose] public section
 
 namespace OAI
-open scoped BigOperators
 
 namespace Problem337
 
@@ -23,7 +22,7 @@ theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
     have ha : a ∈ s := Finset.min'_mem _ hs
     have hb : b ∈ s := Finset.max'_mem _ hs
     have hab : a ≤ b := Finset.min'_le _ _ hb
-    have hbN : b < N := Finset.mem_range.mp (Finset.mem_filter.mp hb).1
+    have hbN := Finset.mem_range.mp (Finset.mem_filter.mp hb).1
     refine ⟨a, b + 1, by omega, by omega, ?_⟩
     change s = Finset.Ico a (b + 1)
     ext j
@@ -32,13 +31,13 @@ theorem monotone_filter_range_eq_Ico {α : Type*} [LinearOrder α]
       exact Finset.mem_Ico.mpr ⟨Finset.min'_le _ _ hj, Nat.lt_succ_iff.mpr (Finset.le_max' _ _ hj)⟩
     · intro hj
       rcases Finset.mem_Ico.mp hj with ⟨haj, hjb⟩
-      have hjb' : j ≤ b := Nat.lt_succ_iff.mp hjb
+      have hjb' := Nat.lt_succ_iff.mp hjb
       apply Finset.mem_filter.mpr
       refine ⟨Finset.mem_range.mpr (lt_of_le_of_lt hjb' hbN), ?_⟩
       exact ⟨(Finset.mem_filter.mp ha).2.1.trans (hd haj),
         (hd hjb').trans (Finset.mem_filter.mp hb).2.2⟩
   · refine ⟨0, 0, le_rfl, Nat.zero_le _, ?_⟩
-    simpa only [Finset.Ico_self] using Finset.not_nonempty_iff_eq_empty.mp hs
+    grind
 
 /-- Cancellation on every interval transfers to one interval cut out by a
 monotone increment sequence, without paying an extra term count. -/
@@ -51,11 +50,7 @@ theorem norm_sum_monotone_block_le {α : Type*} [LinearOrder α]
     ‖∑ j ∈ (Finset.range N).filter (fun j => L ≤ d j ∧ d j ≤ R), z j‖ ≤ C := by
   classical
   obtain ⟨a, b, hab, hbN, heq⟩ := monotone_filter_range_eq_Ico d hd N L R
-  rw [heq]
-  apply hcancel a b hab hbN
-  intro j hj
-  rw [← heq] at hj
-  exact (Finset.mem_filter.mp hj).2
+  grind
 
 /-- Good derivative indices in the integer cell labelled by `k`. -/
 noncomputable def phaseGoodBlock (d : ℕ → ℝ) (N : ℕ) (β : ℝ) (k : ℤ) : Finset ℕ := by
@@ -73,10 +68,10 @@ lemma phaseGoodBlock_pairwise_disjoint (d : ℕ → ℝ) (N : ℕ)
   have hl := (Finset.mem_filter.mp hjl).2
   rcases lt_or_gt_of_ne hkl with hlt | hgt
   · have hgap : (k : ℝ) + 1 ≤ (l : ℝ) := by
-      exact_mod_cast (show k + 1 ≤ l by omega)
+      exact_mod_cast (by omega)
     linarith
   · have hgap : (l : ℝ) + 1 ≤ (k : ℝ) := by
-      exact_mod_cast (show l + 1 ≤ k by omega)
+      exact_mod_cast (by omega)
     linarith
 
 /-- Partition a sum into good monotone derivative blocks and exceptional
@@ -109,25 +104,24 @@ theorem norm_sum_le_bad_card_add_good_blocks
         apply Finset.sum_le_sum
         intro k hk
         exact norm_sum_monotone_block_le d hd N ((k : ℝ) + β) ((k : ℝ) + 1 - β)
-          z C (hcancel k hk)
+          z C (by grind)
       _ = _ := by simp
   have hbad : ‖∑ j ∈ Finset.range N \ G, z j‖ ≤ ((Finset.range N \ G).card : ℝ) := by
     calc
       _ ≤ ∑ j ∈ Finset.range N \ G, ‖z j‖ := norm_sum_le _ _
       _ ≤ ∑ _j ∈ Finset.range N \ G, (1 : ℝ) := by
         apply Finset.sum_le_sum
-        intro j hj
-        exact hz j (Finset.mem_range.mp (Finset.mem_sdiff.mp hj).1)
+        grind
       _ = _ := by simp
   rw [← Finset.sum_sdiff hsub]
-  exact (norm_add_le _ _).trans (add_le_add hbad hgood)
+  exact (norm_add_le _ _).trans (by linarith)
 
 /-- The number of integer cells intersecting a real interval has the usual
 length-plus-two bound. -/
 theorem floor_interval_card_le (L U : ℝ) (hLU : L ≤ U) :
     ((Finset.Icc ⌊L⌋ ⌊U⌋).card : ℝ) ≤ U - L + 2 := by
-  have hfloor : ⌊L⌋ ≤ ⌊U⌋ := Int.floor_le_floor hLU
-  have hcardZ := Int.card_Icc_of_le ⌊L⌋ ⌊U⌋ (show ⌊L⌋ ≤ ⌊U⌋ + 1 by omega)
+  have hfloor := Int.floor_le_floor hLU
+  have hcardZ := Int.card_Icc_of_le ⌊L⌋ ⌊U⌋ (by omega)
   have hcard : ((Finset.Icc ⌊L⌋ ⌊U⌋).card : ℝ) = (⌊U⌋ : ℝ) + 1 - (⌊L⌋ : ℝ) := by
     exact_mod_cast hcardZ
   rw [hcard]
@@ -141,31 +135,28 @@ theorem phase_bad_near_integer (d : ℕ → ℝ) (N : ℕ) (β L U : ℝ)
     (hj : j ∈ Finset.range N \ (Finset.Icc ⌊L⌋ ⌊U⌋).biUnion (phaseGoodBlock d N β)) :
     ∃ k : ℤ, |d j - (k : ℝ)| < β := by
   classical
-  have hjN : j < N := Finset.mem_range.mp (Finset.mem_sdiff.mp hj).1
+  have hjN := Finset.mem_range.mp (Finset.mem_sdiff.mp hj).1
   have hnotmem := (Finset.mem_sdiff.mp hj).2
   let k : ℤ := ⌊d j⌋
   have hk : k ∈ Finset.Icc ⌊L⌋ ⌊U⌋ :=
-    Finset.mem_Icc.mpr ⟨Int.floor_le_floor (hrange j hjN).1,
-      Int.floor_le_floor (hrange j hjN).2⟩
+    Finset.mem_Icc.mpr ⟨Int.floor_le_floor (by grind),
+      Int.floor_le_floor (by grind)⟩
   have hnot : ¬((k : ℝ) + β ≤ d j ∧ d j ≤ (k : ℝ) + 1 - β) := by
     intro hgood
     apply hnotmem
     exact Finset.mem_biUnion.mpr ⟨k, hk,
-      Finset.mem_filter.mpr ⟨Finset.mem_range.mpr hjN, hgood⟩⟩
+      Finset.mem_filter.mpr (by grind)⟩
   have hklo : (k : ℝ) ≤ d j := Int.floor_le _
   have hkhi : d j < (k : ℝ) + 1 := Int.lt_floor_add_one _
   by_cases hleft : d j - (k : ℝ) < β
-  · refine ⟨k, ?_⟩
-    rwa [abs_of_nonneg (sub_nonneg.mpr hklo)]
+  · grind
   · have hleft' : β ≤ d j - (k : ℝ) := le_of_not_gt hleft
     have hright : (k : ℝ) + 1 - β < d j := by
       apply lt_of_not_ge
       intro hupper
-      exact hnot ⟨by linarith, hupper⟩
+      exact by grind
     refine ⟨k + 1, ?_⟩
-    simp only [Int.cast_add, Int.cast_one]
-    rw [abs_of_nonpos (by linarith : d j - ((k : ℝ) + 1) ≤ 0)]
-    linarith
+    grind
 
 noncomputable def nearIntegerIndices (d : ℕ → ℝ) (N : ℕ) (β : ℝ) : Finset ℕ := by
   classical
@@ -187,7 +178,7 @@ theorem norm_sum_le_near_integer_bound
   have hsub : Finset.range N \ (Finset.Icc ⌊L⌋ ⌊U⌋).biUnion (phaseGoodBlock d N β) ⊆
       (Finset.range N).filter (fun j => ∃ k : ℤ, |d j - (k : ℝ)| < β) := by
     intro j hj
-    exact Finset.mem_filter.mpr ⟨(Finset.mem_sdiff.mp hj).1,
+    exact Finset.mem_filter.mpr ⟨by grind,
       phase_bad_near_integer d N β L U hrange j hj⟩
   have hcard : ((Finset.range N \ (Finset.Icc ⌊L⌋ ⌊U⌋).biUnion (phaseGoodBlock d N β)).card : ℝ) ≤
       ((nearIntegerIndices d N β).card : ℝ) := by
@@ -218,28 +209,20 @@ theorem norm_sum_le_near_integer_bound_local
   have hem : Monotone e := by
     intro i j hij
     by_cases hN : N = 0
-    · simp [e, hN]
+    · grind
     · apply hd
-      · change min i (N - 1) < N
-        have := min_le_right i (N - 1)
-        omega
-      · change min j (N - 1) < N
-        have := min_le_right j (N - 1)
-        omega
-      · exact min_le_min_right _ hij
+      · grind
+      · grind
+      omega
   have hindices : nearIntegerIndices e N β = nearIntegerIndices d N β := by
     ext j
     by_cases hj : j < N
-    · simp only [nearIntegerIndices, Finset.mem_filter, Finset.mem_range, hj, true_and, heq j hj]
+    · simp only [nearIntegerIndices, Finset.mem_filter, heq j hj]
     · simp only [nearIntegerIndices, Finset.mem_filter, Finset.mem_range, hj, false_and]
   apply norm_sum_le_near_integer_bound e hem N β L U hβ hLU
-    (fun j hj => by simpa only [heq j hj] using hrange j hj) z B C hC hz
-  · simpa only [hindices] using hbad
-  · intro k hk a b hab hbN hstrip
-    apply hcancel k hk a b hab hbN
-    intro j hj
-    have hjN : j < N := lt_of_lt_of_le (Finset.mem_Ico.mp hj).2 hbN
-    simpa only [heq j hjN] using hstrip j hj
+    (fun j hj => by grind) z B C hC hz
+  · grind
+  grind
 
 end Problem337
 

@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSectorRetained
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalWindow
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorColumns
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
+open CenteredMomentSecondSectorRetained
 open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
 open CenteredMomentSmooth CenteredMomentLogDyadic
-local notation "O" => ActualEisensteinCubic.O
 
-theorem physical_kernel_window (C D I J : Ideal O)
+theorem physical_kernel_window (C D I J : Ideal ActualEisensteinCubic.O)
     (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
+    (A h : ActualEisensteinCubic.O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
     (V : Fin 4→ℝ→ℂ) (K₀ H₀ A₀ B₀ : ℝ)
     (hK₀ : 0<K₀) (hH₀ : 0<H₀) (hA₀ : 0<A₀) (hB₀ : 0<B₀) :
     physicalKernel C D W K R (A*h) I J*
@@ -38,17 +37,17 @@ theorem physical_kernel_window (C D I J : Ideal O)
   have hd : ‖eisEmbedding (CompletedGauss.primaryGenerator (C*I)*
       CompletedGauss.primaryGenerator (D*J))‖^2=
       (Ideal.absNorm (C*I):ℝ)*(Ideal.absNorm (D*J):ℝ) := by
-    rw [map_mul,norm_mul,mul_pow,primary_norm_sq _ ((supported_mul_iff _ _).mpr ⟨hC,hI⟩),
-      primary_norm_sq _ ((supported_mul_iff _ _).mpr ⟨hD,hJ⟩)]
+    rw [map_mul,norm_mul,mul_pow,primary_norm_sq _ ((supported_mul_iff _ _).mpr (by grind)),
+      primary_norm_sq _ ((supported_mul_iff _ _).mpr (by grind))]
   rw [hd] at he
   unfold physicalKernel
   rw [hd]
   simp only [normValue_eq_embedding]
-  convert congrArg (fun x : ℂ=>(retainedWeight R (‖eisEmbedding (A*h)‖^2):ℂ)*x) he using 1 <;> ring
+  grind
 
-theorem physical_kernel_dyadic (C D I J : Ideal O)
+theorem physical_kernel_dyadic (C D I J : Ideal ActualEisensteinCubic.O)
     (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
+    (A h : ActualEisensteinCubic.O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
     (n : Fin 4→ℤ) :
     physicalKernel C D W K R (A*h) I J*
       ((dyadicWeight (n 0) (secondEffectiveScale C D A K)*dyadicWeight (n 1) (normValue h)*

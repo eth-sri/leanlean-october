@@ -8,11 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
@@ -21,20 +18,12 @@ open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,39 +32,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped FourierTransform SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace LocalReflectionBrackets
-open scoped Classical BigOperators
-open AddChar MulChar
+open scoped Classical
 
 section
 variable {F : Type*} [Field F] [Fintype F]
@@ -83,7 +65,7 @@ variable {F : Type*} [Field F] [Fintype F]
 theorem norm_bracket_nonexceptional_le_one (χ : MulChar F ℂ) (j : ℕ)
     (hj4 : j ≠ 4) (hj0 : j ≠ 0) (x : F) : ‖bracket χ j x‖ ≤ 1 := by
   rw [norm_bracket_nonexceptional χ j hj4 hj0]
-  split_ifs <;> norm_num
+  grind
 
 theorem norm_bracket_zero_le (χ : MulChar F ℂ) (x : F) :
     ‖bracket χ 0 x‖ ≤ (rootCard F)⁻¹ := by
@@ -91,7 +73,6 @@ theorem norm_bracket_zero_le (χ : MulChar F ℂ) (x : F) :
   split_ifs <;> simp only [mul_zero, mul_one, le_refl]
   exact inv_nonneg.mpr rootCard_pos.le
 
-open ActualEisensteinCubic
 noncomputable local instance quotientFieldBounds (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeBounds (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
@@ -114,7 +95,6 @@ theorem zeroFourierCoefficient_nontrivial (χ : MulChar F ℂ) (j : ℕ) (hj : �
     zeroFourierCoefficient χ j = 0 := by
   rw [zeroFourierCoefficient, MulChar.sum_eq_zero_of_ne_one hj, mul_zero]
 
-open ActualEisensteinCubic
 noncomputable local instance quotientFieldInactive (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeInactive (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
@@ -131,7 +111,7 @@ theorem canonical_zeroFourierCoefficient (P : Ideal O) [P.IsMaximal]
 end LocalReflectionBrackets
 
 namespace EisensteinSchwartzPoisson
-open MeasureTheory MeasureTheory.Measure Set Real
+open MeasureTheory.Measure
 open scoped SchwartzMap FourierTransform
 
 theorem complex_radial_norm_sq_integral (F : ℝ → ℂ) :
@@ -147,11 +127,11 @@ theorem complex_radial_norm_sq_integral (F : ℝ → ℂ) :
     _ = ∫ p : ℝ × ℝ in Ioi (0 : ℝ) ×ˢ Ioo (-Real.pi) Real.pi,
         (p.1 : ℂ) * F (p.1 ^ 2) := by
       rw [← Complex.integral_comp_polarCoord_symm, polarCoord_target]
-      simp only [Complex.norm_polarCoord_symm, sq_abs, Complex.real_smul]
+      simp
     _ = (∫ r : ℝ in Ioi 0, (r : ℂ) * F (r ^ 2)) *
         ∫ _θ : ℝ in Ioo (-Real.pi) Real.pi, (1 : ℂ) := by
       rw [← setIntegral_prod_mul, volume_eq_prod]
-      simp only [mul_one]
+      simp
     _ = (∫ r : ℝ in Ioi 0, (r : ℂ) * F (r ^ 2)) * (2 * Real.pi : ℂ) := by
       congr 1
       simp only [integral_const, measureReal_restrict_apply MeasurableSet.univ,
@@ -159,7 +139,7 @@ theorem complex_radial_norm_sq_integral (F : ℝ → ℂ) :
         sub_neg_eq_add, Complex.real_smul, mul_one]
       push_cast
       ring
-    _ = (Real.pi : ℂ) * ∫ t : ℝ in Ioi 0, F t := by rw [← hsub']; ring
+    _ = (Real.pi : ℂ) * ∫ t : ℝ in Ioi 0, F t := by grind
 
 theorem paperRadialFourier_zero_eq_halfline (F : ℝ → ℂ) :
     paperRadialFourier F 0 = (2 * Real.pi / Real.sqrt 3 : ℂ) *
@@ -182,8 +162,7 @@ def quadraticSquareProfile (W : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
 
 @[simp] theorem quadraticSquareProfile_apply (W : 𝓢(ℝ, ℂ)) (x : ℝ) :
     quadraticSquareProfile W x = W (x ^ 2) := by
-  simp [quadraticSquareProfile, horizontalSlice_apply, complexPoint_eq,
-    radialTest_apply, Complex.norm_real, Real.norm_eq_abs, sq_abs]
+  simp [quadraticSquareProfile, complexPoint_eq]
 
 def quadraticTransformedSquareProfile (W : 𝓢(ℝ, ℂ)) : 𝓢(ℝ, ℂ) :=
   (2 / Real.sqrt 3 : ℝ) •
@@ -212,9 +191,9 @@ theorem quadraticSquareProfile_principal_equal (W : 𝓢(ℝ, ℂ)) :
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson
 
 theorem primeSubsetGenerator_norm_sq {ι : Type*} (P : ι → Ideal O) (E : Finset ι) :
     ‖eisEmbedding (primeSubsetGenerator P E)‖ ^ 2 = (Ideal.absNorm (∏ i ∈ E, P i) : ℝ) := by
@@ -231,12 +210,12 @@ theorem masked_principal_radial_poisson {ι : Type*} [DecidableEq ι]
         ∑' h : O, paperRadialFourier V
           (M * ‖eisEmbedding h‖ ^ 2 / (Ideal.absNorm (∏ i ∈ E, P i) : ℝ)) := by
   let Q : Empty → Ideal O := Empty.elim
-  let : ∀ i, (Q i).IsMaximal := fun i => nomatch i
+  let : ∀ i, (Q i).IsMaximal := by simp
   have hcop : Pairwise (Function.onFun IsCoprime Q) := by intro i; cases i
-  have hg : ∀ i, lambda ∉ Q i := fun i => nomatch i
-  have hc : ∀ i, ringChar (O ⧸ Q i) ≠ 2 := fun i => nomatch i
-  have hj0 : ∀ i : Empty, (1 : ℕ) ≠ 0 := fun i => nomatch i
-  have hj6 : ∀ i : Empty, (1 : ℕ) < 6 := fun i => nomatch i
+  have hg : ∀ i, lambda ∉ Q i := by simp
+  have hc : ∀ i, ringChar (O ⧸ Q i) ≠ 2 := by simp
+  have hj0 : ∀ i : Empty, (1 : ℕ) ≠ 0 := by omega
+  have hj6 : ∀ i : Empty, (1 : ℕ) < 6 := by omega
   have hp := canonical_masked_radial_poisson_collected P hinj S Q hcop hg hc
     (fun _ => 1) hj0 hj6 V M hM
   simpa only [finiteSexticRow_of_isEmpty, canonicalNormalizedGauss_of_isEmpty,
@@ -274,7 +253,7 @@ theorem masked_principal_radial_poisson_zero_split {ι : Type*} [DecidableEq ι]
     simp_rw [heq] at hsum
     simpa only [map_zero, norm_zero, zero_pow (by decide : 2 ≠ 0), mul_zero, zero_div]
       using hsum.tsum_eq_add_tsum_ite 0
-  have hprime : ∀ i, Prime (P i) := fun i => Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+  have hprime := fun i => Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
   rw [masked_principal_radial_poisson P hinj S V M hM]
   simp_rw [hs, mul_add]
   rw [Finset.sum_add_distrib, ← Finset.sum_mul, mul_add]
@@ -284,10 +263,10 @@ theorem masked_principal_radial_poisson_zero_split {ι : Type*} [DecidableEq ι]
 
 end ActualEisensteinCubic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace PrimaryIdealUnitReindex
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 abbrev GoodIdeal := {I : Ideal O // primaryGenerator I ≠ 0}
 abbrev GoodElement := {z : O // primaryGenerator (Ideal.span {z}) ≠ 0}
@@ -295,9 +274,8 @@ abbrev GoodElement := {z : O // primaryGenerator (Ideal.span {z}) ≠ 0}
 theorem finite_units : Finite Oˣ := by
   let f : Oˣ → {z : O // z ∈ rowNormDisk 1} := fun u => ⟨u.val, by
     rw [mem_rowNormDisk]
-    rw [Ideal.span_singleton_eq_top.mpr u.isUnit]
-    norm_num⟩
-  exact Finite.of_injective f (fun u v h => Units.ext (congrArg Subtype.val h))
+    simp [Ideal.span_singleton_eq_top.mpr u.isUnit]⟩
+  exact Finite.of_injective f (fun u v h => Units.ext (by grind))
 
 theorem span_unit_primary (u : Oˣ) (I : GoodIdeal) :
     Ideal.span {(u : O) * primaryGenerator I.val} = I.val := by
@@ -318,25 +296,25 @@ theorem unitIdealToElement_injective : Function.Injective unitIdealToElement := 
     apply Units.ext
     rw [hI] at he
     exact mul_right_cancel₀ q.2.property he
-  exact Prod.ext hu hI
+  grind
 
 theorem unitIdealToElement_surjective : Function.Surjective unitIdealToElement := by
   intro z
   let I : GoodIdeal := ⟨Ideal.span {z.val}, z.property⟩
-  have ha : Associated (primaryGenerator I.val) z.val :=
+  have ha :=
     Ideal.span_singleton_eq_span_singleton.mp (primaryGenerator_spec I.val I.property).1
   obtain ⟨u, hu⟩ := ha
   refine ⟨(u, I), Subtype.ext ?_⟩
   change u.val * primaryGenerator I.val = z.val
-  simpa only [mul_comm] using hu
+  grind
 
 def unitIdealEquiv : Oˣ × GoodIdeal ≃ GoodElement :=
   Equiv.ofBijective unitIdealToElement ⟨unitIdealToElement_injective, unitIdealToElement_surjective⟩
 
 theorem tsum_good_elements_product (f : O → ℂ) :
     (∑' z : GoodElement, f z.val) =
-      ∑' p : Oˣ × GoodIdeal, f (p.1.val * primaryGenerator p.2.val) := by
-  exact (unitIdealEquiv.tsum_eq (fun z : GoodElement => f z.val)).symm
+      ∑' p : Oˣ × GoodIdeal, f (p.1.val * primaryGenerator p.2.val) :=
+  (unitIdealEquiv.tsum_eq (fun z : GoodElement => f z.val)).symm
 
 theorem tsum_good_elements_unit_invariant (f : O → ℂ)
     (hf : Summable (fun z : GoodElement => f z.val))
@@ -364,7 +342,7 @@ theorem primaryGenerator_ne_zero_of_good_factors (I : Ideal O) (hI : I ≠ 0)
   obtain ⟨P, hP, hzero⟩ := Multiset.mem_map.mp hz
   have hp := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
   let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
-  exact primaryPrime_ne_zero P (hg P hP) hzero
+  exact primaryPrime_ne_zero P (by grind) hzero
 
 theorem primaryGenerator_span_ne_zero_iff (z : O) :
     primaryGenerator (Ideal.span {z}) ≠ 0 ↔ ¬ lambda ∣ z := by
@@ -373,10 +351,10 @@ theorem primaryGenerator_span_ne_zero_iff (z : O) :
     have hs := primaryGenerator_spec (Ideal.span {z}) hg
     have hzgen : z ∣ primaryGenerator (Ideal.span {z}) := by
       apply Ideal.mem_span_singleton.mp
-      exact hs.1.le (Ideal.subset_span (by simp))
+      exact hs.1.le (by simp)
     have hgen := hdiv.trans hzgen
     have hminus : lambda ∣ primaryGenerator (Ideal.span {z}) - 1 :=
-      (dvd_pow_self lambda (by decide : 2 ≠ 0)).trans hs.2
+      (dvd_pow_self lambda (by positivity)).trans hs.2
     have hone : lambda ∣ (1 : O) := by
       convert dvd_sub hgen hminus using 1 ; ring
     exact lambda_prime_actual.not_isUnit (isUnit_of_dvd_one hone)
@@ -388,8 +366,8 @@ theorem primaryGenerator_span_ne_zero_iff (z : O) :
     have hp := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
     let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
     have hzin : z ∈ P := ((Ideal.mem_normalizedFactors_iff hI).mp hP).2
-      (Ideal.subset_span (by simp))
-    have hcop : IsCoprime lambda z := lambda_prime_actual.irreducible.coprime_iff_not_dvd.mpr hdiv
+      (by simp)
+    have hcop := lambda_prime_actual.irreducible.coprime_iff_not_dvd.mpr hdiv
     obtain ⟨a, b, hab⟩ := hcop
     have hone : (1 : O) ∈ P := by
       rw [← hab]
@@ -403,7 +381,7 @@ theorem tsum_ramified_mask (f : O → ℂ) :
       apply tsum_congr
       intro z
       simp only [Set.indicator, Set.mem_ofPred_eq, primaryGenerator_span_ne_zero_iff]
-      split_ifs <;> rfl
+      simp
     _ = _ := (tsum_subtype ({z : O | primaryGenerator (Ideal.span {z}) ≠ 0} : Set O) f).symm
 
 theorem tsum_ramified_mask_unit_invariant (f : O → ℂ) (hf : Summable f)
@@ -415,10 +393,10 @@ theorem tsum_ramified_mask_unit_invariant (f : O → ℂ) (hf : Summable f)
 
 end PrimaryIdealUnitReindex
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace QuadraticUnitInvariance
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
+open FiniteGaussPhase ActualEisensteinCoordinates
 open GaussGeneratorTransport QuadraticGaussRay
 
 theorem principalNormalizedGauss_three_eq_quadraticGamma
@@ -461,7 +439,7 @@ theorem quadratic_unit_phase
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) u.val *
       quadraticRayValue (residue (∏ i, p i)) =
         quadraticRayValue (residue (u.val * ∏ i, p i)) := by
-  have hn0 : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+  have hn0 : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (by grind)
   have hn : Ideal.span {∏ i, p i} = ∏ i, Ideal.span {p i} := span_finset_prod _ _
   have hc : Ideal.span {u.val * ∏ i, p i} = ∏ i, Ideal.span {p i} := by
     rw [Ideal.span_singleton_mul_left_unit u.isUnit, hn]
@@ -469,7 +447,7 @@ theorem quadratic_unit_phase
     (u.val * ∏ i, p i) (∏ i, p i) hc hn (mul_ne_zero u.ne_zero hn0) hn0 u rfl
   rw [principalNormalizedGauss_three_eq_rayValue _ hcop hg hchar,
     principalNormalizedGauss_three_eq_rayValue _ hcop hg hchar] at h
-  exact h.symm
+  simp_all
 
 theorem finiteSexticRow_three_star
     {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -479,7 +457,7 @@ theorem finiteSexticRow_three_star
   apply Finset.prod_congr rfl
   intro i _
   rw [canonicalSextic_pow_three_quadratic]
-  simp only [MulChar.ringHomComp_apply, Int.coe_castRingHom, star_intCast]
+  simp
 
 theorem quadratic_unit_value_eq_of_same_ray
     {ι κ : Type*} [Fintype ι] [Fintype κ]
@@ -496,8 +474,8 @@ theorem quadratic_unit_value_eq_of_same_ray
       finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) u.val := by
   have hne : quadraticRayValue (residue (∏ i, p i)) ≠ 0 := by
     rw [← canonicalProductGauss_three_eq_rayValue p hp hcop hg hchar]
-    exact norm_ne_zero_iff.mp (by rw [norm_canonicalProductGauss p hp hcop hg hchar
-      (fun _ => 3) (fun _ => by decide) (fun _ => by decide)]; norm_num)
+    exact norm_ne_zero_iff.mp (by simp [norm_canonicalProductGauss p hp hcop hg hchar
+      (fun _ => 3) (fun _ => by decide) (fun _ => by decide)])
   apply mul_right_cancel₀ hne
   rw [quadratic_unit_phase p hp hcop hg hchar, hray,
     quadratic_unit_phase q hq hcopq hgq hcharq, residue_mul, residue_mul, hray]
@@ -521,12 +499,7 @@ theorem quadratic_pair_unit_invariant
   have hs := finiteSexticRow_unit_mul_star (fun i => Ideal.span {q i}) hgq (fun _ => 3) u
   rw [finiteSexticRow_three_star] at hs
   rw [finiteSexticRow_mul, finiteSexticRow_mul, hu]
-  calc
-    _ = (finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) u.val *
-        finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) u.val) *
-      (finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) z *
-        finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) z) := by ring
-    _ = _ := by rw [hs, one_mul]
+  grind
 
 end QuadraticUnitInvariance
 

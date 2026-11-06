@@ -20,7 +20,6 @@ namespace Erdos408.Graph
 
 open Erdos821.Blueprint.Graph
 open Erdos821.Blueprint.Analytic (cell charValue primitiveCharacters CharacterIndex)
-open scoped Classical
 
 variable {G : PrimeGroups} {J m : ℕ}
   {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀ < 1} {hc₀ : 0 < c₀} {hvlo : 0 < vlo}
@@ -81,7 +80,7 @@ theorem pairing_eq_family (B : Family (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq
   congr 1
   · rw [rawPairing_eq B ζ raw (fun _ _ _ => 1) (fun a b u => hraw' _ _ _) hV S S' f g hg]
     congr 1
-    exact funext hraw
+    grind
   · rw [sum_famPoint B raw block Q h ξ fun σ => patternPairing G.primes q₀
       (fun g => blockSlots (B.pattern σ.1) block false g ∪ blockSlots (B.pattern σ.1) block true g)
       (termKernel (B.pattern σ.1) block h σ.2) ζ S f g]
@@ -118,7 +117,7 @@ lemma sum_norm_termWeight_family_le
     intro v hv
     have hv' := Finset.ne_of_mem_erase hv
     obtain ⟨g, i, -⟩ := hne v hv'
-    exact sum_norm_termWeight_le (B.pattern v) block hξ hV (Fin.pos i) (hcoef v hv')
+    exact sum_norm_termWeight_le (B.pattern v) block hξ hV (Fin.pos i) (by grind)
   refine (Finset.sum_le_sum hle).trans ?_
   rw [← Finset.mul_sum]
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)

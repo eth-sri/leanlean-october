@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassWeighted
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseFirstPriorityParents InverseInitialArithmetic
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
-lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
+lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
     (A : Finset ι) (Z R eta : ℝ) (hZ : 0<Z)
     (hA : primeProductNorm p A≤Z^(R+eta)) :
     ‖eisEmbedding (∏i∈A,p i)‖≤Z^((R+eta)/2) := by
-  apply (sq_le_sq₀ (norm_nonneg _) (Real.rpow_nonneg hZ.le _)).mp
+  apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
   have hh : (Z^((R+eta)/2))^2=Z^(R+eta) := by
     rw [←Real.rpow_mul_natCast hZ.le]
     congr 1
@@ -27,7 +26,7 @@ lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
   exact hA
 
 theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(Z ell R Bfirst t eta a loss : ℝ),
@@ -50,9 +49,9 @@ theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
   have hZp : 0<Z := zero_lt_one.trans_le hZ
   have hh := hraw p hp hinj Jo hJo S (Z^(ell+eta)) (Z^((R+eta)/2))
     (Z^(Bfirst+eta)) (Z^(t+eta)) a (Real.one_le_rpow hZ hell)
-    (Real.rpow_nonneg hZp.le _) (Real.rpow_pos_of_pos hZp _)
-    (Real.rpow_pos_of_pos hZp _) ha hS hb₁ hb₂
-    (fun x hx=>active_norm_of_square p _ Z R eta hZp (hactive x hx))
+    (by positivity) (by positivity)
+    (by positivity) ha hS hb₁ hb₂
+    (fun x hx=>active_norm_of_square p _ Z R eta hZp (by grind))
     hcommon hquot extra negative hextra
   apply hh.trans
   calc

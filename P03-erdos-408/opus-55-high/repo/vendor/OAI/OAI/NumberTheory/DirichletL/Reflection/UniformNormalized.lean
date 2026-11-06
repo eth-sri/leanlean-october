@@ -8,14 +8,12 @@ public import OAI.NumberTheory.DirichletL.Reflection.NormalizedPhysical
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
+open scoped Classical ContDiff
+open InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
-variable {N a c : Eis} {mode : Bool}
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem actual_physical_shape_uniform_type_uniform
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -51,7 +49,7 @@ theorem actual_physical_shape_uniform_type_uniform
   let r := ramifiedScale 1 completedRamifiedStep m
   let U := kn*Qn/Ideal.absNorm (frozenExtracted F jF e 1)
   let B := kb*Qb/Ideal.absNorm (frozenExtracted F jF e 2)
-  have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
+  have hz : 1<Z := by linarith
   have hr : 0<r := ramifiedScale_pos _ _ (by norm_num)
     (lt_trans zero_lt_one completedRamifiedStep_gt_one) _
   have hR : 0<R := by
@@ -59,22 +57,14 @@ theorem actual_physical_shape_uniform_type_uniform
     dsimp only [R,kernelCenter]
     positivity
   have hh := physical_scalar_hybrid_shape F jF e Z r Qn Qb kn kb R A C (kK*QK) (kP*QP) ε
-    hz hr hn hb hkn hkb hR hC (mul_pos hkK hK) (mul_pos hkP hP)
+    hz hr hn hb hkn hkb hR hC (by positivity) (by positivity)
   dsimp only at hh ⊢
   apply hh.trans
-  apply mul_le_mul_of_nonneg_left _ (mul_nonneg (sq_nonneg _) (mul_nonneg (by norm_num) hC))
+  apply mul_le_mul_of_nonneg_left _ (by positivity)
   apply Real.rpow_le_rpow_of_exponent_le hz.le
   have hthreshold := actual_kernel_upper_threshold F jF e s hc m Z T QK QP Qn Qb kK kP kn kb
     hT hK hP hn hb hkK hkP hkn hkb
-  have hexp := he Z hZ m 0 (Real.logb Z (kK*QK))
-    (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 0))
-    (InverseTerminalWidths.normWidth Z (frozenExtracted F jF e 2))
-    (Real.logb Z (kP*QP)) (Real.logb Z U) (Real.logb Z B)
-    (InverseTerminalWidths.terminalDualWidth Z (Real.logb Z (kK*QK)) (Real.logb Z (kP*QP))
-      (Real.logb Z T) F.ideal jF e)
-  change Real.logb Z U+3*Real.logb Z B+3*Real.logb Z r-Real.logb Z R = _ at hthreshold
-  rw [hthreshold]
-  linarith
+  grind
 
 theorem normalized_surviving_physical_source_energy_type_uniform
     (ε : ℝ) (hε : 0<ε) (a₀ b₀ : ℝ) (ha₀ : 0<a₀)
@@ -88,25 +78,25 @@ theorem normalized_surviving_physical_source_energy_type_uniform
     ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ Z : ℝ, Z₀≤Z →
     ∀ (X Y B L : ℝ), 1≤X → 1≤Y → 1≤B → 1≤L →
     ∀ (F : PrimeFamily φ) (jF : φ→ℕ),
-      (9:Eis)*c ∣ N → (if mode then λ₀^2∣a-1 else λ₀^2∣c-1) → IsCoprime a c →
+      (9:ActualEisensteinCubic.O)*c ∣ N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
-      (∀ f, ringChar (Eis⧸F.ideal f)≠2) → (∀ f, jF f<6) →
+      (∀ f, ringChar (ActualEisensteinCubic.O⧸F.ideal f)≠2) → (∀ f, jF f<6) →
     ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
       (D0 : ControlledStratumArithmetic G0.generator N a c mode)
-      (u : Eisˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
+      (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
       0<T → 0<QK → 0<QP → 0<Qn → 0<Qb →
       X=kK*QK → Y=kn*Qn → B=kb*Qb → L=kP*QP →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)
       (hrows : ∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ)≤X)
       (D : ∀ K : rows, ∀ P : Pset, IsCoprime K.val P.val →
         ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property).1 (S P.val)).generator N a c mode)
-      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+      (r₀ aw₀ : Ideal ActualEisensteinCubic.O→ℂ) (w₀ : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
       (∀ P ∈ Pset, ∀ i, IsCoprime (Ideal.span {N}) ((F.sum (S P)).ideal i)) →
-      (∀ P ∈ Pset, ∀ i, ringChar (Eis⧸(F.sum (S P)).ideal i)≠2) →
+      (∀ P ∈ Pset, ∀ i, ringChar (ActualEisensteinCubic.O⧸(F.sum (S P)).ideal i)≠2) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n:ℝ)≤Y) →
       (∀ b ∈ bset, primaryGenerator b≠0 ∧ (Ideal.absNorm b:ℝ)≤B) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤2*L) →
@@ -157,7 +147,7 @@ theorem normalized_surviving_physical_source_energy_type_uniform
   have hee := hshape Z hZ F jF e m T QK QP Qn Qb (Real.exp (M 2/2+M 3)) C ε hT hQK hQP hQn hQb hC.le
   dsimp only at hee
   rw [hsX,hsY,hsB,hsL]
-  convert hee using 1 ; ring
+  linarith
 
 end
 end SevenEighths.InverseReflectedPhase

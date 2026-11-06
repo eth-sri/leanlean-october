@@ -8,19 +8,17 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstContinuation
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion
 
 theorem continuedMarkedLocal_first_analyticAt_x (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x w z : ℂ)
     (hx : (1/2:ℝ)<x.re) (hz : (1/3:ℝ)≤z.re) :
     AnalyticAt ℂ (fun x=>continuedMarkedLocal η u P hs x w z) x := by
-  have he : (fun x=>continuedMarkedLocal η u P hs x w z)=
-      (fun x=>(ramifiedCorrection η u P hs x w z-1)/(1-coordV P.val.absNorm z)) :=
+  have he :=
     funext (fun x=>continuedMarkedLocal_eq_quotient η u P hs x w z (selected_V_ne_zero P hQ z (by linarith)))
   rw [he]
   exact (((ramifiedCorrection_first_analytic_x η u P hs hQ w z hz) x hx).sub analyticAt_const).div_const
@@ -29,8 +27,7 @@ theorem continuedMarkedLocal_first_differentiable_w (η : Character) (u : FreeRo
     (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x z : ℂ)
     (hx : (1/2:ℝ)≤x.re) (hz : (1/3:ℝ)≤z.re) :
     Differentiable ℂ (fun w=>continuedMarkedLocal η u P hs x w z) := by
-  have he : (fun w=>continuedMarkedLocal η u P hs x w z)=
-      (fun w=>(ramifiedCorrection η u P hs x w z-1)/(1-coordV P.val.absNorm z)) :=
+  have he :=
     funext (fun w=>continuedMarkedLocal_eq_quotient η u P hs x w z (selected_V_ne_zero P hQ z (by linarith)))
   rw [he]
   exact ((ramifiedCorrection_first_analytic_w η u P hs hQ x z hx hz).sub_const 1).div_const _
@@ -62,7 +59,7 @@ theorem continuedCompensatedLocal_first_differentiableAt_x (η : Character) (u :
     (idealRowHom u.val P.val) x z hQ (by simp) (idealCoeff_norm_le_one η _)
     (idealRowHom_norm u.val _) hx.le hz).2.2
   unfold continuedCompensatedLocal ProbeLocal.compensatedReplacement
-  fun_prop (disch := first | assumption | exact Or.inl hQc)
+  fun_prop (disch := simp_all)
 
 theorem continuedCompensatedLocal_first_differentiable_w (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hQ : (4:ℝ)≤P.val.absNorm) (x z : ℂ)

@@ -7,14 +7,12 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLiveStepScalars
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_live_label_step
     (old:ℝ → ℂ)(oldb:ℝ)(hsold:∀y,old y≠0 → y≤oldb)
@@ -24,13 +22,13 @@ theorem actual_live_label_step
     ∃(ω₁ ω₂:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (ω₁:ℝ → ℂ) ∧ HasCompactSupport (ω₂:ℝ → ℂ) ∧
       tsupport (ω₁:ℝ → ℂ)⊆Set.Icc af bf ∧ tsupport (ω₂:ℝ → ℂ)⊆Set.Icc af bf ∧
     ∀degree:ℕ,∃C Cbin Cz Ct:ℝ,0≤C ∧ 0≤Cbin ∧ 0≤Cz ∧ 0≤Ct ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι → O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι → ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (pool:Finset ι)(Q:Finset (ι →₀ ℕ))(labels:Finset (Ideal O))(β:Ideal O → (ι →₀ ℕ) → ℂ)
-      (Ψ:O →* ℂ)(m:O)(slots:Finset σ)(lists:σ → Finset ι)(weights:σ → ι → ℂ)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (pool:Finset ι)(Q:Finset (ι →₀ ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(β:Ideal ActualEisensteinCubic.O → (ι →₀ ℕ) → ℂ)
+      (Ψ:ActualEisensteinCubic.O →* ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ → Finset ι)(weights:σ → ι → ℂ)
       (Φ:𝓢(ℝ,ℂ))(Z M r ell V eta pi epschild A theta t Kphysical:ℝ),
       2≤Z → 2≤Z^eta → 0≤M → M≤F →  (-eta≤r)  → r≤F → 0≤ell → ell≤F → 0≤V → V≤F →
       0≤eta → eta≤1 → tau≤1 → Real.exp window≤Z^eta → 0≤pi → 6*eta≤pi →
@@ -38,7 +36,7 @@ theorem actual_live_label_step
       (∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)) →
       (∀I∈labels,I≠0) → (∀u,‖Ψ u‖≤1) → (slots:Set σ).PairwiseDisjoint lists → slots.card≤K →
       (∀i∈slots,∀q∈lists i,‖weights i q‖≤1) → 0≤A →
-      let cutoff:=fun (q:CubeCoordinates ι)(C:Finset ι)(_I:Ideal O)(D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+      let cutoff:=fun (q:CubeCoordinates ι)(C:Finset ι)(_I:Ideal ActualEisensteinCubic.O)(D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
       let W:=fun y=>normTwistedSource old theta (y/Z^r);
       let mark:=fun v U=>primeMark slots lists weights (v.support∪U);
       let S:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) (Z^(2*F+15*eta+tau));
@@ -57,7 +55,7 @@ theorem actual_live_label_step
   have hcap:0≤cap:=by dsimp [cap];linarith
   have hbig:0≤16*cap+20:=by positivity
   obtain ⟨ω₁,ω₂,af,bf,haf,hab,hw₁,hw₂,hs₁,hs₂,he⟩:=actual_label_cell_step om lo hi hlo hs negative
-    window (16*cap+20) (16*cap+20) tau saving (hhib.trans hwindow) hbig hbig htau b hb ed hed (fun _=>0) (by intro i;norm_num) K em hem
+    window (16*cap+20) (16*cap+20) tau saving (hhib.trans hwindow) hbig hbig htau b hb ed hed (fun _=>0) (by simp) K em hem
   refine ⟨ω₁,ω₂,af,bf,haf,hab,hw₁,hw₂,hs₁,hs₂,?_⟩
   intro degree
   obtain ⟨C,Cbin,Cz,Ct,hC,hCb,hCz,hCt,hstep⟩:=he degree
@@ -73,27 +71,27 @@ theorem actual_live_label_step
       hsmall hsmall' hQ hn hsold k hk negative
   apply hstep p hp hcop hg hpr hinj hc pool Q k.1 k.2.1 k.2.2 Ψ m slots lists weights
     Z M r ell V eta pi b (cap+1) (4*cap+2) epschild A t (fun _=>0)
-    hZ heta hbin (by linarith) hQ hslots hcard hw hΨ (by intro i;simp) hhib le_rfl hb
+    hZ heta hbin (by linarith) hQ hslots hcard hw hΨ (by simp) hhib le_rfl hb
   · exact (hwindow.trans hwin).trans (Real.rpow_le_rpow_of_exponent_le hZ1.le (by linarith))
   · exact hwin.trans (Real.rpow_le_rpow_of_exponent_le hZ1.le (by linarith))
-  · exact hA
-  · exact hcol
-  · exact hYi
-  · exact hgeom
-  · exact hphysical
-  · exact hbudget
-  · exact hcost
-  · exact hY1
-  · exact hX1
-  · exact hYcap
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
   · exact hYi.trans (Real.rpow_le_rpow_of_exponent_le hZ1.le (by linarith))
   · exact hcol.trans (Real.rpow_le_rpow_of_exponent_le hZ1.le (by linarith))
-  · exact hPcap
-  · exact hellcap
-  · exact hactivecap
-  · exact hcommoncap
-  · exact hquotcap
-  · exact hchild
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  omega
 
 end SevenEighths.InverseMoment
 

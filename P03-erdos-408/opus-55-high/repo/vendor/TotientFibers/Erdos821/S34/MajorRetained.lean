@@ -7,7 +7,7 @@ public import Erdos821.S34.TupleBilinear
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -47,7 +47,7 @@ theorem major_retained_comparison (hfourier : RationalFourierTask) (hind : Primi
     have hD : (0 : ℝ) < product G a D := by exact_mod_cast tuple_product_pos G a D
     have hE : (0 : ℝ) < product G b E := by exact_mod_cast tuple_product_pos G b E
     simpa only [tuplePhase, M, rational, mul_assoc] using
-      rational_phase_split ((product G a D : ℝ) * product G b E) θ β ζ u r (mul_pos hD hE) hθ
+      rational_phase_split ((product G a D : ℝ) * product G b E) θ β ζ u r (by positivity) hθ
   have hfreeze_eq : comparisonScalar G a b Q h ξ θ ζ X Y - M X Y * I =
       expect G a (fun D => expect G b (fun E =>
         cellKernel G a Q h ξ (product G a D) (product G a X) *
@@ -78,7 +78,7 @@ theorem major_retained_comparison (hfourier : RationalFourierTask) (hind : Primi
     _ ≤ ‖M X Y * (rational X Y - I)‖ + ‖comparisonScalar G a b Q h ξ θ ζ X Y - M X Y * I‖ := norm_sub_le _ _
     _ = ‖I - rational X Y‖ + ‖comparisonScalar G a b Q h ξ θ ζ X Y - M X Y * I‖ := by
       rw [norm_mul, hnM, one_mul, norm_sub_rev]
-    _ ≤ _ := by linarith [hrepro, hfreeze]
+    _ ≤ _ := by linarith
 
 end
 end Erdos821.S34Core

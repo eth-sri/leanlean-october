@@ -8,15 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
-local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
+open InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
 
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
 
 def cappedSource (S:Finset (Source (ι:=ι) 0))(a b:Fin 4→ℝ) : Finset (Source (ι:=ι) 0) :=
   S.filter (fun x=>∀i,sourceNorms p x i∈Set.Icc (a i) (b i))
@@ -27,7 +25,7 @@ variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 
 theorem physicalBlock_cap_filter
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))(a b:Fin 4→ℝ)
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
     (hcap:∀x∈S,∀N∈(pool\x.overlap).powerset,∀M∈(pool\x.overlap).powerset,
       ∀ρ:SecondRayIndex,w x*physicalTerm p hp hcop hg Ψ j marks W₁ W₂ Φ Z D m
@@ -40,7 +38,7 @@ theorem physicalBlock_cap_filter
   apply Finset.sum_congr rfl
   intro x hx
   by_cases hb:∀i,sourceNorms p x i∈Set.Icc (a i) (b i)
-  · rw [ite_eq_left hb]
+  · simp_all
   · rw [ite_eq_right hb]
     apply Finset.sum_eq_zero
     intro N hN
@@ -49,12 +47,11 @@ theorem physicalBlock_cap_filter
     apply Finset.sum_eq_zero
     intro ρ hρ
     simp only [Function.comp_apply,erase_sourcePoint]
-    by_contra hn
-    exact hb (hcap x hx N hN M hM ρ hn)
+    grind
 
 theorem physicalBlock_live_partition
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))(a b:Fin 4→ℝ)(ha:∀i,0<a i)
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:1<Z)
     (hcap:∀x∈S,∀N∈(pool\x.overlap).powerset,∀M∈(pool\x.overlap).powerset,
       ∀ρ:SecondRayIndex,w x*physicalTerm p hp hcop hg Ψ j marks W₁ W₂ Φ Z D m

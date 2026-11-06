@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic RayFourExpansion
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m d : O) (H selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m d : ActualEisensteinCubic.O) (H selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
   (32*512)*∑ r : RayCharacter×RayCharacter,∑ D∈F.powerset,
     (‖crossCoeff r.1 r.2‖*‖selector D‖)*∑ core : FirstCoreIndex,
       ‖firstCoreOuter p hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative Ψ m D core‖ *
@@ -29,15 +28,15 @@ def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p 
 
 theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
-      (Ψ₁ Ψ₂ : O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
-      ∀ (m₁ m₂ d : O) (labels : Finset (Ideal O)) (a : Ideal O×O→ℂ) (Γ Y : ℝ),0≤Γ → 0<Y →
+      (Ψ₁ Ψ₂ : ActualEisensteinCubic.O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
+      ∀ (m₁ m₂ d : ActualEisensteinCubic.O) (labels : Finset (Ideal ActualEisensteinCubic.O)) (a : Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O→ℂ) (Γ Y : ℝ),0≤Γ → 0<Y →
       (∀ f∈labels,Squarefree f) → (∀ f∈labels,f≠0) → (∀ x∈firstRetainedSource p labels b Y,‖a x‖≤Γ) →
       ∀ (negative : Bool) (H selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t : ℝ),0<X →
       firstFamilyEnergy p hg (firstRetainedSource p labels b Y) F (fun _=>selector)

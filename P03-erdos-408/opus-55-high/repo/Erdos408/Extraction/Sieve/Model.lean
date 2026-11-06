@@ -45,10 +45,10 @@ def divisorModel (A : Finset ℕ) (H : ℕ → ℝ) : ℝ :=
 /-- The model weights are nonnegative when every element of `A` is positive. -/
 lemma modelWeight_nonneg {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) (S : Finset ℕ) :
     0 ≤ modelWeight A S := by
-  refine mul_nonneg (prod_nonneg fun p _ => by positivity) (prod_nonneg fun p hp => ?_)
-  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast hA p (mem_sdiff.1 hp).1
+  refine mul_nonneg (by positivity) (prod_nonneg fun p hp => ?_)
+  have hp1 : (1 : ℝ) ≤ p := by exact_mod_cast (by grind)
   rw [sub_nonneg, div_le_one (by linarith)]
-  exact hp1
+  omega
 
 /-- The model weights sum to one. -/
 lemma sum_modelWeight (A : Finset ℕ) : ∑ S ∈ A.powerset, modelWeight A S = 1 := by
@@ -63,7 +63,7 @@ lemma modelMean_empty (f : Finset ℕ → ℝ) : modelMean ∅ f = f ∅ := by
 /-- The model mean only sees the values on subsets of `A`. -/
 lemma modelMean_congr {A : Finset ℕ} {f g : Finset ℕ → ℝ} (h : ∀ S ⊆ A, f S = g S) :
     modelMean A f = modelMean A g :=
-  sum_congr rfl fun S hS => by rw [h S (mem_powerset.1 hS)]
+  sum_congr rfl fun S hS => by simp_all
 
 /-- The mean of a constant. -/
 lemma modelMean_const (A : Finset ℕ) (c : ℝ) : modelMean A (fun _ => c) = c := by
@@ -78,7 +78,7 @@ lemma modelMean_add (A : Finset ℕ) (f g : Finset ℕ → ℝ) :
 lemma modelMean_mul_left (A : Finset ℕ) (c : ℝ) (f : Finset ℕ → ℝ) :
     modelMean A (fun S => c * f S) = c * modelMean A f := by
   simp only [modelMean, mul_sum]
-  exact sum_congr rfl fun S _ => by ring
+  grind
 
 /-- The model mean commutes with subtraction. -/
 lemma modelMean_sub (A : Finset ℕ) (f g : Finset ℕ → ℝ) :
@@ -94,7 +94,7 @@ lemma modelMean_sum {ι : Type*} (A : Finset ℕ) (I : Finset ι) (f : ι → Fi
 /-- The model mean is monotone. -/
 lemma modelMean_mono {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {f g : Finset ℕ → ℝ}
     (h : ∀ S ⊆ A, f S ≤ g S) : modelMean A f ≤ modelMean A g :=
-  sum_le_sum fun S hS => mul_le_mul_of_nonneg_left (h S (mem_powerset.1 hS))
+  sum_le_sum fun S hS => mul_le_mul_of_nonneg_left (by grind)
     (modelWeight_nonneg hA S)
 
 /-- The model mean of a nonnegative function is nonnegative. -/
@@ -118,13 +118,13 @@ lemma modelMean_insert {A : Finset ℕ} {b : ℕ} (hb : b ∉ A) (f : Finset ℕ
   rw [modelMean, sum_powerset_insert hb, modelMean, modelMean, mul_sum, mul_sum]
   congr 1
   · refine sum_congr rfl fun T hT => ?_
-    have hbT : b ∉ T := fun h => hb (mem_powerset.1 hT h)
+    have hbT : b ∉ T := by grind
     have : insert b A \ T = insert b (A \ T) := by
       rw [insert_sdiff_of_notMem _ hbT]
-    rw [modelWeight, modelWeight, this, prod_insert (fun h => hb (mem_sdiff.1 h).1)]
+    rw [modelWeight, modelWeight, this, prod_insert (by grind)]
     ring
   · refine sum_congr rfl fun T hT => ?_
-    have hbT : b ∉ T := fun h => hb (mem_powerset.1 hT h)
+    have hbT : b ∉ T := by grind
     have : insert b A \ insert b T = A \ T := by
       rw [insert_sdiff_insert, sdiff_insert_of_notMem hb]
     rw [modelWeight, modelWeight, this, prod_insert hbT]
@@ -138,8 +138,8 @@ lemma modelMean_union {A B : Finset ℕ} (hAB : Disjoint A B) (f : Finset ℕ �
   | empty =>
     simp only [union_empty, modelMean_empty]
   | insert b B hbB ih =>
-    have hbA : b ∉ A := fun h => disjoint_left.1 hAB h (mem_insert_self b B)
-    have hAB' : Disjoint A B := disjoint_of_subset_right (subset_insert b B) hAB
+    have hbA : b ∉ A := by grind
+    have hAB' := disjoint_of_subset_right (subset_insert b B) hAB
     have hb : b ∉ A ∪ B := by simp [hbA, hbB]
     rw [union_insert, modelMean_insert hb, ih hAB', ih hAB']
     simp only [modelMean_insert hbB, union_insert]
@@ -149,12 +149,12 @@ lemma modelMean_union {A B : Finset ℕ} (hAB : Disjoint A B) (f : Finset ℕ �
 `E_A[f] = E_U[f]`. -/
 lemma modelMean_eq_of_subset {A U : Finset ℕ} (hUA : U ⊆ A) {f : Finset ℕ → ℝ}
     (hf : ∀ S ⊆ A, f S = f (S ∩ U)) : modelMean A f = modelMean U f := by
-  have hA : A = U ∪ (A \ U) := (union_sdiff_of_subset hUA).symm
+  have hA := (union_sdiff_of_subset hUA).symm
   rw [hA, modelMean_union disjoint_sdiff]
   refine modelMean_congr fun S hS => ?_
   rw [← modelMean_const (A \ U) (f S)]
   refine modelMean_congr fun T hT => ?_
-  have hsub : S ∪ T ⊆ A := union_subset (hS.trans hUA) (hT.trans sdiff_subset)
+  have hsub := union_subset (hS.trans hUA) (hT.trans sdiff_subset)
   rw [hf _ hsub, union_inter_distrib_right, inter_eq_left.2 hS,
     disjoint_iff_inter_eq_empty.1 (disjoint_of_subset_left hT sdiff_disjoint), union_empty]
 
@@ -174,20 +174,20 @@ lemma modelMean_prod {ι : Type*} [DecidableEq ι] (I : Finset ι) (B : ι → F
     have hdisj : Disjoint (B i₀) (I.biUnion B) := by
       rw [disjoint_biUnion_right]
       intro i hi
-      exact hB (by simp) (by simp [hi]) (fun h => hi₀ (h ▸ hi))
+      exact hB (by simp) (by simp_all) (by grind)
     rw [biUnion_insert, modelMean_union hdisj, prod_insert hi₀, ← ih hB', mul_comm,
       ← modelMean_mul_left]
     refine modelMean_congr fun S hS => ?_
     rw [mul_comm, ← modelMean_mul_left]
     refine modelMean_congr fun T hT => ?_
     rw [prod_insert hi₀]
-    have hT0 : T ∩ B i₀ = ∅ :=
+    have hT0 :=
       disjoint_iff_inter_eq_empty.1 (disjoint_of_subset_left hT hdisj.symm)
     congr 1
     · rw [union_inter_distrib_right, inter_eq_left.2 hS, hT0, union_empty]
     · refine prod_congr rfl fun i hi => ?_
-      have hS0 : S ∩ B i = ∅ := disjoint_iff_inter_eq_empty.1
-        (disjoint_of_subset_left hS (hB (by simp) (by simp [hi]) fun h => hi₀ (h ▸ hi)))
+      have hS0 := disjoint_iff_inter_eq_empty.1
+        (disjoint_of_subset_left hS (hB (by simp) (by simp_all) fun h => hi₀ (h ▸ hi)))
       rw [union_inter_distrib_right, hS0, empty_union]
 
 /-! ### Two explicit means -/
@@ -201,7 +201,7 @@ lemma modelMean_pow_card (A : Finset ℕ) (t : ℝ) :
   · refine sum_congr rfl fun S _ => ?_
     rw [modelWeight, prod_mul_distrib, prod_const]
     ring
-  · exact prod_congr rfl fun p _ => by ring
+  ring
 
 /-- The marked count `|S| t^{|S| - 1}` has mean at least
 `(∑_{p ∈ A} 1/p) ∏_{p ∈ A} (1 - (1 - t)/p)` for `0 ≤ t ≤ 1`. -/
@@ -216,7 +216,7 @@ lemma le_modelMean_card_mul_zpow {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {t :
     constructor
     · rw [sub_nonneg, div_le_one (by linarith)]
       linarith
-    · have : 0 ≤ (1 - t) / p := div_nonneg (by linarith) (by linarith)
+    · have : 0 ≤ (1 - t) / p := by positivity
       linarith
   -- `|S| t^{|S| - 1} = ∑_{p ∈ A} [p ∈ S] t^{|S \ {p}|}` on subsets of `A`
   have hid : ∀ S ⊆ A, t ^ ((#S : ℤ) - 1) * #S =
@@ -224,7 +224,7 @@ lemma le_modelMean_card_mul_zpow {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {t :
     intro S hS
     rw [← sum_filter, filter_mem_eq_inter, inter_eq_right.2 hS]
     rcases S.eq_empty_or_nonempty with h | h
-    · simp [h]
+    · simp_all
     · have hc : 1 ≤ #S := card_pos.2 h
       have hz : t ^ ((#S : ℤ) - 1) = t ^ (#S - 1) := by
         rw [← zpow_natCast, Nat.cast_sub hc, Nat.cast_one]
@@ -233,23 +233,23 @@ lemma le_modelMean_card_mul_zpow {A : Finset ℕ} (hA : ∀ p ∈ A, 0 < p) {t :
   rw [modelMean_congr hid, modelMean_sum, sum_mul]
   refine sum_le_sum fun p hp => ?_
   -- the mean of `[p ∈ S] t^{|S \ {p}|}` is `(1/p) ∏_{A \ {p}} (1 - (1 - t)/p')`
-  have hpA : p ∉ A.erase p := notMem_erase p A
-  have hA' : insert p (A.erase p) = A := insert_erase hp
+  have hpA := notMem_erase p A
+  have hA' := insert_erase hp
   conv_rhs => rw [← hA', modelMean_insert hpA]
   have h0 : modelMean (A.erase p) (fun S => if p ∈ S then t ^ #(S.erase p) else 0) = 0 := by
-    rw [modelMean_congr (g := fun _ => (0 : ℝ)) fun S hS => ite_eq_right fun h => hpA (hS h)]
+    rw [modelMean_congr (g := fun _ => (0 : ℝ)) (by grind)]
     exact modelMean_const _ 0
   have h1 : modelMean (A.erase p) (fun T => if p ∈ insert p T then t ^ #((insert p T).erase p)
       else 0) = modelMean (A.erase p) fun T => t ^ #T := by
     refine modelMean_congr fun T hT => ?_
-    rw [ite_eq_left (mem_insert_self p T), erase_insert fun h => hpA (hT h)]
+    rw [ite_eq_left (by simp), erase_insert (by grind)]
   rw [h0, h1, modelMean_pow_card, mul_zero, zero_add, ← prod_erase_mul _ _ hp]
   refine mul_le_mul_of_nonneg_left ?_ (by positivity)
   have hnn : 0 ≤ ∏ x ∈ A.erase p, (1 - (1 - t) / x) :=
-    prod_nonneg fun q hq => (hfac q (mem_of_mem_erase hq)).1
+    prod_nonneg (by grind)
   calc (∏ x ∈ A.erase p, (1 - (1 - t) / x)) * (1 - (1 - t) / p)
       ≤ (∏ x ∈ A.erase p, (1 - (1 - t) / x)) * 1 :=
-        mul_le_mul_of_nonneg_left (hfac p hp).2 hnn
+        mul_le_mul_of_nonneg_left (by grind) hnn
     _ = ∏ x ∈ A.erase p, (1 - (1 - t) / x) := mul_one _
 
 /-! ### Marginals -/
@@ -260,15 +260,13 @@ lemma sum_modelWeight_mem {A : Finset ℕ} {p : ℕ} (hp : p ∈ A) :
   have h : ∑ S ∈ A.powerset with p ∈ S, modelWeight A S =
       modelMean A fun S => if p ∈ S then 1 else 0 := by
     rw [modelMean, sum_filter]
-    exact sum_congr rfl fun S _ => by split_ifs <;> simp
-  rw [h, ← insert_erase hp, modelMean_insert (notMem_erase p A)]
+    exact sum_congr rfl fun S _ => by simp
+  rw [h, ← insert_erase hp, modelMean_insert (by simp)]
   have h0 : modelMean (A.erase p) (fun S => if p ∈ S then (1 : ℝ) else 0) = 0 := by
-    rw [modelMean_congr (g := fun _ => (0 : ℝ)) fun S hS =>
-      ite_eq_right fun h => notMem_erase p A (hS h)]
+    rw [modelMean_congr (g := fun _ => (0 : ℝ)) (by grind)]
     exact modelMean_const _ 0
-  rw [h0, modelMean_congr (g := fun _ => (1 : ℝ)) fun T _ => ite_eq_left (mem_insert_self p T),
+  simp [h0, modelMean_congr (g := fun _ => (1 : ℝ)) fun T _ => ite_eq_left (mem_insert_self p T),
     modelMean_const]
-  ring
 
 /-- Removing primes `R ⊆ A`: for `S ⊆ A \ R`, `π_A(S) = π_{A \ R}(S) ∏_{p ∈ R} (1 - 1/p)`. -/
 lemma modelWeight_sdiff {A R S : Finset ℕ} (hRA : R ⊆ A) (hS : S ⊆ A \ R) :
@@ -277,15 +275,9 @@ lemma modelWeight_sdiff {A R S : Finset ℕ} (hRA : R ⊆ A) (hS : S ⊆ A \ R) 
     ext p
     simp only [mem_sdiff, mem_union]
     constructor
-    · rintro ⟨hA, hS'⟩
-      by_cases hR : p ∈ R
-      · exact Or.inr hR
-      · exact Or.inl ⟨⟨hA, hR⟩, hS'⟩
-    · rintro (⟨⟨hA, -⟩, hS'⟩ | hR)
-      · exact ⟨hA, hS'⟩
-      · exact ⟨hRA hR, fun h => (mem_sdiff.1 (hS h)).2 hR⟩
-  have hd : Disjoint ((A \ R) \ S) R := disjoint_left.2 fun p hp hR =>
-    (mem_sdiff.1 (mem_sdiff.1 hp).1).2 hR
+    · grind
+    · grind
+  have hd : Disjoint ((A \ R) \ S) R := disjoint_left.2 (by grind)
   rw [modelWeight, modelWeight, h, prod_union hd]
   ring
 

@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [Fintype ι]
 def activeMarks (A S : Finset ι) : Finset A := Finset.univ.filter (fun i => i.val∈S)
@@ -22,7 +21,7 @@ lemma mem_activeMarks (A S : Finset ι) (i : A) : i∈activeMarks A S ↔ i.val�
 
 omit [Fintype ι] in
 lemma mixedPrimeFunction_restrict (P : PrimeFamily ι) (j : ι→ℕ) (A S : Finset ι)
-    (i : A) (x : Eis⧸Ideal.span {P.generator i.val}) :
+    (i : A) (x : ActualEisensteinCubic.O⧸Ideal.span {P.generator i.val}) :
     mixedPrimeFunction (P.restrict A).generator (P.restrict A).generator_good
       (fun i => j i.val) (activeMarks A S) i x =
     mixedPrimeFunction P.generator P.generator_good j S i.val x := by
@@ -31,7 +30,7 @@ lemma mixedPrimeFunction_restrict (P : PrimeFamily ι) (j : ι→ℕ) (A S : Fin
 
 omit [Fintype ι] in
 lemma localActiveWeight_restrict (P : PrimeFamily ι) (j : ι→ℕ) (A S : Finset ι)
-    (v : ∀ i : A, (Eis⧸Ideal.span {P.generator i.val})ˣ) :
+    (v : ∀ i : A, (ActualEisensteinCubic.O⧸Ideal.span {P.generator i.val})ˣ) :
     localActiveWeight P.generator P.generator_ne_zero
       (mixedPrimeFunction P.generator P.generator_good j S) A v =
     fullLocalFourierWeight (P.restrict A).generator_ne_zero

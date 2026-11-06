@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.MarkedFourier
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CubicEisenstein LocalReflectionBrackets CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 section Local
 variable {F : Type*} [Field F] [Fintype F]
@@ -26,9 +25,7 @@ theorem markedFrequencyRow_units (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   unfold markedFrequencyRow finiteAdditiveFourierCoeff frequencyMultiplier localReflectionActive localFourier
   simp only [Units.ne_zero, ite_false,  Units.val_inv_eq_inv_val,
     Finset.mul_sum, neg_mul]
-  apply Finset.sum_congr rfl
-  intro h hh
-  ring
+  grind
 
 def mixedFrequencyRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     (marked : Bool) (j : ℕ) (σ ε : Fˣ) (x h : F) : ℂ :=
@@ -36,19 +33,19 @@ def mixedFrequencyRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
 
 end Local
 
-noncomputable local instance markedStratumField (P : Ideal Eis) [P.IsMaximal] : Field (Eis ⧸ P) :=
+noncomputable local instance markedStratumField (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Field (ActualEisensteinCubic.O ⧸ P) :=
   Ideal.Quotient.field P
-noncomputable local instance markedStratumFintype (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) :=
+noncomputable local instance markedStratumFintype (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) :=
   Fintype.ofFinite _
 
-theorem actual_mixed_frequency_units (P : Ideal Eis) [P.IsMaximal]
-    (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (hc : ringChar (Eis ⧸ P) ≠ 2)
-    (ψ : AddChar (Eis ⧸ P) ℂ) (hψ : ψ.IsPrimitive) (marked : Bool)
-    (j : ℕ) (hj : j < 6) (σ ε : (Eis ⧸ P)ˣ) (x : Eis ⧸ P) :
-    (∑ h : (Eis ⧸ P)ˣ, mixedFrequencyRow (actualSextic P hg) ψ marked j σ ε x h) =
+theorem actual_mixed_frequency_units (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (hc : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2)
+    (ψ : AddChar (ActualEisensteinCubic.O ⧸ P) ℂ) (hψ : ψ.IsPrimitive) (marked : Bool)
+    (j : ℕ) (hj : j < 6) (σ ε : (ActualEisensteinCubic.O ⧸ P)ˣ) (x : ActualEisensteinCubic.O ⧸ P) :
+    (∑ h : (ActualEisensteinCubic.O ⧸ P)ˣ, mixedFrequencyRow (actualSextic P hg) ψ marked j σ ε x h) =
       if marked then
-        (rootCard (Eis ⧸ P) : ℂ)⁻¹ * tau (actualSextic P hg) ψ 2 *
-          (((actualSextic P hg) ^ 2)⁻¹) ((σ : Eis ⧸ P) * (ε : Eis ⧸ P) * x)
+        (rootCard (ActualEisensteinCubic.O ⧸ P) : ℂ)⁻¹ * tau (actualSextic P hg) ψ 2 *
+          (((actualSextic P hg) ^ 2)⁻¹) ((σ : ActualEisensteinCubic.O ⧸ P) * (ε : ActualEisensteinCubic.O ⧸ P) * x)
       else (((actualSextic P hg)⁻¹) ^ 2) σ *
         phase (actualSextic P hg) ψ j ε * bracket (actualSextic P hg) j x := by
   cases marked

@@ -8,33 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,40 +32,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
-open scoped BigOperators Classical MatrixGroups Matrix
+open scoped Classical MatrixGroups Matrix
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT
+open CubicKubota
 
 lemma levelThree_of_entries (M : SL(2,O))
     (h : ∀ i j : Fin 2, (3 : O) ∣ M i j - (if i=j then 1 else 0)) :
@@ -90,7 +73,7 @@ lemma levelThree_of_entries (M : SL(2,O))
   have hh : Ideal.Quotient.mk (Ideal.span {(3 : O)}) (M i j) =
       Ideal.Quotient.mk (Ideal.span {(3 : O)}) (if i=j then 1 else 0) :=
     (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr
-      (Ideal.mem_span_singleton.mpr (h i j))
+      (Ideal.mem_span_singleton.mpr (by grind))
   simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using hh
 
 lemma row_coprime (M : levelThree) : IsCoprime (row M 0) (row M 1) := by
@@ -100,7 +83,7 @@ lemma row_coprime (M : levelThree) : IsCoprime (row M 0) (row M 1) := by
   refine ⟨-(M : SL(2,O)) 0 1, (M : SL(2,O)) 0 0, ?_⟩
   change -(M : SL(2,O)) 0 1*(M : SL(2,O)) 1 0 +
     (M : SL(2,O)) 0 0*(M : SL(2,O)) 1 1 = 1
-  linear_combination h
+  grind
 
 lemma exists_matrix_of_primitive_row (c d : O) (hcop : IsCoprime c d)
     (hc : (3 : O) ∣ c) (hd : (3 : O) ∣ d-1) :
@@ -109,7 +92,7 @@ lemma exists_matrix_of_primitive_row (c d : O) (hcop : IsCoprime c d)
   let M : SL(2,O) := ⟨!![s+r*c,r*(d-1); c,d], by
     rw [Matrix.det_fin_two]
     change (s+r*c)*d-(r*(d-1))*c=1
-    linear_combination hrs⟩
+    grind⟩
   have hA : s+r*c-1 = -s*(d-1) := by linear_combination hrs
   have hM : M ∈ levelThree := by
     apply levelThree_of_entries
@@ -119,11 +102,11 @@ lemma exists_matrix_of_primitive_row (c d : O) (hcop : IsCoprime c d)
       rw [hA]
       exact hd.mul_left (-s)
     · change (3 : O) ∣ r*(d-1)-0
-      simpa only [sub_zero] using hd.mul_left r
+      simpa using hd.mul_left r
     · change (3 : O) ∣ c-(if (1 : Fin 2)=0 then 1 else 0)
-      simpa only [show (1 : Fin 2) ≠ 0 by decide, ite_false, sub_zero] using hc
+      simp_all
     · change (3 : O) ∣ d-1
-      exact hd
+      omega
   exact ⟨⟨M,hM⟩, rfl⟩
 
 def PrimitiveRow := {v : Fin 2 → O //
@@ -151,7 +134,7 @@ lemma cosetPrimitiveRow_bijective : Function.Bijective cosetPrimitiveRow := by
 
 def primitiveRowEquiv : CuspCosets ≃ PrimitiveRow := Equiv.ofBijective _ cosetPrimitiveRow_bijective
 
-open ActualEisensteinCubic CubicKubota ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 
 lemma inverse_character_eq_row_symbol (M : levelThree) :
     (complexCharacter M)⁻¹ = eisEmbedding (symbol (row M 0) (row M 1)) := by
@@ -179,24 +162,24 @@ lemma inverse_character_eq_row_symbol (M : levelThree) :
   have hm : eisEmbedding (symbol c a)*eisEmbedding (symbol c d)=1 := by
     simpa only [map_mul, map_one] using congrArg eisEmbedding hs
   change (eisEmbedding (symbol c a))⁻¹ = eisEmbedding (symbol c d)
-  exact inv_eq_of_mul_eq_one_right hm
+  grind
 
 lemma inverse_cosetCharacter_eq_row_symbol (x : CuspCosets) :
     (cosetCharacter x)⁻¹ = eisEmbedding (symbol (cosetRow x 0) (cosetRow x 1)) := by
   induction x using Quotient.inductionOn with | _ M => exact inverse_character_eq_row_symbol M
 
 lemma primitiveRowEquiv_symm_row (v : PrimitiveRow) :
-    cosetRow (primitiveRowEquiv.symm v) = v.1 := by
-  exact congrArg Subtype.val (primitiveRowEquiv.apply_symm_apply v)
+    cosetRow (primitiveRowEquiv.symm v) = v.1 :=
+  congrArg Subtype.val (primitiveRowEquiv.apply_symm_apply v)
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 
 section
 local notation "O" => ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 def radialSource (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑' z : O, if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X)
@@ -233,7 +216,7 @@ theorem radialSource_poisson (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
   change (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / X)) =
     (X : ℂ) * paperRadialFourier W 0 + (X : ℂ) * radialDual W X at hp
   change (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / X)) = W 0 + radialSource W X at hz
-  linear_combination hp - hz
+  grind
 
 def subsetNorm {ι : Type*} (P : ι → Ideal O) (E : Finset ι) : ℝ :=
   Ideal.absNorm (∏ i ∈ E, P i)
@@ -274,7 +257,7 @@ theorem masked_radialSource_dilations {ι : Type*} [DecidableEq ι]
   intro z
   rw [mul_eq_zero, or_iff_right (primeSubsetGenerator_ne_zero P E)]
   by_cases hz : z = 0
-  · simp [hz]
+  · simp_all
   · rw [ite_eq_right hz, ite_eq_right hz, map_mul, norm_mul, mul_pow, primeSubsetGenerator_norm_sq]
     congr 1
     simp only [subsetNorm, div_div_eq_mul_div]
@@ -316,16 +299,15 @@ theorem masked_radialSource_truncated_euler {ι : Type*} [DecidableEq ι]
       (∑ E ∈ largeDivisors P S Z, subsetMobius P E * radialSource W (X / subsetNorm P E)) := by
   rw [masked_radialSource_truncated P hinj S W X Z hX]
   have hs := sum_small_add_large P S Z (fun E => subsetMobius P E / (subsetNorm P E : ℂ))
-  have hprime : ∀ i, Prime (P i) := fun i => Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+  have hprime := fun i => Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
   have he := primeSubset_moebius_norm_sum P hprime hinj S
   change (∑ E ∈ S.powerset, subsetMobius P E / (subsetNorm P E : ℂ)) = _ at he
-  rw [he] at hs
-  linear_combination (X : ℂ) * paperRadialFourier W 0 * hs
+  grind
 
 end
 
 local notation "O" => ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 def middleDivisors {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S : Finset ι) (Y Z : ℝ) :=
   (smallDivisors P S Z).filter (fun E => Y < subsetNorm P E)
@@ -349,16 +331,15 @@ theorem radialDual_near_add_far (W : 𝓢(ℝ, ℂ)) (X lengthScale : ℝ) (hX :
     radialDual W X = dualNear W X lengthScale + dualFar W X lengthScale := by
   have hs := radialDual_summable W X hX
   have hn : Summable (fun h : O => if ‖eisEmbedding h‖ ^ 2 ≤ lengthScale then
-      (if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)) else 0) := by
-    exact hs.indicator {h : O | ‖eisEmbedding h‖ ^ 2 ≤ lengthScale}
+      (if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)) else 0) :=
+    hs.indicator {h : O | ‖eisEmbedding h‖ ^ 2 ≤ lengthScale}
   have hf : Summable (fun h : O => if lengthScale < ‖eisEmbedding h‖ ^ 2 then
-      (if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)) else 0) := by
-    exact hs.indicator {h : O | lengthScale < ‖eisEmbedding h‖ ^ 2}
+      (if h = 0 then 0 else paperRadialFourier W (X * ‖eisEmbedding h‖ ^ 2)) else 0) :=
+    hs.indicator {h : O | lengthScale < ‖eisEmbedding h‖ ^ 2}
   unfold radialDual dualNear dualFar
   rw [← hn.tsum_add hf]
   apply tsum_congr
-  intro h
-  by_cases hL : ‖eisEmbedding h‖ ^ 2 ≤ lengthScale <;> simp [hL, not_lt_of_ge, lt_of_not_ge]
+  grind
 
 theorem sum_small_add_middle {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
     (S : Finset ι) (Y Z : ℝ) (hYZ : Y ≤ Z) (f : Finset ι → ℂ) :
@@ -369,10 +350,8 @@ theorem sum_small_add_middle {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
     ext E
     simp only [Finset.mem_filter, smallDivisors]
     constructor
-    · rintro ⟨⟨hE, hEZ⟩, hEY⟩
-      exact ⟨hE, hEY⟩
-    · rintro ⟨hE, hEY⟩
-      exact ⟨⟨hE, hEY.trans hYZ⟩, hEY⟩
+    · simp_all
+    · grind
   have hs := Finset.sum_filter_add_sum_filter_not (smallDivisors P S Z)
     (fun E => subsetNorm P E ≤ Y) f
   rw [hsmall] at hs
@@ -409,13 +388,11 @@ theorem masked_radialSource_five_pieces {ι : Type*} [DecidableEq ι]
     apply Finset.sum_congr rfl
     intro E hE
     rw [radialDual_near_add_far W _ lengthScale (div_pos hX (subsetNorm_pos P E)), mul_add]
-  rw [hm]
-  ring
+  grind
 
 end TruncatedPrincipalPoisson
 
 namespace EisensteinSchwartzPoisson
-open ConcreteTraceCRT
 
 theorem radial_source_nonzero_lattice_decay (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -445,12 +422,12 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
       nlinarith [one_le_eisenstein_norm_sq h.val h.property]
     have hh := polynomial_tail_majorant A K K (‖eisEmbedding h.val‖ ^ 2) B
       ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖ hK0 hK0.le (sq_nonneg _) (norm_nonneg _) hq
-      (hb _ (by positivity))
+      (by grind)
     simpa only [min_eq_left hK, one_pow, one_mul] using hh
   have hmajor := (eisenstein_cauchy_summable.subtype (fun h => h ≠ 0)).mul_left
     (B / (1 + K) ^ A)
   have hs : Summable (fun h : {h : O // h ≠ 0} => ‖W (K * ‖eisEmbedding h.val‖ ^ 2)‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hp hmajor
+    Summable.of_nonneg_of_le (by simp) hp hmajor
   calc
     _ ≤ ∑' h : {h : O // h ≠ 0},
         (B / (1 + K) ^ A) * ((1 + ‖eisEmbedding h.val‖ ^ 2) ^ 2)⁻¹ :=
@@ -462,24 +439,21 @@ theorem radial_source_nonzero_lattice_decay (A : ℕ) :
     _ ≤ (B / (1 + K) ^ A) * (eisensteinCauchyMass + 1) := by
       gcongr
       linarith
-    _ = _ := by dsimp [B, C]; ring
+    _ = _ := by ring
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 local notation "O" => ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 private theorem zero_removed_tsum (f : O → ℂ) :
     (∑' h : O, if h = 0 then 0 else f h) = ∑' h : {h : O // h ≠ 0}, f h.val := by
   rw [← tsum_subtype_eq_of_support_subset (s := {h : O | h ≠ 0}) (by
-    intro h hh hz
-    subst h
-    exact hh (by simp))]
+    simp_all)]
   apply tsum_congr
-  intro h
-  simp only [ite_eq_right h.property]
+  simp_all
 
 theorem radialSource_inverse_decay (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -496,7 +470,7 @@ theorem radialSource_inverse_decay (A : ℕ) :
   unfold radialSource
   rw [zero_removed_tsum]
   simp only [div_inv_eq_mul, mul_comm (‖eisEmbedding _‖ ^ 2) K]
-  exact (norm_tsum_le_tsum_norm (hs.norm.subtype _)).trans (hb W K hK)
+  exact (norm_tsum_le_tsum_norm (hs.norm.subtype _)).trans (by grind)
 
 theorem radialDual_decay (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -532,7 +506,7 @@ private theorem scale_tail_bound (A : ℕ) (B x Y X : ℝ)
   calc
     _ ≤ (X / x) * (B / (X / x) ^ (A + 1)) := by
       apply mul_le_mul_of_nonneg_left _ hu.le
-      exact div_le_div_of_nonneg_left hB (pow_pos hu _) (pow_le_pow_left₀ hu.le (by linarith) _)
+      exact div_le_div_of_nonneg_left hB (by positivity) (pow_le_pow_left₀ hu.le (by linarith) _)
     _ = B * (x / X) ^ A := by
       simp only [div_pow, pow_succ]
       field_simp
@@ -570,8 +544,8 @@ theorem small_divisor_dual_tail (A : ℕ) :
       ‖(X : ℂ) * ((subsetMobius P E / (subsetNorm P E : ℂ)) *
         radialDual W (X / subsetNorm P E))‖ ≤ B * (Y / X) ^ A := by
     have hn := subsetNorm_pos P E
-    have hEY : subsetNorm P E ≤ Y := (Finset.mem_filter.mp hE).2
-    have hscale : 1 ≤ X / subsetNorm P E := (le_div_iff₀ hn).mpr (by simpa using hEY.trans hYX)
+    have hEY := (Finset.mem_filter.mp hE).2
+    have hscale : 1 ≤ X / subsetNorm P E := (le_div_iff₀ hn).mpr (by linarith)
     calc
       _ = (X / subsetNorm P E) * ‖subsetMobius P E‖ * ‖radialDual W (X / subsetNorm P E)‖ := by
         simp only [norm_mul, norm_div, Complex.norm_real, Real.norm_eq_abs,
@@ -580,9 +554,9 @@ theorem small_divisor_dual_tail (A : ℕ) :
       _ ≤ (X / subsetNorm P E) * 1 * (B / (1 + X / subsetNorm P E) ^ (A + 1)) := by
         gcongr
         · exact subsetMobius_norm_le_one P E
-        · exact hb W _ hscale
+        grind
       _ ≤ B * (Y / X) ^ A := by
-        simpa only [mul_one] using scale_tail_bound A B (subsetNorm P E) Y X hB hn hEY hX
+        simpa using scale_tail_bound A B (subsetNorm P E) Y X hB hn hEY hX
   exact (norm_sum_subsets_le S _ (Finset.filter_subset _ _) _ _ (by positivity) hf).trans_eq (by ring)
 
 theorem large_divisor_source_tail (A : ℕ) :
@@ -602,8 +576,8 @@ theorem large_divisor_source_tail (A : ℕ) :
   have hf (E : Finset ι) (hE : E ∈ largeDivisors P S Z) :
       ‖subsetMobius P E * radialSource W (X / subsetNorm P E)‖ ≤ B / (1 + Z / X) ^ A := by
     have hn := subsetNorm_pos P E
-    have hEZ : Z < subsetNorm P E := (Finset.mem_filter.mp hE).2
-    have hscale : 1 ≤ subsetNorm P E / X := (le_div_iff₀ hX).mpr (by simpa using hXZ.trans hEZ.le)
+    have hEZ := (Finset.mem_filter.mp hE).2
+    have hscale : 1 ≤ subsetNorm P E / X := (le_div_iff₀ hX).mpr (by linarith)
     have hh := hb W (subsetNorm P E / X) hscale
     rw [inv_div] at hh
     calc

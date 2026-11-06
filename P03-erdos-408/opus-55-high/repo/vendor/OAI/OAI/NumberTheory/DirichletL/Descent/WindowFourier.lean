@@ -8,7 +8,7 @@ public import Mathlib.MeasureTheory.Integral.Pi
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform
 open MeasureTheory FourierBridge JointLogSeparation
 noncomputable section
 
@@ -57,11 +57,11 @@ theorem profileMode_coordinate_separation (g : ι → 𝓢(ℝ, ℂ))
   rw [integral_mul_const, integral_mul_const, integral_mul_const]
   have he := coordinate_fourier_inversion g y
   simp only [coordinatePhase] at he
-  rw [← he]
+  simp_all
 
  theorem pureProfileMode_norm (a₁ a₂ ak : ι → ℝ) (y : ι → ℝ)
     (t : Frequency) (u : ι → ℝ) : ‖pureProfileMode a₁ a₂ ak y t u‖ = 1 := by
-  simp [pureProfileMode, norm_prod,  logPhase_norm]
+  simp [pureProfileMode, logPhase_norm]
 
 def fullProfileDensity (g : ι → 𝓢(ℝ, ℂ)) (b₁ b₂ b₃ : 𝓢(ℝ, ℂ))
     (p : Frequency × (ι → ℝ)) : ℂ :=
@@ -126,8 +126,6 @@ def profileHeight (a₁ a₂ ak : ι → ℝ) (t : Frequency) (u : ι → ℝ) (
 
 lemma logPhase_scaled_coordinate (t a y : ℝ) : logPhase t (a*y) = logPhase (a*t) y := by
   unfold logPhase
-  congr 1
-  push_cast
   ring
 
 theorem pureProfileMode_height (a₁ a₂ ak y : ι → ℝ) (t : Frequency) (u : ι → ℝ) :

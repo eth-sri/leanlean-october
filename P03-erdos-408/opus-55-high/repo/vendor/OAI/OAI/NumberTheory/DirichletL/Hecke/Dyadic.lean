@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.ReciprocalBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
-open MeasureTheory Set
+open scoped Classical
+open Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
 
@@ -39,7 +39,7 @@ theorem coefficient_norm_le (χ : Character) (inverse : Bool) (I : Ideal O) :
   cases inverse
   · exact idealCoeff_zero χ
   · change (UniqueFactorizationMonoid.moebius (0 : Ideal O) : ℂ)*idealCoeff χ 0 = 0
-    rw [idealCoeff_zero, mul_zero]
+    grind
 
 def shift (σ ω : ℝ) : ℂ := (σ : ℂ)-(ω : ℂ)*Complex.I
 
@@ -74,7 +74,7 @@ theorem series_eq_tsum (χ : Character) (inverse : Bool) {s : ℂ} (hs : 1 < s.r
     rw [← he]
     apply tsum_congr
     intro I
-    have hI : I.val ≠ 0 := I.property
+    have hI := I.property
     rw [CubicEisenstein.fullIdealWeight, ite_eq_right hI]
     simp only [norm, Complex.ofReal_natCast]
   rw [hc]

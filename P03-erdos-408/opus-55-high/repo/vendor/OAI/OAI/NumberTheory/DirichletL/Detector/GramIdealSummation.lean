@@ -8,11 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ActualEisensteinCubic CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "SupportedIdeal" => {I : Ideal O // Supported I}
+local notation "SupportedIdeal" => {I : Ideal ActualEisensteinCubic.O // Supported I}
 
 def gramIdealNorm (I : SupportedIdeal) : ℝ := Ideal.absNorm I.val
 
@@ -31,7 +30,7 @@ theorem supportedIdeal_rpow_summable (r : ℝ) (hr : r < -1) :
   rw [Function.comp_apply,CubicEisenstein.fullIdealWeight,ite_eq_right I.property.1]
   have he : (Ideal.absNorm I.val:ℂ) = ((gramIdealNorm I:ℝ):ℂ) := by simp [gramIdealNorm]
   rw [he,Complex.norm_cpow_eq_rpow_re_of_pos (gramIdealNorm_pos I)]
-  simp only [Complex.neg_re,Complex.ofReal_re,neg_neg]
+  simp
 
 theorem supportedIdeal_rpow_finite_bound (r : ℝ) (hr : r < -1) :
     ∃ K : ℝ, 0 < K ∧ ∀ F : Finset SupportedIdeal,
@@ -40,10 +39,10 @@ theorem supportedIdeal_rpow_finite_bound (r : ℝ) (hr : r < -1) :
   let K := 1 + ∑' I : SupportedIdeal, gramIdealNorm I ^ r
   have hn : 0 ≤ ∑' I : SupportedIdeal, gramIdealNorm I ^ r :=
     tsum_nonneg (fun I => Real.rpow_nonneg (gramIdealNorm_pos I).le _)
-  refine ⟨K, by dsimp [K]; linarith, ?_⟩
+  refine ⟨K, by linarith, ?_⟩
   intro F
   exact (hs.sum_le_tsum F (fun I _ => Real.rpow_nonneg (gramIdealNorm_pos I).le _)).trans
-    (by dsimp [K]; linarith)
+    (by linarith)
 
 lemma ideal_sum_min_power_bound (t : ℝ) (ht : 0 < t) (A : ℕ) (θ : ℝ)
     (hθ : 0 ≤ θ) (hA : θ ≤ A) : min 1 (t^A) ≤ t^θ := by
@@ -76,11 +75,7 @@ lemma gram_ideal_term_bound (δ Λ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1)
     rw [←Real.rpow_add hj]
     congr 1
     ring
-  rw [show -(1-δ) = -1+δ by ring]
-  calc
-    _ = Λ^(-1+δ)*((gramIdealNorm I^(-2:ℝ)*gramIdealNorm I^(1-δ))*
-        (gramIdealNorm J^(-2:ℝ)*gramIdealNorm J^(1-δ))) := by ring
-    _ = _ := by rw [hi',hj']
+  grind
 
 theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
     ∃ K : ℝ, 0 < K ∧ ∀ (A : ℕ), 1 ≤ A → ∀ (Λ : ℝ), 0 < Λ →
@@ -105,7 +100,7 @@ theorem gram_supported_double_sum (δ : ℝ) (hδ : 0 < δ) (hδ1 : δ < 1) :
       rw [Finset.sum_comm]
     _ ≤ Λ^(-1+δ)*C^2 := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
-      simpa only [pow_two] using mul_le_mul hF hG hGn hC.le
+      nlinarith
     _ = _ := by ring
 
 theorem gram_supported_exceptional_sum (ε : ℝ) (_hε : 0 ≤ ε) (hε1 : ε < 1/6) :

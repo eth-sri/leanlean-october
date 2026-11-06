@@ -9,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.IteratedShift
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-lemma FirstTail.of_ge_one_fiftieth {S : Finset (Ideal O)} (h : FirstTail (1/4) S)
+lemma FirstTail.of_ge_one_fiftieth {S : Finset (Ideal HeckeFamily.O)} (h : FirstTail (1/4) S)
     {eps : ℝ} (heps : (1/50:ℝ)≤eps) : FirstTail eps S := by
   refine ⟨by linarith,h.norm_four,?_⟩
   simpa only [firstPrimeDefectBound,min_eq_right heps,
@@ -28,7 +27,7 @@ private lemma height_integral_wxz (f : HeightSpace→ℂ) (hf : Integrable f hei
   filter_upwards [hf.prod_left_ae] with w hw
   exact integral_prod _ hw
 
-def continuedRowOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def continuedRowOnLines {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
     (X Y Z σ υ r : ℝ) (t : HeightSpace) : ℂ :=
@@ -39,7 +38,7 @@ theorem continuedRowOnLines_z_transport {K : ℕ}
     (e σ υ l r : ℝ) (he : 0<e) (he' : e<1/1000)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ)
     (hυ : (1/2:ℝ)≤υ) (hl : (17/50:ℝ)≤l) (hlr : l≤r)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -51,7 +50,7 @@ theorem continuedRowOnLines_z_transport {K : ℕ}
       Integrable (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ q) heightMeasure :=
     continuedPhysicalRowKernel_integrable e σ υ q he he' hσ hσβ hυ hq S hS hmax hfirst P hP hPS η u hu
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
-  rw [height_integral_wxz _ (hi l hl),height_integral_wxz _ (hi r (hl.trans hlr))]
+  rw [height_integral_wxz _ (by grind),height_integral_wxz _ (by grind)]
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro tw
@@ -64,7 +63,7 @@ theorem continuedRowOnLines_z_transport {K : ℕ}
     (by simp;linarith) (by simp;linarith) (by simp;linarith) hl
 
 theorem rowIntegral_wz_transport {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -81,7 +80,7 @@ theorem rowIntegral_wz_transport {K : ℕ}
       Integrable (continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 3 υ q) heightMeasure :=
     continuedPhysicalRowKernel_integrable (1/2000) 3 υ q (by norm_num) (by norm_num) (by norm_num) hβ hυ hq
       S hS hmax hfirst P hP hPS η u hu W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
-  obtain ⟨_,hphysical⟩ := rowIntegral_w_shift (1/2) (by norm_num) (by norm_num) S hS (by norm_num;exact hfirst) hmax P hP hPS
+  obtain ⟨_,hphysical⟩ := rowIntegral_w_shift (1/2) (by norm_num) (by norm_num) S hS (by grind) hmax P hP hPS
     η u hu W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ υ hυ hυ3
   have hinner : (∫q : ℝ×ℝ,shiftedRowInner S hS hmax P hPS η u W0 W1 X Y Z υ q ∂(volume.prod volume))=
       ∫p : HeightSpace,continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z 3 υ 2 p ∂heightMeasure :=
@@ -89,7 +88,7 @@ theorem rowIntegral_wz_transport {K : ℕ}
   have hz := continuedRowOnLines_z_transport (1/2000) 3 υ r 2 (by norm_num) (by norm_num)
     (by norm_num) hβ hυ hr hr2 S hS hmax hfirst P hP hPS η u hu W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z hX hY hZ
-  exact ⟨hi r hr,hphysical.trans (by rw [hinner,hz])⟩
+  simp_all
 
 end SevenEighths.ProbeHighRowFamily
 

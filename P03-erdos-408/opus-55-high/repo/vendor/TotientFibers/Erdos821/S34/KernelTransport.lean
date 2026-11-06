@@ -6,7 +6,7 @@ public import Erdos821.S34.CellCosts
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -21,7 +21,7 @@ theorem cellKernel_star (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
     simp only [true_and]
     split_ifs
     · simp [mul_comm]
-    · simp
+    simp
   · simp [cellKernel, hc, Ne.symm hc]
 
 def cellTransposeApply (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)

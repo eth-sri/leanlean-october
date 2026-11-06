@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.UniformError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_central_z_height_tail (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -49,7 +48,7 @@ theorem uniform_central_z_height_tail (K : ℕ)
       have hh : 3+|t.2|≤3*jointHeight t.1.1 t.1.2 t.2 := by
         unfold jointHeight
         linarith [abs_nonneg t.1.1,abs_nonneg t.1.2,abs_nonneg t.2]
-      apply (hrow0 η u hu P hP hPS ψ a B H i ha haTop hB hH hbin σ hσ r ⟨hr,hr1⟩ t ht).trans
+      apply (hrow0 η u hu P hP hPS ψ a B H i ha haTop hB hH hbin σ hσ r (by grind) t ht).trans
       calc
         _ ≤ (A*(3+|H|)^2)*(3*jointHeight t.1.1 t.1.2 t.2)^2 :=
           mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) hh 2) (by positivity)
@@ -58,12 +57,12 @@ theorem uniform_central_z_height_tail (K : ℕ)
       positivity
   let F := fun t : HeightSpace=>sourceMellinWeight W0 W1 X Y Z
     ((σ:ℂ)+t.1.1*I) ((((1-a-6*e):ℝ):ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)*G t
-  have hp := hprofile σ ⟨by linarith [hσ.1],hσ.2⟩ r ⟨le_rfl,le_rfl⟩ (1-a-6*e)
-    ⟨by linarith,by linarith⟩ (9*A*(3+|H|)^2) (by positivity)
+  have hp := hprofile σ ⟨by grind,hσ.2⟩ r (by simp) (1-a-6*e)
+    (by grind) (9*A*(3+|H|)^2) (by positivity)
     X Y Z hX hY hZ G hG.aestronglyMeasurable hb
   have hFR (t : HeightSpace) (ht : t∈R) : F t=continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ (1-a-6*e) r t := by
     dsimp only [F,G]
-    rw [Set.indicator_of_mem (show t∈E from ht.1),continuedRowOnLines_eq_amplitude]
+    rw [Set.indicator_of_mem (by grind),continuedRowOnLines_eq_amplitude]
   have hb' : (∫t in R,‖F t‖ ∂heightMeasure)≤
       (9*A*(3+|H|)^2)*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/(1+H)^(N+2) := by
     apply le_trans _ (hp.2 H hH0)
@@ -71,7 +70,7 @@ theorem uniform_central_z_height_tail (K : ℕ)
     exact Filter.Eventually.of_forall (fun t ht=>Or.inr (Or.inl ht.2))
   have heq : (∫t in R,‖F t‖ ∂heightMeasure)=
       ∫t in R,‖continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ (1-a-6*e) r t‖ ∂heightMeasure :=
-    setIntegral_congr_fun hR (fun t ht=>congrArg norm (hFR t ht))
+    setIntegral_congr_fun hR (fun t ht=>congrArg norm (by grind))
   rw [heq] at hb'
   apply hb'.trans
   have hpow : (3+|H|)^2≤9*(height H)^2 := by
@@ -80,7 +79,7 @@ theorem uniform_central_z_height_tail (K : ℕ)
     norm_num [mul_pow] at hh'
     exact hh'
   have hheight : 1+H=height H := by simp [height,abs_of_nonneg hH0]
-  have hden : 0<height H := height_pos H
+  have hden := height_pos H
   rw [hheight]
   calc
     _ ≤ (9*A*(9*height H^2))*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height H^(N+2) := by

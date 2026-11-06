@@ -11,12 +11,11 @@ noncomputable section
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary
-local notation "O" => ActualEisensteinCubic.O
 
 theorem initialHigh_counting_product_integrable {ι : Type*} [Countable ι]
     [MeasurableSpace ι] [MeasurableSingletonClass ι]
     (e : ι→FullHighIndex) (he : Function.Injective e)
-    (S : Finset (Ideal O)) (D : Ideal O) (η : HeckeFamily.Character)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : Ideal ActualEisensteinCubic.O) (η : HeckeFamily.Character)
     (mask : NonzeroFrequency→ℂ) (hm : ∀H,‖mask H‖≤1)
     (σ υ ξ : ℝ) (hσ : 3/2<σ) (hυ : 2<υ) (hξ : 1<ξ)
     (T : HeightSpace→ℂ) (hT : Integrable T heightMeasure) (hcT : Continuous T) :

@@ -9,14 +9,13 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramDiagonal
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT RayFourExpansion
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
 
 lemma original_pair_zero_split (I J : SupportedIdeal) (U : SchwartzMap ℝ ℂ) (Q : ℝ) (hQ : 0<Q) :
-    (∑'h : O,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
+    (∑'h : ActualEisensteinCubic.O,actualCorrelation (primaryGenerator I.val) (primaryGenerator J.val)
       ((supported_span_primaryGenerator_iff _).mpr I.property)
       ((supported_span_primaryGenerator_iff _).mpr J.property) (-h)*
       paperRadialFourier U (Q*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator I.val*primaryGenerator J.val)‖^2))=
@@ -49,12 +48,7 @@ theorem original_energy_nonzero (C : CalibrationData) (W : ℝ→ℂ) (hW : HasC
   simp_rw [original_pair_zero_split _ _ U Q hQ,mul_add,Finset.sum_add_distrib]
   simp only [mul_add]
   congr 1
-  congr 1
-  apply Finset.sum_congr rfl
-  intro I hI
-  apply Finset.sum_congr rfl
-  intro J hJ
-  ring
+  grind
 
 end SevenEighths.ProbeGramCommon
 end

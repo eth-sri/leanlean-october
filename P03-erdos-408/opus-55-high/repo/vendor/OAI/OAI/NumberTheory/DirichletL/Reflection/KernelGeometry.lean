@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.Denominator
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma PrimeFamily.product_span {ι : Type*} [Fintype ι] (G : PrimeFamily ι) :
     Ideal.span {∏ i, G.generator i} = ∏ i, G.ideal i := by
@@ -21,10 +20,10 @@ lemma PrimeFamily.product_span {ι : Type*} [Fintype ι] (G : PrimeFamily ι) :
     | @insert i T hi ih =>
       rw [Finset.prod_insert hi,Finset.prod_insert hi,← Ideal.span_singleton_mul_span_singleton,
         G.generator_span,ih]
-  exact hf Finset.univ
+  simp_all
 
 lemma reflected_conductor_norm {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) (c : Eis) :
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ) (c : ActualEisensteinCubic.O) :
     (Ideal.absNorm (Ideal.span {c*∏ i, (F.reflected K hK S).generator i}):ℝ) =
       (Ideal.absNorm (Ideal.span {c}*(∏ i, F.ideal i)):ℝ)*
         (Ideal.absNorm K:ℝ)*(Ideal.absNorm (∏ i, S.ideal i):ℝ) := by
@@ -42,16 +41,14 @@ lemma kernelLogCoordinates_exp (QK QP Qn Qb k p n b : ℝ)
     (hk : 0<k) (hp : 0<p) (hn : 0<n) (hb : 0<b) :
     Real.exp (∑ i, kernelSlope i * kernelLogCoordinates QK QP Qn Qb k p n b i) =
       (n/Qn)*(b/Qb)^3/((k/QK)^2*(p/QP)^2) := by
-  simp only [kernelSlope,kernelLogCoordinates,Fin.sum_univ_succ,Fin.isValue,
-    Matrix.cons_val_zero,Matrix.cons_val_succ,Fin.sum_univ_zero,add_zero,one_mul]
+  simp only [kernelSlope, kernelLogCoordinates, Fin.sum_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ, Fin.sum_univ_zero, add_zero, one_mul]
   rw [show -2*Real.log (k/QK)+(-2*Real.log (p/QP)+(Real.log (n/Qn)+3*Real.log (b/Qb))) =
     -(2*Real.log (k/QK)) + -(2*Real.log (p/QP)) + Real.log (n/Qn) + 3*Real.log (b/Qb) by ring]
   simp only [Real.exp_add,Real.exp_neg]
   rw [show (2:ℝ)=((2:ℕ):ℝ) by norm_num,show (3:ℝ)=((3:ℕ):ℝ) by norm_num,
     Real.exp_nat_mul,Real.exp_nat_mul,Real.exp_nat_mul,
-    Real.exp_log (div_pos hk hQK),Real.exp_log (div_pos hp hQP),
-    Real.exp_log (div_pos hn hQn),Real.exp_log (div_pos hb hQb)]
-  simp only [div_eq_mul_inv,mul_inv_rev]
+    Real.exp_log (by positivity),Real.exp_log (by positivity),
+    Real.exp_log (by positivity),Real.exp_log (by positivity)]
   ring
 
 theorem actual_annular_kernel_identity (C QK QP Qn Qb k p n b : ℝ)
@@ -63,13 +60,13 @@ theorem actual_annular_kernel_identity (C QK QP Qn Qb k p n b : ℝ)
   unfold kernelCenter
   field_simp
 
-def fixedKernelCoefficient (X tau r : ℝ) (C D1 D2 : Ideal Eis) : ℝ :=
+def fixedKernelCoefficient (X tau r : ℝ) (C D1 D2 : Ideal ActualEisensteinCubic.O) : ℝ :=
   X/(27*tau^2*(Ideal.absNorm C:ℝ)^2)*r^3*
     (Ideal.absNorm D1:ℝ)*(Ideal.absNorm D2:ℝ)^3
 
 lemma source_kernel_argument_factor {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
-    (c : Eis) (X tau r : ℝ) (D1 D2 n b : Ideal Eis) :
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ)
+    (c : ActualEisensteinCubic.O) (X tau r : ℝ) (D1 D2 n b : Ideal ActualEisensteinCubic.O) :
     (X/(27*tau^2*(Ideal.absNorm (Ideal.span {c*∏ i, (F.reflected K hK S).generator i}):ℝ)^2))*
       r^3*(Ideal.absNorm (D1*n):ℝ)*(Ideal.absNorm (D2*b):ℝ)^3 =
     fixedKernelCoefficient X tau r (Ideal.span {c}*(∏ i, F.ideal i)) D1 D2 *

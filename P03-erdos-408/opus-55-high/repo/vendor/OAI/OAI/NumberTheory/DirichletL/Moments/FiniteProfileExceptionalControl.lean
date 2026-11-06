@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceDegree
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice
+open JointLogSeparation CompletedHeight CenteredMomentLattice
 open EisensteinSchwartzPoisson
 
 theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
@@ -34,7 +34,7 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
         apply Finset.sum_le_sum
         intro i hi
         apply Seminorm.le_finset_sup_apply (p := schwartzSeminormFamily ℝ ℝ ℂ) (i := (z.1,i))
-        exact Finset.mem_biUnion.mpr ⟨z,hz,Finset.mem_image.mpr ⟨i,hi,rfl⟩⟩
+        grind
       _ = _ := by simp
   apply Seminorm.finset_sup_apply_le (by positivity)
   intro z hz
@@ -49,15 +49,15 @@ theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
       dsimp only [c]
       exact (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left (hder z hz)
-          (show 0 ≤ (2:ℝ)^z.2*(1+2*Real.pi)^z.2 by positivity))
+          (by positivity))
         (show 0 ≤ (1+‖t‖)^z.2 by positivity)).trans_eq (by ring)
     _ ≤ (C * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) g) *
         (1+‖t‖)^(S.sup Prod.snd) := by
       apply mul_le_mul
-      · exact mul_le_mul_of_nonneg_right hzC (apply_nonneg _ _)
-      · exact pow_le_pow_right₀ (by linarith [norm_nonneg t]) (Finset.le_sup hz)
+      · exact mul_le_mul_of_nonneg_right hzC (by positivity)
+      · exact pow_le_pow_right₀ (by simp) (Finset.le_sup hz)
       · positivity
-      · positivity
+      positivity
 
 theorem normPowerProfile_source_control (a b : ℝ) (ha : 0 < a)
     (S : Finset (ℕ × ℕ)) :
@@ -89,7 +89,7 @@ theorem normPowerProfile_source_control (a b : ℝ) (ha : 0 < a)
     _ ≤ C₁ * (C₂ * (C₃ * T.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) * (1+‖t‖)^n) := by
       apply mul_le_mul_of_nonneg_left _ hC₁.le
       exact (h₂ _ _).trans (mul_le_mul
-        (mul_le_mul_of_nonneg_left (h₃ W) hC₂.le) ht (by positivity) (by positivity))
+        (mul_le_mul_of_nonneg_left (by grind) hC₂.le) ht (by positivity) (by positivity))
     _ = _ := by ring
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 

@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWholeTail
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem second_whole_column_denominator {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal] (G E S T : Finset ι)
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal] (G E S T : Finset ι)
     (hEG : E ⊆ G) (hGS : Disjoint G S) (hGT : Disjoint G T)
     (L : ℝ) (hL : 0 ≤ L)
     (hS : primeProductNorm p (G ∪ S) ≤ L)
@@ -28,10 +27,10 @@ theorem second_whole_column_denominator {ι : Type*} [DecidableEq ι]
   rw [primeProductNorm_union p G T hGT] at hT
   calc
     _ ≤ (primeProductNorm p G)^2 * (primeProductNorm p S * primeProductNorm p T) :=
-      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hE0 hE 2) (mul_nonneg hS0 hT0)
+      mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hE0 hE 2) (by positivity)
     _ = (primeProductNorm p G * primeProductNorm p S) *
       (primeProductNorm p G * primeProductNorm p T) := by ring
-    _ ≤ L*L := mul_le_mul hS hT (mul_nonneg (primeProductNorm_pos p hp G).le hT0) hL
+    _ ≤ L*L := mul_le_mul hS hT (mul_nonneg (by linarith) hT0) hL
     _ = _ := by ring
 
 end

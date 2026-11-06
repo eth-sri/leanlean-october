@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedNormalizationActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedExceptionalLow
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
@@ -23,17 +23,16 @@ open CenteredMomentAmplifiedRetainedRadius CenteredMomentSectorLocalization
 open CenteredMomentDescentLedger CenteredMomentCompleteCommon CenteredMomentCanonicalFirst
 open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentRankinRadical
 open CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
-local notation "O"=>HeckeFamily.O
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 open CenteredMomentFirstMixedExceptionalCap CenteredMomentFirstMixedCommonRadius
 
 theorem actual_main_exceptional_reference (η τ : Character)
-    (I J E : Ideal O) (hI : Supported I) (hJ : Supported J)
+    (I J E : Ideal HeckeFamily.O) (hI : Supported I) (hJ : Supported J)
     (hIJ:primeSupport I=primeSupport J)
     (A : Finset (CommonIndex I J)) (hE:E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A})
     (K X Z j sigma delta reserve r : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
     (hK:0<K)(hX:0<X) :
     ((X/(I.absNorm:ℝ))*(X/(I.absNorm:ℝ))^((1:ℝ)/3)*(mainCommonRadius Z (Real.logb Z (J.absNorm:ℝ)) (nominalLog I J E K X Z) (Real.logb Z (I.absNorm:ℝ)) sigma delta reserve)^((5:ℝ)/6)*Z^(-sigma/3)/((τ.modulus.absNorm:ℝ)*(X/(I.absNorm:ℝ))^2*Z^(allowance I J Z)))*Z^(-2*max r 0/3)≤
@@ -68,15 +67,15 @@ theorem actual_main_exceptional_reference (η τ : Character)
   linarith
 
 theorem actual_error_exceptional_reference (η τ : Character)
-    (I J E : Ideal O) (hI : Supported I) (hJ : Supported J)
+    (I J E : Ideal HeckeFamily.O) (hI : Supported I) (hJ : Supported J)
     (hIJ:primeSupport I=primeSupport J)
     (A : Finset (CommonIndex I J)) (hE:E=Ideal.span {primeSubsetGenerator (fun P:CommonIndex I J=>P.val) A})
     (K X Z j sigma delta reserve r : ℝ) (hZ : 1<Z)
-    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod : τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P : CommonIndex I J => P.val) A*activeConductor I J})
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
-    (p0 : O) (hp0 : p0∈CenteredMomentPrimeElements.elementPool
+    (M : Ideal HeckeFamily.O) [NeZero M] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
+    (Sbad : Finset (Ideal HeckeFamily.O)) (hbad : fixedBadPrimes⊆Sbad)
+    (p0 : HeckeFamily.O) (hp0 : p0∈CenteredMomentPrimeElements.elementPool
       (CenteredMomentPrimePool.primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
     (k : ℕ) (hk : k=1 ∨ k=6 ∨ k=7)
     (hK:0<K)(hX:0<X) :
@@ -97,7 +96,7 @@ theorem actual_error_exceptional_reference (η τ : Character)
   have hp:=elementPool_data _
     (fun Q hQ=>(primePool_data M H Sbad hbad (1/2) 1 (Z^(sigma/3)) Q hQ).1)
     (fun Q hQ=>(primePool_data M H Sbad hbad (1/2) 1 (Z^(sigma/3)) Q hQ).2) p0 hp0
-  have hl : 0 ≤ Real.logb Z (normValue p0) :=
+  have hl :=
     Real.logb_nonneg hZ (normValue_ge_one p0 hp.1.ne_zero)
   have hw : 0 ≤ errorRemoval p0 Z k := by unfold errorRemoval; positivity
   have he:=actual_error_reference_le η τ I J hI hJ hIJ A K X Z j

@@ -8,24 +8,23 @@ public import OAI.NumberTheory.DirichletL.Detector.SixthFrequency
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : O) (I J : Ideal O)
+theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O)
     (hI : CubicSieve.Admissible I) (hJ : CubicSieve.Admissible J)
     (hIJ : CubicSieve.Admissible (I*J)) (hIJcop : IsCoprime I J)
-    (n m s r : O)
+    (n m s r : ActualEisensteinCubic.O)
     (hc : Supported (Ideal.span {primaryGenerator I})) (hd : Supported (Ideal.span {primaryGenerator J}))
     (hn : Supported (Ideal.span {n})) (hm : Supported (Ideal.span {m}))
     (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
     (hpc : goodLambda^2∣primaryGenerator I-1) (hpd : goodLambda^2∣primaryGenerator J-1)
     (hpn : goodLambda^2∣n-1) (hpm : goodLambda^2∣m-1)
     (hps : goodLambda^2∣s-1) (hpr : goodLambda^2∣r-1)
-    (hcop : IsCoprime ((primaryGenerator I*n^3)*s) ((primaryGenerator J*m^3)*r)) (a b : O)
+    (hcop : IsCoprime ((primaryGenerator I*n^3)*s) ((primaryGenerator J*m^3)*r)) (a b : ActualEisensteinCubic.O)
     (hba : IsCoprime b ((primaryGenerator I*n^3)*s))
     (hab : IsCoprime a ((primaryGenerator J*m^3)*r)) :
     let A := primaryGenerator I*n^3
@@ -43,10 +42,9 @@ theorem bareSourceCoefficient_product_row_frequency (η : HeckeFamily.Character)
     (supported_completed _ _ hd hm) hr a (u*b^6) hab
   rw [show b^6*(u*a^6)=u*(a*b)^6 by ring] at hi
   rw [show a^6*(u*b^6)=u*(a*b)^6 by ring] at hj
-  rw [hi,hj] at he
-  exact he
+  simp_all
 
-theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
+theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighCoefficient η u (I*I') (J*J') (K*K') (L*L') =
@@ -63,9 +61,9 @@ theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
     have hab := primaryGenerator_coprime _ _ hsA hsB
       (hc3.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
     have hba := primaryGenerator_coprime _ _ h'.2.2.2.2 hsA
-      (hcop.symm.pow_right.mono (last_block_dvd I' J' K' L') (completed_block_dvd_cube I J K L))
+      (hcop.symm.pow_right.mono (by simp) (completed_block_dvd_cube I J K L))
     have hab' := primaryGenerator_coprime _ _ h.2.2.2.2 hsB
-      (hcop.pow_right.mono (last_block_dvd I J K L) (completed_block_dvd_cube I' J' K' L'))
+      (hcop.pow_right.mono (by simp) (completed_block_dvd_cube I' J' K' L'))
     simp only [primaryGenerator_mul,primaryGenerator_pow] at hab hba hab'
     have he := bareSourceCoefficient_product_row_frequency η u I I'
       ⟨h.1,supported_primaryGenerator_ne_zero I h.2.1⟩
@@ -96,13 +94,13 @@ theorem bareIdealHighCoefficient_row_mul (η : HeckeFamily.Character) (u : O)
     unfold bareIdealHighCoefficient
     rw [dite_eq_right hprod]
     by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
+    · have hj : ¬highSupport I' J' K' L' := by grind
       unfold highSupport at hj
-      rw [dite_eq_right hj,mul_zero]
+      simp_all
     · unfold highSupport at hi
-      rw [dite_eq_right hi,zero_mul]
+      simp_all
 
-theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
+theorem bareIdealHighSummand_row_mul (η : HeckeFamily.Character) (u : ActualEisensteinCubic.O) (x w z : ℂ)
     (I J K L I' J' K' L' : Id)
     (hcop : IsCoprime (I*J*K*L) (I'*J'*K'*L')) :
     bareIdealHighSummand η u x w z (I*I') (J*J') (K*K') (L*L') =

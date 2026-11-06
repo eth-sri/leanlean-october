@@ -9,8 +9,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology ContDiff
-open Set Complex
+open scoped Classical ContDiff
+open Set
 namespace SevenEighths.HeckePrimeAnnular
 open HeckeFamily HeckeDyadic
 
@@ -34,7 +34,7 @@ theorem prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   obtain ⟨Cp,hCp,hprime⟩ := HeckePrimeDyadic.source_log_profile_bound W A B hA hWs hW
     R dmax τ ε e κ η σmin σmax hR hdmax hτ he he' hκ hη hbudget
   let ξ := ε/(R+1)
-  have hξ : 0<ξ := div_pos hε (by positivity)
+  have hξ : 0<ξ := by positivity
   obtain ⟨Ce,hCe,herror⟩ := extraction_bound ξ hξ
   obtain ⟨Bf,hBf,hprofile⟩ := fixed_profile_norm_bound W hW.continuous A B σmin σmax hA
   let E := Ce*(max 1 B)^(1/2+ξ)*Bf
@@ -54,7 +54,7 @@ theorem prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   have hp := hprime Z d hZ hd hd' hU2 hT χ hχ a i ha ha' hmax
     r σ freq (1/Real.log D) hr hrR hσmin hσmax hL k hQ hfreq hheight
   have he := herror (χ k) W A B D σ freq Bf hA hD hWs hlarge hBf.le
-    (hprofile σ ⟨hσmin,hσmax⟩)
+    (hprofile σ (by grind))
   have hpow : D^ξ≤U^((a-1/2)*r+ε) := by
     dsimp [D]
     rw [←Real.rpow_mul hUp.le]
@@ -66,7 +66,7 @@ theorem prime_bin_bound (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
       primePolynomial (χ k) W B D σ freq‖≤E*U^((a-1/2)*r+ε) := by
     apply he.trans
     calc
-      _ = E*D^ξ := by dsimp [E]; ring
+      _ = E*D^ξ := by linarith
       _ ≤ _ := mul_le_mul_of_nonneg_left hpow hE.le
   calc
     _ ≤ ‖HeckePrimeDyadic.polynomial (χ k) (PrimeLogProfile.profile W (1/Real.log D)) D σ freq‖+

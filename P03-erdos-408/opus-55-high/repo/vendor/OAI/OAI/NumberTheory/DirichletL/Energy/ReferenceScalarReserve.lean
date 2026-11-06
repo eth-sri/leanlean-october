@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceScalarBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyReferenceScalarReserve
-open HeckeFamily CenteredMomentEnergyState CenteredMomentNaturalRowSource
+open CenteredMomentEnergyState CenteredMomentNaturalRowSource
 open CenteredMomentEnergyReferenceScalarBounds
 
 theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
@@ -27,12 +27,12 @@ theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
            max 1 s.radial.scale*Z^(s.width/4)*(∏i,Z^(w i))) ≤C*Z^(s.width+ε):=by
   let A:ℝ:=max 1 ((fixedConductorFactor:ℝ)*bΦ)
   let B:ℝ:=1+2*L/d
-  have hA:0<A:=zero_lt_one.trans_le (le_max_left _ _)
+  have hA:0<A:=by positivity
   have hBpos:0<B:=by dsimp only [B];positivity
   refine ⟨1+A^d*B+A^(2*d),by positivity,?_⟩
   intro Z hZ s hs α inst w hw
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hlog:0≤Real.log Z:=Real.log_nonneg hZ
+  have hlog:=Real.log_nonneg hZ
   have hr:=radical_power s d hd.le
   have hc:=conductor_power s Mcap d hs hd.le
   have hc₂:=conductor_power s Mcap (2*d) hs (by positivity)
@@ -40,8 +40,8 @@ theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
   have hm:=short_slot_mass s Mcap hs w hw
   have hdirect:(s.puncture.radical.absNorm:ℝ)^d*Z^(s.width+d)≤Z^(s.width+ε):=by
     calc
-      _≤Z^(Bmask*d)*Z^(s.width+d):=mul_le_mul_of_nonneg_right hr (Real.rpow_nonneg hz.le _)
-      _=Z^(s.width+d*(Bmask+1)):=by rw [←Real.rpow_add hz];congr 1;ring
+      _≤Z^(Bmask*d)*Z^(s.width+d):=mul_le_mul_of_nonneg_right hr (by positivity)
+      _=Z^(s.width+d*(Bmask+1)):=by rw [←Real.rpow_add hz];ring
       _≤_:=Real.rpow_le_rpow_of_exponent_le hZ (by nlinarith)
   have hreflect:(s.puncture.radical.absNorm:ℝ)^d*
       ((max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^d*
@@ -52,7 +52,7 @@ theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
       _=A^d*B*Z^(s.width+d*(Bmask+Mcap+2)):=by
         calc
           _=A^d*B*(Z^(Bmask*d)*Z^(Mcap*d)*Z^d*Z^(s.width+d)):=by ring
-          _=_:=by simp only [←Real.rpow_add hz];congr 2;ring
+          _=_:=by simp only [←Real.rpow_add hz];ring
       _≤_:=mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) (by positivity)
   have herrorTerm:(s.puncture.radical.absNorm:ℝ)^d*
       ((max 1 ((fixedConductorFactor:ℝ)*bΦ*Z^s.width))^(2*d)*Z^(-2*saving)*
@@ -66,12 +66,9 @@ theorem ledger_bound (Mcap Bmask bΦ L d saving ε:ℝ)
       _=A^(2*d)*Z^(s.width+(Bmask*d+Mcap*(2*d)-2*saving+5*Mcap/4)):=by
         calc
           _=A^(2*d)*(Z^(Bmask*d)*Z^(Mcap*(2*d))*Z^(-2*saving)*Z^(s.width+5*Mcap/4)):=by ring
-          _=_:=by simp only [←Real.rpow_add hz];congr 1;congr 1;ring
+          _=_:=by simp only [←Real.rpow_add hz];ring
       _≤_:=mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) (by positivity)
-  calc
-    _≤Z^(s.width+ε)+A^d*B*Z^(s.width+ε)+A^(2*d)*Z^(s.width+ε):=by
-      simpa only [mul_add] using add_le_add (add_le_add hdirect hreflect) herrorTerm
-    _=_:=by ring
+  linarith
 
 theorem exists_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
     (hrho:0<rho)(hε:0<ε)(hM:0≤Mcap)(hB:0≤Bmask):
@@ -100,9 +97,9 @@ theorem exists_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
     nlinarith
   have herror:Bmask*d+Mcap*(2*d)-2*saving+5*Mcap/4≤ε:=by
     dsimp only [saving]
-    nlinarith [mul_nonneg hB hd.le,mul_nonneg hM hd.le]
+    nlinarith
   obtain ⟨C,hC,hledger⟩:=ledger_bound Mcap Bmask bΦ L d saving ε hM hB hL hd hmain herror
-  exact ⟨d,xi,saving,L,C,hd,hxi,hsave,hC,le_rfl,by dsimp only [L];linarith,hledger⟩
+  exact ⟨d,xi,saving,L,C,hd,hxi,hsave,hC,le_rfl,by linarith,hledger⟩
 
 end SevenEighths.CenteredMomentEnergyReferenceScalarReserve
 

@@ -25,9 +25,9 @@ lemma exists_forall_modEq_iff (V : Finset ℕ) (hV : ∀ p ∈ V, p.Prime) (a : 
   induction V using Finset.induction_on with
   | empty => exact ⟨0, fun e => by simp [Nat.modEq_one]⟩
   | insert q V hq ih =>
-    obtain ⟨k, hk⟩ := ih fun p hp => hV p (mem_insert_of_mem hp)
+    obtain ⟨k, hk⟩ := ih (by grind)
     have hqp := hV q (mem_insert_self q V)
-    have hco : q.Coprime (∏ p ∈ V, p) := Nat.Coprime.prod_right fun p hp =>
+    have hco := Nat.Coprime.prod_right fun p hp =>
       (Nat.coprime_primes hqp (hV p (mem_insert_of_mem hp))).2 fun h => hq (h ▸ hp)
     obtain ⟨k', hk'q, hk'M⟩ := Nat.chineseRemainder hco (a q) k
     refine ⟨k', fun e => ?_⟩
@@ -66,7 +66,7 @@ lemma abs_card_filter_modEq_sub_le {M : ℕ} (hM : 0 < M) {A t : ℕ} (hAt : A �
   have e3 : ((⌊β⌋ : ℚ) : ℝ) ≤ (β : ℝ) := by exact_mod_cast h3
   have e4 : (β : ℝ) < ((⌊β⌋ : ℚ) : ℝ) + 1 := by exact_mod_cast h4
   push_cast at e1 e2 e3 e4 ⊢
-  constructor <;> linarith
+  grind
 
 /-- A system of congruences modulo the distinct primes of `V` has
 `(t - A)/∏_{p ∈ V} p + O(1)` solutions in `(A, t]`. -/
@@ -77,10 +77,6 @@ lemma abs_card_filter_forall_modEq_sub_le (V : Finset ℕ) (hV : ∀ p ∈ V, p.
   obtain ⟨k, hk⟩ := exists_forall_modEq_iff V hV a
   have hM : 0 < ∏ p ∈ V, p := prod_pos fun p hp => (hV p hp).pos
   have h := abs_card_filter_modEq_sub_le hM hAt k
-  have hfilt : ((Ioc A t).filter fun e => ∀ p ∈ V, e ≡ a p [MOD p]) =
-      (Ioc A t).filter (· ≡ k [MOD ∏ p ∈ V, p]) := filter_congr fun e _ => hk e
-  rw [hfilt]
-  push_cast at h
-  exact h
+  simp_all
 
 end Erdos408

@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped FourierTransform
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,38 +33,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff FourierTransform
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicReflectionKernel
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform ContDiff
 open MeasureTheory Filter Set
 
 theorem compact_family_mul_fourier_power_source_bound (F : ℝ → ℝ → ℂ)
@@ -111,10 +95,7 @@ theorem compact_family_mul_fourier_power_source_bound (F : ℝ → ℝ → ℂ)
     exact hb W σ hσ
   rw [div_mul_eq_mul_div]
   apply (le_div_iff₀ (by positivity : 0 < (2 * Real.pi) ^ j)).mpr
-  rw [← hid] at hn
-  calc
-    _ = (2 * Real.pi) ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) := mul_comm _ _
-    _ ≤ _ := hn
+  linarith
 
 theorem compact_family_mul_fourier_weighted_source_bound (F : ℝ → ℝ → ℂ)
     (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
@@ -138,22 +119,22 @@ theorem compact_family_mul_fourier_weighted_source_bound (F : ℝ → ℝ → �
     have hh : ‖𝓕 (fun u => F σ u * W u) w‖ ≤ C₀ * (Finset.Iic (0, 0)).sup (schwartzSeminormFamily ℝ ℝ ℂ) W := by
       simpa using h0 W σ hσ w
     exact hh.trans (mul_le_mul_of_nonneg_left hseminorm hC₀.le)
-  have hpower : |w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ ≤ Cj * S := hj W σ hσ w
+  have hpower : |w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ ≤ Cj * S := by grind
   by_cases hw : |w| ≤ 1
   · calc
       _ ≤ 2 ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ :=
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
       _ ≤ 2 ^ j * (C₀ * S) := mul_le_mul_of_nonneg_left hbase (by positivity)
       _ ≤ 2 ^ j * ((C₀ + Cj) * S) := by gcongr; linarith
-      _ = _ := by dsimp [S]; ring
-  · have hw' : 1 ≤ |w| := le_of_lt (lt_of_not_ge hw)
+      _ = _ := by linarith
+  · have hw' : 1 ≤ |w| := by linarith
     calc
       _ ≤ (2 * |w|) ^ j * ‖𝓕 (fun u => F σ u * W u) w‖ :=
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
-      _ = 2 ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) := by rw [mul_pow, mul_assoc]
+      _ = 2 ^ j * (|w| ^ j * ‖𝓕 (fun u => F σ u * W u) w‖) := by ring
       _ ≤ 2 ^ j * (Cj * S) := mul_le_mul_of_nonneg_left hpower (by positivity)
       _ ≤ 2 ^ j * ((C₀ + Cj) * S) := by gcongr; linarith
-      _ = _ := by dsimp [S]; ring
+      _ = _ := by linarith
 
 def negativeLogPullbackCLM (a b : ℝ) : SchwartzMap ℝ ℂ →L[ℝ] SchwartzMap ℝ ℂ :=
   (SchwartzMap.compCLMOfContinuousLinearEquiv ℝ
@@ -183,14 +164,14 @@ theorem logWeight_support (a b σ : ℝ) :
   rw [(logCutoff a b).support_eq] at hm
   change dist (-u) 0 < logRadius a b + 1 at hm
   change dist u 0 ≤ logRadius a b + 1
-  simpa only [dist_zero_right, norm_neg] using hm.le
+  simpa using hm.le
 
 theorem logWeight_mul_pullback (a b : ℝ) (ha : 0 < a) (W : SchwartzMap ℝ ℂ)
     (hsupp : Function.support (W : ℝ → ℂ) ⊆ Set.Icc a b) (σ u : ℝ) :
     logWeight a b σ u * negativeLogPullbackCLM a b W u = mellinLogFamily W σ u := by
   rw [negativeLogPullbackCLM_eq_actual a b ha W hsupp]
   by_cases hW : W (Real.exp (-u)) = 0
-  · simp [logWeight, mellinLogFamily, hW]
+  · simp [mellinLogFamily, hW]
   · have hc := logCutoff_eq_one_of_source a b ha (-u) (hsupp hW)
     simp [logWeight, mellinLogFamily, hc]
 
@@ -207,7 +188,7 @@ theorem mellin_strip_source_bound (a b : ℝ) (ha : 0 < a) (lo hi : ℝ) (j : �
     (negativeLogPullbackCLM a b) (Finset.Iic (0, j))
   refine ⟨s, (1 + 2 * Real.pi) ^ j * C * D, by positivity, ?_⟩
   intro W hsupp σ hσ t
-  have hfun : (fun u => logWeight a b σ u * negativeLogPullbackCLM a b W u) = mellinLogFamily W σ :=
+  have hfun :=
     funext (logWeight_mul_pullback a b ha W hsupp σ)
   have hfour := hb (negativeLogPullbackCLM a b W) σ hσ (t / (2 * Real.pi))
   rw [hfun] at hfour
@@ -238,7 +219,7 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
   let g : ℕ := 4 * A + 4
   obtain ⟨Cγ, hCγ, hγ⟩ := gammaMultiplier_strip_bound A
   obtain ⟨s, CV, hCV, hVb⟩ := mellin_strip_source_bound a b ha (-(A : ℝ)) (1 / 4) (g + j)
-  refine ⟨s, Cγ * CV, mul_pos hCγ hCV, ?_⟩
+  refine ⟨s, Cγ * CV, by positivity, ?_⟩
   intro W hsupp σ hσ t
   have hσ' : -σ ∈ Set.Icc (-(A : ℝ)) (1 / 4) := by constructor <;> linarith [hσ.1, hσ.2]
   have hmb := hVb W hsupp (-σ) hσ' (-t)
@@ -246,7 +227,7 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     push_cast
     ring
   rw [heq, abs_neg] at hmb
-  have hgb : ‖gammaMultiplier ((σ : ℂ) + t * Complex.I)‖ ≤ Cγ * (1 + |t|) ^ g := hγ σ hσ t
+  have hgb : ‖gammaMultiplier ((σ : ℂ) + t * Complex.I)‖ ≤ Cγ * (1 + |t|) ^ g := by grind
   rw [mellinData, norm_mul]
   calc
     _ = ((1 + |t|) ^ j * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) *
@@ -254,7 +235,6 @@ theorem mellinData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
     _ ≤ ((1 + |t|) ^ j * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) *
         (Cγ * (1 + |t|) ^ g) := mul_le_mul_of_nonneg_left hgb (by positivity)
     _ = Cγ * ((1 + |t|) ^ (g + j) * ‖mellin W (-((σ : ℂ) + t * Complex.I))‖) := by
-      rw [pow_add]
       ring
     _ ≤ Cγ * (CV * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) := mul_le_mul_of_nonneg_left hmb hCγ.le
     _ = _ := by ring
@@ -271,11 +251,11 @@ theorem mellinEulerData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) 
   apply weighted_two_to_cauchy (norm_nonneg _) t
   have hσabs : |σ| ≤ (A : ℝ) + 1 := by
     apply abs_le.mpr
-    constructor <;> linarith [hσ.1, hσ.2, (Nat.cast_nonneg A : (0 : ℝ) ≤ A)]
+    constructor <;> linarith [hσ.1, hσ.2]
   have hz : ‖(σ : ℂ) + t * Complex.I‖ ≤ ((A : ℝ) + 2) * (1 + |t|) := by
     have hnorm := norm_add_le (σ : ℂ) ((t : ℂ) * Complex.I)
     simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs, Complex.norm_I, mul_one] at hnorm
-    nlinarith [abs_nonneg t, (Nat.cast_nonneg A : (0 : ℝ) ≤ A)]
+    nlinarith [abs_nonneg t]
   rw [mellinEulerData, norm_mul, norm_pow, norm_neg]
   calc
     _ ≤ (1 + |t|) ^ 2 * ((((A : ℝ) + 2) * (1 + |t|)) ^ j *
@@ -283,7 +263,7 @@ theorem mellinEulerData_strip_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) 
     _ = ((A : ℝ) + 2) ^ j * ((1 + |t|) ^ (j + 2) *
         ‖mellinData W ((σ : ℂ) + t * Complex.I)‖) := by rw [mul_pow, pow_add]; ring
     _ ≤ ((A : ℝ) + 2) ^ j * (C * s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W) :=
-      mul_le_mul_of_nonneg_left (hb W hsupp σ hσ t) (by positivity)
+      mul_le_mul_of_nonneg_left (by grind) (by positivity)
     _ = _ := by ring
 
 theorem mellinInv_euler_line_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
@@ -307,9 +287,9 @@ theorem mellinInv_euler_line_source_bound (a b : ℝ) (ha : 0 < a) (A j : ℕ) :
         simp only [Complex.neg_re, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
           Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_zero, add_zero]
         simpa only [div_eq_mul_inv, mul_assoc] using
-          mul_le_mul_of_nonneg_left (hb W hsupp σ hσ t) (Real.rpow_nonneg hy.le (-σ))
+          mul_le_mul_of_nonneg_left (by grind) (by positivity)
       _ = _ := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
-  rw [mellinInv, norm_smul, Real.norm_of_nonneg (by positivity : (0 : ℝ) ≤ 1 / (2 * Real.pi))]
+  rw [mellinInv, norm_smul, Real.norm_of_nonneg (by positivity)]
   simp only [smul_eq_mul]
   calc
     _ ≤ (1 / (2 * Real.pi)) * ((y ^ (-σ) * (C * Q)) * Real.pi) :=
@@ -342,10 +322,10 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
   have hleft : -(1 / 4 : ℝ) ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ) := by
     constructor
     · rfl
-    · linarith [show (0 : ℝ) ≤ A from Nat.cast_nonneg A]
+    · linarith
   have hright : (A : ℝ) ∈ Set.Icc (-(1 / 4 : ℝ)) (A : ℝ) := by
     constructor
-    · linarith [show (0 : ℝ) ≤ A from Nat.cast_nonneg A]
+    · linarith
     · rfl
   constructor
   · have hh := hline _ hleft
@@ -355,7 +335,7 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
       _ = (C * paperScale ^ (1 / 4 : ℝ)) * Q * x ^ (1 / 4 : ℝ) := by ring
       _ ≤ (C * B) * Q * x ^ (1 / 4 : ℝ) := by
         gcongr
-        exact le_max_left _ _
+        grind
   · have hh := hline _ hright
     rw [Real.mul_rpow paperScale_pos.le hx.le] at hh
     calc
@@ -363,13 +343,12 @@ theorem paperKernel_euler_source_power_decay (a b : ℝ) (ha : 0 < a) (A j : ℕ
       _ = (C * paperScale ^ (-(A : ℝ))) * Q * x ^ (-(A : ℝ)) := by ring
       _ ≤ (C * B) * Q * x ^ (-(A : ℝ)) := by
         gcongr
-        exact le_max_right _ _
+        grind
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase columnPrimeCoprime)
 open FiniteGaussPhase (canonicalProductGauss canonicalProductGauss_cross_factors)
 open MixedGaussConversion (localGauss)
@@ -396,16 +375,13 @@ theorem canonicalProductGauss_eq_gaussBlock {ι : Type*} [DecidableEq ι]
           (Ideal.Quotient.mk (Ideal.span {p i.val}) (p k.val))) =
       ∏ k ∈ S.erase i.val, crossSymbol p hg i.val k ^ e i.val := by
     apply Finset.prod_bij (fun k _ => k.val)
+    · simp
+    · simp
     · intro k hk
-      exact Finset.mem_erase.mpr ⟨fun h => (Finset.mem_erase.mp hk).1 (Subtype.ext h), k.property⟩
-    · intro a ha b hb hab
-      exact Subtype.ext hab
+      refine ⟨⟨k, by grind⟩, ?_, rfl⟩
+      grind
     · intro k hk
-      refine ⟨⟨k, (Finset.mem_erase.mp hk).2⟩, ?_, rfl⟩
-      exact Finset.mem_erase.mpr ⟨fun h => (Finset.mem_erase.mp hk).1 (congrArg Subtype.val h),
-        Finset.mem_univ _⟩
-    · intro k hk
-      exact MulChar.pow_apply' _ (he i.val i.property) _
+      exact MulChar.pow_apply' _ (by grind) _
   calc
     _ = ∏ i : S, (∏ k ∈ S.erase i.val, crossSymbol p hg i.val k ^ e i.val) *
         localGauss (p i.val) (hp i.val) (hg i.val) (e i.val) := by
@@ -434,14 +410,14 @@ theorem gaussBlock_union {ι : Type*} [DecidableEq ι]
         ∏ k ∈ T, crossSymbol p hg i k ^ e i := by
     have hn : i ∉ T := fun h => Finset.disjoint_left.mp hd hi h
     rw [Finset.erase_union_distrib, Finset.erase_eq_of_notMem hn,
-      Finset.prod_union (hd.mono_left (Finset.erase_subset _ _))]
+      Finset.prod_union (hd.mono_left (by grind))]
   have hT (i : ι) (hi : i ∈ T) :
       (∏ k ∈ (S ∪ T).erase i, crossSymbol p hg i k ^ e i) =
       (∏ k ∈ T.erase i, crossSymbol p hg i k ^ e i) *
         ∏ k ∈ S, crossSymbol p hg i k ^ e i := by
     have hn : i ∉ S := fun h => Finset.disjoint_left.mp hd h hi
     rw [Finset.union_comm S T, Finset.erase_union_distrib, Finset.erase_eq_of_notMem hn,
-      Finset.prod_union (hd.symm.mono_left (Finset.erase_subset _ _))]
+      Finset.prod_union (hd.symm.mono_left (by grind))]
   have hpS : (∏ i ∈ S, (∏ k ∈ (S ∪ T).erase i, crossSymbol p hg i k ^ e i) *
       localGauss (p i) (hp i) (hg i) (e i)) =
       gaussBlock p hp hg S e * (∏ i ∈ S, ∏ k ∈ T, crossSymbol p hg i k ^ e i) := by
@@ -468,8 +444,7 @@ theorem gaussBlock_congr {ι : Type*} [DecidableEq ι]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e f : ι → ℕ)
     (he : ∀ i ∈ S, e i = f i) : gaussBlock p hp hg S e = gaussBlock p hp hg S f := by
   apply Finset.prod_congr rfl
-  intro i hi
-  rw [he i hi]
+  simp_all
 
 def cubeActiveSupport {ι : Type*} (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) : Finset ι :=
   B.filter (fun k => conductorExponent (parity (v k)) (ε₁ k) (ε₂ k) ≠ 0)
@@ -483,7 +458,7 @@ theorem columnCoefficient_eq_gaussBlock {ι : Type*} [DecidableEq ι]
         gaussBlock p hp hg S (fun _ => 2) := by
   unfold MixedCrossSeparation.columnCoefficient FiniteGaussPhase.canonicalProductCoefficient
   rw [Finset.prod_coe_sort]
-  rw [canonicalProductGauss_eq_gaussBlock p hp hcop hg S (fun _ => 2) (fun _ _ => by decide)]
+  rw [canonicalProductGauss_eq_gaussBlock p hp hcop hg S (fun _ => 2) (by omega)]
 
 theorem blockCross_two_eq_row_four {ι : Type*}
     (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -500,8 +475,7 @@ theorem blockCross_two_eq_row_four {ι : Type*}
     canonicalSextic_sq_reciprocity_primary (Ideal.span {p i}) (Ideal.span {p k})
       (hg i) (hg k) (p i) (p k) rfl rfl (hpr i) (hpr k)
   change crossSymbol p hg i k ^ 2 * crossSymbol p hg k i ^ 2 = crossSymbol p hg i k ^ 4
-  rw [← hr]
-  ring
+  grind
 
 theorem columnCoefficient_union_row_four {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -533,9 +507,9 @@ theorem gaussBlock_norm_one {ι : Type*} [DecidableEq ι]
     ‖gaussBlock p hp hg S e‖ = 1 := by
   rw [← canonicalProductGauss_eq_gaussBlock p hp hcop hg S e he]
   exact FiniteGaussPhase.norm_canonicalProductGauss
-    (fun i : S => p i.val) (fun i => hp i.val) (columnPrimeCoprime p hcop S)
-    (fun i => hg i.val) (fun i => hc i.val) (fun i => e i.val)
-    (fun i => he i.val i.property) (fun i => he6 i.val i.property)
+    (fun i : S => p i.val) (by grind) (columnPrimeCoprime p hcop S)
+    (by grind) (fun i => hc i.val) (fun i => e i.val)
+    (by grind) (by grind)
 
 end FirstPassCubeLabels
 

@@ -8,7 +8,6 @@ public import Erdos821.S2.SpanMarkWeightTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -65,7 +64,7 @@ theorem all_big_group_weights (hMark : SpanMarkWeightTask) (S : LifespanAssignme
             (P.V g.val) ^ (-((A.pattern (Q.pattern i)).t g.val : ℤ))) =
           ∏ i : Fin n, ∏ g : P.BigGroup,
             (P.V g.val) ^ (-((A.pattern (Q.pattern i)).t g.val : ℤ)) := Finset.prod_comm
-      rw [hTarget]
+      grind
 
 
 end ResiduePath

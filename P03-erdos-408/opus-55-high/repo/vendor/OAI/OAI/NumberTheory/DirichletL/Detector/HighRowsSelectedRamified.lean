@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 def ramifiedSelected (eta a rho x w z : ℂ) (j : ℕ) : ℂ :=
   star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x*(1-coordV (Ideal.absNorm (Ideal.span {p})) z)*
@@ -50,11 +49,11 @@ theorem ramifiedSelected_bound (eta a rho x w z : ℂ)
   have hphase : ‖star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x‖≤Q^x.re := by
     change ‖star eta*(Q:ℂ)^x‖≤Q^x.re
     rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
+    exact mul_le_of_le_one_left (by positivity) heta
   have hq : ‖(Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)‖≤Q^B := by
     change ‖(Q:ℂ)^(-w)‖≤Q^B
     rw [Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by dsimp [B];linarith)
+    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
   have he : Q^x.re*Q^(-x.re+B)=Q^B := by rw [←Real.rpow_add hQ0];congr 1;ring
   unfold ramifiedSelected
   apply (norm_sub_le _ _).trans
@@ -62,7 +61,7 @@ theorem ramifiedSelected_bound (eta a rho x w z : ℂ)
   calc
     _ ≤ (Q^x.re*(3/2))*(128*Q^(-x.re+B))+Q^B*193 := by
       gcongr
-    _ = 385*Q^B := by nlinarith [he]
+    _ = 385*Q^B := by linarith
 
 end SevenEighths.ProbeEuler
 end

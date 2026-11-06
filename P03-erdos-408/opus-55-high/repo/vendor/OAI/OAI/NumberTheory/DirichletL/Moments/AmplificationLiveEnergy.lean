@@ -7,24 +7,23 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationLiveMask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationLiveEnergy
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentSourceRow
 open CenteredMomentSourceLiveColumn CenteredMomentSourceProfileMass CenteredMomentSourceMass
 open CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentFirstSectors
-open CenteredMomentLiveSupport CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
+open CenteredMomentLiveDomain CenteredMomentSourceSmoothedAllocation
 open CenteredMomentOriginalChildEnergy CenteredMomentAmplificationLiveMask
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
- theorem masked_live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+ theorem masked_live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R s : Ideal O) (hC : Supported C)
+    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R s : Ideal ActualEisensteinCubic.O) (hC : Supported C)
     (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ)
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O → ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
@@ -35,7 +34,7 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
       gaussEnergy Finset.univ (sourceGenerator T) (sourceGenerator_supported T)
         (fun I : supportedColumns T => c I*f I) W K := by
   dsimp only
-  have he (I : Ideal O) : finiteColumnCoefficient (liveBox S B hB)
+  have he (I : Ideal ActualEisensteinCubic.O) : finiteColumnCoefficient (liveBox S B hB)
       (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I=
       finiteColumnCoefficient (liveBox S B hB)
         (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I*
@@ -44,13 +43,13 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
   exact live_gaussEnergy S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
     X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => (if s∣I then 1 else 0)*f I) W K
 
-theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
+theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
     (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (C R s : Ideal O) (hC : Supported C) (hsc : IsCoprime s C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
-    (f : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
-    (hW : ∀ z : O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
+    (C R s : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hsc : IsCoprime s C)
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
+    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O)
+    (f : Ideal ActualEisensteinCubic.O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+    (hW : ∀ z : ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     (sourceGaussEnergy (residualPool C hC.1 (finiteColumns (Fintype.piFinset S)))
       (fun I => if IsCoprime C I then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0) f W K).re≤
@@ -67,7 +66,7 @@ theorem original_masked_child_energy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
     finiteColumnCoefficient (liveBox S B (allocation_data S C B (Finset.mem_filter.mp B.property).1).1)
       (maskedLiveProfile B C R s ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂) I*f I
   have he (I : supportedColumns Q) :
-      (if IsCoprime C (I:Ideal O) then finiteColumnCoefficient (Fintype.piFinset S)
+      (if IsCoprime C (I:Ideal ActualEisensteinCubic.O) then finiteColumnCoefficient (Fintype.piFinset S)
         (profileCoefficient R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ s) (C*I) else 0)*f I=
       ∑ B,b B*d B I := by
     rw [original_masked_live_column S hS hp C R s I hC.1

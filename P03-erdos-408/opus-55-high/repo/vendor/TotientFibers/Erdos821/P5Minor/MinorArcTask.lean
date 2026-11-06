@@ -11,7 +11,6 @@ public import Mathlib.Algebra.Ring.IsFormallyReal
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P5Minor
@@ -29,7 +28,7 @@ lemma exp_log_dominates (δ M : ℝ) (hδ : 0 < δ) :
       (L x ^ δ) ^ (M / δ) = L x ^ (δ * (M / δ)) := by
         symm
         exact Real.rpow_mul hpos.le δ (M / δ)
-      _ = L x ^ M := by congr 1; field_simp
+      _ = L x ^ M := by grind
   have hden : 0 < L x ^ M := Real.rpow_pos_of_pos hpos _
   change 1 ≤ Real.exp (L x ^ δ) / (L x ^ δ) ^ (M / δ) at hx
   rw [hpow] at hx
@@ -51,7 +50,7 @@ lemma dirichlet_approximation (α Qarg : ℝ) (hQ : 1 ≤ Qarg) :
   let u : ℤ := q.num
   let r : ℕ := q.den
   let β : ℝ := α - (q : ℝ)
-  have hrpos : 0 < r := by exact Rat.pos q
+  have hrpos : 0 < r := Rat.pos q
   have hrone : 1 ≤ r := by omega
   have hrarg : (r : ℝ) ≤ Qarg := by
     calc
@@ -69,8 +68,8 @@ lemma dirichlet_approximation (α Qarg : ℝ) (hQ : 1 ≤ Qarg) :
   have happrox' : |β| ≤ 1 / (((Q : ℝ) + 1) * (r : ℝ)) := by
     dsimp [β]
     simpa [Q, r, Nat.cast_add, Nat.cast_one, Nat.cast_mul] using happrox
-  have hdenom : (r : ℝ) * (r : ℝ) ≤ ((Q : ℝ) + 1) * (r : ℝ) := by
-    exact mul_le_mul_of_nonneg_right (by
+  have hdenom : (r : ℝ) * (r : ℝ) ≤ ((Q : ℝ) + 1) * (r : ℝ) :=
+    mul_le_mul_of_nonneg_right (by
       have : (r : ℝ) ≤ Q := by exact_mod_cast hden
       linarith) (by positivity)
   have hrecip : 1 / (((Q : ℝ) + 1) * (r : ℝ)) ≤
@@ -79,27 +78,27 @@ lemma dirichlet_approximation (α Qarg : ℝ) (hQ : 1 ≤ Qarg) :
   have hbeta : |β| ≤ (r : ℝ) ^ (-2 : ℤ) := by
     have hz : (r : ℝ) ^ (-2 : ℤ) = 1 / ((r : ℝ) * (r : ℝ)) := by
       rw [zpow_neg, zpow_ofNat, pow_two]
-      simp [div_eq_mul_inv]
+      simp
     rw [hz]
     exact happrox'.trans hrecip
-  have happroxQ : |β| ≤ 1 / ((Q : ℝ) + 1) := by
-    exact happrox'.trans (one_div_le_one_div_of_le (by positivity) (by
+  have happroxQ : |β| ≤ 1 / ((Q : ℝ) + 1) :=
+    happrox'.trans (one_div_le_one_div_of_le (by positivity) (by
       have hrR : 1 ≤ (r : ℝ) := by exact_mod_cast hrone
       nlinarith))
   have hQlt : Qarg < (Q : ℝ) + 1 := by
     dsimp [Q]
     exact Nat.lt_floor_add_one Qarg
-  have hsmall : |β| ≤ 1 / Qarg := by
-    exact happroxQ.trans (one_div_lt_one_div_of_lt (by linarith) hQlt).le
+  have hsmall : |β| ≤ 1 / Qarg :=
+    happroxQ.trans (one_div_lt_one_div_of_lt (by linarith) hQlt).le
   refine ⟨u, r, β, hrone, hrarg, ?_, heq, hbeta, hsmall⟩
-  simpa [u, r] using q.reduced
+  simpa using q.reduced
 
 lemma scaled_fraction (k u : ℤ) (r : ℕ) (hk : k ≠ 0) (hr : 0 < r) :
     ((-(u * k.sign) : ℤ) : ℝ) / ((r * k.natAbs : ℕ) : ℝ) =
       -((u : ℝ) / (r : ℝ)) / (k : ℝ) := by
   have hkR : (k : ℝ) ≠ 0 := by exact_mod_cast hk
   have hrR : (r : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hr)
-  have hsignZ : k.sign * k = (k.natAbs : ℤ) := Int.sign_mul_self_eq_natAbs k
+  have hsignZ := Int.sign_mul_self_eq_natAbs k
   have hsign : (k.sign : ℝ) * (k : ℝ) = (k.natAbs : ℝ) := by
     calc
       (k.sign : ℝ) * (k : ℝ) = ((k.sign * k : ℤ) : ℝ) := by norm_cast
@@ -108,7 +107,6 @@ lemma scaled_fraction (k u : ℤ) (r : ℕ) (hk : k ≠ 0) (hr : 0 < r) :
   have hmul := congrArg (fun z : ℝ => -(u : ℝ) * z) hsign
   push_cast
   field_simp [hkR, hrR]
-  ring_nf at hmul ⊢
   linarith
 
 lemma large_denominator_of_minor_arc
@@ -127,11 +125,11 @@ lemma large_denominator_of_minor_arc
   let d : ℕ := r * k.natAbs
   let v : ℤ := -(u * k.sign)
   have hkabsNat : 1 ≤ k.natAbs := by
-    have hpos : 0 < k.natAbs := Int.natAbs_pos.mpr hk
+    have hpos := Int.natAbs_pos.mpr hk
     omega
   have hdpos : 1 ≤ d := by
     dsimp [d]
-    nlinarith [hr, hkabsNat]
+    nlinarith
   have hkabs : (k.natAbs : ℝ) = |(k : ℝ)| := by
     simp
   have hdbound : (d : ℝ) ≤ L ^ Carc := by
@@ -141,10 +139,10 @@ lemma large_denominator_of_minor_arc
     have hpow : L ^ Cp * L ^ C = L ^ (Cp + C) := by
       rw [Real.rpow_add hLpos Cp C]
     have hexp : Cp + C ≤ Carc := by linarith
-    have hmono : L ^ (Cp + C) ≤ L ^ Carc :=
+    have hmono :=
       Real.rpow_le_rpow_of_exponent_le hL hexp
     calc
-      (d : ℝ) = (r : ℝ) * (k.natAbs : ℝ) := by simp [d, Nat.cast_mul]
+      (d : ℝ) = (r : ℝ) * (k.natAbs : ℝ) := by grind
       _ ≤ L ^ Cp * L ^ C := hprod
       _ = L ^ (Cp + C) := hpow
       _ ≤ L ^ Carc := hmono
@@ -154,22 +152,21 @@ lemma large_denominator_of_minor_arc
     dsimp [v, d]
     exact scaled_fraction k u r hk (by omega)
   have hlin : (k : ℝ) * θ + (u : ℝ) / (r : ℝ) = -β := by
-    linarith [hphase]
+    linarith
   have htheta : θ + ((u : ℝ) / (r : ℝ)) / (k : ℝ) = -β / (k : ℝ) := by
     calc
       θ + ((u : ℝ) / (r : ℝ)) / (k : ℝ) =
           ((k : ℝ) * θ + (u : ℝ) / (r : ℝ)) / (k : ℝ) := by
-            field_simp [hkR]
-      _ = -β / (k : ℝ) := by rw [hlin]
+            grind
+      _ = -β / (k : ℝ) := by simp_all
   have hdist : |θ - (v : ℝ) / (d : ℝ)| = |β| / |(k : ℝ)| := by
     calc
       |θ - (v : ℝ) / (d : ℝ)| = |θ + ((u : ℝ) / (r : ℝ)) / (k : ℝ)| := by
-        rw [hcenter]
-        congr 1; ring
-      _ = |-β / (k : ℝ)| := by rw [← htheta]
-      _ = |β| / |(k : ℝ)| := by simp [abs_div]
+        grind
+      _ = |-β / (k : ℝ)| := by simp_all
+      _ = |β| / |(k : ℝ)| := by grind
   have hkabsone : 1 ≤ |(k : ℝ)| := by
-    have hnat : 1 ≤ k.natAbs := hkabsNat
+    have hnat := hkabsNat
     rw [← hkabs]
     exact_mod_cast hnat
   have hbetaDiv : |β| / |(k : ℝ)| ≤ |β| := by
@@ -179,7 +176,7 @@ lemma large_denominator_of_minor_arc
       _ ≤ |β| * |(k : ℝ)| :=
         mul_le_mul_of_nonneg_left hkabsone (abs_nonneg β)
   have hdistSmall : |θ - (v : ℝ) / (d : ℝ)| ≤ L ^ Cp / H :=
-    (hdist ▸ hbetaDiv).trans hbeta
+    by linarith
   have hpowArc : L ^ Cp ≤ L ^ Carc :=
     Real.rpow_le_rpow_of_exponent_le hL (by linarith)
   have hthreshold : L ^ Cp / H ≤ L ^ Carc / H :=
@@ -201,21 +198,21 @@ lemma bilinear_factor_bound
   let Cp : ℝ := 4 * C + 4 * A + 20
   have hm : 0 ≤ m := by dsimp [m]; positivity
   have hCpEq : Cp = 2 * m + 20 := by dsimp [Cp, m]; ring
-  have hUEq : 2 * C + 2 * A + 10 = m + 10 := by dsimp [m]
+  have hUEq : 2 * C + 2 * A + 10 = m + 10 := by dsimp
   have hVpowpos : 0 < L ^ (m + 10) := Real.rpow_pos_of_pos hLpos _
   have hUpowle : L ^ (m + 10) ≤ U := by simpa [← hUEq] using hU
   have hVpowle : L ^ (m + 10) ≤ V := by simpa [← hUEq] using hV
   have hUpos : 0 < U := lt_of_lt_of_le hVpowpos hUpowle
   have hVpos : 0 < V := lt_of_lt_of_le hVpowpos hVpowle
   have hCpPos : 0 < Cp := by dsimp [Cp]; positivity
-  have hRpowpos : 0 < L ^ Cp := Real.rpow_pos_of_pos hLpos Cp
+  have hRpowpos := Real.rpow_pos_of_pos hLpos Cp
   have hRpowone : 1 ≤ L ^ Cp := by
     apply Real.one_le_rpow (by linarith) (by linarith)
   have hrpos : 0 < r := lt_trans hRpowpos hrlo
   have hHpos : 0 < U * V := mul_pos hUpos hVpos
   have hHbound : 0 < U * V / L ^ Cp := div_pos hHpos hRpowpos
-  have hm9leCp : m + 9 ≤ Cp := by rw [hCpEq]; linarith [hm]
-  have hm10leCp : m + 10 ≤ Cp := by rw [hCpEq]; linarith [hm]
+  have hm9leCp : m + 9 ≤ Cp := by rw [hCpEq]; linarith
+  have hm10leCp : m + 10 ≤ Cp := by rw [hCpEq]; linarith
   have hpowm9 : L ^ (m + 9) ≤ L ^ Cp :=
     Real.rpow_le_rpow_of_exponent_le (by linarith) hm9leCp
   have hpowm10 : L ^ (m + 10) ≤ L ^ Cp :=
@@ -227,15 +224,15 @@ lemma bilinear_factor_bound
   have hInvVstrong : 1 / V ≤ 1 / L ^ (m + 10) :=
     one_div_le_one_div_of_le hVpowpos hVpowle
   have hInvU : 1 / U ≤ 1 / L ^ (m + 9) :=
-    hInvUstrong.trans (one_div_le_one_div_of_le (Real.rpow_pos_of_pos hLpos _)
+    hInvUstrong.trans (one_div_le_one_div_of_le (by positivity)
       hpow9le10)
   have hInvV : 1 / V ≤ 1 / L ^ (m + 9) :=
-    hInvVstrong.trans (one_div_le_one_div_of_le (Real.rpow_pos_of_pos hLpos _)
+    hInvVstrong.trans (one_div_le_one_div_of_le (by positivity)
       hpow9le10)
   have hInvR : 1 / r ≤ 1 / L ^ (m + 9) := by
     have hpowr : L ^ Cp ≤ r := hrlo.le
     exact (one_div_le_one_div_of_le hRpowpos hpowr).trans
-      (one_div_le_one_div_of_le (Real.rpow_pos_of_pos hLpos _) hpowm9)
+      (one_div_le_one_div_of_le (by positivity) hpowm9)
   have hRdiv : r / (U * V) ≤ 1 / L ^ Cp := by
     apply (div_le_iff₀ hHpos).2
     calc
@@ -261,11 +258,10 @@ lemma bilinear_factor_bound
       _ = 3 / L ^ (m + 9) := by
         have hpow : L ^ (m + 10) = L ^ (m + 9) * L := by
           calc
-            L ^ (m + 10) = L ^ ((m + 9) + 1) := by congr 1; ring
+            L ^ (m + 10) = L ^ ((m + 9) + 1) := by ring
             _ = L ^ (m + 9) * L ^ (1 : ℝ) := Real.rpow_add hLpos _ _
-            _ = L ^ (m + 9) * L := by rw [Real.rpow_one]
-        rw [hpow]
-        field_simp
+            _ = L ^ (m + 9) * L := by simp
+        grind
   have hlogterm : ell / U ≤ 3 / L ^ (m + 9) := by
     calc
       ell / U = ell * (1 / U) := by ring
@@ -276,12 +272,10 @@ lemma bilinear_factor_bound
       _ = 3 / L ^ (m + 9) := by
         have hpow : L ^ (m + 10) = L ^ (m + 9) * L := by
           calc
-            L ^ (m + 10) = L ^ ((m + 9) + 1) := by congr 1; ring
+            L ^ (m + 10) = L ^ ((m + 9) + 1) := by ring
             _ = L ^ (m + 9) * L ^ (1 : ℝ) := Real.rpow_add hLpos _ _
-            _ = L ^ (m + 9) * L := by rw [Real.rpow_one]
-        rw [div_eq_mul_inv]
-        rw [hpow]
-        field_simp
+            _ = L ^ (m + 9) * L := by simp
+        grind
   let B : ℝ := 2 / V + 1 / r + ell / U + r * ell / (U * V)
   have hB : B ≤ 9 / L ^ (m + 9) := by
     dsimp [B]
@@ -289,14 +283,14 @@ lemma bilinear_factor_bound
       calc
         2 / V = 2 * (1 / V) := by ring
         _ ≤ 2 * (1 / L ^ (m + 9)) :=
-          mul_le_mul_of_nonneg_left hInvV (by norm_num)
+          by linarith
         _ = 2 / L ^ (m + 9) := by ring
-    have h2 : 1 / r ≤ 1 / L ^ (m + 9) := hInvR
+    have h2 := hInvR
     calc
       2 / V + 1 / r + ell / U + r * ell / (U * V) ≤
           2 / L ^ (m + 9) + 1 / L ^ (m + 9) +
             3 / L ^ (m + 9) + 3 / L ^ (m + 9) :=
-        add_le_add (add_le_add (add_le_add h1 h2) hlogterm) hcross'
+        by linarith
       _ = 9 / L ^ (m + 9) := by ring
   have hL9 : 9 ≤ L ^ (9 : ℝ) := by
     have hpow : L = L ^ (1 : ℝ) := by rw [Real.rpow_one]
@@ -306,7 +300,7 @@ lemma bilinear_factor_bound
     linarith
   have hBgoal : B ≤ 1 / L ^ m := by
     have hrecip : 9 / L ^ (9 : ℝ) ≤ 1 := by
-      apply (div_le_iff₀ (Real.rpow_pos_of_pos hLpos _)).2
+      apply (div_le_iff₀ (by positivity)).2
       nlinarith [hL9]
     calc
       B ≤ 9 / L ^ (m + 9) := hB
@@ -319,7 +313,7 @@ lemma bilinear_factor_bound
   have hpowC : L ^ C * L ^ C = L ^ (2 * C) := by
     calc
       L ^ C * L ^ C = L ^ (C + C) := (Real.rpow_add hLpos C C).symm
-      _ = L ^ (2 * C) := by congr 1; ring
+      _ = L ^ (2 * C) := by ring
   have hfactor :
       (L ^ C / U) * (L ^ C / V) *
         (U + (1 + V / r) * (U + r * ell)) =
@@ -329,9 +323,8 @@ lemma bilinear_factor_bound
           (U + (1 + V / r) * (U + r * ell)) =
           (L ^ C * L ^ C) *
             (2 / V + 1 / r + ell / U + r * ell / (U * V)) := by
-              field_simp [ne_of_gt hUpos, ne_of_gt hVpos, ne_of_gt hrpos]
-              ring
-      _ = L ^ (2 * C) * B := by rw [hpowC]
+              grind
+      _ = L ^ (2 * C) * B := by grind
   have hpowm : L ^ m = L ^ (2 * C) * L ^ (2 * A) := by
     rw [show m = 2 * C + 2 * A by rfl, Real.rpow_add hLpos]
   have hlast : L ^ (2 * C) * (1 / L ^ m) = L ^ (-2 * A) := by
@@ -373,8 +366,8 @@ theorem minorArcTask_proof : MinorArcTask := by
   have hLpos : 0 < L x := by linarith
   have hLone : 1 ≤ L x := by linarith
   have hCpNonneg : 0 ≤ Cp := le_of_lt hCpPos
-  have hLpPos : 0 < L x ^ Cp := Real.rpow_pos_of_pos hLpos Cp
-  have hLpOne : 1 ≤ L x ^ Cp := Real.one_le_rpow hLone hCpNonneg
+  have hLpPos := Real.rpow_pos_of_pos hLpos Cp
+  have hLpOne := Real.one_le_rpow hLone hCpNonneg
   have hPowHalf : L x ^ (2 * C + 2 * A + 10) ≤
       Real.exp (L x ^ δ) := by
     simpa [hCpHalf] using hExp
@@ -382,20 +375,20 @@ theorem minorArcTask_proof : MinorArcTask := by
     hPowHalf.trans hUexp
   have hVlow : L x ^ (2 * C + 2 * A + 10) ≤ V :=
     hPowHalf.trans hVexp
-  have hLδone : 1 ≤ L x ^ δ := Real.one_le_rpow hLone hδ.le
+  have hLδone := Real.one_le_rpow hLone hδ.le
   have hexpOne : 1 ≤ Real.exp (L x ^ δ) := by
     rw [← Real.exp_zero]
     exact Real.exp_le_exp.mpr (by linarith)
   have hUone : 1 ≤ U := hexpOne.trans hUexp
   have hVone : 1 ≤ V := hexpOne.trans hVexp
-  have hUpos : 0 < U := lt_of_lt_of_le (by norm_num) hUone
-  have hVpos : 0 < V := lt_of_lt_of_le (by norm_num) hVone
+  have hUpos : 0 < U := by positivity
+  have hVpos : 0 < V := by positivity
   let H : ℝ := U * V
   have hHpos : 0 < H := by dsimp [H]; exact mul_pos hUpos hVpos
   have hPowSplit : L x ^ Cp =
       L x ^ (Cp / 2) * L x ^ (Cp / 2) := by
     calc
-      L x ^ Cp = L x ^ (Cp / 2 + Cp / 2) := by congr 1; ring
+      L x ^ Cp = L x ^ (Cp / 2 + Cp / 2) := by simp
       _ = L x ^ (Cp / 2) * L x ^ (Cp / 2) :=
         Real.rpow_add hLpos _ _
   have hProductLow : L x ^ Cp ≤ H := by
@@ -403,10 +396,10 @@ theorem minorArcTask_proof : MinorArcTask := by
       L x ^ Cp = L x ^ (Cp / 2) * L x ^ (Cp / 2) := hPowSplit
       _ ≤ U * V := by
         apply mul_le_mul
-        · simpa [hCpHalf] using hUlow
-        · simpa [hCpHalf] using hVlow
+        · linarith
+        · linarith
         · positivity
-        · positivity
+        linarith
       _ = H := by rfl
   have hArgOne : 1 ≤ H / (L x ^ Cp) := by
     apply (le_div_iff₀ hLpPos).2
@@ -417,9 +410,9 @@ theorem minorArcTask_proof : MinorArcTask := by
   have hbetaArc : |β| ≤ L x ^ Cp / H := by
     calc
       |β| ≤ 1 / (H / L x ^ Cp) := hbetaSmall
-      _ = L x ^ Cp / H := by field_simp [ne_of_gt hHpos, ne_of_gt hLpPos]
+      _ = L x ^ Cp / H := by simp
   have hCarcBound : C + Cp ≤ Carc := by dsimp [Carc]; linarith
-  have hlarge : L x ^ Cp < (r : ℝ) :=
+  have hlarge :=
     Erdos821.P5Minor.large_denominator_of_minor_arc
       C Cp Carc (L x) H θ k u r β hLone hLpos hC.le
       hCarcBound hHpos hk hkbound hrone hphase hbetaArc harc
@@ -444,10 +437,10 @@ theorem minorArcTask_proof : MinorArcTask := by
       _ = U * V := by rfl
       _ ≤ x ^ (2 : ℕ) := hUV
   have hLogArgLe : 2 * (r : ℝ) ≤ 2 * x ^ 2 := by nlinarith
-  have hLogMono : Real.log (2 * (r : ℝ)) ≤ Real.log (2 * x ^ 2) :=
-    Real.log_le_log (by nlinarith [hrRealOne]) hLogArgLe
+  have hLogMono :=
+    Real.log_le_log (by linarith) hLogArgLe
   have hLogExpand : Real.log (2 * x ^ 2) = Real.log 2 + 2 * L x := by
-    rw [Real.log_mul (by norm_num) (pow_ne_zero 2 hxpos.ne'), Real.log_pow]
+    rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow]
     simp [L]
   have hLogTwo : Real.log 2 ≤ 1 := by
     calc
@@ -460,18 +453,18 @@ theorem minorArcTask_proof : MinorArcTask := by
     linarith
   have hFactor :=
     Erdos821.P5Minor.bilinear_factor_bound C A (L x) U V (r : ℝ) ell
-      hL hLpos hC hA hUlow hVlow (by simpa [Cp] using hlarge)
-      (by simpa [H, Cp] using hrarg) hellNonneg hellBound
+      hL hLpos hC hA hUlow hVlow (by omega)
+      (by omega) hellNonneg hellBound
   have hIntervals : ∀ n ∈ s,
       U ≤ (n : ℝ) ∧ (n : ℝ) ≤ U + (2 : ℝ) * U := by
     intro n hn
     rcases hs n hn with ⟨hnlo, hnhi⟩
-    exact ⟨hnlo, by linarith [hUpos]⟩
+    exact ⟨hnlo, by linarith⟩
   have hIntervals' : ∀ n ∈ t,
       V ≤ (n : ℝ) ∧ (n : ℝ) ≤ V + (2 : ℝ) * V := by
     intro n hn
     rcases ht n hn with ⟨hnlo, hnhi⟩
-    exact ⟨hnlo, by linarith [hVpos]⟩
+    exact ⟨hnlo, by linarith⟩
   have hBilinear :=
     hbil U V U V α β u r s t a b hUone hVone hrone hcoprime hphase hbeta
       hIntervals hIntervals'
@@ -492,13 +485,13 @@ theorem minorArcTask_proof : MinorArcTask := by
       Real.sqrt (∑ n ∈ t, ‖b n‖ ^ 2) * Real.sqrt S
   have hTnonneg : 0 ≤ T := by positivity [T]
   have hTargetNonneg : 0 ≤ (L x) ^ (-A) :=
-    Real.rpow_nonneg (le_of_lt hLpos) _
+    by positivity
   have hTargetSq : (L x ^ (-A)) ^ 2 = (L x) ^ (-2 * A) := by
     rw [pow_two]
     calc
       L x ^ (-A) * L x ^ (-A) = L x ^ ((-A) + (-A)) :=
         (Real.rpow_add hLpos (-A) (-A)).symm
-      _ = L x ^ (-2 * A) := by congr 1; ring
+      _ = L x ^ (-2 * A) := by ring
   have hTle : T ≤ (L x) ^ (-A) := by
     apply (sq_le_sq₀ hTnonneg hTargetNonneg).1
     have hTidentity : T ^ 2 =
@@ -515,12 +508,12 @@ theorem minorArcTask_proof : MinorArcTask := by
       _ ≤ (L x ^ C / U) * (L x ^ C / V) * S := by
         apply mul_le_mul_of_nonneg_right
         exact mul_le_mul hsa hsb hsb0 (by positivity)
-        exact hSnonneg
+        omega
       _ ≤ (L x) ^ (-2 * A) := hFactor
       _ = (L x ^ (-A)) ^ 2 := hTargetSq.symm
   calc
     ‖∑ n ∈ s, ∑ v ∈ t, a n * b v * e (α * n * v)‖ ≤ K₀ * T := by
-      simpa [T, mul_assoc] using hBilinear
+      linarith
     _ ≤ K₀ * (L x) ^ (-A) :=
       mul_le_mul_of_nonneg_left hTle hK₀.le
 

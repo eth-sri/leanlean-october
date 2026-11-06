@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramCanonicalBlock
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def originalCommonBlock (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
     (C : SupportedIdeal) (k : GramFrequency) (W : ℝ→ℂ) (hW : HasCompactSupport W)
@@ -55,7 +54,7 @@ theorem originalCommonBlock_eq_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaxima
   congr 1
   have hD0 := (divisorPool_supported _ D hD).1
   have hN : 0<commonResidualScale C Y/(Ideal.absNorm D:ℝ) :=
-    div_pos (commonResidualScale_pos C Y hY) (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0))
+    div_pos (by grind) (by exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD0))
   exact (shell_lattice_summable W hW _ hN U v (frequencyScale C k.val Y Q)
     (fun n m=>canonicalJoint S hS σ C k (primaryGenerator D*n) (primaryGenerator D*m))).tsum_prod.symm
 

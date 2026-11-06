@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAmplifiedFourCoefficients
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyFirstStageLossBudget
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
@@ -42,7 +42,7 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
         epsSrc*Bcommon+primeLoss+physicalLoss+highReflection+zeroReflection≤
       stageLoss M Bcap ε (k+1):=by
   have hb:=bounds M Bcap κ ε hM hB hκ hε
-  have hr:0<reserve M Bcap ε:=hb.2.2.2.1
+  have hr:=hb.2.2.2.1
   have hs:0≤amplification ε:=hb.1.le
   have hother:epsSrc*Bcommon+primeLoss+physicalLoss≤48*reserve M Bcap ε:=by linarith
   have hextra:epsSrc*Bcommon+primeLoss+physicalLoss+highReflection+zeroReflection≤
@@ -69,10 +69,10 @@ theorem literal_four_budget (M Bcap Bcommon κ ε:ℝ)
   · dsimp [sourcePaid,edge] at hmain ⊢
     linarith
   · dsimp [exceptional] at hone
-    linarith [hone.1]
+    linarith
   · dsimp [diagonal] at hdiag
-    linarith [hdiag.2]
-  · linarith
+    linarith
+  linarith
 
 end SevenEighths.CenteredMomentEnergyFirstStageLossBudget
 

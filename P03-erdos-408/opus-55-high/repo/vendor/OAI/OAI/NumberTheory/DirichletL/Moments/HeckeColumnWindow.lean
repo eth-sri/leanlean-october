@@ -8,24 +8,23 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
+open scoped Classical SchwartzMap ContDiff FourierTransform
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeColumnWindow
 open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy
-open CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O
 
-def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=
+def heightCoeff (τ : Character) (t : ℝ) (I : Ideal ActualEisensteinCubic.O) : ℂ :=
   idealCoeff τ I*(Ideal.absNorm I:ℂ)^(Complex.I*t)
 
-theorem heightCoeff_add (τ : Character) (I : Ideal O) (hI : I≠0) (t v : ℝ) :
+theorem heightCoeff_add (τ : Character) (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) (t v : ℝ) :
     heightCoeff τ (t+v) I=heightCoeff τ t I*(Ideal.absNorm I:ℂ)^(Complex.I*v) := by
   have hn : (Ideal.absNorm I:ℂ)≠0 := Nat.cast_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   simp only [heightCoeff,Complex.ofReal_add,mul_add,Complex.cpow_add _ _ hn]
   ring
 
-theorem heightCoeff_phase (τ : Character) (I : Ideal O) (hI : I≠0)
+theorem heightCoeff_phase (τ : Character) (I : Ideal ActualEisensteinCubic.O) (hI : I≠0)
     (t θ X : ℝ) (hX : 0<X) :
     heightCoeff τ t I*logPhase θ (-Real.log ((Ideal.absNorm I:ℝ)/X))=
       logPhase θ (Real.log X)*heightCoeff τ (t-2*Real.pi*θ) I := by
@@ -43,9 +42,8 @@ def rootProfile (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff �
 theorem rootProfile_apply (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (u : ℝ) :
     rootProfile V hVc hVs u=rootWindow V u := by
   change V u*(Real.exp (-u/2):ℂ)=_
-  rw [rootWindow,← Real.exp_half,show -u/2=-(u/2) by ring,Real.exp_neg,
+  simp [rootWindow,← Real.exp_half,show -u/2=-(u/2) by ring,Real.exp_neg,
     Complex.ofReal_inv,div_eq_mul_inv]
-  ring
 
 def columnDensity (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) : 𝓢(ℝ,ℂ) :=
   𝓕 (rootProfile V hVc hVs)
@@ -63,7 +61,6 @@ theorem rootWindow_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
   filter_upwards [] with w
   congr 2
   simp only [Real.inner_apply]
-  push_cast
   ring
 
 theorem phase_combine (w θ u : ℝ) :
@@ -75,7 +72,7 @@ theorem phase_combine (w θ u : ℝ) :
   ring
 
 theorem height_column_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0)
+    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal ActualEisensteinCubic.O) (hI : I≠0)
     (t θ X : ℝ) (hX : 0<X) :
     heightCoeff τ t I*columnPhase V (Real.log ((Ideal.absNorm I:ℝ)/X)) θ=
       ∫ w : ℝ,columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
@@ -93,7 +90,7 @@ theorem height_column_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
       ring
 
 theorem height_column_integrable (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0)
+    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal ActualEisensteinCubic.O) (hI : I≠0)
     (t θ X : ℝ) (hX : 0<X) :
     Integrable (fun w : ℝ => columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
       heightCoeff τ (t+2*Real.pi*(w-θ)) I) := by
@@ -115,12 +112,12 @@ theorem height_column_integrable (V : ℝ → ℂ) (hVc : HasCompactSupport V)
     exact ((columnDensity V hVc hVs).continuous.mul (hp.const_mul _)).aestronglyMeasurable
   · filter_upwards [] with w
     simp only [norm_mul,logPhase_norm,mul_one]
-    exact le_of_eq (mul_comm _ _)
+    linarith
 
-theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → O)
+theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
-    (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : O) :
+    (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : ActualEisensteinCubic.O) :
     gaussPolynomial S a ha (fun i => β i*heightCoeff τ t (Ideal.span {a i})*
       columnPhase V (Real.log ((Ideal.absNorm (Ideal.span {a i}):ℝ)/X)) θ) z=
       ∫ w : ℝ,columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
@@ -143,9 +140,7 @@ theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → O)
       apply integral_congr_ae
       filter_upwards [] with w
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro i hi
-      ring
+      grind
 
 end SevenEighths.CenteredMomentHeckeColumnWindow
 

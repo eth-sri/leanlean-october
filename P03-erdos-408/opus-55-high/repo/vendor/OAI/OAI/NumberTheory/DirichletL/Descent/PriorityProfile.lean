@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open FirstPassCubeLabels
 open InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration
-local notation "O" => ActualEisensteinCubic.O
+open CompletedHeight SecondPassIntegration
 
 def priorityLogWindow (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
     (hs:Function.support om⊆Set.Icc a b) (negative:Bool):𝓢(ℝ,ℂ) :=
@@ -35,9 +34,7 @@ theorem priorityLogWindow_support (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
   have hlo:=Real.log_le_log ha hh.1
   have hhi:=Real.log_le_log (Real.exp_pos y) hh.2
   rw [Real.log_exp] at hlo hhi
-  constructor
-  · linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
-  · linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
+  grind
 
 theorem principalWindow_positiveSource (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
     (hs:Function.support om⊆Set.Icc a b) (negative:Bool) (t x:ℝ) (hx:0<x) :
@@ -50,11 +47,10 @@ theorem principalWindow_positiveSource (om:𝓢(ℝ,ℂ)) (a b:ℝ) (ha:0<a)
 
 theorem positiveSource_conjugate_one (g:𝓢(ℝ,ℂ)) (t x:ℝ) :
     star (positiveSource (conjugateProfile g) 1 (-t) x)=positiveSource g 1 t x := by
-  simp only [positiveSource,Real.log_one,add_zero,conjugateProfile_apply,star_mul,star_star,
-    logPhase_conjugate,neg_neg,mul_comm]
+  simp only [positiveSource, conjugateProfile_apply, star_mul, star_star, logPhase_conjugate, neg_neg, mul_comm]
 
 theorem actualSecondProfileRow_congr_positive {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ)
@@ -82,7 +78,7 @@ theorem actualSecondProfileRow_congr_positive {ι σ:Type*} [DecidableEq ι] [De
       (primeProductNorm_pos p hp _)) hX)]
 
 theorem actual_priority_profile_common {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (pool:Finset ι) (x:SecondProfileData ι) (slots₁ slots₂:Finset σ)

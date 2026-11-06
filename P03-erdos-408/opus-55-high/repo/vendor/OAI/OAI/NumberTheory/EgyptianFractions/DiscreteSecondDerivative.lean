@@ -8,7 +8,6 @@ public import OAI.NumberTheory.EgyptianFractions.SecondDerivativeBudget
 @[expose] public section
 
 namespace OAI
-open scoped BigOperators
 
 namespace Problem337
 
@@ -23,23 +22,16 @@ theorem nat_separated_near_integer_card (d : ℕ → ℝ) (N : ℕ)
   have h := separated_near_integer_card ((Finset.range N).image Int.ofNat)
     (fun i : ℤ => d i.toNat) lam β L U hlam hβ hLU
     (by
-      intro i hi j hj hij
-      rcases Finset.mem_image.mp hi with ⟨ii, hii, rfl⟩
-      rcases Finset.mem_image.mp hj with ⟨jj, hjj, rfl⟩
-      simpa only [Int.ofNat_eq_natCast, Int.toNat_natCast, Int.cast_natCast] using
-        hsep ii (Finset.mem_range.mp hii) jj (Finset.mem_range.mp hjj)
-          (Int.ofNat_le.mp (by simpa only [Int.ofNat_eq_natCast] using hij)))
+      simp_all)
     (by
-      intro i hi
-      rcases Finset.mem_image.mp hi with ⟨ii, hii, rfl⟩
-      exact hrange ii (Finset.mem_range.mp hii))
+      simp_all)
   simp only [Finset.filter_image, Int.ofNat_eq_natCast, Int.toNat_natCast] at h
   rw [Finset.card_image_of_injective _ Int.ofNat_injective] at h
   have hsub : nearIntegerIndices d N β ⊆
       (Finset.range N).filter (fun i => ∃ q : ℤ, |d i - (q : ℝ)| ≤ β) := by
     intro i hi
     obtain ⟨hiN, q, hq⟩ := Finset.mem_filter.mp hi
-    exact Finset.mem_filter.mpr ⟨hiN, q, hq.le⟩
+    exact by grind
   exact (show ((nearIntegerIndices d N β).card : ℝ) ≤
       (((Finset.range N).filter (fun i => ∃ q : ℤ, |d i - (q : ℝ)| ≤ β)).card : ℝ) by
     exact_mod_cast Finset.card_le_card hsub).trans h
@@ -66,22 +58,16 @@ theorem first_derivative_Ico_bound (f : ℕ → ℝ) (a b : ℕ) (β : ℝ) (q :
     simp only [g, Nat.add_assoc]
   have hbound := first_derivative_sum_bound_strip g n β q hβ
     (by
-      intro i hi
-      rw [hinc]
-      apply hlo
-      exact Finset.mem_Ico.mpr ⟨by omega, by omega⟩)
+      grind)
     (by
-      intro i hi
-      rw [hinc]
-      apply hhi
-      exact Finset.mem_Ico.mpr ⟨by omega, by omega⟩)
+      grind)
     (by
       intro i hi j hj hij
       change g (i + 1) - g i ≤ g (j + 1) - g j
       rw [hinc, hinc]
       have hi' : i ≤ n := hi
       have hj' : j ≤ n := hj
-      exact hmono (by change a + i < b; omega) (by change a + j < b; omega) (Nat.add_le_add_left hij a))
+      exact hmono (by grind) (by grind) (by omega))
   rw [Finset.sum_Ico_eq_sum_range, ← hn, Finset.sum_range_succ]
   exact (norm_add_le _ _).trans (add_le_add hbound (le_of_eq (phase_norm _)))
 
@@ -102,10 +88,10 @@ theorem discrete_second_derivative_partition_bound (f : ℕ → ℝ) (N : ℕ)
   · exact nat_separated_near_integer_card _ N lam β L U hlam hβ.le hLU hsep hrange
   · intro q hq a b hab hbN hstrip
     exact first_derivative_Ico_bound f a b β q hab hβ
-      (fun j hj => (hstrip j hj).1) (fun j hj => (hstrip j hj).2)
+      (by grind) (by grind)
       (by
         intro i hi j hj hij
-        exact hmono (lt_of_lt_of_le hi hbN) (lt_of_lt_of_le hj hbN) hij)
+        exact hmono (by grind) (by grind) hij)
 
 /-- The square-root form used in the reciprocal-phase differencing argument. -/
 theorem discrete_second_derivative_sqrt_bound (f : ℕ → ℝ) (N : ℕ)
@@ -119,7 +105,7 @@ theorem discrete_second_derivative_sqrt_bound (f : ℕ → ℝ) (N : ℕ)
   have h := discrete_second_derivative_partition_bound f N lam (Real.sqrt lam) L (L + A * lam * N)
     hlam (Real.sqrt_pos.mpr hlam) (le_add_of_nonneg_right (by positivity)) hmono hsep hrange
   have hb := second_derivative_partition_sqrt_budget A (N : ℝ) lam hA (Nat.cast_nonneg _) hlam hlam1
-  exact h.trans (by simpa only [add_sub_cancel_left] using hb)
+  linarith
 
 end ExponentialSum
 end Problem337

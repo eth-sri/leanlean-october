@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.AlternatingProjections
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -31,7 +30,6 @@ lemma productFull_mean_zero (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i 
     productAverage w {i} (productFull w I f) = (fun _ => 0) := by
   rw [← Finset.insert_erase hi, productFull_insert w hsum (I.erase i) i (by simp)]
   rw [productAverage_sub, productAverage_idempotent w hsum {i}]
-  funext x
   simp
 
 lemma productFull_average_subset_zero (w : ∀ i, α i → ℝ)
@@ -47,7 +45,7 @@ lemma productFull_average_subset_zero (w : ∀ i, α i → ℝ)
     funext x
     rw [productAverage_union w hsum U {i}, hu]
   rw [productFull_mean_zero w hsum I i (hU hi), productAverage_zero] at h
-  exact h.symm
+  simp_all
 
 lemma productFull_idempotent (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I : Finset ι) (f : ProductSample α → ℂ) :
@@ -60,7 +58,7 @@ lemma productFull_idempotent (w : ∀ i, α i → ℝ)
   · intro U hU hne
     rw [productFull_average_subset_zero w hsum I U (Finset.mem_powerset.mp hU)
       (Finset.nonempty_iff_ne_empty.mpr hne), mul_zero]
-  · simp
+  simp
 
 lemma productFull_duality (w : ∀ i, α i → ℝ) (I : Finset ι)
     (f g : ProductSample α → ℂ) :
@@ -91,7 +89,7 @@ lemma productFull_duality (w : ∀ i, α i → ℝ) (I : Finset ι)
     apply Finset.sum_congr rfl
     intro x _
     ring
-  rw [hleft, hright, h]
+  grind
 
 lemma productFull_pair_self (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I : Finset ι) (f : ProductSample α → ℂ) :
@@ -99,15 +97,14 @@ lemma productFull_pair_self (w : ∀ i, α i → ℝ)
       productPair w (productFull w I f) (productFull w I f) := by
   have h := productFull_duality w I f (productFull w I f)
   rw [productFull_idempotent w hsum I f] at h
-  exact h
+  omega
 
 lemma productFull_energy_split (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I : Finset ι) (f : ProductSample α → ℂ) :
     productSqNorm w (fun x => f x - productFull w I f x) +
         productSqNorm w (productFull w I f) = productSqNorm w f := by
   have hfg := productFull_pair_self w hsum I f
-  have hgf : productPair w (productFull w I f) f =
-      productPair w (productFull w I f) (productFull w I f) :=
+  have hgf :=
     (productFull_duality w I f f).symm.trans hfg
   have h := productPair_sub_sub w f (productFull w I f)
   rw [hfg, hgf] at h

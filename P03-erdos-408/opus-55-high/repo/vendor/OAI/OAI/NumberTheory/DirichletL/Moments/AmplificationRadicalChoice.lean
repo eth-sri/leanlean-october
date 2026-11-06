@@ -8,26 +8,24 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentAmplificationRadicalChoice
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
+open ConcretePrimeRowBridge RayFourExpansion
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
 open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
 open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
+open CenteredMomentSourceRow
+open CenteredMomentSectorLocalization
 open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentChildRows
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem exists_pool_error_families {ι : Type*} [Fintype ι]
-    (P : Finset (Ideal O)) (hP : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
-    (η : Character) (m : O) (hm : m≠0) (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) :
+    (P : Finset (Ideal ActualEisensteinCubic.O)) (hP : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
+    (η : Character) (m : ActualEisensteinCubic.O) (hm : m≠0) (hmLam : goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m) :
     ∃ τ : (elementPool P) → Fin 3 → RayCharacter → Character,
       (∀ (p : elementPool P) i χ,(τ p i χ).modulus.absNorm≤
         radicalBound (childCharacter η χ) m p.val (errorMovingExponent (errorIndex i))) ∧
@@ -48,7 +46,7 @@ theorem exists_pool_error_families {ι : Type*} [Fintype ι]
     exact CenteredMomentAmplificationRadicalFamily.exists_original_error_ball_family (ι:=ι) η m p hm hd.1 hPid hd.2.2.2.1
       hd.2.2.2.2.1 hd.2.2.2.2.2 hd.2.2.1 hmLam hm2 (errorIndex i) (errorIndex_cases i)
   choose τ hτ using hf
-  refine ⟨τ,fun p i => (hτ p i).1,?_⟩
+  refine ⟨τ,by grind,?_⟩
   intro D hS hprime hslot t T Z sigma D0 cLog hT hZ hsigma j
   rw [←Finset.sum_coe_sort (elementPool P)]
   apply Finset.sum_le_sum
@@ -61,15 +59,15 @@ theorem exists_pool_error_families {ι : Type*} [Fintype ι]
     add_le_add (add_le_add h0 h5) h6
 
 theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+    (M : Ideal ActualEisensteinCubic.O) [NeZero M] (H : Subgroup (ActualEisensteinCubic.O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+    (Sbad : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6) :
     ∀ᶠ Z : ℝ in atTop, 1<Z ∧
       let P := primePool M H Sbad (1/2) 1 (Z^(sigma/3))
       P.Nonempty ∧ Z^(sigma/3-loss)≤(P.card:ℝ) ∧
-      ∀ (η : Character) (m : O),m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀ (η : Character) (m : ActualEisensteinCubic.O),m≠0 → goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       ∃ τ : (elementPool P) → Fin 3 → RayCharacter → Character,
         (∀ (p : elementPool P) i χ,(τ p i χ).modulus.absNorm≤
           radicalBound (childCharacter η χ) m p.val (errorMovingExponent (errorIndex i))) ∧
@@ -80,7 +78,7 @@ theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
           ∀ (z : ι→ℝ),(∀i,z i≤eta) → (∀i,D.lengths i=Z^(z i)) →
           D.R≠0 → D.s≠0 → (Ideal.absNorm D.R:ℝ)≤Z^BR → (Ideal.absNorm D.s:ℝ)≤Z^Bs →
           ∀ (t T D0 cLog : ℝ),0<T → ∀ (j : ℤ),Real.logb Z (dyadicScale j)≤Mmax →
-          (∑' h : O,dyadicWeight j (normValue h)*
+          (∑' h : ActualEisensteinCubic.O,dyadicWeight j (normValue h)*
             ‖gaussPolynomial Finset.univ (sourceGenerator D.columns)
               (sourceGenerator_supported D.columns) (D.coefficient η m t T) h‖^2)≤
             (8/(P.card:ℝ))*
@@ -99,7 +97,7 @@ theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
     (fun Q hQ => (hdata Q hQ).1) (fun Q hQ => (hdata Q hQ).2.1) η m hm hmLam hm2
   refine ⟨τ,hN,?_⟩
   intro D hS hprime hslot hsupp z hz hlen hR0 hs0 hR hs t T D0 cLog hT j hK
-  have hcop (p : O) (hp : p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3)))) :
+  have hcop (p : ActualEisensteinCubic.O) (hp : p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3)))) :
       ∀i,∀I∈D.S (Sum.inl i),IsCoprime (Ideal.span {p}) I := by
     have hd := elementPool_data _ (fun Q hQ => (hdata Q hQ).1)
       (fun Q hQ => (hdata Q hQ).2.1) p hp
@@ -111,15 +109,15 @@ theorem eventually_original_source_amplification {ι : Type*} [Fintype ι]
   exact mul_le_mul_of_nonneg_left (add_le_add le_rfl he) (by positivity)
 
 theorem eventually_original_amplification {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+    (M : Ideal ActualEisensteinCubic.O) [NeZero M] (H : Subgroup (ActualEisensteinCubic.O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+    (Sbad : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6) :
     ∀ᶠ Z : ℝ in atTop, 1<Z ∧
       let P := primePool M H Sbad (1/2) 1 (Z^(sigma/3))
       P.Nonempty ∧ Z^(sigma/3-loss)≤(P.card:ℝ) ∧
-      ∀ (η : Character) (m : O),m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀ (η : Character) (m : ActualEisensteinCubic.O),m≠0 → goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       ∃ τ : (elementPool P) → Fin 3 → RayCharacter → Character,
         (∀ (p : elementPool P) i χ,(τ p i χ).modulus.absNorm≤
           radicalBound (childCharacter η χ) m p.val (errorMovingExponent (errorIndex i))) ∧
@@ -129,7 +127,7 @@ theorem eventually_original_amplification {ι : Type*} [Fintype ι]
           ∀ (z : ι→ℝ),(∀i,z i≤eta) → (∀i,D.lengths i=Z^(z i)) →
           D.R≠0 → D.s≠0 → (Ideal.absNorm D.R:ℝ)≤Z^BR → (Ideal.absNorm D.s:ℝ)≤Z^Bs →
           ∀ (t T D0 cLog : ℝ),0<T → ∀ (j : ℤ),Real.logb Z (dyadicScale j)≤Mmax →
-          (∑' h : O,dyadicWeight j (normValue h)*
+          (∑' h : ActualEisensteinCubic.O,dyadicWeight j (normValue h)*
             ‖gaussPolynomial Finset.univ (sourceGenerator D.columns)
               (sourceGenerator_supported D.columns) (D.coefficient η m t T) h‖^2)≤
             (8/(P.card:ℝ))*
@@ -153,16 +151,16 @@ theorem eventually_original_amplification {ι : Type*} [Fintype ι]
   simpa only [D.active_gaussPolynomial,D.active_gaussEnergy] using he
 
 theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+    (M : Ideal ActualEisensteinCubic.O) [NeZero M] (H : Subgroup (ActualEisensteinCubic.O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+    (Sbad : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta Csec xi reserve : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6)
     (hC : 1≤Csec) (hxi : 0≤xi) (hreserve : 0<reserve) :
     ∀ᶠ Z : ℝ in atTop, 1<Z ∧
       let P := primePool M H Sbad (1/2) 1 (Z^(sigma/3))
       P.Nonempty ∧ Z^(sigma/3-loss)≤(P.card:ℝ) ∧
-      ∀ (η : Character) (m : O),m≠0 → ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀ (η : Character) (m : ActualEisensteinCubic.O),m≠0 → ConcretePrimeRowBridge.goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       ∃ τ : (elementPool P) → Fin 3 → RayFourExpansion.RayCharacter → Character,
         (∀ (p : elementPool P) i χ,(τ p i χ).modulus.absNorm≤
           radicalBound (childCharacter η χ) m p.val (errorMovingExponent (errorIndex i))) ∧
@@ -172,11 +170,11 @@ theorem eventually_original_amplification_common {ι : Type*} [Fintype ι]
           ∀ (z : ι→ℝ),(∀i,z i≤eta) → (∀i,D.lengths i=Z^(z i)) →
           D.R≠0 → D.s≠0 → (Ideal.absNorm D.R:ℝ)≤Z^BR → (Ideal.absNorm D.s:ℝ)≤Z^Bs →
           ∀ (t T d cLog : ℝ),0<T →
-          ∀ (I J E : Ideal O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
+          ∀ (I J E : Ideal ActualEisensteinCubic.O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
           Tsec≤Csec*firstNominalScale I J E K X →
           ∀ (j : ℤ),Retained (frequencyRadius Tsec Z xi) j →
           Real.logb Z (dyadicScale j)≤Mmax →
-          (∑' h : O,dyadicWeight j (normValue h)*
+          (∑' h : ActualEisensteinCubic.O,dyadicWeight j (normValue h)*
             ‖gaussPolynomial Finset.univ (sourceGenerator D.columns)
               (sourceGenerator_supported D.columns) (D.coefficient η m t T) h‖^2)≤
             (8/(P.card:ℝ))*

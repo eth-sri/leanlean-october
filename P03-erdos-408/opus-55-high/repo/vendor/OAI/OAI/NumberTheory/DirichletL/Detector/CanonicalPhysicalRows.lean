@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.PhysicalDyad
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve HeckeInverseAmplification
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem compensatedPhysicalProbe_canonical_slots {K : ℕ} (η : HeckeFamily.Character)
     (C : CalibrationData) (W0 W1 : ℝ→ℂ) (T : Fin K→Finset PrimeIdeal)
@@ -36,7 +35,7 @@ theorem compensatedPhysicalProbe_eq_canonical_rows {K : ℕ} (η : HeckeFamily.C
       ∑'u : FreeRow,∑P : (∀i,↥(T i)),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
         rowIntegral η S (calibrationForSet S hS) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u := by
   have hn (P : ∀i,↥(T i)) (i : Fin K) : primaryGenerator (P i).val.val≠0 :=
-    supported_primaryGenerator_ne_zero _ (hT i _ (P i).property)
+    supported_primaryGenerator_ne_zero _ (by grind)
   have hs (P : ∀i,↥(T i)) : Summable (fun u : FreeRow=>
       (∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
         rowIntegral η S (calibrationForSet S hS) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u) :=

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Energy.AllocatedZero
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyAllocatedClipped
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
@@ -20,34 +20,33 @@ open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
 open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-def pair (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+def pair (D:Ideal HeckeFamily.O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
     {a b:ℝ}(ha:0<a)(p:Profiles a b)(v X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂):
     Profiles (a/max 1 b) b :=
   retainedPair a b ha p ![rawScale D alloc X₁ 0,rawScale D alloc X₂ 1]
     (by intro i;fin_cases i;exact rawScale_pos D alloc X₁ hX₁ 0;exact rawScale_pos D alloc X₂ hX₂ 1) v
 
-def scale (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (X:ℝ)(j:Fin 2)(F:Finset (Ideal O)):ℝ:=
+def scale (D:Ideal HeckeFamily.O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+    (X:ℝ)(j:Fin 2)(F:Finset (Ideal HeckeFamily.O)):ℝ:=
   clippedScale (rawScale D alloc X j)/((∏I∈F,I).absNorm:ℝ)
 
-lemma scale_pos (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (X:ℝ)(j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):0<scale D alloc X j F:=by
+lemma scale_pos (D:Ideal HeckeFamily.O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+    (X:ℝ)(j:Fin 2)(F:Finset (Ideal HeckeFamily.O))(hF:∀I∈F,I≠0):0<scale D alloc X j F:=by
   have hn:0<((∏I∈F,I).absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (Finset.prod_ne_zero_iff.mpr hF))
   exact div_pos (by unfold clippedScale;positivity) hn
 
-lemma scale_cap (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+lemma scale_cap (D:Ideal HeckeFamily.O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
     (Z L X:ℝ)(hZ:1≤Z)(hL:0≤L)(hX:0<X)(hc:X≤Z^L)
-    (j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):scale D alloc X j F≤Z^L:=
+    (j:Fin 2)(F:Finset (Ideal HeckeFamily.O))(hF:∀I∈F,I≠0):scale D alloc X j F≤Z^L:=
   (allocatedScale_le D alloc X hX j F hF).trans (max_le (Real.one_le_rpow hZ hL) hc)
 
 lemma allocated_pair {Z Bmask bΦ a b:ℝ}(st:NaturalState Z Bmask bΦ)(hunit:st.puncture=1)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
-    (ha:0<a)(p:Profiles a b)(pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
-    (v X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal O))(J:Finset α):
+    (D:Ideal HeckeFamily.O)(alloc:Allocation D (Finset.univ:Finset (α⊕Fin 2)))
+    (ha:0<a)(p:Profiles a b)(pool:α→Finset (Ideal HeckeFamily.O))(β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)
+    (v X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal HeckeFamily.O))(J:Finset α):
     allocatedEnergy st.character st.radial D alloc
       (sourcePlain a b ha (p.profile 0) (p.support 0))
       (sourcePlain a b ha (p.profile 1) (p.support 1)) pool β P v X₁ X₂ hX₁ hX₂ F₁ F₂ J =
@@ -62,9 +61,9 @@ lemma allocated_pair {Z Bmask bΦ a b:ℝ}(st:NaturalState Z Bmask bΦ)(hunit:st
   simp only [allocatedEnergy,pair,retainedPair,scale,NaturalState.mask,hunit,
     Matrix.cons_val_zero,Matrix.cons_val_one]
 
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εremove lo hi κ:ℝ)
     (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
@@ -72,7 +71,7 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→RayQuotient.Characters M H,
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z →
-    ∀(a b Bmask L εchild:ℝ)(ha:0<a),0≤L → ∀Q:Ideal O,Q≤M →
+    ∀(a b Bmask L εchild:ℝ)(ha:0<a),0≤L → ∀Q:Ideal HeckeFamily.O,Q≤M →
     ∀(degree:ℕ)(S:Finset (ℕ×ℕ))(C₀ C₁:ℝ),0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b bΦ Bmask L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b bΦ Bmask L Lslot lo hi
@@ -81,12 +80,12 @@ theorem actual_clipped_paid_bands (W:ℝ→ℂ)(aslot bslot Mcap bΦ Lslot εrem
     0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
-    ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
+    ∀(C R:Ideal HeckeFamily.O)(B:actualAllocations src.pools C)(D:Ideal HeckeFamily.O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
       (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)),
     ∀st:NaturalState Z Bmask bΦ,st.puncture=1 → st.fixedModulus=internalQ Q η₀ → st.width≤Mcap →
     ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z^L → X₂≤Z^L →
-    ∀F₁ F₂:Finset (Ideal O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
+    ∀F₁ F₂:Finset (Ideal HeckeFamily.O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
     let d:=commonData (withHeight src st.character v) C R B
     allocatedEnergy st.character st.radial D alloc
       (sourcePlain a b ha (p.profile 0) (p.support 0))

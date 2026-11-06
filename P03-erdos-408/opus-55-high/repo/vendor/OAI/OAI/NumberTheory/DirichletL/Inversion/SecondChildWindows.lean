@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseSecondChildWindows
 open InverseMoment InverseSecondProfileUniform
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 
 theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
     ∃ w : 𝓢(ℝ,ℂ), HasCompactSupport (w : ℝ→ℂ) ∧
@@ -24,18 +23,17 @@ theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
   obtain ⟨f,hf,_,hs,hone⟩ := exists_contDiff_support_eq_eq_one_iff
     (n:=⊤) isOpen_Ioo isClosed_Icc hKU
   let v : ℝ→ℂ := fun x => (f x:ℂ)
-  have hv : ContDiff ℝ ∞ v := Complex.ofRealCLM.contDiff.comp (by simpa using hf)
+  have hv : ContDiff ℝ ∞ v := Complex.ofRealCLM.contDiff.comp (by omega)
   have hvs : Function.support v⊆Set.Icc (a/2) (b+1) := by
     intro x hx
     have hh : x∈Function.support f := by simpa [v,Function.mem_support] using hx
     rw [hs] at hh
-    exact ⟨hh.1.le,hh.2.le⟩
+    exact by grind
   have hvc := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hvs
   refine ⟨hvc.toSchwartzMap hv,hvc,?_,closure_minimal hvs isClosed_Icc⟩
   intro x hx
   change (f x:ℂ)=1
-  rw [(hone x).mp hx]
-  rfl
+  simp_all
 
 theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
     (_hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
@@ -44,10 +42,9 @@ theorem positiveSource_log_bound (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
   have hc0 : 0<c := zero_lt_one.trans_le hc
   have hgn : g (Real.log x+Real.log c)≠0 := (mul_ne_zero_iff.mp hn).2
   have hh := hs hgn
-  have hcl : 0≤Real.log c := Real.log_nonneg hc
-  have hclb : Real.log c≤Real.log bcap := Real.log_le_log hc0 hcb
-  rw [abs_le]
-  constructor <;> linarith [hh.1,hh.2]
+  have hcl := Real.log_nonneg hc
+  have hclb := Real.log_le_log hc0 hcb
+  grind
 
 theorem positiveSource_ratio_support (g : 𝓢(ℝ,ℂ)) (m bcap c θ x : ℝ)
     (hm : 0≤m) (hs : Function.support g⊆Set.Icc (-m) m)
@@ -63,12 +60,7 @@ theorem translated_log_bound (a b x ρ B : ℝ) (ha : 0<a)
   have hx0 := ha.trans_le hx.1
   have hlo := Real.log_le_log ha hx.1
   have hhi := Real.log_le_log hx0 hx.2
-  have hl : |Real.log x|≤|Real.log a|+|Real.log b| := by
-    rw [abs_le]
-    constructor
-    · linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
-    · linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
-  exact (abs_add_le _ _).trans (add_le_add hl hρ)
+  grind
 
 def outerIndex (i : Fin 4) : Fin 6 := i.castLE (by decide)
 
@@ -91,7 +83,7 @@ theorem fixed_windows (m bcap : ℝ) (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
   let R := m+Real.log bcap
   let a := Real.exp (-R)/(hi 0*hi 2)
   let b := Real.exp R/(lo 0*lo 2)
-  have hhi0 (i : Fin 4) : 0<hi i := (hlo i).trans_le (hhi i)
+  have hhi0 (i : Fin 4) : 0<hi i := by grind
   have ha : 0<a := div_pos (Real.exp_pos _) (mul_pos (hhi0 0) (hhi0 2))
   have hb : 0<b := div_pos (Real.exp_pos _) (mul_pos (hlo 0) (hlo 2))
   obtain ⟨w,hwc,hwone,hws⟩ := positive_cutoff a (a+b+1) ha (by linarith)
@@ -106,12 +98,12 @@ theorem fixed_windows (m bcap : ℝ) (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
     · exact half_pos ha
     · exact half_pos ha
   let H (i : Fin 6) := |Real.log (l i)|+|Real.log (u i)|+Bρ i
-  have hH (i : Fin 6) : 0≤H i := add_nonneg (add_nonneg (abs_nonneg _) (abs_nonneg _)) (hBρ i)
+  have hH (i : Fin 6) : 0≤H i := by grind
   choose V hVc hVs hVone hVsupport hVzero using
     fun i : Fin 6 => FourierBridge.exists_complex_smooth_cutoff (H i) (hH i)
   let U (i : Fin 6) : 𝓢(ℝ,ℂ) := (hVc i).toSchwartzMap (hVs i)
   refine ⟨w,U,(fun i=>H i+1),a/2,(a+b+1)+1,half_pos ha,by linarith,hwc,hws,
-    (fun i=>by linarith [hH i]),hVc,(fun i=>(subset_tsupport _).trans (hVsupport i)),?_,?_⟩
+    (fun i=>by grind),hVc,(fun i=>(subset_tsupport _).trans (hVsupport i)),?_,?_⟩
   · intro g hg c θ u v n hc hcb hu hv hn hnz
     have hu0 := (hlo 0).trans_le hu.1
     have hv0 := (hlo 2).trans_le hv.1
@@ -122,16 +114,16 @@ theorem fixed_windows (m bcap : ℝ) (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
       calc
         _ ≤ u*v*n := hs.1
         _ ≤ (hi 0*hi 2)*n := mul_le_mul_of_nonneg_right
-          (mul_le_mul hu.2 hv.2 hv0.le (hhi0 0).le) hn.le
+          (mul_le_mul hu.2 hv.2 hv0.le (by grind)) hn.le
         _ = _ := by ring
     have hnhi : n≤b := by
       apply (le_div_iff₀ (mul_pos (hlo 0) (hlo 2))).mpr
       calc
         _ = (lo 0*lo 2)*n := by ring
         _ ≤ u*v*n := mul_le_mul_of_nonneg_right
-          (mul_le_mul hu.1 hv.1 (hlo 2).le hu0.le) hn.le
+          (mul_le_mul hu.1 hv.1 (by grind) hu0.le) hn.le
         _ ≤ _ := hs.2
-    exact hwone n ⟨hnlo,by linarith⟩
+    grind
   · intro q ρ hρ hblock hleft hright i
     have hq (k : Fin 6) : q k∈Set.Icc (l k) (u k) := by
       fin_cases k
@@ -141,17 +133,17 @@ theorem fixed_windows (m bcap : ℝ) (lo hi : Fin 4→ℝ) (Bρ : Fin 6→ℝ)
       · exact hblock 3
       · exact hws (subset_tsupport _ hleft)
       · exact hws (subset_tsupport _ hright)
-    exact hVone i _ (translated_log_bound (l i) (u i) (q i) (ρ i) (Bρ i) (hl i) (hq i) (hρ i))
+    exact hVone i _ (translated_log_bound (l i) (u i) (q i) (ρ i) (Bρ i) (hl i) (hq i) (by grind))
 
-def actualOuterRatios {ι : Type*} [DecidableEq ι] (p : ι→O)
+def actualOuterRatios {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (G E V B : ℝ) : Fin 4→ℝ :=
   ![primeProductNorm p x.second.sourceCommon/G,
     ‖ConcreteTraceCRT.eisEmbedding (primeSubsetGenerator (fun i=>Ideal.span {p i}) x.second.divisor)‖^2/E,
     primeProductNorm p x.second.overlap/V,‖ConcreteTraceCRT.eisEmbedding x.second.frequency‖^2/B]
 
-lemma actualRelativeNorm_outer {ι : Type*} [DecidableEq ι] (p : ι→O)
+lemma actualRelativeNorm_outer {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O)
     [∀ i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex)
+    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (Q₁ Q₂ : Finset ι) (G E V B X : ℝ) (i : Fin 4) :
     secondRelativeNorm (secondActualNorms p (secondInheritedProfile p x Ψ m z) Q₁ Q₂)
       G E V B X (outerIndex i)=actualOuterRatios p x G E V B i := by
@@ -168,10 +160,10 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
       tsupport (w₁ : ℝ→ℂ)⊆Set.Icc a b ∧ tsupport (w₂ : ℝ→ℂ)⊆Set.Icc a b ∧
       (∀ i,0≤M₀ i) ∧ (∀ i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀ i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
-      ∀ {ι : Type*} [DecidableEq ι] (p : ι→O) (_hp : ∀ i,p i≠0)
+      ∀ {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (_hp : ∀ i,p i≠0)
       [∀ i,(Ideal.span {p i}).IsMaximal]
       {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (pool : Finset ι)
-      (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex) (G E V B X : ℝ)
+      (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex) (G E V B X : ℝ)
       (ρ : Fin 6→ℝ) (c₁ c₂ θ₁ θ₂ : ℝ),
       0<G → 0<E → 0<V → 0<B → 0<X →
       (∀ i,|ρ i|≤Bρ i) → 1≤c₁ → c₁≤bcap → 1≤c₂ → c₂≤bcap →
@@ -189,15 +181,15 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
         U₀ i (secondRelativeLog
           (secondActualNorms p (secondInheritedProfile p j.1 Ψ m z) j.2.1 j.2.2) G E V B X i+ρ i)=1) := by
   let mmax := max m₁ m₂
-  have hmmax : 0≤mmax := hm₁.trans (le_max_left _ _)
+  have hmmax : 0≤mmax := by positivity
   have hg₁' : Function.support g₁⊆Set.Icc (-mmax) mmax := by
     intro x hx
     have h := hg₁ hx
-    exact ⟨(neg_le_neg (le_max_left _ _)).trans h.1,h.2.trans (le_max_left _ _)⟩
+    exact by grind
   have hg₂' : Function.support g₂⊆Set.Icc (-mmax) mmax := by
     intro x hx
     have h := hg₂ hx
-    exact ⟨(neg_le_neg (le_max_right _ _)).trans h.1,h.2.trans (le_max_right _ _)⟩
+    exact by grind
   obtain ⟨w,U,M,a,b,ha,hab,hwc,hws,hM,hUc,hUs,hfresh,hcut⟩ :=
     fixed_windows mmax bcap lo hi Bρ hmmax hcap hlo hhi hBρ
   refine ⟨w,w,U,M,a,b,ha,hab,hwc,hwc,hws,hws,hM,hUc,hUs,?_⟩
@@ -213,14 +205,13 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
     change positiveSource g₁ c₁ θ₁ ((primeProductNorm p x.second.sourceCommon/G)*
       (primeProductNorm p x.second.overlap/V)*(primeProductNorm p Q/X))≠0
     rw [he]
-    exact star_ne_zero.mp hn
+    grind
   · intro x hx Q _ hn
     apply hfresh g₂ hg₂' c₂ θ₂ _ _ _ hc₂ hcb₂ (hblock x hx 0) (hblock x hx 2)
       (div_pos (primeProductNorm_pos p hp Q) hX)
     change positiveSource g₂ c₂ θ₂ ((primeProductNorm p x.second.sourceCommon/G)*
       (primeProductNorm p x.second.overlap/V)*(primeProductNorm p Q/X))≠0
-    rw [he]
-    exact hn
+    grind
   · intro j hj hleft hright i
     apply hcut (secondRelativeNorm
       (secondActualNorms p (secondInheritedProfile p j.1 Ψ m z) j.2.1 j.2.2) G E V B X) ρ hρ

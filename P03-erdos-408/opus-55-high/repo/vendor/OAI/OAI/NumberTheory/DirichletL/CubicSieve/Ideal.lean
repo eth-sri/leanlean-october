@@ -10,30 +10,29 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Blocks
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def Admissible (I : Ideal Eis) : Prop := Squarefree I ∧ primaryGenerator I ≠ 0
+def Admissible (I : Ideal ActualEisensteinCubic.O) : Prop := Squarefree I ∧ primaryGenerator I ≠ 0
 
-def idealKernel (I J : Ideal Eis) : ℂ :=
+def idealKernel (I J : Ideal ActualEisensteinCubic.O) : ℂ :=
   eisEmbedding (CubicJacobiGlobal.idealSymbol I (primaryGenerator J))
 
-theorem idealKernel_reciprocity (I J : Ideal Eis)
+theorem idealKernel_reciprocity (I J : Ideal ActualEisensteinCubic.O)
     (hI : primaryGenerator I ≠ 0) (hJ : primaryGenerator J ≠ 0) :
     idealKernel I J = idealKernel J I :=
   congrArg eisEmbedding (CubicJacobiGlobal.idealSymbol_reciprocity I J hI hJ)
 
-theorem idealKernel_norm_le_one (I J : Ideal Eis) : ‖idealKernel I J‖ ≤ 1 := by
+theorem idealKernel_norm_le_one (I J : Ideal ActualEisensteinCubic.O) : ‖idealKernel I J‖ ≤ 1 := by
   rw [idealKernel, ← CanonicalRowCompletion.idealRowHom_square, norm_pow]
   exact (pow_le_pow_left₀ (norm_nonneg _)
     (CanonicalRowCompletion.idealRowHom_norm (primaryGenerator J) I) 2).trans_eq (by norm_num)
 
-theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
+theorem idealSymbol_fourth (I : Ideal ActualEisensteinCubic.O) (x : ActualEisensteinCubic.O) :
     (eisEmbedding (CubicJacobiGlobal.idealSymbol I x)) ^ 4 =
       eisEmbedding (CubicJacobiGlobal.idealSymbol I x) := by
-  have hlocal (P : Ideal Eis) :
+  have hlocal (P : Ideal ActualEisensteinCubic.O) :
       (eisEmbedding (CubicJacobiGlobal.primeValue P x)) ^ 4 =
         eisEmbedding (CubicJacobiGlobal.primeValue P x) := by
     unfold CubicJacobiGlobal.primeValue
@@ -46,7 +45,7 @@ theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
       simpa only [χ, canonicalSextic_pow_two, MulChar.ringHomComp_apply] using
         cubic_fourth_eq χ hχ (Ideal.Quotient.mk P x)
     · simp
-  have hprod (S : Multiset (Ideal Eis)) :
+  have hprod (S : Multiset (Ideal ActualEisensteinCubic.O)) :
       (eisEmbedding ((S.map (fun P => CubicJacobiGlobal.primeValue P x)).prod)) ^ 4 =
         eisEmbedding ((S.map (fun P => CubicJacobiGlobal.primeValue P x)).prod) := by
     induction S using Multiset.induction_on with
@@ -54,29 +53,29 @@ theorem idealSymbol_fourth (I : Ideal Eis) (x : Eis) :
     | @cons P S ih =>
       simp only [Multiset.map_cons, Multiset.prod_cons, map_mul, mul_pow, hlocal, ih]
   by_cases hI : I = 0
-  · simp [hI]
+  · simp_all
   · simpa only [CubicJacobiGlobal.idealSymbol, ite_eq_right hI] using
       hprod (UniqueFactorizationMonoid.normalizedFactors I)
 
-theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
+theorem idealSymbol_cube_mask (I : Ideal ActualEisensteinCubic.O) (x : ActualEisensteinCubic.O)
     (hI : primaryGenerator I ≠ 0) :
     (eisEmbedding (CubicJacobiGlobal.idealSymbol I x)) ^ 3 =
       if IsCoprime I (Ideal.span {x}) then 1 else 0 := by
-  have hlocal (P : Ideal Eis) (hP : P.IsMaximal ∧ goodLambda ∉ P) :
+  have hlocal (P : Ideal ActualEisensteinCubic.O) (hP : P.IsMaximal ∧ goodLambda ∉ P) :
       (eisEmbedding (CubicJacobiGlobal.primeValue P x)) ^ 3 =
         if IsCoprime P (Ideal.span {x}) then 1 else 0 := by
     let : P.IsMaximal := hP.1
-    let : Field (Eis ⧸ P) := Ideal.Quotient.field P
-    let : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+    let : Field (ActualEisensteinCubic.O ⧸ P) := Ideal.Quotient.field P
+    let : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
     let χ := actualSextic P hP.2 ^ 2
     have hχ : χ ^ 3 = 1 :=
-      (congrArg (fun φ : MulChar (Eis ⧸ P) ℂ => φ ^ 3)
+      (congrArg (fun φ : MulChar (ActualEisensteinCubic.O ⧸ P) ℂ => φ ^ 3)
         (canonicalSextic_pow_two P hP.2)).trans <|
           (MulChar.ringHomComp_pow _ _ _).trans <|
-            (congrArg (fun φ : MulChar (Eis ⧸ P) Eis => φ.ringHomComp eisEmbedding)
+            (congrArg (fun φ : MulChar (ActualEisensteinCubic.O ⧸ P) ActualEisensteinCubic.O => φ.ringHomComp eisEmbedding)
               (cubicChar_pow_three P hP.2)).trans (MulChar.ringHomComp_one eisEmbedding)
     rw [CubicJacobiGlobal.primeValue_eq P hP.2]
-    have hv := congrArg (fun φ : MulChar (Eis ⧸ P) ℂ => φ (Ideal.Quotient.mk P x))
+    have hv := congrArg (fun φ : MulChar (ActualEisensteinCubic.O ⧸ P) ℂ => φ (Ideal.Quotient.mk P x))
       (canonicalSextic_pow_two P hP.2)
     change χ (Ideal.Quotient.mk P x) = _ at hv
     simp only [MulChar.ringHomComp_apply] at hv
@@ -86,7 +85,7 @@ theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
       rw [isUnit_iff_ne_zero, ne_eq, Ideal.Quotient.eq_zero_iff_mem]
     simp only [hu]
     split_ifs <;> rfl
-  have hprod (S : Multiset (Ideal Eis))
+  have hprod (S : Multiset (Ideal ActualEisensteinCubic.O))
       (hS : ∀ P ∈ S, P.IsMaximal ∧ goodLambda ∉ P) :
       (eisEmbedding ((S.map (fun P => CubicJacobiGlobal.primeValue P x)).prod)) ^ 3 =
         if IsCoprime S.prod (Ideal.span {x}) then 1 else 0 := by
@@ -98,8 +97,7 @@ theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
       have ht := fun Q hQ => hS Q (Multiset.mem_cons_of_mem hQ)
       simp only [Multiset.map_cons, Multiset.prod_cons, map_mul, mul_pow,
         hlocal P hp, ih ht, IsCoprime.mul_left_iff]
-      by_cases hP : IsCoprime P (Ideal.span {x}) <;>
-        by_cases hS : IsCoprime S.prod (Ideal.span {x}) <;> simp [hP, hS]
+      grind
   have hI0 := primaryGenerator_ne_zero_ideal I hI
   have hf : ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
       P.IsMaximal ∧ goodLambda ∉ P := by
@@ -110,11 +108,11 @@ theorem idealSymbol_cube_mask (I : Ideal Eis) (x : Eis)
   rw [Ideal.prod_normalizedFactors_eq_self hI0] at h
   simpa only [CubicJacobiGlobal.idealSymbol, ite_eq_right hI0] using h
 
-theorem idealKernel_square_eq_star (I J : Ideal Eis) :
+theorem idealKernel_square_eq_star (I J : Ideal ActualEisensteinCubic.O) :
     idealKernel I J ^ 2 = star (idealKernel I J) :=
   square_eq_star_of_fourth_eq _ (idealSymbol_fourth I (primaryGenerator J))
 
-def idealNumeratorHom (I : Ideal Eis) (hI : primaryGenerator I ≠ 0) : Ideal Eis →* ℂ where
+def idealNumeratorHom (I : Ideal ActualEisensteinCubic.O) (hI : primaryGenerator I ≠ 0) : Ideal ActualEisensteinCubic.O →* ℂ where
   toFun := idealKernel I
   map_one' := by
     change eisEmbedding (CubicJacobiGlobal.idealSymbol I (primaryGenerator 1)) = 1
@@ -123,10 +121,10 @@ def idealNumeratorHom (I : Ideal Eis) (hI : primaryGenerator I ≠ 0) : Ideal Ei
     simp only [idealKernel, primaryGenerator_mul,
       CubicJacobiGlobal.idealSymbol_map_mul I hI, map_mul]
 
-def idealRange (X : ℝ) : Finset (Ideal Eis) :=
+def idealRange (X : ℝ) : Finset (Ideal ActualEisensteinCubic.O) :=
   (idealsUpTo ⌊X⌋₊).filter Admissible
 
-theorem mem_idealRange {X : ℝ} {I : Ideal Eis} :
+theorem mem_idealRange {X : ℝ} {I : Ideal ActualEisensteinCubic.O} :
     I ∈ idealRange X ↔ Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ X := by
   rw [idealRange, Finset.mem_filter, mem_idealsUpTo]
   constructor
@@ -155,15 +153,15 @@ theorem sieveNorm_reciprocity (M N : ℝ) : sieveNorm M N = sieveNorm N M := by
 
 theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
-    (rows : m → Ideal Eis) (cols : n → Ideal Eis)
+    (rows : m → Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
     (hr : Function.Injective rows) (hc : Function.Injective cols)
     (M N : ℝ) (hrows : ∀ i, Admissible (rows i) ∧ (Ideal.absNorm (rows i) : ℝ) ≤ M)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N) :
     squaredNorm (fun i j => idealKernel (cols j) (rows i)) ≤ sieveNorm M N := by
   let r : m → idealRange M := fun i => ⟨rows i, mem_idealRange.mpr (hrows i)⟩
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
-  have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
-  have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
+  have hri : Function.Injective r := fun i j h => by grind
+  have hci : Function.Injective c := fun i j h => by grind
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (idealMatrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 

@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedLevel
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+variable {σ : Type*} [Fintype σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))
@@ -30,16 +29,16 @@ local notation "Jall" => Sum.elim (fun P : FreePrimeIndex D.movingIdeal Q₀ =>
 include hR hI hF hm hf hz hbad hcop hpow hmask
 
 private theorem exists_original_controlled_source
-    (c : Eis) [Fintype (Eis⧸Ideal.span {c})]
-    (G : ∀ h : Eis⧸Ideal.span {c}, FixedFourierGeometry c h)
-    (N : Eis) (hN : ∀ h, (9:Eis)*(G h).c0∣N)
+    (c : ActualEisensteinCubic.O) [Fintype (ActualEisensteinCubic.O⧸Ideal.span {c})]
+    (G : ∀ h : ActualEisensteinCubic.O⧸Ideal.span {c}, FixedFourierGeometry c h)
+    (N : ActualEisensteinCubic.O) (hN : ∀ h, (9:ActualEisensteinCubic.O)*(G h).c0∣N)
     (hNp : ∀ i, IsCoprime (Ideal.span {N}) ((Pall).ideal i))
     (hP : Pairwise (Function.onFun IsCoprime (Pall).ideal))
-    (C : ∀ h : Eis⧸Ideal.span {c}, ∀ B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀),
+    (C : ∀ h : ActualEisensteinCubic.O⧸Ideal.span {c}, ∀ B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀),
       ∀ T : Finset σ, ControlledStratumArithmetic
         (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator
         N (G h).a0 (G h).c0 (G h).mode) :
-    ∀ h : Eis⧸Ideal.span {c}, ∃ CC : ∀ A : Finset (FreePrimeIndex D.movingIdeal Q₀⊕σ),
+    ∀ h : ActualEisensteinCubic.O⧸Ideal.span {c}, ∃ CC : ∀ A : Finset (FreePrimeIndex D.movingIdeal Q₀⊕σ),
       ControlledStratumArithmetic (fun i : A => (Pall).generator i.val) N (G h).a0 (G h).c0 (G h).mode,
       ∀ B T, CC (markedActiveSet E B T)=
         originalChosenControlled D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T (C h B T) := by
@@ -50,8 +49,8 @@ private theorem exists_original_controlled_source
     (fun B T => originalChosenControlled D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask S B T (C h B T))
 
 private theorem original_controlled_source_sum
-    (hSodd : ∀ i, ringChar (Eis⧸S.ideal i)≠2)
-    {N a c : Eis} {mode : Bool}
+    (hSodd : ∀ i, ringChar (ActualEisensteinCubic.O⧸S.ideal i)≠2)
+    {N a c : ActualEisensteinCubic.O} {mode : Bool}
     (C : ∀ B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀),
       ∀ T : Finset σ, ControlledStratumArithmetic
         (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator
@@ -89,16 +88,16 @@ private theorem original_controlled_source_sum
 
 theorem original_selected_reflected_expansion
     (hS : Pairwise (Function.onFun IsCoprime S.ideal))
-    (hSodd : ∀ i, ringChar (Eis⧸S.ideal i)≠2)
+    (hSodd : ∀ i, ringChar (ActualEisensteinCubic.O⧸S.ideal i)≠2)
     (hdis : ∀ P : FreePrimeIndex D.movingIdeal Q₀, ∀ i, S.ideal i≠P.val.val)
-    (φ : Eis→*ℂ) (hφnorm : ∀ n, ‖φ n‖≤1) (hQ₀ : Q₀≠0)
+    (φ : ActualEisensteinCubic.O→*ℂ) (hφnorm : ∀ n, ‖φ n‖≤1) (hQ₀ : Q₀≠0)
     (hφperiod : CanonicalCoefficientClass.FactorsModulo Q₀ φ)
-    (c : Eis) (hc : c≠0) [Fintype (Eis⧸Ideal.span {c})]
-    (hcQ : Ideal.span {c}≤Ideal.span {(9:Eis)}*Q₀)
-    (G : ∀ h : Eis⧸Ideal.span {c}, FixedFourierGeometry c h)
-    (N : Eis) (hN : ∀ h, (9:Eis)*(G h).c0∣N)
+    (c : ActualEisensteinCubic.O) (hc : c≠0) [Fintype (ActualEisensteinCubic.O⧸Ideal.span {c})]
+    (hcQ : Ideal.span {c}≤Ideal.span {(9:ActualEisensteinCubic.O)}*Q₀)
+    (G : ∀ h : ActualEisensteinCubic.O⧸Ideal.span {c}, FixedFourierGeometry c h)
+    (N : ActualEisensteinCubic.O) (hN : ∀ h, (9:ActualEisensteinCubic.O)*(G h).c0∣N)
     (hNp : ∀ i, IsCoprime (Ideal.span {N}) ((Pall).ideal i))
-    (C : ∀ h : Eis⧸Ideal.span {c}, ∀ B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀),
+    (C : ∀ h : ActualEisensteinCubic.O⧸Ideal.span {c}, ∀ B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀),
       ∀ T : Finset σ, ControlledStratumArithmetic
         (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator
         N (G h).a0 (G h).c0 (G h).mode)
@@ -107,7 +106,7 @@ theorem original_selected_reflected_expansion
     (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
     markedCompletedT (φ*unmarkedSexticTwist (Pall).generator (Pall).generator_good Jall markedSumSlots) W X
       (fun A => ∏ i∈markedSumSlots, if Ideal.span {(Pall).generator i}∣A then 1 else 0)=
-    thetaDerivativeScalar⁻¹*∑ h : Eis⧸Ideal.span {c}, fixedThetaRowCoeff c hc φ h *
+    thetaDerivativeScalar⁻¹*∑ h : ActualEisensteinCubic.O⧸Ideal.span {c}, fixedThetaRowCoeff c hc φ h *
       ∑ B : Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀), ∑ T : Finset σ,
         ((∏ b∈(Finset.univ:Finset (FreeReflection.pool R (Ideal.span {m}*F) Q₀))\B,
           if completedLocalExponent R F b.val=0 then 1-(Ideal.absNorm b.val:ℂ)⁻¹ else 0)*
@@ -118,9 +117,9 @@ theorem original_selected_reflected_expansion
           (((poolPrimeFamily R (Ideal.span {m}*F) Q₀).restrict B).reflected K hK (S.restrict T)).generator_good
           (reflectedExponent (fun b : B => completedLocalExponent R F b.val.val))
           (slotIndices B (PrimeIndex K) T) W X := by
-  have hP : Pairwise (Function.onFun IsCoprime (Pall).ideal) :=
+  have hP :=
     joined_free_pairwise D.movingIdeal Q₀ D.movingSupported S hS hdis
-  have hodd : ∀ i, ringChar (Eis⧸(Pall).ideal i)≠2 := by
+  have hodd : ∀ i, ringChar (ActualEisensteinCubic.O⧸(Pall).ideal i)≠2 := by
     intro i
     cases i with
     | inl P => exact (supported_factors_good D.movingIdeal D.movingSupported P.val.val
@@ -129,7 +128,7 @@ theorem original_selected_reflected_expansion
   have hj : ∀ i, Jall i<6 := by
     intro i
     cases i with
-    | inl P => exact Nat.mod_lt _ (by norm_num)
+    | inl P => grind
     | inr t => norm_num
   have hchoose := exists_original_controlled_source D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
     S c G N hN hNp hP C

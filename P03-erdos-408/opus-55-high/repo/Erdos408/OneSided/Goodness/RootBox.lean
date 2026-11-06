@@ -43,8 +43,8 @@ theorem card_filter_specialLinearGroup_le {R : Type*} [CommRing R] [Fintype R] [
   have hinj : Set.InjOn f
       (univ.filter fun g : Matrix.SpecialLinearGroup (Fin 2) R => l * g 0 0 + m * g 0 1 = 0) := by
     intro g hg g' hg' hf
-    have hl : l * g 0 0 + m * g 0 1 = 0 := (mem_filter.1 hg).2
-    have hl' : l * g' 0 0 + m * g' 0 1 = 0 := (mem_filter.1 hg').2
+    have hl := (mem_filter.1 hg).2
+    have hl' := (mem_filter.1 hg').2
     have hs : x * g 0 1 - y * g 0 0 = x * g' 0 1 - y * g' 0 0 := congrArg Prod.fst hf
     have hs' : x * g 1 1 - y * g 1 0 = x * g' 1 1 - y * g' 1 0 := congrArg Prod.snd hf
     have hdet : g 0 0 * g 1 1 - g 0 1 * g 1 0 = 1 := by
@@ -75,10 +75,10 @@ theorem card_filter_specialLinearGroup_le {R : Type*} [CommRing R] [Fintype R] [
       linear_combination -(g 1 1 - g' 1 1) * h + y * hT + l * hs'
     ext i j
     fin_cases i <;> fin_cases j
-    · exact hu
-    · exact hc
-    · exact hv
-    · exact hd
+    · simp_all
+    · simp_all
+    · simp_all
+    · simp_all
   calc (univ.filter fun g : Matrix.SpecialLinearGroup (Fin 2) R =>
         l * g 0 0 + m * g 0 1 = 0).card
       ≤ (univ : Finset (R × R)).card :=
@@ -107,7 +107,7 @@ theorem rootRatio_nonneg (P : ℕ × ℕ) : 0 ≤ rootRatio P := by
 
 /-- `r < 1` for `u > 0`, since `c < u`. -/
 theorem rootRatio_lt_one {P : ℕ × ℕ} (hP : 0 < P.1) : rootRatio P < 1 := by
-  rw [rootRatio_eq, div_lt_one (by exact_mod_cast hP)]
+  rw [rootRatio_eq, div_lt_one (by positivity)]
   exact_mod_cast RootResidue.rootC_lt hP P.2
 
 /-- `|σ(S)| ≤ 2`, from the tail bound at `K = 1`. -/
@@ -207,10 +207,10 @@ theorem exists_card_rootBox_lt_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ
       refine mem_biUnion.2 ⟨g P, mem_filter.2 ⟨mem_univ _, ?_⟩, ?_⟩
       · rw [hg]
         simpa [M] using hcong
-      · refine mem_filter.2 ⟨by simpa only [one_mul] using hmem, hcop, hface.1, hface.2, hα',
+      · refine mem_filter.2 ⟨by grind, hcop, hface.1, hface.2, hα',
           hβ', ?_⟩
-        rw [hg]
-    · exact mem_union_right _ (mem_filter.2 ⟨hbox, hface⟩)
+        grind
+    · grind
   -- each root count is at most `30 UV (β - α)/S³ + E`
   have hcount : ∀ g₀ : Matrix.SpecialLinearGroup (Fin 2) (ZMod S),
       (rootCount U V 1 16 1 2 α β S g₀ : ℝ) ≤
@@ -302,14 +302,14 @@ theorem exists_card_rootBox_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2
           rootRatio P < β'} := by exact_mod_cast card_le_card hsub
     _ ≤ 30 * U * V * (β' - α) / S + C₀ * U * V * (S : ℝ) ^ 4 * min U V ^ (-(1 / 5 : ℝ)) +
           (16 * U + V + 2) :=
-        h U V hU hV S hS l m x y hxy α β' hα (hαβ.trans hβ') (min_le_right _ _)
+        h U V hU hV S hS l m x y hxy α β' hα (by linarith) (min_le_right _ _)
     _ ≤ 30 * U * V * (β + δ - α) / S + C₀ * U * V * (S : ℝ) ^ 4 * min U V ^ (-(1 / 5 : ℝ)) +
           (16 * U + V + 2) := by
         gcongr
         exact min_le_left _ _
     _ = 30 * U * V * (β - α) / S + C₀ * U * V * (S : ℝ) ^ 4 * min U V ^ (-(1 / 5 : ℝ)) +
           (16 * U + V + 2) + 30 * U * V * δ / S := by ring
-    _ = _ := by rw [hδε]
+    _ = _ := by linarith
 
 /-! ### The congruences of a joint count -/
 
@@ -333,9 +333,7 @@ theorem exists_unimodular_of_dvd {G a : ℕ} (hGa : Nat.Coprime G a) {z : ℤ}
     push_cast at this
     exact this
   refine ⟨f * a + z₁ * e * G, z * e * G, f * a, z' * e * G, ?_, fun u c hu hc => ?_⟩
-  · linear_combination (e * G + f * a + 1 : ZMod (G * a)) * h₁ +
-      (z₁ * e * f - 2 * e * f - w * e ^ 2 * G : ZMod (G * a)) * hGa0 +
-      (e ^ 2 * G ^ 2 : ZMod (G * a)) * h₂
+  · grind
   · obtain ⟨t, ht⟩ := hu
     obtain ⟨t', ht'⟩ := hc
     have hu' : (u : ZMod (G * a)) = G * t := by
@@ -346,8 +344,7 @@ theorem exists_unimodular_of_dvd {G a : ℕ} (hGa : Nat.Coprime G a) {z : ℤ}
       have := congrArg (Int.cast : ℤ → ZMod (G * a)) ht'
       push_cast at this
       exact this
-    linear_combination (f * a : ZMod (G * a)) * hu' + (e * G : ZMod (G * a)) * hc' +
-      (f * t + e * t' : ZMod (G * a)) * hGa0
+    grind
 
 /-- `⌊z r⌋ ∈ {j, -j, -j - 1}` for `j = ⌊|z| r⌋` and `r ≥ 0`. -/
 theorem floor_mul_mem {z : ℤ} {r : ℝ} (hr : 0 ≤ r) :
@@ -360,9 +357,9 @@ theorem floor_mul_mem {z : ℤ} {r : ℝ} (hr : 0 ≤ r) :
   rw [hj, habs, mem_insert, mem_insert, mem_singleton]
   rcases le_total 0 z with hz | hz
   · left
-    rw [abs_of_nonneg (by exact_mod_cast hz)]
+    rw [abs_of_nonneg (by positivity)]
   · right
-    rw [abs_of_nonpos (by exact_mod_cast hz), neg_mul, Int.floor_neg, neg_neg]
+    rw [abs_of_nonpos (by simp_all), neg_mul, Int.floor_neg, neg_neg]
     have h₁ := Int.floor_le_ceil ((z : ℝ) * r)
     have h₂ := Int.ceil_le_floor_add_one ((z : ℝ) * r)
     omega
@@ -382,7 +379,7 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
   obtain ⟨C₀, hC₀, h⟩ := exists_card_rootBox_le
   refine ⟨C₀, hC₀, fun U V hU hV G a hS z hz hza k α β hα hαβ hβ => ?_⟩
   have : NeZero (G * a) := ⟨hS.ne_zero⟩
-  have hGa : Nat.Coprime G a := (Nat.squarefree_mul_iff.1 hS).1
+  have hGa := (Nat.squarefree_mul_iff.1 hS).1
   have hU0 : 0 < U := by linarith
   set N := z.natAbs
   have hN : 0 < N := Int.natAbs_pos.2 hz
@@ -391,8 +388,8 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
   set E := C₀ * U * V * ((G : ℝ) * a) ^ 4 * min U V ^ (-(1 / 5 : ℝ)) + (16 * U + V + 2)
   -- the pieces `[f j, f (j + 1)]` of `[α, β]`
   set f : ℕ → ℝ := fun j => max α (min β ((j : ℝ) / N))
-  have hf0 : ∀ j, 0 ≤ f j := fun j => hα.trans (le_max_left _ _)
-  have hf1 : ∀ j, f j ≤ 1 := fun j => max_le (hαβ.trans hβ) ((min_le_left _ _).trans hβ)
+  have hf0 : ∀ j, 0 ≤ f j := by grind
+  have hf1 : ∀ j, f j ≤ 1 := fun j => max_le (by linarith) (by grind)
   have hmono : ∀ j, f j ≤ f (j + 1) := by
     intro j
     refine max_le_max le_rfl (min_le_min le_rfl ?_)
@@ -416,7 +413,7 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
         z * (rootC P.1 P.2 : ℕ) + (k - n) * (P.1 : ℕ) by rfl] at ha
     have := h U V hU hV (G * a) hS l m x y hxy (f j) (f (j + 1)) (hf0 j) (hmono j) (hf1 _)
     rw [Nat.cast_mul] at this
-    exact (Nat.cast_le.2 (card_le_card hsub)).trans (this.trans_eq (by simp only [E]; ring))
+    exact (Nat.cast_le.2 (card_le_card hsub)).trans (this.trans_eq (by linarith))
   -- every counted position lies in a piece
   have hsub : {P ∈ rootBox U V | (G : ℤ) ∣ P.1 ∧
       (a : ℤ) ∣ z * rootC P.1 P.2 + (k - ⌊(z : ℝ) * rootRatio P⌋) * P.1 ∧
@@ -445,13 +442,12 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
       linarith
     · refine le_max_of_le_right (le_min h₂ ?_)
       rw [le_div_iff₀ hN0]
-      push_cast
-      linarith
+      grind
   -- the pieces telescope
   have htel : ∑ j ∈ range N, (f (j + 1) - f j) = β - α := by
     rw [sum_range_sub (f := f)]
     simp only [f, Nat.cast_zero, zero_div, div_self hN0.ne']
-    rw [min_eq_left hβ, max_eq_right hαβ, min_eq_right (hα.trans hαβ), max_eq_left hα]
+    rw [min_eq_left hβ, max_eq_right hαβ, min_eq_right (by linarith), max_eq_left hα]
   have hE : 0 ≤ E := by positivity
   have hGa0 : (0 : ℝ) < (G : ℝ) * a := by
     have : (0 : ℝ) < ((G * a : ℕ) : ℝ) := by exact_mod_cast Nat.pos_of_ne_zero hS.ne_zero
@@ -482,12 +478,11 @@ theorem exists_card_cong_le : ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ U V : ℝ, 2 �
               exact mul_le_mul_of_nonneg_right h3 hnn
     _ = 90 * U * V / ((G : ℝ) * a) * ∑ j ∈ range N, (f (j + 1) - f j) + 3 * N * E := by
         have hj : ∀ j, 3 * (30 * U * V * (f (j + 1) - f j) / ((G : ℝ) * a) + E) =
-            90 * U * V / ((G : ℝ) * a) * (f (j + 1) - f j) + 3 * E := fun j => by ring
+            90 * U * V / ((G : ℝ) * a) * (f (j + 1) - f j) + 3 * E := by grind
         rw [sum_congr rfl fun j _ => hj j, sum_add_distrib, ← mul_sum, sum_const, card_range,
           nsmul_eq_mul]
         ring
     _ = _ := by
-        rw [htel, hNz]
-        ring
+        grind
 
 end Erdos408.OneSided

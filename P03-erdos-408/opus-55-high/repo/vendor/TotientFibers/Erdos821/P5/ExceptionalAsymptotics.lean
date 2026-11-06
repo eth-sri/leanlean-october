@@ -5,7 +5,6 @@ public import Erdos821.P5.ExceptionalCount
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P5Core
@@ -26,28 +25,28 @@ theorem moment_power_choice (L Y P a b : ℝ)
   dsimp only
   let m := ⌊Real.log Y / Real.log (2 * P)⌋₊
   have hLpos : 0 < L := by linarith
-  have hpowpos : 0 < L ^ a := Real.rpow_pos_of_pos hLpos a
+  have hpowpos := Real.rpow_pos_of_pos hLpos a
   have hdenlo : L ^ a ≤ Real.log (2 * P) := by
-    have h := Real.log_le_log (Real.exp_pos (L ^ a))
+    have h := Real.log_le_log (by positivity)
       (show Real.exp (L ^ a) ≤ 2 * P by linarith)
     simpa only [Real.log_exp] using h
   have hden : 0 < Real.log (2 * P) := hpowpos.trans_le hdenlo
   have hlogP : Real.log P ≤ L ^ b := by
     simpa only [Real.log_exp] using Real.log_le_log hP hPhi
   have hdenhi : Real.log (2 * P) ≤ Real.log 2 + L ^ b := by
-    rw [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hP.ne']
+    rw [Real.log_mul (by positivity) hP.ne']
     linarith
   have hlogYpos : 0 < Real.log Y := by linarith
   have hquot : 0 ≤ Real.log Y / Real.log (2 * P) := by positivity
   have hdenY : Real.log (2 * P) ≤ Real.log Y := by linarith
   have hm1 : 1 ≤ m := Nat.le_floor ((le_div_iff₀ hden).mpr
-    (by simpa only [Nat.cast_one, one_mul] using hdenY))
-  have hmpos : (0 : ℝ) < m := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hm1)
+    (by simp_all))
+  have hmpos : (0 : ℝ) < m := by exact_mod_cast (by positivity)
   have hmle := Nat.floor_le hquot
   have hprod : (m : ℝ) * Real.log (2 * P) ≤ Real.log Y :=
     (le_div_iff₀ hden).mp hmle
   have hpowy : (2 * P) ^ m ≤ Y := by
-    apply (Real.log_le_log_iff (pow_pos (by positivity) m) hY).mp
+    apply (Real.log_le_log_iff (by positivity) hY).mp
     simpa only [Real.log_pow] using hprod
   have hmLa : (m : ℝ) * L ^ a ≤ 2 * L := by
     have h := mul_le_mul_of_nonneg_left hdenlo hmpos.le
@@ -63,7 +62,7 @@ theorem moment_power_choice (L Y P a b : ℝ)
   have hresid : Real.log Y - m * Real.log P ≤ Real.log 2 + L ^ b + m * Real.log 2 := by
     have h : Real.log Y < ((m : ℝ) + 1) * Real.log (2 * P) :=
       (div_lt_iff₀ hden).mp hfloorlt
-    conv_rhs at h => arg 2; rw [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hP.ne']
+    conv_rhs at h => arg 2; rw [Real.log_mul (by positivity) hP.ne']
     nlinarith
   have hmL : (m : ℝ) ≤ 2 * L := by
     have hpow : L ^ (1 - a) ≤ L := by
@@ -72,7 +71,7 @@ theorem moment_power_choice (L Y P a b : ℝ)
     linarith
   have hlogm : Real.log (m : ℝ) ≤ Real.log 2 + Real.log L := by
     have h := Real.log_le_log hmpos hmL
-    rwa [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hLpos.ne'] at h
-  exact ⟨hm1, hpowy, hmlength, hresid, hlogm⟩
+    rwa [Real.log_mul (by positivity) hLpos.ne'] at h
+  grind
 
 end Erdos821.P5Core

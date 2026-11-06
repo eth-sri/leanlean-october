@@ -8,14 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
+open CenteredMomentFirstAmplificationChoice
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -73,7 +71,7 @@ def reindex (e : α≃β) (s : Input α) : Input β where
   upper_ge := fun i=>s.upper_ge (e.symm i)
 
 def tupleMap (e : α≃β) : Tuple α≃Tuple β :=
-  (e.sumCongr (Equiv.refl (Fin 2))).arrowCongr (Equiv.refl (Ideal O))
+  (e.sumCongr (Equiv.refl (Fin 2))).arrowCongr (Equiv.refl (Ideal HeckeFamily.O))
 
 omit [Fintype α] [Fintype β] in
 lemma tupleMap_apply (e : α≃β) (v : Tuple α) (j : β⊕Fin 2) :
@@ -93,13 +91,13 @@ lemma pools_map (e : α≃β) (s : Input α) :
     | inl i => exact hw (Sum.inl (e.symm i))
     | inr i => exact hw (Sum.inr i)
   · intro hv
-    refine ⟨(tupleMap e).symm v,?_,(tupleMap e).apply_symm_apply v⟩
+    refine ⟨(tupleMap e).symm v,?_,by simp⟩
     intro j
     cases j with
     | inl i => simpa [tupleMap,Input.pools,reindex] using hv (Sum.inl (e i))
     | inr i => exact hv (Sum.inr i)
 
-lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal O) (v : Tuple α) :
+lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal HeckeFamily.O) (v : Tuple α) :
     (original (reindex e s) R seed).profile (tupleMap e v) =
       (original s R seed).profile v := by
   simp only [OriginalData.profile,original,reindex,profileCoefficient,tupleMap_product,
@@ -109,14 +107,14 @@ lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal O) (v : Tuple α)
   exact e.symm.prod_comp (fun i=>s.ν i (v (Sum.inl i))*
     s.W i ((Ideal.absNorm (v (Sum.inl i)):ℝ)/s.P i))
 
-lemma coefficient_map (e : α≃β) (s : Input α) (R seed : Ideal O) :
+lemma coefficient_map (e : α≃β) (s : Input α) (R seed : Ideal HeckeFamily.O) :
     (original (reindex e s) R seed).beta=(original s R seed).beta := by
   funext I
   unfold OriginalData.beta finiteColumnCoefficient
   change (∑v∈(Fintype.piFinset (reindex e s).pools).filter (fun v=>finiteTupleProduct v=I),
     (original (reindex e s) R seed).profile v)=_
   rw [←pools_map,Finset.filter_image]
-  rw [Finset.sum_image (fun v _ w _ h => (tupleMap e).injective h)]
+  rw [Finset.sum_image (by simp)]
   simp only [tupleMap_product,profile_map]
   rfl
 

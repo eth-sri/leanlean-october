@@ -8,33 +8,24 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,40 +34,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor_fun {n p : Type*} [Fintype n] [Fintype p]
     (u z : n → p → ℂ) (c : ℝ) (hc : 0 ≤ c) :
@@ -89,7 +73,7 @@ theorem norm_double_sum_real_factor_fun {n p : Type*} [Fintype n] [Fintype p]
     apply Finset.sum_congr rfl
     intro k hk
     ring
-  rw [he, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hc]
+  simp_all
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -146,8 +130,8 @@ theorem dualProductDivisorMiddleAt_le_window
       unfold dualPrincipalKernel
       simp only [map_mul, Nat.cast_mul]
       exact norm_double_sum_real_factor_fun _ _ _ (by positivity)
-    · simp only [hd, hpi, and_false, ite_false, ite_true]
-  · simp only [hd, false_and, ite_false]
+    grind
+  grind
 
 theorem HasSieveExponent.dual_product_divisor_middle {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -172,13 +156,13 @@ theorem HasSieveExponent.dual_product_divisor_middle {α : ℝ} (hexp : HasSieve
             (M / F + (2 * U) * Real.sqrt (M / F) * B ^ (α - 1 / 2))) := by
   let S := columnDivisorPool left
   let T := columnDivisorPool right
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  have hl0 := fun j => (hleft j).1.1
+  have hr0 := fun k => (hright k).1.1
   have hs := hexp.dual_middle_pool deltaLoss hδ ε hε S T B N M F U hB hN hM hF hU
-    (columnDivisorPool_norm_bounds left hl0 N (fun j => (hleft j).2.2))
-    (columnDivisorPool_norm_bounds right hr0 N (fun k => (hright k).2.2))
+    (columnDivisorPool_norm_bounds left hl0 N (by grind))
+    (columnDivisorPool_norm_bounds right hr0 N (by grind))
     rows left right hr hl hri hrows a₀ b₀ a b ha hb W (fun d i => d ∈ K ∧ P d i) hleft hright
-    (fun D E i hp => hP _ hp.1 i hp.2)
+    (by grind)
   have hdom (h : {h : O // h ≠ 0}) := dualProductDivisorMiddleAt_le_window W K S T
     rows left right (a h.val) (b h.val) M F P h.val hl0 hr0
     (mem_columnDivisorPool_of_dvd left hl0) (mem_columnDivisorPool_of_dvd right hr0)
@@ -190,7 +174,6 @@ theorem HasSieveExponent.dual_product_divisor_middle {α : ℝ} (hexp : HasSieve
 end CanonicalQuadraticSieve
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -202,8 +185,7 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace DescentFiberCost
-open ActualEisensteinCubic ConcreteTraceCRT
-open ShortDraftLatticeCount ActualEisensteinCoordinates
+open ActualEisensteinCoordinates
 
 theorem finite_element_count_real (S : Finset O) (K : ℝ) (hK : 1 ≤ K)
     (hS : ∀ z ∈ S, ‖eisEmbedding z‖^2 ≤ K) : (S.card : ℝ) ≤ 128*K := by
@@ -224,22 +206,20 @@ theorem finite_element_count_real (S : Finset O) (K : ℝ) (hK : 1 ≤ K)
 end DescentFiberCost
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 end SecondPassIntegration
 
 namespace ShortDraftLatticeCount
-open ActualEisensteinCubic ActualEisensteinCoordinates ConcreteTraceCRT
+open ActualEisensteinCoordinates
 
 end ShortDraftLatticeCount
 namespace SecondPassArithmetic
-open ActualEisensteinCubic ConcreteTraceCRT
 
 end SecondPassArithmetic
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical
 
 namespace CubicEisenstein
 
@@ -251,10 +231,9 @@ lemma axisSlice_update (f : SpatialCoordinates → ℂ) (p : SpatialCoordinates)
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT
 
 def cuspRectangle : Set (ℝ × ℝ) := Set.Icc 0 3 ×ˢ Set.Icc 0 (3*Real.sqrt 3)
 

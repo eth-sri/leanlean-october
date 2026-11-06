@@ -8,7 +8,6 @@ public import Mathlib.Tactic.Positivity
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators
 noncomputable section
 
 variable {a b n : Type*} [Fintype a] [Fintype b] [Fintype n]
@@ -45,8 +44,8 @@ theorem rectangular_block_energy_le
         have h := masked_energy_le A coef (fun j => star (B k j) * mask j) (by
           intro j
           rw [norm_mul, norm_star]
-          exact (mul_le_mul_of_nonneg_right (hB k j) (norm_nonneg _)).trans (by simpa using hmask j))
-        simpa only [mul_assoc, mul_left_comm, mul_comm] using h
+          exact (mul_le_mul_of_nonneg_right (hB k j) (norm_nonneg _)).trans (by simp_all))
+        grind
       _ = _ := by simp [mul_assoc]
   have hright :
       (∑ k, ∑ i, ‖∑ j, A i j * star (B k j) * coef j * mask j‖ ^ 2) ≤
@@ -60,20 +59,15 @@ theorem rectangular_block_energy_le
           (fun j => A i j * mask j) (by
             intro j
             rw [norm_mul]
-            exact (mul_le_mul_of_nonneg_right (hA i j) (norm_nonneg _)).trans (by simpa using hmask j))
-        simpa only [mul_assoc, mul_left_comm, mul_comm] using h
+            exact (mul_le_mul_of_nonneg_right (hA i j) (norm_nonneg _)).trans (by simp_all))
+        grind
       _ = _ := by
         have hn : squaredNorm (fun k j => star (B k j)) = squaredNorm B := by
           unfold squaredNorm
           rw [operator_conjugate_norm]
         rw [hn]
         simp [mul_assoc]
-  rcases le_total ((Fintype.card b : ℝ) * squaredNorm A)
-      ((Fintype.card a : ℝ) * squaredNorm B) with h | h
-  · rw [min_eq_left h]
-    exact hleft
-  · rw [min_eq_right h]
-    exact hright
+  grind
 
 theorem cube_family_block_energy_le {c : Type*} [Fintype c]
     (A : Matrix a n ℂ) (B : Matrix b n ℂ) (coef : n → ℂ) (mask : c → n → ℂ)

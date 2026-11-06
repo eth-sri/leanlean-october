@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.Damping
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -32,11 +31,11 @@ theorem clean_projected_norm (F : FixedData) (r : MemoryParameters F) :
   let : Fintype (CutPendingState P B) := Fintype.ofFinite _
   have hV (g : P.Group) : 0 < P.V g := F.vMin_pos.trans_le (hP.2.2.2.2.1 g).1
   have hm := memoryMass_nonneg (P := P) (F := F) J n hV hb
-  have hCC : 0 ≤ C * (L x) ^ Cs := mul_nonneg hC (Real.rpow_nonneg hL.le _)
+  have hCC : 0 ≤ C * (L x) ^ Cs := by positivity
   have hcoordinate := hraw x P hP hL J m n B A theta (edgeForward i) C hC
     (betweenMass_nonneg F P n hb)
     (fun d => normBound_bigAveragedConditionedKernel A n B theta (edgeForward i) d C hC hb
-      (fun theta' => hbig theta' (edgeForward i)))
+      (by grind))
   have hsmall := normBound_averageSmallCoordinateKernel F J n B _ _ hcoordinate
   let e := cutoffStateCoordinates P (J + F.ell) B
   have hcut := normBound_equiv (coordinateMass F J n B)
@@ -70,9 +69,8 @@ theorem clean_projected_norm (F : FixedData) (r : MemoryParameters F) :
     rw [memoryEdgeKernel_rho]
     rw [memoryEdgeKernel_clean]
     by_cases hs : P.memorySize s ≤ B <;> by_cases ht : P.memorySize t ≤ B <;>
-      simp [hs, ht]
-  rw [he] at h
-  exact h
+      simp
+  grind
 
 
 end Erdos821.P3Clean

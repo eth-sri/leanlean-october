@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,41 +31,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
+open CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 
 lemma constant_dirichlet_support (s : ℂ) :
@@ -108,10 +89,9 @@ lemma totient_sum_good (s : ℂ) :
 
 lemma norm_ramifiedRatio_lt_one (s : ℂ) (hs : 1<s.re) : ‖ramifiedRatio s‖<1 := by
   change ‖((3:ℝ):ℂ)^(3-3*s)‖<1
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos (by norm_num : (0:ℝ)<3)]
+  rw [Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
   apply Real.rpow_lt_one_of_one_lt_of_neg (by norm_num)
-  norm_num
-  linarith
+  simp_all
 
 theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     Summable (fun c : LevelLower => ‖arithmeticDirichletTerm s 0 c‖) := by
@@ -119,7 +99,7 @@ theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
   have hw : 2<(3*s-2).re := by norm_num; linarith
   have hq := norm_ramifiedRatio_lt_one s hs1
   have hqn : Summable (fun n : ℕ => ‖ramifiedRatio s^(n+1)‖) := by
-    have hh := (summable_geometric_of_lt_one (norm_nonneg (ramifiedRatio s)) hq).mul_right
+    have hh := (summable_geometric_of_lt_one (by positivity) hq).mul_right
       ‖ramifiedRatio s‖
     simpa only [pow_succ,norm_mul,norm_pow] using hh
   have hi := (unramifiedTotientSeries_summable_norm (3*s-2) hw).subtype
@@ -140,11 +120,11 @@ theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
   apply hind.congr
   intro c
   by_cases hc : c.1 ≠ 0 ∧ ∃ a : O,c.1=a^3
-  · simp [Set.indicator,hc]
+  · simp [hc]
   · have hz : arithmeticDirichletTerm s 0 c=0 := by
       by_contra h
       exact hc (constant_dirichlet_support s h)
-    simp [Set.indicator,hc,hz]
+    simp [hz]
 
 lemma ramified_geometric_sum (s : ℂ) (hs : 1<s.re) :
     (∑' n : ℕ,ramifiedRatio s^(n+1))=((3:ℂ)^(3*s-3)-1)⁻¹ := by
@@ -152,7 +132,7 @@ lemma ramified_geometric_sum (s : ℂ) (hs : 1<s.re) :
   have hne : ramifiedRatio s ≠ 0 := by
     unfold ramifiedRatio
     apply Complex.cpow_ne_zero_iff.mpr
-    exact Or.inl (by norm_num)
+    exact by simp
   have hone : ramifiedRatio s ≠ 1 := by intro h; rw [h,norm_one] at hn; exact lt_irrefl 1 hn
   have hi : (3:ℂ)^(3*s-3)=(ramifiedRatio s)⁻¹ := by
     rw [ramifiedRatio,← Complex.cpow_neg]
@@ -207,7 +187,6 @@ theorem scatteringCoefficient_zero_zeta (s : ℂ) (hs : (4:ℝ)/3<s.re) :
     unramifiedTotientSeries_quotient (3*s-2) (by
       norm_num
       linarith)]
-  rw [show 3*s-2-1=3*s-3 by ring]
   ring
 
 end CubicEisenstein
@@ -215,7 +194,7 @@ end CubicEisenstein
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 
 theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
     (hF : ∀ I ∈ F, Admissible I)
@@ -256,9 +235,8 @@ theorem sieveNorm_reverse_le (M N : ℝ) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
-open TruncatedPrincipalPoisson QuadraticSquarefreeKernel
+open ConcretePrimeRowBridge CompletedGauss
+open EisensteinSchwartzPoisson UnrestrictedIdealReindex
 
 def dualPrincipalIdeal (I J : Ideal O) (V : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑' A : NonzeroIdeal,
@@ -280,12 +258,11 @@ theorem canonical_pair_ideal_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ
 end
 section
 
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open QuadraticMainOperatorBound IdealCoprimeSieveOperator DivisorBlockCauchy
+open CompletedGauss
 
 end
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
+open CompletedGauss FiniteSieveRestriction
 
 def CoefficientOnShell (N X : ℝ) (a : idealRange N → ℂ) : Prop :=
   ∀ J, a J ≠ 0 → X / 2 < (Ideal.absNorm J.val : ℝ) ∧ (Ideal.absNorm J.val : ℝ) ≤ X
@@ -313,9 +290,9 @@ theorem dyadicColumnCoefficient_shell (N : ℝ) (lengthScale : ℕ) (hNL : N ≤
     by_contra hn
     exact hJ (by simp only [dyadicColumnCoefficient, sectorCoefficient, ite_eq_right hn])
   have hs := (column_dyadic_exists N lengthScale hNL J).choose_spec.2
-  have hv : (columnDyadicSector N lengthScale hNL J).val = j.val := congrArg Fin.val he
+  have hv := congrArg Fin.val he
   change (column_dyadic_exists N lengthScale hNL J).choose = j.val at hv
-  simpa only [hv] using hs
+  simp_all
 
 theorem dyadicColumnCoefficient_energy (N : ℝ) (lengthScale : ℕ) (hNL : N ≤ (2 : ℝ) ^ lengthScale)
     (a : idealRange N → ℂ) :
@@ -341,7 +318,7 @@ theorem coefficientAtScale_shell (N X : ℝ) (a : idealRange N → ℂ)
   unfold coefficientAtScale at hJ
   split_ifs at hJ with h
   · exact ha ⟨J.val, h⟩ hJ
-  · exact (hJ rfl).elim
+  simp_all
 
 theorem coefficientAtScale_row_sum (N X : ℝ) (a : idealRange N → ℂ)
     (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) (z : O) :
@@ -363,15 +340,14 @@ theorem coefficientAtScale_row_sum (N X : ℝ) (a : idealRange N → ℂ)
   rw [hleft, hright]
   rcases le_total N X with hNX | hXN
   · apply Finset.sum_subset (idealRange_mono hNX)
-    intro I hIX hIN
-    simp only [f, dite_eq_right hIN]
+    grind
   · symm
     apply Finset.sum_subset (idealRange_mono hXN)
     intro I hIN hIX
     have haI : a ⟨I, hIN⟩ = 0 := by
       by_contra hn
-      exact hIX (mem_idealRange.mpr ⟨(mem_idealRange.mp hIN).1, ha ⟨I, hIN⟩ hn⟩)
-    simp only [f, dite_eq_left hIN, haI, mul_zero]
+      exact hIX (mem_idealRange.mpr ⟨(mem_idealRange.mp hIN).1, by grind⟩)
+    grind
 
 theorem coefficientAtScale_energy (N X : ℝ) (a : idealRange N → ℂ)
     (ha : ∀ J, a J ≠ 0 → (Ideal.absNorm J.val : ℝ) ≤ X) :
@@ -392,14 +368,13 @@ theorem coefficientAtScale_energy (N X : ℝ) (a : idealRange N → ℂ)
   rw [hleft, hright]
   rcases le_total N X with hNX | hXN
   · apply Finset.sum_subset (idealRange_mono hNX)
-    intro I hIX hIN
-    simp only [f, dite_eq_right hIN]
+    grind
   · symm
     apply Finset.sum_subset (idealRange_mono hXN)
     intro I hIN hIX
     have haI : a ⟨I, hIN⟩ = 0 := by
       by_contra hn
-      exact hIX (mem_idealRange.mpr ⟨(mem_idealRange.mp hIN).1, ha ⟨I, hIN⟩ hn⟩)
+      exact hIX (mem_idealRange.mpr ⟨(mem_idealRange.mp hIN).1, by grind⟩)
     simp only [f, dite_eq_left hIN, haI, norm_zero, zero_pow (by decide : 2 ≠ 0)]
 
 theorem annularHighEnergy_coefficientAtScale (M N X K : ℝ) (a : idealRange N → ℂ)

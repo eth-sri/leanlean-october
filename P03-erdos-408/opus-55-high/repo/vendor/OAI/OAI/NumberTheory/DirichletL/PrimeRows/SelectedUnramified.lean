@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Selected
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (x w z : ℂ)
@@ -23,7 +21,7 @@ theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : Prim
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have hnot : ¬p∣u.val := by
@@ -68,7 +66,7 @@ theorem continuedMarkedLocal_unramified (η : Character) (u : FreeRow) (P : Prim
     (actualSextic (Ideal.span {p}) hg.1 (Ideal.Quotient.mk _ (unitPart u p hp))) (multiplicity p u.val)=_
   rw [hj,hb,hh,hr,←hk,actualACube_sq,heta,hphase]
   simp only [unramifiedMarked,coordD,coordW,div_eq_mul_inv,hi,Complex.ofReal_natCast]
-  congr 1; ring
+  grind
 
 theorem continuedCompensatedLocal_unramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (x w z : ℂ)

@@ -12,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowth
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthHighBound
@@ -25,10 +25,9 @@ open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyOriginalProfileControl
-local notation "O"=>HeckeFamily.O
 local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 
-lemma low_restrict (Q:Ideal O)(a b bΦ Bmask L L' Mcap e Z:ℝ)
+lemma low_restrict (Q:Ideal HeckeFamily.O)(a b bΦ Bmask L L' Mcap e Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(K:ℝ)(hZ:1≤Z)(hL:L'≤L)
     (h:ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K):
     ZeroLowAt Q a b bΦ Bmask L' Mcap e Z degree S K:=by
@@ -45,7 +44,7 @@ theorem actual_high_from_physical
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∀Jmass:ℕ,∀Smass:Finset (ℕ×ℕ),
     ∃Jout:ℕ,∃U:Finset (ℕ×ℕ),∃Cfixed:ℝ,0<Cfixed ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
-      ∀(e emass efinal:ℝ)(Q:Ideal O)(K Cmass:ℝ),
+      ∀(e emass efinal:ℝ)(Q:Ideal HeckeFamily.O)(K Cmass:ℝ),
       0≤e→0≤K→0≤Cmass→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       ZeroLowAt Q a b bΦ Bmask (Mcap+Bmask+rho/100) Mcap e Z degree S K→
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q→ rho≤s.width→s.width≤Mcap→
@@ -116,8 +115,8 @@ theorem actual_high_from_physical
     have hCuC : Cu ≤ Cfixed := by
       dsimp only [Cfixed]
       linarith only [hCr, hD, hT]
-    exact mul_le_mul hCuC (by linarith only [hCmass])
-      (by linarith only [hK]) hCfixed.le
+    exact mul_le_mul hCuC (by linarith)
+      (by linarith) hCfixed.le
   by_cases hshort:min (length Z X₁) (length Z X₂)≤s.width/4
   · have hunbalanced:=hZu.2 e Q degree K he hK hlowU s hQ hwidthLo hwidth
       p t X₁ X₂ hX₁ hX₂ hshort hlarge
@@ -127,7 +126,7 @@ theorem actual_high_from_physical
     apply hunbalanced.trans
     dsimp [F] at hh' hc ⊢
     rw [show s.width+e+ε=s.width+(e+ε) by ring]
-    nlinarith only [hh',hc]
+    linarith
   · have hfour':=balanced_four_scale_gates Z s.width X₁ X₂ hZ.1 (hrho.trans_le hwidthLo)
       hX₁ hX₂ (le_of_not_ge hshort)
     have hfour:Z^(s.width/4)≤ inp.X₁ ∧ Z^(s.width/4)≤ inp.X₂ ∧
@@ -142,7 +141,7 @@ theorem actual_high_from_physical
       have hp:=profile_control_mono p hm
       have hp0:=p.control_nonneg Smass
       have hj:=pow_le_pow_right₀ hbase hjm
-      have hx:=Real.rpow_le_rpow_of_exponent_le hZ.1.le (show Mout+emass≤Mout+efinal by linarith only [hmassFinal])
+      have hx:=Real.rpow_le_rpow_of_exponent_le hZ.1.le (show Mout+emass≤Mout+efinal by linarith)
       dsimp [F]
       gcongr
     have hmass':physicalMass inp s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z ξ/
@@ -150,7 +149,7 @@ theorem actual_high_from_physical
       apply hmass.trans
       convert mul_le_mul_of_nonneg_left hmEnv hCmass using 1 ; ring
     have hplain:(plainControl inp (p.profile 0) (p.profile 1))^2≤P*(p.control U)^2:=by
-      have hc:=plain_control_sq_le inp p U 0 1 (by norm_num) (by simp) (by intro i;exact Fin.elim0 i)
+      have hc:=plain_control_sq_le inp p U 0 1 (by norm_num) (by simp) (by simp)
       have h00:(0,0)∈U:=Finset.mem_insert_self _ _
       simpa only [P,Finset.insert_eq_of_mem h00,one_pow,one_mul] using hc
     have hheight1:1≤(1+|t|)^Jout:=one_le_pow₀ hbase

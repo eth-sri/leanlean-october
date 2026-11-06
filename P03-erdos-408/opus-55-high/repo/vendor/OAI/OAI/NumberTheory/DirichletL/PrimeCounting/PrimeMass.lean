@@ -9,7 +9,7 @@ namespace OAI
 namespace SevenEighths.PNT
 
 open Filter ArithmeticFunction
-open scoped Topology BigOperators
+open scoped Topology
 
 theorem cumsum_div_tendsto_zero_of_summable_div {f : ℕ → ℝ}
     (hf : ∀ n, 0 ≤ f n) (hzero : f 0 = 0)
@@ -29,7 +29,7 @@ theorem cumsum_div_tendsto_zero_of_summable_div {f : ℕ → ℝ}
     · simp only [F, ite_eq_left hN, Real.norm_eq_abs,
         abs_of_nonneg (div_nonneg (hf n) (Nat.cast_nonneg N))]
       exact div_le_div_of_nonneg_left (hf n)
-        (show (0 : ℝ) < n by exact_mod_cast Nat.pos_of_ne_zero hn)
+        (show (0 : ℝ) < n by positivity)
         (show (n : ℝ) ≤ N by exact_mod_cast hN.le)
     · simp only [F, ite_eq_right hN, norm_zero]
       exact div_nonneg (hf n) (by positivity)
@@ -37,13 +37,12 @@ theorem cumsum_div_tendsto_zero_of_summable_div {f : ℕ → ℝ}
     (Filter.Eventually.of_forall hbound)
   have heq (N : ℕ) : (∑' n, F N n) = cumsum f N / N := by
     rw [tsum_eq_sum (s := Finset.range N) (fun n hn => by
-      simp only [Finset.mem_range] at hn
-      simp [F, hn])]
+      grind)]
     rw [cumsum, Finset.sum_div]
     apply Finset.sum_congr rfl
     intro n hn
     simp [F, Finset.mem_range.mp hn]
-  simpa only [heq, tsum_zero] using h
+  simp_all
 
 end SevenEighths.PNT
 

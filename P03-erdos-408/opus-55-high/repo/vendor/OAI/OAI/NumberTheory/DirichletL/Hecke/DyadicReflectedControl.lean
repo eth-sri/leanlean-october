@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicReflectedFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ComplexConjugate
+open scoped Classical ComplexConjugate
 open Complex Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth HeckeDeletionBounds HeckeDyadicReflection
@@ -33,17 +33,17 @@ theorem buffered_reflected_line_control (e ε : ℝ)
   have hwre : (1-conj s).re=a+6*e := by simp; linarith
   have hwim : (1-conj s).im=s.im := by simp
   have hw := hrect χ hχ T a i hT ha ha' hmax j (1-conj s)
-    (by rw [hwre]) (by rw [hwre]; linarith) (by rwa [hwim])
+    (by linarith) (by linarith) (by grind)
   have hL : ‖LFunction (χ j) (1-conj s)‖≤
       Cb*(presentationComplexity (χ j) ((3*i+2 : ℕ)*T))^ε :=
     (le_add_of_nonneg_right (norm_nonneg _)).trans hw.2
-  have href := hreflect (χ j) (hχ j) s (by rw [hs]; linarith) (by rw [hs]; linarith)
+  have href := hreflect (χ j) (by grind) s (by linarith) (by linarith)
   have hexp : 1/2-s.re=a-1/2+6*e := by rw [hs]; ring
   rw [hexp] at href
   have hR : ((radical (χ j).modulus).absNorm : ℝ)^(max (-s.re) 0+2*ε)≤
       ((radical (χ j).modulus).absNorm : ℝ)^(6*e+2*ε) := by
     apply Real.rpow_le_rpow_of_exponent_le (radical_norm_ge_one _)
-    have hm : max (-s.re) 0≤6*e := max_le (by rw [hs]; linarith) (by positivity)
+    have hm : max (-s.re) 0≤6*e := max_le (by linarith) (by positivity)
     linarith
   calc
     _ ≤ Cg*((χ j).modulus.absNorm : ℝ)^(a-1/2+6*e)*
@@ -69,13 +69,13 @@ theorem original_upper_strip (ε : ℝ) (hε : 0<ε) :
   have hg := HeckeLogarithmicInput.regular_right_growth ψ hp hs
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal ψ hψ] at hg
   have hQ' : (ψ.modulus.absNorm : ℝ)^(3/5 : ℝ)≤(χ.modulus.absNorm : ℝ)^(3/5 : ℝ) :=
-    Real.rpow_le_rpow (by positivity) (by exact_mod_cast hQ) (by norm_num)
+    Real.rpow_le_rpow (by positivity) (by simp_all) (by norm_num)
   have hd : ‖HeckeFiniteDeletion.factors χ.modulus ψ s‖≤
       Cd*((radical χ.modulus).absNorm : ℝ)^(1/10+ε) := by
     apply (hdel χ.modulus ψ s).trans
     apply mul_le_mul_of_nonneg_left _ hCd.le
     apply Real.rpow_le_rpow_of_exponent_le (radical_norm_ge_one _)
-    have hm : max (-s.re) 0≤1/10 := max_le (by linarith) (by norm_num)
+    have hm : max (-s.re) 0≤1/10 := by grind
     linarith
   have hU := HeckeLogarithmicInput.uniformConstant_nonneg
   rw [LFunction_eq_of_mask_entire χ ψ hχ hmask,norm_mul]

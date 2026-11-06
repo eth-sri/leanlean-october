@@ -7,7 +7,7 @@ public import Erdos821.S34.OwnedLeafProofs
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -20,8 +20,8 @@ theorem kernel_log_localization (G : PrimeGroups) (k : Fin G.size → ℕ)
   have heq : cell h D = cell h X := by
     unfold cellKernel at hne
     split_ifs at hne with hc
-    · exact hc.1
-    · exact False.elim (hne rfl)
+    · omega
+    · simp_all
   have hDlo := Int.floor_le (Real.log D / h)
   have hDhi := Int.lt_floor_add_one (Real.log D / h)
   have hXlo := Int.floor_le (Real.log X / h)
@@ -32,8 +32,7 @@ theorem kernel_log_localization (G : PrimeGroups) (k : Fin G.size → ℕ)
   have hDhi' := (div_lt_iff₀ hh).mp hDhi
   have hXlo' := (le_div_iff₀ hh).mp hXlo
   have hXhi' := (div_lt_iff₀ hh).mp hXhi
-  apply abs_lt.mpr
-  constructor <;> nlinarith
+  grind
 
 theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
     (Q : ℕ) (h ξ : ℝ) (hξ : 0 < ξ) (X : ℕ) :
@@ -43,14 +42,14 @@ theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
   have hw (D : Tuple G k) : 0 ≤ tupleWeight G k D :=
     Erdos821.S34.Proofs.tupleWeight_nonneg (coreGroups G) k D
   by_cases hret : ξ ≤ ν
-  · have hν : 0 < ν := hξ.trans_le hret
+  · have hν : 0 < ν := by linarith
     have hpoint (D : Tuple G k) :
         ‖cellKernel G k Q h ξ (product G k D) X‖ ≤
           if cell h (product G k D) = cell h X then (Q : ℝ) ^ 2 / ν else 0 := by
       by_cases hm : cell h (product G k D) = cell h X
       · have hk : cellKernel G k Q h ξ (product G k D) X =
             cellKernel G k Q h ν (product G k D) X := by
-          simp [cellKernel, hm, show ξ ≤ cellMass G k h (cell h X) from hret, ν]
+          simp [cellKernel, show ξ ≤ cellMass G k h (cell h X) from hret, ν]
         rw [ite_eq_left hm, hk]
         exact cell_kernel_sup_proof G k Q h ν hν (product G k D) X
       · simp [cellKernel, hm]
@@ -61,10 +60,8 @@ theorem kernel_l1_bound (G : PrimeGroups) (k : Fin G.size → ℕ)
       _ = ((Q : ℝ) ^ 2 / ν) * ν := by
         dsimp [ν, cellMass]
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro D _
-        split_ifs <;> ring
-      _ = _ := div_mul_cancel₀ _ hν.ne'
+        grind
+      _ = _ := by grind
   · have hz (D : Tuple G k) : cellKernel G k Q h ξ (product G k D) X = 0 := by
       simp only [cellKernel]
       simp only [show ¬ ξ ≤ cellMass G k h (cell h X) from hret, and_false, ite_false]

@@ -16,7 +16,7 @@ lemma one_sub_ne_zero_of_norm_le_half (a : ℂ) (ha : ‖a‖ ≤ 1/2) : 1 - a �
   intro h
   have : a = 1 := by linear_combination -h
   rw [this, norm_one] at ha
-  norm_num at ha
+  linarith
 
 lemma inv_one_sub_norm_le_two (a : ℂ) (ha : ‖a‖ ≤ 1/2) : ‖(1-a)⁻¹‖ ≤ 2 := by
   have hl := norm_sub_norm_le (1 : ℂ) a
@@ -36,15 +36,15 @@ theorem unramified_marked_error_bound (R V qInv K W D : ℂ)
       ‖R‖ * (2 + (1 + ‖V‖) * (‖W‖ + ‖D‖)) + ‖K‖ * ‖V‖ := by
     calc
       _ ≤ ‖R*((1-qInv)+(1-V)*(W-D))‖ + ‖K*V‖ := norm_sub_le _ _
-      _ = ‖R‖ * ‖(1-qInv)+(1-V)*(W-D)‖ + ‖K‖*‖V‖ := by rw [norm_mul, norm_mul]
+      _ = ‖R‖ * ‖(1-qInv)+(1-V)*(W-D)‖ + ‖K‖*‖V‖ := by simp
       _ ≤ ‖R‖ * (‖1-qInv‖ + ‖1-V‖*‖W-D‖) + ‖K‖*‖V‖ := by
         gcongr
-        simpa only [norm_mul] using norm_add_le (1-qInv) ((1-V)*(W-D))
+        simpa using norm_add_le (1-qInv) ((1-V)*(W-D))
       _ ≤ ‖R‖ * (2 + (1+‖V‖)*(‖W‖+‖D‖)) + ‖K‖*‖V‖ := by
         gcongr
         · calc ‖1-qInv‖ ≤ ‖(1:ℂ)‖+‖qInv‖ := norm_sub_le _ _
                _ ≤ 2 := by simp only [norm_one]; linarith
-        · simpa only [norm_one] using norm_sub_le (1:ℂ) V
+        · simpa using norm_sub_le (1:ℂ) V
         · exact norm_sub_le W D
   have hv := inv_one_sub_norm_le_two V hV
   have hr := inv_one_sub_norm_le_two R hR
@@ -73,12 +73,12 @@ theorem continuedCorrection_defect_bound (V W D Pstar : ℂ)
     calc
       _ ≤ ‖D*(V+W-V*W)-V*W‖+‖(1-V)*(1-W)*(Pstar+D)‖ := norm_add_le _ _
       _ ≤ ‖D*(V+W-V*W)‖+‖V*W‖+‖(1-V)*(1-W)*(Pstar+D)‖ := by gcongr; exact norm_sub_le _ _
-      _ = ‖D‖*‖V+W-V*W‖+‖V‖*‖W‖+‖1-V‖*‖1-W‖*‖Pstar+D‖ := by simp only [norm_mul]
+      _ = ‖D‖*‖V+W-V*W‖+‖V‖*‖W‖+‖1-V‖*‖1-W‖*‖Pstar+D‖ := by simp
       _ ≤ _ := by
         gcongr
-        · calc ‖1-V‖ ≤ 1+‖V‖ := by simpa only [norm_one] using norm_sub_le (1:ℂ) V
+        · calc ‖1-V‖ ≤ 1+‖V‖ := by simpa using norm_sub_le (1:ℂ) V
                _ ≤ 2 := by linarith
-        · simpa only [norm_one] using norm_sub_le (1:ℂ) W
+        · simpa using norm_sub_le (1:ℂ) W
   calc
     _ ≤ (‖D‖*(‖V‖+‖W‖+‖V‖*‖W‖)+‖V‖*‖W‖+2*(1+‖W‖)*‖Pstar+D‖)*2 := by
       gcongr

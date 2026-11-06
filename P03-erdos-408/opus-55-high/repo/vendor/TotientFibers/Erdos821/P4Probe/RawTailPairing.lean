@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.BigDuality
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -22,7 +21,7 @@ lemma tailMix_prefix (P : PrimeGroups) (J ell : ℕ) (a y : P.BigLabels (J + ell
       if i ∈ tailCoordinates P J ell g then y g i else a g i)).1 =
         (splitBigLabels P J ell a).1 := by
   funext g i
-  simp [splitBigLabels, tailCoordinates, not_le_of_gt i.isLt]
+  simp [splitBigLabels, tailCoordinates]
 
 lemma tailAverage_prefix_function (P : PrimeGroups) (J ell : ℕ)
     (hV : ∀ g, 0 < P.V g) (F : P.BigLabels J → ℂ) :

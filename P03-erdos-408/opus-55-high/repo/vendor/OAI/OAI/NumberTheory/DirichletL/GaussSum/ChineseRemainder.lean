@@ -6,15 +6,11 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 
 namespace OAI
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 noncomputable section
-open Finset Complex
+open Complex
 
 open scoped Classical
 
@@ -69,17 +65,13 @@ theorem gauss_sum_crt [Fintype T] [Fintype R] [Fintype S]
     (∑ x : T,
       χR (e x).1 * χS (e x).2 *
         (leftAddChar e ψ (e x).1 * rightAddChar e ψ (e x).2)) =
-        ∑ x : T, F (e x) := by congr 1; ext x; simp [F]; ring
+        ∑ x : T, F (e x) := by grind
     _ = ∑ z : R × S, F z := Equiv.sum_comp e.toEquiv F
     _ = ∑ z : R, ∑ w : S, F (z, w) := Fintype.sum_prod_type F
     _ = gaussSum χR (leftAddChar e ψ) * gaussSum χS (rightAddChar e ψ) := by
       simp only [F, gaussSum]
       rw [Finset.sum_mul_sum]
-      apply Finset.sum_congr rfl
-      intro z hz
-      apply Finset.sum_congr rfl
-      intro w hw
-      ring
+      grind
 
 theorem gauss_sum_ideal_crt {A : Type*} [CommRing A]
     (I J : Ideal A) (h : IsCoprime I J)
@@ -98,7 +90,7 @@ theorem gauss_sum_ideal_crt {A : Type*} [CommRing A]
   simp only [e, Ideal.quotientMulEquivQuotientProd_fst,
     Ideal.quotientMulEquivQuotientProd_snd]
 
-noncomputable def quotientAddChar {A : Type*} [CommRing A]
+def quotientAddChar {A : Type*} [CommRing A]
     (I : Ideal A) (ψ : AddChar A ℂ)
     (hper : ∀ a : A, a ∈ I → ψ a = 1) : AddChar (A ⧸ I) ℂ where
   toFun := fun x => Quotient.liftOn' x ψ (by
@@ -127,8 +119,8 @@ theorem principal_coprime_of_bezout {A : Type*} [CommRing A]
     IsCoprime (Ideal.span {a}) (Ideal.span {b}) := by
   apply Ideal.isCoprime_iff_exists.mpr
   refine ⟨u * a, ?_, v * b, ?_, h⟩
-  · exact Ideal.mem_span_singleton.mpr ⟨u, by ring⟩
-  · exact Ideal.mem_span_singleton.mpr ⟨v, by ring⟩
+  · exact Ideal.mem_span_singleton.mpr (by simp)
+  · exact Ideal.mem_span_singleton.mpr (by simp)
 
 theorem bezout_of_principal_coprime {A : Type*} [CommRing A]
     {a b : A} (h : IsCoprime (Ideal.span {a}) (Ideal.span {b})) :
@@ -137,8 +129,7 @@ theorem bezout_of_principal_coprime {A : Type*} [CommRing A]
   obtain ⟨u, hu⟩ := Ideal.mem_span_singleton.mp hx
   obtain ⟨v, hv⟩ := Ideal.mem_span_singleton.mp hy
   refine ⟨u, v, ?_⟩
-  rw [hu, hv] at hxy
-  convert hxy using 1; ring
+  grind
 
 theorem crt_left_inverse_coordinate {A : Type*} [CommRing A]
     {a b u v : A} (hbez : u * a + v * b = 1) (x : A) :
@@ -162,9 +153,7 @@ theorem crt_left_inverse_coordinate {A : Type*} [CommRing A]
     change x - x * v * b ∈ I
     rw [Ideal.mem_span_singleton]
     refine ⟨x * u, ?_⟩
-    calc
-      x - x * v * b = x * (u * a + v * b) - x * v * b := by rw [hbez]; ring
-      _ = a * (x * u) := by ring
+    grind
   · change (e (e.symm (Ideal.Quotient.mk I x, 0))).2 =
       (e (Ideal.Quotient.mk (I * J) (x * v * b))).2
     rw [e.apply_symm_apply]
@@ -172,7 +161,7 @@ theorem crt_left_inverse_coordinate {A : Type*} [CommRing A]
       Ideal.Quotient.factor_mk]
     symm
     apply (Ideal.Quotient.eq_zero_iff_mem).mpr
-    exact Ideal.mem_span_singleton.mpr ⟨x * v, by ring⟩
+    exact Ideal.mem_span_singleton.mpr (by simp)
 
 theorem crt_right_inverse_coordinate {A : Type*} [CommRing A]
     {a b u v : A} (hbez : u * a + v * b = 1) (y : A) :
@@ -194,7 +183,7 @@ theorem crt_right_inverse_coordinate {A : Type*} [CommRing A]
       Ideal.Quotient.factor_mk]
     symm
     apply (Ideal.Quotient.eq_zero_iff_mem).mpr
-    exact Ideal.mem_span_singleton.mpr ⟨y * u, by ring⟩
+    exact Ideal.mem_span_singleton.mpr (by simp)
   · change (e (e.symm (0, Ideal.Quotient.mk J y))).2 =
       (e (Ideal.Quotient.mk (I * J) (y * u * a))).2
     rw [e.apply_symm_apply]
@@ -204,11 +193,9 @@ theorem crt_right_inverse_coordinate {A : Type*} [CommRing A]
     change y - y * u * a ∈ J
     rw [Ideal.mem_span_singleton]
     refine ⟨y * v, ?_⟩
-    calc
-      y - y * u * a = y * (u * a + v * b) - y * u * a := by rw [hbez]; ring
-      _ = b * (y * v) := by ring
+    grind
 
-noncomputable def rawTraceChar {A : Type*} [CommRing A]
+def rawTraceChar {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (c : A) : AddChar A ℂ where
   toFun x := ψ (ι x / (ι c * lam))
   map_zero_eq_one' := by simp
@@ -224,13 +211,9 @@ theorem rawTraceChar_period {A : Type*} [CommRing A]
   obtain ⟨y, hy⟩ := Ideal.mem_span_singleton.mp hx
   rw [hy]
   change ψ (ι (c * y) / (ι c * lam)) = 1
-  rw [map_mul]
-  have hfrac : ι c * ι y / (ι c * lam) = ι y / lam := by
-    field_simp
-  rw [hfrac]
-  exact hbase y
+  grind
 
-noncomputable def traceModChar {A : Type*} [CommRing A]
+def traceModChar {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (c : A)
     (hc : ι c ≠ 0) (hlam : lam ≠ 0)
     (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
@@ -246,7 +229,7 @@ noncomputable def traceModChar {A : Type*} [CommRing A]
       (Ideal.Quotient.mk (Ideal.span {c}) x) =
       ψ (ι x / (ι c * lam)) := rfl
 
-noncomputable def traceProdChar {A : Type*} [CommRing A]
+def traceProdChar {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) (a b : A)
     (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
     (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
@@ -292,9 +275,7 @@ theorem leftAddChar_traceProd {A : Type*} [CommRing A]
   rw [crt_left_inverse_coordinate hbez x]
   simp only [traceProdChar_mk, AddChar.mulShift_apply, ← map_mul,
     traceModChar_mk]
-  congr 1
-  simp only [map_mul]
-  field_simp
+  grind
 
 theorem rightAddChar_traceProd {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
@@ -320,9 +301,7 @@ theorem rightAddChar_traceProd {A : Type*} [CommRing A]
   rw [crt_right_inverse_coordinate hbez y]
   simp only [traceProdChar_mk, AddChar.mulShift_apply, ← map_mul,
     traceModChar_mk]
-  congr 1
-  simp only [map_mul]
-  field_simp
+  grind
 
 theorem bezout_inverse_left {A : Type*} [CommRing A]
     {a b u v : A} (hbez : u * a + v * b = 1) :
@@ -333,9 +312,7 @@ theorem bezout_inverse_left {A : Type*} [CommRing A]
   change b * v - 1 ∈ Ideal.span {a}
   rw [Ideal.mem_span_singleton]
   refine ⟨-u, ?_⟩
-  calc
-    b * v - 1 = b * v - (u * a + v * b) := by rw [hbez]
-    _ = a * -u := by ring
+  grind
 
 theorem bezout_inverse_right {A : Type*} [CommRing A]
     {a b u v : A} (hbez : u * a + v * b = 1) :
@@ -346,9 +323,7 @@ theorem bezout_inverse_right {A : Type*} [CommRing A]
   change a * u - 1 ∈ Ideal.span {b}
   rw [Ideal.mem_span_singleton]
   refine ⟨-v, ?_⟩
-  calc
-    a * u - 1 = a * u - (u * a + v * b) := by rw [hbez]
-    _ = b * -v := by ring
+  grind
 
 theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
     {a b u v : A} [Fintype (A ⧸ Ideal.span {a})]
@@ -360,16 +335,12 @@ theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
   let mb := Ideal.Quotient.mk (Ideal.span {a}) b
   let mv := Ideal.Quotient.mk (Ideal.span {a}) v
   have hprod : mb * mv = 1 := bezout_inverse_left hbez
-  have hu : IsUnit mv := IsUnit.of_mul_eq_one_right mb hprod
+  have hu := IsUnit.of_mul_eq_one_right mb hprod
   have hχ : χ mb * χ mv = 1 := by rw [← map_mul, hprod, map_one]
   have hshift := gaussSum_mulShift χ ψ hu.unit
   have hshift' : χ mv * gaussSum χ (ψ.mulShift mv) = gaussSum χ ψ := by
     simpa only [hu.unit_spec] using hshift
-  calc
-    gaussSum χ (ψ.mulShift mv) =
-        (χ mb * χ mv) * gaussSum χ (ψ.mulShift mv) := by rw [hχ, one_mul]
-    _ = χ mb * (χ mv * gaussSum χ (ψ.mulShift mv)) := by ring
-    _ = χ mb * gaussSum χ ψ := by rw [hshift']
+  grind
 
 theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
     {a b u v : A} [Fintype (A ⧸ Ideal.span {b})]
@@ -381,16 +352,12 @@ theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
   let ma := Ideal.Quotient.mk (Ideal.span {b}) a
   let mu := Ideal.Quotient.mk (Ideal.span {b}) u
   have hprod : ma * mu = 1 := bezout_inverse_right hbez
-  have hu : IsUnit mu := IsUnit.of_mul_eq_one_right ma hprod
+  have hu := IsUnit.of_mul_eq_one_right ma hprod
   have hχ : χ ma * χ mu = 1 := by rw [← map_mul, hprod, map_one]
   have hshift := gaussSum_mulShift χ ψ hu.unit
   have hshift' : χ mu * gaussSum χ (ψ.mulShift mu) = gaussSum χ ψ := by
     simpa only [hu.unit_spec] using hshift
-  calc
-    gaussSum χ (ψ.mulShift mu) =
-        (χ ma * χ mu) * gaussSum χ (ψ.mulShift mu) := by rw [hχ, one_mul]
-    _ = χ ma * (χ mu * gaussSum χ (ψ.mulShift mu)) := by ring
-    _ = χ ma * gaussSum χ ψ := by rw [hshift']
+  grind
 
 theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
@@ -421,12 +388,7 @@ theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
       rightAddChar_traceProd ι ψ lam hbez ha hb hlam hbase,
       gauss_shift_bezout_left hbez χa (traceModChar ι ψ lam a ha hlam hbase),
       gauss_shift_bezout_right hbez χb (traceModChar ι ψ lam b hb hlam hbase)] at h
-  calc
-    _ = (χa (Ideal.Quotient.mk (Ideal.span {a}) b) *
-          gaussSum χa (traceModChar ι ψ lam a ha hlam hbase)) *
-        (χb (Ideal.Quotient.mk (Ideal.span {b}) a) *
-          gaussSum χb (traceModChar ι ψ lam b hb hlam hbase)) := h
-    _ = _ := by ring
+  grind
 
 theorem gauss_sum_trace_crt_of_coprime {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)

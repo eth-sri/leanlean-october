@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationSourceDomain
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourcePolynomial
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
+open CenteredMomentAmplificationSourceDomain
 open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation
 open CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
 
- theorem residual_primaryGaussRow (p : O) (hp : Prime p)
-    (hpp : goodLambda^2 ∣ p-1) (I : Ideal O) (hI : Supported I) (h : O) :
+ theorem residual_primaryGaussRow (p : ActualEisensteinCubic.O) (hp : Prime p)
+    (hpp : goodLambda^2 ∣ p-1) (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) (h : ActualEisensteinCubic.O) :
     primaryGaussRow (residualIdeal p hp I) h=
       gaussRow (primeRemainder p hp (primaryGenerator I)
         (supported_primaryGenerator_ne_zero I hI))
@@ -27,13 +26,13 @@ local notation "O" => ActualEisensteinCubic.O
   simp only [primaryGaussRow,dite_eq_left (residualIdeal_supported p hp I hI),
     residualIdeal_generator p hp hpp I hI]
 
- theorem supported_residualColumns (S : Finset (Ideal O)) (p : O) (hp : Prime p) (k : ℕ) :
+ theorem supported_residualColumns (S : Finset (Ideal ActualEisensteinCubic.O)) (p : ActualEisensteinCubic.O) (hp : Prime p) (k : ℕ) :
     supportedColumns (residualColumns S p hp k)=residualColumns S p hp k := by
   apply Finset.filter_eq_self.mpr
   exact residualColumns_supported S p hp k
 
-theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hpp : goodLambda^2 ∣ p-1) (k : ℕ) (h : O) :
+theorem remainder_polynomial (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (p : ActualEisensteinCubic.O) (hp : Prime p) (hpp : goodLambda^2 ∣ p-1) (k : ℕ) (h : ActualEisensteinCubic.O) :
     gaussPolynomial Finset.univ
       (fun I : supportedColumns S => primeRemainder p hp (sourceGenerator S I)
         (supported_element_ne_zero _ (sourceGenerator_supported S I)))
@@ -46,7 +45,7 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
         (sourceGenerator_supported (residualColumns S p hp k))
         (fun I : supportedColumns (residualColumns S p hp k) =>
           c ((Ideal.span {p})^k*I)*residualCharacter p k (primaryGenerator I)) h := by
-  let f : Ideal O → ℂ := fun I => residualCharacter p k (primaryGenerator I)*primaryGaussRow I h
+  let f : Ideal ActualEisensteinCubic.O → ℂ := fun I => residualCharacter p k (primaryGenerator I)*primaryGaussRow I h
   have he := residual_column_sum S p hp k c f
   have hl : (∑ I∈valuationColumns S p k,c I*f (residualIdeal p hp I))=
       gaussPolynomial Finset.univ
@@ -81,10 +80,7 @@ theorem remainder_polynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ)
     (fun I => c ((Ideal.span {p})^k*I)*residualCharacter p k (primaryGenerator I)) h
   refine Eq.trans ?_ hh.symm
   rw [supported_residualColumns]
-  apply Finset.sum_congr rfl
-  intro I hI
-  dsimp only [f]
-  ring
+  grind
 
 end SevenEighths.CenteredMomentAmplificationSourcePolynomial
 

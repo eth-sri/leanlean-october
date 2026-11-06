@@ -8,15 +8,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open CanonicalRowCompletion ConcretePrimeRowBridge
+open SecondPassArithmetic
 
 theorem actual_large_bins_aggregate
-    {σ:Type*}[DecidableEq σ](S:Finset (Ideal O))(D:ℕ)
-    (labels:Finset (Ideal O))(Ψ:O→*ℂ)(m:O)(W:ℝ→ℂ)(b X H₀ R Z V E:ℝ)
+    {σ:Type*}[DecidableEq σ](S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(W:ℝ→ℂ)(b X H₀ R Z V E:ℝ)
     (slots:Finset σ)(lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
     (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
     (hbin:∀j∈cubeLogRange b X,
@@ -35,7 +34,7 @@ theorem actual_large_bins_aggregate
         (progressingCubes S D H₀ (activeCubeLogBin S D b X j))
         Ψ m (idealGenerator I) z W X H₀ slots lists a) R≤E := by
     by_cases hn:(progressingCubes S D H₀ (activeCubeLogBin S D b X j)).Nonempty
-    · exact hbin j hj hn
+    · simp_all
     · rw [Finset.not_nonempty_iff_eq_empty.mp hn]
       simpa only [markedReopenedCubeBin,Finset.sum_empty,rowFamilyEnergy,
         nonzeroRowMajorantSum,norm_zero,zero_pow (by decide:2≠0),Complex.ofReal_zero,
@@ -47,7 +46,7 @@ theorem actual_large_bins_aggregate
         Ψ m (idealGenerator I) z W X H₀ slots lists a) R := by rw [←Finset.mul_sum];ring
     _≤(cubeLogRange b X).card*∑_j∈cubeLogRange b X,E := by
       gcongr
-      exact hj _ ‹_›
+      simp_all
     _=_ := by rw [Finset.sum_const,nsmul_eq_mul];ring
 
 end SevenEighths.InverseMoment

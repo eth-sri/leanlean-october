@@ -10,33 +10,22 @@ noncomputable section
 
 namespace FirstPassCubeLabels
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -45,43 +34,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical SchwartzMap
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -101,7 +82,6 @@ def actualFirstKernel {ι : Type*} [DecidableEq ι]
 end
 
 section
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius supportRay supportConjugateSum)
 open RayFourExpansion (RayCharacter)
 
@@ -111,8 +91,8 @@ variable {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaxi
 
 theorem row_union (S T : Finset ι) (hd : Disjoint S T) (a : O) :
     finiteSquarefreeRow P hg (S ∪ T) a =
-      finiteSquarefreeRow P hg S a * finiteSquarefreeRow P hg T a := by
-  exact Finset.prod_union hd
+      finiteSquarefreeRow P hg S a * finiteSquarefreeRow P hg T a :=
+  Finset.prod_union hd
 
 include hg in
 theorem mask_union (S T : Finset ι) (hd : Disjoint S T) (a : O) :
@@ -130,7 +110,7 @@ theorem row_four_star (S : Finset ι) (f h : O) :
       _ = finiteSquarefreeRow P hg S f ^ 4 * finiteSquarefreeRow P hg S f ^ 6 := by ring
       _ = _ := by
         rw [row_sixth]
-        simpa only [pow_one] using row_power_mul_mask_power P hg S f 4 1 (by decide)
+        simpa using row_power_mul_mask_power P hg S f 4 1 (by decide)
   rw [finiteSquarefreeRow_mul, star_mul, hf]
 
 def beforeDilationLabel {κ : Type*} (p : κ → O) (B : Finset κ)
@@ -227,9 +207,8 @@ theorem rayIdealRow_beforeDilation {ι κ : Type*} [DecidableEq ι] (p : ι → 
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro U hU
-  have hd : Disjoint D U := by
-    exact Finset.disjoint_left.mpr (fun i hiD hiU =>
-      (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hU) hiU)).2 hiD)
+  have hd : Disjoint D U :=
+    Finset.disjoint_left.mpr (by grind)
   dsimp only
   rw [beforeDilationLabel_union _ hg q B v ε₁ ε₂ side c d f D U hd]
   calc
@@ -309,14 +288,12 @@ theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 
 section
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+open scoped Classical
 open RayFourExpansion (RayCharacter crossCoeff)
 
 theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
@@ -325,7 +302,7 @@ theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
   rw [blockRow_eq_product, norm_prod]
   calc
     _ ≤ ∏ i ∈ S, (1 : ℝ) := by
-      apply Finset.prod_le_prod₀ (fun _ _ => norm_nonneg _)
+      apply Finset.prod_le_prod₀ (by simp)
       intro i hi
       let : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
       exact FiniteRayExpansion.norm_char_le_one _ _
@@ -343,15 +320,13 @@ theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
     intro i hi
     exact (ZMod.val_eq_zero _).not.mpr (Finset.mem_filter.mp hi).2
   simp only [cubeBaseFactor, norm_mul, norm_star,
-    gaussBlock_norm_one p hp hcop hg hc _ _ he (fun _ _ => ZMod.val_lt _), one_mul]
+    gaussBlock_norm_one p hp hcop hg hc _ _ he (by grind), one_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _)
     (blockRow_norm_le_one p hg _ _ _)).trans (blockRow_norm_le_one p hg _ _ _)
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FourierBridge (logPhase)

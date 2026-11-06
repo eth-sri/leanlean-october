@@ -8,14 +8,14 @@ namespace OAI
 
 namespace SevenEighths.InverseKernelSourceUniform
 
-open scoped BigOperators Classical ContDiff SchwartzMap FourierTransform
+open scoped Classical ContDiff SchwartzMap FourierTransform
 open MeasureTheory LocalLogFourier
 noncomputable section
 
 def smallScalar (R : ℝ) : ℝ := min 1 (R ^ (1/4 : ℝ))
 
 lemma smallScalar_pos {R : ℝ} (hR : 0 < R) : 0 < smallScalar R :=
-  lt_min zero_lt_one (Real.rpow_pos_of_pos hR _)
+  lt_min zero_lt_one (by positivity)
 
 def canonicalDensity (U : ℝ → ℂ) (V : 𝓢(ℝ, ℂ)) (R t : ℝ) : ℂ :=
   ((smallScalar R : ℝ) : ℂ)⁻¹ *
@@ -71,7 +71,7 @@ theorem paperKernel_window_source_bound (a b : ℝ) (ha : 0 < a) (K : ℕ) (L : 
     exact hh.trans (by nlinarith [mul_nonneg (mul_nonneg hD.le hE.le) hQ])
   change _ ≤ D*(1+E)*Q * min 1 (R^(1/4 : ℝ))
   rw [mul_min_of_nonneg _ _ (by positivity : 0 ≤ D*(1+E)*Q), mul_one]
-  exact le_min hlarge' hsmall'
+  grind
 
 private theorem localized_source_seminorm
     (V F : ℝ → ℂ) (R L CW CF : ℝ) (n k : ℕ)
@@ -93,7 +93,7 @@ private theorem localized_source_seminorm
     funext z
     exact positiveLogProfile_apply V F R z hVc hVs hF hR
   have hD : 0 ≤ derivativeConstant n CW CF := derivativeConstant_nonneg _ _ _ hCW hCF
-  apply SchwartzMap.seminorm_le_bound' ℝ k n g (mul_nonneg (pow_nonneg hL _) hD)
+  apply SchwartzMap.seminorm_le_bound' ℝ k n g (by positivity)
   intro s
   have hprod := norm_iteratedFDeriv_mul_le hVs hG s (n := n) (by simp)
   by_cases hs : ∃ i ≤ n, ‖iteratedFDeriv ℝ i V s‖ ≠ 0
@@ -104,23 +104,23 @@ private theorem localized_source_seminorm
       unfold derivativeConstant
       apply Finset.sum_le_sum
       intro i hi
-      have hi' : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+      have hi' := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
       have hGi : ‖iteratedFDeriv ℝ (n - i) G s‖ ≤ CF := by
         rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, show (G : ℝ → ℂ) = fun z => F (R * Real.exp z) from rfl,
           iteratedDeriv_log_eq_euler]
-        exact hEuler (n - i) (Nat.sub_le _ _) s hwindow'
+        exact by grind
       gcongr
-      exact hVderiv i hi' s
+      exact by grind
     have hsk : ‖s‖ ^ k ≤ L ^ k := by simpa only [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg s) hwindow' k
-    exact mul_le_mul hsk hraw (norm_nonneg _) (pow_nonneg hL _)
+    exact mul_le_mul hsk hraw (norm_nonneg _) (by positivity)
   · have hz (i : ℕ) (hi : i ≤ n) : ‖iteratedFDeriv ℝ i V s‖ = 0 := by
       by_contra hne
-      exact hs ⟨i, hi, hne⟩
+      exact by grind
     have hsum : (∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * ‖iteratedFDeriv ℝ i V s‖ *
         ‖iteratedFDeriv ℝ (n - i) G s‖) = 0 := by
       apply Finset.sum_eq_zero
       intro i hi
-      rw [hz i (Nat.lt_succ_iff.mp (Finset.mem_range.mp hi))]
+      rw [hz i (by grind)]
       ring
     have hgzero : ‖iteratedDeriv n g s‖ = 0 := by
       rw [hgeq, ← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
@@ -187,12 +187,9 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
         L^k * derivativeConstant n CW (CF*Q*m) := by
       apply localized_source_seminorm U (CubicReflectionKernel.paperKernel V)
         R L CW (CF*Q*m) n k hUc hUs hF hR hL hCW (by positivity)
-      · intro i hi
-        exact hUderiv i (hi.trans hn)
-      · intro s hs
-        exact (hwindow s (by obtain ⟨i, hi, hz⟩ := hs; exact ⟨i, hi.trans hn, hz⟩)).2.2
-      · intro i hi s hs
-        exact hkernel V hV R hR i (hi.trans hn) s hs
+      · grind
+      · grind
+      · grind
     have hd : derivativeConstant n CW (CF*Q*m) = derivativeConstant n CW CF * Q * m := by
       simp only [derivativeConstant, Finset.sum_mul]
       apply Finset.sum_congr rfl
@@ -203,10 +200,9 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
       calc
         _ ≤ L^0 * derivativeConstant n CW (CF*Q*m) +
             L^(volume : Measure ℝ).integrablePower * derivativeConstant n CW (CF*Q*m) :=
-          add_le_add (hsemi 0) (hsemi _)
+          by grind
         _ = ((1+L^(volume : Measure ℝ).integrablePower)*derivativeConstant n CW CF)*Q*m := by
-          rw [hd]
-          ring
+          grind
         _ ≤ _ := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right
           (momentConstant_dominates K n L CW CF hL hCW hCF.le hn) hQ) hm.le
     exact (mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr hm.le)).trans_eq (by field_simp)
@@ -221,8 +217,8 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
     ring
   refine ⟨?_, ?_, ?_, ?_⟩
   · intro y
-    have hactive : (∏ i, windows i (y i)) ≠ 0 → U (∑ i, slope i*y i) = 1 :=
-      FourierBridge.coupled_cutoff_active windows U slope y M hwindows (by simpa [T] using hUone)
+    have hactive :=
+      FourierBridge.coupled_cutoff_active windows U slope y M hwindows (by omega)
     have hsep := coupled_positive_log_separation windows (CubicReflectionKernel.paperKernel V)
       U R slope y hUc hUs hF hR hactive
     rw [hsep, ← integral_const_mul]
@@ -231,13 +227,11 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
     rw [← hcan]
     dsimp only [B]
     simp only [smul_apply, smul_eq_mul]
-    have hmC : (m : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hm.ne'
-    change _ = (m : ℂ)*_
-    field_simp
-    rfl
+    have hmC := Complex.ofReal_ne_zero.mpr hm.ne'
+    grind
   · simp_rw [← hcan, hnorm]
     exact AnalyticBridge.schwartz_fourier_one_plus_integrable g J |>.const_mul m⁻¹ |>.congr
-      (Filter.Eventually.of_forall (fun t => by dsimp only; ring))
+      (Filter.Eventually.of_forall (fun t => by linarith))
   · simp_rw [← hcan, hnorm]
     have hh := FourierBridge.uniform_fourier_one_plus_moment g J m⁻¹ (P0*Q)
       (inv_nonneg.mpr hm.le) hP hsource
@@ -251,7 +245,7 @@ theorem source_uniform_separation {ι : Type*} [Fintype ι]
   · intro t
     rw [← hcan, hnorm]
     have hh := FourierBridge.uniform_fourier_pointwise g J m⁻¹ (P0*Q)
-      (inv_nonneg.mpr hm.le) hP (fun i hi => hsource i (hi.trans (by dsimp only [K]; omega))) t
+      (inv_nonneg.mpr hm.le) hP (fun i hi => hsource i (hi.trans (by omega))) t
     rw [hB1Q] at hh
     have he : (1+‖t‖)^J*(m⁻¹*‖(𝓕 g) t‖) = m⁻¹*(1+‖t‖)^J*‖(𝓕 g) t‖ := by ring
     rw [he]
@@ -311,7 +305,7 @@ theorem normTwistedSource_uniform_separation {ι : Type*} [Fintype ι]
   have hb : C * orders.sup (schwartzSeminormFamily ℝ ℝ ℂ) (G θ) ≤
       C*D * (1+‖θ‖)^n :=
     (mul_le_mul_of_nonneg_left (hpoly θ) hC).trans_eq (by ring)
-  exact ⟨heq, hi, hm.trans hb, fun t => (hp t).trans hb⟩
+  grind
 
 theorem fourier_joint_stronglyMeasurable {α : Type*} [MeasurableSpace α]
     (f : α → ℝ → ℂ) (hf : StronglyMeasurable (Function.uncurry f)) :
@@ -412,9 +406,7 @@ theorem twistedDensity_joint_stronglyMeasurable
       (hU.stronglyMeasurable.comp_measurable measurable_snd).mul
         hcomposed
     convert hprofileG using 1
-    exact funext (fun p => congrArg
-      (fun V : ℝ → ℂ => U p.2 * CubicReflectionKernel.paperKernel V (R * Real.exp p.2))
-      (hlink p.1).symm)
+    exact by grind
   exact twistedDensity_measurable_of_profile U W R hprofile
 
 end

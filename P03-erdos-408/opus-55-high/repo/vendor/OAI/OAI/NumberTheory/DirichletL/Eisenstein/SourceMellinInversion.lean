@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,45 +31,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma source_period_of_three_supported
@@ -102,8 +81,7 @@ lemma source_period_of_three_supported
         ring
       rw [he,cuspFrequency_period]
     rw [mul_add,AddChar.map_add_eq_mul,hp,mul_one]
-  · rw [hs h hd]
-    by_cases hh:h=0 <;> simp [hh]
+  simp_all
 
 theorem exists_source_coefficient_not_three :
     ∃h:Eis,¬(3:Eis)∣h ∧ sourceResidualFourierCoefficient h≠0 := by
@@ -111,7 +89,7 @@ theorem exists_source_coefficient_not_three :
   have hs:∀h:Eis,¬(3:Eis)∣h→sourceResidualFourierCoefficient h=0:=by
     intro h hh
     by_contra hne
-    exact hn ⟨h,hh,hne⟩
+    exact by grind
   apply cubicSource_not_eisenstein_periodic
   intro a w
   obtain ⟨z,v,hv,rfl⟩:=upperPoint_surjective w
@@ -124,12 +102,12 @@ namespace CompletedGauss
 
 section
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology FourierTransform SchwartzMap ContDiff
+open scoped Classical FourierTransform SchwartzMap ContDiff
 
 lemma compactMellin_vertical_integrable (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hsupp : Function.support V⊆Set.Icc a b) (hV : ContDiff ℝ ∞ V) (σ : ℝ) :
     Complex.VerticalIntegrable (mellin V) σ := by
-  have hc : HasCompactSupport (CubicReflectionKernel.mellinLogFamily V σ) :=
+  have hc :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc
       (CubicReflectionKernel.mellinLogFamily_support V a b ha hsupp σ)
   have hd : ContDiff ℝ ∞ (CubicReflectionKernel.mellinLogFamily V σ) :=
@@ -137,7 +115,7 @@ lemma compactMellin_vertical_integrable (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   let f : 𝓢(ℝ,ℂ) := hc.toSchwartzMap hd
   have hf : Integrable (fun t : ℝ=>(𝓕 f) (t/(2*Real.pi))) := by
     simpa only [div_eq_mul_inv] using
-      (𝓕 f).integrable.comp_mul_right' (inv_ne_zero (mul_ne_zero (by norm_num) Real.pi_ne_zero))
+      (𝓕 f).integrable.comp_mul_right' (by positivity)
   change Integrable (fun t : ℝ=>mellin V ((σ:ℂ)+t*Complex.I))
   have hfcoe : (f:ℝ→ℂ)=CubicReflectionKernel.mellinLogFamily V σ := rfl
   simpa only [CubicReflectionKernel.mellin_eq_logFamily_fourier,
@@ -157,17 +135,15 @@ theorem compactMellin_inversion (V : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
 end
 
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 
 lemma positive_cpow_vertical_norm (r σ t : ℝ) (hr : 0<r) :
     ‖(r:ℂ)^((σ:ℂ)+t*Complex.I)‖=r^σ := by
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hr]
-  simp
+  simp [Complex.norm_cpow_eq_rpow_re_of_pos hr]
 
 lemma positive_cpow_negative_vertical_norm (r σ t : ℝ) (hr : 0<r) :
     ‖(r:ℂ)^(-((σ:ℂ)+t*Complex.I))‖=r^(-σ) := by
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos hr]
-  simp
+  simp [Complex.norm_cpow_eq_rpow_re_of_pos hr]
 
 lemma positive_cpow_vertical_continuous (r σ : ℝ) (hr : 0<r) :
     Continuous (fun t : ℝ=>(r:ℂ)^((σ:ℂ)+t*Complex.I)) := by
@@ -239,23 +215,19 @@ theorem weightedMellin_inversion {α : Type*} [Countable α]
     exact Filter.Eventually.of_forall (fun t=>by
       dsimp only
       rw [positive_quotient_cpow_neg _ _ (hr i) hX]
-      dsimp only [M]
       ring)
   simp_rw [hi]
   rw [tsum_mul_left,weighted_vertical_sum_integral r hr c σ hc M hM]
-  congr 1
-  apply integral_congr_ae
-  exact Filter.Eventually.of_forall (fun t=>by dsimp only [M];ring)
+  grind
 
 end CompletedGauss
 
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology
+open scoped Classical
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 lemma angularFactor_norm_le_one (a : ActualEisensteinCubic.O) : ‖FiniteGaussPhase.angularFactor a‖≤1 := by
@@ -268,7 +240,7 @@ lemma cubicRow_norm_le_one (I : Ideal ActualEisensteinCubic.O) (hI : primaryGene
   unfold cubicRow
   rw [norm_prod]
   apply Finset.prod_le_one₀
-  · intro i hi; exact norm_nonneg _
+  · simp
   · intro i hi
     exact FiniteRayExpansion.norm_char_le_one _ _
 
@@ -298,7 +270,7 @@ lemma gaussTwo_norm_le_sqrt (I : Ideal ActualEisensteinCubic.O) (hI : primaryGen
   change ‖(∑x : ActualEisensteinCubic.O⧸Ideal.span {n},cubicRow I hI (e x)*ψ x)/(‖eisEmbedding n‖:ℂ)‖≤_
   rw [norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (norm_nonneg _),hn]
   apply (div_le_iff₀ (Real.sqrt_pos.mpr hN)).mpr
-  simpa only [Real.mul_self_sqrt hN.le] using hsum
+  simp_all
 
 lemma columnWeight_div_sqrt_norm_le_one (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1) (I : Ideal ActualEisensteinCubic.O) :
     ‖columnWeight Ψ I/(Real.sqrt (Ideal.absNorm I:ℝ):ℂ)‖≤1 := by
@@ -309,13 +281,13 @@ lemma columnWeight_div_sqrt_norm_le_one (Ψ : ActualEisensteinCubic.O→*ℂ) (h
       FiniteGaussPhase.norm_angularFactor _ hI.2,one_mul,
       Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg _)]
     apply (div_le_one (Real.sqrt_pos.mpr hN)).mpr
-    exact (mul_le_of_le_one_right (norm_nonneg _) (hΨ _)).trans (gaussTwo_norm_le_sqrt I hI.2)
+    exact (mul_le_of_le_one_right (norm_nonneg _) (by grind)).trans (gaussTwo_norm_le_sqrt I hI.2)
   · simp only [columnWeight,squarefreeGaussCoefficient,dite_eq_right hI,zero_mul,zero_div,norm_zero,zero_le_one]
 
 lemma cubeWeight_norm_le_one (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1) (I : Ideal ActualEisensteinCubic.O) :
     ‖cubeWeight Ψ I‖≤1 := by
   by_cases hI : I=0
-  · subst I; simp
+  · simp_all
   have hN : (1:ℝ)≤(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun h=>hI (Ideal.absNorm_eq_zero_iff.mp h))
   have hn : 0<(Ideal.absNorm I:ℝ) := lt_of_lt_of_le zero_lt_one hN
@@ -327,16 +299,16 @@ lemma cubeWeight_norm_le_one (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,�
   calc
     _≤(1:ℝ)*1 := mul_le_mul
       (pow_le_one₀ (norm_nonneg _) (angularFactor_norm_le_one _))
-      (pow_le_one₀ (norm_nonneg _) (hΨ _)) (pow_nonneg (norm_nonneg _) _) zero_le_one
+      (pow_le_one₀ (norm_nonneg _) (by grind)) (by positivity) zero_le_one
     _=1 := one_mul _
 
 end
 
 open Filter MeasureTheory
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 
 section
-open ActualEisensteinCubic CubicEisenstein
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CompletedMellinIndex := NonzeroIdeal×NonzeroIdeal
@@ -357,11 +329,11 @@ lemma completedMellinCoefficient_norm_le_one (Ψ : ActualEisensteinCubic.O→*�
     (p : CompletedMellinIndex) : ‖completedMellinCoefficient Ψ p‖≤1 := by
   rw [completedMellinCoefficient,norm_mul]
   exact (mul_le_mul_of_nonneg_right (columnWeight_div_sqrt_norm_le_one Ψ hΨ p.1.1)
-    (norm_nonneg _)).trans (by simpa only [one_mul] using cubeWeight_norm_le_one Ψ hΨ p.2.1)
+    (norm_nonneg _)).trans (by simpa using cubeWeight_norm_le_one Ψ hΨ p.2.1)
 
 lemma nonzeroIdeal_norm_rpow_summable (σ : ℝ) (hσ : 1<σ) :
     Summable (fun I : NonzeroIdeal=>(Ideal.absNorm I.1:ℝ)^(-σ)) := by
-  have h := (fullIdealWeight_summable_norm (σ:ℂ) (by simpa using hσ)).subtype (fun I=>I≠0)
+  have h := (fullIdealWeight_summable_norm (σ:ℂ) (by omega)).subtype (fun I=>I≠0)
   apply h.congr
   intro I
   change ‖fullIdealWeight (σ:ℂ) I.1‖=(Ideal.absNorm I.1:ℝ)^(-σ)
@@ -374,17 +346,15 @@ lemma completedMellinLength_rpow (p : CompletedMellinIndex) (σ : ℝ) :
       (Ideal.absNorm p.1.1:ℝ)^(-σ)*(Ideal.absNorm p.2.1:ℝ)^(-(3*σ)) := by
   rw [completedMellinLength,Real.mul_rpow (nonzeroIdeal_norm_pos p.1).le
     (pow_nonneg (nonzeroIdeal_norm_pos p.2).le _),←Real.rpow_natCast_mul (nonzeroIdeal_norm_pos p.2).le]
-  congr 1
-  congr 1
-  ring
+  simp
 
 theorem completedMellinCoefficient_summable (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1)
     (σ : ℝ) (hσ : 1<σ) :
     Summable (fun p=>‖completedMellinCoefficient Ψ p‖*(completedMellinLength p)^(-σ)) := by
   have hI := nonzeroIdeal_norm_rpow_summable σ hσ
   have hJ := nonzeroIdeal_norm_rpow_summable (3*σ) (by linarith)
-  have hp := hI.mul_of_nonneg hJ (fun I=>Real.rpow_nonneg (nonzeroIdeal_norm_pos I).le _)
-    (fun J=>Real.rpow_nonneg (nonzeroIdeal_norm_pos J).le _)
+  have hp := hI.mul_of_nonneg hJ (fun I=>by positivity)
+    (fun J=>by positivity)
   apply hp.of_nonneg_of_le
   · intro p; exact mul_nonneg (norm_nonneg _) (Real.rpow_nonneg (completedMellinLength_pos p).le _)
   · intro p
@@ -404,8 +374,8 @@ theorem completedT_eq_mellin_index (Ψ : ActualEisensteinCubic.O→*ℂ) (W : �
   have hinj : Function.Injective (fun p : CompletedMellinIndex=>(p.1.1,p.2.1)) := by
     intro p q h
     apply Prod.ext <;> apply Subtype.ext
-    · exact congrArg Prod.fst h
-    · exact congrArg Prod.snd h
+    · simp_all
+    · simp_all
   have hsub := hfull.comp_injective hinj
   calc
     completedT Ψ W X=∑'I : NonzeroIdeal,∑'J : Ideal ActualEisensteinCubic.O,summand Ψ W X I.1 J := by
@@ -437,7 +407,7 @@ theorem completedT_initial_mellin (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : �
         completedDirichletSeries Ψ ((2:ℂ)+t*Complex.I) := by
   let : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let : Countable (Ideal ActualEisensteinCubic.O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
-  have hWc : HasCompactSupport W :=
+  have hWc :=
     HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp
   rw [completedT_eq_mellin_index Ψ W hWc X hX]
   have h := weightedMellin_inversion completedMellinLength completedMellinLength_pos
@@ -457,12 +427,11 @@ theorem completedT_initial_mellin (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : �
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 end
 
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
 
 lemma weighted_vertical_series_continuous {α : Type*}
@@ -488,9 +457,6 @@ lemma completedDirichletSeries_initial (Ψ : ActualEisensteinCubic.O→*ℂ) (t 
       ∑'p : CompletedMellinIndex,completedMellinCoefficient Ψ p*
         (completedMellinLength p:ℂ)^(-((3/2:ℂ)+t*Complex.I)) := by
   unfold completedDirichletSeries
-  apply tsum_congr
-  intro p
-  congr 2
   ring
 
 theorem completedT_initial_mellin_integrable (Ψ : ActualEisensteinCubic.O→*ℂ) (hΨ : ∀a,‖Ψ a‖≤1)
@@ -515,8 +481,7 @@ theorem completedT_initial_mellin_integrable (Ψ : ActualEisensteinCubic.O→*�
 
 end CompletedGauss
 
-open scoped BigOperators Classical
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -529,8 +494,7 @@ lemma mem_dualIdealDyad (I : Ideal Eis) (j : ℕ) :
     I∈dualIdealDyad j ↔ I≠0 ∧ Nat.clog 2 (Ideal.absNorm I)=j := by
   simp only [dualIdealDyad,Finset.mem_filter,ConcretePrimeRowBridge.mem_idealsUpTo]
   constructor
-  · rintro ⟨⟨hI,_⟩,hj⟩
-    exact ⟨fun h => by simp [h] at hI, hj⟩
+  · grind
   · rintro ⟨hI,hj⟩
     refine ⟨⟨Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI),?_⟩,hj⟩
     simpa only [hj] using Nat.le_pow_clog (by norm_num : 1<2) (Ideal.absNorm I)

@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily UniqueFactorizationMonoid
 open CenteredMomentDetectorDictionary CenteredExceptionalProfile CenteredExceptionalCount
 open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
 
-theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
-    (hQ0 : Q≠0) (hQ : Q≠⊤) (hQ72 : Q≤Ideal.span {(72:O)}) (hQη : Q≤η.modulus)
-    (m : O) (hm : m≠0) (hml : goodLambda∣m) (hm2 : (2:O)∣m)
+theorem fixed_inducing_free_support (η : Character) (Q : Ideal HeckeFamily.O)
+    (hQ0 : Q≠0) (hQ : Q≠⊤) (hQ72 : Q≤Ideal.span {(72:HeckeFamily.O)}) (hQη : Q≤η.modulus)
+    (m : HeckeFamily.O) (hm : m≠0) (hml : goodLambda∣m) (hm2 : (2:HeckeFamily.O)∣m)
     (u : FreeRow) (hu : FixedInducingRow η Q m 1 u.val) :
     u.val∈HeckeExceptionalRows.rows (normalizedFactors Q).toFinset := by
   obtain ⟨χ,ψ,hprim,hind,hψ,hχ⟩:=hu
@@ -27,13 +26,13 @@ theorem fixed_inducing_free_support (η : Character) (Q : Ideal O)
   intro P hP
   refine ⟨?_,u.property.2 P⟩
   by_contra hout
-  have hp : Prime P:=prime_of_normalized_factor P hP
+  have hp:=prime_of_normalized_factor P hP
   let : P.IsMaximal:=(Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
   obtain ⟨hl,h2,hQP⟩:=outside_fixed_support Q hQ0 hQ72 P hp hout
-  have hηP : IsCoprime η.modulus P:=hQP.of_isCoprime_of_dvd_left (Ideal.dvd_iff_le.mpr hQη)
+  have hηP:=hQP.of_isCoprime_of_dvd_left (Ideal.dvd_iff_le.mpr hQη)
   have hz:=actual_row_numerator_valuation_zero η χ ψ hind Q hQ hQ72 hψ
     m 1 u.val hm one_ne_zero u.property.1 hml hm2
-    (by simpa only [one_mul] using hχ) P hl h2 hQP hηP
+    (by simp_all) P hl h2 hQP hηP
   simp only [one_pow,one_mul,valuation] at hz
   have hpos:=Multiset.count_pos.mpr hP
   have hlt:=u.property.2 P
@@ -66,14 +65,14 @@ theorem eventually_source_no_exceptional (F : ProbeFinalAssembly.SourceData D) (
       (sourceExceptionalBound F (sourceMomentBase F.modulus ⊤ le_top F.S F.exclusions.prime η label):ℝ)<Z^(1/100:ℝ) := by
     apply Filter.eventually_all.mpr
     intro label
-    exact (tendsto_rpow_atTop (by norm_num : (0:ℝ)<1/100)).eventually (eventually_gt_atTop _)
+    exact (tendsto_rpow_atTop (by positivity)).eventually (eventually_gt_atTop _)
   filter_upwards [hh] with Z hz
   intro label u hu hex
   have hb : rowNorm u≤(sourceExceptionalBound F
       (sourceMomentBase F.modulus ⊤ le_top F.S F.exclusions.prime η label):ℝ) := by
     change ((Ideal.span {u.val}).absNorm:ℝ)≤_
     exact_mod_cast source_exceptional_norm F _ u hex
-  exact (not_lt_of_ge (hu.trans hb)) (hz label)
+  grind
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource
 

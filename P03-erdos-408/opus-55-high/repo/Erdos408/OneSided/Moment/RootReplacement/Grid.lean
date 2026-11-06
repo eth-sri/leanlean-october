@@ -129,19 +129,19 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
       rw [sub_lt_iff_lt_add, div_lt_iff₀ hV]
       linarith
     have h₃ : (rootC P.1 P.2 : ℝ) / P.1 < 1 :=
-      (div_lt_one (by exact_mod_cast hu₀)).2 (by exact_mod_cast RootResidue.rootC_lt hu₀ P.2)
+      (div_lt_one (by linarith)).2 (by exact_mod_cast RootResidue.rootC_lt hu₀ P.2)
     simp only [hι, cubeIndices, mem_product, mem_range]
     refine ⟨(Nat.floor_lt ?_).2 ?_, (Nat.floor_lt ?_).2 ?_, (Nat.floor_lt ?_).2 ?_⟩
     · exact mul_nonneg (sub_nonneg.2 ((one_le_div hU).2 hu₁)) hn'.le
     · push_cast
-      exact mul_lt_mul_of_pos_right h₁ hn'
+      nlinarith
     · exact mul_nonneg (sub_nonneg.2 ((one_le_div hV).2 hv₁)) hn'.le
-    · simpa using mul_lt_mul_of_pos_right h₂ hn'
+    · nlinarith
     · positivity
-    · simpa using mul_lt_mul_of_pos_right h₃ hn'
+    · nlinarith
   -- step: sort the positions off the upper faces by their cube
   rw [← sum_fiberwise_of_maps_to hmaps]
-  refine sum_congr rfl fun i hi => sum_congr ?_ fun _ _ => rfl
+  refine sum_congr rfl fun i hi => sum_congr ?_ (by simp)
   simp only [cubeIndices, mem_product, mem_range] at hi
   obtain ⟨hi₁, hi₂, hi₃⟩ := hi
   ext P
@@ -153,16 +153,16 @@ theorem sum_positions_eq (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm) 
   · rintro ⟨hc, ⟨hu₁, hu₂⟩, ⟨hv₁, hv₂⟩, h₃⟩
     have hb₁ : ((i.1 : ℝ) + 1) / n ≤ 15 := by
       rw [div_le_iff₀ hn']
-      exact_mod_cast (show i.1 + 1 ≤ 15 * n by omega)
+      exact_mod_cast (by omega)
     have hb₂ : ((i.2.1 : ℝ) + 1) / n ≤ 1 := by
       rw [div_le_iff₀ hn']
-      exact_mod_cast (show i.2.1 + 1 ≤ 1 * n by omega)
+      exact_mod_cast (by omega)
     have hu : d₀ * Y * d.Hm ≤ P.1 :=
       le_trans (le_mul_of_one_le_left hU.le (le_add_of_nonneg_right (by positivity))) hu₁
     have hv : d.Hn ≤ P.2 :=
       le_trans (le_mul_of_one_le_left hV.le (le_add_of_nonneg_right (by positivity))) hv₁
     refine ⟨(mem_positions_filter_not d).2 ⟨hc, ⟨hu, ?_⟩, hv, ?_⟩,
-      (hιeq P i hu hv).2 ⟨⟨hu₁, hu₂⟩, ⟨hv₁, hv₂⟩, h₃⟩⟩
+      by grind⟩
     · calc (P.1 : ℝ) < (1 + (i.1 + 1) / n) * (d₀ * Y * d.Hm) := hu₂
         _ ≤ 16 * (d₀ * Y * d.Hm) := mul_le_mul_of_nonneg_right (by linarith) hU.le
     · calc (P.2 : ℝ) < (1 + (i.2.1 + 1) / n) * d.Hn := hv₂
@@ -184,7 +184,7 @@ theorem card_edgeRoots_le (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y * d.Hm)
     rcases hedge with h | h
     · refine Or.inl ⟨le_antisymm hu₂ ?_, hv₁, hv₂⟩
       exact_mod_cast (Nat.floor_le (by positivity)).trans h
-    · refine Or.inr ⟨⟨hu₁, hu₂⟩, le_antisymm hv₂ ?_⟩
+    · refine Or.inr ⟨by grind, le_antisymm hv₂ ?_⟩
       exact_mod_cast (Nat.floor_le (by positivity)).trans h
   -- step: count the two segments
   have hIcc : ∀ {a b : ℝ}, a ≤ b → 0 ≤ b → ((Icc ⌈a⌉₊ ⌊b⌋₊).card : ℝ) ≤ b + 1 - a := by
@@ -210,13 +210,13 @@ theorem norm_lineAverage_le_one (x : ℝ) (d : Data K) {G : (ℕ → ℕ) → �
     ‖lineAverage x d G‖ ≤ 1 := by
   rw [lineAverage, norm_mul, norm_inv, Complex.norm_natCast]
   rcases Nat.eq_zero_or_pos (lineAssignments x d).card with h | h
-  · simp [h]
+  · simp_all
   · calc ((lineAssignments x d).card : ℝ)⁻¹ * ‖∑ ℓ ∈ lineAssignments x d, G ℓ‖
         ≤ ((lineAssignments x d).card : ℝ)⁻¹ * ∑ _ℓ ∈ lineAssignments x d, (1 : ℝ) :=
-          mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (sum_le_sum fun ℓ _ => hG ℓ))
+          mul_le_mul_of_nonneg_left ((norm_sum_le _ _).trans (sum_le_sum (by grind)))
             (by positivity)
       _ = 1 := by
-          rw [sum_const, nsmul_eq_mul, mul_one, inv_mul_cancel₀ (by exact_mod_cast h.ne')]
+          rw [sum_const, nsmul_eq_mul, mul_one, inv_mul_cancel₀ (by positivity)]
 
 /-- `RootEquidist` for `G ≡ 1`: a box at scales `U, V ≥ 2` has at most
 `UV (|c₂| |box| + C₀ min(U, V)^{-1/5})` roots. -/
@@ -228,15 +228,15 @@ theorem card_boxRoots_le {C₀ : ℝ} (hE : RootEquidist K C₀) (x : ℝ) (d : 
       U * V * (|primitiveDensity| * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)) +
         C₀ * min U V ^ (-(1 / 5 : ℝ))) := by
   have h := hE x d U V hU hV a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃ hab₃ hb₃ ∅
-    (empty_subset _) (fun _ => 1) 1 (fun _ _ _ => rfl) (fun _ => by simp)
+    (empty_subset _) (fun _ => 1) 1 (by simp) (by simp)
   simp only [sum_const, nsmul_eq_mul, mul_one, prod_empty, one_pow, one_mul] at h
-  have hl := norm_lineAverage_le_one x d (G := fun _ => 1) (fun _ => by simp)
+  have hl := norm_lineAverage_le_one x d (G := fun _ => 1) (by simp)
   have hs := norm_sub_norm_le ((boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃).card : ℂ)
     (((primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) : ℝ) : ℂ) *
       lineAverage x d fun _ => 1)
   rw [Complex.norm_natCast, norm_mul, Complex.norm_real, Real.norm_eq_abs] at hs
   have hvol : 0 ≤ (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) :=
-    mul_nonneg (mul_nonneg (sub_nonneg.2 hab₁) (sub_nonneg.2 hab₂)) (sub_nonneg.2 hab₃)
+    by positivity
   have habs : |primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)| =
       U * V * (|primitiveDensity| * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃))) := by
     rw [show primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) =
@@ -286,7 +286,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   set L := lineAverage x d (fun ℓ => ∏ p ∈ bandPrimes x d, (lam p (ℓ p) : ℂ)) with hLdef
   set m := min U V ^ (-(1 / 5 : ℝ)) with hm
   have hm₀ : 0 ≤ m := Real.rpow_nonneg (le_min hU₀.le hV₀.le) _
-  have hc₂ : |primitiveDensity| ≤ 2 := RootResidue.abs_primitiveDensity_le
+  have hc₂ := RootResidue.abs_primitiveDensity_le
   have hUV : 0 < U * V := mul_pos hU₀ hV₀
   have hn₃ : (0 : ℝ) < (n : ℝ) ^ 3 := by positivity
   -- step: the factors are bounded by `1`
@@ -294,7 +294,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     rw [norm_prod]
     refine prod_le_one₀ (fun _ _ => norm_nonneg _) fun p hp => ?_
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hlam p hp (ℓ p)).1]
-    exact (hlam p hp (ℓ p)).2
+    grind
   have hL₁ : ‖L‖ ≤ 1 := norm_lineAverage_le_one x d hF₁
   have hsum₁ : ∀ s : Finset (ℕ × ℕ), ‖((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ s,
       (A P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) : ℂ) *
@@ -306,13 +306,12 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
           calc _ ≤ 1 * 1 := mul_le_mul (hA _ _ _) (hF₁ _) (norm_nonneg _) zero_le_one
             _ = 1 := one_mul 1
-      _ = s.card := by rw [sum_const, nsmul_eq_mul, mul_one]
+      _ = s.card := by simp
   -- step: the cubes are boxes of volume `n⁻³`
   have hvol : ∀ i : ℕ × ℕ × ℕ,
       (1 + ((i.1 : ℝ) + 1) / n - (1 + (i.1 : ℝ) / n)) *
         (1 + ((i.2.1 : ℝ) + 1) / n - (1 + (i.2.1 : ℝ) / n)) *
           (((i.2.2 : ℝ) + 1) / n - (i.2.2 : ℝ) / n) = ((n : ℝ) ^ 3)⁻¹ := fun i => by
-    field_simp
     ring
   have hside : ∀ k : ℕ, (k : ℝ) / n ≤ ((k : ℝ) + 1) / n := fun k =>
     div_le_div_of_nonneg_right (by linarith) hn'.le
@@ -336,8 +335,8 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       rw [div_le_iff₀ hn']
       exact_mod_cast (show i.2.2 + 1 ≤ 1 * n by omega)
     have h₀ : ∀ k : ℕ, 0 ≤ (k : ℝ) / n := fun k => by positivity
-    refine ⟨by linarith [h₀ i.1], by linarith [hside i.1], by linarith, by linarith [h₀ i.2.1],
-      by linarith [hside i.2.1], by linarith, h₀ i.2.2, hside i.2.2, h₃⟩
+    refine ⟨by grind, by grind, by linarith, by grind,
+      by grind, by linarith, h₀ i.2.2, hside i.2.2, h₃⟩
   -- step: the error of each cube
   obtain ⟨D, hD⟩ : ∃ D : ℕ × ℕ × ℕ → ℂ, D = fun i =>
       ((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ cubeRoots U V n i,
@@ -358,7 +357,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           (A (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n) : ℂ) *
             ∑ P₀ ∈ cubeRoots U V n i, ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ) := by
       rw [mul_sum]
-      exact sum_congr rfl fun P₀ hP₀ => by rw [hbad i hi hib P₀ hP₀]
+      exact sum_congr rfl fun P₀ hP₀ => by grind
     have hDi : D i = (A (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n) : ℂ) *
         (((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ cubeRoots U V n i,
             ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ) -
@@ -399,8 +398,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       _ ≤ (U * V)⁻¹ * ((cubeRoots U V n i).card : ℝ) + 2 * ((n : ℝ) ^ 3)⁻¹ :=
           add_le_add (hsum₁ _) hmain
       _ ≤ 4 / (n : ℝ) ^ 3 + C₀ * m := by
-          rw [div_eq_mul_inv]
-          linarith
+          grind
   -- step: assemble the cubes and the upper faces
   have hsplit : ((U * V : ℝ) : ℂ)⁻¹ * (∑ i ∈ cubeIndices n, ∑ P₀ ∈ cubeRoots U V n i,
           (A P₀.1 P₀.2 ((rootC P₀.1 P₀.2 : ℝ) / P₀.1) : ℂ) *
@@ -437,8 +435,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
             pmax ^ (6 * (act.card + T)) * m) := by
           rw [sum_const, nsmul_eq_mul, cubeIndices, card_product, card_product, card_range,
             card_range]
-          push_cast
-          field_simp
+          grind
   have hbadsum : ∑ i ∈ cubeIndices n with i ∈ bad, ‖D i‖ ≤
       bad.card * (4 / (n : ℝ) ^ 3 + C₀ * m) := by
     calc _ ≤ ∑ i ∈ cubeIndices n with i ∈ bad, (4 / (n : ℝ) ^ 3 + C₀ * m) :=
@@ -447,7 +444,7 @@ theorem norm_sum_positions_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           rw [sum_const, nsmul_eq_mul]
       _ ≤ bad.card * (4 / (n : ℝ) ^ 3 + C₀ * m) := by
           gcongr
-          exact fun i hi => (mem_filter.1 hi).2
+          grind
   have hedge' : (U * V)⁻¹ * ((edgeRoots d Y d₀).card : ℝ) ≤
       (16 * U + 2 * V + 2) / (U * V) := by
     rw [div_eq_inv_mul]

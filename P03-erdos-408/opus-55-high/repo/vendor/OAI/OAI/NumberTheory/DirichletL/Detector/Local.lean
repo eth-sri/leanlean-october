@@ -24,8 +24,7 @@ theorem continuedCorrection_eq_raw (V W D Pstar : ℂ)
     (hV : 1 - V ≠ 0) (hW : 1 - W ≠ 0) (hD : 1 - D ≠ 0) :
     continuedCorrection V W D Pstar = localCorrection V W D Pstar := by
   unfold continuedCorrection localCorrection localFactor
-  field_simp
-  ring
+  grind
 
 def compensatedReplacement (V W D Pstar B q : ℂ) : ℂ :=
   ((B - q) * (1 - V) * (1 - W) * Pstar - q * (1 - V * W)) / (1 - D)
@@ -38,16 +37,14 @@ theorem compensatedReplacement_eq_raw (V W D Pstar B q : ℂ)
   unfold localCorrection compensatedReplacement
   field_simp
   unfold localFactor
-  field_simp
-  ring
+  grind
 
 theorem continuedCorrection_defect (V W D Pstar : ℂ) (hD : 1 - D ≠ 0) :
     continuedCorrection V W D Pstar - 1 =
       (D * (V + W - V * W) - V * W +
         (1 - V) * (1 - W) * (Pstar + D)) / (1 - D) := by
   unfold continuedCorrection
-  field_simp
-  ring
+  grind
 
 theorem continued_normalized_cancellation (V W D Pstar B q vInv : ℂ)
     (hV : 1 - V ≠ 0) (hD : 1 - D ≠ 0)
@@ -58,8 +55,7 @@ theorem continued_normalized_cancellation (V W D Pstar B q vInv : ℂ)
         ((vInv - q) * (V / (1 - V) - D) +
           (B + vInv - q) * (Pstar + D)) := by
   unfold compensatedReplacement continuedCorrection
-  field_simp
-  linear_combination -(1 - V) * (1 - W) * hBD + (1 - V) * hvW
+  grind
 
 theorem continued_ramified_compensation (V Pstar B q : ℂ) :
     compensatedReplacement V 0 0 Pstar B q =

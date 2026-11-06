@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSquarefree
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 omit [DecidableEq ι] in
-theorem rowCoprimeMask_radical_generator (S : Finset ι) (a : Eis) :
+theorem rowCoprimeMask_radical_generator (S : Finset ι) (a : ActualEisensteinCubic.O) :
     rowCoprimeMask (fun i => Ideal.span {p i}) S a =
       rowCoprimeMask (fun i => Ideal.span {p i}) S
         (ConcretePrimeRowBridge.idealGenerator (Ideal.span {a}).radical) := by
@@ -30,8 +29,8 @@ theorem rowCoprimeMask_radical_generator (S : Finset ι) (a : Eis) :
   simp only [rowCoprimeMask,he]
 
 omit [DecidableEq σ] in
-theorem finiteCanonicalMarkedRow_radical_puncture (F : Finset ι) (Ψ : Eis →* ℂ)
-    (m f k : Eis) (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
+theorem finiteCanonicalMarkedRow_radical_puncture (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ)
+    (m f k : ActualEisensteinCubic.O) (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ) :
     finiteCanonicalMarkedRow p hp hcop hg F Ψ m f k slots lists a W X =
       finiteCanonicalMarkedRow p hp hcop hg F Ψ
@@ -39,10 +38,10 @@ theorem finiteCanonicalMarkedRow_radical_puncture (F : Finset ι) (Ψ : Eis →*
   simp only [finiteCanonicalMarkedRow,fixedChildRow,secondChildColumn,
     ←rowCoprimeMask_radical_generator p]
 
-def actualSecondRadicalPuncture (m : Eis) (γ : InverseSecondFibers.OuterTriple) : Eis :=
+def actualSecondRadicalPuncture (m : ActualEisensteinCubic.O) (γ : InverseSecondFibers.OuterTriple) : ActualEisensteinCubic.O :=
   ConcretePrimeRowBridge.idealGenerator (Ideal.span {actualSecondPuncture m γ}).radical
 
-theorem radical_product_norm_le (I J B R : Ideal Eis) (hI : I ≠ 0) (hB : B ≠ 0)
+theorem radical_product_norm_le (I J B R : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (hB : B ≠ 0)
     (hR : R ≠ 0) (hBJ : B ≤ J.radical) :
     (Ideal.absNorm (I*J*R).radical : ℝ) ≤
       (Ideal.absNorm I.radical : ℝ)*Ideal.absNorm B*Ideal.absNorm R := by
@@ -57,14 +56,14 @@ theorem radical_product_norm_le (I J B R : Ideal Eis) (hI : I ≠ 0) (hB : B ≠
     · exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans hBJ
     · exact Ideal.mul_le_right.trans Ideal.le_radical
   have hb := Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
-    (mul_ne_zero (mul_ne_zero hi hB) hR))) (Ideal.absNorm_dvd_absNorm_of_le hle)
-  simpa only [map_mul,Nat.cast_mul] using (show (Ideal.absNorm (I*J*R).radical : ℝ) ≤
+    (by positivity))) (Ideal.absNorm_dvd_absNorm_of_le hle)
+  simpa using (show (Ideal.absNorm (I*J*R).radical : ℝ) ≤
     Ideal.absNorm (I.radical*B*R) from by exact_mod_cast hb)
 
-def actualSecondInheritedPuncture (m : Eis) (γ : InverseSecondFibers.OuterTriple) : Eis :=
+def actualSecondInheritedPuncture (m : ActualEisensteinCubic.O) (γ : InverseSecondFibers.OuterTriple) : ActualEisensteinCubic.O :=
   actualSecondPuncture (m*ConcretePrimeRowBridge.idealGenerator γ.quotient) γ
 
-def actualSecondInheritedRadicalPuncture (m : Eis) (γ : InverseSecondFibers.OuterTriple) : Eis :=
+def actualSecondInheritedRadicalPuncture (m : ActualEisensteinCubic.O) (γ : InverseSecondFibers.OuterTriple) : ActualEisensteinCubic.O :=
   actualSecondRadicalPuncture (m*ConcretePrimeRowBridge.idealGenerator γ.quotient) γ
 
 end

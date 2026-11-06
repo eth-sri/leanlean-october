@@ -11,14 +11,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers
-local notation "Eis" => ActualEisensteinCubic.O
+open InverseSecondSourceBlocks InverseSecondPrincipalCaller
+open JointLogSeparation
+open InverseInitialClippedColumns
 theorem actual_priority_source_moving_radius_window_order_uniform_types
     (om Φ:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -26,24 +25,24 @@ theorem actual_priority_source_moving_radius_window_order_uniform_types
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
-      ∀ J:ℕ, ∃ C : ℝ,0 ≤ C ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
+      ∀ J:ℕ, ∃ C : ℝ,0 ≤ C ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (_hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (_hs : ActualSecondSourceConditions p source),
-    ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+    ∀ (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
         (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
         (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
         (Y:ℝ) (R:BlockIndex→ℝ) (L Z X εchild : ℝ) (Vlabel:BlockIndex→ℝ)
         (ell Ractive j tcount eta : ℝ) (ρ : Fin 6 → ℝ) (t : ℝ)
         (w : MarkedSecondSource ι Jo 0 → ℂ)
-        (labels : BlockIndex→Finset (Ideal Eis)) (A : ℝ),
-      (∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
-      (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal Eis)∣x.quotient) →
+        (labels : BlockIndex→Finset (Ideal ActualEisensteinCubic.O)) (A : ℝ),
+      (∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient) →
+      (∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient) →
       (∀ i,|ρ i| ≤ B₀ i) → 0 ≤ L →
       1 < Z → 0 < X → 0 < Y → 0≤eta → 2≤Z^eta →
       (∀ x ∈ source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) (R (index p x))) →
@@ -101,7 +100,7 @@ theorem actual_priority_source_moving_radius_window_order_uniform_types
   apply (norm_sum_le _ _).trans
   apply Finset.sum_le_sum
   intro d hd
-  have hin : cell p source d⊆source:=cell_subset p source d
+  have hin:=cell_subset p source d
   have hcommon:∀x∈cell p source d,primeProductNorm p x.second.sourceCommon≤Z^(secondCellExponent Z d 0+eta):=by
     intro x hx
     have hr:primeProductNorm p x.second.sourceCommon≤2*scales d 0:=
@@ -118,7 +117,7 @@ theorem actual_priority_source_moving_radius_window_order_uniform_types
     rw [second_cell_scale_rpow Z d 1 hZ] at hh
     exact hh.trans hr
   exact henergy p hp hcop hg hpr hinj hc (cell p source d) (cell_conditions p source hs d) d
-    (fun x hx=>(mem_cell p source d x).mp hx |>.2) pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂
+    (by simp) pool Ψ m z slots₁ slots₂ lists₁ lists₂ a₁ a₂
     deleted₁ deleted₂ Y (R d) L Z X (Vlabel d) εchild ell Ractive j tcount
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) eta ρ t w (labels d) A
     (fun x hx=>hd₁ x (hin hx)) (fun x hx=>hd₂ x (hin hx)) hρ hL hZ hX hY

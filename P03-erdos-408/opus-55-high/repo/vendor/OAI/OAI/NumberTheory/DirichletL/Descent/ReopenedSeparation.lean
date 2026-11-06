@@ -8,18 +8,17 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
+open scoped Classical SchwartzMap ContDiff
+open MeasureTheory ActualEisensteinCubic CanonicalRowCompletion
 open CanonicalCubeSeparation JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem varyingReopenedRow_integrand
     (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (β : (ι →₀ ℕ) → ℂ)
-    (Ψ : O →* ℂ) (m f z : O) (H : (ι→₀ℕ)→Finset ι → ℂ) :
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (H : (ι→₀ℕ)→Finset ι → ℂ) :
     varyingReopenedRow p hp hcop hg pool Q β Ψ m f H z =
       ∑ v ∈ Q, ∑ T ∈ pool.powerset,
         β v * (multiplicityRow (fun i => Ideal.span {p i}) hg pool v z ^ 3 *
@@ -38,7 +37,7 @@ theorem varying_canonical_bin_separation
     (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (V : 𝓢(ℝ,ℂ)) (hV : ∀ u, |u| ≤ columnWindowRadius a b → V u = 1)
     (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (β : (ι →₀ ℕ) → ℂ)
-    (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Ψ : O →* ℂ) (m f z : O) (B ell X : ℝ)
+    (n : (ι →₀ ℕ) → ℝ) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (B ell X : ℝ)
     (hB : 0 < B) (hell : 0 < ell) (hX : X = B^3*ell)
     (hn : ∀ v ∈ Q, B ≤ n v) (hn' : ∀ v ∈ Q, n v ≤ Real.exp 1*B) :
     (∑ v ∈ Q, (β v * (n v : ℂ)⁻¹ * (Real.sqrt (X/(n v)^3) : ℂ)⁻¹) *
@@ -64,10 +63,7 @@ theorem varying_canonical_bin_separation
       apply Finset.sum_congr rfl
       intro v hv
       rw [fixedChildRow_coefficient_expansion p hp hcop hg, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro T hT
-      dsimp only [A]
-      ring
+      grind
     _ = _ := by
       rw [hsep]
       congr 1

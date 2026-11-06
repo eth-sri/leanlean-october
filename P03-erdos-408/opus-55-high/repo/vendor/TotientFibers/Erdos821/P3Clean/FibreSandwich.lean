@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.MatrixSandwich
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -24,7 +23,7 @@ theorem finiteLinearMap_fibre {X Y D : Type*} [Fintype X] [Fintype Y]
       c y * ∑ x ∈ (s y).filter (fun x => p x = d), f (x, y) := by
   classical
   simp only [finiteLinearMap, Fintype.sum_prod_type, fibreCoefficient]
-  simp [ite_and, mul_ite, ite_mul, Finset.sum_ite_mem, Finset.mul_sum, Finset.sum_filter]
+  simp [ite_and, Finset.mul_sum, Finset.sum_filter]
 
 theorem fibre_entry_sum {X Y D : Type*} [Fintype Y] [Fintype D]
     (s : Y → Finset X) (p : X → D) (c : Y → ℂ) (mass : Y → ℝ)
@@ -39,8 +38,7 @@ theorem fibre_entry_sum {X Y D : Type*} [Fintype Y] [Fintype D]
   rcases b with ⟨w, z⟩
   simp only [fibreCoefficient]
   by_cases hx : x ∈ s y <;> by_cases hw : w ∈ s z <;> by_cases hp : p x = p w
-  all_goals simp [hx, hw, hp, apply_ite, ite_and, ite_mul,
-    Finset.sum_ite_eq, Finset.sum_ite_eq', mul_assoc]
+  all_goals simp [hx, hw, hp, apply_ite, ite_and]
 
 def fibreMass {X Y : Type*} (s : Y → Finset X) (m : ℝ) (mass : Y → ℝ) (a : X × Y) : ℝ :=
   if a.1 ∈ s a.2 then m * mass a.2 else 0
@@ -59,14 +57,7 @@ theorem fibreMass_entry {X Y D : Type*} [Fintype Y] [Fintype D]
   rw [fibre_entry_sum]
   by_cases ha : a.1 ∈ s a.2
   · simp only [fibreMass, ite_eq_left ha, Complex.ofReal_mul]
-    calc
-      _ = (mass a.2 : ℂ) * ((m : ℂ) * K a b) := by ring
-      _ = _ := by
-        rw [hentry]
-        by_cases h : a.1 ∈ s a.2 ∧ b.1 ∈ s b.2 ∧ p a.1 = p b.1
-        · simp only [ite_eq_left h]
-          ring
-        · simp only [ite_eq_right h, mul_zero]
+    grind
   · simp [fibreMass, ha]
 
 theorem fibreMass_energy {X Y : Type*} [Fintype X] [Fintype Y]
@@ -80,8 +71,6 @@ theorem fibreMass_energy {X Y : Type*} [Fintype X] [Fintype Y]
   intro y _
   simp only [ite_mul, zero_mul, Finset.sum_ite_mem, Finset.univ_inter]
   rw [Finset.mul_sum, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro x _
   ring
 
 theorem fibre_energy_bound {X Y D : Type*} [Fintype X] [Fintype Y] [Fintype D]

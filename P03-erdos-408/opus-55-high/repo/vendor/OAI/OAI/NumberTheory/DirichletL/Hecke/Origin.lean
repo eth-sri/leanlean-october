@@ -19,8 +19,7 @@ def poleRemoved (χ : Character) (s : ℂ) : ℂ :=
 theorem poleRemoved_entire (χ : Character) : Differentiable ℂ (poleRemoved χ) := by
   have hGamma : Differentiable ℂ (fun s : ℂ => (Complex.Gamma (s+1))⁻¹) :=
     Complex.differentiable_one_div_Gamma.comp (differentiable_id.add_const 1)
-  exact (((differentiable_id.const_cpow (Or.inl
-    (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).mul hGamma).mul
+  exact (((differentiable_id.const_cpow (by simp)).mul hGamma).mul
       (HeckeMellinIdentity.regularized_entire _)).div_const 6
 
 theorem poleRemoved_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
@@ -50,7 +49,7 @@ theorem continued_eq (χ : Character) {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
   unfold continued
   split_ifs
   · rw [poleRemoved_eq χ h0 h1, mul_div_cancel_left₀ _ (sub_ne_zero.mpr h1)]
-  · rfl
+  simp
 
 theorem continued_differentiableAt (χ : Character) {s : ℂ}
     (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : DifferentiableAt ℂ (continued χ) s := by
@@ -60,7 +59,7 @@ theorem continued_differentiableAt (χ : Character) {s : ℂ}
       simp [continued, hχ]
     rw [heq]
     exact (poleRemoved_entire χ s).div (differentiableAt_id.sub_const 1)
-      (sub_ne_zero.mpr (hpole.resolve_right (not_not.mpr hχ)))
+      (by grind)
   · have heq : continued χ = LFunction χ := by
       funext z
       simp [continued, hχ]

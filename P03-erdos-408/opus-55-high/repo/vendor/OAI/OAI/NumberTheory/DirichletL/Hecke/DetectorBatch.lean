@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFiberPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorBatch
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorFiberPartition
 open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
@@ -86,7 +86,7 @@ theorem Batch.card_bound [Fintype Label] (B : Batch M H Label Slot U a ε tstar 
       · exact hfiber bin j J K hn
       · rw [Finset.not_nonempty_iff_eq_empty.mp hn]
         simp only [Finset.card_empty,Nat.cast_zero]
-        exact mul_nonneg hC (Real.rpow_nonneg hU.le _)
+        positivity
     _ = _ := by
       simp only [Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul]
       simp_rw [←mul_assoc]

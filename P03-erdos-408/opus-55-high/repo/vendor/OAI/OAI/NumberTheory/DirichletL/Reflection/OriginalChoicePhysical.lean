@@ -7,23 +7,22 @@ public import OAI.NumberTheory.DirichletL.Reflection.OriginalChoiceControl
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
 
-variable (L : σ→Finset (Ideal Eis))
+variable (L : σ→Finset (Ideal ActualEisensteinCubic.O))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 
-variable {τ : Type*} [Fintype τ] (Frozen : PrimeFamily τ) {N a c : Eis} {mode : Bool}
+variable {τ : Type*} [Fintype τ] (Frozen : PrimeFamily τ) {N a c : ActualEisensteinCubic.O} {mode : Bool}
 variable (T : Finset σ)
     (C : ∀ _b : supportedSlotChoices (fun i : {i // i∉T} => L i.val)
         ((poolPrimeFamily R (Ideal.span {m}*F) Q₀).ideal) (rowResidualPart I (Ideal.span {m}*F)),
@@ -57,8 +56,8 @@ lemma originalSplitControlled_physical (p : originalSlotChoices D Q₀ L)
         ((slotChoiceFamily L hmax hgood p.val).restrict T)).generator_good
       (reflectedExponent jF) (slotIndices τ (PrimeIndex (rowResidualPart I (Ideal.span {m}*F))) T) W X=
     originalSplitPhysical R I F Q₀ hbad L hmax hgood Frozen T C s hc jF W X
-      (originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T p) := by
-  exact originalSplitControlled_value D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
+      (originalSlotSplit D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask L hmax hgood T p) :=
+  originalSplitControlled_value D R I F Q₀ hR hI hF hm hf hz hbad hcop hpow hmask
     L hmax hgood Frozen T C p s hc jF W X
 
 end

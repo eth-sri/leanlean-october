@@ -9,19 +9,16 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
+open ConcretePrimeRowBridge QuadraticInitialBound
 open CenteredMomentCommonRadialData CenteredMomentEnergyZeroComparison
 open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyOriginalSource
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentEnergyState CenteredMomentEnergyPhysicalEntry
+open CenteredMomentSecondHeightFamily
 open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -38,7 +35,7 @@ theorem original_low_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),∀he₁:s.W₁=W₁,∀he₂:s.W₂=W₂,
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
-      (∀i,s.hi i≤hi i) →∀(R:Ideal O)(r:Radial),
+      (∀i,s.hi i≤hi i) →∀(R:Ideal HeckeFamily.O)(r:Radial),
       Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ →
       CenteredMomentAmplificationChildInput.volume s≤Z^B → r.scale⁻¹≤Z^B →
       let hz₁:s.W₁ 0=0:=by rw [he₁];exact CenteredMomentDetectorPlainSource.support_zero W₁ a b ha hs₁;
@@ -65,7 +62,7 @@ theorem original_low_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
     s.W₁ s.W₂ s.slots s.toData.coefficient s.P (zeroInput s hz₁ hz₂).Y₁ (zeroInput s hz₁ hz₂).Y₂
     r.keep r.profile r.scale at hh
   rw [comparison_energy_zero s hz₁ hz₂ R r,mul_zero,add_zero,zeroInput_volume,zero_control] at hh
-  exact hh
+  omega
 
 end SevenEighths.CenteredMomentEnergyLowFixedRadialEntry
 

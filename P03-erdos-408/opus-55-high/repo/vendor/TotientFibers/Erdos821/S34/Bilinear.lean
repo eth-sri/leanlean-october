@@ -6,7 +6,6 @@ public import OAI.NumberTheory.PrimeGaps.AdditiveSieve
 
 set_option autoImplicit false
 
-open scoped BigOperators
 
 namespace Erdos821.S34.Proofs
 
@@ -17,8 +16,8 @@ theorem rational_frequency_separation (α β : ℝ) (u d q : ℤ) (r : ℕ)
     (hα : α = (u : ℝ) / r + β) (hβ : |β| ≤ 1 / (r : ℝ) ^ 2)
     (hd : d ≠ 0) (hspan : |(d : ℝ)| ≤ (r : ℝ) / 2) :
     1 / (2 * (r : ℝ)) ≤ |α * d - q| := by
-  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (show 0 < r by omega)
-  have hrne : (r : ℝ) ≠ 0 := ne_of_gt hrpos
+  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (by positivity)
+  have hrne := ne_of_gt hrpos
   have hdabs : d.natAbs < r := by
     have h : |(d : ℝ)| < (r : ℝ) := by linarith
     have hi : |d| < (r : ℤ) := by exact_mod_cast h
@@ -26,7 +25,7 @@ theorem rational_frequency_separation (α β : ℝ) (u d q : ℤ) (r : ℕ)
     exact_mod_cast hi'
   have hnum : u * d - q * (r : ℤ) ≠ 0 := by
     intro hz
-    have hdiv : (r : ℤ) ∣ u * d := ⟨q, by nlinarith [hz]⟩
+    have hdiv : (r : ℤ) ∣ u * d := ⟨q, by linarith⟩
     have hdiv' : r ∣ u.natAbs * d.natAbs := by
       simpa only [Int.natAbs_mul, Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr hdiv
     have hrd := hu.symm.dvd_of_dvd_mul_left hdiv'

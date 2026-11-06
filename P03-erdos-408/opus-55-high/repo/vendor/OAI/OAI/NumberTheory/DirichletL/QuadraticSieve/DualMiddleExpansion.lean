@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,40 +33,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem scaled_middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
@@ -99,7 +82,7 @@ theorem scaled_middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squaref
   · simp only [hp, and_self, ite_true]
     push_cast
     ring
-  · simp only [hp, ite_false, mul_zero]
+  grind
 
 theorem dual_normalized_middle_expansion (G : Ideal O) (hG : Squarefree G)
     (W : ℝ → ℂ) (M F b i j Y Z lengthScale : ℝ)
@@ -161,20 +144,20 @@ theorem dual_truncated_pair_expansion
     have hpos (I : Ideal O) (hI : Admissible I) : 0 < (Ideal.absNorm I : ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (fun h => hI.1 (Ideal.absNorm_eq_zero_iff.mp h))
     rw [dual_normalized_middle_expansion _ hsq _ _ _ _ _ _ _ _ _ hM hF
-      (hpos _ (hrows i)) (hpos _ (hleft j)) (hpos _ (hright k)), Finset.mul_sum]
+      (by grind) (by grind) (by grind), Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro h hh
-    rw [← divisorPool_filter K (left j * right k) hsq.ne_zero (hK j k), Finset.sum_filter, Finset.mul_sum]
+    rw [← divisorPool_filter K (left j * right k) hsq.ne_zero (by grind), Finset.sum_filter, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro d hd
     by_cases hdv : d ∣ left j * right k
     · by_cases hp : Y i < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z i
       · simp only [hdv, hp, and_self, ite_true, dualPrincipalKernel]
         ring
-      · simp only [hdv, hp, ite_true, ite_false, mul_zero]
-    · simp only [hdv, ite_false, ite_self, mul_zero]
+      grind
+    simp_all
   · have hz : originalTerm rows left right a b 1 1 i j k = 0 := by simp only [originalTerm, hc, ite_false]
-    simp only [hz, zero_mul, ite_self, mul_zero, Finset.sum_const_zero]
+    simp_all
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem dualTruncatedMiddle_le_product_divisors
@@ -251,16 +234,16 @@ theorem HasSieveExponent.dual_truncated_middle {α : ℝ} (hexp : HasSieveExpone
     Y i < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z i
   have hb := hexp.dual_product_divisor_middle deltaLoss hδ ε hε K B N M F U hB hN hM hF hU
     rows left right hr hl hri hrows a b (fun _ => a) (fun _ => b)
-    (fun _ _ => le_rfl) (fun _ _ => le_rfl) W P hleft hright
-    (fun d hd i hp => hp.2.trans (hZ i))
+    (by simp) (by simp) W P hleft hright
+    (by grind)
   have hH (h : O) (hh : h ∈ rowNormDisk ⌊lengthScale⌋₊) : h ≠ 0 := by
     intro hz
     have hn := (mem_rowNormDisk.mp hh).1
     simp [hz] at hn
   calc
     _ ≤ ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, dualProductDivisorMiddleAt W K rows left right a b M F P h :=
-      dualTruncatedMiddle_le_product_divisors W K rows left right a b M F Y Z lengthScale hM hF (fun i => (hrows i).1)
-        (fun j => (hleft j).1) (fun k => (hright k).1) hK
+      dualTruncatedMiddle_le_product_divisors W K rows left right a b M F Y Z lengthScale hM hF (by grind)
+        (by grind) (by grind) hK
     _ ≤ ∑' h : {h : O // h ≠ 0}, dualProductDivisorMiddleAt W K rows left right a b M F P h.val :=
       finite_nonzero_frequency_sum_le (rowNormDisk ⌊lengthScale⌋₊) hH _
         (fun h => dualProductDivisorMiddleAt_nonneg W K rows left right a b M F P h) hb.1
@@ -268,11 +251,10 @@ theorem HasSieveExponent.dual_truncated_middle {α : ℝ} (hexp : HasSieveExpone
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (jLabel primeProduct bit)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -283,7 +265,6 @@ variable {ι : Type*} [DecidableEq ι]
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (jLabel)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -293,9 +274,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic
+open scoped Classical
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -314,15 +293,12 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace FirstPassCubeLabels
-open scoped BigOperators
 open MeasureTheory
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)

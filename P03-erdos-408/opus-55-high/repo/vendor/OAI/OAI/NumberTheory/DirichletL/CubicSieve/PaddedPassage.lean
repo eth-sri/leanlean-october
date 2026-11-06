@@ -9,31 +9,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
+open Real
+open scoped SchwartzMap
+open Finset
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -53,41 +45,33 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 def firstFrequencyDisk (R:ℝ) : Finset O :=
@@ -111,7 +95,7 @@ end SecondPassArithmetic
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped Classical Topology SchwartzMap LineDeriv
 
 lemma euclideanCoordinateVector_eq_basis (j : Fin 3) :
     euclideanCoordinateVector j=EuclideanSpace.basisFun (Fin 3) ℝ j := by
@@ -122,12 +106,12 @@ lemma schwartz_toL2_norm_sq (g : 𝓢(EuclideanSpatial,ℂ)) :
     ‖g.toLp 2 volume‖^2=∫p,‖g p‖^2 := by
   calc
     ‖g.toLp 2 volume‖^2=inner ℝ (g.toLp 2 volume) (g.toLp 2 volume) :=
-      (real_inner_self_eq_norm_sq _).symm
+      by simp
     _ = ∫p,inner ℝ (g.toLp 2 volume p) (g.toLp 2 volume p) := rfl
     _ = _ := by
       apply integral_congr_ae
       filter_upwards [g.coeFn_toLp 2 volume] with p hp
-      rw [hp,real_inner_self_eq_norm_sq]
+      simp_all
 
 def kernelLocalizedDensity (χ : PositiveChartCutoff) (f : kernelSmoothTests)
     (p : EuclideanSpatial) : ℝ :=
@@ -237,7 +221,7 @@ theorem kernelLocalizedH1_norm_sq_le (χ : PositiveChartCutoff)
     _ ≤ ∫p in tsupport χ.func,G (kernelEuclideanProjection p) := by
       apply setIntegral_mono_on (kernelLocalizedDensity_integrable χ f).integrableOn hGI hS
       intro p hp
-      exact kernelLocalizedDensity_le χ f p (χ.positive hp) M D A (hM p hp) (hD p hp) (hA p hp)
+      exact kernelLocalizedDensity_le χ f p (χ.positive hp) M D A (by grind) (by grind) (by grind)
     _ ≤ b^3*∫q,G q∂integralQuotientVolume globalKubotaKernel :=
       kernelEuclideanProjection_volume_integral_le (tsupport χ.func) hS χ.positive hinj
         b hb hheight G hG hGn
@@ -273,22 +257,22 @@ theorem kernelLocalizedH1_bounded (χ : PositiveChartCutoff)
   have hA0 : 0≤A := le_max_left _ _
   have hB0 : 0≤B := le_max_left _ _
   have hheight : ∀p∈tsupport χ.func,p 2≤B := fun p hp =>
-    (hb ⟨p,hp,rfl⟩).trans (le_max_right _ _)
+    (hb (by grind)).trans (by grind)
   have hM : ∀p∈tsupport χ.func,(χ.func p)^2≤M := fun p hp =>
     (hm ⟨p,hp,rfl⟩).trans (le_max_right _ _)
   have hD : ∀p∈tsupport χ.func,
       (∑j : Fin 3,‖fderiv ℝ χ.func p (EuclideanSpace.basisFun (Fin 3) ℝ j)‖^2)≤D := fun p hp =>
-    (hd ⟨p,hp,rfl⟩).trans (le_max_right _ _)
+    (hd ⟨p,hp,rfl⟩).trans (by grind)
   have hA : ∀p∈tsupport χ.func,(χ.func p)^2≤A*(p 2)^2 := fun p hp =>
     (div_le_iff₀ (sq_pos_of_pos (χ.positive hp))).mp
-      ((ha ⟨p,hp,rfl⟩).trans (le_max_right _ _))
+      ((ha ⟨p,hp,rfl⟩).trans (by grind))
   refine ⟨B^3*(M+2*D+2*A),by positivity,fun f => ?_⟩
   refine (kernelLocalizedH1_norm_sq_le χ hinj M D A B hM0 hD0 hA0 hB0 hheight hM hD hA f).trans ?_
   rw [mul_assoc (B^3) (M+2*D+2*A)]
-  apply mul_le_mul_of_nonneg_left _ (pow_nonneg hB0 3)
+  apply mul_le_mul_of_nonneg_left _ (by positivity)
   have hm0 := sq_nonneg ‖kernelSmoothTestsToL2 f‖
   have he0 := kernelDirichletEnergy_nonneg f
-  nlinarith [mul_nonneg (by positivity : 0≤M+2*D) he0,mul_nonneg hA0 hm0]
+  nlinarith
 
 def kernelLocalizedSchwartzLinear (χ : PositiveChartCutoff) :
     kernelSmoothTests →ₗ[ℂ] 𝓢(EuclideanSpatial,ℂ) where
@@ -320,7 +304,7 @@ def kernelLocalizedH1Linear (χ : PositiveChartCutoff) : kernelSmoothTests →�
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
@@ -385,10 +369,10 @@ lemma kernelLocalizedH1_graph_bound (χ : PositiveChartCutoff)
   refine ⟨Real.sqrt C,fun f => ?_⟩
   have hh := hbound f
   rw [←kernelEnergyGraphCore_norm_sq] at hh
-  apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg C) (norm_nonneg _))).mp
+  apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
   change ‖kernelLocalizedH1 χ f‖^2≤(Real.sqrt C*‖kernelEnergyGraphCore f‖)^2
   rw [mul_pow,Real.sq_sqrt hC]
-  exact hh
+  omega
 
 def kernelEnergyLocalize (χ : PositiveChartCutoff) : KernelEnergyGraph →L[ℂ] EuclideanH1 :=
   (kernelLocalizedH1Linear χ).extendOfNorm kernelEnergyGraphCore
@@ -401,7 +385,7 @@ lemma kernelEnergyLocalize_core (χ : PositiveChartCutoff)
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff SchwartzMap LineDeriv
+open scoped Classical Topology SchwartzMap LineDeriv
 
 namespace CubicEisenstein
 
@@ -422,14 +406,14 @@ lemma kernelLocalizedL2_bounded (χ : PositiveChartCutoff)
   have hM0 : 0≤M := le_max_left _ _
   have hB0 : 0≤B := le_max_left _ _
   have hheight : ∀p∈tsupport χ.func,p 2≤B := fun p hp =>
-    (hb ⟨p,hp,rfl⟩).trans (le_max_right _ _)
+    (hb (by grind)).trans (by grind)
   have hM : ∀p∈tsupport χ.func,(χ.func p)^2≤M := fun p hp =>
     (hm ⟨p,hp,rfl⟩).trans (le_max_right _ _)
   refine ⟨B^3*M,by positivity,fun f => ?_⟩
   let G : KernelQuotient→ℝ := fun q => M*‖f.1 q‖^2
   have hG : Integrable G (integralQuotientVolume globalKubotaKernel) :=
     ((kernelSmoothTests_memLp f).norm.integrable_sq).const_mul M
-  have hGn : ∀q,0≤G q := fun q => mul_nonneg hM0 (sq_nonneg _)
+  have hGn : ∀q,0≤G q := fun q => by positivity
   have hS := χ.compact.measurableSet
   have hGI := kernelEuclideanProjection_volume_integrable (tsupport χ.func) hS χ.positive
     hinj B hB0 hheight G hG
@@ -442,13 +426,13 @@ lemma kernelLocalizedL2_bounded (χ : PositiveChartCutoff)
       intro p hp
       have hz := (notMem_tsupport_iff_eventuallyEq.mp hp).self_of_nhds
       change ‖χ.func p • kernelTestField f p‖^2=0
-      simp only [hz,Pi.zero_apply,zero_smul,norm_zero,zero_pow (by decide : 2≠0)]
+      simp_all
     _ ≤ ∫p in tsupport χ.func,G (kernelEuclideanProjection p) := by
       apply setIntegral_mono_on hfi.integrableOn hGI hS
       intro p hp
       change ‖χ.func p • kernelTestField f p‖^2≤M*‖kernelTestField f p‖^2
       simp only [norm_smul,mul_pow,Real.norm_eq_abs,sq_abs]
-      exact mul_le_mul_of_nonneg_right (hM p hp) (sq_nonneg _)
+      exact mul_le_mul_of_nonneg_right (by grind) (sq_nonneg _)
     _ ≤ B^3*∫q,G q∂integralQuotientVolume globalKubotaKernel :=
       kernelEuclideanProjection_volume_integral_le (tsupport χ.func) hS χ.positive hinj
         B hB0 hheight G hG hGn
@@ -462,9 +446,9 @@ lemma kernelLocalizedL2_bound (χ : PositiveChartCutoff)
       ‖kernelLocalizedL2Linear χ f‖≤C*‖kernelSmoothTestsToL2 f‖ := by
   obtain ⟨C,hC,hbound⟩ := kernelLocalizedL2_bounded χ hinj
   refine ⟨Real.sqrt C,fun f => ?_⟩
-  apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg C) (norm_nonneg _))).mp
+  apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
   rw [mul_pow,Real.sq_sqrt hC]
-  exact hbound f
+  grind
 
 def kernelL2Localize (χ : PositiveChartCutoff) : KernelQuotientL2 →L[ℂ] EuclideanL2 :=
   (kernelLocalizedL2Linear χ).extendOfNorm kernelSmoothTestsToL2

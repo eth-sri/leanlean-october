@@ -8,23 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
+open scoped Classical ContDiff
+open MeasureTheory FourierBridge
+open ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonTransform
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonProfile
-open InverseInitialCommonCutoff InverseInitialCommonTuples InverseInitialOverlapFourier
-open InverseInitialOverlapInputFourier InverseInitialRayAttachment InverseInitialArithmetic
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialEnergyCallerWindow
+open InverseMoment InverseInitialCommonLists InverseInitialCommonProfile
+open InverseInitialCommonCutoff InverseInitialOverlapFourier
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
 theorem original_profile_point
     (W wFresh:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
     (hs:Function.support W⊆Set.Icc a₀ b₀)(hW:ContDiff ℝ ∞ W)
-    (F:Finset (Ideal Eis))(I:Finset σ)(L:σ→Finset (Ideal Eis))
-    (hL:∀i∈I,∀P∈L i,Prime P)(a:σ→Ideal Eis→ℂ)
+    (F:Finset (Ideal ActualEisensteinCubic.O))(I:Finset σ)(L:σ→Finset (Ideal ActualEisensteinCubic.O))
+    (hL:∀i∈I,∀P∈L i,Prime P)(a:σ→Ideal ActualEisensteinCubic.O→ℂ)
     (hcop:∀q∈I.pi L,Pairwise (Function.onFun IsCoprime (fun i:I=>q i.val i.property)))
     (Z:ℝ)(hZ:0<Z)(ell lo hi:σ→ℝ)(jlo jhi:ℝ)
     (ha:∀i∈I,∀q∈L i,a i q≠0→slotRatio Z ell i q∈Set.Icc (lo i) (hi i))

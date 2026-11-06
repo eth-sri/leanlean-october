@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFiberPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorAmplitudeFirst
-open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorFiberPartition
-open HeckeDetectorPhysicalSelection HeckeDetectorAdaptiveCutoff
+open HeckeDetectorFiberPartition
+open HeckeDetectorPhysicalSelection
 
 def amplitudeRows {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)
@@ -40,7 +40,7 @@ theorem rowMean_eq {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
   have hval : HeckePrimeAmplitudeBins.amplitude (U^(widths s)) cap mesh (physical u s)=
       binValue slots cap mesh bin s := by
     simpa only [amplitudeLabel,binValue,dite_eq_left hs] using hv
-  exact congrArg (fun x => widths s*x) hval
+  simp_all
 
 theorem classMean_bounds {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     (U δ mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)

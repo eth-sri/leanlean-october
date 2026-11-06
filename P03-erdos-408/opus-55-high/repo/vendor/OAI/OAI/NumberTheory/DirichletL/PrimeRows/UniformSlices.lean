@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SliceIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem uniform_buffered_x_slice_decay (K : ℕ)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
@@ -47,13 +46,13 @@ theorem uniform_buffered_x_slice_decay (K : ℕ)
     have hh : 3+|q.2|≤3*jointHeight tx q.1 q.2 := by
       unfold jointHeight
       linarith [abs_nonneg tx,abs_nonneg q.1,abs_nonneg q.2]
-    apply (hrow σ hσ r ⟨hr,hr1⟩ ((tx,q.1),q.2) htx.le).trans
+    apply (hrow σ hσ r (by grind) ((tx,q.1),q.2) htx.le).trans
     calc
       _ ≤ (A*(3+|H|)^2)*(3*jointHeight tx q.1 q.2)^2 := mul_le_mul_of_nonneg_left
         (pow_le_pow_left₀ (by positivity) hh 2) (by positivity)
       _ = _ := by ring
-  have ht := hprofile σ ⟨by linarith [hσ.1],hσ.2⟩ r ⟨le_rfl,le_rfl⟩ (1-a-6*e)
-    ⟨by linarith,by linarith⟩ .s tx (9*A*(3+|H|)^2) (by positivity)
+  have ht := hprofile σ ⟨by grind,hσ.2⟩ r (by simp) (1-a-6*e)
+    (by grind) .s tx (9*A*(3+|H|)^2) (by positivity)
     X Y Z hX hY hZ G hG.aestronglyMeasurable hb
   have ht' : Integrable (fun q : ℝ×ℝ=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z
         σ (1-a-6*e) r ((tx,q.1),q.2)) (volume.prod volume) ∧
@@ -69,7 +68,7 @@ theorem uniform_buffered_x_slice_decay (K : ℕ)
     have hh' := pow_le_pow_left₀ (by positivity) hh 2
     norm_num [mul_pow] at hh'
     exact hh'
-  have hden : 0<height H := height_pos H
+  have hden := height_pos H
   rw [hheight]
   calc
     _ ≤ (9*A*(9*(height H)^2))*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height H^(N+2) := by

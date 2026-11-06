@@ -10,31 +10,22 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -54,34 +45,28 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ComplexConjugate MatrixGroups Matrix
+open scoped Classical Topology ComplexConjugate MatrixGroups Matrix
 
 def inverseCuspCoordinates (c d : ℂ) (v : ℝ) (z : ℂ) : ℂ×ℝ :=
   (-d/c-star z/(c^2*((v^2+‖z‖^2:ℝ):ℂ)),v/(‖c‖^2*(v^2+‖z‖^2)))
@@ -105,13 +90,13 @@ theorem inverse_cusp_action (g : SL(2,ℂ)) (hc : g 1 0≠0)
   have hdet : g 0 0*g 1 1-g 0 1*g 1 0=1 := by
     simpa only [Matrix.det_fin_two] using g.property
   have h00 : (g⁻¹) 0 0=g 1 1 := by
-    simp [Matrix.SpecialLinearGroup.coe_inv,Matrix.adjugate_fin_two]
+    simp [Matrix.adjugate_fin_two]
   have h01 : (g⁻¹) 0 1= -g 0 1 := by
-    simp [Matrix.SpecialLinearGroup.coe_inv,Matrix.adjugate_fin_two]
+    simp [Matrix.adjugate_fin_two]
   have h10 : (g⁻¹) 1 0= -g 1 0 := by
-    simp [Matrix.SpecialLinearGroup.coe_inv,Matrix.adjugate_fin_two]
+    simp [Matrix.adjugate_fin_two]
   have h11 : (g⁻¹) 1 1=g 0 0 := by
-    simp [Matrix.SpecialLinearGroup.coe_inv,Matrix.adjugate_fin_two]
+    simp [Matrix.adjugate_fin_two]
   have hl : (-g 1 0)*(z+g 0 0/g 1 0)+g 0 0= -(g 1 0*z) := by
     field_simp
     ; ring
@@ -125,7 +110,7 @@ theorem inverse_cusp_action (g : SL(2,ℂ)) (hc : g 1 0≠0)
   have hnormz : ((‖z‖^2:ℝ):ℂ)=z*star z := by
     simpa [Complex.normSq_eq_norm_sq,Complex.star_def] using (Complex.mul_conj z).symm
   have hT : v^2+‖z‖^2≠0 := by positivity
-  have hTc : ((v^2+‖z‖^2:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr hT
+  have hTc := Complex.ofReal_ne_zero.mpr hT
   have hcc : star (g 1 0)≠0 := star_ne_zero.mpr hc
   rw [mobius_upperPoint]
   apply upperPoint_congr
@@ -134,7 +119,7 @@ theorem inverse_cusp_action (g : SL(2,ℂ)) (hc : g 1 0≠0)
     rw [Complex.ofReal_mul,hnormc]
     simp only [Complex.star_def,map_neg,map_mul]
     simp only [Complex.star_def] at hcc
-    field_simp [hc,hcc,hTc]
+    field_simp
     rw [Complex.ofReal_add,Complex.ofReal_pow,hnormz]
     simp only [Complex.star_def,]
     ; ring
@@ -145,16 +130,16 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ComplexConjugate
+open scoped Classical Topology ComplexConjugate
 
 lemma real_linear_horizontal_decompose (A : (ℂ×ℝ)→L[ℝ]ℂ) (z : ℂ) :
     A (z,0)=(z.re:ℂ)*A (1,0)+(z.im:ℂ)*A (Complex.I,0) := by
   have hz : ((z,0):ℂ×ℝ)=z.re • (1,0)+z.im • (Complex.I,0) := by
     apply Prod.ext
-    · simpa only [Prod.fst_add,Prod.smul_fst,Complex.real_smul,mul_one] using z.re_add_im.symm
+    · simp
     · simp
   rw [hz,map_add,map_smul,map_smul]
-  simp only [Complex.real_smul]
+  simp
 
 lemma real_linear_wirtinger_swap (A : (ℂ×ℝ)→L[ℝ]ℂ) (k : ℂ) :
     (1/2:ℂ)*(A (k,0)+Complex.I*A (-Complex.I*k,0))=
@@ -189,7 +174,7 @@ theorem inverse_cusp_wirtingerBar (c d : ℂ) (v : ℝ) (hc : c≠0) (hv : 0<v)
   rw [he1,heI,h1,hI]
   simp only [star_one,Complex.star_def,Complex.conj_I,neg_neg]
   convert real_linear_wirtinger_swap A (-1/(c^2*(v:ℂ)^2)) using 1 ;
-    congr 2 ; ring_nf
+    ring
 
 def horizontalWirtingerZ (f : ℂ→ℂ) (z : ℂ) : ℂ :=
   (1/2:ℂ)*(deriv (fun t : ℝ=>f (z+(t:ℂ))) 0-
@@ -215,7 +200,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 section
 
@@ -229,8 +214,6 @@ theorem cusp_mellin_reflection (g : ℝ→ℂ) (A s : ℂ) (Q : ℝ) (hQ : 0<Q) 
   have hm := mellin_comp_mul_left (fun v : ℝ=>g v⁻¹) (2*s+(-2:ℂ)) hQ
   rw [mellin_comp_inv] at hm
   rw [hm]
-  simp only [smul_eq_mul]
-  rw [show -(2*s+(-2:ℂ))=2-2*s by ring]
   ring
 
 theorem cusp_mellin_reflection_of_identity (f g : ℝ→ℂ) (A s : ℂ)
@@ -241,13 +224,12 @@ theorem cusp_mellin_reflection_of_identity (f g : ℝ→ℂ) (A s : ℂ)
   unfold mellin
   apply integral_congr_ae
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-  rw [hfg v hv]
+  simp_all
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -290,7 +272,7 @@ lemma amplitude_hasDerivAt (v : ℝ) (hv : 0<v) (h : ActualEisensteinCubic.O) :
   have hvd := (Complex.ofRealCLM.hasDerivAt (x:=v)).mul hk
   have hfull := hvd.const_mul (coeff.value h)
   simp only [amplitude,amplitudeDeriv,ite_eq_right hh]
-  convert! hfull using 1 <;> simp [Function.comp_def,Pi.mul_apply,Complex.ofRealCLM_apply,Complex.real_smul,mul_assoc]
+  convert! hfull using 1 <;> simp [mul_assoc]
 
 def termFDeriv (h : ActualEisensteinCubic.O) (p : ℝ × ℂ) : (ℝ × ℂ) →L[ℝ] ℂ :=
   if h=0 then 0 else
@@ -335,8 +317,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology
 
 section
 local notation "O" => ActualEisensteinCubic.O
@@ -355,7 +336,7 @@ lemma weighted_bessel_bounds (a : ℝ) (ha : 0<a) :
   have hdelta : 0<delta := by dsimp [delta];positivity
   have hKu := (cubicBesselUpperAway_pos delta hdelta).le
   have hKd := cubicBesselDerivativeUpper_nonneg delta hdelta
-  obtain ⟨C,hC,hcoeff⟩ := coeff.growth (Real.pi*a) (mul_pos Real.pi_pos ha)
+  obtain ⟨C,hC,hcoeff⟩ := coeff.growth (Real.pi*a) (by positivity)
   refine ⟨C*cubicBesselUpperAway delta,C*cubicBesselDerivativeUpper delta,
     mul_nonneg hC hKu,mul_nonneg hC hKd,?_⟩
   intro h hh v hv
@@ -370,7 +351,7 @@ lemma weighted_bessel_bounds (a : ℝ) (ha : 0<a) :
     calc
       _ ≤ (C*Real.exp ((Real.pi*a)*‖cuspFrequency h‖))*
           (D*Real.exp (-(4*Real.pi*‖cuspFrequency h‖*v)/2)) :=
-        mul_le_mul (hcoeff h hh) hbound hy (by positivity)
+        mul_le_mul (by grind) hbound hy (by positivity)
       _ = (C*D)*Real.exp ((Real.pi*a)*‖cuspFrequency h‖-
           (4*Real.pi*‖cuspFrequency h‖*v)/2) := by
         rw [show (Real.pi*a)*‖cuspFrequency h‖-(4*Real.pi*‖cuspFrequency h‖*v)/2=
@@ -378,9 +359,9 @@ lemma weighted_bessel_bounds (a : ℝ) (ha : 0<a) :
           Real.exp_add]
         ring
       _ ≤ _ := by
-        apply mul_le_mul_of_nonneg_left _ (mul_nonneg hC hD)
+        apply mul_le_mul_of_nonneg_left _ (by positivity)
         apply Real.exp_le_exp.mpr
-        nlinarith [mul_le_mul_of_nonneg_left hv (mul_pos Real.pi_pos hr).le]
+        nlinarith
   exact ⟨hcombine _ _ (norm_nonneg _) hKu
     (schlafliBesselK_cubic_upper_away delta _ hdelta hx),
     hcombine _ _ (norm_nonneg _) hKd
@@ -399,7 +380,7 @@ lemma amplitudeDeriv_norm_le (v : ℝ) (hv : 0<v) (h : ActualEisensteinCubic.O) 
       mul_le_mul_of_nonneg_left (norm_add_le _ _) (norm_nonneg _)
     _ = _ := by
       rw [norm_mul,norm_mul,Complex.norm_of_nonneg hv.le,
-        Complex.norm_of_nonneg (by positivity : 0≤4*Real.pi*‖cuspFrequency h‖)]
+        Complex.norm_of_nonneg (by positivity)]
       ring
 
 lemma termFDeriv_norm_le (h : ActualEisensteinCubic.O) (p : ℝ × ℂ) :
@@ -461,13 +442,12 @@ lemma termFDeriv_slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
         (b*(4*Real.pi*‖cuspFrequency h‖))*(B*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖)))+
         (T*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖))*(4*Real.pi*‖cuspFrequency h‖) := by
       gcongr
-      exact hterm h p hp
+      simp_all
     _ = (A+D*‖cuspFrequency h‖)*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖) := by
-      dsimp [D]
-      ring
+      linarith
     _ ≤ _ := by
       rw [←mul_assoc]
-      apply mul_le_mul_of_nonneg_right _ (Real.exp_pos _).le
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
       nlinarith [mul_nonneg hA (norm_nonneg (cuspFrequency h))]
 
 end SubexponentialBesselCoefficients
@@ -493,14 +473,14 @@ lemma series_hasFDerivAt (p : ℝ × ℂ) (hp : 0<p.1) :
   have hpb : p.1<b := by dsimp [b];linarith
   obtain ⟨C,hC,hbound⟩ := coeff.termFDeriv_slab_bound a b ha hab
   have hsum := (summable_one_add_norm_exp_neg_cuspFrequency (Real.pi*a)
-    (mul_pos Real.pi_pos ha)).mul_left C
+    (by positivity)).mul_left C
   let slab : Set (ℝ × ℂ) := Set.Ioo a b ×ˢ Set.univ
   have hslab : IsOpen slab := isOpen_Ioo.prod isOpen_univ
   have hconn : IsPreconnected slab := isPreconnected_Ioo.prod isPreconnected_univ
-  have hpSlab : p∈slab := ⟨⟨hap,hpb⟩,Set.mem_univ _⟩
+  have hpSlab : p∈slab := by grind
   exact hasFDerivAt_tsum_of_isPreconnected hsum hslab hconn
     (fun h q hq => coeff.term_hasFDerivAt h q (ha.trans hq.1.1))
-    (fun h q hq => hbound h q ⟨hq.1.1.le,hq.1.2.le⟩)
+    (by grind)
     hpSlab (coeff.summable p hp) hpSlab
 
 lemma series_differentiableAt (p : ℝ × ℂ) (hp : 0<p.1) :
@@ -516,7 +496,7 @@ lemma fullFunction_cusp_differentiableAt (constant : ℂ) (p : ℝ × ℂ) (hp :
     DifferentiableAt ℝ (fun q : ℝ × ℂ => coeff.fullFunction constant (cuspCoordinateLift q)) p := by
   have hc := ((hasDerivAt_ofReal_cpow_const hp.ne' (r:=(2/3:ℂ))
     (by norm_num)).const_mul constant).differentiableAt.comp p
-      (differentiableAt_fst (𝕜:=ℝ) (p:=p))
+      (by simp)
   have ht : DifferentiableAt ℝ (fun q : ℝ × ℂ =>
       constant*(q.1:ℂ)^(2/3:ℂ)+coeff.series q) p := by
     convert! hc.add (coeff.series_differentiableAt p hp) using 1
@@ -528,7 +508,7 @@ end SubexponentialBesselCoefficients
 end
 
 open Filter MeasureTheory Asymptotics
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 def truncatedCuspProfile (c : ℝ) (f : ℝ→ℂ) (x : ℝ) : ℂ :=
   if c<x then f x else 0
@@ -549,14 +529,14 @@ lemma truncatedCuspProfile_locallyIntegrable (c : ℝ) (hc : 0<c) (f : ℝ→ℂ
     LocallyIntegrable (truncatedCuspProfile c f) volume := by
   have hcont : Continuous (fun x : ℝ=>f (max (c/2) x)) :=
     hf.comp_continuous (continuous_const.max continuous_id)
-      (fun x=>lt_of_lt_of_le (by linarith : 0<c/2) (le_max_left _ _))
+      (by grind)
   have he : truncatedCuspProfile c f=
       (Set.Ioi c).indicator (fun x : ℝ=>f (max (c/2) x)) := by
     funext x
     by_cases hx : c<x
-    · have hm : max (c/2) x=x := max_eq_right (by linarith)
-      simp [truncatedCuspProfile,Set.indicator,hx,hm]
-    · simp [truncatedCuspProfile,Set.indicator,hx]
+    · have hm : max (c/2) x=x := by grind
+      simp [truncatedCuspProfile, hx, hm]
+    · simp [truncatedCuspProfile, hx]
   rw [he]
   exact hcont.locallyIntegrable.indicator measurableSet_Ioi
 
@@ -566,7 +546,7 @@ theorem truncatedCuspProfile_mellin_entire (c decay : ℝ) (hc : 0<c) (hdecay : 
     (∀s : ℂ,MellinConvergent (truncatedCuspProfile c f) s) ∧
       Differentiable ℂ (mellin (truncatedCuspProfile c f)) := by
   have hlocal := (truncatedCuspProfile_locallyIntegrable c hc f hf).locallyIntegrableOn (Set.Ioi 0)
-  have htop : truncatedCuspProfile c f =O[atTop] (fun x : ℝ=>Real.exp (-decay*x)) :=
+  have htop :=
     hbound.congr' (truncatedCuspProfile_eventually_top c f).symm Filter.EventuallyEq.rfl
   have hzero (b : ℝ) : truncatedCuspProfile c f =O[𝓝[>] 0] (fun x : ℝ=>x^(-b)) :=
     (Asymptotics.isBigO_zero (fun x : ℝ=>x^(-b)) (𝓝[>] 0)).congr'

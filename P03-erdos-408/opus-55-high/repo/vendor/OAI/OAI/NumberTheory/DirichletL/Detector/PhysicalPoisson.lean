@@ -7,32 +7,30 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCoefficient
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition ConcreteTraceCRT
 open EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
-lemma sexticGauss_frequency_congr (s : O) (hs : s≠0) (h k : O)
-    (he : h-k ∈ (Ideal.span {s}:Ideal O)) : sexticGauss s hs h = sexticGauss s hs k := by
+lemma sexticGauss_frequency_congr (s : ActualEisensteinCubic.O) (hs : s≠0) (h k : ActualEisensteinCubic.O)
+    (he : h-k ∈ (Ideal.span {s}:Ideal ActualEisensteinCubic.O)) : sexticGauss s hs h = sexticGauss s hs k := by
   have hmk := Ideal.Quotient.eq.mpr he
   simp only [sexticGauss, hmk]
 
-def physicalQuotient (C : CalibrationData) (A s : O) (hs : s≠0)
-    (m : O ⧸ Ideal.span {(C.generator*A)*s}) : ℂ :=
+def physicalQuotient (C : CalibrationData) (A s : ActualEisensteinCubic.O) (hs : s≠0)
+    (m : ActualEisensteinCubic.O ⧸ Ideal.span {(C.generator*A)*s}) : ℂ :=
   calibratedNumerator C A (representative ((C.generator*A)*s) m) *
     sexticGauss s hs (-representative ((C.generator*A)*s) m)
 
-lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
+lemma physicalQuotient_mk (C : CalibrationData) (A s : ActualEisensteinCubic.O) (hs : s≠0) (m : ActualEisensteinCubic.O) :
     physicalQuotient C A s hs (Ideal.Quotient.mk _ m) =
       calibratedNumerator C A m * sexticGauss s hs (-m) := by
   have hd : (C.generator*A)*s ∣ representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m :=
     Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (representative_spec _ _))
-  have hA : representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m ∈
-      (Ideal.span {C.generator*A}:Ideal O) :=
+  have hA :=
     Ideal.mem_span_singleton.mpr ((dvd_mul_right (C.generator*A) s).trans hd)
   have hs' : -representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-(-m) ∈
-      (Ideal.span {s}:Ideal O) := by
+      (Ideal.span {s}:Ideal ActualEisensteinCubic.O) := by
     apply Ideal.mem_span_singleton.mpr
     rw [show -representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-(-m) =
       -(representative ((C.generator*A)*s) (Ideal.Quotient.mk _ m)-m) by ring]
@@ -40,33 +38,33 @@ lemma physicalQuotient_mk (C : CalibrationData) (A s : O) (hs : s≠0) (m : O) :
   unfold physicalQuotient
   rw [calibratedNumerator_congr C A _ m hA, sexticGauss_frequency_congr s hs _ (-m) hs']
 
-theorem physical_row_poisson (C : CalibrationData) (A s : O) (hA : A≠0) (hs : s≠0)
+theorem physical_row_poisson (C : CalibrationData) (A s : ActualEisensteinCubic.O) (hA : A≠0) (hs : s≠0)
     (W : ℝ → ℂ) (hWc : HasCompactSupport W) (hWs : ContDiff ℝ ∞ W)
     (K : ℝ) (hK : 0<K) :
-    (∑' m : O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
+    (∑' m : ActualEisensteinCubic.O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
       ((K / elementNorm (C.generator*A) : ℝ):ℂ) *
-        ∑' H : O, actualCongruenceCoefficient C A s hA H *
+        ∑' H : ActualEisensteinCubic.O, actualCongruenceCoefficient C A s hA H *
           paperRadialFourier W (K*elementNorm H/elementNorm ((C.generator*A)*s)) := by
   let c := (C.generator*A)*s
   have hc : c≠0 := mul_ne_zero (mul_ne_zero C.generator_ne_zero hA) hs
   let := finite_quotient_span hc
-  let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
+  let : Fintype (ActualEisensteinCubic.O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   have ht := actual_compact_radial_paper_poisson_trace W hWc hWs K hK c hc
     (physicalQuotient C A s hs)
-  change (∑' m : O, physicalQuotient C A s hs (Ideal.Quotient.mk _ m) *
+  change (∑' m : ActualEisensteinCubic.O, physicalQuotient C A s hs (Ideal.Quotient.mk _ m) *
     W (‖eisEmbedding m‖^2/K)) =
-    (K/‖eisEmbedding c‖^2:ℝ) • ∑' H : O,
-      (∑ r : O ⧸ Ideal.span {c}, physicalQuotient C A s hs r *
+    (K/‖eisEmbedding c‖^2:ℝ) • ∑' H : ActualEisensteinCubic.O,
+      (∑ r : ActualEisensteinCubic.O ⧸ Ideal.span {c}, physicalQuotient C A s hs r *
         quotientTrace c hc (Ideal.Quotient.mk _ H*r)) *
         paperRadialFourier W (K*‖eisEmbedding H‖^2/‖eisEmbedding c‖^2) at ht
-  have hf (H : O) : (∑ r : O ⧸ Ideal.span {c}, physicalQuotient C A s hs r *
+  have hf (H : ActualEisensteinCubic.O) : (∑ r : ActualEisensteinCubic.O ⧸ Ideal.span {c}, physicalQuotient C A s hs r *
       quotientTrace c hc (Ideal.Quotient.mk _ H*r)) =
         (Ideal.absNorm (Ideal.span {s}):ℂ) * actualCongruenceCoefficient C A s hA H := by
     rw [← actualPhysicalFourier_eq C A s hA hs H]
     exact (tsum_fintype _).symm
   simp_rw [physicalQuotient_mk, eisEmbedding_norm_sq_eq_absNorm_span, hf] at ht
-  change (∑' m : O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
-    (K/elementNorm c:ℝ) • ∑' H : O,
+  change (∑' m : ActualEisensteinCubic.O, calibratedNumerator C A m * sexticGauss s hs (-m) * W (elementNorm m/K)) =
+    (K/elementNorm c:ℝ) • ∑' H : ActualEisensteinCubic.O,
       ((Ideal.absNorm (Ideal.span {s}):ℂ) * actualCongruenceCoefficient C A s hA H) *
         paperRadialFourier W (K*elementNorm H/elementNorm c) at ht
   rw [ht]

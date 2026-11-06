@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectionWeightedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentRetainedWeightedSource
 open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion
 open CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy
@@ -17,7 +17,6 @@ open CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormal
 open CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation
 open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
 abbrev sourcePrimes (χ ψ : Character) := redundantSet χ.modulus ψ.modulus
 
@@ -28,13 +27,13 @@ def dualScale (χ ψ : Character) (X : ℝ)
 lemma dualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
     (D : (sourcePrimes χ ψ).powerset) (H : SmoothIdeal (sourcePrimes χ ψ)) :
     0<dualScale χ ψ X D H := by
-  have hD : (∏P∈D.val,P : Ideal O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
-    (redundantSet_prime χ.modulus ψ.modulus P ((Finset.mem_powerset.mp D.property) hP)).ne_zero)
+  have hD : (∏P∈D.val,P : Ideal HeckeFamily.O)≠0 := Finset.prod_ne_zero_iff.mpr (fun P hP=>
+    (redundantSet_prime χ.modulus ψ.modulus P (by grind)).ne_zero)
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr ψ.modulus_ne_bot)
   have hd : 0<(Ideal.absNorm (∏P∈D.val,P):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hD)
-  exact div_pos (mul_pos hQ hd) (mul_pos hX (CenteredMomentReflectionDeletion.norm_pos H.val))
+  exact div_pos (by positivity) (mul_pos hX (CenteredMomentReflectionDeletion.norm_pos H.val))
 
 def retainedColumn (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X)
     (B n : ℕ) (P : ℂ) (a : Index (sourcePrimes χ ψ)) : ℂ :=
@@ -149,7 +148,7 @@ theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
         ‖retainedOriginal (χ i) (ψ i) (W i) (X i) (R i) (t i)*P i‖=(1+‖t i‖)^n*‖z i‖ := by
       rw [hid i,norm_mul,Complex.norm_real,Real.norm_of_nonneg (by positivity)]
     have hp (i : ι) : (1+‖t i‖)^n≤(1+T)^n :=
-      pow_le_pow_left₀ (by positivity) (by linarith [ht i]) n
+      pow_le_pow_left₀ (by positivity) (by grind) n
     calc
       (∑i,‖retainedOriginal (χ i) (ψ i) (W i) (X i) (R i) (t i)*P i‖^2)
           = ∑i,((1+‖t i‖)^n*‖z i‖)^2 := by simp_rw [hn]
@@ -160,7 +159,7 @@ theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
           (mul_le_mul_of_nonneg_right (hp i) (norm_nonneg _)) 2
       _ = ((1+T)^n)^2*∑i,‖z i‖^2 := by simp only [mul_pow,Finset.mul_sum]
       _ ≤ ((1+T)^n)^2*(C*Rcap^ε*E) := mul_le_mul_of_nonneg_left he.2 (sq_nonneg _)
-      _ = C*Rcap^ε*(1+T)^(2*n)*E := by rw [←pow_mul,Nat.mul_comm n 2];ring
+      _ = C*Rcap^ε*(1+T)^(2*n)*E := by ring
 
 end SevenEighths.CenteredMomentRetainedWeightedSource
 

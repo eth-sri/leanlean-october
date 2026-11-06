@@ -8,32 +8,30 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowMoments
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyReferenceLowChild CenteredMomentEnergyReferenceLowControl
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem reflected_child_uniform_from_low
     (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (degree:ℕ)(S:Finset (ℕ×ℕ)):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃D:ℝ,0<D ∧
     ∀(Wslot:ℝ→ℂ)(bslot bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(C:ℝ)(_hC:0≤C)
+    (η₀:Character)(Q:Ideal HeckeFamily.O)(C:ℝ)(_hC:0≤C)
     (_hlow:PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
       Mcap ε κ Z η₀ Q degree S C)
     (_hB:0≤Bmask)
@@ -70,8 +68,7 @@ theorem reflected_child_uniform_from_low
     positivity)
   have hz:0≤Z^(s.width+ε):=(Real.rpow_pos_of_pos (zero_lt_one.trans_le s.base_ge_one) _).le
   have hmul:=mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hp) hz
-  apply hh.trans
-  convert hmul using 1 <;> ring
+  linarith
 
 end SevenEighths.CenteredMomentEnergyReferenceLowMoments
 

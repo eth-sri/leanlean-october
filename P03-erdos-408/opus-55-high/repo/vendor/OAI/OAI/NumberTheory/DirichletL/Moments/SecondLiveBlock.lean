@@ -8,26 +8,25 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRetainedWidth
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondLiveBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
 open CenteredMomentSecondPhysicalBlock CenteredMomentSecondSectorRetained
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization
 open CenteredMomentHeckeColumnWindow CenteredMomentSecondLocalization CenteredMomentActiveSource
-local notation "O" => HeckeFamily.O
 
-def liveLabels (η:Character) (S:Finset (Ideal O)) (β:Ideal O→ℂ):Finset (ActiveLabel S β):=
+def liveLabels (η:Character) (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ):Finset (ActiveLabel S β):=
   Finset.univ.filter (fun p=>idealCoeff η p.val.1≠0 ∧ idealCoeff η p.val.2≠0)
 
-lemma mem_liveLabels (η:Character) (S:Finset (Ideal O)) (β:Ideal O→ℂ) (p:ActiveLabel S β):
+lemma mem_liveLabels (η:Character) (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ) (p:ActiveLabel S β):
     p∈liveLabels η S β ↔ idealCoeff η p.val.1≠0 ∧ idealCoeff η p.val.2≠0:=by
   simp only [liveLabels,Finset.mem_filter,Finset.mem_univ,true_and]
 
 lemma common_height_zero_of_not_live (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (p:ActiveLabel S β)
+    (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ) (p:ActiveLabel S β)
     (hp:p∉liveLabels η S β):heightCoeff η t p.val.1*star (heightCoeff η t p.val.2)=0:=by
   rw [mem_liveLabels] at hp
   push Not at hp
@@ -35,27 +34,27 @@ lemma common_height_zero_of_not_live (η:Character) (t:ℝ)
   · simp only [heightCoeff,hc,zero_mul]
   · simp only [heightCoeff,hp hc,zero_mul,star_zero,mul_zero]
 
-def liveRows (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O):Finset O:=
+def liveRows (C D:Ideal HeckeFamily.O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset HeckeFamily.O):Finset HeckeFamily.O:=
   rows.filter (fun z=>retainedWeight R
     (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))≠0)
 
-lemma liveRows_weight (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O)
-    (z:O) (hz:z∈liveRows C D U R rows):
+lemma liveRows_weight (C D:Ideal HeckeFamily.O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset HeckeFamily.O)
+    (z:HeckeFamily.O) (hz:z∈liveRows C D U R rows):
     retainedWeight R (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))≠0:=
   (Finset.mem_filter.mp hz).2
 
-lemma liveRows_geometry (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O)
-    (z:O) (hz:z∈liveRows C D U R rows):
+lemma liveRows_geometry (C D:Ideal HeckeFamily.O) (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset HeckeFamily.O)
+    (z:HeckeFamily.O) (hz:z∈liveRows C D U R rows):
     0<R ∧ z≠0 ∧ 1≤normValue z ∧ normValue z≤
       4*R/(normValue (commonFrequencyGenerator C D)*normValue (nonunitFrequencyGenerator C D U)):=by
   obtain ⟨hr,hg,hv,hz0,h1,hbound,hmax⟩:=CenteredMomentSecondRetainedWidth.retained_geometry R
     (commonFrequencyGenerator C D) (nonunitFrequencyGenerator C D U) z
     (liveRows_weight C D U R rows z hz)
-  exact ⟨hr,hz0,h1,hbound⟩
+  simp_all
 
-lemma physicalBlock_live_rows (η:Character) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ)
-    (C D:Ideal O) (hC:Supported C) (hD:Supported D) (U:Finset (CommonIndex C D))
-    (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ):
+lemma physicalBlock_live_rows (η:Character) (t:ℝ) (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ)
+    (C D:Ideal HeckeFamily.O) (hC:Supported C) (hD:Supported D) (U:Finset (CommonIndex C D))
+    (R:ℝ) (rows:Finset HeckeFamily.O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ):
     physicalBlock η t S β C D hC hD U R rows W K n=
       physicalBlock η t S β C D hC hD U R (liveRows C D U R rows) W K n:=by
   unfold physicalBlock liveRows
@@ -64,12 +63,11 @@ lemma physicalBlock_live_rows (η:Character) (t:ℝ) (S:Finset (Ideal O)) (β:Id
   intro z hz
   by_cases hr:retainedWeight R
       (normValue ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*z))=0
-  · simp only [hr,ne_eq,not_true_eq_false,physicalKernel,Complex.ofReal_zero,
-      mul_zero,zero_mul,Finset.sum_const_zero,ite_self]
-  · simp only [hr,ne_eq,not_false_eq_true,ite_true]
+  · simp only [hr, physicalKernel, Complex.ofReal_zero, mul_zero, zero_mul, Finset.sum_const_zero, ite_self]
+  grind
 
 theorem original_live_blocks (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (W:𝓢(ℝ,ℂ))
+    (S:Finset (Ideal HeckeFamily.O)) (β:Ideal HeckeFamily.O→ℂ) (W:𝓢(ℝ,ℂ))
     (K Tsec Z ξ H:ℝ) (hK:0<K)
     (hH:∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H):
     secondRetainedEnergy η t S β W K Tsec Z ξ=

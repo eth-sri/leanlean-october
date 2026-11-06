@@ -9,13 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators SchwartzMap
+open scoped SchwartzMap
 
 namespace SevenEighths.TraceCharacter
 
 abbrev O := ActualEisensteinCubic.O
 
-open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT
+open ActualEisensteinCubic ConcreteTraceCRT
 open EisensteinSchwartzPoisson FiniteFourier
 
 def traceCharacter (c : O) (hc : c ≠ 0) : AddChar (O ⧸ Ideal.span {c}) ℂ :=
@@ -90,9 +90,7 @@ theorem primitive_radial_paper_poisson (W : 𝓢(ℝ, ℂ)) (scale : ℝ)
   rw [hp, ← tsum_mul_left]
   simp only [Complex.real_smul, Complex.ofReal_div, Complex.ofReal_natCast]
   rw [← tsum_mul_left]
-  apply tsum_congr
-  intro h
-  ring
+  grind
 
 theorem primitive_radial_paper_poisson_normalized (W : 𝓢(ℝ, ℂ)) (scale : ℝ)
     (hscale : 0 < scale) (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
@@ -110,9 +108,7 @@ theorem primitive_radial_paper_poisson_normalized (W : 𝓢(ℝ, ℂ)) (scale : 
   rw [hp]
   congr 1
   rw [normalizedGauss]
-  have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c)))
-  field_simp
+  ring
 
 end SevenEighths.TraceCharacter
 

@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Energy.SourceInputReindexGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysicalReindex
 open HeckeFamily CenteredMomentCommonRadialData CenteredMomentSourceInputReindex
 open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSourceReduction
 open CenteredMomentFirstRetainedNorm CenteredMomentAmplificationChildInput
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
 variable {α β:Type*}[Fintype α][Fintype β]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
 local instance : DecidableEq (β⊕Fin 2):=Classical.decEq _
 
-lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal O)(m A:O)
+lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal HeckeFamily.O)(m A:HeckeFamily.O)
     (Ψ:𝓢(ℝ,ℂ))(K Z ξ:ℝ):
     physicalMass (reindex e s) R seed m A Ψ K Z ξ=physicalMass s R seed m A Ψ K Z ξ:=by
   have hc:coefficient (reindex e s) R seed=coefficient s R seed:=by
@@ -36,7 +35,7 @@ lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal O)(m A:O)
     exact tupleMap_product e v
   have hv:CenteredMomentExceptionalAmplitudePair.volume (reindex e s).toData=
       CenteredMomentExceptionalAmplitudePair.volume s.toData:=volume_map e s
-  have hs (T:Finset (Ideal O))(C D:Ideal O)
+  have hs (T:Finset (Ideal HeckeFamily.O))(C D:Ideal HeckeFamily.O)
       (hC:CanonicalQuadraticSieve.Supported C)(hD:CanonicalQuadraticSieve.Supported D)
       (t X:ℝ):
       sectorMass (reindex e s) R seed m A t T C D hC hD Ψ K X Z ξ=
@@ -44,7 +43,7 @@ lemma physical_mass_map (e:α≃β)(s:Input α)(R seed:Ideal O)(m A:O)
     unfold sectorMass
     rw [sourceRadius_map e s]
     simp only [hc, show (reindex e s).η=s.η from rfl]
-  let sumAt (T:Finset (Ideal O))(t X:ℝ):ℝ:=
+  let sumAt (T:Finset (Ideal HeckeFamily.O))(t X:ℝ):ℝ:=
     ∑p:CenteredMomentFirstSectors.commonLabels
         (CenteredMomentSourceRow.supportedColumns T) (CenteredMomentSourceRow.supportedColumns T),
       sectorMass s R seed m A t T p.val.1 p.val.2
@@ -71,7 +70,7 @@ def emptyBalanced (α:Type*)[Fintype α]:Input (∅:Finset α):=
   reindex (emptyEquiv α)
     (CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂)
 
-lemma empty_balanced_mass (R seed:Ideal O)(m A:O)(Ψ:𝓢(ℝ,ℂ))(K Z₀ ξ:ℝ):
+lemma empty_balanced_mass (R seed:Ideal HeckeFamily.O)(m A:HeckeFamily.O)(Ψ:𝓢(ℝ,ℂ))(K Z₀ ξ:ℝ):
     physicalMass (emptyBalanced s p ha t X₁ X₂ hX₁ hX₂ α) R seed m A Ψ K Z₀ ξ=
       physicalMass (CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂)
         R seed m A Ψ K Z₀ ξ:=

@@ -8,7 +8,6 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 
@@ -46,7 +45,7 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
   have hZtwo : 2 ≤ Z := by linarith [Real.exp_pos (R / eta)]
   have hZpos : 0 < Z := by linarith
   have hZexp : Real.exp (R / eta) ≤ Z := by linarith
-  have hlog := Real.log_le_log (Real.exp_pos (R / eta)) hZexp
+  have hlog := Real.log_le_log (by positivity) hZexp
   rw [Real.log_exp] at hlog
   have hRlog : R ≤ Real.log Z * eta := (div_le_iff₀ heta).mp hlog
   have hpow : Real.exp R ≤ Z ^ eta := by
@@ -61,11 +60,9 @@ theorem eventually_canonical_reference_gates (hi Alog window eta : ℝ)
       linarith [le_abs_self hi, abs_nonneg Alog, abs_nonneg window]
     exact hhi.trans ((by linarith [Real.add_one_le_exp R] : R ≤ Real.exp R).trans hpow)
   · apply (Real.exp_le_exp.mpr ?_).trans hpow
-    dsimp [R]
-    linarith [le_abs_self Alog, abs_nonneg hi, abs_nonneg window]
+    grind
   · apply (Real.exp_le_exp.mpr ?_).trans hpow
-    dsimp [R]
-    linarith [le_abs_self window, abs_nonneg hi, abs_nonneg Alog]
+    grind
 
 end SevenEighths.InverseMoment
 

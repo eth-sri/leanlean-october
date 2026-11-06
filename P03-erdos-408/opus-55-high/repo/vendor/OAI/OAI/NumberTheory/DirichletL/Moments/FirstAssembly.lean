@@ -7,19 +7,18 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstColumns
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAssembly
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
+open CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly
 open CenteredMomentGaussEnergy RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 
-def originalPhase (e r : O) (ρ : O → ℂ) (a b : O) : ℂ :=
+def originalPhase (e r : ActualEisensteinCubic.O) (ρ : ActualEisensteinCubic.O → ℂ) (a b : ActualEisensteinCubic.O) : ℂ :=
   (idealRowHom e (Ideal.span {a})*star (idealRowHom e (Ideal.span {b}))*ρ e)*
     (idealRowHom (b*r) (Ideal.span {a})*star (idealRowHom (a*r) (Ideal.span {b}))*ρ (a*b))
 
-theorem originalPhase_eq (e r a b : O) (ρ : O → ℂ)
+theorem originalPhase_eq (e r a b : ActualEisensteinCubic.O) (ρ : ActualEisensteinCubic.O → ℂ)
     (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y)
     (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (hpa : ConcretePrimeRowBridge.goodLambda^2∣a-1)
@@ -27,10 +26,10 @@ theorem originalPhase_eq (e r a b : O) (ρ : O → ℂ)
     originalPhase e r ρ a b=firstExtension e r ρ a b :=
   first_phase_columns e r a b ρ hρ ha hb hpa hpb hab
 
-theorem first_divisor_pair {α β : Type*} (L : Ideal O)
-    (a : α → O) (b : β → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+theorem first_divisor_pair {α β : Type*} (L : Ideal ActualEisensteinCubic.O)
+    (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (hb : ∀ j,Supported (Ideal.span {b j}))
-    (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ) (h : O)
+    (c : α → ℂ) (d : β → ℂ) (e r : ActualEisensteinCubic.O) (ρ : ActualEisensteinCubic.O → ℂ) (h : ActualEisensteinCubic.O)
     (i : α) (j : β) (K : ℂ) :
     (if L∣Ideal.span {a i} ∧ L∣Ideal.span {b j} then
       firstExtension e r ρ (a i) (b j)*(c i*star (d j))*
@@ -45,22 +44,17 @@ theorem first_divisor_pair {α β : Type*} (L : Ideal O)
     · simp only [hi,hj,and_self,ite_true,divisorCoefficient,star_mul,rayCharacter_inverse_star]
       rw [firstExtension_separated e r (a i) (b j) ρ (ha i) (hb j)]
       simp only [Finset.mul_sum,Finset.sum_mul,star_mul,rayCharacter_inverse_star]
-      apply Finset.sum_congr rfl
-      intro χ hχ
-      apply Finset.sum_congr rfl
-      intro ξ hξ
-      ring
-    · simp only [hi,hj,and_false,ite_false,divisorCoefficient,ite_true,zero_mul,star_zero,
-        mul_zero,Finset.sum_const_zero]
+      grind
+    · simp only [hj, and_false, ite_false, divisorCoefficient, zero_mul, star_zero, mul_zero, Finset.sum_const_zero]
   · simp only [hi,false_and,ite_false,divisorCoefficient,zero_mul,mul_zero,Finset.sum_const_zero]
 
 theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
-    (a : α → O) (b : β → O) (ha : ∀ i,Supported (Ideal.span {a i}))
+    (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (hb : ∀ j,Supported (Ideal.span {b j}))
     (hpa : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣a i-1)
     (hpb : ∀ j,ConcretePrimeRowBridge.goodLambda^2∣b j-1)
-    (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ)
-    (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y) (h : O) (K : α → β → ℂ) :
+    (c : α → ℂ) (d : β → ℂ) (e r : ActualEisensteinCubic.O) (ρ : ActualEisensteinCubic.O → ℂ)
+    (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y) (h : ActualEisensteinCubic.O) (K : α → β → ℂ) :
     (∑ i∈S,∑ j∈T,(if IsCoprime (a i) (b j) then originalPhase e r ρ (a i) (b j) else 0)*
       (c i*star (d j))*(gaussRow (a i) (ha i) h*star (gaussRow (b j) (hb j) (-h)))*K i j) =
     ∑ L∈divisorPool T (fun j => Ideal.span {b j}),
@@ -79,7 +73,7 @@ theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
     rw [Ideal.isCoprime_span_singleton_iff]
     by_cases hc : IsCoprime (a i) (b j)
     · simp only [hc,ite_true,originalPhase_eq e r (a i) (b j) ρ hρ (ha i) (hb j) (hpa i) (hpb j) hc]
-    · simp only [hc,ite_false,zero_mul]
+    · simp_all
   simp_rw [ht]
   rw [finite_pair_mobius S T (fun i => Ideal.span {a i}) (fun j => Ideal.span {b j})
     (fun j _ => (hb j).1)]

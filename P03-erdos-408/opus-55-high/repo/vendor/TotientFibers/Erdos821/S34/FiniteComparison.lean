@@ -5,7 +5,7 @@ public import Erdos821.S34.EventPairing
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S34Core
@@ -27,8 +27,8 @@ theorem finite_comparison_of_pointwise {α β : Type} [Fintype α] [Fintype β]
   have hR (x : α) (y : β) : ‖R x y‖ ≤ E := by
     dsimp [R]
     split_ifs with he
-    · simpa only [norm_zero] using hE
-    · exact hpoint x y (fun hx => he (Or.inl hx)) (fun hy => he (Or.inr hy))
+    · simp_all
+    · simp_all
   have hbad := independent_event_pairing w v hw hv hwprob hvprob EA EB f g raw hraw
   have hgood := independent_pairing_bound w v hw hv hwprob hvprob f g R E hE hR
   change ‖∑ x, ∑ y, (w x : ℂ) * (v y : ℂ) * star (f y) * g x * R x y‖ ≤
@@ -44,11 +44,11 @@ theorem finite_comparison_of_pointwise {α β : Type} [Fintype α] [Fintype β]
     apply Finset.sum_congr rfl
     intro y _
     by_cases he : EA x ∨ EB y
-    · simp [R, he, hzero x y he]
-    · simp [R, he]
+    · grind
+    · grind
   rw [heq]
   have hn := (norm_add_le _ _).trans (add_le_add hbad hgood)
-  convert hn using 1; ring
+  linarith
 
 end
 end Erdos821.S34Core

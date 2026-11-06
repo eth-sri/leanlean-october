@@ -10,14 +10,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open InverseInitialRawDictionary InverseInitialDetectorSource InverseInitialPhysicalSlots
-open DetectorDictionaryInverseMarkedPadding
 local notation "O"=>HeckeFamily.O
 
-variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
+variable {M:Ideal HeckeFamily.O}[NeZero M]{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label Slot:Type*}
   {U a ε tstar T allowance:ℝ}{i:ℕ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference

@@ -9,15 +9,14 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
 
-lemma Xi_apply (C : CalibrationData) (a : O) :
+lemma Xi_apply (C : CalibrationData) (a : ActualEisensteinCubic.O) :
     C.Xi a = C.residueMonoid a * idealRowHom C.generator (Ideal.span {a}) := rfl
 
-theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (A s : O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
-    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : O)
+theorem calibration_coefficient_cancel (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ P∈S, P.IsMaximal)
+    (A s : ActualEisensteinCubic.O) (hA : Supported (Ideal.span {A})) (hs : Supported (Ideal.span {s}))
+    (hcop : IsCoprime (calibrationForSet S hS).generator (A*s)) (H : ActualEisensteinCubic.O)
     (hH : IsCoprime (calibrationForSet S hS).generator H) :
     let C := calibrationForSet S hS
     actualCongruenceCoefficient C A s (supportedElement_ne_zero A hA) H *
@@ -52,14 +51,12 @@ theorem calibration_coefficient_cancel (S : Finset (Ideal O)) (hS : ∀ P∈S, P
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr C.generator_ne_zero))
   have hroot : (Real.sqrt (elementNorm C.generator):ℂ)≠0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr hq).ne'
+    exact_mod_cast (by positivity)
   have he := actualCongruenceCoefficient_calibration_factor S hS A s
     (supportedElement_ne_zero A hA) hs hcop H
   dsimp only at he
   rw [he, Xi_apply, map_mul]
-  change _ = bareCongruenceCoefficient A s (supportedElement_ne_zero A hA) H
-  dsimp only [C] at hηA hκA hηs hκs hηHstar hτ hroot
-  field_simp
+  grind
 
 end SevenEighths.ProbePhysical
 end

@@ -9,9 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve CompletedGauss
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev DivisibleSupported (D : SupportedIdeal) := {I : SupportedIdeal // D.val∣I.val}
 
@@ -54,7 +53,7 @@ theorem supported_divisor_pair_tsum (D : SupportedIdeal) (f : SupportedIdeal→S
     by_cases hI : D.val∣I.val
     · simp only [hI,true_and,ite_true]
       exact supported_divisor_tsum D (f I)
-    · simp [hI]
+    · simp_all
   simp_rw [hinner]
   exact supported_divisor_tsum D (fun I=>∑'J : SupportedIdeal,f I (supportedIdealProduct D J))
 

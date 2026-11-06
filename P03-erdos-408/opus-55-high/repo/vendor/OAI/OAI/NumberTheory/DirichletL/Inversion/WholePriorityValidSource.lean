@@ -7,29 +7,27 @@ public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseWholePriorityValidSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
-open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
-local notation "O" => ActualEisensteinCubic.O
+open ActualEisensteinCubic SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InversePrioritySecondSource
+open RayFourExpansion
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ}
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-theorem priorityOuter_zero (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
+theorem priorityOuter_zero (b : CubeCoordinates ι) (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (selector : Finset ι→ℂ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (D : Finset ι) (hD : selector D=0) : priorityOuter p hg b negative Ψ m selector r core D=0 := by
   simp only [priorityOuter,hD,norm_zero,mul_zero,zero_mul]
 
 def wholePriorityPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (b : CubeCoordinates ι) (C E extra : Finset ι) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : ℝ→ℂ) (X t Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex) (D : Finset ι) : ℂ :=
   firstFreshSecondPoisson p hp hg hinj pool D b.support
     (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit negative
@@ -41,7 +39,7 @@ def wholePriorityPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
 theorem parentPoisson_fixed_whole (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (pool : Finset ι) (b : CubeCoordinates ι) (C E extra D : Finset ι)
     (old : Fin Jo→SmoothMobiusCorrection.PrimeIdeal) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : ℝ→ℂ) (X t Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex) :
     parentPoisson p hp hg hinj pool negative Ψ m slots J (fun i=>lists i\extra) a om X t Y r core
       (parent p (fixedPoint b C E old D)) =

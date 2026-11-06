@@ -9,31 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -53,33 +44,28 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -88,17 +74,16 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct dilationLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CompletedGauss
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
-noncomputable abbrev actualSextic := ActualEisensteinCubic.canonicalSextic
+abbrev actualSextic := ActualEisensteinCubic.canonicalSextic
 
 def exceptionalPiece (P : Ideal O) [P.IsMaximal] (e : Fin 3) (n b : O) : ℂ :=
   if e=0 then -(rootCard (O ⧸ P) : ℂ)⁻¹
@@ -122,7 +107,7 @@ theorem exceptionalPiece_norm_le (P : Ideal O) [P.IsMaximal]
     (e : Fin 3) (n b : O) :
     ‖exceptionalPiece P e n b‖≤(if e=0 then (rootCard (O ⧸ P))⁻¹ else rootCard (O ⧸ P)) := by
   have hr : 0≤rootCard (O ⧸ P) := rootCard_pos.le
-  fin_cases e <;> simp only [exceptionalPiece,Fin.isValue,Fin.zero_eta,↓reduceIte]
+  fin_cases e <;> simp only [exceptionalPiece, Fin.zero_eta, ↓reduceIte]
   · simp [abs_of_nonneg hr]
   · by_cases hn : n∈P <;> simp [hn,abs_of_nonneg hr,hr]
   · by_cases hn : n∉P ∧ b∈P <;> simp [hn,abs_of_nonneg hr,hr]
@@ -130,12 +115,11 @@ theorem exceptionalPiece_norm_le (P : Ideal O) [P.IsMaximal]
 end CompletedGauss
 
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss
 
 end CanonicalQuadraticSieve
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff
+open scoped Classical Topology MatrixGroups Matrix ContDiff
 
 namespace CubicEisenstein
 
@@ -255,7 +239,7 @@ lemma hyperbolicSpatial_isOpenEmbedding : Topology.IsOpenEmbedding hyperbolicSpa
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff Manifold
+open scoped Classical Topology MatrixGroups Matrix ContDiff Manifold
 
 namespace CubicEisenstein
 
@@ -294,7 +278,7 @@ lemma kernel_lifts_eventually_eq {X : Type*} [TopologicalSpace X]
       (fun y => integralOrbitProjection globalKubotaKernel (g y))) : f=ᶠ[𝓝 x]g := by
   obtain ⟨U,hU,hx,hUinj⟩ := kernelQuotient_localHomeomorph.isLocallyInjective (f x)
   have hfn : ∀ᶠ y in 𝓝 x,f y∈U := hf (hU.mem_nhds hx)
-  have hgn : ∀ᶠ y in 𝓝 x,g y∈U := hg (hU.mem_nhds (hfg ▸ hx))
+  have hgn : ∀ᶠ y in 𝓝 x,g y∈U := hg (hU.mem_nhds (by grind))
   filter_upwards [hfn,hgn,hproj] with y hyf hyg hye
   exact hUinj hyf hyg hye
 
@@ -328,7 +312,7 @@ lemma kernelCoordinateTransition_eventually (w : HyperbolicSpace) (p : SpatialCo
       (kernelLocalLift w).source) :
     ∃M : globalKubotaKernel,kernelCoordinateTransition w=ᶠ[𝓝 p]
       mobiusSpatial (integralComplexMatrix M) := by
-  have hc : ContinuousAt hyperbolicSpatialChart.symm p :=
+  have hc :=
     hyperbolicSpatialChart.symm.continuousAt hp
   have hπ : ContinuousAt (fun y => integralOrbitProjection globalKubotaKernel
       (hyperbolicSpatialChart.symm y)) p :=
@@ -367,13 +351,13 @@ def kernelQuotientChart (q : KernelQuotient) : OpenPartialHomeomorph KernelQuoti
     (kernelQuotientChart q).symm p=
       integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p) := by
   change (kernelLocalLift q.out).symm (hyperbolicSpatialChart.symm p)=_
-  rw [kernelLocalLift_symm]
+  simp
 
 lemma kernelQuotientChart_contDiffOn (q r : KernelQuotient) :
     ContDiffOn ℝ ∞ ((kernelQuotientChart q).symm.trans (kernelQuotientChart r))
       ((kernelQuotientChart q).symm.trans (kernelQuotientChart r)).source := by
   intro p hp
-  have hp' : p∈hyperbolicSpatialChart.target := hp.1.1
+  have hp' := hp.1.1
   have hq' : integralOrbitProjection globalKubotaKernel (hyperbolicSpatialChart.symm p)∈
       (kernelLocalLift r.out).source := by
     rw [← kernelQuotientChart_symm q p]

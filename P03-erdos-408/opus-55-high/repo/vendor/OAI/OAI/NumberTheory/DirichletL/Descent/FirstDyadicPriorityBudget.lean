@@ -11,15 +11,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open InverseMomentFirstOriginalProfile
+open JointLogSeparation CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_dyadic_priority_budget
     (om Φ:𝓢(ℝ,ℂ))(a b:ℝ)(ha:0<a)(hs:Function.support om⊆Set.Icc a b) (Lcap:ℝ)(hcap:0≤Lcap)(hb:0≤b):
@@ -27,14 +26,14 @@ theorem original_dyadic_priority_budget
       HasCompactSupport (omega₁:ℝ→ℂ) ∧ HasCompactSupport (omega₂:ℝ→ℂ) ∧
       tsupport (omega₁:ℝ→ℂ)⊆Set.Icc lo hi ∧ tsupport (omega₂:ℝ→ℂ)⊆Set.Icc lo hi ∧
     ∀eps:ℝ,0<eps→∀J:ℕ,∃C:ℝ,0≤C ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-      (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
+      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+      (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
       (Z M r ell V eta tau Fmax Γ K theta Benergy:ℝ)
       (_hZ:2≤Z)(_hbin:2≤Z^eta)(_hM:0≤M)(_hF:r+3*ell+V≤Fmax)
@@ -45,7 +44,7 @@ theorem original_dyadic_priority_budget
       (_hsf:∀I∈labels,Squarefree I)(_hn:∀I∈labels,I≠0)(_hβ:∀I∈labels,∀v∈Q,‖β I v‖≤Γ),
       let mark:=fun v U=>primeMark slots lists weights (v.support∪U);
       let Y:=Z^(2*Fmax+15*eta+tau);
-      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+      let cutoff:=fun (q:CubeCoordinates ι) (C:Finset ι) (_I:Ideal ActualEisensteinCubic.O) (D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
       let W:=fun y=>normTwistedSource om theta (y/Z^r);
       let source:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) Y;
       let keys:=liveJointKeys p source pool (sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K);
@@ -88,13 +87,13 @@ theorem original_dyadic_priority_budget
       ((physicalScales (Z^r) k.1 k.2.1) 7)
       (profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 7)
       (firstCellRadius Z M r ell V eta tau k.1 k.2.2) (Real.rpow_pos_of_pos hz _)
-    exact (mul_le_mul_of_nonneg_left he' (mul_nonneg (Real.rpow_nonneg hz.le _) (Real.exp_pos _).le)).trans (hleft k hk z)
+    exact (mul_le_mul_of_nonneg_left he' (by positivity)).trans (hleft k hk z)
   · intro k hk z
     have he':=refined_child_priority p hp hg hinj hc pool Q k.1 k.2.1 k.2.2 false Ψ m slots lists weights w₂
       ((physicalScales (Z^r) k.1 k.2.1) 8)
       (profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 8)
       (firstCellRadius Z M r ell V eta tau k.1 k.2.2) (Real.rpow_pos_of_pos hz _)
-    exact (mul_le_mul_of_nonneg_left he' (mul_nonneg (Real.rpow_nonneg hz.le _) (Real.exp_pos _).le)).trans (hright k hk z)
+    exact (mul_le_mul_of_nonneg_left he' (by positivity)).trans (hright k hk z)
 
 end SevenEighths.InverseMoment
 

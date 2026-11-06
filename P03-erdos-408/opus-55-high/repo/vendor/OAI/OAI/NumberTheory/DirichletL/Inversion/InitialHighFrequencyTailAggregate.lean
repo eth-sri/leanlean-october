@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialHighFrequencyTail
 open InverseInitialPhysicalMeasure
 
@@ -25,8 +25,8 @@ theorem original_source_norm_fibers
       apply Finset.sum_le_sum
       intro k hk
       rw [Finset.sum_comm]
-      exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun r hr=>hb k hk r hr))
-    _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul]
+      exact (norm_sum_le _ _).trans (Finset.sum_le_sum (by grind))
+    _ = _ := by simp
 
 end SevenEighths.InverseInitialHighFrequencyTail
 

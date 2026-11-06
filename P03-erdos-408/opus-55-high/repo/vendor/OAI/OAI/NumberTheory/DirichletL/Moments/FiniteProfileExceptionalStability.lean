@@ -10,11 +10,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedAnnuli
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff FourierTransform
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open CenteredMomentRetainedProfile CenteredMomentAllocatedNaturalSource
-open EisensteinSchwartzPoisson CenteredMomentLattice
+open EisensteinSchwartzPoisson
 
 def sourcePlain (a b:ℝ) (ha:0<a) (W:𝓢(ℝ,ℂ))
     (hs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b) : Plain :=
@@ -43,7 +43,7 @@ theorem plain_profile_source_control (a b:ℝ) (ha:0<a) (S:Finset (ℕ×ℕ)) :
   by_cases hret:1≤U*b
   · rw [Plain.profile_retained _ U hU t hret]
     have hd:=normPowerProfile_dilated_finite W a b (max 1 b) (clipDilation U)
-      ha (le_max_left _ _) (clipDilation_ge_one U hU) (clipDilation_le b U hU hret)
+      ha (by simp) (clipDilation_ge_one U hU) (clipDilation_le b U hU hret)
       hs (W.smooth ⊤) t S
     exact hd.trans ((mul_le_mul_of_nonneg_left (hsource W hs t) (by positivity)).trans_eq (by dsimp only [sourceControl]; ring))
   · rw [Plain.profile_zero _ U hU t (lt_of_not_ge hret)]

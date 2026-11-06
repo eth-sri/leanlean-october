@@ -9,12 +9,11 @@ public import OAI.NumberTheory.DirichletL.Detector.RadialMellin
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePrincipalNormalizer
-open HeckeFamily PrincipalMellinResidues PrincipalSignalComparison
-local notation "O" => HeckeFamily.O
+open PrincipalMellinResidues PrincipalSignalComparison
 
-theorem sourceResidueConstant_positive (M : Ideal O) [NeZero M]
+theorem sourceResidueConstant_positive (M : Ideal HeckeFamily.O) [NeZero M]
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hreal0 : ∀y,(W0 y).im=0) (hreal1 : ∀y,(W1 y).im=0)
@@ -28,18 +27,16 @@ theorem sourceResidueConstant_positive (M : Ideal O) [NeZero M]
     exact hres
   have he0 : mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) (1/6)=
       ((mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) (1/6)).re:ℂ) :=
-    Complex.ext (by simp) (by simpa using hi0)
+    Complex.ext (by simp) (by omega)
   have he1 : mellin W1 1=((mellin W1 1).re:ℂ) :=
-    Complex.ext (by simp) (by simpa using hi1)
+    Complex.ext (by simp) (by omega)
   refine ⟨(mellin W1 1).re*(mellin (EisensteinSchwartzPoisson.paperRadialFourier W0) (1/6)).re*R^2/6,?_,?_⟩
-  · norm_num only [Complex.ofReal_one] at hp1
-    positivity
+  · positivity
   · unfold sourceResidueConstant
     rw [he0,he1,hr]
-    push_cast
-    rfl
+    simp
 
-theorem sourceResidueConstant_ne_zero (M : Ideal O) [NeZero M]
+theorem sourceResidueConstant_ne_zero (M : Ideal HeckeFamily.O) [NeZero M]
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hreal0 : ∀y,(W0 y).im=0) (hreal1 : ∀y,(W1 y).im=0)
@@ -51,7 +48,7 @@ theorem sourceResidueConstant_ne_zero (M : Ideal O) [NeZero M]
   exact Complex.ofReal_ne_zero.mpr hc.ne'
 
 theorem signed_source_normalizer_ne_zero {κ ι : Type*} [DecidableEq κ]
-    (M : Ideal O) [NeZero M] (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+    (M : Ideal HeckeFamily.O) [NeZero M] (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (hreal0 : ∀y,(W0 y).im=0) (hreal1 : ∀y,(W1 y).im=0)
     (hpos0 : ∀y,0≤(W0 y).re) (hpos1 : ∀y,0≤(W1 y).re) (hne0 : W0≠0) (hne1 : W1≠0)

@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P5Core
 
@@ -21,7 +20,7 @@ theorem harmonic_coefficient_square (s : Finset ℕ) (b : ℕ → ℂ) (P : ℝ)
       s.card ≤ (Finset.range (⌊2 * P⌋₊ + 1)).card := by
         apply Finset.card_le_card
         intro p hp
-        exact Finset.mem_range.mpr (Nat.lt_succ_of_le (Nat.le_floor (hs p hp).2))
+        exact Finset.mem_range.mpr (Nat.lt_succ_of_le (Nat.le_floor (by grind)))
       _ = _ := Finset.card_range _
   have hcardreal : (s.card : ℝ) ≤ 3 * P := by
     have hfloor := Nat.floor_le (show 0 ≤ 2 * P by positivity)
@@ -30,9 +29,9 @@ theorem harmonic_coefficient_square (s : Finset ℕ) (b : ℕ → ℂ) (P : ℝ)
   have hlocal (p : ℕ) (hp : p ∈ s) : ‖b p‖ ^ 2 / (p : ℝ) ^ 2 ≤ 1 / P ^ 2 := by
     calc
       _ ≤ 1 / (p : ℝ) ^ 2 := div_le_div_of_nonneg_right
-        (by simpa using pow_le_pow_left₀ (norm_nonneg (b p)) (hb p hp) 2) (sq_nonneg _)
+        (by simp_all) (sq_nonneg _)
       _ ≤ _ := one_div_le_one_div_of_le (sq_pos_of_pos hPpos)
-        (pow_le_pow_left₀ hPpos.le (hs p hp).1 2)
+        (pow_le_pow_left₀ hPpos.le (by grind) 2)
   calc
     _ ≤ ∑ _p ∈ s, 1 / P ^ 2 := Finset.sum_le_sum hlocal
     _ = (s.card : ℝ) * (1 / P ^ 2) := by simp

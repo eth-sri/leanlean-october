@@ -8,7 +8,6 @@ public import Erdos821.S2.GhostTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -24,19 +23,12 @@ lemma fiberA_card_eq_zero_of_not_mem (s u : P.Memory g.val)
       (Finset.univ.filter (fun A => A ⊆ zeroMemoryIndices s))) :
     (fiberA (P := P) (g := g) s u).card = 0 := by
   by_contra hne
-  have hpos : 0 < (fiberA (P := P) (g := g) s u).card :=
+  have hpos :=
     Nat.pos_of_ne_zero hne
   obtain ⟨A, hA⟩ := Finset.card_pos.mp hpos
   have hmem : A ⊆ zeroMemoryIndices s ∧ deleteMemoryIndices s A = u := by
     simpa only [fiberA, Finset.mem_filter, Finset.mem_univ, true_and] using hA
-  have hA_mem : A ∈ Finset.univ.filter (fun A : Finset (Fin s.card) => A ⊆ zeroMemoryIndices s) :=
-    Finset.mem_filter.mpr ⟨Finset.mem_univ A, hmem.1⟩
-  have hu : deleteMemoryIndices s A ∈ Finset.image
-      (fun A : Finset (Fin s.card) => deleteMemoryIndices s A)
-      (Finset.univ.filter (fun A => A ⊆ zeroMemoryIndices s)) :=
-    Finset.mem_image_of_mem _ hA_mem
-  rw [hmem.2] at hu
-  exact h hu
+  grind
 
 /-- Single-group mass-kernel reversal. -/
 lemma single_mass_kernel_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -64,7 +56,7 @@ lemma single_mass_kernel_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n 
         perU_term F n rho d i g s0 t0 u) := by
     apply Finset.sum_subset hSs_sub
     intro u huS huNot
-    have hfib0 : (fiberA (P := P) (g := g) s0 u).card = 0 :=
+    have hfib0 :=
       fiberA_card_eq_zero_of_not_mem s0 u huNot
     simp only [hfib0, Nat.cast_zero, zero_mul]
   have hsum_t : (∑ u ∈ St, ((fiberA (P := P) (g := g) t0 u).card : ℝ) *
@@ -73,7 +65,7 @@ lemma single_mass_kernel_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n 
         perU_term F n rho d i g t0 s0 u) := by
     apply Finset.sum_subset hSt_sub
     intro u huS huNot
-    have hfib0 : (fiberA (P := P) (g := g) t0 u).card = 0 :=
+    have hfib0 :=
       fiberA_card_eq_zero_of_not_mem t0 u huNot
     simp only [hfib0, Nat.cast_zero, zero_mul]
   rw [hsum_s, hsum_t, Finset.mul_sum, Finset.mul_sum]
@@ -94,9 +86,9 @@ lemma single_mass_kernel_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n 
 theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
   intro F P J n r hV hbase d hd i s t
   have hd_pos : 0 < d := by rcases hd with rfl | rfl <;> norm_num
-  have hrho : 0 < r.rho := r.rho_pos
+  have hrho := r.rho_pos
   have hVbig : ∀ g : P.BigGroup, 0 < P.V g.val := fun g => hV g.val
-  have hbase_big : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < baselinePrime F n q.val :=
+  have hbase_big :=
     fun g q => hbase g q
   by_cases hcoord : s.1 = t.1 ∧ s.2.1 = t.2.1
   · have hker_st := globalKernel_eq_prod F J n r.rho d i s t hcoord
@@ -129,19 +121,18 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
         have hmis : ∃ v : P.Particle g0.val,
             ¬ isZeroParticle v ∧ (s.2.2 g0).count v ≠ (t.2.2 g0).count v :=
           ⟨v0, hv0, hne⟩
-        have hker_st0 : singleKernel F n r.rho d i g0 (s.2.2 g0) (t.2.2 g0) = 0 :=
+        have hker_st0 :=
           singleKernel_eq_zero_of_mismatch hmis F n r.rho d i
         have hmis_symm : ∃ v : P.Particle g0.val,
             ¬ isZeroParticle v ∧ (t.2.2 g0).count v ≠ (s.2.2 g0).count v :=
           ⟨v0, hv0, fun h => hne h.symm⟩
-        have hker_ts0 : singleKernel F n r.rho d i g0 (t.2.2 g0) (s.2.2 g0) = 0 :=
+        have hker_ts0 :=
           singleKernel_eq_zero_of_mismatch hmis_symm F n r.rho d i
         have hprod_st0 : (∏ g : P.BigGroup, singleKernel F n r.rho d i g (s.2.2 g) (t.2.2 g)) = 0 :=
           Finset.prod_eq_zero (Finset.mem_univ g0) hker_st0
         have hprod_ts0 : (∏ g : P.BigGroup, singleKernel F n r.rho d i g (t.2.2 g) (s.2.2 g)) = 0 :=
           Finset.prod_eq_zero (Finset.mem_univ g0) hker_ts0
-        rw [hmass_s, hmass_t, hker_st, hker_ts, hprod_st0, hprod_ts0]
-        ring
+        grind
       · push Not at hmismatch
         have hagree_all : ∀ (g : P.BigGroup) (v : P.Particle g.val),
             ¬ isZeroParticle v → (s.2.2 g).count v = (t.2.2 g).count v := by
@@ -186,18 +177,7 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
             (∏ g : P.BigGroup, P.groupMemoryMass F n g.val (t.2.2 g)) *
               (∏ g : P.BigGroup, singleKernel F n r.rho d i g (t.2.2 g) (s.2.2 g)) := by
           rw [Finset.prod_mul_distrib]
-        rw [hL, hR1, hR2] at hProd
-        rw [hmass_s, hmass_t, hker_st, hker_ts, hRevProd]
-        have hC : (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, ∏ k, tiltedMu F P n g.val (s.2.1 g.val k)) =
-            (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, ∏ k, tiltedMu F P n g.val (s.2.1 g.val k)) := rfl
-        linear_combination
-          ((Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, ∏ k, tiltedMu F P n g.val (s.2.1 g.val k))) * hProd
+        grind
     · have hsmall_t : ¬ P.smallPhysical t.1 t.2.1 := by
         rw [← hcoord.1, ← hcoord.2]
         exact hsmall
@@ -207,8 +187,7 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
       have hmass_t0 : P.memoryMass F J n t = 0 := by
         unfold PrimeGroups.memoryMass
         rw [ite_eq_right hsmall_t]
-      rw [hmass_s0, hmass_t0]
-      ring
+      grind
   · have hcoord_symm : ¬ (t.1 = s.1 ∧ t.2.1 = s.2.1) := by
       rintro ⟨h1, h2⟩
       exact hcoord ⟨h1.symm, h2.symm⟩
@@ -218,8 +197,7 @@ theorem GhostAdjointTask_proof : Erdos821.S2Core.GhostAdjointTask := by
     have hker_ts0 : absoluteScaledMemoryGhostKernel F J n r.rho d i t s = 0 := by
       unfold absoluteScaledMemoryGhostKernel
       rw [ite_eq_right hcoord_symm]
-    rw [hker_st0, hker_ts0]
-    ring
+    simp_all
 
 
 end Erdos821.P3Adj

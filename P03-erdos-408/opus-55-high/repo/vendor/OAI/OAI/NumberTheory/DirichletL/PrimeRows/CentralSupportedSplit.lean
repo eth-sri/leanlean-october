@@ -7,25 +7,24 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeCalibration
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-def supportedFloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+def supportedFloorRows (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (R : Finset FreeRow) (grid : FreeRow→ℕ) : Finset FreeRow :=
   R.filter (fun u=>(calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u=0)
 
-def supportedNonfloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+def supportedNonfloorRows (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (R : Finset FreeRow) (grid : FreeRow→ℕ) : Finset FreeRow :=
   R.filter (fun u=>(calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u≠0)
 
-@[simp] lemma mem_supportedFloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+@[simp] lemma mem_supportedFloorRows (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (R : Finset FreeRow) (grid : FreeRow→ℕ) (u : FreeRow) :
     u∈supportedFloorRows S hmax R grid ↔ u∈R ∧ (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u=0 :=
   Finset.mem_filter
 
-@[simp] lemma mem_supportedNonfloorRows (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+@[simp] lemma mem_supportedNonfloorRows (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (R : Finset FreeRow) (grid : FreeRow→ℕ) (u : FreeRow) :
     u∈supportedNonfloorRows S hmax R grid ↔ u∈R ∧ (calibrationForSet S hmax).residueMonoid u.val≠0 ∧ grid u≠0 :=
   Finset.mem_filter
@@ -64,7 +63,7 @@ lemma normalized_nonfloor_error (A F Cfloor Cnon N : ℂ) (E B : ℝ)
     (hE : ‖A/N-F-(Cfloor+Cnon)/N‖≤E) (hB : ‖Cfloor/N‖≤B) :
     ‖A/N-F-Cnon/N‖≤E+B := by
   calc
-    _ = ‖(A/N-F-(Cfloor+Cnon)/N)+Cfloor/N‖ := by congr 1;ring
+    _ = ‖(A/N-F-(Cfloor+Cnon)/N)+Cfloor/N‖ := by ring
     _ ≤ ‖A/N-F-(Cfloor+Cnon)/N‖+‖Cfloor/N‖ := norm_add_le _ _
     _ ≤ E+B := add_le_add hE hB
 

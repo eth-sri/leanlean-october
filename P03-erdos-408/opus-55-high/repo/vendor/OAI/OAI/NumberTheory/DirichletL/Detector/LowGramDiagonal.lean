@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDiagonal
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
+open CanonicalQuadraticSieve RayFourExpansion
 open CenteredMomentSupportedCorrelation CenteredMomentSecondDiagonal EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowGramZeroMode (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (U : SchwartzMap ℝ ℂ) (Q : ℝ) : ℂ :=
@@ -60,8 +59,7 @@ lemma lowGramZeroMode_bound (C : CalibrationData) (W1 : ℝ→ℂ) (hW1 : HasCom
     apply Subtype.ext
     have hes := (primaryGenerator_spec s.val (supported_primaryGenerator_ne_zero s.val s.property)).1
     have het := (primaryGenerator_spec t.val (supported_primaryGenerator_ne_zero t.val t.property)).1
-    rw [←hes,←het]
-    exact congrArg (fun z : O=>Ideal.span {z}) h
+    simp_all
 
 theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
     ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀hS : ∀P∈S,P.IsMaximal,
@@ -73,10 +71,10 @@ theorem lowGramZeroMode_source_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
   obtain ⟨C,hC,hb⟩ := lowGaussColumn_l2_bound a b B ha hB
   refine ⟨C,hC,?_⟩
   intro S hS W1 hW1 hWS hWB Y hY σ v U Q hQ
-  apply (lowGramZeroMode_bound (calibrationForSet S hS) W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY) σ v U Q hQ).trans
+  apply (lowGramZeroMode_bound (calibrationForSet S hS) W1 hW1 Y (by positivity) σ v U Q hQ).trans
   calc
-    _ ≤ Q*‖paperRadialFourier U 0‖*(C/Y) := by
-      exact mul_le_mul_of_nonneg_left (hb S hS W1 hW1 hWS hWB Y hY σ v) (by positivity)
+    _ ≤ Q*‖paperRadialFourier U 0‖*(C/Y) :=
+      mul_le_mul_of_nonneg_left (hb S hS W1 hW1 hWS hWB Y hY σ v) (by positivity)
     _ = _ := by ring
 
 end SevenEighths.ProbePhysical

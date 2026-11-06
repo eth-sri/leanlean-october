@@ -22,7 +22,7 @@ with `U = ∅`; above `x^γ` one may take `W = 1/(D_j γ L)`.
 
 namespace Erdos408
 
-open Finset Real
+open Finset
 
 noncomputable section
 
@@ -35,8 +35,8 @@ lemma prod_model_le_loneFactor {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, Side
     (hc₁ : 0 ≤ c₁) (hc₁' : c₁ ≤ 1 / 4) {c d : ℕ} (hcd : ∀ g ∈ F, ∀ p ∈ g, p ∣ c ↔ p ∣ d) :
     ∏ g ∈ F, (1 - sideAlpha c₁ g d * (∑ p ∈ g, modelWeight c p -
       ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, modelWeight c p)) ≤ loneFactor c₁ F d :=
-  prod_le_prod₀ (fun g hg => ((hF g hg).one_sub_sideAlpha_mul_le hc₁ hc₁' (hcd g hg)).1)
-    fun g hg => ((hF g hg).one_sub_sideAlpha_mul_le hc₁ hc₁' (hcd g hg)).2
+  prod_le_prod₀ (fun g hg => ((hF g hg).one_sub_sideAlpha_mul_le hc₁ hc₁' (by grind)).1)
+    fun g hg => ((hF g hg).one_sub_sideAlpha_mul_le hc₁ hc₁' (by grind)).2
 
 /-- The absolute model product is at most `(5/2)^{|F|}`. -/
 lemma prod_model_abs_le {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, SideGroup g) {c₁ : ℝ}
@@ -47,14 +47,12 @@ lemma prod_model_abs_le {F : Finset (Finset ℕ)} (hF : ∀ g ∈ F, SideGroup g
   refine prod_le_prod₀ (fun g hg => ?_) fun g hg => ?_
   · have h0 : 0 ≤ sideModelAbs g c := add_nonneg (sum_nonneg ((hF g hg).modelWeight_nonneg _))
       (sum_nonneg fun K hK => prod_nonneg fun p hp =>
-        (hF g hg).modelWeight_nonneg _ p ((mem_powersetCard.1 hK).1 hp))
-    have := mul_nonneg (abs_nonneg (sideAlpha c₁ g d)) h0
-    unfold sideModelAbs at this
-    linarith
+        (hF g hg).modelWeight_nonneg _ p (by grind))
+    positivity
   · obtain ⟨h1, h2⟩ := (hF g hg).sideAlpha_mem hc₁ hc₁' d
     have h3 : 0 ≤ sideModelAbs g c := add_nonneg (sum_nonneg ((hF g hg).modelWeight_nonneg _))
       (sum_nonneg fun K hK => prod_nonneg fun p hp =>
-        (hF g hg).modelWeight_nonneg _ p ((mem_powersetCard.1 hK).1 hp))
+        (hF g hg).modelWeight_nonneg _ p (by grind))
     have h5 := mul_le_mul h2 ((hF g hg).sideModelAbs_le c) h3 (by norm_num)
     unfold sideModelAbs at h5
     rw [abs_of_nonneg h1]
@@ -140,8 +138,6 @@ lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ)
       have : (2 : ℝ) ≤ p := by exact_mod_cast (hS p hp).two_le
       have : (1 : ℝ) / p ≤ 1 := by rw [div_le_one (by linarith)]; linarith
       linarith
-    have : 0 ≤ ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p :=
-      sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
     positivity
   have h := abs_card_rough_cong_sub_le S ∅ hS (empty_subset S) (c := 1) (by simp) R hAB
   simp only [prod_empty, div_one, notMem_empty, IsEmpty.forall_iff, implies_true, and_true] at h
@@ -151,9 +147,8 @@ lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ)
     rw [card_eq_sum_ones, Nat.cast_sum, Nat.cast_one, mul_sum, sum_filter]
     refine sum_le_sum fun a ha => ?_
     split_ifs
-    · rw [mul_one]
-      exact hwW a ha
-    · exact le_rfl
+    · simp_all
+    · simp
   refine hle.trans (mul_le_mul_of_nonneg_left ?_ hW)
   have hB : (B : ℝ) - A ≤ B := by linarith [(Nat.cast_nonneg A : (0 : ℝ) ≤ A)]
   have hBA : 0 ≤ (B : ℝ) - A := by
@@ -165,7 +160,6 @@ lemma sum_rough_weight_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (R : ℕ)
     linarith
   have hε : 0 ≤ ∑ u ∈ S.powersetCard (R + 1), ∏ p ∈ u, (1 : ℝ) / p :=
     sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
-  have := mul_le_mul_of_nonneg_right hB (add_nonneg hPi (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hε))
   nlinarith
 
 end

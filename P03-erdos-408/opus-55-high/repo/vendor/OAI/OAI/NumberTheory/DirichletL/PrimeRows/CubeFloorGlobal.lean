@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorDyadic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots HeckeDetectorPhysicalSelection
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+open ProbeRaySlots
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem globalFloorPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
+theorem globalFloorPoolOutside (S : Finset (Ideal HeckeFamily.O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
     ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
+  by simp
 
 theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
@@ -29,7 +28,7 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
     (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
     (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
     (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
@@ -68,7 +67,7 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
   let Rn : ℕ→Finset FreeRow := fun k=>rows∩dyadicRows 1 k
   let term : FreeRow→ℂ := fun u=>frequencyWeight ((17/50:ℂ)+t.1.2*Complex.I) ⟨u.val,u.property.1⟩*
     ∑P:(∀j,T j),calibratedTupleValue S hS hmax η u (fun j=>(P j).val)
-      (fun j=>globalFloorPoolOutside M H S N c b Y j _ (P j).property) W Y
+      (fun j=>globalFloorPoolOutside M H S N c b Y j _ (by simp)) W Y
       (((51/100+16*e:ℝ):ℂ)+t.1.1*Complex.I) (((1-51/100-6*e:ℝ):ℂ)+t.2*Complex.I)
       ((17/50:ℂ)+t.1.2*Complex.I)
   let D : ℝ := C*(η.modulus.absNorm:ℝ)^(2*eps)*Z^(loss-1/40+mesh/6)
@@ -101,7 +100,7 @@ theorem actual_global_floor_cube_arithmetic (N n : ℕ) (e eps c b A R dmin dmax
     _ ≤ ∑k∈smallDyadicIndices (Z^v),D*((2:ℝ)^k)^θ := Finset.sum_le_sum (fun k _=>hdyad k)
     _ = D*∑k∈smallDyadicIndices (Z^v),((2:ℝ)^k)^θ := (Finset.mul_sum _ _ _).symm
     _ ≤ D*(Cg*(Z^v)^θ) := mul_le_mul_of_nonneg_left
-      (hgeom (Z^v) (by positivity) (smallDyadicIndices (Z^v)) (fun k hk=>mem_smallDyadicIndices.mp hk)) hD
+      (hgeom (Z^v) (by positivity) (smallDyadicIndices (Z^v)) (by simp)) hD
     _ = _ := by
       have hp : Z^(loss-1/40+mesh/6)*(Z^v)^θ=Z^(v*θ+loss-1/40+mesh/6) := by
         rw [←Real.rpow_mul hZp.le,←Real.rpow_add hZp]

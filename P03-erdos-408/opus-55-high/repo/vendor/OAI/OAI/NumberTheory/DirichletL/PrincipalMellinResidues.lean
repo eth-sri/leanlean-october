@@ -23,7 +23,7 @@ lemma inverse_vertical_continuous (c : ℝ) (hc : c≠0) :
   intro t h
   have he := congrArg Complex.re h
   simp at he
-  exact hc he
+  simp_all
 
 lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹) = (2*Real.arctan (T/c):ℝ) := by
@@ -37,9 +37,9 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     have he : (fun t : ℝ => (((c:ℂ)+t*I)⁻¹).re) =
         (fun t : ℝ => c/(c^2+t^2)) := by
       funext t
-      simp [Complex.inv_re, Complex.normSq_apply, pow_two]
+      simp [Complex.normSq_apply, pow_two]
     rw [he, integral_div_sq_add_sq]
-    simp [neg_div, Real.arctan_neg]
+    simp [neg_div]
     ring
   · have hh := Complex.imCLM.intervalIntegral_comp_comm hi
     change (∫ t : ℝ in -T..T, (((c:ℂ)+t*I)⁻¹).im) = (∫ t : ℝ in -T..T, ((c:ℂ)+t*I)⁻¹).im at hh
@@ -48,7 +48,7 @@ lemma inverse_vertical_truncated (c T : ℝ) (hc : c≠0) :
     have he : (fun t : ℝ => (((c:ℂ)+t*I)⁻¹).im) =
         (fun t : ℝ => -(t/(c^2+t^2))) := by
       funext t
-      simp [Complex.inv_im, Complex.normSq_apply, pow_two, neg_div]
+      simp [Complex.normSq_apply, pow_two, neg_div]
     rw [he, intervalIntegral.integral_neg, integral_id_div_sq_add_sq hc]
     simp
 
@@ -70,7 +70,7 @@ lemma inverse_horizontal_limit (a b p : ℝ) (ε : ℝ) (hε : |ε| = 1) :
     Tendsto (fun T : ℝ => ∫ x : ℝ in a..b,
       ((x : ℂ) + (ε*T)*I - p)⁻¹) atTop (𝓝 0) := by
   apply tendsto_zero_iff_norm_tendsto_zero.mpr
-  apply squeeze_zero' (Filter.Eventually.of_forall (fun _ => norm_nonneg _))
+  apply squeeze_zero' (by simp)
     (show ∀ᶠ T : ℝ in atTop, ‖∫ x : ℝ in a..b,
       ((x : ℂ) + (ε*T)*I - p)⁻¹‖ ≤ T⁻¹ * |b-a| from ?_) ?_
   · filter_upwards [eventually_gt_atTop 0] with T hT
@@ -122,13 +122,13 @@ lemma rectangle_limits (G : ℂ → ℂ) {a b : ℝ} (hab : a≤b)
       I*(∫ t : ℝ in -T..T, G ((a:ℂ)+t*I)) = 0 := by
     have h := integral_boundary_rect_eq_zero_of_differentiableOn G
       ((a:ℂ)+(-T)*I) ((b:ℂ)+T*I) (hG.mono ?_)
-    · simpa [smul_eq_mul] using h
+    · simpa using h
     · intro z hz
       simpa [uIcc_of_le hab] using hz.1
   have hlim := ((hbot.sub htop).add (hb.const_mul I)).sub (ha.const_mul I)
-  have hz : (0:ℂ)-0+I*Vb-I*Va=0 := tendsto_nhds_unique hlim
+  have hz := tendsto_nhds_unique hlim
     (by simpa only [hrect] using (tendsto_const_nhds : Tendsto (fun _ : ℝ => (0:ℂ)) atTop (𝓝 0)))
-  exact (mul_left_cancel₀ I_ne_zero (show I*Vb=I*Va by simpa using sub_eq_zero.mp hz)).symm
+  exact (mul_left_cancel₀ I_ne_zero (by grind)).symm
 
 lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
     (hab : a≤b) (hy : y≠0)
@@ -137,7 +137,7 @@ lemma horizontal_quotient_continuousOn (A : ℂ → ℂ) {a b p y : ℝ}
   apply ContinuousOn.div
   · apply hA.continuousOn.comp (by fun_prop)
     intro x hx
-    simpa [uIcc_of_le hab] using hx
+    simp_all
   · fun_prop
   · intro x hx h
     have hh := congrArg Complex.im h
@@ -153,13 +153,13 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
   simp only [mul_zero, sub_zero] at hl
   apply hl.congr'
   filter_upwards [eventually_gt_atTop 0] with T hT
-  have hy : ε*T≠0 := mul_ne_zero (by intro h; simp [h] at hε) hT.ne'
+  have hy : ε*T≠0 := mul_ne_zero (by grind) hT.ne'
   have hn (x : ℝ) : (x:ℂ)+(ε*T)*I≠p := by
     intro h
     exact hy (by simpa using congrArg Complex.im h)
   have he (x : ℝ) (hx : x∈uIcc a b) := hF ((x:ℂ)+(ε*T)*I)
-    (by have := (uIcc_of_le hab ▸ hx).1; simpa using this)
-    (by have := (uIcc_of_le hab ▸ hx).2; simpa using this) (hn x)
+    (by simp_all)
+    (by simp_all) (hn x)
   have hfi : IntervalIntegrable (fun x : ℝ => F ((x:ℂ)+(ε*T)*I)) volume a b := by
     apply ((horizontal_quotient_continuousOn A (p:=p) hab hy hA).congr ?_).intervalIntegrable
     intro x hx
@@ -168,11 +168,11 @@ lemma dslope_horizontal_limit (A F : ℂ → ℂ) {a b p : ℝ} (hab : a≤b)
     apply Continuous.intervalIntegrable
     apply Continuous.inv₀ (by fun_prop)
     intro x h
-    exact hn x (sub_eq_zero.mp h)
+    exact by grind
   rw [← intervalIntegral.integral_const_mul, ← intervalIntegral.integral_sub hfi (hki.const_mul _)]
   apply intervalIntegral.integral_congr
   intro x hx
-  exact (dslope_eq_sub_pole (hn x) (he x hx)).symm
+  exact (dslope_eq_sub_pole (hn x) (by grind)).symm
 
 theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
     (hap : a<p) (hpb : p<b)
@@ -190,37 +190,36 @@ theorem verticalIntegral_simple_pole (A F : ℂ → ℂ) {a b p : ℝ}
         (isOpen_lt Complex.continuous_re continuous_const)).mem_nhds
         (show a<(p:ℂ).re ∧ (p:ℂ).re<b from ⟨hap,hpb⟩))
     intro z hz
-    exact ⟨hz.1.le,hz.2.le⟩
+    exact by grind
   have hG := (Complex.differentiableOn_dslope hnb).mpr hA
   have haF := intervalIntegral_tendsto_integral ha tendsto_neg_atTop_atBot tendsto_id
   have hbF := intervalIntegral_tendsto_integral hb tendsto_neg_atTop_atBot tendsto_id
   have haG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((a:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((a:ℂ)+t*I)) - A p * (-(Real.pi:ℂ)))) := by
     simp_rw [dslope_vertical_truncated A F p a _ hap.ne
-      (fun z hz => hF z (by simp [hz]) (by simpa [hz] using hab)
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hap.ne this)) ha]
+      (fun z hz => hF z (by linarith) (by linarith)
+        (by intro h; simp_all)) ha]
     exact haF.sub ((inverse_vertical_limit_neg (a-p) (sub_neg.mpr hap)).const_mul (A p))
   have hbG : Tendsto (fun T : ℝ => ∫ t : ℝ in -T..T, dslope A (p:ℂ) ((b:ℂ)+t*I))
       atTop (𝓝 ((∫ t : ℝ, F ((b:ℂ)+t*I)) - A p * (Real.pi:ℂ))) := by
     simp_rw [dslope_vertical_truncated A F p b _ hpb.ne'
-      (fun z hz => hF z (by simpa [hz] using hab) (by simp [hz])
-        (by intro h; have := congrArg Complex.re h; simp [hz] at this; exact hpb.ne' this)) hb]
+      (fun z hz => hF z (by linarith) (by linarith)
+        (by intro h; simp_all)) hb]
     exact hbF.sub ((inverse_vertical_limit_pos (b-p) (sub_pos.mpr hpb)).const_mul (A p))
   have hbotG := dslope_horizontal_limit A F hab hA hF (-1) (by norm_num)
-    (by simpa using hbot)
+    (by simp_all)
   have htopG := dslope_horizontal_limit A F hab hA hF 1 (by norm_num)
-    (by simpa using htop)
+    (by simp_all)
   have he := rectangle_limits (dslope A p) hab hG haG hbG
-    (by simpa using hbotG) (by simpa using htopG)
+    (by simp_all) (by simp_all)
   have he' : (∫ t : ℝ, F ((b:ℂ)+t*I)) =
       (∫ t : ℝ, F ((a:ℂ)+t*I)) + 2*(Real.pi:ℂ)*A p := by
     linear_combination -he
   unfold verticalIntegral
   rw [he']
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  field_simp
-  simp only [mul_comm]
+  have hpi := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  grind
 
 structure BoundaryControl (F : ℂ → ℂ) (a b : ℝ) : Prop where
   left : Integrable (fun t : ℝ => F ((a:ℂ)+t*I))
@@ -265,7 +264,7 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
     ((hK.mul hhol.differentiableOn).div_const 6) ?_
     hB.left hB.right hB.lower hB.upper
   · norm_num [HeckeOrigin.poleRemoved_one] at h ⊢
-    exact h
+    omega
   · intro z hza hzb hzp
     have hz0 : 6*z≠0 := by
       intro h
@@ -279,7 +278,7 @@ theorem verticalIntegral_hecke_six (χ : Character) (K : ℂ → ℂ) {a b : ℝ
       push_cast
       linear_combination h / 6
     rw [HeckeOrigin.poleRemoved_eq χ hz0 hz1]
-    have hden : z-(1/6:ℂ)≠0 := sub_ne_zero.mpr (by simpa using hzp)
+    have hden : z-(1/6:ℂ)≠0 := sub_ne_zero.mpr (by simp_all)
     push_cast
     field_simp
 
@@ -324,8 +323,8 @@ theorem source_ordered_double_shift (χ : Character) (K : ℂ → ℂ → ℂ)
       verticalIntegral (33/200) (fun z => K 1 z * LFunction χ (6*z)) +
     (HeckeReciprocal.regularizedL χ 1)^2 / 6 * K 1 (1/6) := by
   have hw (z : ℂ) (hz : z.re=1/6+e) := verticalIntegral_hecke χ
-    (fun w => K w z * LFunction χ (6*z)) (by norm_num : (0:ℝ)<19/20)
-    (by norm_num : (19/20:ℝ)<1) hcw ((hwK z hz).mul_const _) (hwB z hz)
+    (fun w => K w z * LFunction χ (6*z)) (by positivity)
+    (by linarith) hcw ((hwK z hz).mul_const _) (by grind)
   have hpoint : verticalIntegral (1/6+e) (fun z => verticalIntegral cw
       (fun w => K w z * LFunction χ (6*z) * LFunction χ w)) =
       verticalIntegral (1/6+e) (fun z => verticalIntegral (19/20)

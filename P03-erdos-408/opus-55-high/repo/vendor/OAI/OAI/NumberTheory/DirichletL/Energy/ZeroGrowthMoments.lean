@@ -9,19 +9,17 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthMoments
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeDyadic QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReflectionSupport
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
+open CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyZeroGrowthChild CenteredMomentEnergyReferenceLowControl
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
 open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
 open CenteredMomentSectorLocalization
-local notation "O"=>HeckeFamily.O
 
 theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     (S:Finset (ℕ×ℕ)):
@@ -50,8 +48,7 @@ theorem reflected_uniform (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
     positivity)
   have hz:0≤Z^(max s.width (length Z X₁+length Z X₂)+ε):=(Real.rpow_pos_of_pos (zero_lt_one.trans_le s.base_ge_one) _).le
   have hmul:=mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hb hp) hz
-  apply hh.trans
-  convert hmul using 1 ; ring
+  linarith
 
 lemma actual_growth_power (Z b M xi epsilon loss Xshort Xlong Nshort Nlong x:ℝ)
     (hZ:1<Z)(hb:0<b)(hM:0≤M)(he:0≤epsilon)(hxi:0≤xi)

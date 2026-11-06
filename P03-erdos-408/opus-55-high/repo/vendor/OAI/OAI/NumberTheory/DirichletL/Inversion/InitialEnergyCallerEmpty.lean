@@ -8,14 +8,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialEnergyCallerEmpty
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)(hp:∀i,p i≠0)
+open InverseInitialEnergyCallerSource
+open InverseInitialProfile InverseInitialClippedColumns
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -24,7 +22,7 @@ theorem physicalBlock_zero_of_fresh_empty
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (w:Point ι→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Point ι→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂ ω₁ ω₂:ℝ→ℂ)(V:Fin 6→ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
     (Z D B v θ H m c₁ c₂ θ₁ θ₂:ℝ)(hZ:0<Z)
     (hs:BlockSupport p (pointSource pool S) W₁ W₂ ω₁ ω₂ V Z D B v θ H c₁ c₂ θ₁ θ₂)
@@ -42,7 +40,7 @@ theorem physicalBlock_zero_of_fresh_empty
   have hω:ω₁ (columnRatio p x.left Z D B v)=0 := by
     by_contra hn
     rw [columnRatio_actual] at hn
-    have hm:= (mem_freshColumns p pool ω₁ (Z^(columnCenter D B v)) x.left).mpr ⟨hleft,hn⟩
+    have hm:= (mem_freshColumns p pool ω₁ (Z^(columnCenter D B v)) x.left).mpr (by grind)
     rw [he] at hm
     exact Finset.notMem_empty _ hm
   have hW:clippedSource W₁ c₁ θ₁
@@ -67,7 +65,7 @@ theorem physical_nonzero_clipping
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (w:Point ι→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Point ι→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂ ω₁ ω₂:ℝ→ℂ)(V:Fin 6→ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
     (Z D B v θ H m c₁ c₂ θ₁ θ₂ a b η:ℝ)(hZ:1<Z)(hb:1≤b)
     (hω:Function.support ω₁⊆Set.Icc a b)
@@ -79,7 +77,7 @@ theorem physical_nonzero_clipping
       max 0 (columnCenter D B v)-columnCenter D B v≤3*η := by
   apply freshColumns_initial_clipping_shift p hp pool ω₁ a b Z (columnCenter D B v) η hZ hb hω _ ht
   by_contra he
-  have he':freshColumns p pool ω₁ (Z^(columnCenter D B v))=∅:=Finset.not_nonempty_iff_eq_empty.mp he
+  have he':=Finset.not_nonempty_iff_eq_empty.mp he
   exact hn (physicalBlock_zero_of_fresh_empty p hp hcop hg hpr pool S hdiv hf w Ψ j marks
     W₁ W₂ ω₁ ω₂ V Φ Z D B v θ H m c₁ c₂ θ₁ θ₂ (zero_lt_one.trans hZ) hs he')
 

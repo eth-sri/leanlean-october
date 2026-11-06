@@ -8,27 +8,26 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailCollapse
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
 open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open InverseSecondPrincipalCaller
+open InverseWholePriorityRetainedSource
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃(s : Finset (ℕ×ℕ))(C : ℝ),0<C ∧
     ∀{ι σ : Type*}[DecidableEq ι][DecidableEq σ]
-      (p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (Jo : ℕ),Jo≤Jmax → ∀(extra : CubeCoordinates ι→Finset ι)(pool : Finset ι)
-      (source : Finset (Source ι Jo))(negative : Bool)(Ψ : O→*ℂ)(m : O)
+      (source : Finset (Source ι Jo))(negative : Bool)(Ψ : ActualEisensteinCubic.O→*ℂ)(m : ActualEisensteinCubic.O)
       (ray : RayCharacter×RayCharacter)(core : FirstCoreIndex)
       (w : Source ι Jo→ℂ)(slots J : Finset σ)(lists : σ→Finset ι)(a : σ→ι→ℂ),
       J⊆slots → (slots:Set σ).PairwiseDisjoint lists →
@@ -57,7 +56,7 @@ theorem global_parent_tail_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
   obtain ⟨s,Ct,hCt,htail⟩ := priority_tail_parent_uniform Lcap tau (saving+13*Lcap) hLcap htau
   obtain ⟨Cm,hCm,hmark⟩ := finite_primeMark_small_power (1/2) (by norm_num)
   obtain ⟨Cs,hCs,hmass⟩ := original_tail_mass Jmax
-  have hCb : 0<coefficientBound := coefficientBound_pos
+  have hCb := coefficientBound_pos
   refine ⟨s,coefficientBound*Cm^2*Ct*Cs,by positivity,?_⟩
   intro ι σ _ _ p hp _ hg hinj hcop hc Jo hJo extra pool source negative Ψ m ray core w slots J lists a
     hJ hslots ha hΨ hw om lo hi hlo hs X M Y Z height R hX hhi hZ hY hscale hy hyi hXcap

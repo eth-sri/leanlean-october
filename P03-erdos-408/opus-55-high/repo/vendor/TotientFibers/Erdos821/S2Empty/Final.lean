@@ -6,7 +6,6 @@ public import Erdos821.S2.AnalyticParametersTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -25,18 +24,17 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
   rcases hx₀ x hx with ⟨hL, hT, hTle, hN, hdecay, hbudgetRaw⟩
   have hePos : 0 < e := by
     dsimp [e]
-    exact div_pos (by positivity) (Real.exp_pos _)
+    exact by positivity
   have he0 : 0 ≤ e := hePos.le
   have hLsq : 5 * L x ≤ 5 * (L x) ^ (2 : ℕ) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hL)
-      (show 0 ≤ 5 * L x by positivity)]
+    nlinarith
   have hehalf : e ≤ 1 / 2 := by
     dsimp [e]
     calc
       _ ≤ 5 * L x / Real.exp ((L x) ^ F.c) :=
-        div_le_div_of_nonneg_right hN (Real.exp_pos _).le
+        div_le_div_of_nonneg_right hN (by positivity)
       _ ≤ 5 * (L x) ^ (2 : ℕ) / Real.exp ((L x) ^ F.c) :=
-        div_le_div_of_nonneg_right hLsq (Real.exp_pos _).le
+        div_le_div_of_nonneg_right hLsq (by positivity)
       _ = 5 * (L x) ^ (2 : ℕ) * Real.exp (-((L x) ^ F.c)) := by
         rw [div_eq_mul_inv, Real.exp_neg]
       _ ≤ 1 / 2 := le_of_lt hdecay
@@ -52,7 +50,7 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
     unfold PrimeGroups.BigGroup PrimeGroups.bigGroups
     exact Fintype.card_of_subtype
       (Finset.univ.filter (fun g : P.Group => P.big g = true))
-      (by intro g; simp)
+      (by simp)
   have hBigCard : (Fintype.card P.BigGroup : ℝ) ≤ F.C₀ * T x := by
     rw [hcardBig]
     exact hP.2.2.2.1
@@ -61,13 +59,12 @@ theorem EmptyBoundaryMassTask_proof : Erdos821.S2Core.EmptyBoundaryMassTask := b
       _ ≤ (J + F.ell : ℝ) * (F.C₀ * T x) * e := by
         apply mul_le_mul_of_nonneg_right
         · exact mul_le_mul_of_nonneg_left hBigCard (by positivity)
-        · exact he0
+        omega
       _ = (J + F.ell : ℝ) * F.C₀ * T x *
           ((N x : ℝ) + 1) / Real.exp ((L x) ^ F.c) := by
-        dsimp [e]
         ring
       _ ≤ 1 / 2 := by
-        simpa [M, Nat.cast_add] using hbudgetRaw
+        grind
   exact initial_boundary_mass_le_two_of_budget F P J m (N x) A e
     hehalf hbudget hV hfloor
 

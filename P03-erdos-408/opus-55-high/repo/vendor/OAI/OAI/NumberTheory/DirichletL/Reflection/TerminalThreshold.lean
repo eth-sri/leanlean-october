@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Reflection.AnnularNormalization
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
+open scoped Classical
+open CompletedDyadic CompletedGauss CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
+variable {φ : Type*} [Fintype φ] {a c : ActualEisensteinCubic.O} {mode : Bool}
 
 lemma frozenExtracted_eq_ideal (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3) (v : Fin 3) :
     frozenExtracted F jF e v = reflectionExtractedDivisor F.ideal jF e v := by
@@ -32,7 +31,7 @@ theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e
   have hr : 0<ramifiedScale 1 completedRamifiedStep m := ramifiedScale_pos _ _
     (by norm_num) (lt_trans zero_lt_one completedRamifiedStep_gt_one) _
   have htau := sourceCuspScale_pos s.index
-  have hp (I : Ideal Eis) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
+  have hp (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   have hcn := hp (Ideal.span {c}) (Ideal.span_singleton_eq_bot.not.mpr hc)
   have hfn := hp (∏ i, F.ideal i) (Finset.prod_ne_zero_iff.mpr (fun i _ => NeZero.ne (F.ideal i)))
@@ -44,13 +43,12 @@ theorem actual_kernel_terminal_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e
     simp only [actualKernelCoefficient,fixedKernelCoefficient,map_one,Nat.cast_one,one_pow,mul_one,map_mul,Nat.cast_mul]
   rw [hcc,annular_kernel_threshold Z T (sourceCuspScale s.index)
     ((Ideal.absNorm (Ideal.span {c}):ℝ)*(Ideal.absNorm (∏ i,F.ideal i):ℝ))
-    _ QK QP Qn Qb kn kb _ _ hT htau (mul_pos hcn hfn) hr hK hP hn hb hkn hkb (hd 1) (hd 2)]
+    _ QK QP Qn Qb kn kb _ _ hT htau (by positivity) hr hK hP hn hb hkn hkb (hd 1) (hd 2)]
   unfold InverseTerminalWidths.terminalDualWidth InverseTerminalWidths.normWidth
   rw [← frozenExtracted_eq_ideal F jF e 1,← frozenExtracted_eq_ideal F jF e 2]
   have hd1 := hd 1
   have hd2 := hd 2
   simp (disch := positivity) only [Real.logb_div,Real.logb_mul,Real.logb_pow]
-  norm_num only [Nat.cast_ofNat]
   ring
 
 end

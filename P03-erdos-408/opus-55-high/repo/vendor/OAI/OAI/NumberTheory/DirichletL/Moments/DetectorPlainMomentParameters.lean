@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorPlainUnmarkedState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainMomentParameters
-open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
+open HeckeFamily HeckeDetectorRawFiber
 open CenteredMomentDetectorDictionary
-open CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentEnergyBands
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
-open CenteredMomentDetectorPlainUnmarkedState CenteredMomentNaturalFixedRaySource
-local notation "O" => HeckeFamily.O
+open CenteredMomentDetectorPlainUnmarkedState
 
 variable {Δ:ℝ}
 
@@ -38,7 +37,7 @@ theorem fixed_parameters (D:Parameters.HighData Δ):
   · exact div_pos D.t_pos (by norm_num)
   constructor
   · linarith [D.t_pos]
-  constructor <;> linarith
+  grind
 
 lemma source_base_gt_one (_D:Parameters.HighData Δ)(Z d:ℝ)
     (hZ:1<Z)(hd:(1/200:ℝ)≤d):1<Z^d :=
@@ -47,7 +46,7 @@ lemma source_base_gt_one (_D:Parameters.HighData Δ)(Z d:ℝ)
 lemma witness_length_cap (D:Parameters.HighData Δ):
     1/2+75*D.ε≤(23/40:ℝ) := by linarith [D.epsilon_small]
 
-variable {M:Ideal O}[NeZero M]{H:Subgroup (O⧸M)ˣ}{Label:Type*}
+variable {M:Ideal HeckeFamily.O}[NeZero M]{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label:Type*}
 variable {U a tstar T heightAllowance:ℝ}{i:ℕ}
 
 theorem actual_fiber_lengths (D:Parameters.HighData Δ)
@@ -64,19 +63,13 @@ theorem actual_fiber_lengths (D:Parameters.HighData Δ)
 lemma width_bands (D:Parameters.HighData Δ)(m:ℝ)(hm:m≤23/40):
     1≤1+delta D ∧ 1+delta D≤2 ∧
     1≤max 1 (2*m)+delta D ∧ max 1 (2*m)+delta D≤2 := by
-  have hδ:0<delta D:=(fixed_parameters D).1
-  have hd:delta D≤1/4:=(fixed_parameters D).2.1
-  have hmax:max 1 (2*m)≤23/20:=max_le (by norm_num) (by linarith)
-  have hlo:=le_max_left (1:ℝ) (2*m)
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor <;> linarith
+  have hδ:=(fixed_parameters D).1
+  have hd:=(fixed_parameters D).2.1
+  grind
 
 theorem unmarked_state_admission (D:Parameters.HighData Δ)
     (F:Fiber M H Label (Fin D.N) U a D.ε tstar T heightAllowance i)
-    (η:Character)(Q:Ideal O)(Φ:𝓢(ℝ,ℂ))(bΦ:ℝ)(hU:1<U)
+    (η:Character)(Q:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(bΦ:ℝ)(hU:1<U)
     (hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)(hp:∀x,0≤(Φ x).re)
     (hη:(η.modulus.absNorm:ℝ)≤U^(delta D)):
     let s:=state F η Q Φ bΦ (delta D) hU.le (fixed_parameters D).1.le hs hp hη;
@@ -87,13 +80,12 @@ theorem unmarked_state_admission (D:Parameters.HighData Δ)
   dsimp only
   have hf:=actual_fiber_lengths D F hU
   have hw:=width_bands D F.m hf.2.2.1
-  have he:(state F η Q Φ bΦ (delta D) hU.le (fixed_parameters D).1.le hs hp hη).width=
+  have he:(state F η Q Φ bΦ (delta D) hU.le (by linarith) hs hp hη).width=
       max 1 (2*F.m)+delta D:=padded_width _ _
   refine ⟨rfl,rfl,rfl,rfl,rfl,rfl,he,?_,?_,hf.2.2.2.1,hf.2.2.2.2.1,?_⟩
-  · rw [he];exact hw.2.2.1
-  · rw [he];exact hw.2.2.2
-  · rw [he,hf.2.2.2.2.2]
-    exact (le_max_right 1 (2*F.m)).trans (le_add_of_nonneg_right (fixed_parameters D).1.le)
+  · linarith
+  · linarith
+  grind
 
 theorem source_label_fixed_allowance (D:Parameters.HighData Δ)
     (S:ProbeFinalAssembly.SourceData D)(η:Character):

@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialSource
 open HeckeFamily CenteredMomentSourceRow CenteredMomentAbsoluteEnergy CenteredMomentHeckeExpansion
 open QuadraticInitialBound ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
 
 lemma norm_le_diagonalControl (Φ:𝓢(ℝ,ℂ))(x:ℝ):‖Φ x‖≤diagonalControl Φ:=by
   have hs:SchwartzMap.seminorm ℝ 0 0 Φ≤
@@ -35,14 +34,14 @@ theorem exists_fixed_bump (b:ℝ)(_hb:0<b):
     (n:=⊤) isOpen_Ioo isClosed_Icc hsub
   let v:ℝ→ℂ:=fun x=>((f x)^2:ℝ)
   have hv:ContDiff ℝ ∞ v:=Complex.ofRealCLM.contDiff.comp
-    ((by simpa using hf:ContDiff ℝ ∞ f).pow 2)
+    ((by omega:ContDiff ℝ ∞ f).pow 2)
   have hsupp:Function.support v⊆Set.Icc (-1) (b+1):=by
     intro x hx
     have hn:x∈Function.support f:=by
       intro hz
       exact hx (by simp [v,hz])
     rw [hs] at hn
-    exact ⟨hn.1.le,hn.2.le⟩
+    exact by grind
   let Ψ:𝓢(ℝ,ℂ):=(HasCompactSupport.of_support_subset_isCompact isCompact_Icc hsupp).toSchwartzMap hv
   refine ⟨Ψ,hsupp,?_,?_,?_⟩
   · intro x
@@ -52,13 +51,12 @@ theorem exists_fixed_bump (b:ℝ)(_hb:0<b):
     exact Complex.ofReal_im _
   · intro x hx
     change (((f x)^2:ℝ):ℂ)=1
-    rw [(hone x).mp hx]
-    norm_num
+    simp_all
 
 theorem finite_energy_domination (b:ℝ)(Ψ:𝓢(ℝ,ℂ))
     (hΨ:∀x,0≤(Ψ x).re)(hone:∀x∈Set.Icc (0:ℝ) b,Ψ x=1)
     (Φ:𝓢(ℝ,ℂ))(hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic b)
-    (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
+    (η:Character)(m A:HeckeFamily.O)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(c:Ideal HeckeFamily.O→ℂ)
     (K:ℝ)(hK:0<K):
     ‖finiteHeckeEnergy η m A t S c Φ K‖≤
       diagonalControl Φ*‖finiteHeckeEnergy η m A t S c Ψ K‖:=by
@@ -66,21 +64,21 @@ theorem finite_energy_domination (b:ℝ)(Ψ:𝓢(ℝ,ℂ))
     intro x hx
     by_cases h:Φ x=0
     · rw [h,norm_zero]
-      exact mul_nonneg (diagonalControl_nonneg Φ) (hΨ x)
+      exact mul_nonneg (diagonalControl_nonneg Φ) (by grind)
     · rw [hone x ⟨hx,hs h⟩,Complex.one_re,mul_one]
       exact norm_le_diagonalControl Φ x
   have hsumΦ:=finite_hecke_energy_summable η m A t S c Φ K hK
   have hsumΨ:=finite_hecke_energy_summable η m A t S c Ψ K hK
-  have hre:HasSum (fun z:O=>‖∑I∈S,c I*rowWeight η m A z t I‖^2*
+  have hre:HasSum (fun z:HeckeFamily.O=>‖∑I∈S,c I*rowWeight η m A z t I‖^2*
       (Ψ (‖eisEmbedding z‖^2/K)).re)
       (finiteHeckeEnergy η m A t S c Ψ K).re:=by
     have hh:=Complex.hasSum_re hsumΨ.hasSum
     simpa only [Complex.mul_re,Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero,
       finiteHeckeEnergy] using hh
   calc
-    _≤∑'z:O,‖((‖∑I∈S,c I*rowWeight η m A z t I‖^2:ℝ):ℂ)*
+    _≤∑'z:HeckeFamily.O,‖((‖∑I∈S,c I*rowWeight η m A z t I‖^2:ℝ):ℂ)*
       Φ (‖eisEmbedding z‖^2/K)‖:=norm_tsum_le_tsum_norm hsumΦ.norm
-    _≤∑'z:O,diagonalControl Φ*(‖∑I∈S,c I*rowWeight η m A z t I‖^2*
+    _≤∑'z:HeckeFamily.O,diagonalControl Φ*(‖∑I∈S,c I*rowWeight η m A z t I‖^2*
       (Ψ (‖eisEmbedding z‖^2/K)).re):=by
       apply hsumΦ.norm.tsum_le_tsum _ (hre.summable.mul_left _)
       intro z
@@ -93,7 +91,7 @@ theorem finite_energy_domination (b:ℝ)(Ψ:𝓢(ℝ,ℂ))
 theorem fixed_source (b:ℝ)(hb:0<b):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (b+1) ∧
       (∀x,0≤(Ψ x).re) ∧ ∀Φ:𝓢(ℝ,ℂ),Function.support (Φ:ℝ→ℂ)⊆Set.Iic b→
-      ∀(η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)(K:ℝ),0<K→
+      ∀(η:Character)(m A:HeckeFamily.O)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(c:Ideal HeckeFamily.O→ℂ)(K:ℝ),0<K→
       ‖finiteHeckeEnergy η m A t S c Φ K‖≤
         diagonalControl Φ*‖finiteHeckeEnergy η m A t S c Ψ K‖:=by
   obtain ⟨Ψ,hs,hn,_,hone⟩:=exists_fixed_bump b hb

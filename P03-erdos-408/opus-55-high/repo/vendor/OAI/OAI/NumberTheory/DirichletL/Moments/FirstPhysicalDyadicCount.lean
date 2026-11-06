@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalDyadicAssembly
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicCount
 open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentDyadicCount
@@ -17,7 +17,7 @@ lemma indices_mono_upper (a b c : ℝ) (ha : 0<a) (hb : 0<b) (hbc : b≤c) :
   intro n hn
   rw [mem_indices_iff_scale a c ha (hb.trans_le hbc)]
   have h := (mem_indices_iff_scale a b ha hb n).mp hn
-  exact ⟨h.1,h.2.trans (by linarith)⟩
+  grind
 
 lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
     (hC : 1≤nC) (hD : 1≤nD) :
@@ -25,8 +25,8 @@ lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
       Fintype.card (∀i:Fin 4,↥(indices (![K,1,1,1] i)
         (![K,max 1 R,max 1 H,max 1 H] i))) := by
   have hcol (n : ℝ) (hn : 1≤n) : indices 1 (H/n) ⊆ indices 1 (max 1 H) := by
-    apply indices_mono_upper _ _ _ (by norm_num) (div_pos hH (zero_lt_one.trans_le hn))
-    exact (div_le_self hH.le hn).trans (le_max_right _ _)
+    apply indices_mono_upper _ _ _ (by norm_num) (by positivity)
+    exact (div_le_self hH.le hn).trans (by simp)
   have hs (i : Fin 4) : bands K R (H/nC) (H/nD) i ⊆
       indices (![K,1,1,1] i) (![K,max 1 R,max 1 H,max 1 H] i) := by
     fin_cases i
@@ -38,7 +38,7 @@ lemma blocks_card_le (K R H nC nD : ℝ) (hH : 0<H)
     · exact hcol nD hD
   let f : Blocks K R (H/nC) (H/nD) →
       (∀i:Fin 4,↥(indices (![K,1,1,1] i) (![K,max 1 R,max 1 H,max 1 H] i))) :=
-    fun x i => ⟨x i,hs i (x i).property⟩
+    fun x i => ⟨x i,by grind⟩
   apply Fintype.card_le_of_injective f
   intro x y hxy
   funext i
@@ -52,23 +52,23 @@ theorem blocks_subpower (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
       R≤Cr*Z^L → H≤Z^B →
       (Fintype.card (Blocks K R (H/nC) (H/nD)):ℝ)≤C*Z^ε := by
   obtain ⟨C,hC,hcount⟩ := four_indices_subpower (max 1 Cr) (B+L) ε
-    (le_max_left _ _) (add_nonneg hB hL) hε
+    (by simp) (by positivity) hε
   refine ⟨C,hC,?_⟩
   filter_upwards [hcount,Filter.eventually_ge_atTop (1:ℝ)] with Z hcount hZ
   intro K R H nC nD hK hH hnC hnD hR hHcap
   have hz : 0<Z := zero_lt_one.trans_le hZ
-  have hp : 1≤Z^(B+L) := Real.one_le_rpow hZ (add_nonneg hB hL)
+  have hp : 1≤Z^(B+L) := Real.one_le_rpow hZ (by positivity)
   have hbound : 1≤max 1 Cr*Z^(B+L) :=
-    one_le_mul_of_one_le_of_one_le (le_max_left _ _) hp
+    one_le_mul_of_one_le_of_one_le (by simp) hp
   have hR' : max 1 R≤max 1 Cr*Z^(B+L) := by
     apply max_le hbound
-    exact hR.trans (mul_le_mul (le_max_right _ _)
+    exact hR.trans (mul_le_mul (by simp)
       (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
-      (Real.rpow_nonneg hz.le _) (by positivity))
+      (by positivity) (by positivity))
   have hH' : max 1 H≤max 1 Cr*Z^(B+L) := by
     apply max_le hbound
-    exact hHcap.trans ((Real.rpow_le_rpow_of_exponent_le hZ (by linarith : B≤B+L)).trans
-      (le_mul_of_one_le_left (zero_le_one.trans hp) (le_max_left _ _)))
+    exact hHcap.trans ((Real.rpow_le_rpow_of_exponent_le hZ (by linarith)).trans
+      (le_mul_of_one_le_left (zero_le_one.trans hp) (by simp)))
   have hfour := hcount ![K,1,1,1] ![K,max 1 R,max 1 H,max 1 H]
     (by intro i;fin_cases i <;> simp_all)
     (by intro i;fin_cases i <;> simp)

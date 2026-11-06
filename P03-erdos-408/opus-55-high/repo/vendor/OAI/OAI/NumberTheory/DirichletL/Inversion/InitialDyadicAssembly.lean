@@ -9,14 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic
 namespace SevenEighths.InverseInitialDyadicAssembly
-local notation "Eis" => ActualEisensteinCubic.O
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open InverseInitialKernelBridge InverseSecondChildWindows
+open InverseSecondChildWindows
 open CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 abbrev Windows (a b : Fin 4→ℝ) := ∀ i:Fin 4,↥(indices (a i) (b i))
@@ -49,7 +48,7 @@ theorem weight_eq_cutoff (Z D:ℝ) (hZ:1<Z) (k:Fin 4→ℤ) (q:Fin 6→ℝ) :
   simp [weight,Fin.prod_univ_succ,dyadicWeight,outerIndex,outerCutoff,cutoff,
     relativeNorm,secondRelativeNorm,exponent_scale Z hZ,mul_assoc]
 
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
 
 def sourceNorms (x:Source (ι:=ι) 0) : Fin 4→ℝ :=
   fun i=>coordinates p (sourcePoint x ∅ ∅) (outerIndex i)
@@ -65,7 +64,7 @@ theorem source_weight_cutoff (Z D:ℝ) (hZ:1<Z) (k:Fin 4→ℤ)
 omit [DecidableEq ι] in
 theorem sourceNorms_one_le (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal] (x:Source (ι:=ι) 0)
     (hf:x.frequency≠0) : ∀i,1≤sourceNorms p x i := by
-  have hi (I:Ideal Eis) (hI:I≠0) : (1:ℝ)≤(Ideal.absNorm I:ℝ) := by
+  have hi (I:Ideal ActualEisensteinCubic.O) (hI:I≠0) : (1:ℝ)≤(Ideal.absNorm I:ℝ) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   intro i
   fin_cases i
@@ -74,7 +73,7 @@ theorem sourceNorms_one_le (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   · exact hi _ (sourceIdeal_ne_zero p hp _)
   · change 1≤‖ConcreteTraceCRT.eisEmbedding x.frequency‖^2
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
-    exact hi _ (by change Ideal.span {x.frequency}≠⊥; exact Ideal.span_singleton_eq_bot.not.mpr hf)
+    exact hi _ (by simp_all)
 
 variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
@@ -84,7 +83,7 @@ theorem physicalBlock_partition
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (a b:Fin 4→ℝ)(ha:∀i,0<a i)
     (hs:∀x∈S,∀i,sourceNorms p x i∈Set.Icc (a i) (b i))
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ) :
     physicalBlock p hp hcop hg (pointSource pool S) (w∘erasePoint)
       Ψ j marks W₁ W₂ Φ Z D m =
@@ -101,13 +100,13 @@ theorem physicalBlock_partition
   apply Finset.sum_congr rfl
   intro ρ hρ
   simp only [Function.comp_apply,erase_sourcePoint]
-  rw [←Finset.sum_mul,←Finset.mul_sum,weight_partition a b _ ha (hs s hsS),mul_one]
+  rw [←Finset.sum_mul,←Finset.mul_sum,weight_partition a b _ ha (by grind),mul_one]
 
 theorem physicalBlock_window_partition
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (a b:Fin 4→ℝ)(ha:∀i,0<a i)
     (hs:∀x∈S,∀i,sourceNorms p x i∈Set.Icc (a i) (b i))
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:1<Z) :
     physicalBlock p hp hcop hg (pointSource pool S) (w∘erasePoint)
       Ψ j marks W₁ W₂ Φ Z D m =

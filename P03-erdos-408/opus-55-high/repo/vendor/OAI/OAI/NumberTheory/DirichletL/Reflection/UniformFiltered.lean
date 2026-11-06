@@ -8,34 +8,32 @@ public import OAI.NumberTheory.DirichletL.Reflection.FilteredMeasure
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
-variable {Ω : Type*} [MeasurableSpace Ω] {N a c : Eis} {mode : Bool}
+variable {Ω : Type*} [MeasurableSpace Ω] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem filtered_actual_weighted_reflected_energy_type_uniform (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-      (hc : c ≠ 0), (9:Eis)*c ∣ N →
-      (if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) → IsCoprime a c →
+      (hc : c ≠ 0), (9:ActualEisensteinCubic.O)*c ∣ N →
+      (if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
-      (∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
+      (∀ f, ringChar (ActualEisensteinCubic.O ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
     ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
       (D0 : ControlledStratumArithmetic G0.generator N a c mode)
-      (u : Eisˣ) (m : ℕ) (rows nset bset Pset : Finset (Ideal Eis))
-      (S : Ideal Eis → PrimeFamily σ) (E : Finset (φ→Fin 3))
-      (r aw : Ideal Eis → ℂ) (w : Ideal Eis → Ideal Eis → ℂ),
+      (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (S : Ideal ActualEisensteinCubic.O → PrimeFamily σ) (E : Finset (φ→Fin 3))
+      (r aw : Ideal ActualEisensteinCubic.O → ℂ) (w : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ) ≤ X) →
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i) = P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
       (∀ P ∈ Pset, ∀ i, IsCoprime (Ideal.span {N}) ((F.sum (S P)).ideal i)) →
-      (∀ P ∈ Pset, ∀ i, ringChar (Eis ⧸ (F.sum (S P)).ideal i) ≠ 2) →
+      (∀ P ∈ Pset, ∀ i, ringChar (ActualEisensteinCubic.O ⧸ (F.sum (S P)).ideal i) ≠ 2) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n:ℝ) ≤ Y) →
       (∀ b ∈ bset, primaryGenerator b ≠ 0 ∧ (Ideal.absNorm b:ℝ) ≤ B) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L ≤ (Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ) ≤ 2*L) →
@@ -76,23 +74,23 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
     ∃ C : ℝ, 0 < C ∧ ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (X Y B L : ℝ), 1 ≤ X → 1 ≤ Y → 1 ≤ B → 1 ≤ L →
     ∀ (F : PrimeFamily φ) (jF : φ → ℕ)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-      (hc : c ≠ 0), (9:Eis)*c ∣ N →
-      (if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) → IsCoprime a c →
+      (hc : c ≠ 0), (9:ActualEisensteinCubic.O)*c ∣ N →
+      (if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
-      (∀ f, ringChar (Eis ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
+      (∀ f, ringChar (ActualEisensteinCubic.O ⧸ F.ideal f) ≠ 2) → (∀ f, jF f < 6) →
     ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
       (D0 : ControlledStratumArithmetic G0.generator N a c mode)
-      (u : Eisˣ) (m : ℕ) (rows nset bset Pset : Finset (Ideal Eis))
-      (S : Ideal Eis → PrimeFamily σ) (branches : Finset (φ→Fin 3))
+      (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (S : Ideal ActualEisensteinCubic.O → PrimeFamily σ) (branches : Finset (φ→Fin 3))
       (μ : Measure Ω) (density : Ω → ℂ) (scalar : ℂ)
-      (r aw : Ω → Ideal Eis → ℂ) (w : Ω → Ideal Eis → Ideal Eis → ℂ),
+      (r aw : Ω → Ideal ActualEisensteinCubic.O → ℂ) (w : Ω → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ) ≤ X) →
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i) = P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
       (∀ P ∈ Pset, ∀ i, IsCoprime (Ideal.span {N}) ((F.sum (S P)).ideal i)) →
-      (∀ P ∈ Pset, ∀ i, ringChar (Eis ⧸ (F.sum (S P)).ideal i) ≠ 2) →
+      (∀ P ∈ Pset, ∀ i, ringChar (ActualEisensteinCubic.O ⧸ (F.sum (S P)).ideal i) ≠ 2) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n:ℝ) ≤ Y) →
       (∀ b ∈ bset, primaryGenerator b ≠ 0 ∧ (Ideal.absNorm b:ℝ) ≤ B) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L ≤ (Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ) ≤ 2*L) →
@@ -133,7 +131,7 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   have hbound (t : Ω) : (∑ K, ‖ψ K t‖^2) ≤ E := by
     change (∑ K : rows, ‖(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
       (actualCuspColumn D0 s hc u m) (r t) (aw t) (w t) u m Pset nset bset K.val)‖^2) ≤ E
-    rw [Finset.sum_coe_sort rows (fun K : Ideal Eis => ‖(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
+    rw [Finset.sum_coe_sort rows (fun K : Ideal ActualEisensteinCubic.O => ‖(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
       (actualCuspColumn D0 s hc u m) (r t) (aw t) (w t) u m Pset nset bset K)‖^2)]
     exact he X Y B L hX hY hB hL F jF s hc hN hbase hac hF hNF hcharF hj
       G0 D0 u m rows nset bset Pset S branches (r t) (aw t) (w t)
@@ -154,12 +152,12 @@ theorem integrated_filtered_actual_reflected_energy_type_uniform (ε : ℝ) (hε
   have hsum : (∑ K : rows, ‖∫ t, density t*ψ K t ∂μ‖^2) =
       ∑ K ∈ rows, ‖∫ t, density t*(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
       (actualCuspColumn D0 s hc u m) (r t) (aw t) (w t) u m Pset nset bset K) ∂μ‖^2 :=
-    Finset.sum_coe_sort rows (fun K : Ideal Eis =>
+    Finset.sum_coe_sort rows (fun K : Ideal ActualEisensteinCubic.O =>
       ‖∫ t, density t*(∑ e∈branches, weightedReflectedBranchHybridRow F jF e S s D0.fixedFactor
       (actualCuspColumn D0 s hc u m) (r t) (aw t) (w t) u m Pset nset bset K) ∂μ‖^2)
   rw [hsum] at hh
   simp only [norm_mul,mul_pow,← Finset.mul_sum]
-  simpa only [E,mul_assoc] using hh
+  linarith
 
 end
 end SevenEighths.InverseReflectedPhase

@@ -11,7 +11,6 @@ ghost/edge choices, the analytic ghost parameters, and the empty boundary mass. 
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -25,7 +24,7 @@ open Erdos821.Blueprint.Graph hiding BirthAddress EdgeChoice GhostChoice MemoryH
   memoryEntry memoryGhostKernel permuteActive rawEdgeValid rawEdgeWeight retrievedIndices
   smallDamping smallOmega smallTargetFactor storedMemory transferModeAccept translateMemory
   translateParticle translateSmallResidues zeroBirthBatch zeroMemoryIndices
-open Erdos821.S2Core Erdos821.P3Lowrank Erdos821.S2High
+open Erdos821.S2Core Erdos821.S2High
 
 /-- The scalar absorption into `L ^ (Ch * (N + 1))`. -/
 theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ) (N : ℕ) (hℓ : 2 ≤ ℓ) (hCG : 0 ≤ CG)
@@ -36,28 +35,28 @@ theorem scalar_absorb (ℓ CG Cv Ca IBM X : ℝ) (N : ℕ) (hℓ : 2 ≤ ℓ) (h
   have hℓ1 : 1 ≤ ℓ := by linarith
   apply mul_le_mul_of_nonneg_right _ hX
   have h1 : CG ^ (N + 1) ≤ (ℓ ^ Cv) ^ (N + 1) := pow_le_pow_left₀ hCG hCGle _
-  have hCa' : 1 ≤ ℓ ^ (max Ca 0) := Real.one_le_rpow hℓ1 (le_max_right _ _)
+  have hCa' : 1 ≤ ℓ ^ (max Ca 0) := Real.one_le_rpow hℓ1 (by positivity)
   have h2 : (ℓ ^ Ca) ^ N ≤ (ℓ ^ (max Ca 0)) ^ (N + 1) :=
     calc (ℓ ^ Ca) ^ N ≤ (ℓ ^ (max Ca 0)) ^ N :=
-          pow_le_pow_left₀ (Real.rpow_nonneg hℓ0.le _)
-            (Real.rpow_le_rpow_of_exponent_le hℓ1 (le_max_left _ _)) _
+          pow_le_pow_left₀ (by positivity)
+            (Real.rpow_le_rpow_of_exponent_le hℓ1 (by simp)) _
       _ ≤ (ℓ ^ (max Ca 0)) ^ (N + 1) := pow_le_pow_right₀ hCa' (Nat.le_succ N)
   have h3 : IBM ≤ ℓ ^ (N + 1) :=
     calc IBM ≤ 2 := hIBM
       _ ≤ ℓ := hℓ
-      _ = ℓ ^ 1 := (pow_one ℓ).symm
+      _ = ℓ ^ 1 := by simp
       _ ≤ ℓ ^ (N + 1) := pow_le_pow_right₀ hℓ1 (by omega)
   have hpowexp : ℓ ^ ((Cv + max Ca 0 + 1) * ((N + 1 : ℕ) : ℝ)) =
       (ℓ ^ Cv) ^ (N + 1) * (ℓ ^ (max Ca 0)) ^ (N + 1) * ℓ ^ (N + 1) := by
     rw [Real.rpow_mul hℓ0.le, Real.rpow_natCast, Real.rpow_add hℓ0, Real.rpow_add hℓ0,
       Real.rpow_one, mul_pow, mul_pow]
   rw [hpowexp]
-  have hA0 : 0 ≤ (ℓ ^ Cv) ^ (N + 1) := pow_nonneg (Real.rpow_nonneg hℓ0.le _) _
-  have hB0 : 0 ≤ (ℓ ^ Ca) ^ N := pow_nonneg (Real.rpow_nonneg hℓ0.le _) _
+  have hA0 : 0 ≤ (ℓ ^ Cv) ^ (N + 1) := by positivity
+  have hB0 : 0 ≤ (ℓ ^ Ca) ^ N := by positivity
   calc CG ^ (N + 1) * (ℓ ^ Ca) ^ N * IBM
       ≤ (ℓ ^ Cv) ^ (N + 1) * (ℓ ^ (max Ca 0)) ^ (N + 1) * ℓ ^ (N + 1) := by
         apply mul_le_mul (mul_le_mul h1 h2 hB0 hA0) h3 hIBM0
-        exact mul_nonneg hA0 (pow_nonneg (Real.rpow_nonneg hℓ0.le _) _)
+        positivity
 
 /-- The high-rank task, given the empty-boundary mass estimate. -/
 theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
@@ -78,12 +77,12 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
   have ev3 : ∀ᶠ x : ℝ in atTop, (2 : ℝ) ≤ Real.log x :=
     Real.tendsto_log_atTop.eventually_ge_atTop 2
   obtain ⟨x₁, hx₁⟩ := Filter.eventually_atTop.1 (ev1.and (ev2.and ev3))
-  refine ⟨16 / F.vMin, div_pos (by norm_num) hvmin, max (max xG xE) (max xB x₁), ?_⟩
+  refine ⟨16 / F.vMin, by positivity, max (max xG xE) (max xB x₁), ?_⟩
   intro x hx P hP A hA theta pi hpi
-  have hxG' : x ≥ xG := le_trans (le_trans (le_max_left _ _) (le_max_left _ _)) hx
-  have hxE' : x ≥ xE := le_trans (le_trans (le_max_right _ _) (le_max_left _ _)) hx
-  have hxB' : x ≥ xB := le_trans (le_trans (le_max_left _ _) (le_max_right _ _)) hx
-  have hx1' : x ≥ x₁ := le_trans (le_trans (le_max_right _ _) (le_max_right _ _)) hx
+  have hxG' : x ≥ xG := by grind
+  have hxE' : x ≥ xE := by grind
+  have hxB' : x ≥ xB := by grind
+  have hx1' : x ≥ x₁ := by grind
   obtain ⟨hN, h2, hL2⟩ := hx₁ x hx1'
   have hL2' : (2 : ℝ) ≤ L x := hL2
   set E : ℝ := Real.exp ((L x) ^ F.c) with hEdef
@@ -105,16 +104,16 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
     linarith
   obtain ⟨hV, hbase, hsum2, hCvb⟩ := hxG x hxG' P hP
   have hmb := tiltedMu_group_mass_bounds F P x (N x) hP hcut
-  have hμ : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < tiltedMu F P (N x) g.val q :=
+  have hμ :=
     fun g q => ((hmb g).1 q).1
-  have hmass1 : ∀ g : P.BigGroup, 1 ≤ ∑ q : P.Prime g.val, tiltedMu F P (N x) g.val q :=
+  have hmass1 :=
     fun g => (hmb g).2.1
   have hmassJ : ∀ (g : P.BigGroup) (forb : Finset (P.Prime g.val)), forb.card ≤ J →
       (1 / 2 : ℝ) ≤ ∑ q ∈ Finset.univ.filter (fun q => q ∉ forb), tiltedMu F P (N x) g.val q :=
     fun g forb hcard => tiltedMass_avoiding_finite_set_ge_half F P x (N x) hP hcut g forb J
       hcard hsmall
   set CG : ℝ := (Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card with hCGdef
-  have hCG0 : 0 ≤ CG := pow_nonneg (Real.exp_pos _).le _
+  have hCG0 : 0 ≤ CG := by positivity
   have hL0 : 0 < L x := by linarith
   have hCE0 : 0 ≤ (L x) ^ Ca := Real.rpow_nonneg hL0.le _
   have hG : ∀ (i : Fin (N x + 1)) (s : P.MemoryState (J + F.ell)),
@@ -126,7 +125,7 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
     have h := hGR F P J (N x) r hV hbase hsum2 1 (Or.inl rfl) i s
     exact ⟨h.1, h.2.1⟩
   have hEw := hxE x hxE' P hP (majorantModel A)
-    (by rw [majorantModel_patternMass]; exact hA) theta
+    (by rw [majorantModel_patternMass]; omega) theta
   have hE : ∀ (i : Fin (N x)) (s : P.MemoryState (J + F.ell)),
       Summable (fun t => absoluteMemoryEdgeKernel (majorantModel A) (N x) r.rho theta i .all s t *
         P.memoryWeight r.v t) ∧
@@ -145,7 +144,7 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
     exact h
   have hIBM := hxB x hxB' P hP m A
   have hIBM0 : 0 ≤ initialMemoryBoundaryMass A (N x) :=
-    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
+    Finset.sum_nonneg fun _ _ => by positivity
   have hv : 1 ≤ r.v := r.v_gt.le
   have hY0 : 0 ≤ (16 / (F.vMin * E)) ^ birthRank pi := by positivity
   calc highRankHistoryExpression A (N x) (memoryCutoff x) r.rho theta pi
@@ -168,12 +167,12 @@ theorem highRank_of_boundary (F : FixedData) (r : MemoryParameters F)
     _ ≤ CG ^ (N x + 1) * ((L x) ^ Ca) ^ (N x) * initialMemoryBoundaryMass A (N x) *
           (16 / (F.vMin * E)) ^ birthRank pi :=
         mul_le_mul_of_nonneg_left (assign_sum_le x hP hcut pi hpi)
-          (mul_nonneg (mul_nonneg (pow_nonneg hCG0 _) (pow_nonneg hCE0 _)) hIBM0)
+          (by positivity)
     _ ≤ (L x) ^ ((Cv + max Ca 0 + 1) * ((N x + 1 : ℕ) : ℝ)) *
           (16 / (F.vMin * E)) ^ birthRank pi :=
         scalar_absorb (L x) CG Cv Ca (initialMemoryBoundaryMass A (N x)) _ (N x) hL2' hCG0 hCvb
           hIBM0 hIBM hY0
-    _ = _ := by rw [div_div]
+    _ = _ := by ring
 
 end Erdos821.P3High
 

@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorMomentData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
 open HeckeDetectorCoefficientTransfer CenteredMomentRetainedEnergy
-open CenteredMomentPrimeSlot CenteredMomentWholeSlotDeletion
-local notation "O" => HeckeFamily.O
+open CenteredMomentPrimeSlot
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem source_plain_pair_norm
-    (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
-    (η χ ψ : Character) (m u : O) (reverse : Bool)
+    (M : Ideal HeckeFamily.O) (H : Subgroup (HeckeFamily.O⧸M)ˣ)
+    (η χ ψ : Character) (m u : HeckeFamily.O) (reverse : Bool)
     (hrow : ∀n,elementCoeff ψ n=CanonicalRowCompletion.rowTwist (elementHom η) m 1 (1*u) n)
-    (hc : ∀I : Ideal O,idealCoeff χ I=if reverse then conj (idealCoeff ψ I) else idealCoeff ψ I)
+    (hc : ∀I : Ideal HeckeFamily.O,idealCoeff χ I=if reverse then conj (idealCoeff ψ I) else idealCoeff ψ I)
     (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hMm : M≤Ideal.span {m})
     (W₁ W₂ : ℝ→ℂ) (V : ι→ℝ→ℂ) (b P : ι→ℝ) (external : ι→ℂ)
     (X₁ X₂ σ t : ℝ) (hX₁ : 0<X₁) (hX₂ : 0<X₂) (hP : ∀i,0<P i)
@@ -40,12 +39,12 @@ theorem source_plain_pair_norm
   congr 1
   apply Finset.prod_congr rfl
   intro i hi
-  rw [physical_slot_conj M H η m u hmLam hMm (V i) (b i) (P i) (external i) (hP i) (hη i),RCLike.norm_conj]
+  rw [physical_slot_conj M H η m u hmLam hMm (V i) (b i) (P i) (external i) (hP i) (by grind),RCLike.norm_conj]
 
 theorem momentData_plain_pair_norm
-    (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
+    (M : Ideal HeckeFamily.O) (H : Subgroup (HeckeFamily.O⧸M)ˣ)
     (η χ : Character) (u : FreeRow) (reverse : Bool)
-    (hc : ∀I : Ideal O,idealCoeff χ I=if reverse then
+    (hc : ∀I : Ideal HeckeFamily.O,idealCoeff χ I=if reverse then
       conj (idealCoeff ((ProbeHighRowFamily.momentData η).character (ProbeHighRowFamily.momentElement u)) I)
       else idealCoeff ((ProbeHighRowFamily.momentData η).character (ProbeHighRowFamily.momentElement u)) I)
     (hMm : M≤Ideal.span {ProbeHighRowFamily.rowMaskElement})

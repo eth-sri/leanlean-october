@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -17,7 +16,7 @@ noncomputable section
 lemma graph_mu_pos (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g)
     (p : P.Prime g) : 0 < P.mu g p := by
   have hp : 0 < (p.val : ℝ) := by exact_mod_cast (P.prime g p.val p.property).pos
-  exact inv_pos.mpr (mul_pos hV hp)
+  exact inv_pos.mpr (by positivity)
 
 lemma graph_mu_sum (P : PrimeGroups) (g : P.Group) (hV : 0 < P.V g) :
     ∑ p : P.Prime g, P.mu g p = 1 := by
@@ -68,8 +67,7 @@ lemma weighted_sqrt_cauchy {β : Type*} [Fintype β]
     (fun z _ => mul_nonneg (hw z) (ha z))
     (fun z _ => mul_nonneg (hw z) (hb z))
     (fun z _ => le_of_eq (by
-      rw [mul_pow, mul_pow, Real.sq_sqrt (ha z), Real.sq_sqrt (hb z)]
-      ring))
+      grind))
   have hsa : 0 ≤ ∑ z, w z * a z := Finset.sum_nonneg (fun z _ => mul_nonneg (hw z) (ha z))
   have hsb : 0 ≤ ∑ z, w z * b z := Finset.sum_nonneg (fun z _ => mul_nonneg (hw z) (hb z))
   have hsq : (Real.sqrt (∑ z, w z * a z) * Real.sqrt (∑ z, w z * b z)) ^ 2 =

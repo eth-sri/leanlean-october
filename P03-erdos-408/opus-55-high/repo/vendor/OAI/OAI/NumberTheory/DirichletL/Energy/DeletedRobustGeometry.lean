@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDeletedGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDivisors
 open CenteredMomentEnergyLiveClippingDefect
-local notation "O" => HeckeFamily.O
 
 theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hZ:1<Z)(hB:0≤Bmask)(Mcap L X₁ X₂ ell z κ xi e:ℝ)
@@ -23,7 +22,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
     (hκ:3/4≤κ)(hxi:0≤xi)(he:0≤e)(hreserve:xi+11*e/7≤s.width/14)
     (hlarge:5*s.width/6-e≤Real.logb Z (X₁*X₂)+ell)
     (hcap:Real.logb Z (X₁*X₂)+ell+(6*κ-1)*ell≤s.width)
-    (D₁ D₂:Finset (Ideal O))
+    (D₁ D₂:Finset (Ideal HeckeFamily.O))
     (hD₁:D₁∈(CompletedGauss.primeSupport s.puncture).powerset)
     (hD₂:D₂∈(CompletedGauss.primeSupport s.puncture).powerset):
     let short:=s.width/4-Real.logb Z ((∏P∈D₁,P).absNorm:ℝ);
@@ -40,7 +39,7 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   have hb := robust_balanced_long_nonneg s.width (Real.logb Z (X₁*X₂)) ell κ xi e
     s.width_nonneg hell hκ hxi hlarge hcap hreserve
   have hy₁ : 1 ≤ comparisonFirst Z s.width :=
-    Real.one_le_rpow hZ.le (by linarith [s.width_nonneg])
+    Real.one_le_rpow hZ.le (by linarith)
   have hy₂ : 1 ≤ comparisonSecond Z s.width X₁ X₂ := by
     rw [comparison_second_power Z s.width X₁ X₂ hZ hX₁ hX₂]
     exact Real.one_le_rpow hZ.le hb.2
@@ -61,24 +60,21 @@ theorem actual_deleted_gates {Z Bmask bΦ:ℝ}(s:NaturalState Z Bmask bΦ)
   have hLc : 0 ≤ L := by linarith
   have hslot : 0 ≤ (6*κ-1)*ell := mul_nonneg (by linarith) hell
   dsimp only
-  refine ⟨hd₁.2.2, hd₂.2.2, by linarith, by linarith [s.width_nonneg],
-    by linarith, hd₂.2.1, max_le hLc (by linarith [hd₂.1]), ?_⟩
+  refine ⟨hd₁.2.2, hd₂.2.2, by linarith, by linarith,
+    by linarith, hd₂.2.1, max_le hLc (by linarith), ?_⟩
   have hp₁ : ∀ I ∈ D₁, Prime I := fun I hi =>
-    CenteredMomentNaturalRowSource.support_prime s.puncture I (Finset.mem_powerset.mp hD₁ hi)
+    CenteredMomentNaturalRowSource.support_prime s.puncture I (by grind)
   have hp₂ : ∀ I ∈ D₂, Prime I := fun I hi =>
-    CenteredMomentNaturalRowSource.support_prime s.puncture I (Finset.mem_powerset.mp hD₂ hi)
+    CenteredMomentNaturalRowSource.support_prime s.puncture I (by grind)
   let along := Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏ P ∈ D₂, P).absNorm : ℝ)
   have halong : Real.logb Z (comparisonSecond Z s.width X₁ X₂/((∏ P ∈ D₂, P).absNorm : ℝ)) = along := by
     rw [← hd₂.2.2]
     exact Real.logb_rpow hbase hZ.ne'
   rcases robust_deleted_reference_cases Z s.width X₁ X₂ ell z κ xi e (max 0 (s.width-along+xi))
     hZ s.width_nonneg hX₁ hX₂ hell hz hze hκ hxi he hreserve hlarge hcap D₁ D₂ hp₁ hp₂
-    (by rw [halong]) with hc | hc
-  · exact Or.inl (by simpa only [hd₁.2.2, hd₂.2.2] using hc)
-  · apply Or.inr
-    have hh := robust_reflected_low_admissible s.width xi e _ (max 0 (s.width-along+xi)) z κ
-      he hreserve hc.2.1 hc.2.2
-    simpa only [hd₁.2.2] using hh
+    (by simp_all) with hc | hc
+  · grind
+  grind
 
 end SevenEighths.CenteredMomentEnergyDeletedRobustGeometry
 

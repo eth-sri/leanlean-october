@@ -6,7 +6,7 @@ public import Erdos821.S34.BilinearDecayArithmetic
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -48,22 +48,16 @@ theorem supported_tuple_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
           f X * g Y * mellin (product G a X * product G b Y) ζ * e (θ * product G a X * product G b Y) := by
         apply Finset.sum_congr rfl
         intro X _
-        apply Finset.sum_subset (Finset.filter_subset _ _)
-        intro Y _ hn
-        have hy : g Y = 0 := by simpa [t] using hn
-        simp [hy]
+        apply Finset.sum_subset (by grind)
+        grind
       _ = ∑ X, ∑ Y, (tupleWeight G a X : ℂ) * (tupleWeight G b Y : ℂ) *
           f X * g Y * mellin (product G a X * product G b Y) ζ * e (θ * product G a X * product G b Y) := by
-        apply Finset.sum_subset (Finset.filter_subset _ _)
+        apply Finset.sum_subset (by grind)
         intro X _ hn
         have hx : f X = 0 := by simpa [s] using hn
         simp [hx]
       _ = _ := by
-        apply Finset.sum_congr rfl
-        intro X _
-        apply Finset.sum_congr rfl
-        intro Y _
-        ring
+        grind
   rw [heq]
   apply hb.trans
   have hdec := bilinear_scale_sqrt_bound U V r H (by linarith) (by linarith)
@@ -72,7 +66,7 @@ theorem supported_tuple_bilinear (G : PrimeGroups) (a b : Fin G.size → ℕ)
     (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_left hdec integerBilinearConstant_pos.le) (tuple_norm_nonneg G a f))
         (tuple_norm_nonneg G b g)
-  convert hm using 1 <;> ring
+  linarith
 
 end
 end Erdos821.S34Core

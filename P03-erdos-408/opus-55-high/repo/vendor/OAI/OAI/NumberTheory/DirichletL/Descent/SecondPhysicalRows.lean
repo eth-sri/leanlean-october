@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
 
-def actualSecondMultiplier {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : Eis :=
+def actualSecondMultiplier {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : ActualEisensteinCubic.O :=
   primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor *
     primeSubsetGenerator (fun i => Ideal.span {p i}) x.second.divisor
 
@@ -32,7 +31,7 @@ include hp in
 
 theorem actual_second_row_norm_sq
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ) :
+    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : ActualEisensteinCubic.Oˣ) :
     ‖eisEmbedding (actualSecondChild p u v x).2.2‖^2 =
       ‖eisEmbedding (actualSecondMultiplier p x*x.second.frequency)‖^2 := by
   change ‖eisEmbedding (primaryGenerator (sourceIdeal p x.firstDivisor)*
@@ -45,7 +44,7 @@ include hp in
 
 theorem actual_second_row_ball
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ) (R : ℝ) :
+    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : ActualEisensteinCubic.Oˣ) (R : ℝ) :
     x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R ↔
       (actualSecondChild p u v x).2.2 ∈ nonzeroChildFrequencyBall 1 R := by
   rw [mem_nonzeroChildFrequencyBall _ (actualSecondMultiplier_ne_zero p x),
@@ -60,7 +59,7 @@ theorem actual_second_row_radius_one
   obtain ⟨x,hx⟩ := hsource
   by_contra hR
   have he := nonzeroChildFrequencyBall_empty _ (actualSecondMultiplier_ne_zero p x) R (lt_of_not_ge hR)
-  simpa [he] using hrows x hx
+  grind
 
 end
 end SevenEighths.InverseMoment

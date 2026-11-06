@@ -9,10 +9,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalRemainderBounds
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
+open HeckeFamily ProbePhysical
 open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
 open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
@@ -35,32 +35,30 @@ lemma active_prime_sum_bound (T : Finset PrimeIdeal) (W : ℝ→ℝ)
     intro p hp hn
     have hw : W ((Ideal.absNorm p.val:ℝ)/P)=0 := by
       by_contra hh
-      exact hn (Finset.mem_filter.mpr ⟨hp,hh⟩)
+      exact by grind
     simp [hw]
   have hcount : (A.card:ℝ)≤128*(d*P) := by
     have h := DescentFiberCost.finite_ideal_count_real (A.image Subtype.val) (d*P)
       (by nlinarith) (by
         intro I hI; obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hI; exact p.property.ne_zero)
-      (by intro I hI; obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hI; exact (hA p hp).2)
+      (by simp_all)
     simpa only [Finset.card_image_of_injective _ Subtype.val_injective] using h
   have hp (p : PrimeIdeal) (hp : p∈A) : (Ideal.absNorm p.val:ℝ)^(ξ-1)≤c^(ξ-1)*P^(ξ-1) := by
     rw [←Real.mul_rpow hc.le hP.le]
-    exact Real.rpow_le_rpow_of_nonpos (mul_pos hc hP) (hA p hp).1 (by linarith)
+    exact Real.rpow_le_rpow_of_nonpos (by positivity) (by grind) (by linarith)
   rw [he]
   calc
     _≤∑_p∈A,B*(c^(ξ-1)*P^(ξ-1)) := Finset.sum_le_sum (fun p hpA=>
-      mul_le_mul (hW _).2 (hp p hpA) (Real.rpow_nonneg (Nat.cast_nonneg _) _) hB)
+      mul_le_mul (by grind) (by grind) (by positivity) hB)
     _=(A.card:ℝ)*(B*(c^(ξ-1)*P^(ξ-1))) := by simp
     _≤(128*(d*P))*(B*(c^(ξ-1)*P^(ξ-1))) :=
       mul_le_mul_of_nonneg_right hcount (by positivity)
     _=(128*d*B*c^(ξ-1))*P^ξ := by
       have heP : P*P^(ξ-1)=P^ξ := by
         calc
-          _=P^(1:ℝ)*P^(ξ-1) := by rw [Real.rpow_one]
-          _=P^ξ := by rw [←Real.rpow_add hP];congr 1;ring
-      calc
-        _=(128*d*B*c^(ξ-1))*(P*P^(ξ-1)) := by ring
-        _=_ := by rw [heP]
+          _=P^(1:ℝ)*P^(ξ-1) := by simp
+          _=P^ξ := by rw [←Real.rpow_add hP];simp
+      grind
 
 def slotConstant {ι : Type*} (J : Finset ι) (c d B ξ : ℝ) : ℝ :=
   (3/2)*∏_j∈J,(1+1440*(480:ℝ)^(-(7/8:ℝ)))*(128*d*B*c^(ξ-1))
@@ -69,8 +67,7 @@ lemma slotConstant_nonneg {ι : Type*} (J : Finset ι) {c d B ξ : ℝ}
     (hc : 0<c) (hd : c≤d) (hB : 0≤B) : 0≤slotConstant J c d B ξ := by
   have hd0 : 0≤d := hc.le.trans hd
   unfold slotConstant
-  apply mul_nonneg (by norm_num)
-  exact Finset.prod_nonneg (fun _ _=>by positivity)
+  positivity
 
 theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
     (hS : CorrectionTail S) (J : Finset ι) (c d B ξ : ℝ)
@@ -87,7 +84,7 @@ theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
       slotConstant J c d B ξ * ∏j∈J,(P j)^ξ := by
   let A (j : ι) := (T j).filter (fun p=>W j ((Ideal.absNorm p.val:ℝ)/P j)≠0)
   have hA (j : ι) (hj : j∈J) (p : PrimeIdeal) (hp : p∈A j) : c*P j≤(Ideal.absNorm p.val:ℝ) :=
-    (le_div_iff₀ (hP j hj)).mp ((hsupp j hj) (Finset.mem_filter.mp hp).2).1
+    (le_div_iff₀ (by grind)).mp ((hsupp j hj) (Finset.mem_filter.mp hp).2).1
   have he : windowMultiplier η J T (fun j x=>(W j x:ℂ)) P s w z =
       slotMultiplier η J A (fun j p=>(W j ((Ideal.absNorm p.val:ℝ)/P j):ℂ)) s w z := by
     unfold windowMultiplier slotMultiplier
@@ -97,16 +94,16 @@ theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
     apply Finset.sum_subset (Finset.filter_subset _ _)
     intro p hp hn
     have hh : W j ((Ideal.absNorm p.val:ℝ)/P j)=0 := by
-      by_contra h; exact hn (Finset.mem_filter.mpr ⟨hp,h⟩)
+      by_contra h; exact by grind
     simp [hh]
   rw [he]
   have h := combined_slot_bound_sharp η S hS J A
     (fun j p=>W j ((Ideal.absNorm p.val:ℝ)/P j)) 480 (by norm_num)
-    (fun j hj p _=>(hW j hj _).1)
-    (fun j hj p hp=>(hthreshold j hj).trans (hA j hj p hp))
+    (by grind)
+    (by grind)
     (fun j hj p hp=>PrincipalSignalComparison.idealCoeff_norm_one_of_coprime η p.val p.property.ne_zero
       (PrincipalSignalComparison.prime_coprime_of_norm_gt η p (by
-        exact_mod_cast (hmod j hj).trans_le (hA j hj p hp)))) s w z hs hw (by rw [hz];exact hzlo)
+        exact_mod_cast (hmod j hj).trans_le (hA j hj p hp)))) s w z hs hw (by linarith)
   apply h.trans
   simp only [hz]
   calc
@@ -114,10 +111,10 @@ theorem window_sharp_bound {ι : Type*} (η : Character) (S : Finset Id)
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       apply Finset.prod_le_prod₀
       · intro j hj; apply mul_nonneg (by positivity);exact Finset.sum_nonneg (fun p _=>by
-          exact mul_nonneg (hW j hj _).1 (Real.rpow_nonneg (Nat.cast_nonneg _) _))
+          exact mul_nonneg (by grind) (by positivity))
       · intro j hj
         exact mul_le_mul_of_nonneg_left (active_prime_sum_bound (A j) (W j) c d B (P j) ξ
-          hc hd hB (hP j hj) (hthreshold j hj) hξ (hW j hj) (hsupp j hj)) (by positivity)
+          hc hd hB (by grind) (by grind) hξ (by grind) (by grind)) (by positivity)
     _=_ := by simp only [slotConstant,←mul_assoc,Finset.prod_mul_distrib]
 
 def scalePower (X Y Z a ξ υ : ℝ) : ℝ :=
@@ -147,7 +144,7 @@ lemma continued_source_sharp_pointwise (t v u : ℝ) :
       jointHeight t v u^2*‖onLines W0 W1 a ξ υ ((t,v),u)‖ := by
   have hslot := window_sharp_bound η S hS.tail J c d B ξ hc hd hB hξ W hW hsupp
     P hP hthreshold hmod T ((a:ℂ)+t*I) ((υ:ℂ)+u*I) ((ξ:ℂ)+v*I)
-    (by simpa using ha) (by simpa using hυ) (by simp) hzlo
+    (by simp_all) (by simp_all) (by simp) hzlo
   have hr : ‖HeckeReciprocal.reciprocal (η.excludePrimes S hS.prime) ((a:ℂ)+t*I)‖≤C*jointHeight t v u^2 := by
     apply (hR _ (by simp)).trans
     simp only [add_im,ofReal_im,mul_im,ofReal_re,I_im,I_re,mul_one,mul_zero,add_zero,zero_add]
@@ -270,7 +267,7 @@ lemma vertical_pair_eq_joint (F : ℂ→ℂ→ℂ) (a ξ : ℝ)
 
 lemma normalizer_norm_pos : 0<‖(((1/(2*Real.pi):ℝ):ℂ))‖ := by
   apply norm_pos_iff.mpr
-  exact_mod_cast (one_div_ne_zero (mul_ne_zero (by norm_num : (2:ℝ)≠0) Real.pi_ne_zero))
+  simp
 
 section Uniform
 variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S)
@@ -333,7 +330,7 @@ theorem full_scale_bound (υ : ℝ) (hυ : υ∈Icc (19/20:ℝ) 2) (hυ1 : υ≠
         hmod T W0 W1 X Y Z a υ C hX hY hZ ha.1 hυ.1 hξ.1 hC hR hυ.2 hυ1 hξ1 p
     _=A*E*(∫p : HeightSpace,jointHeight p.1.1 p.1.2 p.2^8*‖onLines W0 W1 a ξ υ p‖ ∂heightMeasure) := integral_const_mul _ _
     _≤A*E*D := mul_le_mul_of_nonneg_left hp.2 (mul_nonneg hA hE)
-    _=K/(|6*ξ-1| *|υ-1|)*E := by dsimp [A,K];simp only [div_eq_mul_inv,mul_inv_rev];ring
+    _=K/(|6*ξ-1| *|υ-1|)*E := by ring
     _≤(K+1)/(|6*ξ-1| *|υ-1|)*E := by gcongr;linarith
 
 theorem residue_scale_bound :
@@ -384,8 +381,8 @@ theorem residue_scale_bound :
   let E := scalePower X Y Z a ξ 1*(∏j∈J,(P j)^ξ)
   have hA : 0≤A := by dsimp [A];positivity
   have hE : 0≤E := mul_nonneg (scalePower_nonneg hX.le hY.le hZ.le)
-    (Finset.prod_nonneg (fun j hj=>Real.rpow_nonneg (hP j hj).le _))
-  have hp := hprofile a ha ξ hξ 1 ⟨le_rfl,le_rfl⟩ .w 0
+    (Finset.prod_nonneg (fun j hj=>Real.rpow_nonneg (by grind) _))
+  have hp := hprofile a ha ξ hξ 1 (by simp) .w 0
   simp only [sliceMap,pow_zero,div_one] at hp
   calc
     _≤∫q : ℝ×ℝ,A*E*(jointHeight q.1 q.2 0^5*‖onLines W0 W1 a ξ 1 ((q.1,q.2),0)‖) ∂volume.prod volume := by
@@ -394,8 +391,8 @@ theorem residue_scale_bound :
       exact residue_sharp_pointwise η S hS J c d B ξ hc hd hB hξ.2 W hW hsupp P hP hthreshold
         hmod T W0 W1 X Y Z a C hX hY hZ ha.1 hξ.1 hC hR hξ1 q
     _=A*E*(∫q : ℝ×ℝ,jointHeight q.1 q.2 0^5*‖onLines W0 W1 a ξ 1 ((q.1,q.2),0)‖ ∂volume.prod volume) := integral_const_mul _ _
-    _≤A*E*D := mul_le_mul_of_nonneg_left hp.2 (mul_nonneg hA hE)
-    _=K/|6*ξ-1| *E := by dsimp [A,K];ring
+    _≤A*E*D := mul_le_mul_of_nonneg_left hp.2 (by positivity)
+    _=K/|6*ξ-1| *E := by ring
     _≤(K+1)/|6*ξ-1| *E := by gcongr;linarith
 
 theorem full_vertical_scale_bound (υ : ℝ) (hυ : υ∈Icc (19/20:ℝ) 2) (hυ1 : υ≠1) :
@@ -462,10 +459,10 @@ theorem residue_vertical_scale_bound :
         ((a:ℂ)+q.1*I) (globalClosedCorrection η S ((a:ℂ)+q.1*I))
         (windowMultiplier η J T (fun j x=>(W j x:ℂ)) P ((a:ℂ)+q.1*I))
         1 ((ξ:ℂ)+q.2*I)*LFunction (fixedSourcePrincipal S hS.prime) (6*((ξ:ℂ)+q.2*I))‖ ∂volume.prod volume)) := by
-      apply mul_le_mul (by dsimp [R];linarith [norm_nonneg (HeckeReciprocal.regularizedL (fixedSourcePrincipal S hS.prime) 1)])
+      apply mul_le_mul (by linarith)
         (mul_le_mul_of_nonneg_left (norm_integral_le_integral_norm _) hk.le) (by positivity) (by positivity)
     _≤(1+‖R‖)*(k*(K/|6*ξ-1| *(scalePower X Y Z a ξ 1*(∏j∈J,(P j)^ξ)))) := by
-      gcongr;exact hh.2
+      gcongr;linarith
     _=_ := by ring
 end Uniform
 
@@ -492,7 +489,7 @@ theorem ordered_remainders_scale_bound {ι : Type*}
       (fun z=>K0 s 1 z*LFunction π (6*z)))‖≤
       C*(scalePower X Y Z a (33/200) 1*(∏j∈J,(P j)^(33/200:ℝ)))) := by
   obtain ⟨A,hA,hfirst⟩ := full_vertical_scale_bound η S hS J c d B hc hd hB W0 W1 a0 b0 a1 b1
-    ha0 ha1 hW0 hW1 a (1/6+e) ha hβ ⟨by linarith,by linarith⟩ (by linarith)
+    ha0 ha1 hW0 hW1 a (1/6+e) ha hβ (by grind) (by linarith)
     (19/20) (by norm_num) (by norm_num)
   obtain ⟨D,hD,hsecond⟩ := residue_vertical_scale_bound η S hS J c d B hc hd hB W0 W1 a0 b0 a1 b1
     ha0 ha1 hW0 hW1 a (33/200) ha hβ (by norm_num) (by norm_num)
@@ -504,9 +501,9 @@ theorem ordered_remainders_scale_bound {ι : Type*}
   dsimp only at hf hg
   have hegap : |6*((1/6:ℝ)+e)-1|=6*e := by rw [abs_of_pos (by linarith)];ring
   rw [hegap] at hf
-  norm_num only [show |(19/20:ℝ)-1|=1/20 by norm_num] at hf
-  norm_num only [show |6*(33/200:ℝ)-1|=1/100 by norm_num] at hg
-  have hm (ξ : ℝ) : 0≤∏j∈J,(P j)^ξ := Finset.prod_nonneg (fun j hj=>Real.rpow_nonneg (hP j hj).le _)
+  norm_num only at hf
+  norm_num only at hg
+  have hm (ξ : ℝ) : 0≤∏j∈J,(P j)^ξ := Finset.prod_nonneg (fun j hj=>Real.rpow_nonneg (by grind) _)
   constructor
   · apply hf.trans
     apply mul_le_mul_of_nonneg_right _ (mul_nonneg (scalePower_nonneg hX.le hY.le hZ.le) (hm _))
@@ -516,7 +513,6 @@ theorem ordered_remainders_scale_bound {ι : Type*}
     nlinarith
   · apply hg.trans
     apply mul_le_mul_of_nonneg_right _ (mul_nonneg (scalePower_nonneg hX.le hY.le hZ.le) (hm _))
-    norm_num
     linarith
 
 lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
@@ -529,7 +525,6 @@ lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
     rw [←Real.rpow_sum_of_pos hZ,←Finset.sum_mul,hell]
   rw [hp,scalePower,←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le]
   rw [←Real.rpow_add hZ,←Real.rpow_add hZ,←Real.rpow_add hZ]
-  congr 1
   ring
 
 lemma source_w_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
@@ -537,14 +532,14 @@ lemma source_w_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a (1/6+e) (19/20) *
       (∏j∈J,(Z^(ell j))^(1/6+e)) = Z^(a-11/16+(13/16)*e-23/960) := by
   rw [source_scale_identity J ell hell Z a (1/6+e) (19/20) hZ]
-  congr 1;ring
+  ring
 
 lemma source_z_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
     (hell : ∑j∈J,ell j=1/6) (Z a : ℝ) (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a (33/200) 1 *
       (∏j∈J,(Z^(ell j))^(33/200:ℝ)) = Z^(a-11/16-13/9600) := by
   rw [source_scale_identity J ell hell Z a (33/200) 1 hZ]
-  congr 1;ring
+  ring
 
 theorem source_remainders_power_bound {ι : Type*}
     (η : Character) (S : Finset Id) (hS : SourceExclusions S)
@@ -574,10 +569,10 @@ theorem source_remainders_power_bound {ι : Type*}
   dsimp only
   have hh := hbound W hW hsupp (fun j=>Z^(ell j)) (fun _ _=>Real.rpow_pos_of_pos hZ _)
     hthreshold hmod T hT (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _) hZ
+    (by positivity) (by positivity) hZ
   dsimp only at hh
   rw [source_w_scale_identity J ell hell Z a e hZ,source_z_scale_identity J ell hell Z a hZ] at hh
-  exact hh
+  omega
 
 lemma source_w_strict_exponent (β e : ℝ) (he : e≤1/1000) :
     (β+e)-11/16+(13/16)*e-23/960≤β-11/16-17/48000 := by linarith
@@ -616,10 +611,10 @@ theorem source_remainders_strict_saving {ι : Type*}
   dsimp only at hh
   constructor
   · exact hh.1.trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ (source_w_strict_exponent HeckeZeroSupremum.beta e hehi))
-      (div_nonneg hC.le he.le))
+      (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
+      (by positivity))
   · exact hh.2.trans (mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le hZ (source_z_strict_exponent HeckeZeroSupremum.beta e hehi)) hC.le)
+      (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)) hC.le)
 
 end SevenEighths.ProbePrincipalRemainderBounds
 

@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondSourceFrequency
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
 open CenteredMomentSecondLocalization CenteredMomentSecondSourceRetained CenteredMomentSecondSourceFrequency
 open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization
 open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
 open CenteredMomentHeckeColumnWindow CenteredMomentCompleteCommon
-local notation "O" => ActualEisensteinCubic.O
 
-theorem commonLabels_supported (S : Finset (Ideal O)) (C D : Ideal O)
+theorem commonLabels_supported (S : Finset (Ideal ActualEisensteinCubic.O)) (C D : Ideal ActualEisensteinCubic.O)
     (h : (C,D)∈commonLabels (supportedColumns S) (supportedColumns S)) :
     Supported C ∧ Supported D := by
   obtain ⟨p,hp,he⟩ := Finset.mem_image.mp h
@@ -28,12 +27,12 @@ theorem commonLabels_supported (S : Finset (Ideal O)) (C D : Ideal O)
     commonPart_supported _ _ (Finset.mem_filter.mp hp'.2).2⟩
 
 theorem original_retained_energy_GV (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ))
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (W : 𝓢(ℝ,ℂ))
     (K Tsec Z ξ : ℝ) (hK : 0<K) :
     secondRetainedEnergy η t S β W K Tsec Z ξ=
       ∑ p : commonLabels (supportedColumns S) (supportedColumns S),
         heightCoeff η t p.val.1*star (heightCoeff η t p.val.2)*
-          ∑ U : Finset (CommonIndex p.val.1 p.val.2),∑' h : O,
+          ∑ U : Finset (CommonIndex p.val.1 p.val.2),∑' h : ActualEisensteinCubic.O,
             if canonicalPartition p.val.1 p.val.2 U
                 (nonunitFrequencyGenerator p.val.1 p.val.2 U*h) then
               sectorFrequency η t S β p.val.1 p.val.2

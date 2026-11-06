@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.RawLabels
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -27,9 +26,7 @@ lemma DBig_split (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   apply Finset.prod_congr rfl
   intro g _
   rw [← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro i _
-  cases hb : block g <;> by_cases hi : i ∈ ν.changed g.val <;> simp [hi]
+  grind
 
 lemma prefixProduct_split (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (a : P.BigLabels (J + ell)) :
@@ -53,8 +50,8 @@ lemma selectedProduct_pos (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   apply Finset.prod_pos
   intro i _
   split_ifs
-  · exact (P.prime g.val _ (u g i).property).pos
-  · exact Nat.zero_lt_one
+  · exact (P.prime g.val _ (by simp)).pos
+  omega
 
 end
 end Erdos821.P4Probe

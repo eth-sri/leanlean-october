@@ -8,19 +8,18 @@ public import OAI.NumberTheory.DirichletL.Reflection.InactiveSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
-variable {Nlevel : Eis}
+variable {Nlevel : ActualEisensteinCubic.O}
 
 lemma inactiveRows_mem {σ φ : Type*} [Fintype σ] [DecidableEq σ]
-    (rows : Finset (Ideal Eis)) (lists : σ→Finset (Ideal Eis)) (T : Finset σ)
-    (FF : φ→Ideal Eis) (b : ∀ i : {i // i∉T},lists i.val) (K : Ideal Eis) :
+    (rows : Finset (Ideal ActualEisensteinCubic.O)) (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ)
+    (FF : φ→Ideal ActualEisensteinCubic.O) (b : ∀ i : {i // i∉T},lists i.val) (K : Ideal ActualEisensteinCubic.O) :
     K∈inactiveRowSet rows lists T FF b ↔ K∈rows ∧
-      IsCoprime K (∏ i : {i // i∉T},(b i).val) ∧ ∀ j i,(b i).val≠FF j := by
-  exact Finset.mem_filter
+      IsCoprime K (∏ i : {i // i∉T},(b i).val) ∧ ∀ j i,(b i).val≠FF j :=
+  Finset.mem_filter
 
 end
 end SevenEighths.InverseReflectedPhase

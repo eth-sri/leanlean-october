@@ -23,8 +23,8 @@ def sourceHeightShear : HeightSpace ≃ᵐ HeightSpace where
     change Measurable (fun p : HeightSpace=>((p.1.1-p.1.2,p.1.2),p.2))
     fun_prop
 
-lemma sourceHeightShear_preserving : MeasurePreserving sourceHeightShear heightMeasure heightMeasure := by
-  exact (measurePreserving_add_prod (volume:Measure ℝ) volume).prod (MeasurePreserving.id volume)
+lemma sourceHeightShear_preserving : MeasurePreserving sourceHeightShear heightMeasure heightMeasure :=
+  (measurePreserving_add_prod (volume:Measure ℝ) volume).prod (MeasurePreserving.id volume)
 
 lemma sourceMellinWeight_shear (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (t w z : ℂ) :
     sourceMellinWeight W0 W1 X Y Z (t+1-z) w z=

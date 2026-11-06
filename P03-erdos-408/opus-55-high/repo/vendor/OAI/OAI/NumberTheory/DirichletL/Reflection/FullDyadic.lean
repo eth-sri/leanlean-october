@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Reflection.FullRaw
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss CompletedDyadic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
+variable {ι : Type*} [Fintype ι] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 def literalDyadicBlock (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (u : Eisˣ) (i : ℕ×ℕ×ℕ) : ℂ :=
+    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (u : ActualEisensteinCubic.Oˣ) (i : ℕ×ℕ×ℕ) : ℂ :=
   ∑ n : dualIdealDyad i.2.2, ∑ b : dualIdealDyad i.2.1,
     literalRawSeries G D s hc j S W X
       (u,i.1,⟨n.val,((mem_dualIdealDyad _ _).mp n.property).1⟩,
@@ -25,13 +24,13 @@ def literalDyadicBlock (G : PrimeFamily ι)
 theorem mixedReflectedValue_eq_dyadic (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
-    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
+    (hN : (9:ActualEisensteinCubic.O)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
+    (hchar : ∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
     (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
     mixedReflectedValue D s G.generator_ne_zero hc G.generator_good j S W X=
       fixedRadialCoefficientScalar*s.stratumShapeFactor (c*∏ i,G.generator i)*
-        ∑' u : Eisˣ, ∑' i : ℕ×ℕ×ℕ, literalDyadicBlock G D s hc j S W X u i := by
+        ∑' u : ActualEisensteinCubic.Oˣ, ∑' i : ℕ×ℕ×ℕ, literalDyadicBlock G D s hc j S W X u i := by
   have hs := (literalRawSeries_summable_norm G D s hc hN hbase hchar j hj S W lo hi hlo hWs hW X hX).of_norm
   rw [mixedReflectedValue_eq_fullRaw,hs.tsum_prod]
   congr 1
@@ -50,9 +49,8 @@ lemma dyadic_kernel_argument_lower (scale rho q : ℝ) (hs : 0≤scale)
     unfold ramifiedScale
     positivity
   have hh := mul_le_mul hn (pow_le_pow_left₀ (by positivity) hb 3) (by positivity)
-    (Nat.cast_nonneg (Ideal.absNorm n.val))
-  have hh' := mul_le_mul_of_nonneg_left hh hp
-  nlinarith only [hh']
+    (by positivity)
+  nlinarith
 
 end
 end SevenEighths.InverseReflectedPhase

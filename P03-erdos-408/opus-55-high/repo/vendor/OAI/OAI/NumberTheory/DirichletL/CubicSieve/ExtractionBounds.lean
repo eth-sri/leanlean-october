@@ -7,30 +7,29 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.FullExtraction
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical
+open CompletedGauss
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-theorem extracted_parts_ne_zero (I : Ideal O) (hI : I ≠ 0) :
+theorem extracted_parts_ne_zero (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) :
     firstPart I ≠ 0 ∧ secondPart I ≠ 0 ∧ cubePart I ≠ 0 := by
   have he := cubic_factorization I hI
   rw [he, mul_ne_zero_iff, mul_ne_zero_iff,
-    pow_ne_zero_iff (by decide : (2 : ℕ) ≠ 0),
-    pow_ne_zero_iff (by decide : (3 : ℕ) ≠ 0)] at hI
-  exact ⟨hI.1.1, hI.1.2, hI.2⟩
+    pow_ne_zero_iff (by positivity),
+    pow_ne_zero_iff (by positivity)] at hI
+  grind
 
-theorem goodPart_norm_le (I : Ideal O) (hI : Squarefree I) :
+theorem goodPart_norm_le (I : Ideal ActualEisensteinCubic.O) (hI : Squarefree I) :
     (Ideal.absNorm (goodPart I) : ℝ) ≤ Ideal.absNorm I := by
   exact_mod_cast CanonicalQuadraticSieve.goodSquarefreePart_norm_le I hI
 
 theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq n]
-    (R : Finset O) (hR : ∀ z ∈ R, z ≠ 0)
+    (R : Finset ActualEisensteinCubic.O) (hR : ∀ z ∈ R, z ≠ 0)
     (X Y H N : ℝ) (hX : 1 ≤ X) (hY : 1 ≤ Y) (hH : 1 ≤ H)
     (hfirst : ∀ z ∈ R, (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ≤ X)
     (hsecond : ∀ z ∈ R, (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ≤ Y)
     (hcube : ∀ z ∈ R, (Ideal.absNorm (cubePart (Ideal.span {z})) : ℝ) ≤ H)
-    (cols : n → Ideal O) (hinj : Function.Injective cols)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hinj : Function.Injective cols)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2) ≤
@@ -39,35 +38,35 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
   have ha : ∀ I ∈ firstImage R, Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ X := by
     intro I hI
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-    exact ⟨goodPart_admissible _, (goodPart_norm_le _ (firstPart_squarefree _)).trans (hfirst z hz)⟩
+    exact ⟨goodPart_admissible _, (goodPart_norm_le _ (firstPart_squarefree _)).trans (by grind)⟩
   have hb : ∀ I ∈ secondImage R, Admissible I ∧ (Ideal.absNorm I : ℝ) ≤ Y := by
     intro I hI
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-    exact ⟨goodPart_admissible _, (goodPart_norm_le _ (secondPart_squarefree _)).trans (hsecond z hz)⟩
+    exact ⟨goodPart_admissible _, (goodPart_norm_le _ (secondPart_squarefree _)).trans (by grind)⟩
   have hca : ((firstImage R).card : ℝ) ≤ 128 * X :=
     DescentFiberCost.finite_ideal_count_real _ X hX
-      (fun I hI => primaryGenerator_ne_zero_ideal I (ha I hI).1.2) (fun I hI => (ha I hI).2)
+      (fun I hI => primaryGenerator_ne_zero_ideal I (ha I hI).1.2) (by grind)
   have hcb : ((secondImage R).card : ℝ) ≤ 128 * Y :=
     DescentFiberCost.finite_ideal_count_real _ Y hY
-      (fun I hI => primaryGenerator_ne_zero_ideal I (hb I hI).1.2) (fun I hI => (hb I hI).2)
+      (fun I hI => primaryGenerator_ne_zero_ideal I (hb I hI).1.2) (by grind)
   have hcc : ((cubeImage R).card : ℝ) ≤ 128 * H := by
     apply DescentFiberCost.finite_ideal_count_real _ H hH
     · intro I hI
       obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-      exact (extracted_parts_ne_zero _ (Ideal.span_singleton_eq_bot.not.mpr (hR z hz))).2.2
+      exact (extracted_parts_ne_zero _ (Ideal.span_singleton_eq_bot.not.mpr (by grind))).2.2
     · intro I hI
       obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hI
-      exact hcube z hz
+      simp_all
   have hna := family_squared_norm_le (fun I : firstImage R => I.val) cols
-    Subtype.val_injective hinj X N (fun I => ha I.val I.property) hcols
+    Subtype.val_injective hinj X N (by grind) hcols
   have hnb := family_squared_norm_le (fun I : secondImage R => I.val) cols
-    Subtype.val_injective hinj Y N (fun I => hb I.val I.property) hcols
+    Subtype.val_injective hinj Y N (by grind) hcols
   have hmin : min ((secondImage R).card * squaredNorm
       (fun (i : firstImage R) j => idealKernel (cols j) i.val))
       ((firstImage R).card * squaredNorm
       (fun (k : secondImage R) j => idealKernel (cols j) k.val)) ≤
       128 * min (Y * sieveNorm X N) (X * sieveNorm Y N) := by
-    rw [mul_min_of_nonneg _ _ (by norm_num : (0 : ℝ) ≤ 128)]
+    rw [mul_min_of_nonneg _ _ (by positivity)]
     apply min_le_min
     · calc
         _ ≤ (128 * Y) * sieveNorm X N := mul_le_mul hcb hna (squaredNorm_nonneg _) (by positivity)
@@ -78,15 +77,15 @@ theorem full_element_extraction_norm_bound {n : Type*} [Fintype n] [DecidableEq 
   have hn : 0 ≤ min ((secondImage R).card * squaredNorm
       (fun (i : firstImage R) j => idealKernel (cols j) i.val))
       ((firstImage R).card * squaredNorm
-      (fun (k : secondImage R) j => idealKernel (cols j) k.val)) := by
-    exact le_min (mul_nonneg (Nat.cast_nonneg _) (squaredNorm_nonneg _))
+      (fun (k : secondImage R) j => idealKernel (cols j) k.val)) :=
+    le_min (mul_nonneg (Nat.cast_nonneg _) (squaredNorm_nonneg _))
       (mul_nonneg (Nat.cast_nonneg _) (squaredNorm_nonneg _))
   calc
     _ ≤ _ := full_element_extraction_energy R hR cols (fun j => (hcols j).1.2) coef
     _ ≤ (96 * (128 * H)) * (128 * min (Y * sieveNorm X N) (X * sieveNorm Y N)) *
         ∑ j, ‖coef j‖ ^ 2 := by
-      apply mul_le_mul_of_nonneg_right _ (Finset.sum_nonneg (fun _ _ => sq_nonneg _))
-      exact mul_le_mul (mul_le_mul_of_nonneg_left hcc (by norm_num)) hmin hn (by positivity)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
+      nlinarith
     _ = _ := by ring
 
 theorem cubePart_norm_le_of_block (I : Ideal O) (hI : I ≠ 0)
@@ -110,21 +109,21 @@ theorem cubePart_norm_le_of_block (I : Ideal O) (hI : I ≠ 0)
     _ ≤ _ := hN
 
 theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
-    (R : Finset O) (hR : ∀ z ∈ R, z ≠ 0)
+    (R : Finset ActualEisensteinCubic.O) (hR : ∀ z ∈ R, z ≠ 0)
     (M X Y N : ℝ) (hX : 1 ≤ X) (hY : 1 ≤ Y) (hXY : X * Y ^ 2 ≤ M)
     (hfirst : ∀ z ∈ R, X ≤ (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ∧
       (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ≤ 2 * X)
     (hsecond : ∀ z ∈ R, Y ≤ (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ∧
       (Ideal.absNorm (secondPart (Ideal.span {z})) : ℝ) ≤ 2 * Y)
     (hnorm : ∀ z ∈ R, (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (cols : n → Ideal O) (hinj : Function.Injective cols)
+    (cols : n → Ideal ActualEisensteinCubic.O) (hinj : Function.Injective cols)
     (hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (coef : n → ℂ) :
     (∑ z ∈ R, ‖∑ j, coef j * elementCharacter (cols j) (hcols j).1.2 z‖ ^ 2) ≤
       (192 * 128 ^ 2 : ℝ) * (M / (X * Y ^ 2)) ^ (1 / 3 : ℝ) *
         min (Y * sieveNorm (2 * X) N) (X * sieveNorm (2 * Y) N) * ∑ j, ‖coef j‖ ^ 2 := by
   have hp : 0 < X * Y ^ 2 := by positivity
-  have hq : 1 ≤ M / (X * Y ^ 2) := (le_div_iff₀ hp).mpr (by simpa using hXY)
+  have hq : 1 ≤ M / (X * Y ^ 2) := (le_div_iff₀ hp).mpr (by linarith)
   have hH : 1 ≤ (M / (X * Y ^ 2)) ^ (1 / 3 : ℝ) :=
     Real.one_le_rpow hq (by norm_num)
   have hpow : ((M / (X * Y ^ 2)) ^ (1 / 3 : ℝ)) ^ 3 = M / (X * Y ^ 2) := by
@@ -132,20 +131,15 @@ theorem full_element_dyadic_block_bound {n : Type*} [Fintype n] [DecidableEq n]
   have hcube : ∀ z ∈ R, (Ideal.absNorm (cubePart (Ideal.span {z})) : ℝ) ≤
       (M / (X * Y ^ 2)) ^ (1 / 3 : ℝ) := by
     intro z hz
-    apply cubePart_norm_le_of_block _ (Ideal.span_singleton_eq_bot.not.mpr (hR z hz))
-      X Y _ (by linarith) (by linarith) (by linarith) (hfirst z hz).1 (hsecond z hz).1
+    apply cubePart_norm_le_of_block _ (Ideal.span_singleton_eq_bot.not.mpr (by grind))
+      X Y _ (by linarith) (by linarith) (by linarith) (by grind) (by grind)
     rw [hpow, mul_div_cancel₀ _ hp.ne']
     exact hnorm z hz
   have hb := full_element_extraction_norm_bound R hR (2 * X) (2 * Y) _ N
-    (by linarith) (by linarith) hH (fun z hz => (hfirst z hz).2)
-    (fun z hz => (hsecond z hz).2) hcube cols hinj hcols coef
+    (by linarith) (by linarith) hH (by grind)
+    (by grind) hcube cols hinj hcols coef
   convert hb using 1
-  have hm : min (2 * Y * sieveNorm (2 * X) N) (2 * X * sieveNorm (2 * Y) N) =
-      2 * min (Y * sieveNorm (2 * X) N) (X * sieveNorm (2 * Y) N) := by
-    rw [mul_min_of_nonneg _ _ (by norm_num : (0 : ℝ) ≤ 2)]
-    congr 1 <;> ring
-  rw [hm]
-  ring
+  grind
 
 end
 end SevenEighths.CubicSieve

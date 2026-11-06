@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 open Filter Set
-open scoped Topology ContDiff
+open scoped ContDiff
 namespace SevenEighths.HeckePrimeAmplitudeActual
 open HeckeFamily HeckePrimeRay HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M]
@@ -42,8 +42,8 @@ theorem ray_amplitude_bins (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     (2*(|Real.log A|+|Real.log B|)+1) hdmin hrmin
   filter_upwards [hbins,hlog,eventually_ge_atTop (1 : ℝ)] with Z hb hl hZ
   intro d hd hd' hU hT χ hχ a i ha ha' hmax r σ freq hr hr' hσ hσ' hQ hf ht
-  have hestimate := hbound Z d hZ (hdmin.trans_le hd).le hd' hU hT χ hχ a i
-    ha ha' hmax r σ freq (hrmin.trans_le hr).le hr' hσ hσ' (hl d r hd hr) hQ hf ht
+  have hestimate := hbound Z d hZ (by linarith) hd' hU hT χ hχ a i
+    ha ha' hmax r σ freq (by linarith) hr' hσ hσ' (hl d r hd hr) hQ hf ht
   exact hb d hd r (a-1/2) hr (by linarith) _ hestimate
 
 end SevenEighths.HeckePrimeAmplitudeActual

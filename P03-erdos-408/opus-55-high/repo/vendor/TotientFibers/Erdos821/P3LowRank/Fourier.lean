@@ -13,7 +13,6 @@ multiplies each local phase.  Distinct blocks use independent frequency families
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Lowrank
@@ -23,8 +22,7 @@ open Erdos821.Blueprint.Graph
 theorem phase_eq_exp (t : ℝ) :
     phase t = Complex.exp (((2 * Real.pi * t : ℝ) : ℂ) * Complex.I) := by
   unfold phase
-  push_cast
-  ring_nf
+  simp
 
 theorem norm_phase (t : ℝ) : ‖phase t‖ = 1 := by
   rw [phase_eq_exp, Complex.norm_exp_ofReal_mul_I]
@@ -63,7 +61,7 @@ theorem phase_eq_one_imp (t : ℝ) (h : phase t = 1) : ∃ k : ℤ, t = k := by
   obtain ⟨k, hk⟩ := h
   refine ⟨k, ?_⟩
   have h2 : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
-    simp [Real.pi_ne_zero, Complex.I_ne_zero]
+    simp
   have : (t : ℂ) = k := by
     apply mul_right_cancel₀ h2
     linear_combination hk
@@ -94,18 +92,15 @@ theorem sum_phase (Q : ℕ) (hQ : 0 < Q) (d : ℤ) :
       exact_mod_cast this
     rw [geom_sum_eq hz, ← phase_nat_mul]
     have : (Q : ℝ) * ((d : ℝ) / Q) = (d : ℝ) := by field_simp
-    rw [this, phase_int]
-    simp
+    simp [this, phase_int]
 
 theorem dvd_sub_iff_eq (Q x y : ℕ) (hx : x < Q) (hy : y < Q) :
     (Q : ℤ) ∣ ((x : ℤ) - y) ↔ x = y := by
   constructor
   · intro h
-    have h0 := Int.eq_zero_of_abs_lt_dvd h (by rw [abs_sub_lt_iff]; constructor <;> omega)
+    have h0 := Int.eq_zero_of_abs_lt_dvd h (by grind)
     omega
-  · intro h
-    subst h
-    simp
+  simp_all
 
 /-- The averaged-product representation of a birth event. -/
 def Represents {a : ℕ} (π : Finset (Finset (Fin a))) (Q : ℕ) (Ξ : Type) [Fintype Ξ]
@@ -118,9 +113,6 @@ def Represents {a : ℕ} (π : Finset (Finset (Fin a))) (Q : ℕ) (Ξ : Type) [F
 theorem prod_ite_mem_univ {α M : Type*} [Fintype α] [CommMonoid M] (s : Finset α)
     [∀ k, Decidable (k ∈ s)] (f : α → M) :
     ∏ k, (if k ∈ s then f k else 1) = ∏ k ∈ s, f k := by
-  rw [← Finset.prod_filter]
-  congr 1
-  ext k
   simp
 
 /-- A performed-address gate, kept opaque so decidability instances never need to agree. -/
@@ -133,9 +125,9 @@ theorem gate_neg {P : Prop} (h : ¬ P) (z : ℂ) : gate P z = 0 := ite_eq_right 
 theorem norm_gate_le (P : Prop) {z : ℂ} (hz : ‖z‖ ≤ 1) : ‖gate P z‖ ≤ 1 := by
   by_cases h : P
   · rw [gate_pos h]
-    exact hz
+    omega
   · rw [gate_neg h, norm_zero]
-    exact zero_le_one
+    simp
 
 /-- One block, with a chosen pivot. -/
 theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.Nonempty) :
@@ -173,7 +165,7 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
         rfl
       have e1 : ∑ x ∈ B.erase p, ((cf ξ x : ℤ) : ℝ) * ((value x : ℕ) : ℝ) / (Q : ℝ) =
           ∑ x ∈ B.erase p, ((ξ x : ℕ) : ℝ) * ((value x : ℕ) : ℝ) / (Q : ℝ) :=
-        Finset.sum_congr rfl (fun k hk => by rw [hcf k hk])
+        Finset.sum_congr rfl (fun k hk => by simp_all)
       rw [e1, hcp]
       simp only [D]
       push_cast
@@ -190,44 +182,29 @@ theorem block_rep {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (B : Finset (Fin a)) (hB : B.
       · simp only [ite_eq_left hkB, D]
         rw [sum_phase Q hQ]
         by_cases he : value k = value p
-        · rw [ite_eq_left ((dvd_sub_iff_eq Q _ _ (hv k) (hv p)).mpr he)]
-          simp [he]
+        · simp_all
         · rw [ite_eq_right (fun h => he ((dvd_sub_iff_eq Q _ _ (hv k) (hv p)).mp h))]
-          simp [he, hkB]
-      · simp [hkB]
+          simp_all
+      · simp_all
     have hiff : (B ⊆ perf ∧ ∀ i ∈ B, ∀ j ∈ B, value i = value j) ↔
         ∀ k, k ∈ B.erase p → value k = value p := by
       constructor
-      · intro h k hk
-        exact h.2 k (Finset.mem_of_mem_erase hk) p hp
-      · intro h
-        refine ⟨hsub, fun i hi j hj => ?_⟩
-        have hi' : value i = value p := by
-          by_cases hip : i = p
-          · rw [hip]
-          · exact h i (Finset.mem_erase.mpr ⟨hip, hi⟩)
-        have hj' : value j = value p := by
-          by_cases hjp : j = p
-          · rw [hjp]
-          · exact h j (Finset.mem_erase.mpr ⟨hjp, hj⟩)
-        rw [hi', hj']
+      · grind
+      · grind
     simp only [hprod]
     rw [← Fintype.prod_sum (fun (k : Fin a) (x : Fin Q) =>
       if k ∈ B.erase p then phase (((x : ℕ) : ℝ) * D k) else 1)]
     simp only [hk]
     rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin,
       Finset.prod_boole]
-    rw [← mul_assoc, inv_mul_cancel₀ (pow_ne_zero a hQ'), one_mul]
-    by_cases hall : ∀ k, k ∈ B.erase p → value k = value p
-    · rw [ite_eq_left (hiff.mpr hall), ite_eq_left (fun k _ => hall k)]
-    · rw [ite_eq_right (fun h => hall (hiff.mp h)),
-        ite_eq_right (fun h => hall (fun k => h k (Finset.mem_univ k)))]
+    rw [← mul_assoc, inv_mul_cancel₀ (by positivity), one_mul]
+    grind
   · obtain ⟨j, hjB, hjp⟩ := Finset.not_subset.mp hsub
-    rw [ite_eq_right (fun h => hsub h.1)]
+    rw [ite_eq_right (by grind)]
     have h0 : ∀ ξ : Fin a → Fin Q,
         ∏ j ∈ B, gate (j ∈ perf) (phase ((cf ξ j : ℝ) * (value j : ℝ) / Q)) = 0 :=
       fun ξ => Finset.prod_eq_zero hjB (gate_neg hjp _)
-    simp only [h0, Finset.sum_const_zero, mul_zero]
+    simp_all
 
 theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset (Fin a)))
     (hπ : BirthCollection π) :
@@ -235,29 +212,24 @@ theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset 
   induction π using Finset.induction_on with
   | empty =>
       refine ⟨Unit, inferInstance, fun _ _ _ _ => 1, ?_, ?_, ?_⟩
-      · intros
-        simp
+      · simp
       · simp
       · intro perf value _
         simp [birthEvent]
   | @insert B π hB ih =>
       have hπ' : BirthCollection π :=
         ⟨fun B' hB' => hπ.1 B' (Finset.mem_insert_of_mem hB'),
-          hπ.2.mono (Finset.coe_subset.mpr (Finset.subset_insert B π))⟩
-      have hBcard := hπ.1 B (Finset.mem_insert_self B π)
+          hπ.2.mono (by simp)⟩
+      have hBcard := hπ.1 B (by simp)
       have hdisj : ∀ B' ∈ π, Disjoint B B' := fun B' hB' =>
-        hπ.2 (Finset.mem_coe.mpr (Finset.mem_insert_self B π))
-          (Finset.mem_coe.mpr (Finset.mem_insert_of_mem hB')) (fun h => hB (h ▸ hB'))
+        hπ.2 (by simp)
+          (by grind) (by grind)
       have hdU : Disjoint B (π.biUnion id) := (Finset.disjoint_biUnion_right _ _ _).mpr hdisj
       obtain ⟨Ξ, hΞ, m', hm', hcard', hrep'⟩ := ih hπ'
-      obtain ⟨mB, hmB, hrepB⟩ := block_rep Q hQ B (Finset.card_pos.mp (by omega))
+      obtain ⟨mB, hmB, hrepB⟩ := block_rep Q hQ B (by grind)
       refine ⟨(Fin a → Fin Q) × Ξ, inferInstance,
         fun ξ j P v => if j ∈ B then mB ξ.1 j P v else m' ξ.2 j P v, ?_, ?_, ?_⟩
-      · intro ξ j P v
-        dsimp only
-        split_ifs
-        · exact hmB _ _ _ _
-        · exact hm' _ _ _ _
+      · grind
       · rw [Fintype.card_prod]
         exact Nat.mul_pos (by simp [hQ]) hcard'
       · intro perf value hv
@@ -268,10 +240,8 @@ theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset 
             (if B ⊆ perf ∧ ∀ i ∈ B, ∀ j ∈ B, value i = value j then (1 : ℂ) else 0) *
               (if birthEvent perf value π then (1 : ℂ) else 0) := by
           by_cases h1 : B ⊆ perf ∧ ∀ i ∈ B, ∀ j ∈ B, value i = value j
-          · by_cases h2 : birthEvent perf value π
-            · rw [ite_eq_left (hev.mpr ⟨h1, h2⟩), ite_eq_left h1, ite_eq_left h2, one_mul]
-            · rw [ite_eq_right (fun h => h2 (hev.mp h).2), ite_eq_right h2, mul_zero]
-          · rw [ite_eq_right (fun h => h1 (hev.mp h).1), ite_eq_right h1, zero_mul]
+          · grind
+          · grind
         rw [hL, hrepB perf value hv, hrep' perf value hv]
         have hsplit : ∀ ξ : (Fin a → Fin Q) × Ξ,
             (∏ j ∈ B ∪ π.biUnion id,
@@ -281,7 +251,7 @@ theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset 
           intro ξ
           rw [Finset.prod_union hdU]
           congr 1
-          · exact Finset.prod_congr rfl fun j hj => ite_eq_left hj
+          · exact Finset.prod_congr rfl (by grind)
           · exact Finset.prod_congr rfl fun j hj =>
               ite_eq_right (Finset.disjoint_right.mp hdU hj)
         rw [Finset.biUnion_insert, id_eq]
@@ -290,8 +260,6 @@ theorem exists_represents {a : ℕ} (Q : ℕ) (hQ : 0 < Q) (π : Finset (Finset 
         dsimp only
         rw [← Finset.sum_mul_sum, Fintype.card_prod, Fintype.card_fun]
         simp only [Fintype.card_fin]
-        push_cast
-        rw [mul_inv]
-        ring
+        grind
 
 end Erdos821.P3Lowrank

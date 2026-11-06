@@ -27,7 +27,6 @@ and deriving their consequences.
 
 open Filter
 
-open Topology
 
 namespace Asymptotics
 
@@ -68,14 +67,14 @@ variable [NormedAddCommGroup α] [LinearOrder α] [ProperSpace α] [NormedAddCom
 
 theorem isLittleO_const_snd_atBot [NoMinOrder α] [ClosedIicTopology α] (c : F) (lx : Filter E) :
     (fun (_ : E × α) ↦ c) =o[lx ×ˢ atBot] Prod.snd := by
-  refine lx.eq_or_neBot.casesOn (fun h ↦ by simp [h]) (fun _ ↦ ?_)
+  refine lx.eq_or_neBot.casesOn (fun h ↦ by simp_all) (fun _ ↦ ?_)
   change ((fun _ ↦ c) ∘ Prod.snd) =o[lx ×ˢ atBot] (id ∘ Prod.snd)
   rewrite [← isLittleO_map, map_snd_prod]
   exact isLittleO_const_id_atBot2 c
 
 theorem isLittleO_const_snd_atTop [NoMaxOrder α] [ClosedIciTopology α] (c : F) (lx : Filter E) :
     (fun (_ : E × α) ↦ c) =o[lx ×ˢ atTop] Prod.snd := by
-  refine lx.eq_or_neBot.casesOn (fun h ↦ by simp [h]) (fun _ ↦ ?_)
+  refine lx.eq_or_neBot.casesOn (fun h ↦ by simp_all) (fun _ ↦ ?_)
   change ((fun _ ↦ c) ∘ Prod.snd) =o[lx ×ˢ atTop] (id ∘ Prod.snd)
   rewrite [← isLittleO_map, map_snd_prod]
   exact isLittleO_const_id_atTop2 c
@@ -101,7 +100,7 @@ theorem _root_.ContinuousOn.const_isBigOWithUniformlyOn_isCompact
   · rw [div_mul_cancel₀ _ hc]
     replace hs := hs.image_of_continuousOn hf |>.image continuous_norm
     have h_sSup := hs.isLUB_sSup <| Set.image_nonempty.mpr <| Set.image_nonempty.mpr ⟨x.1, hx.1⟩
-    exact h_sSup.1 <| Set.mem_image_of_mem _ <| Set.mem_image_of_mem _ hx.1
+    exact h_sSup.1 <| (by grind)
 
 /-- A family of constant functions `f (i, x) = C i` is uniformly O(1) w.r.t. `s`,
 if `s` is compact and `C` is continuous. -/
@@ -128,10 +127,10 @@ theorem _root_.ContinuousOn.const_isBigOWithUniformlyOn_isCompact_rev
     replace hs := hs.image_of_continuousOn hf |>.image continuous_norm
     have h_sInf := hs.isGLB_sInf <| Set.image_nonempty.mpr <| Set.image_nonempty.mpr ⟨x.1, hx.1⟩
     refine le_mul_of_one_le_right (norm_nonneg c) <| (one_le_div ?_).mpr <|
-      h_sInf.1 <| Set.mem_image_of_mem _ <| Set.mem_image_of_mem _ hx.1
+      h_sInf.1 <| (by grind)
     obtain ⟨_, ⟨x, hx, hCx⟩, hnormCx⟩ := hs.sInf_mem h_sInf.nonempty
     rewrite [← hnormCx, ← hCx]
-    exact (norm_ne_zero_iff.mpr (hC x hx)).symm.lt_of_le (norm_nonneg _)
+    exact (norm_ne_zero_iff.mpr (by grind)).symm.lt_of_le (norm_nonneg _)
 
 /-- A family of constant functions `f (i, x) = C i` is uniformly Ω(1) w.r.t. `s`,
 if `s` is compact and `C` is continuous with no zeros on `s`. -/

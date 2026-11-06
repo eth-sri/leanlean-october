@@ -8,19 +8,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_complete_energy_from_live_bins (K:ℕ)(b L eps:ℝ)
     (hb:0≤b)(hL:0≤L)(heps:0<eps) :
     ∃C:ℝ,0<C ∧ ∀{σ:Type*}[DecidableEq σ]
-      (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(_hSp:∀P∈S,Prime P)
-      (labels:Finset (Ideal O))(_hlabels:∀I∈labels,I≠0)
-      (Ψ:O→*ℂ)(m:O)(slots:Finset σ)
+      (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(_hSp:∀P∈S,Prime P)
+      (labels:Finset (Ideal ActualEisensteinCubic.O))(_hlabels:∀I∈labels,I≠0)
+      (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)
       (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
       (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
       (W:ℝ→ℂ)(_hWc:HasCompactSupport W)(Z N V R H₀ Eshort Elong:ℝ),
@@ -62,7 +61,7 @@ theorem actual_complete_energy_from_live_bins (K:ℕ)(b L eps:ℝ)
     convert ht using 1
     · ring
     · rw [←hh];ring
-  exact hs.trans (add_le_add (mul_le_mul_of_nonneg_left hshort (by norm_num:0≤(2:ℝ))) ha')
+  linarith
 
 end SevenEighths.InverseMoment
 

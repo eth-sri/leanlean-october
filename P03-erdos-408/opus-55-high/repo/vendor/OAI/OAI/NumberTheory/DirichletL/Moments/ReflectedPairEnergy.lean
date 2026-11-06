@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedProfileMeasure
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedPairEnergy
 open HeckeFamily FourierBridge CenteredMomentReflectedProfileMeasure
-local notation "O" => HeckeFamily.O
 
 lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
     (hV : ∀y,V y≠0 → |y|≤M) (η : Character) :
@@ -24,9 +23,9 @@ lemma plain_frequency_control (V : ℝ→ℂ) (M X : ℝ) (hX : 0<X)
     intro hz
     subst I
     simp at hi
-  have hc : ∀I : Ideal O,I≠0 → logWindow V ((I.absNorm:ℝ)/X)≠0 → I∈S := by
+  have hc : ∀I : Ideal HeckeFamily.O,I≠0 → logWindow V ((I.absNorm:ℝ)/X)≠0 → I∈S := by
     have hh := HeckeInverseAmplification.scaleSupport_cover (logWindow V)
-      (Real.exp (-M)) (Real.exp M) (Real.log X) (Real.log X) (Real.exp_pos M).le
+      (Real.exp (-M)) (Real.exp M) (Real.log X) (Real.log X) (by positivity)
       (logWindow_support V M hV) le_rfl
     simpa only [Real.exp_log hX] using hh
   have he (v : ℝ) : HeckeDyadic.polynomial η false (logWindow V) X 0 (2*Real.pi*v)=

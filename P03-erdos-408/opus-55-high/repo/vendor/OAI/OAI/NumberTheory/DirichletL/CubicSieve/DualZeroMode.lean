@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +31,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open FiniteGaussPhase (canonicalProductGauss_cross_factors)
 
@@ -95,7 +74,7 @@ lemma threeGaussRowFactor_empty
     threeGaussRowFactor p hp hcop hg ∅ ∅ B v ε₁ ε₂ C₁ C₂ d h=
       star (C₁ ∅)*C₂ ∅ := by
   let : IsEmpty {i:ι // i∈(((∅:Finset ι)∪∅)∪cubeActiveSupport B v ε₁ ε₂)} :=
-    ⟨fun x=>by simpa [hB] using x.property⟩
+    ⟨fun x=>by grind⟩
   simp [MixedCrossSeparation.columnCoefficient,FiniteGaussPhase.canonicalProductCoefficient,
     threeGaussRowFactor,canonicalProductGauss_cross_factors,FiniteGaussPhase.angularFactor,
     blockRow,finiteSexticRow]
@@ -105,7 +84,6 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -162,7 +140,7 @@ theorem canonicalCubeDualZero_eq_density
     simp_rw [hd]
     rw [primeSubset_moebius_norm_sum _ hprime hinj]
     ring
-  · simp only [mul_zero,Finset.sum_const_zero]
+  simp
 
 theorem canonicalCubeDualZero_norm_le
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
@@ -185,23 +163,22 @@ theorem canonicalCubeDualZero_norm_le
       abs_of_nonneg (primeDensity_nonneg_le_one (fun i=>Ideal.span {p i}) M).1]
     calc
       _ ≤ 1*(‖H₁ (b.rightDivisor∪C)‖*‖H₂ (b.leftDivisor∪C)‖)*|K| *‖paperRadialFourier W 0‖*
-          ∏i∈M,(1-(1:ℝ)/Ideal.absNorm (Ideal.span {p i})) := by
-        exact mul_le_mul_of_nonneg_right
+          ∏i∈M,(1-(1:ℝ)/Ideal.absNorm (Ideal.span {p i})) :=
+        mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right
             (mul_le_mul_of_nonneg_right
               (mul_le_mul_of_nonneg_right
                 (canonicalCubeOuter_norm_le_one p hp hcop hg hc b C Ψ₁ Ψ₂ hΨ₁ hΨ₂ m₁ m₂ f)
-                (mul_nonneg (norm_nonneg _) (norm_nonneg _))) (abs_nonneg _)) (norm_nonneg _))
+                (by positivity)) (abs_nonneg _)) (norm_nonneg _))
           (primeDensity_nonneg_le_one (fun i=>Ideal.span {p i}) M).1
       _ ≤ _ := by
-        simpa only [one_mul] using mul_le_of_le_one_right
+        simpa using mul_le_of_le_one_right
           (show 0≤(1*(‖H₁ (b.rightDivisor∪C)‖*‖H₂ (b.leftDivisor∪C)‖)*|K| *‖paperRadialFourier W 0‖) by positivity)
           (primeDensity_nonneg_le_one (fun i=>Ideal.span {p i}) M).2
-  · simp
+  simp
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 
 theorem boundedPrimeSupports_card_positive {ι : Type*} [DecidableEq ι]
@@ -221,7 +198,6 @@ theorem boundedPrimeSupports_card_positive {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open SecondPassArithmetic (boundedPrimeSupports boundedPrimeSupports_card_positive
@@ -246,8 +222,7 @@ theorem actualFirstKernel_complement_eq_pairs
     by_cases hNQ : Disjoint N Q
     · simp only [hNQ,ite_true]
       exact (canonicalPairMode_summable p hp hcop hg N Q B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d hd).subtype _
-    · simp only [hNQ,ite_false]
-      exact summable_zero
+    · simp_all
   change (∑'h:{h:O // h∉T},∑N∈F.powerset,∑Q∈F.powerset,if Disjoint N Q then
     canonicalPairMode p hp hcop hg N Q B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val else 0)=_
   rw [Summable.tsum_finsetSum (fun N hN=>summable_sum (fun Q hQ=>hs N Q))]
@@ -265,7 +240,6 @@ end FirstPassCubeLabels
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
@@ -286,7 +260,6 @@ end
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -308,15 +281,15 @@ lemma originalLabelColumn_core_norm_le
       (finiteSquarefreeRow_norm_le_one (fun i=>Ideal.span {p i}) hg S z) 4
   simp only [originalLabelColumn,multiplicativeCoreColumn,norm_mul,norm_pow]
   calc
-    _ ≤ 1*‖H S‖*1*1*1 := by
-      exact mul_le_mul
+    _ ≤ 1*‖H S‖*1*1*1 :=
+      mul_le_mul
         (mul_le_mul
           (mul_le_mul
             (mul_le_mul_of_nonneg_right
-              ((mul_le_mul (hΨ _) (hm m) (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)) (norm_nonneg _))
+              ((mul_le_mul (by grind) (hm m) (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)) (norm_nonneg _))
             (hm _) (norm_nonneg _) (by positivity))
-          (hrow _) (pow_nonneg (norm_nonneg _) _) (by positivity))
-        (hrow _) (pow_nonneg (norm_nonneg _) _) (by positivity)
+          (hrow _) (by positivity) (by positivity))
+        (hrow _) (by positivity) (by positivity)
     _ = _ := by ring
 
 omit [DecidableEq ι] in

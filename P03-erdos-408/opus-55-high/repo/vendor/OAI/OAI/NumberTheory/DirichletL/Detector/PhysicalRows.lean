@@ -11,12 +11,11 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CanonicalQuadraticSieve CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
-abbrev PhysicalRowIndex := {I : Id // Supported I}×O
+abbrev PhysicalRowIndex := {I : Id // Supported I}×ActualEisensteinCubic.O
 
-def physicalRowMonoid (η : HeckeFamily.Character) (C : CalibrationData) (r : PhysicalRowIndex) : O→*ℂ :=
+def physicalRowMonoid (η : HeckeFamily.Character) (C : CalibrationData) (r : PhysicalRowIndex) : ActualEisensteinCubic.O→*ℂ :=
   rowCoefficient η C.Xi (primaryGenerator r.1.val)
     ((supported_span_primaryGenerator_iff r.1.val).mpr r.1.property) r.2
 
@@ -32,21 +31,21 @@ def physicalRowWeight (C : CalibrationData) (W0 W1 : ℝ→ℂ) (X Y : ℝ) (r :
   else 0
 
 lemma physicalRowMonoid_norm (η : HeckeFamily.Character) (C : CalibrationData)
-    (r : PhysicalRowIndex) (n : O) : ‖physicalRowMonoid η C r n‖≤1 :=
+    (r : PhysicalRowIndex) (n : ActualEisensteinCubic.O) : ‖physicalRowMonoid η C r n‖≤1 :=
   rowCoefficient_norm_le_one η C.Xi C.Xi_norm_le_one _ _ r.2 n
 
 lemma physicalRowWeight_outer_zero (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (X Y : ℝ) (r : PhysicalRowIndex) (h : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)=0) :
     physicalRowWeight C W0 W1 X Y r=0 := by
   unfold physicalRowWeight
-  split_ifs <;> simp [h]
+  simp_all
 
 lemma physicalRowWeight_inner_zero (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (X Y : ℝ) (r : PhysicalRowIndex)
     (h : W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))=0) :
     physicalRowWeight C W0 W1 X Y r=0 := by
   unfold physicalRowWeight
-  split_ifs <;> simp [h]
+  simp_all
 
 lemma physicalRowScale_pos (C : CalibrationData) (X : ℝ) (hX : 0<X)
     (s : {I : Id // Supported I}) : 0<elementNorm C.generator*(Ideal.absNorm s.val:ℝ)*X := by
@@ -77,7 +76,7 @@ theorem physicalRowWeight_finite_support (C : CalibrationData) (W0 W1 : ℝ→�
     intro hz
     apply hr.1
     apply physicalRowWeight_inner_zero C W0 W1 X Y r
-    simpa only [he] using hz
+    simp_all
 
 lemma physicalRowWeight_mul_summable (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
@@ -85,8 +84,7 @@ lemma physicalRowWeight_mul_summable (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     Summable (fun r=>physicalRowWeight C W0 W1 X Y r*F r) := by
   apply summable_of_hasFiniteSupport
   apply (physicalRowWeight_finite_support C W0 W1 hW0 hW1 X Y hX hY).subset
-  intro r hr hz
-  exact hr (by dsimp only; rw [hz,zero_mul])
+  simp
 
 theorem markedPhysicalProbe_eq_rows (η : HeckeFamily.Character) (C : CalibrationData)
     (D : Id) (W0 W1 : ℝ→ℂ) (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
@@ -105,9 +103,7 @@ theorem markedPhysicalProbe_eq_rows (η : HeckeFamily.Character) (C : Calibratio
   · simp only [physicalRowWeight,physicalRowMonoid]
     simp only [ite_eq_left hc]
     rw [←tsum_mul_left,←tsum_mul_left]
-    apply tsum_congr
-    intro m
-    ring
+    grind
   · simp only [physicalRowWeight]
     simp only [ite_eq_right hc,zero_mul,mul_zero,tsum_zero]
 

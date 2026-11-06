@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 namespace SevenEighths.InverseInitialOverlapFourier
 open InverseMoment
@@ -22,9 +22,7 @@ theorem density_norm (g : 𝓢(ℝ,ℂ)) (xj t : ℝ) : ‖density g xj t‖=‖
 
 lemma phase_neg (t x : ℝ) : logPhase (-t) x=logPhase t (-x) := by
   unfold logPhase
-  congr 1
-  push_cast
-  ring
+  simp
 
 lemma phase_sub (t xj xc y : ℝ) :
     logPhase t xj*logPhase t xc*logPhase (-t) y=logPhase t (xj+xc-y) := by
@@ -48,9 +46,7 @@ theorem tuple_mark_phase (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ
   apply Finset.sum_congr rfl
   intro p hp
   rw [logPhase_sum,←Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro i hi
-  split_ifs <;> simp
+  simp
 
 theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
     (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
@@ -76,12 +72,7 @@ theorem overlap_tuple_separation (g : 𝓢(ℝ,ℂ))
   rw [integral_mul_const]
   have hinv := schwartz_logPhase_inversion g
     (xj+xc-∑i∈I.attach,y i.val (p i.val i.property))
-  rw [mul_comm (∏i∈I.attach,if p i.val i.property∈A then a i.val (p i.val i.property) else 0)]
-  congr 1
-  rw [hinv]
-  apply integral_congr_ae
-  filter_upwards with t
-  ring
+  grind
 
 theorem overlap_mode_integrable (g : 𝓢(ℝ,ℂ))
     (I : Finset σ) (L : σ→Finset ι) (a : σ→ι→ℂ) (y : σ→ι→ℝ)
@@ -119,8 +110,7 @@ theorem actual_overlap_separation
   congr 2
   apply Finset.prod_congr rfl
   intro i hi
-  exact (Real.exp_log (hy i.val i.property (p i.val i.property)
-    ((Finset.mem_pi.mp hp) i.val i.property))).symm
+  exact (Real.exp_log (by grind)).symm
 
 end SevenEighths.InverseInitialOverlapFourier
 

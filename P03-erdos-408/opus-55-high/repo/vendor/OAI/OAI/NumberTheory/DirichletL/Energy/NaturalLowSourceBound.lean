@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
@@ -22,14 +22,13 @@ open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentAmplificationChildInput CenteredMomentInductionEnergy
 open CenteredMomentEnergyBands CenteredMomentSecondHeightFamily
 open CenteredMomentPrimeSlot CenteredMomentNaturalFixedRaySource HeckeDyadic HeckePrimeAnnular
-local notation "O" => HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=
   CenteredMomentEnergyOriginalSource.energyOriginalSourceDecidableSum
 
 section Source
-variable (Q:Ideal O)[NeZero Q]
-variable (H:Subgroup (O⧸Q)ˣ)(hH:RayOrthogonality.globalUnits Q≤H)
+variable (Q:Ideal HeckeFamily.O)[NeZero Q]
+variable (H:Subgroup (HeckeFamily.O⧸Q)ˣ)(hH:RayOrthogonality.globalUnits Q≤H)
 variable (η₀:Character)(θ:ι→RayQuotient.Characters Q H)
 variable (W:ℝ→ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)(haslot:0<aslot)
 variable (hWs:Function.support W⊆Set.Icc aslot bslot)
@@ -63,7 +62,7 @@ theorem natural_low_source_bound
     (hεdiag:0<εdiag)(hξ:0<ξ):
     ∃Ψ:𝓢(ℝ,ℂ),Function.support (Ψ:ℝ→ℂ)⊆Set.Icc (-1) (bΦ+1) ∧
       (∀x,0≤(Ψ x).re) ∧ ∃Cfixed:ℝ,0<Cfixed ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀(Q:Ideal O)[NeZero Q](H:Subgroup (O⧸Q)ˣ)(hH:RayOrthogonality.globalUnits Q≤H),
+    ∀(Q:Ideal HeckeFamily.O)[NeZero Q](H:Subgroup (HeckeFamily.O⧸Q)ˣ)(hH:RayOrthogonality.globalUnits Q≤H),
     ∀(η₀:Character)(θ:ι→RayQuotient.Characters Q H),
     ∀(w σ freq:ι→ℝ), (∀i,0≤w i) → ∀hσ:∀i,σ i∈Set.Icc lo hi,
     ∀(Bmask:ℝ)(state:NaturalState Z Bmask bΦ)(p:Profiles a b)(t X₁ X₂:ℝ),
@@ -102,7 +101,7 @@ theorem natural_low_source_bound
     w σ freq hσ state p ha t X₁ X₂ hX₁ hX₂
   have hZ:0<Z:=zero_lt_one.trans hz.1
   have hPi:∀i,1≤s.P i:=fun i=>Real.one_le_rpow hz.1.le (hw i)
-  have hv:volume s≤Z^Mcap:=original_volume_cap s Z κ Mcap hz.1 hκ hPi (by
+  have hv:=original_volume_cap s Z κ Mcap hz.1 hκ hPi (by
     change length Z X₁+length Z X₂+6*κ*(∑i,Real.logb Z (Z^(w i)))≤Mcap
     simpa only [Real.logb_rpow hZ hz.1.ne'] using hcap)
   have hscale:1≤state.radial.scale:=by rw [state.scale_eq];exact Real.one_le_rpow hz.1.le state.row_nonneg
@@ -127,7 +126,7 @@ theorem natural_low_source_bound
     apply hphysical.trans
     calc
       _≤Cphysical*(p.control (insert (0,0) S))^2*(1+|t|+height)^J*Z^(state.width+e):=by gcongr
-      _=Cphysical*F:=by dsimp [F];ring
+      _=Cphysical*F:=by linarith
   have hterm (c A x:ℝ)(hc:0≤c)(hA:0≤A)(hx:x≤e):
       c*(plainControl s (p.profile 0) (p.profile 1))^2*A*state.radial.scale*Z^x≤c*P*A*F:=by
     calc
@@ -138,8 +137,7 @@ theorem natural_low_source_bound
       _≤c*P*A*F:=by
         have hh:=le_mul_of_one_le_right
           (show 0≤c*P*A*(p.control (insert (0,0) S))^2*Z^(state.width+e) by positivity) hheight1
-        dsimp [F]
-        convert hh using 1 <;> ring
+        linarith
   have hd:=hterm Cd (Sd.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ) εdiag hCd.le (apply_nonneg _ _) he
   have ht:=hterm Ct (St.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ) (-saving) hCt.le (apply_nonneg _ _) hsave
   change energy state.character state.mask 1 t (p.profile 0) (p.profile 1) _ _ _ _ _ _ _ _≤_ at hbound
@@ -157,8 +155,7 @@ theorem natural_low_source_bound
     nlinarith [mul_nonneg hCphysical hD,mul_nonneg hCphysical hT]
   have hh:=mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hcoeff hF)
     (mul_nonneg (by norm_num : (0:ℝ)≤2) (diagonalControl_nonneg state.radial.profile))
-  dsimp [F] at hh ⊢
-  nlinarith only [hh]
+  linarith
 
 end SevenEighths.CenteredMomentEnergyNaturalLowSourceBound
 

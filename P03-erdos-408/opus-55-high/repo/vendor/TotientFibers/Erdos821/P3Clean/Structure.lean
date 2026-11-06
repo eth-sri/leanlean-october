@@ -7,7 +7,6 @@ public import Erdos821.S2.EdgeTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -30,8 +29,7 @@ theorem clean_transfer_iff {M : ℕ} {s : P.MemoryState M} (c : TransferChoice s
     have hA : A = fun _ => ∅ := funext (fun g => (h g).2)
     subst B A
     congr 2
-    funext g i
-    exact False.elim (Finset.notMem_empty i.val i.property)
+    grind
   · rintro rfl
     exact fun _ => ⟨rfl, rfl⟩
 
@@ -43,9 +41,8 @@ theorem sum_clean_transfer {M : ℕ} (s : P.MemoryState M)
   simp_rw [clean_transfer_iff]
   rw [Finset.sum_eq_single (emptyTransfer s)]
   · simp
-  · intro c _ hc
-    simp [hc]
-  · simp
+  · grind
+  grind
 
 def cleanEdgeKernel (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) : ℂ :=
@@ -89,7 +86,7 @@ theorem deleteMemoryIndices_empty {g : P.Group} (z : P.Memory g) :
       List.ofFn (fun i : Fin n => l.get ⟨i.val, by omega⟩) = l := by
     subst n
     exact List.ofFn_get l
-  rw [h z.toList z.card (Multiset.length_toList z), Multiset.coe_toList]
+  simp_all
 
 theorem retrievedIndices_empty {M : ℕ} (s : P.MemoryState M) (g : P.BigGroup) :
     retrievedIndices (emptyTransfer s) g = ∅ := by
@@ -149,6 +146,6 @@ theorem translateMemory_groupMass (F : FixedData) (n : ℕ) (delta : ℤ)
     intro u _
     rw [Multiset.count_map_eq_count' _ _ hinj]
   · intro a _ b _ h
-    exact hinj h
+    grind
 
 end Erdos821.P3Clean

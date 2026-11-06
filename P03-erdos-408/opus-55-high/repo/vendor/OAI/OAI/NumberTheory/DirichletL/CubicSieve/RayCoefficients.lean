@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,41 +31,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnG columnPrimeCoprime quadraticCrossPhase)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open RayFourExpansion (RayCharacter rayCharacter gCoeff crossCoeff)
@@ -105,8 +85,8 @@ theorem columnG_eq_ray_sum
     (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
     columnG p hp hcop hg S = ∑ χ : RayCharacter, gCoeff χ * rayCharacter χ (∏ i ∈ S, p i) := by
   have h := RayFourExpansion.canonicalProductG_character_expansion
-    (fun i : S => p i.val) (fun i => hp i.val) (columnPrimeCoprime p hcop S)
-    (fun i => hg i.val) (fun i => hc i.val) (fun i => hpr i.val)
+    (fun i : S => p i.val) (by grind) (columnPrimeCoprime p hcop S)
+    (by grind) (fun i => hc i.val) (by grind)
   simpa only [columnG, Finset.prod_coe_sort] using h
 
 def secondInputCoefficient (Ψ : O →* ℂ) (m c d : O)
@@ -182,7 +162,6 @@ theorem second_gauss_ray_expansion
 end
 
 section
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open RayFourExpansion (RayCharacter gCoeff crossCoeff)
 
@@ -210,7 +189,6 @@ def secondTotalWeight (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
 
 end
 
-open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -220,7 +198,7 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic CompletedGauss CubicRamified
+open CubicRamified
 
 theorem symbol_ne_zero_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
     (hcop : IsCoprime x a) : symbol x a ≠ 0 := by
@@ -234,14 +212,14 @@ theorem symbol_ne_zero_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
   have hprime := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
   let : P.IsMaximal := (Ideal.isPrime_of_prime hprime).isMaximal hprime.ne_zero
   have hle := ((Ideal.mem_normalizedFactors_iff hI0).mp hP).2
-  have haP : a ∈ P := hle (Ideal.subset_span (by simp))
+  have haP : a ∈ P := hle (by simp)
   have hg := primary_maximal_divisor_good a ha P haP
   have hxP : x ∉ P := by
     intro hxP
     obtain ⟨r,s,hrs⟩ := hcop
     have hmem := P.add_mem (P.mul_mem_left r hxP) (P.mul_mem_left s haP)
     rw [hrs] at hmem
-    exact (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal))
+    exact (Ideal.IsMaximal.ne_top (by omega))
       ((Ideal.eq_top_iff_one P).mpr hmem)
   rw [primeValue_eq P hg] at hzero
   exact cubicValue_ne_zero P hg x hxP hzero
@@ -276,7 +254,7 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
   have hnonzero := symbol_ne_zero_of_isCoprime a productA hA hcop
   have h1 : symbol a productA * symbol productC productA = symbol g productA := by
     rw [← symbol_mul_numerator _ _ productA hA]
-    exact symbol_congr ⟨c, by linear_combination hrelation⟩
+    exact symbol_congr ⟨c, by grind⟩
   have h2 : symbol a productA * symbol c a = symbol g a := by
     rw [symbol_reciprocity a productA (primary_ne_zero a ha) (primary_ne_zero productA hA) ha hA,
       ← symbol_mul_numerator _ _ a ha]
@@ -284,7 +262,7 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
       symbol (productA*c) a = symbol (-g) a := by
         apply symbol_congr
         refine ⟨productC,?_⟩
-        linear_combination -hrelation
+        grind
       _ = symbol g a := symbol_neg_numerator g a ha
   have h3 : symbol g productA = symbol g a * symbol g e := by
     rw [← symbol_mul_denominator]
@@ -292,14 +270,11 @@ theorem kubota_mul_of_isCoprime (a b c d e g : O)
     · obtain ⟨b0,hb0⟩ := hb
       obtain ⟨g0,hg0⟩ := hg
       refine ⟨b0*g0,?_⟩
-      dsimp [productA]
-      rw [hb0,hg0]
-      ring
-    · exact ⟨b,by dsimp [productA];ring⟩
+      grind
+    · exact ⟨b,by ring⟩
   change symbol productC productA = _
   apply mul_left_cancel₀ hnonzero
-  rw [h1,h3,← h2]
-  ring
+  grind
 
 lemma three_dvd_primary_sub_one (a : O) (ha : lambda ^ 2 ∣ a-1) : (3 : O) ∣ a-1 := by
   obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
@@ -314,12 +289,12 @@ theorem exists_coprime_three_shift (a c g : O)
   let s := (UniqueFactorizationMonoid.normalizedFactors g).filter (fun p => ¬p ∣ a)
   refine ⟨s.prod, ?_⟩
   apply IsCoprime.symm
-  apply isCoprime_of_prime_dvd (by rintro ⟨h,-⟩; exact hg0 h)
+  apply isCoprime_of_prime_dvd (by simp_all)
   intro p hp hpg hpnew
   by_cases hpa : p ∣ a
   · have hp3 : ¬p ∣ (3 : O) := by
       intro h3
-      have hsub : p ∣ a-1 := h3.trans (three_dvd_primary_sub_one a ha)
+      have hsub := h3.trans (three_dvd_primary_sub_one a ha)
       have hone : p ∣ (1 : O) := by
         convert dvd_sub hpa hsub using 1 ; ring
       exact hp.not_dvd_one hone
@@ -329,7 +304,7 @@ theorem exists_coprime_three_shift (a c g : O)
     have hps : ¬p ∣ s.prod := by
       intro hdiv
       obtain ⟨q,hqs,hpq⟩ := hp.exists_mem_multiset_dvd hdiv
-      have hqs' : q ∈ UniqueFactorizationMonoid.normalizedFactors g ∧ ¬q ∣ a :=
+      have hqs' :=
         Multiset.mem_filter.mp hqs
       have hqprime := UniqueFactorizationMonoid.prime_of_normalized_factor q hqs'.1
       have hqp : q ∣ p := (hp.associated_of_dvd hqprime hpq).dvd'
@@ -338,28 +313,27 @@ theorem exists_coprime_three_shift (a c g : O)
       convert dvd_sub hpnew hpa using 1 ; ring
     rcases hp.dvd_or_dvd hpterm with hleft | hright
     · rcases hp.dvd_or_dvd hleft with h3 | hs
-      · exact hp3 h3
-      · exact hps hs
-    · exact hpc hright
+      · simp_all
+      simp_all
+    simp_all
   · obtain ⟨q,hq,hpq⟩ := UniqueFactorizationMonoid.exists_mem_normalizedFactors_of_dvd
       hg0 hp.irreducible hpg
     have hqa : ¬q ∣ a := fun hqa => hpa (hpq.dvd.trans hqa)
-    have hqs : q ∈ s := Multiset.mem_filter.mpr ⟨hq,hqa⟩
+    have hqs : q ∈ s := Multiset.mem_filter.mpr (by grind)
     have hps : p ∣ s.prod := hpq.dvd.trans (Multiset.dvd_prod hqs)
     have hpterm : p ∣ 3*s.prod*c :=
       dvd_mul_of_dvd_left (dvd_mul_of_dvd_right hps 3) c
     have hpa' : p ∣ a := by
       convert dvd_sub hpnew hpterm using 1 ; ring
-    exact hpa hpa'
+    simp_all
 
 lemma symbol_three_shift (c a t : O) (ha : lambda ^ 2 ∣ a-1) (hc : (3 : O) ∣ c) :
     symbol c (a+3*t*c) = symbol c a := by
   apply symbol_denominator_congr c (a+3*t*c) a (primary_add_multiple_three a c t ha) ha
   · obtain ⟨c0,hc0⟩ := hc
     refine ⟨t*c0,?_⟩
-    rw [hc0]
-    ring
-  · exact ⟨3*t,by ring⟩
+    grind
+  simp
 
 theorem kubota_mul (a b c d e f g h : O)
     (hdet : a*d-b*c=1) (hdet' : e*h-f*g=1)
@@ -369,14 +343,14 @@ theorem kubota_mul (a b c d e f g h : O)
   by_cases hg0 : g = 0
   · have heh : e*h=1 := by simpa only [hg0,mul_zero,sub_zero] using hdet'
     have he1 : e=1 := A3_primary_unit_eq_one e (IsUnit.of_mul_eq_one h heh) he
-    simp only [hg0,he1,mul_one,mul_zero,add_zero,symbol_one]
+    simp_all
   have hac : IsCoprime a c := by
     refine ⟨d,-b,?_⟩
     linear_combination hdet
   obtain ⟨t,ht⟩ := exists_coprime_three_shift a c g ha hac hg0
   have hdetShift : (a+3*t*c)*d-(b+3*t*d)*c=1 := by linear_combination hdet
   have hbShift : (3 : O) ∣ b+3*t*d :=
-    dvd_add hb (dvd_mul_of_dvd_left (dvd_mul_right 3 t) d)
+    dvd_add hb (dvd_mul_of_dvd_left (by simp) d)
   have hcalc := kubota_mul_of_isCoprime (a+3*t*c) (b+3*t*d) c d e g
     hdetShift (primary_add_multiple_three a c t ha) he hbShift hg ht
   have hC : (3 : O) ∣ c*e+d*g :=
@@ -390,15 +364,15 @@ theorem kubota_mul (a b c d e f g h : O)
         symbol (c*e+d*g) ((a*e+b*g)+3*t*(c*e+d*g)) :=
       (symbol_three_shift _ _ _ hA hC).symm
     _ = symbol c (a+3*t*c) * symbol g e := by
-      convert hcalc using 1 ; congr 1 ; ring
+      grind
     _ = symbol c a * symbol g e := by rw [symbol_three_shift c a t ha hc]
 
 end CubicJacobiGlobal
 
-open scoped BigOperators Classical MatrixGroups
+open scoped Classical MatrixGroups
 
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic CubicRamified
+open CubicRamified
 
 theorem symbol_cube_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
     (hcop : IsCoprime x a) : symbol x a ^ 3 = 1 := by
@@ -412,14 +386,14 @@ theorem symbol_cube_of_isCoprime (x a : O) (ha : lambda ^ 2 ∣ a-1)
   have hprime := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
   let : P.IsMaximal := (Ideal.isPrime_of_prime hprime).isMaximal hprime.ne_zero
   have hle := ((Ideal.mem_normalizedFactors_iff hI0).mp hP).2
-  have haP : a ∈ P := hle (Ideal.subset_span (by simp))
+  have haP : a ∈ P := hle (by simp)
   have hg := primary_maximal_divisor_good a ha P haP
   have hxP : x ∉ P := by
     intro hxP
     obtain ⟨r,t,hrt⟩ := hcop
     have hmem := P.add_mem (P.mul_mem_left r hxP) (P.mul_mem_left t haP)
     rw [hrt] at hmem
-    exact (Ideal.IsMaximal.ne_top (inferInstance : P.IsMaximal))
+    exact (Ideal.IsMaximal.ne_top (by omega))
       ((Ideal.eq_top_iff_one P).mpr hmem)
   rw [primeValue_eq P hg]
   exact cubicValue_cube P hg x hxP
@@ -427,7 +401,7 @@ end CubicJacobiGlobal
 
 namespace CubicKubota
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal CubicRamified
 
 def levelThree : Subgroup (SL(2, O)) :=
   (Matrix.SpecialLinearGroup.map (n := Fin 2)
@@ -442,11 +416,11 @@ lemma levelThree_entry (M : levelThree) (i j : Fin 2) :
     (1 : Matrix (Fin 2) (Fin 2) (O ⧸ (Ideal.span {(3 : O)}))) i j at h
   apply Ideal.mem_span_singleton.mp
   apply (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mp
-  simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using h
+  simpa
 
 lemma levelThree_primary (M : levelThree) :
-    lambda ^ 2 ∣ (M : SL(2,O)) 0 0 - 1 := by
-  exact lambda_sq_dvd_three.trans (by simpa using levelThree_entry M 0 0)
+    lambda ^ 2 ∣ (M : SL(2,O)) 0 0 - 1 :=
+  lambda_sq_dvd_three.trans (by simpa using levelThree_entry M 0 0)
 lemma levelThree_upper (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 0 1 := by
   simpa using levelThree_entry M 0 1
 lemma levelThree_lower (M : levelThree) : (3 : O) ∣ (M : SL(2,O)) 1 0 := by
@@ -474,7 +448,7 @@ theorem value_mul (M N : levelThree) : value (M*N) = value M * value N := by
 
 @[simp] theorem value_one : value 1 = 1 := by
   change symbol (0 : O) 1 = 1
-  exact symbol_one 0
+  simp
 
 def character : levelThree →* O where
   toFun := value
@@ -487,7 +461,7 @@ theorem value_zero_lower_left (M : levelThree) (hc : (M : SL(2,O)) 1 0 = 0) :
     have hd := (M : SL(2,O)).property
     simpa only [Matrix.det_fin_two, hc, mul_zero, sub_zero] using hd
   have ha := A3_primary_unit_eq_one _ (IsUnit.of_mul_eq_one _ hm) (levelThree_primary M)
-  simp only [value, hc, ha, symbol_one]
+  simp only [value, ha, symbol_one]
 
 theorem value_cube (M : levelThree) : value M ^ 3 = 1 := by
   apply symbol_cube_of_isCoprime _ _ (levelThree_primary M)
@@ -495,7 +469,7 @@ theorem value_cube (M : levelThree) : value M ^ 3 = 1 := by
       (M : SL(2,O)) 0 1 * (M : SL(2,O)) 1 0 = 1 := by
     simpa only [Matrix.det_fin_two] using (M : SL(2,O)).property
   refine ⟨-(M : SL(2,O)) 0 1, (M : SL(2,O)) 1 1, ?_⟩
-  linear_combination hd
+  grind
 
 def complexCharacter : levelThree →* ℂ :=
   ConcreteTraceCRT.eisEmbedding.toMonoidHom.comp character
@@ -506,7 +480,7 @@ theorem complexCharacter_cube (M : levelThree) : complexCharacter M ^ 3 = 1 := b
 
 theorem norm_complexCharacter (M : levelThree) : ‖complexCharacter M‖ = 1 := by
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3 : ℕ) ≠ 0)).mp
-  simpa only [norm_pow, norm_one] using congrArg norm (complexCharacter_cube M)
+  simpa using congrArg norm (complexCharacter_cube M)
 
 end CubicKubota
 

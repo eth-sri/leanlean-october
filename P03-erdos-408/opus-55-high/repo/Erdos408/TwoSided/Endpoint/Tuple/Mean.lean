@@ -51,7 +51,7 @@ theorem setIntegral_ordinary_le (s : Finset ℕ) (cs : ℕ → ℂ) (N : ℕ) (c
   -- on `O`, `|P_s Q|² ≤ θ² |Q|²`
   have h₁ : ∫ t in O, ‖Ps t * Q t‖ ^ 2 ≤ ∫ t in O, θ ^ 2 * ‖Q t‖ ^ 2 := by
     refine integral_mono_of_nonneg (Filter.Eventually.of_forall fun t => by positivity)
-      (hint.mono_set fun t ht => ht.1) ((ae_restrict_iff' hO).2
+      (hint.mono_set (by grind)) ((ae_restrict_iff' hO).2
         (Filter.Eventually.of_forall fun t ht => ?_))
     show ‖Ps t * Q t‖ ^ 2 ≤ θ ^ 2 * ‖Q t‖ ^ 2
     rw [norm_mul, mul_pow]

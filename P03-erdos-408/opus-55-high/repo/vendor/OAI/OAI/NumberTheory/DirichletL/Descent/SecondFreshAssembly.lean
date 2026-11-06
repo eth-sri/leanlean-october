@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondFreshMeasure
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -59,8 +58,7 @@ theorem actual_second_full_mode_columns (F : Finset ι) (x : SecondProfileData �
             logPhase (h 5) (Real.log (primeProductNorm p M/X₀)) := by
         rw [second_mode_split]
         simp [secondOuterPhase,secondRelativeLog,secondRelativeNorm,secondActualNorms,O,h]
-      rw [hm]
-      ring
+      grind
     _ = _ := by
       rw [actual_second_columns_separated]
       simp only [secondSeparatedPair,h,O,mul_assoc]

@@ -8,8 +8,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeDyadicEstimates
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
-open Set Metric MeasureTheory Complex
+open scoped Classical ContDiff
+open Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic HeckeLogarithmic HeckeDeletionBounds
 
@@ -18,12 +18,12 @@ def binCost (B : ℝ) (χ : Character) (H : ℝ) : ℝ :=
 
 theorem binCost_nonneg {B : ℝ} (hB : 0≤B) (χ : Character) (H : ℝ) : 0≤binCost B χ H := by
   have hc : 1≤complexity χ H :=
-    (Real.one_le_exp (by norm_num : (0 : ℝ)≤1)).trans (complexity_ge_exp χ H)
+    (Real.one_le_exp (by positivity)).trans (complexity_ge_exp χ H)
   have hr : (1 : ℝ)≤(radical χ.modulus).absNorm := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr
       (Ideal.absNorm_eq_zero_iff.not.mpr (radical_ne_zero χ.modulus))
   exact add_nonneg (mul_nonneg hB (Real.log_nonneg hc))
-    (mul_nonneg (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le (Real.log_nonneg hr))
+    (mul_nonneg (localBound_pos (by positivity)).le (Real.log_nonneg hr))
 
 theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
     ∃ B : ℝ, 0≤B ∧ ∀ {ι : Type*} [Fintype ι] (χ : ι→Character)
@@ -52,13 +52,13 @@ theorem polynomial_bound_in_bin (e : ℝ) (he : 0<e) (he' : e<1/1000) :
       (by linarith) (by linarith) hlr hL hfreq hs using 1 ; ring_nf
   have hs (s : ℂ) (hs : s ∈ (uIcc (a+8*e-σ) (2-σ) ×ℂ uIcc (-L) L)) :=
     hbound χ hχ T a i hT ha ha' hmax j (s+HeckeDyadic.shift σ freq)
-      (hmem s hs).1 (hmem s hs).2.1 (hmem s hs).2.2
-  have hh := polynomial_bound_of_rectangle (χ j) (hχ j) W α β hα hWs hW
+      (by grind) (by grind) (by grind)
+  have hh := polynomial_bound_of_rectangle (χ j) (by grind) W α β hα hWs hW
     D σ freq (a+8*e-σ) (2-σ) L C₂ Cn (binCost B (χ j) ((3*i+2 : ℕ)*T)) n
     hD hlr (by linarith) hL hC₂ hCn (binCost_nonneg hB _ _)
-    hm₂ hmn (fun s h => (hs s h).1) (fun s h => by
+    hm₂ hmn (by grind) (fun s h => by
       simpa only [series, neg_div, norm_neg, logDeriv_apply, binCost] using (hs s h).2)
-  convert hh using 1 ; congr 1 ; ring_nf
+  grind
 
 end SevenEighths.HeckePrimeDyadic
 

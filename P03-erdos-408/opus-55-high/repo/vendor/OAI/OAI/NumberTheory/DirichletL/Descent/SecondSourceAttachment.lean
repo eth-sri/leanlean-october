@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRecursive
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 @[ext] structure SecondParentSource (ι : Type*) (Jo : ℕ) where
   cube : CubeCoordinates ι
   firstCommon : Finset ι
   firstDivisor : Finset ι
-  quotient : Ideal Eis
+  quotient : Ideal ActualEisensteinCubic.O
   oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal
 
 def attachSecondExpansion {Jo : ℕ} (parent : SecondParentSource ι Jo)
@@ -51,32 +50,32 @@ theorem attachSecondExpansion_recover {Jo : ℕ} (x : MarkedSecondSource ι Jo 0
   funext i
   exact Fin.elim0 i
 
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def secondParentLabel {Jo : ℕ} (parent : SecondParentSource ι Jo) : Eis :=
+def secondParentLabel {Jo : ℕ} (parent : SecondParentSource ι Jo) : ActualEisensteinCubic.O :=
   (∏ i∈parent.firstCommon,p i)*jLabel p parent.cube.support
     (fun i => parent.cube.leftExponent i+parent.cube.rightExponent i)
     parent.cube.leftBit parent.cube.rightBit
 
-def secondParentDivisor {Jo : ℕ} (parent : SecondParentSource ι Jo) : Eis :=
+def secondParentDivisor {Jo : ℕ} (parent : SecondParentSource ι Jo) : ActualEisensteinCubic.O :=
   primeSubsetGenerator (fun i => Ideal.span {p i}) parent.firstDivisor
 
-def secondParentPuncture {Jo : ℕ} (m : Eis) (parent : SecondParentSource ι Jo) : Eis :=
+def secondParentPuncture {Jo : ℕ} (m : ActualEisensteinCubic.O) (parent : SecondParentSource ι Jo) : ActualEisensteinCubic.O :=
   (m*ConcretePrimeRowBridge.idealGenerator parent.quotient)*
     b0Label p parent.cube.support (fun i => parent.cube.leftExponent i+parent.cube.rightExponent i)
       parent.cube.leftBit parent.cube.rightBit*secondParentDivisor p parent
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem attached_inherited_profile {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) :
+    (x : SecondExpansionData ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex) :
     secondInheritedProfile p (attachSecondExpansion parent x) Ψ m z =
       expansionProfileData p Ψ (secondParentPuncture p m parent)
         (secondParentLabel p parent) (secondParentDivisor p parent) z ∅ ∅ x := rfl
 
 theorem attached_signed_weight {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) :
+    (x : SecondExpansionData ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex) :
     actualSecondSignedWeight p hp hcop hg Ψ
       (m*ConcretePrimeRowBridge.idealGenerator (attachSecondExpansion parent x).quotient) z
       (attachSecondExpansion parent x) =
@@ -88,7 +87,7 @@ theorem secondExpansionSource_attached
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo : ℕ} (parent : SecondParentSource ι Jo)
     (source : Finset (SecondExpansionData ι)) (hE : ∀ x∈source,x.divisor ⊆ x.sourceCommon)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+    (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (X Y : ℝ) :
     secondExpansionSource p hp hcop hg pool Ψ (secondParentPuncture p m parent)

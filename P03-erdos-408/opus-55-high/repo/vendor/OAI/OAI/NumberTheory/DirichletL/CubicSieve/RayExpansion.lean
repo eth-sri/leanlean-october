@@ -8,33 +8,18 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,41 +28,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace FirstPassCubeLabels
 
 section
-open ActualEisensteinCubic
 open MixedCrossSeparation (quadraticCrossPhase)
 open FirstCauchyArithmetic (supportMobius supportRay supportIdealFamily supportIdealFamily_pos
   supportIdealFamily_good recoveredSupport firstPassColumnMinus firstPassColumnPlus)
@@ -140,11 +117,9 @@ theorem threeGaussRowFactor_eq_ray_columns {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical
 
 section
-open ActualEisensteinCubic
 open FourierBridge (logPhase logPhase_norm logPhase_continuous_left)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -158,7 +133,6 @@ def logTwistPlus {ι : Type*} (C : Finset ι → ℂ) (V : ℝ → ℂ)
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -167,7 +141,7 @@ def primeProductNorm {ι : Type*} (p : ι → O) (S : Finset ι) : ℝ :=
 
 theorem primeProductNorm_pos {ι : Type*} (p : ι → O) (hp : ∀ i, p i ≠ 0) (S : Finset ι) :
     0 < primeProductNorm p S :=
-  pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)))) 2
+  pow_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (Finset.prod_ne_zero_iff.mpr (by grind)))) 2
 
 theorem primeProductNorm_union {ι : Type*} [DecidableEq ι]
     (p : ι → O) (S T : Finset ι) (hd : Disjoint S T) :
@@ -179,7 +153,7 @@ def columnLog {ι : Type*} (p : ι → O) (X : ℝ) (S : Finset ι) : ℝ :=
 
 end FirstPassCubeLabels
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace QuadraticDivisorSplit
 abbrev O := ActualEisensteinCubic.O
 
@@ -187,25 +161,23 @@ theorem exists_unique_split (B C D : Ideal O) (hBC : IsCoprime B C)
     (hD : D ∣ B * C) :
     ∃! x : Ideal O × Ideal O, x.1 ∣ B ∧ x.2 ∣ C ∧ x.1 * x.2 = D := by
   obtain ⟨D₁, D₂, h₁, h₂, hprod⟩ := exists_dvd_and_dvd_of_dvd_mul hD
-  refine ⟨(D₁, D₂), ⟨h₁, h₂, hprod.symm⟩, ?_⟩
+  refine ⟨(D₁, D₂), by grind, ?_⟩
   intro y hy
   apply Prod.ext
   · apply associated_iff_eq.mp
     apply associated_of_dvd_dvd
     · apply (hBC.mono hy.1 h₂).dvd_of_dvd_mul_right
       rw [← hprod, ← hy.2.2]
-      exact dvd_mul_right _ _
+      simp
     · apply (hBC.mono h₁ hy.2.1).dvd_of_dvd_mul_right
-      rw [hy.2.2, hprod]
-      exact dvd_mul_right _ _
+      simp_all
   · apply associated_iff_eq.mp
     apply associated_of_dvd_dvd
     · apply (hBC.symm.mono hy.2.1 h₁).dvd_of_dvd_mul_left
       rw [← hprod, ← hy.2.2]
-      exact dvd_mul_left _ _
+      simp
     · apply (hBC.symm.mono h₂ hy.1).dvd_of_dvd_mul_left
-      rw [hy.2.2, hprod]
-      exact dvd_mul_left _ _
+      simp_all
 
 theorem split_product_injective (B C : Ideal O) (hBC : IsCoprime B C) :
     Function.Injective (fun x : {x : Ideal O × Ideal O // x.1 ∣ B ∧ x.2 ∣ C} =>
@@ -213,9 +185,7 @@ theorem split_product_injective (B C : Ideal O) (hBC : IsCoprime B C) :
   intro x y hxy
   have hD : x.val.1 * x.val.2 ∣ B * C := mul_dvd_mul x.property.1 x.property.2
   obtain ⟨z, hz, huniq⟩ := exists_unique_split B C (x.val.1 * x.val.2) hBC hD
-  apply Subtype.ext
-  exact (huniq x.val ⟨x.property.1, x.property.2, rfl⟩).trans
-    (huniq y.val ⟨y.property.1, y.property.2, hxy.symm⟩).symm
+  grind
 
 open IdealMobiusDivisorSum
 
@@ -224,15 +194,15 @@ theorem divisors_coprime_product (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 0)
     idealDivisors (B * C) =
       ((idealDivisors B) ×ˢ (idealDivisors C)).image (fun x => x.1 * x.2) := by
   ext D
-  rw [mem_idealDivisors (mul_ne_zero hB hC), Finset.mem_image]
+  rw [mem_idealDivisors (by positivity), Finset.mem_image]
   constructor
   · intro hD
     obtain ⟨x, hx, _⟩ := exists_unique_split B C D hBC hD
     exact ⟨x, Finset.mem_product.mpr
       ⟨(mem_idealDivisors hB).mpr hx.1, (mem_idealDivisors hC).mpr hx.2.1⟩, hx.2.2⟩
   · rintro ⟨x, hx, rfl⟩
-    exact mul_dvd_mul ((mem_idealDivisors hB).mp (Finset.mem_product.mp hx).1)
-      ((mem_idealDivisors hC).mp (Finset.mem_product.mp hx).2)
+    exact mul_dvd_mul ((mem_idealDivisors hB).mp (by grind))
+      ((mem_idealDivisors hC).mp (by grind))
 
 theorem sum_divisors_coprime_product (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 0)
     (hBC : IsCoprime B C) (f : Ideal O → ℂ) :
@@ -242,14 +212,14 @@ theorem sum_divisors_coprime_product (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 
   · exact Finset.sum_product _ _ _
   · intro x hx y hy hxy
     have hx' : x.1 ∣ B ∧ x.2 ∣ C :=
-      ⟨(mem_idealDivisors hB).mp (Finset.mem_product.mp hx).1,
-        (mem_idealDivisors hC).mp (Finset.mem_product.mp hx).2⟩
+      ⟨(mem_idealDivisors hB).mp (by grind),
+        (mem_idealDivisors hC).mp (by grind)⟩
     have hy' : y.1 ∣ B ∧ y.2 ∣ C :=
-      ⟨(mem_idealDivisors hB).mp (Finset.mem_product.mp hy).1,
-        (mem_idealDivisors hC).mp (Finset.mem_product.mp hy).2⟩
+      ⟨(mem_idealDivisors hB).mp (by grind),
+        (mem_idealDivisors hC).mp (by grind)⟩
     have he : (⟨x, hx'⟩ : {z : Ideal O × Ideal O // z.1 ∣ B ∧ z.2 ∣ C}) = ⟨y, hy'⟩ :=
       split_product_injective B C hBC hxy
-    exact congrArg Subtype.val he
+    simp_all
 
 end QuadraticDivisorSplit
 

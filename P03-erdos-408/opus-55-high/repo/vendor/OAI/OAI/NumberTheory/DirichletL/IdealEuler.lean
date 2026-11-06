@@ -12,7 +12,7 @@ namespace SevenEighths.IdealEuler
 open ActualEisensteinCubic UniqueFactorizationMonoid
 open CompletedGauss (MulFiber mulFiber_moebius_sum)
 open SmoothMobiusCorrection (PrimeIdeal)
-open scoped BigOperators Classical
+open scoped Classical
 
 noncomputable section
 
@@ -43,7 +43,7 @@ def inverseSeries (a : Ideal O →*₀ ℂ) (s : ℂ) : ℂ :=
 theorem weighted_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) : Summable (fun I : Ideal O => ‖weighted a s I‖) := by
   apply (CubicEisenstein.fullIdealWeight_summable_norm s hs).of_nonneg_of_le
-    (fun _ => norm_nonneg _)
+    (by simp)
   intro I
   change ‖a I * CubicEisenstein.fullIdealWeight s I‖ ≤ _
   rw [norm_mul]
@@ -52,7 +52,7 @@ theorem weighted_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ 
 theorem inverse_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) :
     Summable (fun I : Ideal O => ‖(moebius I : ℂ) * weighted a s I‖) := by
-  apply (weighted_summable_norm a ha s hs).of_nonneg_of_le (fun _ => norm_nonneg _)
+  apply (weighted_summable_norm a ha s hs).of_nonneg_of_le (by grind)
   intro I
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (CubicEisenstein.norm_ideal_moebius_le_one I)
@@ -72,17 +72,14 @@ theorem inverseSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
     by_cases hB : B = 0
     · subst B
       have hz (p : MulFiber 0) : F p.1 = 0 := by simp only [F, p.2, map_zero, mul_zero]
-      simp only [hz, tsum_zero, zero_ne_one, ite_false]
+      simp_all
     · calc
         _ = (∑' p : MulFiber B, (moebius p.1.1 : ℂ)) * f B := by
           rw [← tsum_mul_right]
-          exact tsum_congr (fun p => by simp only [F, p.2])
+          grind
         _ = _ := by
           rw [mulFiber_moebius_sum B hB]
-          split_ifs with hB1
-          · subst B
-            simp only [map_one, one_mul]
-          · exact zero_mul _
+          grind
   have hsum := hF.hasSum.tsum_fiberwise (fun p : Ideal O × Ideal O => p.1 * p.2)
   change HasSum (fun B : Ideal O => ∑' p : MulFiber B, F p.1) (∑' p, F p) at hsum
   simp_rw [hfiber] at hsum
@@ -93,17 +90,14 @@ theorem inverseSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
         (weighted_summable_norm a ha s hs)
     _ = ∑' p, F p := by
       apply tsum_congr
-      intro p
-      simp only [F, map_mul]
-      ring
+      grind
     _ = 1 := hFone
 
 theorem series_ne_zero (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) : series a s ≠ 0 := by
   intro hz
   have h := inverseSeries_mul_series a ha s hs
-  rw [hz, mul_zero] at h
-  exact zero_ne_one h
+  simp_all
 
 theorem inverseSeries_eq_inv (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) : inverseSeries a s = (series a s)⁻¹ := by
@@ -115,8 +109,7 @@ theorem inverseSeries_eq_inv (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ �
 theorem primeValueHom_eq (f : Ideal O →*₀ ℂ) : CanonicalRowCompletion.primeValueHom f = f := by
   ext I
   by_cases hI : I = 0
-  · subst I
-    rw [map_zero, map_zero]
+  · grind
   · change (if I = 0 then 0 else ((normalizedFactors I).map f).prod) = f I
     simp only [hI, ite_false]
     rw [← map_multiset_prod, prod_normalizedFactors_eq hI, normalize_eq]
@@ -131,10 +124,10 @@ theorem prime_norm_lt_one (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1
   simp only [CubicEisenstein.fullIdealWeight, P.property.ne_zero, ite_false, norm_mul]
   change ‖a P.val‖ * ‖SmoothMobiusCorrection.primeNormPower P s‖ < 1
   rw [SmoothMobiusCorrection.norm_primeNormPower]
-  apply (mul_le_of_le_one_left (Real.rpow_nonneg (by positivity) _) (ha P.val)).trans_lt
+  apply (mul_le_of_le_one_left (by positivity) (ha P.val)).trans_lt
   exact Real.rpow_lt_one_of_one_lt_of_neg
     (by have h := SmoothMobiusCorrection.prime_norm_two_le P
-        exact_mod_cast (by omega : 1 < Ideal.absNorm P.val)) (by simpa using neg_neg_of_pos hs)
+        exact_mod_cast (by omega)) (by linarith)
 
 theorem local_factor_ne_zero (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 0 < s.re) (P : PrimeIdeal) : 1 - weighted a s P.val ≠ 0 :=
@@ -153,8 +146,8 @@ theorem euler_hasProd (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
   have hm : Multipliable (fun P : PrimeIdeal => 1 - weighted a s P.val) := by
     simpa only [sub_eq_add_neg] using multipliable_one_add_of_summable
       (show Summable (fun P : PrimeIdeal => ‖-weighted a s P.val‖) by
-        simpa only [norm_neg] using prime_summable_norm a ha s hs)
-  have heq : (∏' P : PrimeIdeal, (1 - weighted a s P.val)) = (series a s)⁻¹ :=
+        simpa using prime_summable_norm a ha s hs)
+  have heq :=
     (inverseSeries_euler a ha s hs).symm.trans (inverseSeries_eq_inv a ha s hs)
   have hne : (∏' P : PrimeIdeal, (1 - weighted a s P.val)) ≠ 0 := by
     rw [heq]
@@ -174,30 +167,26 @@ theorem deletePrimes_prime (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ) (P 
     deletePrimes S a P.val = if P ∈ S then 0 else a P.val := by
   have hmem : P.val ∈ S.image Subtype.val ↔ P ∈ S := by
     constructor
-    · intro hP
-      obtain ⟨Q, hQ, hQP⟩ := Finset.mem_image.mp hP
-      exact (Subtype.ext hQP : Q = P) ▸ hQ
-    · intro hP
-      exact Finset.mem_image.mpr ⟨P, hP, rfl⟩
+    · simp
+    · grind
   change CanonicalRowCompletion.primeValueHom _ P.val = _
   rw [CanonicalRowCompletion.primeValueHom_prime _ _ P.property]
-  simp only [hmem]
+  grind
 
 theorem deletePrimes_norm_le_one (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ)
     (ha : ∀ I, ‖a I‖ ≤ 1) : ∀ I, ‖deletePrimes S a I‖ ≤ 1 := by
   apply CanonicalRowCompletion.primeValueHom_norm_le_one
   intro I
   split_ifs
-  · simp only [norm_zero, zero_le_one]
-  · exact ha I
+  · simp
+  simp_all
 
 theorem deletePrimes_apply (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ) (I : Ideal O) :
     deletePrimes S a I = if ∀ P ∈ S, ¬P.val ∣ I then a I else 0 := by
   by_cases ho : ∀ P ∈ S, ¬P.val ∣ I
   · rw [ite_eq_left ho]
     by_cases hI : I = 0
-    · subst I
-      rw [map_zero, map_zero]
+    · grind
     · change (if I = 0 then 0 else
         ((normalizedFactors I).map (fun J => if J ∈ S.image Subtype.val then 0 else a J)).prod) = a I
       simp only [hI, ite_false]
@@ -215,28 +204,26 @@ theorem deletePrimes_apply (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ) (I 
     push Not at ho
     obtain ⟨P, hPS, J, hJ⟩ := ho
     rw [hJ, map_mul, deletePrimes_prime]
-    simp only [hPS, ite_true, zero_mul]
+    simp_all
 
 theorem deletePrimes_primeSet_apply (M : Ideal O) (hM : M ≠ 0)
     (a : Ideal O →*₀ ℂ) (I : Ideal O) :
     deletePrimes (SmoothMobiusCorrection.primeSet M) a I =
       if IsCoprime I M then a I else 0 := by
   by_cases hI : I = 0
-  · subst I
-    rw [map_zero, map_zero]
-    exact (ite_self _).symm
+  · grind
   have heq : (∀ P ∈ SmoothMobiusCorrection.primeSet M, ¬P.val ∣ I) ↔ IsCoprime I M := by
     rw [← IdealCoprimeSieveOperator.primeSupport_disjoint_iff hI hM]
     constructor
     · intro h
       apply Finset.disjoint_left.mpr
       intro P hPI hPM
-      have hp : Prime P := IdealMobiusDivisorSum.support_prime hPM
+      have hp := IdealMobiusDivisorSum.support_prime hPM
       exact h ⟨P, hp⟩ (SmoothMobiusCorrection.mem_primeSet M ⟨P, hp⟩ |>.mpr hPM)
         (dvd_of_mem_normalizedFactors (Multiset.mem_toFinset.mp hPI))
     · intro h P hPM hPI
       exact Finset.disjoint_left.mp h
-        (Multiset.mem_toFinset.mpr ((mem_normalizedFactors_iff hI).mpr ⟨P.property, hPI⟩))
+        (Multiset.mem_toFinset.mpr ((mem_normalizedFactors_iff hI).mpr (by grind)))
         ((SmoothMobiusCorrection.mem_primeSet M P).mp hPM)
   simpa only [heq] using deletePrimes_apply (SmoothMobiusCorrection.primeSet M) a I
 
@@ -260,14 +247,14 @@ theorem series_deletePrimes (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ)
     intro P hP
     by_contra hPS
     change P ∉ S at hPS
-    exact hP (by simp only [hPS, ite_false])
+    exact hP (by simp_all)
   rw [series_euler _ (deletePrimes_norm_le_one S a ha) s hs,
     series_euler a ha s hs]
   simp_rw [hlocal]
   rw [(euler_hasProd a ha s hs).multipliable.tprod_mul hfinite]
   congr 1
-  rw [tprod_eq_prod (s := S) (fun P hP => by simp only [hP, ite_false])]
-  exact Finset.prod_congr rfl (fun P hP => by simp only [hP, ite_true])
+  rw [tprod_eq_prod (s := S) (fun P hP => by simp_all)]
+  simp
 
 theorem series_of_coprime_mask (M : Ideal O) (hM : M ≠ 0)
     (a b : Ideal O →*₀ ℂ) (hb : ∀ I, ‖b I‖ ≤ 1)

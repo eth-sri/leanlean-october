@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.FinitePairing
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -32,9 +31,7 @@ lemma finite_schur {β : Type*} [Fintype β] (mass : β → ℝ) (K : β → β 
       (∑ b, mass a * ‖K a b‖ * ‖f a‖ ^ 2) =
           mass a * ‖f a‖ ^ 2 * ∑ b, ‖K a b‖ := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro b _
-        ring
+        grind
       _ ≤ mass a * ‖f a‖ ^ 2 * C :=
         mul_le_mul_of_nonneg_left (hrow a) (mul_nonneg (hm a) (sq_nonneg _))
       _ = _ := by ring
@@ -51,7 +48,7 @@ lemma finite_schur {β : Type*} [Fintype β] (mass : β → ℝ) (K : β → β 
         mul_le_mul_of_nonneg_right (hcol b) (sq_nonneg _)
       _ = _ := by ring
   have hcs := weighted_sqrt_cauchy w (fun z => ‖f z.1‖ ^ 2) (fun z => ‖g z.2‖ ^ 2)
-    hw (fun _ => sq_nonneg _) (fun _ => sq_nonneg _)
+    hw (by simp) (by simp)
   have hnorm : ‖∑ a, ∑ b, (mass a : ℂ) * star (f a) * K a b * g b‖ ≤
       ∑ z : β × β, w z * Real.sqrt (‖f z.1‖ ^ 2) * Real.sqrt (‖g z.2‖ ^ 2) := by
     rw [Fintype.sum_prod_type]
@@ -79,10 +76,7 @@ lemma finite_schur {β : Type*} [Fintype β] (mass : β → ℝ) (K : β → β 
       mul_le_mul (Real.sqrt_le_sqrt hu) (Real.sqrt_le_sqrt hv) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     _ = _ := by
       rw [Real.sqrt_mul hC, Real.sqrt_mul hC]
-      calc
-        _ = (Real.sqrt C) ^ 2 * Real.sqrt (∑ a, mass a * ‖f a‖ ^ 2) *
-            Real.sqrt (∑ b, mass b * ‖g b‖ ^ 2) := by ring
-        _ = _ := by rw [Real.sq_sqrt hC]
+      grind
 
 end
 end Erdos821.P4Probe

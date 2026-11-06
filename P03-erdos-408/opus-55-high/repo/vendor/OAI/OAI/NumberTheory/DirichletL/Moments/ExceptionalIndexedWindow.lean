@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalWindowPair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalIndexedWindow
 open CenteredMomentExceptionalWindowPair CenteredMomentPlainWindowEnergy
 open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily FourierBridge
 
 theorem indexed_plain_window_pair {κ α β:Type*}
-    (rows:Finset κ)(row:κ→O)(S:Finset α)(T:Finset β)(a:α→O)(b:β→O)
+    (rows:Finset κ)(row:κ→ActualEisensteinCubic.O)(S:Finset α)(T:Finset β)(a:α→ActualEisensteinCubic.O)(b:β→ActualEisensteinCubic.O)
     (ha:∀i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
     (hb:∀j,CanonicalQuadraticSieve.Supported (Ideal.span {b j}))
     (c:κ→α→ℂ)(d:κ→β→ℂ)(τ₁ τ₂:Character)(t₁ t₂ θ₁ θ₂ X Y:ℝ)(hX:0<X)(hY:0<Y)
@@ -53,7 +52,7 @@ theorem indexed_plain_window_pair {κ α β:Type*}
         (∫v:ℝ,g z v)=rowPolynomial T b (fun j=>d z j*heightCoeff τ₂ t₂ (Ideal.span {b j})*
           columnPhase V₂ (Real.log ((Ideal.absNorm (Ideal.span {b j}):ℝ)/Y)) θ₂) (row z):=
         (plain_column_integral T b hb (d z) τ₂ t₂ θ₂ Y hY V₂ hc₂ hs₂ (row z)).symm
-    simpa only [hfEq,hgEq] using hh
+    simp_all
   · intro u v
     simp only [f,g,norm_mul,logPhase_norm,mul_one]
     calc
@@ -62,12 +61,10 @@ theorem indexed_plain_window_pair {κ α β:Type*}
           ‖rowPolynomial S a (fun i=>c z i*heightCoeff τ₁ (t₁+2*Real.pi*(u-θ₁)) (Ideal.span {a i})) (row z)‖*
           ‖rowPolynomial T b (fun j=>d z j*heightCoeff τ₂ (t₂+2*Real.pi*(v-θ₂)) (Ideal.span {b j})) (row z)‖):=by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro z hz
-        ring
+        grind
       _≤(‖columnDensity V₁ hc₁ hs₁ u‖*‖columnDensity V₂ hc₂ hs₂ v‖)*
           (E*(1+‖u‖)^J₁*(1+‖v‖)^J₂):=
-        mul_le_mul_of_nonneg_left (hpair u v) (mul_nonneg (norm_nonneg _) (norm_nonneg _))
+        mul_le_mul_of_nonneg_left (by grind) (by positivity)
       _=_:=by ring
 
 end SevenEighths.CenteredMomentExceptionalIndexedWindow

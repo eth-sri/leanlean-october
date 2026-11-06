@@ -32,18 +32,17 @@ theorem sum_sum_ite_mul_eq_le (A B : Finset ℕ) {N : ℕ} (hN : N ≠ 0) :
     · have hcard : #{n ∈ B | m * n = N} ≤ 1 := by
         refine card_le_one.2 fun n hn n' hn' => ?_
         rw [mem_filter] at hn hn'
-        have hm0 : 0 < m := Nat.pos_of_ne_zero fun h0 => hN (by rw [← hn.2, h0, zero_mul])
+        have hm0 : 0 < m := Nat.pos_of_ne_zero fun h0 => hN (by simp_all)
         exact Nat.eq_of_mul_eq_mul_left hm0 (hn.2.trans hn'.2.symm)
-      exact_mod_cast hcard
+      simp_all
     · rw [Nat.cast_nonpos, card_eq_zero, filter_eq_empty_iff]
       exact fun n _ hmn => hdvd ⟨n, hmn.symm⟩
   calc ∑ m ∈ A, ∑ n ∈ B, (if m * n = N then (1 : ℝ) else 0)
       ≤ ∑ m ∈ A, (if m ∣ N then (1 : ℝ) else 0) := sum_le_sum fun m _ => hm m
-    _ = #{m ∈ A | m ∣ N} := by rw [sum_boole]
+    _ = #{m ∈ A | m ∣ N} := by simp
     _ ≤ N.divisors.card := by
         refine Nat.cast_le.2 (card_le_card fun m hm => ?_)
-        rw [mem_filter] at hm
-        exact Nat.mem_divisors.2 ⟨hm.2, hN⟩
+        simp_all
 
 /-- Grouping by the product: `∑_{m, n} G(mn) ≤ ∑_{k ≤ M} τ(k) G(k)` for `G ≥ 0`, when every
 product lies in `[1, M]`. -/
@@ -54,7 +53,7 @@ theorem sum_sum_mul_le (A B : Finset ℕ) {M : ℕ}
       G (m * n) = ∑ k ∈ Icc 1 M, (if m * n = k then (1 : ℝ) else 0) * G k := by
     intro m hm n hn
     simp_rw [ite_mul, one_mul, zero_mul]
-    rw [sum_ite_eq, ite_eq_left (mem_Icc.2 (hAB m hm n hn))]
+    rw [sum_ite_eq, ite_eq_left (by grind)]
   calc ∑ m ∈ A, ∑ n ∈ B, G (m * n)
       = ∑ k ∈ Icc 1 M, (∑ m ∈ A, ∑ n ∈ B, (if m * n = k then (1 : ℝ) else 0)) * G k := by
         rw [sum_congr rfl fun m hm => sum_congr rfl fun n hn => hsplit m hm n hn]
@@ -62,7 +61,7 @@ theorem sum_sum_mul_le (A B : Finset ℕ) {M : ℕ}
         exact (sum_congr rfl fun m _ => sum_comm).trans sum_comm
     _ ≤ ∑ k ∈ Icc 1 M, (k.divisors.card : ℝ) * G k := by
         refine sum_le_sum fun k hk => mul_le_mul_of_nonneg_right ?_ (hG k)
-        exact sum_sum_ite_mul_eq_le A B (by linarith [(mem_Icc.1 hk).1])
+        exact sum_sum_ite_mul_eq_le A B (by grind)
 
 /-- The `l` with `|c - a l| ≤ w` number at most `2w/a + 1`. -/
 theorem card_filter_abs_sub_le (s : Finset ℕ) (c : ℝ) {a w : ℝ} (ha : 0 < a) (hw : 0 ≤ w) :
@@ -77,7 +76,7 @@ theorem card_filter_abs_sub_le (s : Finset ℕ) (c : ℝ) {a w : ℝ} (ha : 0 < 
   have hsub : T ⊆ Icc l₀ (l₀ + ⌊2 * w / a⌋₊) := by
     intro l hl
     have hle : l₀ ≤ l := T.min'_le l hl
-    have hlw : |c - a * l| ≤ w := (mem_filter.1 hl).2
+    have hlw := (mem_filter.1 hl).2
     refine mem_Icc.2 ⟨hle, ?_⟩
     have hdiff : ((l - l₀ : ℕ) : ℝ) ≤ 2 * w / a := by
       rw [Nat.cast_sub hle, le_div_iff₀ ha]
@@ -89,8 +88,7 @@ theorem card_filter_abs_sub_le (s : Finset ℕ) (c : ℝ) {a w : ℝ} (ha : 0 < 
   calc (#T : ℝ) ≤ #(Icc l₀ (l₀ + ⌊2 * w / a⌋₊)) := by exact_mod_cast card_le_card hsub
     _ = ⌊2 * w / a⌋₊ + 1 := by
         rw [Nat.card_Icc, show l₀ + ⌊2 * w / a⌋₊ + 1 - l₀ = ⌊2 * w / a⌋₊ + 1 by omega]
-        push_cast
-        ring
+        simp
     _ ≤ 2 * w / a + 1 := by
         gcongr
         exact Nat.floor_le (by positivity)
@@ -123,7 +121,7 @@ theorem sum_ite_exists_le (A B : Finset ℕ) {a b Z : ℕ} (ha : 0 < a) (hb : 0 
         else 0) * (if r * s = 1 + b * h then 1 else 0)) (fun h _ => by positivity)
         (mem_Icc.2 ⟨h1, hZ m hm n hn h h1 hmn⟩))
       rw [ite_eq_left (by omega), ite_eq_left (by omega), one_mul]
-    · exact sum_nonneg fun h _ => by positivity
+    · positivity
   calc ∑ m ∈ A, ∑ n ∈ B, ∑ r ∈ A, ∑ s ∈ B,
         (if ∃ h, 1 ≤ h ∧ m * n - 1 = a * h ∧ r * s - 1 = b * h then (1 : ℝ) else 0)
       ≤ ∑ m ∈ A, ∑ n ∈ B, ∑ r ∈ A, ∑ s ∈ B, ∑ h ∈ Icc 1 Z,
@@ -140,7 +138,7 @@ theorem sum_ite_exists_le (A B : Finset ℕ) {a b Z : ℕ} (ha : 0 < a) (hb : 0 
     _ ≤ ∑ h ∈ Icc 1 Z, ((1 + a * h).divisors.card : ℝ) * (1 + b * h).divisors.card := by
         refine sum_le_sum fun h _ => mul_le_mul (sum_sum_ite_mul_eq_le A B (by omega))
           (sum_sum_ite_mul_eq_le A B (by omega)) ?_ (Nat.cast_nonneg _)
-        exact sum_nonneg fun r _ => sum_nonneg fun s _ => by positivity
+        positivity
 
 /-- The near-solutions: the quadruples with `|b mn - a rs| ≤ 5Y` number at most
 `11 ∑_{k ≤ M} τ(k)²`, when `a, b > Y` and every product lies in `[1, M]`. -/
@@ -152,7 +150,7 @@ theorem sum_ite_abs_le (A B : Finset ℕ) {M : ℕ}
       11 * ∑ k ∈ Icc 1 M, (k.divisors.card : ℝ) ^ 2 := by
   set g : ℕ → ℕ → ℝ := fun k l => if |b * (k : ℝ) - a * (l : ℝ)| ≤ 5 * Y then 1 else 0
   set τ : ℕ → ℝ := fun k => (k.divisors.card : ℝ)
-  have hg : ∀ k l, 0 ≤ g k l := fun k l => by simp only [g]; split_ifs <;> norm_num
+  have hg : ∀ k l, 0 ≤ g k l := fun k l => by positivity
   -- each `k` has at most `11` partners `l`, and conversely
   have hrow : ∀ k, ∑ l ∈ Icc 1 M, g k l ≤ 11 := by
     intro k
@@ -172,7 +170,7 @@ theorem sum_ite_abs_le (A B : Finset ℕ) {M : ℕ}
   calc ∑ m ∈ A, ∑ n ∈ B, ∑ r ∈ A, ∑ s ∈ B, g (m * n) (r * s)
       ≤ ∑ k ∈ Icc 1 M, τ k * ∑ r ∈ A, ∑ s ∈ B, g k (r * s) :=
         sum_sum_mul_le A B hAB (G := fun k => ∑ r ∈ A, ∑ s ∈ B, g k (r * s))
-          fun k => sum_nonneg fun r _ => sum_nonneg fun s _ => hg _ _
+          fun k => by positivity
     _ ≤ ∑ k ∈ Icc 1 M, τ k * ∑ l ∈ Icc 1 M, τ l * g k l :=
         sum_le_sum fun k _ => mul_le_mul_of_nonneg_left (sum_sum_mul_le A B hAB (hg k))
           (Nat.cast_nonneg _)
@@ -191,10 +189,10 @@ theorem sum_ite_abs_le (A B : Finset ℕ) {M : ℕ}
           simp only [mul_sum]
     _ ≤ ∑ k ∈ Icc 1 M, τ k ^ 2 / 2 * 11 + ∑ l ∈ Icc 1 M, τ l ^ 2 / 2 * 11 := by
         gcongr with k _ l _
-        · exact hrow k
-        · exact hcol l
+        · simp_all
+        simp_all
     _ = 11 * ∑ k ∈ Icc 1 M, τ k ^ 2 := by
         rw [← sum_add_distrib, mul_sum]
-        exact sum_congr rfl fun k _ => by ring
+        ring
 
 end Erdos408.OneSided

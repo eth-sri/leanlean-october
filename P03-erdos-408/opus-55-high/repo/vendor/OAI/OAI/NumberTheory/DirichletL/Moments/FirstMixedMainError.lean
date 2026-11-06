@@ -10,15 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedMainError
-open HeckeFamily CanonicalQuadraticSieve ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstSourceConductorCaps
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationRadicalFamily
-open CenteredMomentAmplificationActiveFactor CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentChildRows
-open CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 
 end SevenEighths.CenteredMomentFirstMixedMainError

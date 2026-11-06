@@ -5,7 +5,7 @@ public import Erdos821.S34.ProductSupport
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -15,13 +15,13 @@ theorem occupied_cell_count {α : Type*} [Fintype α] (n : α → ℕ)
     (h H : ℝ) (hh : 0 < h) (hH : 0 ≤ H)
     (hn : ∀ x, Real.log (n x) ≤ H) :
     ((Finset.univ.image (fun x => cell h (n x))).card : ℝ) ≤ H / h + 1 := by
-  have hfloor : 0 ≤ ⌊H / h⌋ := Int.floor_nonneg.mpr (div_nonneg hH hh.le)
+  have hfloor : 0 ≤ ⌊H / h⌋ := by positivity
   have hs : Finset.univ.image (fun x => cell h (n x)) ⊆ Finset.Icc 0 ⌊H / h⌋ := by
     intro j hj
     obtain ⟨x, _, rfl⟩ := Finset.mem_image.mp hj
     apply Finset.mem_Icc.mpr
     constructor
-    · exact Int.floor_nonneg.mpr (div_nonneg (Real.log_natCast_nonneg _) hh.le)
+    · exact Int.floor_nonneg.mpr (by positivity)
     · exact Int.floor_mono (div_le_div_of_nonneg_right (hn x) hh.le)
   have hc : ((Finset.Icc (0 : ℤ) ⌊H / h⌋).card : ℝ) = (⌊H / h⌋ : ℝ) + 1 := by
     have ht := Int.card_Icc_of_le (a := (0 : ℤ)) (b := ⌊H / h⌋) (by omega)
@@ -40,7 +40,7 @@ theorem product_cell_count (P : Geometry) (x : ℝ) (G : PrimeGroups)
       ((m : ℝ) * P.C₀ * T x * L x ^ P.d) / h + 1 := by
   apply occupied_cell_count (fun z => product G k z) h _ hh
   · exact mul_nonneg (mul_nonneg (mul_nonneg (Nat.cast_nonneg m)
-      P.positive.2.1.le) hT) (Real.rpow_nonneg hL _)
+      P.positive.2.1.le) hT) (by positivity)
   · exact fun z => (log_product_bounds P x G hL hG k m hk z).2
 
 end

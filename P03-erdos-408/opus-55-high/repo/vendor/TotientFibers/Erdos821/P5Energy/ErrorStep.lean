@@ -8,7 +8,6 @@ on the range `Y/2 ≤ v ≤ 5Y/2`: support, Lipschitz error, counting and integr
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff
 open MeasureTheory
 
 namespace Erdos821.P5Energy
@@ -40,21 +39,18 @@ theorem kernels_vanish_far {Y H n v : ℝ} (hY : 0 < Y) (hH : 0 < H) (hHY : H �
     rw [abs_div, abs_of_pos hH, le_div_iff₀ hH]
     rcases lt_abs.mp hfar with h | h
     · have hlog : 1 - (n / v)⁻¹ ≤ Real.log (n / v) :=
-        Real.one_sub_inv_le_log_of_pos (div_pos hn hv)
+        Real.one_sub_inv_le_log_of_pos (by positivity)
       have hinv : 1 - (n / v)⁻¹ = (n - v) / n := by field_simp
       rw [hinv] at hlog
       have h1 : v * ((n - v) / n) ≤ v * Real.log (n / v) := mul_le_mul_of_nonneg_left hlog hv.le
       have h2 : 1 / 4 * H ≤ v * ((n - v) / n) := by
         rw [mul_div_assoc', le_div_iff₀ hn]
         nlinarith
-      calc 1 / 4 * H ≤ v * Real.log (n / v) := h2.trans h1
-        _ ≤ |v * Real.log (n / v)| := le_abs_self _
-    · have hlog : Real.log (n / v) ≤ n / v - 1 := Real.log_le_sub_one_of_pos (div_pos hn hv)
+      grind
+    · have hlog : Real.log (n / v) ≤ n / v - 1 := Real.log_le_sub_one_of_pos (by positivity)
       have h1 : v * Real.log (n / v) ≤ v * (n / v - 1) := mul_le_mul_of_nonneg_left hlog hv.le
       have h2 : v * (n / v - 1) = n - v := by field_simp
-      rw [h2] at h1
-      calc 1 / 4 * H ≤ -(v * Real.log (n / v)) := by linarith
-        _ ≤ |v * Real.log (n / v)| := neg_le_abs _
+      grind
 
 theorem abs_log_one_add_sub_self_le {z : ℝ} (hz : -1 < z) :
     |Real.log (1 + z) - z| ≤ z ^ 2 / (1 + z) := by
@@ -72,14 +68,13 @@ theorem abs_log_one_add_sub_self_le {z : ℝ} (hz : -1 < z) :
     have heq : z / (1 + z) - z = -(z ^ 2 / (1 + z)) := by field_simp; ring
     rw [← heq]
     linarith
-  rw [abs_le]
-  exact ⟨hl, hu.trans (div_nonneg (sq_nonneg z) hpos.le)⟩
+  grind
 
 theorem log_argument_error {Y H n v : ℝ} (hY : 0 < Y) (hv : 0 < v) (hn : Y ≤ n)
     (hnv : |n - v| ≤ H) :
     |v * Real.log (n / v) - (n - v)| ≤ H ^ 2 / Y := by
   have hnpos : 0 < n := hY.trans_le hn
-  have hH : 0 ≤ H := (abs_nonneg _).trans hnv
+  have hH : 0 ≤ H := by grind
   let z : ℝ := (n - v) / v
   have h1pz : 1 + z = n / v := by
     dsimp [z]; field_simp; ring
@@ -91,13 +86,12 @@ theorem log_argument_error {Y H n v : ℝ} (hY : 0 < Y) (hv : 0 < v) (hn : Y ≤
     rw [← sq_abs]; exact pow_le_pow_left₀ (abs_nonneg _) hnv 2
   have hmain : v * |Real.log (1 + z) - z| ≤ H ^ 2 / Y := by
     calc _ ≤ v * (z ^ 2 / (1 + z)) := mul_le_mul_of_nonneg_left ht hv.le
-      _ = (n - v) ^ 2 / n := by rw [h1pz]; dsimp [z]; field_simp
+      _ = (n - v) ^ 2 / n := by grind
       _ ≤ H ^ 2 / n := div_le_div_of_nonneg_right hsquare hnpos.le
       _ ≤ H ^ 2 / Y := div_le_div_of_nonneg_left (sq_nonneg H) hY hn
   have hdiff : v * Real.log (n / v) - (n - v) = v * (Real.log (1 + z) - z) := by
     rw [h1pz]; dsimp [z]; field_simp
-  rw [hdiff, abs_mul, abs_of_pos hv]
-  exact hmain
+  grind
 
 theorem kernel_diff_le {L : NNReal} (hL : LipschitzWith L localKernel) {Y H n v : ℝ}
     (hY : 0 < Y) (hH : 0 < H) (hHY : H ≤ Y / 10)
@@ -114,8 +108,7 @@ theorem kernel_diff_le {L : NNReal} (hL : LipschitzWith L localKernel) {Y H n v 
     rw [Real.dist_eq, Real.dist_eq] at hlip
     exact hlip.trans (mul_le_mul_of_nonneg_left hd L.2)
   · obtain ⟨h1, h2⟩ := kernels_vanish_far hY hH hHY hv1 hn1 hn2 (lt_of_not_ge hnear)
-    rw [h1, h2, sub_zero, abs_zero]
-    positivity
+    simp_all
 
 /-- Indicator of `|n - v| ≤ H`. -/
 def chi (H : ℝ) (n : ℕ) : ℝ → ℝ := Set.indicator (Set.Icc ((n : ℝ) - H) (n + H)) 1
@@ -125,14 +118,14 @@ theorem chi_apply (H : ℝ) (n : ℕ) (v : ℝ) :
   unfold chi
   rw [Set.indicator_apply]
   have : v ∈ Set.Icc ((n : ℝ) - H) (n + H) ↔ |(n : ℝ) - v| ≤ H := by
-    rw [Set.mem_Icc, abs_le]; constructor <;> intro h <;> constructor <;> linarith [h.1, h.2]
-  simp only [this, Pi.one_apply]
+    rw [Set.mem_Icc, abs_le]; constructor <;> intro h <;> constructor <;> linarith
+  simp_all
 
 theorem chi_nonneg (H : ℝ) (n : ℕ) (v : ℝ) : 0 ≤ chi H n v := by
-  rw [chi_apply]; split_ifs <;> norm_num
+  rw [chi_apply]; positivity
 
 theorem chi_sq (H : ℝ) (n : ℕ) (v : ℝ) : chi H n v ^ 2 = chi H n v := by
-  rw [chi_apply]; split_ifs <;> norm_num
+  rw [chi_apply]; simp
 
 theorem integrable_chi (H : ℝ) (n : ℕ) : Integrable (chi H n) := by
   unfold chi
@@ -161,8 +154,8 @@ theorem sum_chi_le (s : Finset ℕ) {H v : ℝ} (hH : 0 ≤ H) (hvH : H ≤ v) :
     rw [abs_le] at hn
     rw [Finset.mem_Icc]
     constructor
-    · exact Nat.ceil_le.mpr (by linarith [hn.2])
-    · exact Nat.le_floor (by linarith [hn.1])
+    · simp_all
+    · exact Nat.le_floor (by linarith)
   have hcard := Finset.card_le_card hsub
   rw [Nat.card_Icc] at hcard
   have hcast : ((s.filter (fun n : ℕ => |(n : ℝ) - v| ≤ H)).card : ℝ) ≤
@@ -172,11 +165,9 @@ theorem sum_chi_le (s : Finset ℕ) {H v : ℝ} (hH : 0 ≤ H) (hvH : H ≤ v) :
   have hce : v - H ≤ (⌈v - H⌉₊ : ℝ) := Nat.le_ceil _
   by_cases hle : ⌈v - H⌉₊ ≤ ⌊v + H⌋₊ + 1
   · rw [Nat.cast_sub hle]
-    push_cast
-    linarith
-  · rw [Nat.sub_eq_zero_of_le (le_of_lt (lt_of_not_ge hle))]
-    simp
-    linarith
+    grind
+  · rw [Nat.sub_eq_zero_of_le (by omega)]
+    grind
 
 theorem localLogConvolution_continuousOn (s : Finset ℕ) (a : ℕ → ℂ) (H : ℝ) :
     ContinuousOn (localLogConvolution s a H) (Set.Ioi 0) := by
@@ -192,8 +183,8 @@ theorem localLogConvolution_continuousOn (s : Finset ℕ) (a : ℕ → ℂ) (H :
   by_cases hn0 : (n : ℝ) = 0
   · simp only [hn0, zero_div]; exact continuousOn_const
   · apply ContinuousOn.log
-    · exact continuousOn_const.div continuousOn_id (fun x hx => ne_of_gt hx)
-    · intro x hx; exact div_ne_zero hn0 (ne_of_gt hx)
+    · exact continuousOn_const.div continuousOn_id (by grind)
+    grind
 
 theorem diff_pointwise_sq {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset ℕ)
     (a : ℕ → ℂ) {Y H v : ℝ} (hY : 0 < Y) (hH1 : 1 ≤ H) (hHY : H ≤ Y / 10)
@@ -207,7 +198,7 @@ theorem diff_pointwise_sq {L : NNReal} (hL : LipschitzWith L localKernel) (s : F
         (localKernel (v * Real.log ((n : ℝ) / v) / H) : ℂ)) := by
     unfold localConvolution localLogConvolution localConvolutionTerm localLogConvolutionTerm
     rw [← Finset.sum_sub_distrib]
-    exact Finset.sum_congr rfl (fun n _ => by ring)
+    exact by grind
   have hterm : ∀ n ∈ s, ‖a n * ((localKernel (((n : ℝ) - v) / H) : ℂ) -
         (localKernel (v * Real.log ((n : ℝ) / v) / H) : ℂ))‖ ≤
       chi H n v * (chi H n v * (‖a n‖ * δ)) := by
@@ -218,7 +209,7 @@ theorem diff_pointwise_sq {L : NNReal} (hL : LipschitzWith L localKernel) (s : F
     · rw [one_mul, one_mul]
       exact mul_le_mul_of_nonneg_left (kernel_diff_le hL hY hH hHY hv1 hn1 hn2) (norm_nonneg _)
     · obtain ⟨h1, h2⟩ := kernels_vanish_far hY hH hHY hv1 hn1 hn2 (lt_of_not_ge hnear)
-      rw [h1, h2]; simp
+      simp_all
   have hnorm : ‖localConvolution s a H v - localLogConvolution s a H v‖ ≤
       ∑ n ∈ s, chi H n v * (chi H n v * (‖a n‖ * δ)) := by
     rw [hdiff]; exact (norm_sum_le _ _).trans (Finset.sum_le_sum hterm)
@@ -236,7 +227,7 @@ theorem diff_pointwise_sq {L : NNReal} (hL : LipschitzWith L localKernel) (s : F
       (∑ n ∈ s, chi H n v * (chi H n v * (‖a n‖ * δ))) ^ 2 :=
         pow_le_pow_left₀ (norm_nonneg _) hnorm 2
     _ ≤ (∑ n ∈ s, (chi H n v) ^ 2) * ∑ n ∈ s, (chi H n v * (‖a n‖ * δ)) ^ 2 := hCS
-    _ = (∑ n ∈ s, chi H n v) * (δ ^ 2 * ∑ n ∈ s, chi H n v * ‖a n‖ ^ 2) := by rw [e1, e2]
+    _ = (∑ n ∈ s, chi H n v) * (δ ^ 2 * ∑ n ∈ s, chi H n v * ‖a n‖ ^ 2) := by simp_all
     _ ≤ (2 * H + 1) * (δ ^ 2 * ∑ n ∈ s, chi H n v * ‖a n‖ ^ 2) :=
         mul_le_mul_of_nonneg_right hcount (by positivity)
     _ = _ := by ring
@@ -251,7 +242,7 @@ theorem error_energy {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset
   have hab : Y / 2 ≤ 5 * Y / 2 := by linarith
   have hH : 0 < H := by linarith
   have hsubset : Set.uIcc (Y / 2) (5 * Y / 2) ⊆ Set.Ioi 0 := by
-    rw [Set.uIcc_of_le hab]; intro x hx; exact lt_of_lt_of_le (by linarith) hx.1
+    rw [Set.uIcc_of_le hab]; intro x hx; exact by grind
   have hcont : ContinuousOn
       (fun v => ‖localConvolution s a H v - localLogConvolution s a H v‖ ^ 2)
       (Set.uIcc (Y / 2) (5 * Y / 2)) :=
@@ -260,7 +251,7 @@ theorem error_energy {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset
   have hgint : Integrable (fun v => (2 * H + 1) * ((L : ℝ) * (H / Y)) ^ 2 *
       ∑ n ∈ s, chi H n v * ‖a n‖ ^ 2) :=
     (integrable_finsetSum s (fun n _ => (integrable_chi H n).mul_const _)).const_mul _
-  have hsq0 : 0 ≤ sqNorm s a := Finset.sum_nonneg (fun n _ => sq_nonneg _)
+  have hsq0 : 0 ≤ sqNorm s a := Finset.sum_nonneg (by simp)
   calc ∫ v in (Y / 2)..(5 * Y / 2),
         ‖localConvolution s a H v - localLogConvolution s a H v‖ ^ 2 ≤
       ∫ v in (Y / 2)..(5 * Y / 2), (2 * H + 1) * ((L : ℝ) * (H / Y)) ^ 2 *
@@ -271,8 +262,7 @@ theorem error_energy {L : NNReal} (hL : LipschitzWith L localKernel) (s : Finset
         ∑ n ∈ s, (∫ v in (Y / 2)..(5 * Y / 2), chi H n v) * ‖a n‖ ^ 2 := by
         rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_finsetSum
           (fun n _ => ((integrable_chi H n).mul_const _).intervalIntegrable)]
-        congr 1
-        exact Finset.sum_congr rfl (fun n _ => intervalIntegral.integral_mul_const _ _)
+        simp
     _ ≤ (2 * H + 1) * ((L : ℝ) * (H / Y)) ^ 2 * ∑ n ∈ s, (2 * H) * ‖a n‖ ^ 2 :=
         mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun n _ =>
           mul_le_mul_of_nonneg_right (integral_chi_le hH.le n hab) (sq_nonneg _)) (by positivity)

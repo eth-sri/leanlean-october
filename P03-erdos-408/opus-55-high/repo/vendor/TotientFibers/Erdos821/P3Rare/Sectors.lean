@@ -17,7 +17,6 @@ bounded by contextwise weighted Schur, and the context constants sum to the
 pattern mass times a `J`-independent power of `L(x)`. -/
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Rare
@@ -57,13 +56,13 @@ theorem normBound_sum_projected_contexts_sparseRows'
     intro j a ω t
     by_cases ha : keep a
     · simpa [K', ha, Finset.sum_filter] using hrow j a ω (t.filter keep)
-    · simpa [K', ha] using mul_nonneg (hR j) (hw a).le
+    · simpa [K', ha] using mul_nonneg (hR j) (by grind)
   have hcol' : ∀ j b ω s,
       ∑ a ∈ s, mass a * K' j ω a b * w a ≤ C j * mass b * w b := by
     intro j b ω s
     by_cases hb : keep b
     · simpa [K', hb, Finset.sum_filter] using hcol j b ω (s.filter keep)
-    · simpa [K', hb] using mul_nonneg (mul_nonneg (hC j) (hm b)) (hw b).le
+    · simpa [K', hb] using mul_nonneg (mul_nonneg (hC j) (hm b)) (by grind)
   have hbadConverted : ∀ j a,
       (@Finset.filter Ω (fun ω => bad' j a ω)
         (fun ω => Classical.propDecidable (bad' j a ω)) Finset.univ).card ≤ B := by
@@ -78,11 +77,8 @@ theorem normBound_sum_projected_contexts_sparseRows'
   have hzero' : ∀ j a ω, ¬ bad' j a ω → ∀ b, K' j ω a b = 0 := by
     intro j a ω hnot b
     by_cases ha : keep a
-    · have hnb : ¬ bad j a ω := fun h => hnot (show keep a ∧ bad j a ω from ⟨ha, h⟩)
-      by_cases hb : keep b
-      · simp [K', ha, hb, hzero j a ω ha hnb b]
-      · simp [K', ha, hb]
-    · simp [K', ha]
+    · grind
+    · grind
   simpa [K'] using normBound_sum_contexts_sparseRows mass w K' bad' R C B
     hm hw hK' hR hC hD hrow' hcol' hbadConverted hzero'
 
@@ -117,13 +113,13 @@ theorem normBound_sum_projected_contexts_sparseCols'
     intro j a ω t
     by_cases ha : keep a
     · simpa [K', ha, Finset.sum_filter] using hrow j a ω (t.filter keep)
-    · simpa [K', ha] using mul_nonneg (hR j) (hw a).le
+    · simpa [K', ha] using mul_nonneg (hR j) (by grind)
   have hcol' : ∀ j b ω s,
       ∑ a ∈ s, mass a * K' j ω a b * w a ≤ C j * mass b * w b := by
     intro j b ω s
     by_cases hb : keep b
     · simpa [K', hb, Finset.sum_filter] using hcol j b ω (s.filter keep)
-    · simpa [K', hb] using mul_nonneg (mul_nonneg (hC j) (hm b)) (hw b).le
+    · simpa [K', hb] using mul_nonneg (mul_nonneg (hC j) (hm b)) (by grind)
   have hbadConverted : ∀ j b,
       (@Finset.filter Ω (fun ω => bad' j b ω)
         (fun ω => Classical.propDecidable (bad' j b ω)) Finset.univ).card ≤ B := by
@@ -138,11 +134,8 @@ theorem normBound_sum_projected_contexts_sparseCols'
   have hzero' : ∀ j b ω, ¬ bad' j b ω → ∀ a, K' j ω a b = 0 := by
     intro j b ω hnot a
     by_cases hb : keep b
-    · have hnb : ¬ bad j b ω := fun h => hnot (show keep b ∧ bad j b ω from ⟨hb, h⟩)
-      by_cases ha : keep a
-      · simp [K', ha, hb, hzero j b ω hb hnb a]
-      · simp [K', ha, hb]
-    · simp [K', hb]
+    · grind
+    · grind
   simpa [K'] using normBound_sum_contexts_sparseCols mass w K' bad' R C B
     hm hw hK' hR hC hD hrow' hcol' hbadConverted hzero'
 
@@ -154,16 +147,7 @@ theorem promotionContextKernel_nonneg {F : FixedData} {P : PrimeGroups}
   unfold promotionContextKernel
   apply mul_nonneg
   · exact mul_nonneg (Nat.cast_nonneg _) (edgeSymmetryFactor_nonneg P _)
-  · apply Finset.sum_nonneg
-    intro a _
-    apply Finset.sum_nonneg
-    intro b _
-    apply Finset.sum_nonneg
-    intro c _
-    dsimp only
-    split_ifs
-    · exact norm_nonneg _
-    · exact le_rfl
+  positivity
 
 theorem storeOnlyContextKernel_nonneg {F : FixedData} {P : PrimeGroups}
     {J m n : ℕ} (A : Model F P J m) (r : MemoryParameters F) (theta : ℝ) (i : Fin n)
@@ -173,16 +157,7 @@ theorem storeOnlyContextKernel_nonneg {F : FixedData} {P : PrimeGroups}
   unfold storeOnlyContextKernel
   apply mul_nonneg
   · exact mul_nonneg (Nat.cast_nonneg _) (edgeSymmetryFactor_nonneg P _)
-  · apply Finset.sum_nonneg
-    intro a _
-    apply Finset.sum_nonneg
-    intro b _
-    apply Finset.sum_nonneg
-    intro c _
-    dsimp only
-    split_ifs
-    · exact norm_nonneg _
-    · exact le_rfl
+  positivity
 
 theorem promotionOmissionAverage_projectedNormBound'
     {F : FixedData} {P : PrimeGroups} {J m n : ℕ}
@@ -345,22 +320,20 @@ theorem normBound_projected_dirty_of_sectorBounds {F : FixedData}
     simp only [K₁]
     split_ifs
     · exact promotionOmissionAverageKernel_nonneg A rho theta i s t
-    · exact le_rfl
+    simp
   · intro s t
     simp only [K₂]
     split_ifs
     · exact storeOnlyOmissionAverageKernel_nonneg A rho theta i s t
-    · exact le_rfl
+    simp
   · intro s t
     simp only [K₁, K₂, projectKernel]
     split_ifs
     · simpa [promotionOmissionAverageKernel, storeOnlyOmissionAverageKernel] using
         memoryEdgeKernel_dirty_omission_domination A rho theta i phi hphi s t
-    · simp
-  · rw [e₁]
-    exact hprom
-  · rw [e₂]
-    exact hstore
+    simp
+  · grind
+  grind
 
 theorem normBound_mono' {α : Type*} {mass : α → ℝ} {K : α → α → ℂ} {c c' : ℝ}
     (h : NormBound mass K c) (hc : c ≤ c') : NormBound mass K c' := by

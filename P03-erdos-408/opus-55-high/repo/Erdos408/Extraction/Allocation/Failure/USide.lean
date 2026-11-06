@@ -34,9 +34,8 @@ lemma sum_lowSubsets_eq_add (g : Finset ℕ) (f : Finset ℕ → ℝ) :
     ext K
     simp only [lowSubsets, mem_filter, mem_powerset, mem_union, mem_powersetCard]
     by_cases h : K ⊆ g
-    · simp only [h, true_and]
-      omega
-    · simp [h]
+    · grind
+    · simp_all
   have hd1 : Disjoint (g.powersetCard 0) (g.powersetCard 1) := by
     rw [disjoint_left]
     intro K h1 h2
@@ -61,7 +60,7 @@ lemma modelWeight_nonneg {c p : ℕ} (hp : p.Prime) : 0 ≤ modelWeight c p := b
   unfold modelWeight
   have : (2 : ℝ) ≤ p := by exact_mod_cast hp.two_le
   split_ifs
-  · exact le_rfl
+  · simp
   · exact one_div_nonneg.2 (by linarith)
 
 /-- The model sum over the expansion of one group. -/
@@ -88,13 +87,13 @@ lemma sum_lowSubsets_abs_lowCoeff_mul_prod (g : Finset ℕ) (α : ℝ) (π : ℕ
     rw [(mem_powersetCard.1 hK).2]
     simp [lowCoeff]
   rw [sum_congr rfl h2, ← mul_sum]
-  simp [lowCoeff, ← mul_sum, abs_neg]
+  simp [lowCoeff, ← mul_sum]
   ring
 
 /-- `|c_α(k)| ≤ 1` for `|α| ≤ 1`. -/
 lemma abs_lowCoeff_le {α : ℝ} (hα : |α| ≤ 1) (k : ℕ) : |lowCoeff α k| ≤ 1 := by
   unfold lowCoeff
-  split_ifs <;> simp [abs_neg, hα]
+  grind
 
 /-- The `u`-side comparison for one free factor. -/
 theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : Finset (Finset ℕ))
@@ -117,7 +116,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         E * ∏ g ∈ F, ((lowSubsets g).card : ℝ) := by
   classical
   set S0 := ∑ e ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ e then w e else 0) with hS0
-  have hS00 : 0 ≤ S0 := sum_nonneg fun e _ => by split_ifs <;> simp [hw0 e]
+  have hS00 : 0 ≤ S0 := sum_nonneg fun e _ => by grind
   clear_value S0
   set SU : Finset ℕ → ℝ := fun U =>
     ∑ e ∈ Ioc A B, (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ U, e * c ≡ 1 [MOD p] then w e else 0)
@@ -142,13 +141,13 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         rw [ite_eq_right]
         rintro ⟨-, h⟩
         have h1 := h p hp
-        have h2 : e * c ≡ 0 [MOD p] := Nat.modEq_zero_iff_dvd.2 (dvd_mul_of_dvd_right hpc e)
+        have h2 : e * c ≡ 0 [MOD p] := Nat.modEq_zero_iff_dvd.2 (by grind)
         have h3 := h1.symm.trans h2
-        have hp1 := (hS p (hUS κ hκ hp)).one_lt
+        have hp1 := (hS p (by grind)).one_lt
         rw [Nat.ModEq, Nat.zero_mod, Nat.mod_eq_of_lt hp1] at h3
         exact one_ne_zero h3
       rw [hπ0, hSU0]
-      simpa using hE
+      grind
     · push Not at hdv
       have hπ : ∏ p ∈ (Finset.univ : Finset F).biUnion κ, π p =
           1 / ∏ p ∈ (Finset.univ : Finset F).biUnion κ, ((p : ℝ) - 1) := by
@@ -156,8 +155,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         exact prod_congr rfl fun p hp => by simp [π, modelWeight, hdv p hp]
       have h := hstar ((Finset.univ : Finset F).biUnion κ) (hUS κ hκ) hdv
       rw [hπ]
-      rw [div_mul_eq_mul_div, one_mul]
-      exact h
+      grind
   -- the expansion
   have hexp : ∀ e ∈ Ioc A B, (if ∀ p ∈ S, ¬ p ∣ e then w e else 0) *
       ∏ g ∈ F, (1 - α g * ell (primeCount g (e * c - 1))) =
@@ -165,7 +163,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
         (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ (Finset.univ : Finset F).biUnion κ, e * c ≡ 1 [MOD p]
           then w e else 0) := by
     intro e he
-    have he1 : 1 ≤ e * c := one_le_mul (by have := (mem_Ioc.1 he).1; omega) hc
+    have he1 : 1 ≤ e * c := one_le_mul (by grind) hc
     rw [prod_one_sub_mul_ell_eq, mul_sum]
     refine sum_congr rfl fun κ _ => ?_
     have hcong : (∀ p ∈ (Finset.univ : Finset F).biUnion κ, p ∣ e * c - 1) ↔
@@ -173,14 +171,8 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
       forall₂_congr fun p _ => ((Nat.modEq_iff_dvd' he1).symm.trans ⟨Nat.ModEq.symm,
         Nat.ModEq.symm⟩)
     by_cases hr : ∀ p ∈ S, ¬ p ∣ e
-    · by_cases hd0 : ∀ p ∈ (Finset.univ : Finset F).biUnion κ, p ∣ e * c - 1
-      · rw [ite_eq_left hr, ite_eq_left hd0, ite_eq_left ⟨hr, hcong.1 hd0⟩]
-        ring
-      · rw [ite_eq_left hr, ite_eq_right hd0, ite_eq_right fun h => hd0 (hcong.2 h.2)]
-        ring
-    · rw [ite_eq_right hr, zero_mul, ite_eq_right (show ¬((∀ p ∈ S, ¬ p ∣ e) ∧
-        ∀ p ∈ (Finset.univ : Finset F).biUnion κ, e * c ≡ 1 [MOD p]) from fun h => hr h.1),
-        mul_zero]
+    · grind
+    · grind
   rw [sum_congr rfl hexp, sum_comm]
   -- the model sums factor over the groups
   have hdisjκ : ∀ κ ∈ ι, ((Finset.univ : Finset F) : Set F).PairwiseDisjoint κ := by
@@ -188,7 +180,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
     have h1 := mem_powerset.1 (mem_filter.1 (Fintype.mem_piFinset.1 hκ g)).1
     have h2 := mem_powerset.1 (mem_filter.1 (Fintype.mem_piFinset.1 hκ g')).1
     exact disjoint_of_subset_left h1 (disjoint_of_subset_right h2
-      (hdisj g.2 g'.2 fun h => hgg' (Subtype.ext h)))
+      (hdisj g.2 g'.2 (by grind)))
   have hmodel : ∑ κ ∈ ι, (∏ g, lowCoeff (α g.1) (κ g).card) *
       ∏ p ∈ (Finset.univ : Finset F).biUnion κ, π p =
       ∏ g ∈ F, (1 - α g * (∑ p ∈ g, π p - ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, π p)) := by
@@ -196,7 +188,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
     simp_rw [← sum_lowSubsets_lowCoeff_mul_prod]
     rw [prod_univ_sum]
     refine sum_congr rfl fun κ hκ => ?_
-    rw [prod_mul_distrib, prod_biUnion (hdisjκ κ hκ)]
+    rw [prod_mul_distrib, prod_biUnion (by grind)]
   have habs : ∑ κ ∈ ι, |(∏ g, lowCoeff (α g.1) (κ g).card)| *
       ∏ p ∈ (Finset.univ : Finset F).biUnion κ, π p =
       ∏ g ∈ F, (1 + |α g| * (∑ p ∈ g, π p + ∑ K ∈ g.powersetCard 2, ∏ p ∈ K, π p)) := by
@@ -204,7 +196,7 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
     simp_rw [← sum_lowSubsets_abs_lowCoeff_mul_prod]
     rw [prod_univ_sum]
     refine sum_congr rfl fun κ hκ => ?_
-    rw [prod_mul_distrib, prod_biUnion (hdisjκ κ hκ), abs_prod]
+    rw [prod_mul_distrib, prod_biUnion (by grind), abs_prod]
   have hcard : ∑ κ ∈ ι, |∏ g, lowCoeff (α g.1) (κ g).card| ≤
       ∏ g ∈ F, ((lowSubsets g).card : ℝ) := by
     have h : ∑ κ ∈ ι, |∏ g, lowCoeff (α g.1) (κ g).card| =
@@ -212,12 +204,12 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
       rw [prod_univ_sum]
       exact sum_congr rfl fun κ _ => abs_prod _ _
     rw [h, ← prod_coe_sort F]
-    refine prod_le_prod₀ (fun g _ => sum_nonneg fun K _ => abs_nonneg _) fun g _ => ?_
+    refine prod_le_prod₀ (fun g _ => by positivity) fun g _ => ?_
     calc ∑ K ∈ lowSubsets g.1, |lowCoeff (α g.1) K.card| ≤ ∑ _K ∈ lowSubsets g.1, (1 : ℝ) :=
-          sum_le_sum fun K _ => abs_lowCoeff_le (hα g.1 g.2) _
-      _ = _ := by rw [sum_const, nsmul_eq_mul, mul_one]
+          sum_le_sum fun K _ => abs_lowCoeff_le (by grind) _
+      _ = _ := by simp
   have hπ0 : ∀ κ ∈ ι, 0 ≤ ∏ p ∈ (Finset.univ : Finset F).biUnion κ, π p := fun κ hκ =>
-    prod_nonneg fun p hp => modelWeight_nonneg (hS p (hUS κ hκ hp))
+    prod_nonneg fun p hp => modelWeight_nonneg (by grind)
   -- assembling
   calc ∑ κ ∈ ι, ∑ e ∈ Ioc A B, (∏ g, lowCoeff (α g.1) (κ g).card) *
         (if (∀ p ∈ S, ¬ p ∣ e) ∧ ∀ p ∈ (Finset.univ : Finset F).biUnion κ,
@@ -246,11 +238,10 @@ theorem sum_rough_mul_prod_le (S : Finset ℕ) (hS : ∀ p ∈ S, p.Prime) (F : 
             ∏ p ∈ (Finset.univ : Finset F).biUnion κ, π p) +
           E * ∑ κ ∈ ι, |(∏ g, lowCoeff (α g.1) (κ g).card)| := by
         simp only [mul_sum, ← sum_add_distrib]
-        exact sum_congr rfl fun κ _ => by ring
+        exact sum_congr rfl (by grind)
     _ ≤ _ := by
         rw [hmodel, habs]
-        have := mul_le_mul_of_nonneg_left hcard hE
-        linarith
+        nlinarith
 
 end
 

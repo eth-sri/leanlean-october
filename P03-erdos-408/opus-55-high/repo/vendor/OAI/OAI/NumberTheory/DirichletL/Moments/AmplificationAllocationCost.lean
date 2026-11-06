@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationLiveMask
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocationCost
-open CenteredMomentCommonAllocationSum CenteredMomentSupport IdealMobiusDivisorSum
-open CenteredMomentAddedZeroUniform CenteredMomentCommonSectors
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonAllocationSum IdealMobiusDivisorSum
+open CenteredMomentCommonSectors
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
- theorem allocation_slot_one (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (P : Ideal O) (hP : P≠0) (k : ℕ)
+ theorem allocation_slot_one (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
+    (P : Ideal ActualEisensteinCubic.O) (hP : P≠0) (k : ℕ)
     (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I)
     (B : actualAllocations S (P^k)) (i : ι) : B.val (Sum.inl i)=1 := by
   obtain ⟨v,hv,hvB⟩ := Finset.mem_image.mp (Finset.mem_filter.mp B.property).1
@@ -29,8 +28,8 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
     ((IdealCoprimeSieveOperator.primeSupport_disjoint_iff (pow_ne_zero k hP) hd.1).mpr hc).symm
   exact he.symm.trans hh
 
- theorem allocation_plain_product (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (P : Ideal O) (hP : P≠0) (k : ℕ)
+ theorem allocation_plain_product (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
+    (P : Ideal ActualEisensteinCubic.O) (hP : P≠0) (k : ℕ)
     (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I)
     (B : actualAllocations S (P^k)) : B.val (Sum.inr 0)*B.val (Sum.inr 1)=P^k := by
   have he := (Finset.mem_filter.mp B.property).2
@@ -39,8 +38,8 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
     Fin.prod_univ_two] at he
   exact he
 
- theorem allocation_plain_injective (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (P : Ideal O) (hP : P≠0) (k : ℕ)
+ theorem allocation_plain_injective (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
+    (P : Ideal ActualEisensteinCubic.O) (hP : P≠0) (k : ℕ)
     (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I) :
     Function.Injective (fun B : actualAllocations S (P^k) => B.val (Sum.inr 0)) := by
   intro B D he
@@ -56,7 +55,7 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
   | inl i => rw [allocation_slot_one S P hP k hslot B,allocation_slot_one S P hP k hslot D]
   | inr i => fin_cases i <;> assumption
 
- theorem idealDivisors_prime_power_card (P : Ideal O) (hP : Prime P) (k : ℕ) :
+ theorem idealDivisors_prime_power_card (P : Ideal ActualEisensteinCubic.O) (hP : Prime P) (k : ℕ) :
     (idealDivisors (P^k)).card≤k+1 := by
   have hs : idealDivisors (P^k)⊆(Finset.range (k+1)).image (fun j => P^j) := by
     intro I hI
@@ -65,8 +64,8 @@ local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
     exact Finset.mem_image.mpr ⟨j,Finset.mem_range.mpr (by omega),heq.symm⟩
   exact (Finset.card_le_card hs).trans ((Finset.card_image_le).trans_eq (Finset.card_range (k+1)))
 
-theorem actual_amplification_allocations_card (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (P : Ideal O) (hP : Prime P) (k : ℕ)
+theorem actual_amplification_allocations_card (S : (ι ⊕ Fin 2) → Finset (Ideal ActualEisensteinCubic.O))
+    (P : Ideal ActualEisensteinCubic.O) (hP : Prime P) (k : ℕ)
     (hslot : ∀ i,∀ I∈S (Sum.inl i),I≠0 ∧ IsCoprime P I) :
     (actualAllocations S (P^k)).card≤k+1 := by
   let f : actualAllocations S (P^k) → idealDivisors (P^k) := fun B =>
@@ -74,7 +73,7 @@ theorem actual_amplification_allocations_card (S : (ι ⊕ Fin 2) → Finset (Id
       ⟨B.val (Sum.inr 1),(allocation_plain_product S P hP.ne_zero k hslot B).symm⟩⟩
   have hf : Function.Injective f := by
     intro B D he
-    exact allocation_plain_injective S P hP.ne_zero k hslot (congrArg Subtype.val he)
+    exact allocation_plain_injective S P hP.ne_zero k hslot (by grind)
   have hh := Fintype.card_le_of_injective f hf
   simp only [Fintype.card_coe] at hh
   exact hh.trans (idealDivisors_prime_power_card P hP k)

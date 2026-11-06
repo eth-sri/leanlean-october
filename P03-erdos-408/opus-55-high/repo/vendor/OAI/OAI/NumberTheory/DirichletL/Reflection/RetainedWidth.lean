@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.UpperThreshold
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
+open scoped Classical
+open CompletedDyadic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u
-variable {a c : Eis} {mode : Bool}
+variable {a c : ActualEisensteinCubic.O} {mode : Bool}
 
 lemma family_center_eq_kernel {φ : Type u} [Fintype φ] (F : PrimeFamily φ)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
@@ -44,7 +43,7 @@ theorem actual_retained_width_uniform
   obtain ⟨Z₀,hZ₀,hlog⟩ := InverseTerminalWidths.constant_log_error (16*Cf) η (by positivity) hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro φ _ F jF e Z X QK QP δ i hZ hX hQK hQP hi
-  have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
+  have hz : 1<Z := by linarith
   have hs := familyRawScale_pos F s hc X QK QP hX hQK hQP
   have hret := (mem_retainedDyads _ _ hs i).mp hi
   rw [family_center_eq_kernel] at hret
@@ -53,16 +52,15 @@ theorem actual_retained_width_uniform
     unfold kernelCenter
     positivity
   have hrl := Real.logb_le_logb_of_le hz hR hret
-  rw [Real.logb_mul (by norm_num : (16:ℝ)≠0) (Real.rpow_pos_of_pos (lt_trans zero_lt_one hz) δ).ne',
-    Real.logb_rpow (lt_trans zero_lt_one hz) (ne_of_gt hz)] at hrl
+  rw [Real.logb_mul (by positivity) (by positivity),
+    Real.logb_rpow (by positivity) (ne_of_gt hz)] at hrl
   have he := actual_kernel_upper_threshold F jF e s hc i.1 Z X QK QP
     ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) kK kP kn kb hX hQK hQP (by positivity) (by positivity) hkK hkP hkn hkb
   rw [literal_ramified_width_offset] at he
   have hl : Real.logb Z 16+Real.logb Z Cf≤η := by
-    rw [←Real.logb_mul (by norm_num : (16:ℝ)≠0) hCf.ne']
+    rw [←Real.logb_mul (by positivity) hCf.ne']
     exact hlog Z hZ
   have hoff : 0≤4*Real.logb Z 3 := mul_nonneg (by norm_num) (Real.logb_nonneg hz (by norm_num))
-  change _ = _+Real.logb Z Cf at he
   linarith
 end
 end SevenEighths.InverseReflectedPhase

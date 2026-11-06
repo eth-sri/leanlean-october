@@ -28,7 +28,7 @@ namespace Erdos408
 
 open Complex Metric DirichletCharacter MeasureTheory Filter Asymptotics
 
-open scoped LSeries.notation Topology
+open scoped LSeries.notation
 
 /-! ### Partial summation -/
 
@@ -48,7 +48,7 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
   let F : ℝ → ℂ := fun t ↦ g t * S t - g t * (a * t)
   have hF (t : ℝ) : ‖F t‖ ≤ B := by
     by_cases ht : t ∈ Set.Ioi (1 : ℝ)
-    · simpa [F, g, ht, S] using hB t (Set.mem_Ioi.mp ht).le
+    · simpa [F, g, ht, S] using hB t (by grind)
     · simpa [F, g, ht] using hB₀
   let I : ℂ → ℂ := fun z ↦ ∫ t in Set.Ioi (1 : ℝ), A t * (t : ℂ) ^ (-(z + 1))
   have hImellin : I = fun z ↦ mellin F (-z) := by
@@ -58,7 +58,7 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
       funext t
       rw [show -z - 1 = -(z + 1) by ring]
       by_cases ht : t ∈ Set.Ioi (1 : ℝ)
-      · simp [F, g, A, ht, mul_comm, mul_sub]
+      · simp [F, g, A, ht, mul_comm]
       · simp [F, g, ht]
     rw [mellin, hint, setIntegral_indicator measurableSet_Ioi, Set.Ioi_inter_Ioi,
       sup_eq_right.mpr zero_le_one]
@@ -67,7 +67,7 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
     intro z hz
     have hmellin : DifferentiableAt ℂ (mellin F) (-z) := by
       refine mellin_differentiableAt_of_isBigO_rpow (a := 0) (b := -z.re - 1) ?_ ?_
-        (by simpa using (show 0 < z.re from hz)) ?_ (by simp)
+        (by simp_all) ?_ (by simp)
       · have hg : LocallyIntegrableOn g (Set.Ici 0) :=
           ((locallyIntegrable_const 1).indicator measurableSet_Ioi).locallyIntegrableOn _
         have h₁ := (locallyIntegrableOn_mul_sum_Icc (m := 1) f le_rfl hg).mono_set
@@ -81,7 +81,7 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
           exact ((Continuous.locallyIntegrable (by fun_prop)).indicator
             measurableSet_Ioi).locallyIntegrableOn _
         exact h₁.sub h₂
-      · exact IsBigO.of_bound B (Eventually.of_forall fun t ↦ by simpa using hF t)
+      · exact IsBigO.of_bound B (Eventually.of_forall fun t ↦ by simp_all)
       · refine EventuallyEq.trans_isBigO ?_ (isBigO_zero _ _)
         filter_upwards [nhdsWithin_le_nhds (Iio_mem_nhds zero_lt_one)] with t ht
         simp [F, g, not_lt.mpr (Set.mem_Iio.mp ht).le]
@@ -100,7 +100,7 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
         have hre : (-(s + 1)).re = -s.re - 1 := by simp; ring
         rw [hre]
         gcongr
-        exact hB t (Set.mem_Ioi.mp ht).le
+        grind
       _ = B / s.re := by
         rw [integral_const_mul, integral_Ioi_rpow_of_lt (by linarith) zero_lt_one,
           show -s.re - 1 + 1 = -s.re by ring, Real.one_rpow]
@@ -116,9 +116,9 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
       refine IsBigO.of_bound 1 (Eventually.of_forall fun n ↦ ?_)
       have h₁ : ∑ k ∈ Finset.Icc 1 n, ‖f k‖ ≤ n := by
         calc ∑ k ∈ Finset.Icc 1 n, ‖f k‖
-          _ ≤ ∑ _k ∈ Finset.Icc 1 n, (1 : ℝ) := Finset.sum_le_sum fun k _ ↦ hf k
+          _ ≤ ∑ _k ∈ Finset.Icc 1 n, (1 : ℝ) := Finset.sum_le_sum (by grind)
           _ = n := by simp
-      rw [Real.norm_of_nonneg (Finset.sum_nonneg fun _ _ ↦ norm_nonneg _), Real.rpow_one,
+      rw [Real.norm_of_nonneg (by positivity), Real.rpow_one,
         Real.norm_natCast, one_mul]
       exact h₁
     rw [LSeries_eq_mul_integral' f zero_le_one hs hO]
@@ -139,13 +139,13 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
       have hre : (-(s + 1)).re = -s.re - 1 := by simp; ring
       rw [hre]
       gcongr
-      exact hB t (Set.mem_Ioi.mp ht).le
+      exact by grind
     have hpow : IntegrableOn (fun t : ℝ ↦ a * (t : ℂ) ^ (-s)) (Set.Ioi 1) :=
-      (integrableOn_Ioi_cpow_of_lt (by simpa using hs) zero_lt_one).const_mul _
+      (integrableOn_Ioi_cpow_of_lt (by simp_all) zero_lt_one).const_mul _
     have hsplit : ∫ t in Set.Ioi (1 : ℝ), S t * (t : ℂ) ^ (-(s + 1)) =
         ∫ t in Set.Ioi (1 : ℝ), (A t * (t : ℂ) ^ (-(s + 1)) + a * (t : ℂ) ^ (-s)) := by
       refine setIntegral_congr_fun measurableSet_Ioi fun t ht ↦ ?_
-      have ht₀ : (t : ℂ) ≠ 0 := ofReal_ne_zero.mpr (zero_lt_one.trans ht).ne'
+      have ht₀ := ofReal_ne_zero.mpr (zero_lt_one.trans ht).ne'
       have hcpow : (t : ℂ) ^ (-s) = (t : ℂ) ^ (-(s + 1)) * t := by
         rw [show -s = -(s + 1) + 1 by ring, cpow_add _ _ ht₀, cpow_one]
       simp only [A, hcpow]
@@ -154,11 +154,10 @@ lemma exists_LSeries_eq_add {f : ℕ → ℂ} (hf : ∀ n, ‖f n‖ ≤ 1) (a :
       have hs₂ : -s + 1 ≠ 0 := by
         rw [show -s + 1 = -(s - 1) by ring]
         exact neg_ne_zero.mpr hs₁
-      rw [integral_Ioi_cpow_of_lt (by simpa using hs) zero_lt_one, ofReal_one, one_cpow,
+      rw [integral_Ioi_cpow_of_lt (by simp_all) zero_lt_one, ofReal_one, one_cpow,
         show s - 1 = -(-s + 1) by ring]
       field_simp
     rw [hsplit, integral_add hA hpow, integral_const_mul, hmain]
-    field_simp
     ring
 
 /-- The partial sums of a nontrivial Dirichlet character are bounded by its modulus.
@@ -170,9 +169,9 @@ lemma norm_sum_Icc_le {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N} (hχ 
   have h₀ : ∑ k ∈ Finset.range N, f k = 0 := by
     rw [← χ.sum_eq_zero_of_ne_one hχ]
     exact Finset.sum_nbij' (fun k ↦ (k : ZMod N)) ZMod.val (by simp)
-      (fun x _ ↦ Finset.mem_range.mpr (ZMod.val_lt x))
+      (by grind)
       (fun k hk ↦ ZMod.val_cast_of_lt (Finset.mem_range.mp hk))
-      (fun x _ ↦ ZMod.natCast_zmod_val x) (fun _ _ ↦ rfl)
+      (by simp) (by grind)
   -- so does a shifted full period
   have hperiod : ∑ k ∈ Finset.range N, f (k + 1) = 0 := by
     have h₁ := Finset.sum_range_succ f N
@@ -203,7 +202,7 @@ lemma norm_sum_Icc_le {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N} (hχ 
         rw [Finset.sum_range_add, hperiod, zero_add]
         simp_rw [hshift]
         exact ih m (by have := NeZero.pos N; omega)
-  exact (hIcc n).symm ▸ hbound n
+  grind
 
 /-- A nontrivial Dirichlet L-function grows at most linearly in `‖s‖` to the right of zero.
 Adapted from `Erdos770.norm_LFunction_le`. -/
@@ -225,7 +224,7 @@ theorem norm_LFunction_le_of_ne_one {k : ℕ} [NeZero k] {χ : DirichletCharacte
     simp
   calc ‖LFunction χ s‖
     _ = ‖s‖ * ‖I s‖ := by rw [hEq hs, norm_mul]
-    _ ≤ ‖s‖ * (k / s.re) := by gcongr; exact hIb s hs
+    _ ≤ ‖s‖ * (k / s.re) := by gcongr; simp_all
     _ = k * ‖s‖ / s.re := by ring
 
 /-- The Riemann zeta function is `s / (s - 1) + O(‖s‖ / re s)` to the right of zero. -/
@@ -237,7 +236,7 @@ theorem norm_riemannZeta_le {s : ℂ} (hs : 0 < s.re) (hs₁ : s ≠ 1) :
     have h₂ := Nat.lt_floor_add_one t
     simp only [Pi.one_apply, Finset.sum_const, Nat.card_Icc, add_tsub_cancel_right,
       nsmul_eq_mul, mul_one, one_mul]
-    rw [show (⌊t⌋₊ : ℂ) - t = ((⌊t⌋₊ - t : ℝ) : ℂ) by push_cast; ring, norm_real,
+    rw [show (⌊t⌋₊ : ℂ) - t = ((⌊t⌋₊ - t : ℝ) : ℂ) by simp, norm_real,
       Real.norm_eq_abs, abs_le]
     constructor <;> linarith
   obtain ⟨I, hI, hIb, hL⟩ := exists_LSeries_eq_add (f := 1) (fun n ↦ by simp) 1 hfloor
@@ -272,7 +271,7 @@ theorem norm_riemannZeta_le {s : ℂ} (hs : 0 < s.re) (hs₁ : s ≠ 1) :
     _ ≤ ‖s‖ / ‖s - 1‖ + ‖s‖ * (1 / s.re) := by
       rw [norm_div, norm_mul]
       gcongr
-      exact hIb s hs
+      simp_all
     _ = ‖s‖ / ‖s - 1‖ + ‖s‖ / s.re := by ring
 
 /-- The L-function of the trivial character mod `k` is at most `k` times the bound
@@ -285,7 +284,7 @@ theorem norm_LFunction_one_le {k : ℕ} [NeZero k] {s : ℂ} (hs : 0 < s.re) (hs
     rw [norm_prod]
     calc ∏ p ∈ k.primeFactors, ‖1 - (p : ℂ) ^ (-s)‖
       _ ≤ ∏ p ∈ k.primeFactors, (p : ℝ) := by
-        refine Finset.prod_le_prod₀ (fun _ _ ↦ norm_nonneg _) (fun p hp ↦ ?_)
+        refine Finset.prod_le_prod₀ (by simp) (fun p hp ↦ ?_)
         have hp := Nat.prime_of_mem_primeFactors hp
         calc ‖1 - (p : ℂ) ^ (-s)‖
           _ ≤ ‖(1 : ℂ)‖ + ‖(p : ℂ) ^ (-s)‖ := norm_sub_le _ _
@@ -356,7 +355,7 @@ private lemma tsum_one_div_rpow_le {σ : ℝ} (hσ : 1 < σ) :
 /-- A Dirichlet L-function is bounded above by `re s / (re s - 1)` to the right of one. -/
 theorem norm_LFunction_le_of_one_lt_re {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k)
     {s : ℂ} (hs : 1 < s.re) : ‖LFunction χ s‖ ≤ s.re / (s.re - 1) := by
-  have hsum : LSeriesSummable (fun n ↦ χ n) s := LSeriesSummable_of_one_lt_re χ hs
+  have hsum := LSeriesSummable_of_one_lt_re χ hs
   have hζsum : Summable fun n : ℕ ↦ 1 / ((n : ℝ) + 1) ^ s.re := by
     exact_mod_cast (summable_nat_add_iff 1).mpr (Real.summable_one_div_nat_rpow.mpr hs)
   -- each term is bounded by the corresponding zeta term
@@ -382,7 +381,7 @@ theorem le_norm_LFunction {k : ℕ} [NeZero k] (χ : DirichletCharacter ℂ k) {
   have hmul : LFunction χ s * LSeries (↗χ * ↗μ) s = 1 := by
     rw [LFunction_eq_LSeries χ hs]
     exact LSeries.mul_mu_eq_one χ hs
-  have hsum : LSeriesSummable (↗χ * ↗μ) s :=
+  have hsum :=
     LSeriesSummable_mul χ (ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs)
   have hζsum : Summable fun n : ℕ ↦ 1 / ((n : ℝ) + 1) ^ s.re := by
     exact_mod_cast (summable_nat_add_iff 1).mpr (Real.summable_one_div_nat_rpow.mpr hs)
@@ -426,8 +425,8 @@ lemma differentiableOn_of_exp_eq {U : Set ℂ} (hU : IsOpen U) {G g : ℂ → �
     (he : Set.EqOn (Complex.exp ∘ g) G U) :
     DifferentiableOn ℂ g U := by
   intro z hz
-  have hgc : ContinuousAt g z := (hg z hz).continuousAt (hU.mem_nhds hz)
-  have hGc : DifferentiableAt ℂ G z := (hG z hz).differentiableAt (hU.mem_nhds hz)
+  have hgc := (hg z hz).continuousAt (hU.mem_nhds hz)
+  have hGc := (hG z hz).differentiableAt (hU.mem_nhds hz)
   have hs := Complex.hasStrictDerivAt_exp (g z)
   let inv := hs.localInverse Complex.exp (Complex.exp (g z)) (g z) (Complex.exp_ne_zero _)
   have hi : DifferentiableAt ℂ inv (G z) := by
@@ -450,12 +449,12 @@ lemma exists_holomorphic_log {G : ℂ → ℂ} {c : ℂ} {R : ℝ} (hR : 0 < R)
     change SimplyConnectedSpace (ball c R)
     infer_instance
   obtain ⟨h, hh, he⟩ := Complex.exists_continuousOn_eqOn_exp_comp hsc isOpen_ball
-    hG.continuousOn (by rintro ⟨z, hz, heq⟩; exact h0 z hz heq)
+    hG.continuousOn (by simp_all)
   refine ⟨fun z ↦ h z - h c, (differentiableOn_of_exp_eq isOpen_ball hG hh he).sub_const _,
     fun z hz ↦ ?_, sub_self _⟩
   have hec : Complex.exp (h c) = 1 := (he (mem_ball_self hR)).trans hc
   simp only [Function.comp_apply, Complex.exp_sub, hec, div_one]
-  exact he hz
+  grind
 
 /-- **Borel–Carathéodory** followed by a **Cauchy estimate**: if `h` is holomorphic on
 `ball c r₂` with `h c = 0` and `re h ≤ B` there, then `‖h'‖ = O(B)` on `closedBall c r₁`.
@@ -488,7 +487,7 @@ lemma norm_deriv_le_of_re_le {h : ℂ → ℂ} {c z : ℂ} {r₁ r₂ B : ℝ} (
       refine hh.comp (by fun_prop) fun v hv ↦ ?_
       simpa [mem_ball, dist_eq_norm] using hv
     have hb := Complex.borelCaratheodory (M := B + ε / C) (by positivity) hh'
-      (fun v hv ↦ (hre _ (by simpa [mem_ball, dist_eq_norm] using hv)).trans
+      (fun v hv ↦ (hre _ (by simp_all)).trans
         (le_add_of_nonneg_right (by positivity)))
       (by linarith) (show w - c ∈ ball 0 r₂ by simpa using hw'.trans_lt h₃₂)
     simp only [add_sub_cancel, add_zero, hc, norm_zero, zero_mul, zero_div] at hb
@@ -508,8 +507,7 @@ lemma norm_deriv_le_of_re_le {h : ℂ → ℂ} {c z : ℂ} {r₁ r₂ B : ℝ} (
     (hh.diffContOnCl_ball (hsub.trans (closedBall_subset_ball h₃₂)))
     (fun w hw ↦ hbc w (hsub (sphere_subset_closedBall hw)))
   refine hd.trans (le_of_eq ?_)
-  rw [show 2 * (B + ε / C) * r₃ / (r₂ - r₃) / (r₃ - r₁) = C * (B + ε / C) by simp only [C]; ring,
-    mul_add, mul_div_cancel₀ _ hCpos.ne']
+  grind
 
 /-- **Borel–Carathéodory**, recentred at `c`: if `h` is holomorphic on `ball c R` with
 `h c = 0` and `re h ≤ B` there, then `‖h‖ ≤ 2 B r / (R - r)` on `closedBall c r`. -/
@@ -522,9 +520,9 @@ lemma norm_le_of_re_le {h : ℂ → ℂ} {c z : ℂ} {r R B : ℝ} (hrR : r < R)
     refine hh.comp (by fun_prop) fun v hv ↦ ?_
     simpa [mem_ball, dist_eq_norm] using hv
   have hb := Complex.borelCaratheodory_zero (M := B) hB hh'
-    (fun v hv ↦ hre _ (by simpa [mem_ball, dist_eq_norm] using hv))
+    (fun v hv ↦ hre _ (by simp_all))
     (by linarith [norm_nonneg (z - c)]) (show z - c ∈ ball 0 R by simpa using hz'.trans_lt hrR)
-    (by simpa using hc)
+    (by simp_all)
   simp only [add_sub_cancel] at hb
   refine hb.trans ?_
   have : 0 < R - ‖z - c‖ := by linarith
@@ -539,24 +537,24 @@ theorem norm_logDeriv_le_of_norm_le {F : ℂ → ℂ} {c z : ℂ} {r₁ r₂ M :
     (h0 : ∀ w ∈ ball c r₂, F w ≠ 0) (hFM : ∀ w ∈ ball c r₂, ‖F w‖ ≤ M * ‖F c‖)
     (hz : z ∈ closedBall c r₁) :
     ‖deriv F z / F z‖ ≤ 4 * (r₁ + r₂) / (r₂ - r₁) ^ 2 * Real.log M := by
-  have h₂ : 0 < r₂ := h₁.trans_lt h₁₂
-  have hc0 : F c ≠ 0 := h0 c (mem_ball_self h₂)
+  have h₂ : 0 < r₂ := by linarith
+  have hc0 := h0 c (mem_ball_self h₂)
   -- a holomorphic logarithm `h` of `F / F c`, with `re h ≤ log M`
   obtain ⟨h, hh, hexp, hc⟩ := exists_holomorphic_log h₂ (G := fun w ↦ F w / F c)
-    (hF.div_const _) (fun w hw ↦ div_ne_zero (h0 w hw) hc0) (div_self hc0)
+    (hF.div_const _) (by grind) (div_self hc0)
   have hre : ∀ w ∈ ball c r₂, (h w).re ≤ Real.log M := by
     intro w hw
-    have hFw : 0 < ‖F w‖ := norm_pos_iff.mpr (h0 w hw)
+    have hFw : 0 < ‖F w‖ := norm_pos_iff.mpr (by grind)
     have hFc : 0 < ‖F c‖ := norm_pos_iff.mpr hc0
     calc (h w).re = Real.log ‖Complex.exp (h w)‖ := by rw [Complex.norm_exp, Real.log_exp]
       _ = Real.log (‖F w‖ / ‖F c‖) := by
-        rw [← norm_div]; exact congrArg _ (congrArg _ (hexp hw))
-      _ ≤ Real.log M := Real.log_le_log (div_pos hFw hFc) ((div_le_iff₀ hFc).mpr (hFM w hw))
+        rw [← norm_div]; grind
+      _ ≤ Real.log M := Real.log_le_log (by positivity) ((div_le_iff₀ hFc).mpr (by grind))
   -- the logarithmic derivative of `F` is `h'`
-  have hzb : z ∈ ball c r₂ := closedBall_subset_ball h₁₂ hz
+  have hzb := closedBall_subset_ball h₁₂ hz
   have hlogh : deriv F z / F z = deriv h z := by
     have hev : (fun w ↦ F w / F c) =ᶠ[nhds z] Complex.exp ∘ h := by
-      filter_upwards [isOpen_ball.mem_nhds hzb] with w hw using (hexp hw).symm
+      filter_upwards [isOpen_ball.mem_nhds hzb] with w hw using (by grind)
     have hFF : logDeriv (fun w ↦ F w / F c) z = logDeriv F z := by
       simp_rw [div_eq_mul_inv]
       exact logDeriv_mul_const z _ (inv_ne_zero hc0)
@@ -576,12 +574,12 @@ theorem norm_le_of_three_circles {h : ℂ → ℂ} {c z : ℂ} {r₁ r₃ a b : 
     (hz₁ : r₁ ≤ ‖z - c‖) (hz₃ : ‖z - c‖ ≤ r₃) :
     ‖h z‖ ≤ a ^ (1 - (Real.log ‖z - c‖ - Real.log r₁) / (Real.log r₃ - Real.log r₁)) *
       b ^ ((Real.log ‖z - c‖ - Real.log r₁) / (Real.log r₃ - Real.log r₁)) := by
-  have hlu : Real.log r₁ < Real.log r₃ := Real.log_lt_log h₁ h₁₃
+  have hlu := Real.log_lt_log h₁ h₁₃
   let g : ℂ → ℂ := fun w ↦ h (c + Complex.exp w)
   have hmem (w : ℂ) (hw : w.re ≤ Real.log r₃) : c + Complex.exp w ∈ closedBall c r₃ := by
     rw [mem_closedBall, dist_eq_norm, add_sub_cancel_left, Complex.norm_exp]
     calc Real.exp w.re ≤ Real.exp (Real.log r₃) := Real.exp_le_exp.mpr hw
-      _ = r₃ := Real.exp_log (h₁.trans h₁₃)
+      _ = r₃ := Real.exp_log (by linarith)
   have hz0 : z - c ≠ 0 := by
     intro h0
     rw [h0, norm_zero] at hz₁
@@ -600,7 +598,7 @@ theorem norm_le_of_three_circles {h : ℂ → ℂ} {c z : ℂ} {r₁ r₃ a b : 
           rw [Complex.exp_log hz0, add_sub_cancel]
       _ ≤ _ := key
   · rw [Complex.HadamardThreeLines.verticalClosedStrip, Set.mem_preimage, Complex.log_re]
-    exact ⟨Real.log_le_log h₁ hz₁, Real.log_le_log (h₁.trans_le hz₁) hz₃⟩
+    exact ⟨Real.log_le_log h₁ hz₁, Real.log_le_log (by positivity) hz₃⟩
   · refine ⟨b, ?_⟩
     rintro _ ⟨w, hw, rfl⟩
     exact hb _ (hmem w hw.2)
@@ -609,9 +607,7 @@ theorem norm_le_of_three_circles {h : ℂ → ℂ} {c z : ℂ} {r₁ r₃ a b : 
     rw [mem_sphere, dist_eq_norm, add_sub_cancel_left, Complex.norm_exp]
     rw [Set.mem_preimage, Set.mem_singleton_iff] at hw
     rw [hw, Real.exp_log h₁]
-  · intro w hw
-    rw [Set.mem_preimage, Set.mem_singleton_iff] at hw
-    exact hb _ (hmem w hw.le)
+  grind
 
 /-! ### The three bounds -/
 
@@ -635,9 +631,7 @@ private lemma mem_ball_aux {c w : ℂ} {r : ℝ} (hw : w ∈ ball c r) :
   have h₁ := abs_re_le_norm (w - c)
   have h₂ := abs_im_le_norm (w - c)
   simp only [sub_re, sub_im] at h₁ h₂
-  refine ⟨?_, ?_, by linarith⟩
-  · linarith [neg_abs_le (w.re - c.re)]
-  · linarith [le_abs_self (w.re - c.re)]
+  grind
 
 /-- Polynomial growth of Dirichlet L-functions on `re s ≥ 1/2`, away from
 `s = 1`. -/
@@ -668,13 +662,13 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
     rw [hcim] at h₃
     refine ⟨by linarith, ?_⟩
     have h₄ := Complex.norm_le_abs_re_add_abs_im w
-    have h₅ : |w.re| ≤ 2 + 9 / 8 := abs_le.mpr ⟨by linarith, by linarith⟩
+    have h₅ : |w.re| ≤ 2 + 9 / 8 := by grind
     have h₆ : |w.im| ≤ |t| + 9 / 8 := by
       have := abs_sub_abs_le_abs_sub w.im t
       linarith
     linarith
   have hLc : 1 / 2 ≤ ‖LFunction χ c‖ := by
-    have h := le_norm_LFunction χ (s := c) (by rw [hcre]; norm_num)
+    have h := le_norm_LFunction χ (s := c) (by linarith)
     rw [hcre] at h
     norm_num at h
     linarith
@@ -693,8 +687,8 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
         rcases eq_or_ne w 1 with rfl | hw₁
         · exact LFunctionTrivChar₁_apply_one_ne_zero k
         · rw [LFunctionTrivChar₁, Function.update_of_ne hw₁]
-          exact mul_ne_zero (sub_ne_zero.mpr hw₁)
-            (LFunction_ne_zero_of_seven_eighths_lt_re 1 (hball w hw).1 (fun h ↦ hw₁ h.2))
+          exact mul_ne_zero (by positivity)
+            (LFunction_ne_zero_of_seven_eighths_lt_re 1 (by grind) (by grind))
       · have hc₁ : c ≠ 1 := by
           intro h
           have := congrArg re h
@@ -713,23 +707,23 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
         obtain ⟨hw₁, hw₂⟩ := hball w hw
         have hbound : ‖LFunctionTrivChar₁ k w‖ ≤ 8 * k * (|t| + 3) ^ 2 := by
           rcases eq_or_ne w 1 with rfl | hw1
-          · simp only [LFunctionTrivChar₁, Function.update_self]
+          · simp only [Function.update_self]
             calc ‖∏ p ∈ k.primeFactors, (1 - (p : ℂ)⁻¹)‖
               _ ≤ ∏ p ∈ k.primeFactors, (1 : ℝ) := by
                 rw [norm_prod]
-                refine Finset.prod_le_prod₀ (fun _ _ ↦ norm_nonneg _) (fun p hp ↦ ?_)
+                refine Finset.prod_le_prod₀ (by simp) (fun p hp ↦ ?_)
                 have hp := (Nat.prime_of_mem_primeFactors hp).one_lt
                 have hp' : (1 : ℝ) < p := by exact_mod_cast hp
-                rw [show (1 - (p : ℂ)⁻¹) = ((1 - (p : ℝ)⁻¹ : ℝ) : ℂ) by push_cast; ring,
+                rw [show (1 - (p : ℂ)⁻¹) = ((1 - (p : ℝ)⁻¹ : ℝ) : ℂ) by simp,
                   norm_real, Real.norm_eq_abs, abs_le]
-                have : 0 < (p : ℝ)⁻¹ := inv_pos.mpr (by linarith)
+                have : 0 < (p : ℝ)⁻¹ := by positivity
                 have : (p : ℝ)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hp'
-                constructor <;> linarith
+                grind
               _ ≤ 8 * k * (|t| + 3) ^ 2 := by
                 rw [Finset.prod_const_one]
                 nlinarith
           · rw [LFunctionTrivChar₁, Function.update_of_ne hw1, norm_mul]
-            have hL := norm_LFunction_one_le (k := k) (by linarith : 0 < w.re) hw1
+            have hL := norm_LFunction_one_le (k := k) (by positivity) hw1
             have hw1' : 0 < ‖w - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hw1)
             have hw1'' : ‖w - 1‖ ≤ ‖w‖ + 1 := by simpa using norm_sub_le w 1
             have hwre : 0 < w.re := by linarith
@@ -746,14 +740,14 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
               _ = 8 * k * (|t| + 3) ^ 2 := by ring
         calc ‖LFunctionTrivChar₁ k w‖
           _ ≤ 8 * k * (|t| + 3) ^ 2 := hbound
-          _ = M * (1 / 2) := by rw [hM]; ring
+          _ = M * (1 / 2) := by linarith
           _ ≤ M * ‖LFunctionTrivChar₁ k c‖ := by gcongr
       · -- `F'/F = L'/L + 1/(s - 1)`
         have hs1 : s ≠ 1 := by
           rintro rfl
           norm_num at hs₁
         have hLs : LFunction (1 : DirichletCharacter ℂ k) s ≠ 0 :=
-          LFunction_ne_zero_of_seven_eighths_lt_re 1 (by linarith) (fun h ↦ hs1 h.2)
+          LFunction_ne_zero_of_seven_eighths_lt_re 1 (by linarith) (by grind)
         have hs1' : s - 1 ≠ 0 := sub_ne_zero.mpr hs1
         rw [deriv_LFunctionTrivChar₁_apply_of_ne_one k hs1, LFunctionTrivChar₁,
           Function.update_of_ne hs1]
@@ -772,7 +766,7 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
             exact div_le_one_of_le₀ hs₁ (norm_nonneg _)
     · -- a nontrivial character: `L` itself
       refine ⟨LFunction χ, (differentiable_LFunction hχ).differentiableOn,
-        fun w hw ↦ LFunction_ne_zero_of_seven_eighths_lt_re χ (hball w hw).1 (fun h ↦ hχ h.1),
+        fun w hw ↦ LFunction_ne_zero_of_seven_eighths_lt_re χ (by grind) (by grind),
         fun w hw ↦ ?_, le_add_of_nonneg_right zero_le_one⟩
       obtain ⟨hw₁, hw₂⟩ := hball w hw
       calc ‖LFunction χ w‖
@@ -781,9 +775,8 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
         _ ≤ k * (8 * (|t| + 3) ^ 2) := by
           rw [mul_div_assoc]
           gcongr
-          rw [div_le_iff₀ (by norm_num)]
           nlinarith
-        _ = M * (1 / 2) := by rw [hM]; ring
+        _ = M * (1 / 2) := by linarith
         _ ≤ M * ‖LFunction χ c‖ := by gcongr
   -- Borel–Carathéodory on `ball c (9/8)`
   have hM₁ : 1 ≤ M := by rw [hM]; nlinarith
@@ -793,18 +786,14 @@ theorem norm_logDeriv_LFunction_le : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
     have hx' : |t| + 3 ≤ (k : ℝ) * (|t| + 3) := by nlinarith
     rw [show (5 : ℝ) = ((5 : ℕ) : ℝ) by norm_num, ← Real.log_pow]
     refine Real.log_le_log (by positivity) ?_
-    calc M = 16 * (k * (|t| + 3)) * (|t| + 3) := by rw [hM]; ring
+    calc M = 16 * (k * (|t| + 3)) * (|t| + 3) := by linarith
       _ ≤ 16 * (k * (|t| + 3)) * (k * (|t| + 3)) := by gcongr
       _ ≤ (k * (|t| + 3)) ^ 3 * (k * (|t| + 3)) * (k * (|t| + 3)) := by
         gcongr
         calc (16 : ℝ) ≤ 3 ^ 3 := by norm_num
           _ ≤ _ := pow_le_pow_left₀ (by norm_num) hx 3
       _ = (k * (|t| + 3)) ^ 5 := by ring
-  calc ‖deriv (LFunction χ) s / LFunction χ s‖
-    _ ≤ ‖deriv F s / F s‖ + 1 := hLF
-    _ ≤ 4 * (17 / 16 + 9 / 8) / (9 / 8 - 17 / 16) ^ 2 * Real.log M + 1 := by gcongr
-    _ ≤ 2240 * (5 * Real.log (k * (|t| + 3))) + 1 := by norm_num; linarith
-    _ ≤ 11201 * Real.log (k * (|t| + 3)) := by linarith
+  linarith
 
 /-- On `63/64 ≤ re s ≤ 2` and `|im s| ≥ 3`, a Dirichlet L-function is at most
 `exp(C √(log (k (|t| + 3))))`. -/
@@ -839,29 +828,29 @@ theorem norm_LFunction_le_exp_sqrt : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
     have := (hball 1 hw).2.1
     norm_num at this
   have hLd : DifferentiableOn ℂ (LFunction χ) (ball c (9 / 8)) := fun w hw ↦
-    (differentiableAt_LFunction χ w (Or.inl (hne w hw))).differentiableWithinAt
+    (differentiableAt_LFunction χ w (by grind)).differentiableWithinAt
   have hL0 (w : ℂ) (hw : w ∈ ball c (9 / 8)) : LFunction χ w ≠ 0 :=
-    LFunction_ne_zero_of_seven_eighths_lt_re χ (hball w hw).1 (fun h ↦ hne w hw h.2)
+    LFunction_ne_zero_of_seven_eighths_lt_re χ (by grind) (by grind)
   have hLc : 1 / 2 ≤ ‖LFunction χ c‖ := by
-    have h := le_norm_LFunction χ (s := c) (by rw [hcre]; norm_num)
+    have h := le_norm_LFunction χ (s := c) (by linarith)
     rw [hcre] at h
     norm_num at h
     linarith
   have hLc₂ : ‖LFunction χ c‖ ≤ 2 := by
-    have h := norm_LFunction_le_of_one_lt_re χ (s := c) (by rw [hcre]; norm_num)
+    have h := norm_LFunction_le_of_one_lt_re χ (s := c) (by linarith)
     rw [hcre] at h
     norm_num at h
     exact h
-  have hc0 : LFunction χ c ≠ 0 := hL0 c (mem_ball_self (by norm_num))
+  have hc0 := hL0 c (by simp)
   -- a holomorphic logarithm `h` of `L / L c` on `ball c (9/8)`
-  obtain ⟨h, hh, hexp, hc⟩ := exists_holomorphic_log (by norm_num : (0 : ℝ) < 9 / 8)
+  obtain ⟨h, hh, hexp, hc⟩ := exists_holomorphic_log (by positivity)
     (G := fun w ↦ LFunction χ w / LFunction χ c) (hLd.div_const _)
-    (fun w hw ↦ div_ne_zero (hL0 w hw) hc0) (div_self hc0)
+    (by grind) (div_self hc0)
   have hre (w : ℂ) (hw : w ∈ ball c (9 / 8)) :
       (h w).re = Real.log (‖LFunction χ w‖ / ‖LFunction χ c‖) := by
     calc (h w).re = Real.log ‖Complex.exp (h w)‖ := by rw [Complex.norm_exp, Real.log_exp]
       _ = Real.log (‖LFunction χ w‖ / ‖LFunction χ c‖) := by
-        rw [← norm_div]; exact congrArg _ (congrArg _ (hexp hw))
+        rw [← norm_div]; grind
   -- `re h ≤ 768` on `ball c (127/128)`, inside `1 < re w`
   have hre₁ : ∀ w ∈ ball c (127 / 128), (h w).re ≤ 768 := by
     intro w hw
@@ -873,7 +862,7 @@ theorem norm_LFunction_le_exp_sqrt : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
       rw [div_le_iff₀ (by linarith)]
       linarith
     have hpos : 0 < ‖LFunction χ w‖ / ‖LFunction χ c‖ :=
-      div_pos (norm_pos_iff.mpr (hL0 w hw')) (norm_pos_iff.mpr hc0)
+      div_pos (norm_pos_iff.mpr (by grind)) (norm_pos_iff.mpr hc0)
     rw [hre w hw']
     calc Real.log (‖LFunction χ w‖ / ‖LFunction χ c‖)
       _ ≤ ‖LFunction χ w‖ / ‖LFunction χ c‖ := Real.log_le_self hpos.le
@@ -885,7 +874,7 @@ theorem norm_LFunction_le_exp_sqrt : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
     obtain ⟨h₁, h₂, h₃⟩ := hball w hw
     have hLw := norm_LFunction_le_two_mul χ (s := w) (by linarith) h₂
     have hpos : 0 < ‖LFunction χ w‖ / ‖LFunction χ c‖ :=
-      div_pos (norm_pos_iff.mpr (hL0 w hw)) (norm_pos_iff.mpr hc0)
+      div_pos (norm_pos_iff.mpr (by grind)) (norm_pos_iff.mpr hc0)
     have hx : 6 ≤ (k : ℝ) * (|t| + 3) := by nlinarith
     rw [hre w hw, hℓdef, show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, ← Real.log_pow]
     refine Real.log_le_log hpos ?_
@@ -914,13 +903,13 @@ theorem norm_LFunction_le_exp_sqrt : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
     norm_num at this
     linarith
   -- Hadamard's three circles: `‖h s‖ ≤ A √ℓ`
-  have hsqrt : 1 ≤ Real.sqrt ℓ := Real.one_le_sqrt.mpr hℓ
+  have hsqrt := Real.one_le_sqrt.mpr hℓ
   have hhs : ‖h s‖ ≤ A * Real.sqrt ℓ := by
     have hsc : ‖s - c‖ = 2 - s.re := by
       rw [norm_sub_center, abs_of_nonpos (by linarith)]
       ring
     by_cases hρ : ‖s - c‖ ≤ 63 / 64
-    · have := hA₁ s (by rw [mem_closedBall, dist_eq_norm]; exact hρ)
+    · have := hA₁ s (by rw [mem_closedBall, dist_eq_norm]; omega)
       nlinarith
     · push Not at hρ
       have key := norm_le_of_three_circles (by norm_num) (by norm_num)
@@ -968,7 +957,6 @@ theorem norm_LFunction_le_exp_sqrt : ∃ C : ℝ, ∀ (k : ℕ) [NeZero k]
     _ = Real.exp (1 + A * Real.sqrt ℓ) := (Real.exp_add _ _).symm
     _ ≤ Real.exp (193537 * Real.sqrt ℓ) := by
       gcongr
-      rw [hA]
       linarith
 
 end Erdos408

@@ -8,33 +8,32 @@ public import OAI.NumberTheory.DirichletL.Reflection.TupleFamily
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : Eis} {mode : Bool}
+variable {φ σ : Type*} [Fintype φ] [Fintype σ] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
-lemma slotProductCoefficient_norm (tuples : Finset (σ→Ideal Eis))
-    (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal Eis)))
-    (aw : (σ→Ideal Eis)→ℂ) (haw : ∀ p∈tuples,‖aw p‖≤1)
-    (P : Ideal Eis) (hP : P∈tuples.image slotTupleProduct) :
+lemma slotProductCoefficient_norm (tuples : Finset (σ→Ideal ActualEisensteinCubic.O))
+    (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal ActualEisensteinCubic.O)))
+    (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ) (haw : ∀ p∈tuples,‖aw p‖≤1)
+    (P : Ideal ActualEisensteinCubic.O) (hP : P∈tuples.image slotTupleProduct) :
     ‖slotProductCoefficient tuples aw P‖≤1 := by
   obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hP
   rw [slotProductCoefficient_at_product tuples hinj aw p hp]
-  exact haw p hp
+  simp_all
 
 theorem literalWholeRow_eq_active_tuples
-    (F : PrimeFamily φ) (rows : Finset (Ideal Eis))
-    (tuples : Finset (σ→Ideal Eis)) (hne : tuples.Nonempty)
+    (F : PrimeFamily φ) (rows : Finset (Ideal ActualEisensteinCubic.O))
+    (tuples : Finset (σ→Ideal ActualEisensteinCubic.O)) (hne : tuples.Nonempty)
     (hmax : ∀ p∈tuples,∀ i,(p i).IsMaximal)
     (hgood : ∀ p∈tuples,∀ i,ConcretePrimeRowBridge.goodLambda∉p i)
-    (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal Eis)))
+    (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal ActualEisensteinCubic.O)))
     (hrows : ∀ K∈rows,Admissible K) (jF : φ→ℕ)
     (D : ∀ K : rows,∀ P : tuples.image slotTupleProduct,IsCoprime K.val P.val→
       ControlledStratumArithmetic (F.reflected K.val (hrows K.val K.property)
         (tuplePrimeFamily tuples hne hmax hgood P.val)).generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ) (K : rows) :
+    (W : ℝ→ℂ) (θ X : ℝ) (r : Ideal ActualEisensteinCubic.O→ℂ) (aw : (σ→Ideal ActualEisensteinCubic.O)→ℂ) (K : rows) :
     literalWholeRow F K.val (hrows K.val K.property) (tuplePrimeFamily tuples hne hmax hgood)
       jF (tuples.image slotTupleProduct) (D K) s hc W θ X r (slotProductCoefficient tuples aw)=
     ∑ p : tuples,if hp:IsCoprime K.val (slotTupleProduct p.val) then

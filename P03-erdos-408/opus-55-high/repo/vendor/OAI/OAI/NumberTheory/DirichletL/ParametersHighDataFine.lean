@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.ParametersHighData
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 
 namespace SevenEighths.Parameters
 
@@ -24,7 +23,7 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
   have hsa : small≤allowance := min_le_left _ _
   have hst : small≤t/((N:ℝ)+2000) := min_le_right _ _
   have hst0 : small≤t/2000 := hst.trans
-    (div_le_div_of_nonneg_left ht.le (by norm_num) (by linarith [Nat.cast_nonneg (α:=ℝ) N]))
+    (div_le_div_of_nonneg_left ht.le (by norm_num) (by simp))
   let ellMin := (7/8:ℝ)*rmin
   have hmin : 0<ellMin := mul_pos (by norm_num) hr
   obtain ⟨ε,e,κ,cost,τ₀,hε,hε1,hεgap,hεa,he,he1,heell,hea,hκ,hκ1,hcost,
@@ -52,13 +51,13 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
     slots_bounds:=fun j=>⟨(hbounds j).1,(hbounds j).2.1,(hbounds j).2.2.2⟩
     rmin_pos:=hr,epsilon_pos:=hε,epsilon_small:=hε1,epsilon_gap:=hεgap
     e_pos:=he,e_small:=he1,kappa_pos:=hκ,kappa_small:=hκ1,cost_pos:=hcost
-    eps_pos:=heps,eps_small:=heps1,sigma_pos:=hs,detector_budget:=by linarith only [hdet]
+    eps_pos:=heps,eps_small:=heps1,sigma_pos:=hs,detector_budget:=by linarith
     phase_budget:=hphase,count_budget:=hbud'.1,central_budget:=hbud'.2
-    geometric_budget:=by linarith only [hst2, het, ht1]
-    principal_budget:=by linarith only [hst2, ht1]
-    window_budget:=by change sigma+e≤(7/8)*ellMin;linarith only [hsell, heell, hmin]
-    floor_budget:=by linarith only [hst2, het, he8, ht1]
-    high_saving:=by linarith only [hst2, ht]
+    geometric_budget:=by linarith
+    principal_budget:=by linarith
+    window_budget:=by grind
+    floor_budget:=by linarith
+    high_saving:=by linarith
     height_choice:=?_ },?_⟩
   · intro J hJ
     let τ := min ((1/200:ℝ)*cost/16) (min (1/800) (t/(4*(J+7))))
@@ -69,9 +68,9 @@ theorem exists_high_data_fine (Δ:ℝ)(hΔ:0<Δ)(mesh:ℝ→ℝ)
     have hτJ : τ*(4*(J+7))≤t := (le_div_iff₀ (by positivity)).mp hτt
     have hprod : 0≤τ*J := mul_nonneg htau.le hJ
     have hprodeps := mul_le_mul_of_nonneg_left heps1 htau.le
-    refine ⟨τ,htau,by linarith only [hτd],by linarith only [hτc, hcost],
-      by nlinarith only [hτJ, hprod, htau],by nlinarith only [hτJ, hprod, htau],
-      by nlinarith only [hτJ, hprod, hprodeps, htau]⟩
+    refine ⟨τ,htau,by linarith,by linarith,
+      by linarith,by linarith,
+      by linarith⟩
   · intro j
     change ell j≤mesh t/200
     calc

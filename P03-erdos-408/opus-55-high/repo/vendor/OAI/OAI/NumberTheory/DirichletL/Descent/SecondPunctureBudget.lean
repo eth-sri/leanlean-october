@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
+open FirstPassCubeLabels
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
 include hp in
@@ -33,10 +32,10 @@ theorem second_residual_norm_power_bound (E G : Finset ι) (hE : E ⊆ G)
     primeProductNorm p (G\E) ≤ Z^(g-theta+2*eta) := by
   rw [second_residual_norm_eq_div p hp E G hE]
   calc
-    _ ≤ Z^(g+eta)/Z^(theta-eta) := div_le_div₀ (Real.rpow_pos_of_pos hZ _).le hg
-      (Real.rpow_pos_of_pos hZ _) hd
+    _ ≤ Z^(g+eta)/Z^(theta-eta) := div_le_div₀ (by positivity) hg
+      (by positivity) hd
     _ = Z^((g+eta)-(theta-eta)) := (Real.rpow_sub hZ _ _).symm
-    _ = _ := by congr 1; ring
+    _ = _ := by ring
 
 end
 end SevenEighths.InverseMoment

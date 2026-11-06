@@ -25,12 +25,12 @@ theorem exists_external_tail_order (τ B p : ℝ) (hτ : 0<τ) :
     _ = Z^p*(Z^τ)^n := by
       rw [Real.rpow_add hZp,Real.rpow_mul hZp.le,Real.rpow_natCast]
     _ ≤ _ := mul_le_mul_of_nonneg_left
-      (pow_le_pow_left₀ (Real.rpow_nonneg hZp.le _) (by linarith) n)
-      (Real.rpow_nonneg hZp.le _)
+      (pow_le_pow_left₀ (by positivity) (by linarith) n)
+      (by positivity)
 
 theorem constant_absorbed_eventually (C ε : ℝ) (hε : 0<ε) :
-    ∀ᶠ Z : ℝ in Filter.atTop, C≤Z^ε := by
-  exact (tendsto_rpow_atTop hε).eventually (Filter.eventually_ge_atTop C)
+    ∀ᶠ Z : ℝ in Filter.atTop, C≤Z^ε :=
+  (tendsto_rpow_atTop hε).eventually (Filter.eventually_ge_atTop C)
 
 theorem uniform_external_tail_order (τ dmax B R : ℝ)
     (hτ : 0<τ) (_hdmax : 0≤dmax) (hB : 0≤B) (hR : 0≤R) :
@@ -46,8 +46,7 @@ theorem uniform_external_tail_order (τ dmax B R : ℝ)
   have htarget : Z^(-dmax*R)≤(Z^d)^p := by
     rw [←Real.rpow_mul hZp.le]
     apply Real.rpow_le_rpow_of_exponent_le hZ
-    nlinarith [mul_nonneg hd (show 0≤p+R by linarith),
-      mul_nonneg (show 0≤dmax-d by linarith) hR]
+    nlinarith
   have hden : ((1+Z^τ)/2)^n≤(1+Z^τ/2)^n :=
     pow_le_pow_left₀ (by positivity) (by linarith) n
   calc
@@ -56,7 +55,7 @@ theorem uniform_external_tail_order (τ dmax B R : ℝ)
     _ = (2 : ℝ)^n*(Z^(dmax*B)/(1+Z^τ)^n) := by
       rw [div_pow]
       field_simp
-    _ ≤ (2 : ℝ)^n*Z^(-dmax*R) := mul_le_mul_of_nonneg_left (hn Z hZ) (by positivity)
+    _ ≤ (2 : ℝ)^n*Z^(-dmax*R) := mul_le_mul_of_nonneg_left (by grind) (by positivity)
     _ ≤ _ := mul_le_mul_of_nonneg_left htarget (by positivity)
 
 end SevenEighths.HeckeDyadic

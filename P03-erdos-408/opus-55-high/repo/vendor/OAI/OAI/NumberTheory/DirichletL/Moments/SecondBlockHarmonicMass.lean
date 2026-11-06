@@ -8,58 +8,53 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalCommonHarmonic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondBlockHarmonicMass
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate CenteredMomentSourceMass
+open CenteredMomentCanonicalFirst CenteredMomentSecondRetainedAggregate
 open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockCount
 open CenteredMomentSecondActiveCount CenteredMomentActiveSource
-open CenteredMomentFirstSectors CenteredMomentSourceRow
-open CenteredMomentSecondCanonicalNonunit CenteredMomentRankinRadical
-open CenteredMomentCommonHarmonicMass CenteredMomentOriginalCommonHarmonic
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCommonHarmonicMass
 
-abbrev ActiveSubsets (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
+abbrev ActiveSubsets (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) :=
   (p : ActiveLabel S β) × Finset (CommonIndex p.val.1 p.val.2)
 
-abbrev ActiveBlocks (S : Finset (Ideal O)) (β : Ideal O→ℂ) (K R H : ℝ) :=
+abbrev ActiveBlocks (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (K R H : ℝ) :=
   (q : ActiveSubsets S β) × SourceBlocks q.1.val.1 q.1.val.2 q.2 K R H
 
-def pairWeight (C D : Ideal O) : ℝ := 1/Real.sqrt ((C.absNorm:ℝ)*D.absNorm)
+def pairWeight (C D : Ideal ActualEisensteinCubic.O) : ℝ := 1/Real.sqrt ((C.absNorm:ℝ)*D.absNorm)
 
-lemma pairWeight_nonneg (C D : Ideal O) : 0≤pairWeight C D := by
+lemma pairWeight_nonneg (C D : Ideal ActualEisensteinCubic.O) : 0≤pairWeight C D := by
   unfold pairWeight
   positivity
 
-def activeSubsetLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ)
+def activeSubsetLabel (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ)
     (q : ActiveSubsets S β) : Label := (q.1.val,q.2.image Subtype.val)
 
-lemma activeSubsetLabel_injective (S : Finset (Ideal O)) (β : Ideal O→ℂ) :
+lemma activeSubsetLabel_injective (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) :
     Function.Injective (activeSubsetLabel S β) := by
   rintro ⟨p,U⟩ ⟨q,V⟩ he
   have hp : p=q := Subtype.ext (congrArg (fun x=>x.1) he)
   cases hp
   have hU : U=V := Finset.image_injective Subtype.val_injective
     (congrArg (fun x=>x.2) he)
-  cases hU
-  rfl
+  simp_all
 
-lemma active_common_shell (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
+lemma active_common_shell (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (Y : ℝ)
     (hN : ∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Y) (p : ActiveLabel S β) :
     p.val∈commonShell S β Y := by
   have hs := commonLabels_supported (activeSource S β) _ _ p.property
   have hn := commonLabel_norm_bounds S β Y hN _ _ p.property
   exact Finset.mem_filter.mpr ⟨p.property,
-    (commonRadical_norm_le _ _ hs.1.1 hs.2.1).trans ((min_le_left _ _).trans hn.1)⟩
+    (commonRadical_norm_le _ _ hs.1.1 hs.2.1).trans (by grind)⟩
 
-lemma activeSubsetLabel_mem (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
+lemma activeSubsetLabel_mem (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (Y : ℝ)
     (hN : ∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Y) (q : ActiveSubsets S β) :
-    activeSubsetLabel S β q∈partitionLabels S β Y := by
-  exact (mem_partitionLabels S β Y _).mpr
+    activeSubsetLabel S β q∈partitionLabels S β Y :=
+  (mem_partitionLabels S β Y _).mpr
     ⟨active_common_shell S β Y hN q.1,commonSubset_support _ _ q.2⟩
 
-lemma active_mass_le_partition (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : ℝ)
+lemma active_mass_le_partition (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (Y : ℝ)
     (hN : ∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Y) :
     (∑p : ActiveLabel S β,∑_U : Finset (CommonIndex p.val.1 p.val.2),
       pairWeight p.val.1 p.val.2)≤
@@ -79,7 +74,7 @@ lemma active_mass_le_partition (S : Finset (Ideal O)) (β : Ideal O→ℂ) (Y : 
           exact activeSubsetLabel_mem S β Y hN q)
       (fun v _ _=>pairWeight_nonneg _ _)
 
-lemma active_blocks_sum_eq (S : Finset (Ideal O)) (β : Ideal O→ℂ) (K R H : ℝ) :
+lemma active_blocks_sum_eq (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (K R H : ℝ) :
     (∑q : ActiveBlocks S β K R H,pairWeight q.1.1.val.1 q.1.1.val.2)=
       ∑p : ActiveLabel S β,∑U : Finset (CommonIndex p.val.1 p.val.2),
         (Fintype.card (SourceBlocks p.val.1 p.val.2 U K R H):ℝ)*pairWeight p.val.1 p.val.2 := by
@@ -88,8 +83,8 @@ lemma active_blocks_sum_eq (S : Finset (Ideal O)) (β : Ideal O→ℂ) (K R H : 
   exact Fintype.sum_sigma _
 
 theorem actual_active_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
-    ∃C:ℝ,0<C ∧ ∀Z:ℝ,2≤Z → ∀seed:Ideal O,Squarefree seed → seed≠0 →
-      ∀(S:Finset (Ideal O))(β:Ideal O→ℂ),
+    ∃C:ℝ,0<C ∧ ∀Z:ℝ,2≤Z → ∀seed:Ideal ActualEisensteinCubic.O,Squarefree seed → seed≠0 →
+      ∀(S:Finset (Ideal ActualEisensteinCubic.O))(β:Ideal ActualEisensteinCubic.O→ℂ),
       (∀I∈S,β I≠0 → seed∣I) →
       (∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Z^B) →
       (∑p : ActiveLabel S β,∑_U : Finset (CommonIndex p.val.1 p.val.2),
@@ -110,8 +105,8 @@ theorem actual_active_harmonic_mass (B δ : ℝ) (hB : 0≤B) (hδ : 0<δ) :
 theorem actual_block_harmonic_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
     (hCr : 0<Cr) (hε : 0<ε) :
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in Filter.atTop,
-      ∀seed:Ideal O,Squarefree seed → seed≠0 →
-      ∀(S:Finset (Ideal O))(β:Ideal O→ℂ),
+      ∀seed:Ideal ActualEisensteinCubic.O,Squarefree seed → seed≠0 →
+      ∀(S:Finset (Ideal ActualEisensteinCubic.O))(β:Ideal ActualEisensteinCubic.O→ℂ),
       (∀I∈S,β I≠0 → seed∣I) →
       (∀I∈S,β I≠0 → (I.absNorm:ℝ)≤Z^B) →
       ∀K R H:ℝ,0<K → R≤Cr*Z^L → H≤Z^B →
@@ -119,7 +114,7 @@ theorem actual_block_harmonic_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
         C*Z^ε/(seed.absNorm:ℝ) := by
   obtain ⟨C₁,hC₁,hmass⟩:=actual_active_harmonic_mass B (ε/2) hB (by positivity)
   obtain ⟨C₂,hC₂,hblocks⟩:=sourceBlocks_subpower B L Cr (ε/2) hB hL hCr (by positivity)
-  refine ⟨C₂*C₁,mul_pos hC₂ hC₁,?_⟩
+  refine ⟨C₂*C₁,by positivity,?_⟩
   filter_upwards [hblocks,Filter.eventually_ge_atTop (2:ℝ)] with Z hb hZ
   intro seed hs hs0 S β hm hn K R H hK hR hH
   have hsum:=hmass Z hZ seed hs hs0 S β hm hn
@@ -142,7 +137,7 @@ theorem actual_block_harmonic_mass (B L Cr ε : ℝ) (hB : 0≤B) (hL : 0≤L)
     _ = (C₂*C₁)*Z^ε/(seed.absNorm:ℝ) := by
       calc
         _ = (C₂*C₁)*(Z^(ε/2)*Z^(ε/2))/(seed.absNorm:ℝ) := by ring
-        _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z),add_halves]
+        _ = _ := by rw [←Real.rpow_add (by positivity),add_halves]
 
 end SevenEighths.CenteredMomentSecondBlockHarmonicMass
 

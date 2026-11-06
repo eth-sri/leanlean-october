@@ -16,7 +16,7 @@ theorem exists_reserve (εm:ℝ)(hε:0<εm):
       0<τ ∧ τ≤gap/50 ∧ 0<π ∧ 0<eps ∧ 0<loss ∧
       ρ+15*η+π+eps+loss≤εm:=by
   let ρ:=min (εm/4) (1/4)
-  have hρ:0<ρ:=lt_min (by linarith) (by norm_num)
+  have hρ:0<ρ:=by positivity
   have hρa:ρ≤εm/4:=min_le_left _ _
   have hρb:ρ≤1/4:=min_le_right _ _
   refine ⟨ρ,ρ/4,ρ/400,ρ/400,ρ/16,ρ/16,ρ/16,hρ,hρb,hρa,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_,?_⟩ <;> linarith
@@ -30,17 +30,7 @@ theorem shifted_capacity (ρ gap η r r' ell G:ℝ)
       r'+2*ell≤(1+ρ)-2*gap ∧
       2*r'+8*ell≤3*(1+ρ)-2*gap ∧
       r'+ell+7*η≤2:=by
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor
-  · linarith
-  constructor
-  · linarith
-  · linarith
+  grind
 
 end SevenEighths.InverseInitialMarkedReserve
 

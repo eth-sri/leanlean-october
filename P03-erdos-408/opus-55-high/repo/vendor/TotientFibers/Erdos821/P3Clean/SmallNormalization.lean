@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.ProductConditioning
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -18,10 +17,9 @@ theorem normalizedSmallCoefficient_factor (F : FixedData) (J : ℕ) (V : ℝ) (z
     normalizedSmallCoefficient F J V z =
       Real.sqrt (V ^ (-(F.ell : ℤ))) * F.q ^ (((z : ℝ) - ((J + F.ell : ℕ) : ℝ)) / 2) := by
   unfold normalizedSmallCoefficient
-  rw [Real.sqrt_mul (zpow_nonneg hV _)]
+  rw [Real.sqrt_mul (by positivity)]
   simp only [Real.sqrt_eq_rpow]
   rw [← Real.rpow_mul F.q_pos.le]
-  congr 2
   ring
 
 theorem productSmallCoefficient_factor (F : FixedData) (P : PrimeGroups) (J : ℕ)
@@ -79,18 +77,7 @@ theorem physicalSmallCoefficient_joint (F : FixedData) (P : PrimeGroups) (J : �
     Finset.prod_nonneg (fun g _ => zpow_nonneg (hV g) _)
   simp only [physicalSmallCoefficient, smallArrayCoefficient_factor F P J _ hV,
     Complex.star_def, Complex.conj_ofReal, ← Complex.ofReal_mul]
-  have heq : Real.sqrt (smallMarkMass P (J + F.ell)) *
-      (Real.sqrt (smallTargetFactor (P := P) F) * smallDamping F J y) *
-      (Real.sqrt (smallMarkMass P (J + F.ell)) *
-        (Real.sqrt (smallTargetFactor (P := P) F) * smallDamping F J z)) =
-        smallMarkMass P (J + F.ell) * smallTargetFactor (P := P) F *
-          smallDamping F J y * smallDamping F J z := by
-    calc
-      _ = (Real.sqrt (smallMarkMass P (J + F.ell))) ^ 2 *
-          (Real.sqrt (smallTargetFactor (P := P) F)) ^ 2 *
-          smallDamping F J y * smallDamping F J z := by ring
-      _ = _ := by rw [Real.sq_sqrt hm, Real.sq_sqrt ht]
-  exact congrArg Complex.ofReal heq
+  grind
 
 
 end Erdos821.P3Clean

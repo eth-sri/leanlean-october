@@ -7,20 +7,19 @@ public import OAI.NumberTheory.DirichletL.Detector.DetectorPlainUnmarkedField
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainUnmarkedRestrictedField
-open HeckeDyadic HeckeRowClosure HeckeInverseAmplification
+open HeckeDyadic HeckeInverseAmplification
 open CenteredMomentDetectorPlainFiberSource
 open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch ProbeHighRowFamily
 open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 open CenteredMomentDetectorDictionary CenteredMomentDetectorEnergyInitialState
-open CenteredMomentDetectorPlainExceptional CenteredMomentDetectorPlainUnmarkedState
+open CenteredMomentDetectorPlainExceptional
 open CenteredMomentDetectorPlainMomentParameters CenteredMomentDetectorPlainProfileControl
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
+open CenteredMomentEnergyBands CenteredMomentNaturalFixedRaySource
 open QuadraticInitialBound
-local notation "O" => HeckeFamily.O
 
 open ProbeDetectorPlainUnmarkedField
 variable {Δ:ℝ}
@@ -83,7 +82,7 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
   refine ⟨hret.1,?_⟩
   intro rows hrows d hd a tstar T heightAllowance i B hB hdata hprofile hwidth
     bin label left right hne height hheight j k hjk σ hσ t ht F value
-  have hU:1<Z^d:=source_base_gt_one D Z d hret.1 hd
+  have hU:=source_base_gt_one D Z d hret.1 hd
   have hnorm:‖t‖≤height:=by simpa only [Real.norm_eq_abs] using abs_le.mpr ht
   have hp:(detectorProfiles F.reverse j k σ t).control control ^2≤Cp*(1+height)^Jheight:=by
     apply (hprofiles F.reverse j k hjk σ hσ t).trans
@@ -106,8 +105,8 @@ theorem source_batch_plain_unmarked (D:Parameters.HighData Δ)
           (Z^d)^(max 1 (2*F.m)+D.t):=by
         apply mul_le_mul
         · exact mul_le_mul_of_nonneg_left hp (mul_nonneg (hA label).le hdiag)
-        · exact hpow
-        · exact Real.rpow_nonneg (zero_lt_one.trans hU).le _
+        · omega
+        · positivity
         · exact mul_nonneg (mul_nonneg (hA label).le hdiag)
             (mul_nonneg hCp.le (by positivity))
       _=(A label*diagonalControl radialMajorant*Cp)*(1+height)^Jheight*

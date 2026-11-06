@@ -37,7 +37,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
+open scoped ENNReal MeasureTheory Convolution Pointwise
 open MeasureTheory Set
 
 noncomputable section
@@ -80,8 +80,8 @@ omit [InnerProductSpace ℝ E] [FiniteDimensional ℝ E] in
 private lemma isCompact_diffSet (hK : IsCompact K) (hψcs : HasCompactSupport ψ) :
     IsCompact
       ((fun p : E × E => p.1 - p.2) '' ((Kψ (K := K) (ψ := ψ)) ×ˢ K)) := by
-  have hKψ : IsCompact (Kψ (K := K) (ψ := ψ)) := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
-  have hprod : IsCompact ((Kψ (K := K) (ψ := ψ)) ×ˢ K) := hKψ.prod hK
+  have hKψ := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
+  have hprod := hKψ.prod hK
   refine hprod.image ?_
   exact (continuous_fst.sub continuous_snd)
 
@@ -100,19 +100,19 @@ private lemma exists_norm_ψ_bound_on_diffSet (hK : IsCompact K) (hψc : Continu
     rcases hdiff.exists_isMaxOn hne (hcont.continuousOn) with ⟨z0, hz0, hzmax⟩
     refine ⟨‖ψ z0‖, norm_nonneg _, ?_⟩
     intro x t ht
-    have hx : (x : E) ∈ Kψ (K := K) (ψ := ψ) := x.2
+    have hx := x.2
     have hx_t : (x : E) - t ∈ diffSet := by
       refine ⟨((x : E), t), ?_, rfl⟩
-      exact ⟨hx, ht⟩
+      exact by grind
     exact (isMaxOn_iff.1 hzmax) _ hx_t
   · -- `diffSet = ∅`: take the trivial bound.
     refine ⟨0, le_rfl, ?_⟩
     intro x t ht
     exfalso
-    have hx : (x : E) ∈ Kψ (K := K) (ψ := ψ) := x.2
+    have hx := x.2
     have : (x : E) - t ∈ diffSet := by
       refine ⟨((x : E), t), ?_, rfl⟩
-      exact ⟨hx, ht⟩
+      exact by grind
     exact hne ⟨(x : E) - t, this⟩
 
 private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
@@ -128,7 +128,7 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
   intro mK
   classical
   have hR : 0 ≤ R := hRpos.le
-  have hμK : (volume : Measure E) K < (⊤ : ℝ≥0∞) := hK.measure_lt_top (μ := (volume : Measure E))
+  have hμK := hK.measure_lt_top (μ := (volume : Measure E))
   have : Fact ((volume : Measure E) K < (⊤ : ℝ≥0∞)) := ⟨hμK⟩
   have : IsFiniteMeasure ((volume : Measure E).restrict K) := by infer_instance
   let μ : Measure E := (volume : Measure E).restrict K
@@ -148,14 +148,14 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
     filter_upwards
       [MeasureTheory.ae_restrict_mem
         (μ := (volume : Measure E)) hKm] with t ht
-    exact hψ_bound x t ht
+    exact by grind
   let kx : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ :=
     hker.toLp (fun t : E => ψ ((x : E) - t))
   have hkx_norm : ‖kx‖ ≤ mK * Cψ := by
     have h_ae :
         ∀ᵐ t ∂(volume.restrict K), ‖(fun t : E => ψ ((x : E) - t)) t‖ ≤ Cψ := by
       filter_upwards [MeasureTheory.ae_restrict_mem (μ := (volume : Measure E)) hKm] with t ht
-      exact hψ_bound x t ht
+      exact by grind
     have := (MeasureTheory.Lp.norm_le_of_ae_bound
       (μ := (volume.restrict K)) (p := (2 : ℝ≥0∞))
       (f := kx) (hC := hCψ_nonneg) (by
@@ -165,7 +165,7 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
             (μ := (volume.restrict K)) (p := (2 : ℝ≥0∞))
             (f := fun t : E => ψ ((x : E) - t))
             hker] with t ht hrep
-        simpa [kx, hrep] using ht))
+        grind))
     simpa [mK] using this
   -- Express the smoothing value as an `L²` inner product, then apply Cauchy–Schwarz.
   have hsmooth :
@@ -198,12 +198,9 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
     calc
       |smoothFun (E := E) (K := K) ψ u (x : E)|
           ≤ ‖u‖ * ‖kx‖ := habs
-      _ ≤ R * (mK * Cψ) := by
-        exact mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
-  have : dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x) 0 ≤ R * (mK * Cψ) := by
-    simpa [smoothBCF_apply (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x,
-      dist_eq_norm, Real.norm_eq_abs] using habs'
-  simpa [Metric.mem_closedBall, dist_eq_norm] using this
+      _ ≤ R * (mK * Cψ) :=
+        mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
+  simp_all
 
 /-- Arzelà--Ascoli: smoothing maps `L²(K)` bounded sets into a precompact set
 in `BCF(K + tsupport ψ)`. -/
@@ -217,14 +214,14 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
   intro A
   classical
   have hR : 0 ≤ R := hRpos.le
-  have hR0 : R ≠ 0 := ne_of_gt hRpos
-  have hμK : (volume : Measure E) K < (⊤ : ℝ≥0∞) := hK.measure_lt_top (μ := (volume : Measure E))
+  have hR0 := ne_of_gt hRpos
+  have hμK := hK.measure_lt_top (μ := (volume : Measure E))
   have : Fact ((volume : Measure E) K < (⊤ : ℝ≥0∞)) := ⟨hμK⟩
   have : IsFiniteMeasure ((volume : Measure E).restrict K) := by infer_instance
   let μ : Measure E := (volume : Measure E).restrict K
   let mK : ℝ :=
     (MeasureTheory.measureUnivNNReal (volume.restrict K)) ^ ((2 : ℝ≥0∞).toReal⁻¹)
-  have hmK : 0 ≤ mK := Real.rpow_nonneg (by simp) _
+  have hmK : 0 ≤ mK := by positivity
   let s : Set ℝ := Metric.closedBall (0 : ℝ) (R * (mK * Cψ))
   have in_s :=
     smoothFun_image_mem_closedBall (K := K) (ψ := ψ) hK hKm hψc hψcs
@@ -240,24 +237,24 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       (f : BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ) with hF
     have hzero : ∀ z, F z = 0 := by
       intro z
-      have hmem : F z ∈ s := in_s (f := F) z f.property
+      have hmem : F z ∈ s := by grind
       have hle : dist (F z) 0 ≤ 0 := by
         have : dist (F z) 0 ≤ R * (mK * Cψ) := by simpa [s, Metric.mem_closedBall] using hmem
         simpa [hmK0] using this
       exact dist_eq_zero.1 (le_antisymm hle dist_nonneg)
     simpa [hzero x, hzero y] using hε
-  · have hRmK_ne : R * mK ≠ 0 := mul_ne_zero hR0 hmK0
+  · have hRmK_ne := mul_ne_zero hR0 hmK0
     let ε2 : ℝ := ε / 2
     have hε2pos : 0 < ε2 := by
       simpa [ε2] using half_pos hε
     let ε' : ℝ := ε2 / (R * mK)
     have hε'pos : 0 < ε' :=
-      div_pos hε2pos (mul_pos hRpos (lt_of_le_of_ne hmK (Ne.symm hmK0)))
+      by positivity
     have hε'lt : R * mK * ε' = ε2 := by
       dsimp [ε']
-      field_simp [hRmK_ne, mul_assoc, mul_left_comm, mul_comm]
+      field_simp
     -- Use uniform continuity of `ψ` to get `deltaLoss`.
-    have hUC : UniformContinuous ψ := uniformContinuous_ψ (E := E) (ψ := ψ) hψc hψcs
+    have hUC := uniformContinuous_ψ (E := E) (ψ := ψ) hψc hψcs
     rcases (Metric.uniformContinuous_iff.1 hUC) ε' hε'pos with ⟨deltaLoss, hδpos, hδ⟩
     refine ⟨deltaLoss, hδpos, ?_⟩
     intro x y hxy f
@@ -278,7 +275,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       filter_upwards
         [MeasureTheory.ae_restrict_mem
           (μ := (volume : Measure E)) hKm] with t ht
-      exact hψ_bound x t ht
+      exact by grind
     have hkery :
         MemLp (fun t : E => ψ ((y : E) - t)) (2 : ℝ≥0∞) (volume.restrict K) := by
       refine MemLp.of_bound (μ := (volume.restrict K))
@@ -303,7 +300,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       have hxy' : dist ((x : E) - t) ((y : E) - t) < deltaLoss := by
         rw [dist_sub_right]
         exact hxy
-      have hψxy : dist (ψ ((x : E) - t)) (ψ ((y : E) - t)) < ε' :=
+      have hψxy :=
         hδ (a := (x : E) - t) (b := (y : E) - t) hxy'
       have : ‖ψ ((x : E) - t) - ψ ((y : E) - t)‖ ≤ ε' := by
         simpa [dist_eq_norm, sub_eq_add_neg] using le_of_lt hψxy
@@ -316,7 +313,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       simpa [hsub'.symm] using hnorm
     have hkdiff : ‖kx - ky‖ ≤ mK * ε' := by
       have := (MeasureTheory.Lp.norm_le_of_ae_bound (μ := (volume.restrict K)) (p := (2 : ℝ≥0∞))
-        (f := (kx - ky : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ)) (hC := le_of_lt hε'pos) h_ae)
+        (f := (kx - ky : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ)) (hC := by positivity) h_ae)
       simpa [mK, mul_comm, mul_left_comm, mul_assoc] using this
     -- Bound the difference of values using Cauchy–Schwarz.
     have hdist :
@@ -397,11 +394,10 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
         dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x)
             (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u y)
             ≤ ‖u‖ * ‖kx - ky‖ := hdist
-        _ ≤ ‖u‖ * (mK * ε') := by
-          exact mul_le_mul_of_nonneg_left hkdiff (norm_nonneg _)
+        _ ≤ ‖u‖ * (mK * ε') :=
+          mul_le_mul_of_nonneg_left hkdiff (norm_nonneg _)
         _ ≤ R * (mK * ε') := by
-          have hmKε' : 0 ≤ mK * ε' := mul_nonneg hmK (le_of_lt hε'pos)
-          exact mul_le_mul_of_nonneg_right hu_norm hmKε'
+          nlinarith
     have hRmkε' : R * (mK * ε') = ε2 := by
       have : R * mK * ε' = ε2 := by
         simpa [ε', mul_assoc] using hε'lt
@@ -415,7 +411,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
     have :
         dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x)
             (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u y) < ε :=
-      lt_of_le_of_lt hle' hε2lt
+      by linarith
     simpa [hu_eq'] using this
 
 theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : MeasurableSet K)
@@ -427,14 +423,8 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
   classical
   -- Radius `0`: the image is a singleton, hence compact.
   by_cases hR0 : R = 0
-  · subst hR0
-    have hball :
-        Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) 0 = {0} := by
-      ext u
-      simp
-    -- Reduce to a singleton.
-    simp [hball]
-  · have hRpos : 0 < R := lt_of_le_of_ne hR (Ne.symm hR0)
+  · simp_all
+  · have hRpos : 0 < R := by positivity
     -- Compactness of the codomain.
     let : CompactSpace ↥(Kψ (K := K) (ψ := ψ)) :=
       isCompact_iff_compactSpace.1 (isCompact_Kψ (K := K) (ψ := ψ) hK hψcs)
@@ -442,7 +432,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
         Set (BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ) :=
       smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs '' Metric.closedBall (0 : _) R
     -- `volume.restrict K` is finite since `K` is compact.
-    have hμK : (volume : Measure E) K < (⊤ : ℝ≥0∞) := hK.measure_lt_top (μ := (volume : Measure E))
+    have hμK := hK.measure_lt_top (μ := (volume : Measure E))
     let : Fact ((volume : Measure E) K < (⊤ : ℝ≥0∞)) := ⟨hμK⟩
     have : IsFiniteMeasure (volume.restrict K) := by
       infer_instance
@@ -476,14 +466,14 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
         filter_upwards
           [MeasureTheory.ae_restrict_mem
             (μ := (volume : Measure E)) hKm] with t ht
-        exact hψ_bound x t ht
+        exact by grind
       let kx : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) μ :=
         hker.toLp (fun t : E => ψ ((x : E) - t))
       have hkx_norm : ‖kx‖ ≤ mK * Cψ := by
         have h_ae :
             ∀ᵐ t ∂(volume.restrict K), ‖(fun t : E => ψ ((x : E) - t)) t‖ ≤ Cψ := by
           filter_upwards [MeasureTheory.ae_restrict_mem (μ := (volume : Measure E)) hKm] with t ht
-          exact hψ_bound x t ht
+          exact by grind
         have := (MeasureTheory.Lp.norm_le_of_ae_bound
           (μ := (volume.restrict K)) (p := (2 : ℝ≥0∞))
           (f := kx) (hC := hCψ_nonneg) (by
@@ -493,7 +483,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
                 (μ := (volume.restrict K)) (p := (2 : ℝ≥0∞))
                 (f := fun t : E => ψ ((x : E) - t))
                 hker] with t ht hrep
-            simpa [kx, hrep] using ht))
+            grind))
         simpa [mK] using this
       -- Express the smoothing value as an `L²` inner product, then apply Cauchy–Schwarz.
       have hsmooth :
@@ -526,8 +516,8 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
         calc
           |smoothFun (E := E) (K := K) ψ u (x : E)|
               ≤ ‖u‖ * ‖kx‖ := habs
-          _ ≤ R * (mK * Cψ) := by
-            exact mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
+          _ ≤ R * (mK * Cψ) :=
+            mul_le_mul hu_norm hkx_norm (norm_nonneg _) hR
       have : dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x) 0 ≤ R * (mK * Cψ) := by
         simpa [smoothBCF_apply (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u x,
           dist_eq_norm, Real.norm_eq_abs] using habs'
@@ -541,7 +531,7 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
     -- Apply Arzelà–Ascoli.
     simpa [A, s] using
       (BoundedContinuousFunction.arzela_ascoli (α := ↥(Kψ (K := K) (ψ := ψ))) (β := ℝ)
-        (s := s) hs A (fun f x hf => in_s f x hf) H)
+        (s := s) hs A (by omega) H)
 
 end Volume
 

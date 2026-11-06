@@ -7,24 +7,23 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
     (hMm:0≤Mmax) (hFm:0≤Fmax) (heta:0≤eta) (htau:0<tau) :
     ∃(s:Finset (ℕ×ℕ)) (Ctail:ℝ),0<Ctail ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
-      (a:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂:O)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal ActualEisensteinCubic.O))
+      (a:CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→ℂ) (Ψ₁ Ψ₂:ActualEisensteinCubic.O→*ℂ) (m₁ m₂:ActualEisensteinCubic.O)
       (slots:Finset σ) (lists:σ→Finset ι) (weights:σ→ι→ℂ)
       (extra₁ extra₂:CubeCoordinates ι→Finset ι)
       (test₁ test₂:CubeCoordinates ι→Finset ι→ℂ) (W:𝓢(ℝ,ℂ))
@@ -70,13 +69,13 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
     (primeProductNorm_mono p hp (he b hb)).trans
       (cube_whole_support_dyad p hp b B (zero_le_one.trans hB) (hb₁ b hb) (hb₂ b hb))
   have hlocal (b:CubeCoordinates ι) (hb:b∈bs) (C:Finset ι)
-      (hC:C∈boundedPrimeSupports p (pool\b.support) L) (I:Ideal O) (hI:I∈labels)
+      (hC:C∈boundedPrimeSupports p (pool\b.support) L) (I:Ideal ActualEisensteinCubic.O) (hI:I∈labels)
       (D:Finset ι) (hD:D∈(C∪cubePrincipalSupport b.support b.leftExponent b.rightExponent b.leftBit b.rightBit).powerset):
       ‖firstLocalPhysicalTail p hp hcop hg pool b C Ψ₁ Ψ₂ m₁ m₂ (ConcretePrimeRowBridge.idealGenerator I)
         (fun U=>primeMark slots lists weights (extra₁ b∪U)*test₁ b U)
         (fun U=>primeMark slots lists weights (extra₂ b∪U)*test₂ b U) W (Z^M)
         (firstDyadicPhysicalCutoff p b C I Z M r ell V eta tau) D‖≤E:=by
-    have hCB:Disjoint C b.support:=Finset.disjoint_left.mpr (fun i hi hib=>
+    have hCB:=Finset.disjoint_left.mpr (fun i hi hib=>
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp (Finset.mem_filter.mp hC).1) hi)).2 hib)
     have hupper (x:ℝ) (hx:1≤x):x≤Z^(firstDyadicExponent Z x+eta):=
       (first_dyadic_bounds Z eta x hZ hbin hx).2.2

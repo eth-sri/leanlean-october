@@ -10,7 +10,7 @@ namespace LargePrimeGaps
 
 section
 
-open Complex Filter Topology Set MeasureTheory Finset
+open Complex Filter Topology Set Finset
 
 lemma periodic_sum_norm_le_mul {f : ℕ → ℂ} {q : ℕ} {D : ℝ} (hq : 0<q) (hD : 0≤D)
     (hp : ∀ n,f (q+n)=f n) (hz : ∑ n∈range q,f n=0)
@@ -23,10 +23,9 @@ lemma periodic_sum_norm_le_mul {f : ℕ → ℂ} {q : ℕ} {D : ℝ} (hq : 0<q) 
         _ ≤ ∑ _n∈range N,D := sum_le_sum (fun n _ => hb n)
         _ = N*D := by simp
         _ ≤ q*D := mul_le_mul_of_nonneg_right (by exact_mod_cast hN.le) hD
-    · have he : q+(N-q)=N := Nat.add_sub_of_le (not_lt.mp hN)
+    · have he := Nat.add_sub_of_le (not_lt.mp hN)
       rw [←he,sum_range_add,hz,zero_add]
-      simp_rw [hp]
-      exact ih _ (Nat.sub_lt (lt_of_lt_of_le hq (not_lt.mp hN)) hq)
+      grind
 
 noncomputable def characterMean {q : ℕ} (χ : DirichletCharacter ℂ q) : ℂ :=
   (∑ n∈range q,χ (n : ZMod q))/(q:ℂ)
@@ -55,11 +54,11 @@ lemma discrepancy_characterMean_bound {q : ℕ} [NeZero q] (χ : DirichletCharac
     have hq : (q:ℂ)≠0 := by exact_mod_cast NeZero.ne q
     field_simp
     ring
-  have hr := periodic_sum_norm_le_mul (NeZero.pos q) (by norm_num : (0:ℝ)≤2)
-    (f:=fun n => χ (n : ZMod q)-c) (by intro n; simp) hz hb (⌊t⌋₊+1)
+  have hr := periodic_sum_norm_le_mul (NeZero.pos q) (by positivity)
+    (f:=fun n => χ (n : ZMod q)-c) (by simp) hz hb (⌊t⌋₊+1)
   have he : ∑ n∈range (⌊t⌋₊+1),(χ (n : ZMod q)-c) =
       χ (0 : ZMod q)-c+ ∑ n∈Icc 1 ⌊t⌋₊,(χ (n : ZMod q)-c) := by
-    rw [Nat.range_succ_eq_Icc_zero,←Finset.insert_Icc_add_one_left_eq_Icc (Nat.zero_le ⌊t⌋₊)]
+    rw [Nat.range_succ_eq_Icc_zero,←Finset.insert_Icc_add_one_left_eq_Icc (by positivity)]
     simp
     ring
   have ht0 : 0≤t := by linarith
@@ -89,7 +88,7 @@ lemma LFunction_regularSeries_characterMean {q : ℕ} [NeZero q] (χ : Dirichlet
     χ.LFunction s = regularSeries (positiveCoefficients (fun n => χ (n : ZMod q))) (characterMean χ) s+
       characterMean χ/(s-1) := by
   rw [regularSeries_eq_LSeries_sub (positiveCoefficients_norm_le (fun n => χ.norm_le_one _))
-    (by positivity : (0:ℝ)≤2*q+3) (fun t ht => discrepancy_characterMean_bound χ ht.le) hs,
+    (by positivity) (fun t ht => discrepancy_characterMean_bound χ ht.le) hs,
     sub_add_cancel,LSeries_positiveCoefficients,←χ.LFunction_eq_LSeries hs]
 
 lemma LFunction_deriv_norm_small_power {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1/2) :
@@ -104,9 +103,7 @@ lemma LFunction_deriv_norm_small_power {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1/2)
   rw [←he.deriv_eq]
   have hb := h _ 0 (q+1) (positiveCoefficients_zero _) (positiveCoefficients_norm_le (fun n => χ.norm_le_one _))
     (by simp) (by positivity) (fun t _ => discrepancy_character_bound hχ t) s hs
-  convert hb using 1
-  congr 3
-  ring
+  grind
 
 noncomputable def characterRegular {q : ℕ} (χ : DirichletCharacter ℂ q) : ℂ → ℂ :=
   regularSeries (positiveCoefficients (fun n => χ (n : ZMod q))) (characterMean χ)
@@ -136,23 +133,23 @@ lemma character_line_bounds {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1/2) :
       (by positivity) (fun t ht => discrepancy_characterMean_bound χ ht) s (by linarith)
     change ‖characterRegular χ s‖≤_ at hb
     have hb' : (2*q+3+1)*(‖s‖+2)≤8*(((q:ℝ)+2)*(|t|+2)) := by
-      nlinarith [mul_nonneg (show (0:ℝ)≤2*q+4 by positivity) (sub_nonneg.mpr hn)]
+      nlinarith
     calc
       _ ≤ K₀*((2*q+3+1)*(‖s‖+2))^(2*ε) := hb
       _ ≤ K₀*(8*(((q:ℝ)+2)*(|t|+2)))^(2*ε) :=
         mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hb' he) hK₀.le
       _ = (K₀*8^(2*ε))*(((q:ℝ)+2)*(|t|+2))^(2*ε) := by rw [Real.mul_rpow (by norm_num) hp]; ring
-      _ ≤ _ := by gcongr; dsimp [K]; linarith
+      _ ≤ _ := by gcongr; linarith
   · intro hχ s hs hn
     have hb := h₁ q χ hχ s (by linarith)
     have hb' : (q+2)*(‖s‖+2)≤4*(((q:ℝ)+2)*(|t|+2)) := by
-      nlinarith [mul_nonneg (show (0:ℝ)≤q+2 by positivity) (sub_nonneg.mpr hn)]
+      nlinarith
     calc
       _ ≤ K₁*((q+2)*(‖s‖+2))^(2*ε) := hb
       _ ≤ K₁*(4*(((q:ℝ)+2)*(|t|+2)))^(2*ε) :=
         mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by positivity) hb' he) hK₁.le
       _ = (K₁*4^(2*ε))*(((q:ℝ)+2)*(|t|+2))^(2*ε) := by rw [Real.mul_rpow (by norm_num) hp]; ring
-      _ ≤ _ := by gcongr; dsimp [K]; linarith
+      _ ≤ _ := by gcongr; linarith
 
 lemma line_growth_lipschitz {f : ℂ → ℂ} {t D : ℝ} (hf : Differentiable ℂ f)
     (hb : ∀ s : ℂ,1 ≤ s.re → ‖s‖+2≤4*(|t|+2) → ‖deriv f s‖≤D)
@@ -162,8 +159,8 @@ lemma line_growth_lipschitz {f : ℂ → ℂ} {t D : ℝ} (hf : Differentiable �
   let S := {s : ℂ | 1 ≤ s.re} ∩ Metric.closedBall 0 (4*(|t|+2)-2)
   have hS : Convex ℝ S := (convex_halfSpace_re_ge 1).inter (convex_closedBall 0 _)
   apply Convex.norm_image_sub_le_of_norm_deriv_le (s:=S) (fun z _ => hf z) ?_ hS
-      ⟨hw,by simp [Metric.mem_closedBall,dist_zero_right]; linarith⟩
-      ⟨hz,by simp [Metric.mem_closedBall,dist_zero_right]; linarith⟩
+      ⟨hw,by simp; linarith⟩
+      ⟨hz,by simp; linarith⟩
   intro s hs
   exact hb s hs.1 (by have := hs.2; simp only [Metric.mem_closedBall,dist_zero_right] at this; linarith)
 
@@ -189,7 +186,6 @@ lemma three_four_one_lower {a D E : ℝ} (ha : 0≤a) (hD : 1≤D) (hE : 1≤E)
   have hh := h δ hδ hδ1
   have hu : (2*D/δ)^3*(a+D*δ)^4*E≤(2*D/δ)^3*(2*D*δ)^4*E := by gcongr
   have hv : (2*D/δ)^3*(2*D*δ)^4*E=1/2 := by dsimp [δ]; field_simp; norm_num
-  rw [hv] at hu
   linarith
 
 open Complex Filter Topology Finset
@@ -197,11 +193,8 @@ open Complex Filter Topology Finset
 lemma line_sample_norm {δ t u : ℝ} (hδ : 0≤δ) (hδ1 : δ≤1) (hu : |u|≤2*|t|) :
     ‖(1:ℂ)+δ+I*u‖+2≤4*(|t|+2) := by
   have h := Complex.norm_le_abs_re_add_abs_im ((1:ℂ)+δ+I*u)
-  simp only [Complex.add_re,Complex.one_re,Complex.ofReal_re,Complex.mul_re,Complex.I_re,
-    Complex.I_im,Complex.ofReal_im,mul_zero,zero_mul,sub_self,add_zero,Complex.add_im,
-    Complex.one_im,Complex.mul_im,one_mul,zero_add] at h
-  rw [abs_of_nonneg (by linarith : (0:ℝ)≤1+δ)] at h
-  linarith [abs_nonneg t]
+  simp only [Complex.add_re, Complex.one_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, Complex.I_im, Complex.ofReal_im, zero_mul, sub_self, add_zero, Complex.add_im, Complex.one_im, Complex.mul_im, one_mul, zero_add] at h
+  grind
 
 lemma LFunction_norm_le_regular_add_pole {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
     {s : ℂ} (hs : 1<s.re) :
@@ -229,7 +222,7 @@ lemma nonprincipal_line_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter 
   have hhc : 0<K+K/c := by positivity
   have hKP : 1≤K*P := one_le_mul_of_one_le_of_one_le hK hP
   have hn0 : ‖(1:ℂ)+I*t‖+2≤4*(|t|+2) := by
-    simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by linarith [abs_nonneg t])
+    simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by grind)
   have hn1 : ‖(1:ℂ)‖+2≤4*(|t|+2) := by norm_num; linarith [abs_nonneg t]
   by_cases hsmall : χ^2=1 ∧ |t|≤c/(2*K*P^2)
   · have hdiff := line_growth_lipschitz (DirichletCharacter.differentiable_LFunction hχ) hd
@@ -252,7 +245,7 @@ lemma nonprincipal_line_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter 
       linarith
     have hP8 : P≤P^8 := by simpa using pow_le_pow_right₀ hP (show (1:ℕ)≤8 by norm_num)
     calc
-      _ ≤ (c/2)/P^8 := div_le_div_of_nonneg_right (min_le_left _ _) (by positivity)
+      _ ≤ (c/2)/P^8 := div_le_div_of_nonneg_right (by simp) (by positivity)
       _ ≤ (c/2)/P := div_le_div_of_nonneg_left (by positivity) hP0 hP8
       _ = c/(2*P) := by ring
       _ ≤ _ := hval
@@ -265,14 +258,14 @@ lemma nonprincipal_line_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter 
       have hnδ := line_sample_norm hδ.le hδ1 (t:=t) (u:=t) (by linarith [abs_nonneg t])
       have hnδ2 : ‖(1:ℂ)+δ+2*I*t‖+2≤4*(|t|+2) := by
         simpa only [show I*((2*t:ℝ):ℂ)=2*I*t by push_cast; ring] using
-          line_sample_norm hδ.le hδ1 (t:=t) (u:=2*t) (by rw [abs_mul]; norm_num)
+          line_sample_norm hδ.le hδ1 (t:=t) (u:=2*t) (by simp)
       have hL0 : ‖DirichletCharacter.LFunctionTrivChar q (1+δ)‖≤2*(K*P)/δ := by
         have hn : ‖(1:ℂ)+δ‖+2≤4*(|t|+2) := by
           simpa using line_sample_norm hδ.le hδ1 (t:=t) (u:=0) (by simp)
         have hreg := hr (1:DirichletCharacter ℂ q) (1+δ) (by simp; linarith) hn
         have hp := LFunction_norm_le_regular_add_pole (1:DirichletCharacter ℂ q)
-          (s:=1+δ) (by simp; linarith)
-        have hden : ‖(1:ℂ)+δ-1‖=δ := by simp [Complex.norm_real,Real.norm_eq_abs,abs_of_pos hδ]
+          (s:=1+δ) (by simp_all)
+        have hden : ‖(1:ℂ)+δ-1‖=δ := by simp [abs_of_pos hδ]
         rw [hden] at hp
         change ‖DirichletCharacter.LFunction (1:DirichletCharacter ℂ q) (1+δ)‖≤_
         apply (hp.trans (add_le_add hreg le_rfl)).trans
@@ -282,7 +275,7 @@ lemma nonprincipal_line_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter 
         nlinarith
       have hLχ : ‖χ.LFunction (1+δ+I*t)‖≤‖χ.LFunction (1+I*t)‖+(K*P)*δ := by
         have hl := line_growth_lipschitz (DirichletCharacter.differentiable_LFunction hχ) hd
-          (z:=1+δ+I*t) (w:=1+I*t) (by simp; linarith) (by simp) hnδ hn0
+          (z:=1+δ+I*t) (w:=1+I*t) (by linarith) (by simp) hnδ hn0
         have hden : ‖(1:ℂ)+δ+I*t-(1+I*t)‖=δ := by
           rw [show (1:ℂ)+δ+I*t-(1+I*t)=(δ:ℂ) by ring,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hδ]
         rw [hden] at hl
@@ -291,35 +284,35 @@ lemma nonprincipal_line_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter 
         linarith
       have hL2 : ‖(χ^2).LFunction (1+δ+2*I*t)‖≤(K+K/c)*P^2 := by
         by_cases hχ2 : χ^2=1
-        · have ht : c/(2*K*P^2)< |t| := lt_of_not_ge (fun ht => hsmall ⟨hχ2,ht⟩)
+        · have ht : c/(2*K*P^2)< |t| := by grind
           have ht0 : 0< |t| := (by positivity : 0<c/(2*K*P^2)).trans ht
-          have hp := LFunction_norm_le_regular_add_pole (χ^2) (s:=1+δ+2*I*t) (by rw [hrδ2]; linarith)
+          have hp := LFunction_norm_le_regular_add_pole (χ^2) (s:=1+δ+2*I*t) (by linarith)
           have hn : 2*|t|≤‖(1:ℂ)+δ+2*I*t-1‖ := by
             have h := Complex.abs_im_le_norm ((1:ℂ)+δ+2*I*t-1)
             simpa [abs_mul] using h
           have hfrac : 1/‖(1:ℂ)+δ+2*I*t-1‖≤K*P^2/c := by
-            apply (div_le_div_of_nonneg_left zero_le_one (by positivity : 0<2*|t|) hn).trans
-            apply (div_le_iff₀ (by positivity : 0<2*|t|)).mpr
-            have ht' := (div_lt_iff₀ (by positivity : 0<2*K*P^2)).mp ht
+            apply (div_le_div_of_nonneg_left zero_le_one (by positivity) hn).trans
+            apply (div_le_iff₀ (by positivity)).mpr
+            have ht' := (div_lt_iff₀ (by positivity)).mp ht
             rw [div_mul_eq_mul_div]
             apply (le_div_iff₀ hc).mpr
             nlinarith
-          have hreg := hr (χ^2) (1+δ+2*I*t) (by rw [hrδ2]; linarith) hnδ2
+          have hreg := hr (χ^2) (1+δ+2*I*t) (by linarith) hnδ2
           have hP2 : P≤P^2 := by nlinarith
           have h := hp.trans (add_le_add hreg hfrac)
           apply h.trans
           calc
             K*P+K*P^2/c ≤ K*P^2+K*P^2/c := add_le_add (mul_le_mul_of_nonneg_left hP2 hK0.le) le_rfl
             _ = _ := by ring
-        · have hreg := hr (χ^2) (1+δ+2*I*t) (by rw [hrδ2]; linarith) hnδ2
-          rw [characterRegular_eq_nonprincipal hχ2 (by rw [hrδ2]; linarith)] at hreg
+        · have hreg := hr (χ^2) (1+δ+2*I*t) (by linarith) hnδ2
+          rw [characterRegular_eq_nonprincipal hχ2 (by linarith)] at hreg
           have hP2 : P≤P^2 := by nlinarith
           exact hreg.trans (by nlinarith [mul_le_mul_of_nonneg_left hP2 hK0.le,div_pos hK0 hc])
       have hprod := χ.norm_LFunction_product_ge_one hδ t
       simp only [norm_mul,norm_pow] at hprod
       exact hprod.trans (by gcongr)
     calc
-      _ ≤ (1/(256*K^6*(K+K/c)))/P^8 := div_le_div_of_nonneg_right (min_le_right _ _) (by positivity)
+      _ ≤ (1/(256*K^6*(K+K/c)))/P^8 := div_le_div_of_nonneg_right (by simp) (by positivity)
       _ = 1/(256*(K*P)^6*((K+K/c)*P^2)) := by field_simp
       _ ≤ _ := hLo
 
@@ -354,7 +347,7 @@ lemma nonprincipal_line_lower {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
       _ ≤ _ := hsiegel q χ hχp hχ hχ2
   have hh := nonprincipal_line_lower_aux hχ hc hc1 hK hP
     (fun ψ s hs hn => by simpa only [he] using (hgrowth q ψ t).1 s hs hn)
-    (fun s hs hn => by simpa only [he] using (hgrowth q χ t).2 hχ s hs hn) hsi
+    (fun s hs hn => by grind) hsi
   have hP8 : P^8=X^ε := by
     dsimp [P]
     rw [←Real.rpow_mul_natCast hX0.le]
@@ -374,7 +367,7 @@ lemma character_interior_lower {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ
   have hKP0 : 0<K*P := by linarith
   have hb (ψ : DirichletCharacter ℂ q) (u : ℝ) (hu : |u|≤2*|t|) :
       ‖ψ.LFunction (1+δ+I*u)‖≤2*K*P/δ := by
-    have hp := LFunction_norm_le_regular_add_pole ψ (s:=1+δ+I*u) (by simp; linarith)
+    have hp := LFunction_norm_le_regular_add_pole ψ (s:=1+δ+I*u) (by simp_all)
     have hn : δ≤‖(1:ℂ)+δ+I*u-1‖ := by
       simpa using Complex.re_le_norm ((1:ℂ)+δ+I*u-1)
     have hreg := hr ψ (1+δ+I*u) (by simp; linarith) (line_sample_norm hδ.le hδ1 hu)
@@ -388,16 +381,16 @@ lemma character_interior_lower {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ
   have h0 : ‖DirichletCharacter.LFunctionTrivChar q (1+δ)‖≤2*K*P/δ := by
     simpa using hb (1:DirichletCharacter ℂ q) 0 (by simp)
   have h2 : ‖(χ^2).LFunction (1+δ+2*I*t)‖≤2*K*P/δ := by
-    simpa only [show I*((2*t:ℝ):ℂ)=2*I*t by push_cast; ring] using hb (χ^2) (2*t) (by rw [abs_mul]; norm_num)
+    simpa only [show I*((2*t:ℝ):ℂ)=2*I*t by push_cast; ring] using hb (χ^2) (2*t) (by simp)
   have hh := χ.norm_LFunction_product_ge_one hδ t
   simp only [norm_mul,norm_pow] at hh
   have hu : 1≤(2*K*P/δ)^3*‖χ.LFunction (1+δ+I*t)‖^4*(2*K*P/δ) := hh.trans (by gcongr)
   have hp : (1:ℝ)^4≤((2*K*P/δ)*‖χ.LFunction (1+δ+I*t)‖)^4 := by convert hu using 1 <;> ring
-  have hv := le_of_pow_le_pow_left₀ (by norm_num : (4:ℕ)≠0) (by positivity) hp
-  apply (div_le_iff₀ (by positivity : 0<2*K*P)).mpr
+  have hv := le_of_pow_le_pow_left₀ (by positivity) (by positivity) hp
+  apply (div_le_iff₀ (by positivity)).mpr
   have he : (2*K*P/δ)*‖χ.LFunction (1+δ+I*t)‖=(‖χ.LFunction (1+δ+I*t)‖*(2*K*P))/δ := by ring
   rw [he] at hv
-  simpa only [one_mul] using (le_div_iff₀ hδ).mp hv
+  simpa using (le_div_iff₀ hδ).mp hv
 
 lemma nonprincipal_strip_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter ℂ q}
     (hχ : χ≠1) {t c K P δ : ℝ} (hc : 0<c) (hK : 1≤K) (hP : 1≤P)
@@ -411,10 +404,10 @@ lemma nonprincipal_strip_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter
   have hP0 : 0<P := by linarith
   by_cases hnear : δ≤c/(2*K*P^2)
   · have hn0 : ‖(1:ℂ)+I*t‖+2≤4*(|t|+2) := by
-      simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by linarith [abs_nonneg t])
+      simpa using line_sample_norm (t:=t) (u:=t) (δ:=0) le_rfl zero_le_one (by grind)
     have hnδ := line_sample_norm hδ hδ1 (t:=t) (u:=t) (by linarith [abs_nonneg t])
     have hdif := line_growth_lipschitz (DirichletCharacter.differentiable_LFunction hχ) hd
-      (z:=1+I*t) (w:=1+δ+I*t) (by simp) (by simp; linarith) hn0 hnδ
+      (z:=1+I*t) (w:=1+δ+I*t) (by simp) (by simp_all) hn0 hnδ
     have hnorm : ‖(1:ℂ)+I*t-(1+δ+I*t)‖=δ := by
       rw [show (1:ℂ)+I*t-(1+δ+I*t)=-(δ:ℂ) by ring,norm_neg,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg hδ]
     rw [hnorm] at hdif
@@ -434,11 +427,11 @@ lemma nonprincipal_strip_lower_aux {q : ℕ} [NeZero q] {χ : DirichletCharacter
     apply div_le_div_of_nonneg_left hc.le (by positivity)
     have hP3 : P≤P^3 := by simpa using pow_le_pow_right₀ hP (show (1:ℕ)≤3 by norm_num)
     have hK2 : 1≤K^2 := one_le_pow₀ hK
-    nlinarith [mul_le_mul_of_nonneg_left hP3 (show (0:ℝ)≤4*K^2 by positivity)]
+    nlinarith [mul_le_mul_of_nonneg_left hP3 (by positivity)]
   · have hδ0 : 0<δ := (by positivity : 0<c/(2*K*P^2)).trans (lt_of_not_ge hnear)
     apply le_trans ?_ (character_interior_lower χ hK hP hδ0 hδ1 hr)
     calc
-      (c/(4*K^2))/P^3 = (c/(2*K*P^2))/(2*K*P) := by field_simp; norm_num
+      (c/(4*K^2))/P^3 = (c/(2*K*P^2))/(2*K*P) := by ring
       _ ≤ δ/(2*K*P) := div_le_div_of_nonneg_right (le_of_not_ge hnear) (by positivity)
 
 lemma nonprincipal_strip_lower {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
@@ -462,8 +455,8 @@ lemma nonprincipal_strip_lower {ε : ℝ} (hε : 0<ε) (hε1 : ε≤1) :
     change c/X^(ε/3)≤_
     simpa only [Real.rpow_neg hX0.le,div_eq_mul_inv] using hh
   have hb := nonprincipal_strip_lower_aux hχ hc hK hP (δ:=σ-1) (by linarith) (by linarith)
-    (fun ψ s hs hn => by simpa only [he] using (hg q ψ t).1 s hs hn)
-    (fun s hs hn => by simpa only [he] using (hg q χ t).2 hχ s hs hn) hl'
+    (fun ψ s hs hn => by grind)
+    (fun s hs hn => by grind) hl'
   have hP3 : P^3=X^ε := by dsimp [P]; rw [←Real.rpow_mul_natCast hX0.le]; congr 1; norm_num
   rw [hP3] at hb
   have hs : (1:ℂ)+((σ-1:ℝ):ℂ)+I*t=(σ:ℂ)+I*t := by push_cast; ring

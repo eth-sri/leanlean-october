@@ -16,12 +16,11 @@ lemma unramifiedClosed_central_lower (Q a e : ℝ) (A eta v x w z : ℂ)
     1/2≤‖unramifiedClosed Q A eta v x w z‖ := by
   have hQ0 : 0<Q := by linarith
   have hd := unramifiedClosed_first_region_bound Q A eta v x w z (10*e)
-    (by linarith) hA heta hv (by positivity) (by rw [hx];linarith)
-    (by rw [hz]) (by rw [hw];linarith) (by rw [hx,hw];linarith)
+    (by linarith) hA heta hv (by positivity) (by linarith)
+    (by linarith) (by linarith) (by linarith)
   have hp : Q^(-1-min (10*e) (1/50:ℝ))≤Q^(-1:ℝ) :=
     Real.rpow_le_rpow_of_exponent_le (by linarith) (by
-      have hm : 0≤min (10*e) (1/50:ℝ) := by positivity
-      linarith)
+      grind)
   have hi : Q^(-1:ℝ)≤1/480 := by
     rw [Real.rpow_neg_one,←one_div]
     exact one_div_le_one_div_of_le (by norm_num) hQ
@@ -48,7 +47,7 @@ lemma unramifiedSelected_central_quotient (Q a e : ℝ) (A eta v x w z : ℂ)
       unramifiedClosed Q A eta v x w z := by field_simp
   rw [hid,norm_div]
   apply (div_le_iff₀ hp).mpr
-  have ht : 0≤Q^(-(51/100:ℝ)) := Real.rpow_nonneg (by linarith) _
+  have ht : 0≤Q^(-(51/100:ℝ)) := by positivity
   nlinarith
 end SevenEighths.ProbeEuler
 end

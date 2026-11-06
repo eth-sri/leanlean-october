@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentCauchy
 open CenteredMomentSmooth FourierBridge
@@ -21,7 +21,7 @@ theorem bounded_row_cauchy {κ : Type*} (rows : Finset κ)
     _ ≤ ∑ k ∈ rows, ‖A k‖ * ‖B k‖ := Finset.sum_le_sum fun k hk => by
       rw [norm_mul, norm_mul]
       exact mul_le_mul_of_nonneg_right
-        (mul_le_of_le_one_left (norm_nonneg _) (hw k hk)) (norm_nonneg _)
+        (mul_le_of_le_one_left (norm_nonneg _) (by grind)) (norm_nonneg _)
     _ ≤ _ := Real.sum_mul_le_sqrt_mul_sqrt rows _ _
 
 def leftColumn {α : Type*} (S : Finset α) (c : α → ℂ)
@@ -44,11 +44,7 @@ lemma paired_columns_integrable {α β : Type*}
   funext t
   simp only [leftColumn, rightColumn, Finset.mul_sum, Finset.sum_mul, separatedKernel]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro i hi
-  apply Finset.sum_congr rfl
-  intro j hj
-  ring
+  grind
 
 theorem common_density_cauchy {κ α β : Type*}
     (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -66,15 +62,15 @@ theorem common_density_cauchy {κ α β : Type*}
       E * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖ := by
   have hrow (k : κ) (hk : k ∈ rows) (t : ℝ) : ‖η k * rowPhase V (ρ k) (x k) t‖ ≤ 1 := by
     rw [norm_mul, rowPhase, norm_mul, norm_mul, norm_mul, logPhase_norm, logPhase_norm, mul_one, mul_one]
-    exact (mul_le_of_le_one_left (by positivity) (hη k hk)).trans
-      ((mul_le_of_le_one_left (norm_nonneg _) (hV₀ k hk)).trans (hV₁ k hk))
+    exact (mul_le_of_le_one_left (by positivity) (by grind)).trans
+      ((mul_le_of_le_one_left (norm_nonneg _) (by grind)).trans (by grind))
   have hpoint (t : ℝ) :
       ‖∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
         leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t)‖ ≤
         E * ((1 + ‖t‖) ^ J * ‖b t‖) := by
     have hs := bounded_row_cauchy rows (fun k => η k * rowPhase V (ρ k) (x k) t)
       (fun k => leftColumn S (c k) (V 2) u t) (fun k => rightColumn T (d k) (V 3) v t)
-      (fun k hk => hrow k hk t)
+      (by grind)
     have he : (∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
         leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t)) =
         (∑ k ∈ rows, (η k * rowPhase V (ρ k) (x k) t) *
@@ -85,7 +81,7 @@ theorem common_density_cauchy {κ α β : Type*}
       ring
     rw [he, norm_mul]
     exact (mul_le_mul_of_nonneg_right (hs.trans (henergy t)) (norm_nonneg _)).trans_eq (by ring)
-  have hi : Integrable (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) :=
+  have hi :=
     JointLogSeparation.weighted_schwartz_integrable b J
   calc
     _ = ‖∫ t : ℝ, ∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *

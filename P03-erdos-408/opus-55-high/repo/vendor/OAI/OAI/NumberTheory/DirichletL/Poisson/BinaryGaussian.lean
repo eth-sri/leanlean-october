@@ -8,20 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 
 namespace RankTwoComplex
 
-open Real
 
 theorem lattice_gaussian_summable_of_re_bound (F : ℤ × ℤ → ℂ)
     {eps : ℝ} (heps : 0 < eps)
@@ -29,10 +22,8 @@ theorem lattice_gaussian_summable_of_re_bound (F : ℤ × ℤ → ℂ)
       eps * ((z.1 : ℝ) ^ 2 + (z.2 : ℝ) ^ 2) ≤ (F z).re) :
     Summable (fun z : ℤ × ℤ => Complex.exp (-(Real.pi : ℂ) * F z)) := by
   have h1 := RankTwoPoisson.real_gauss_summable heps
-  have hmaj : Summable (fun z : ℤ × ℤ =>
-      Real.exp (-Real.pi * eps * (z.1 : ℝ) ^ 2) *
-      Real.exp (-Real.pi * eps * (z.2 : ℝ) ^ 2)) :=
-    h1.mul_of_nonneg h1 (fun _ => (Real.exp_pos _).le) (fun _ => (Real.exp_pos _).le)
+  have hmaj :=
+    h1.mul_of_nonneg h1 (fun _ => by positivity) (fun _ => by positivity)
   refine hmaj.of_norm_bounded ?_
   intro z
   have hb := hbound z
@@ -41,23 +32,23 @@ theorem lattice_gaussian_summable_of_re_bound (F : ℤ × ℤ → ℂ)
   have hexp : (-(Real.pi : ℂ) * F z).re ≤
       -Real.pi * eps * (z.1 : ℝ) ^ 2 +
       -Real.pi * eps * (z.2 : ℝ) ^ 2 := by
-    simp [Complex.mul_re] at *
-    nlinarith [hm]
+    simp at *
+    nlinarith
   simpa only [Complex.norm_exp, Real.exp_add] using
     (Real.exp_le_exp.mpr hexp)
 
-noncomputable def schur (a b d : ℂ) : ℂ := d - b ^ 2 / a
+def schur (a b d : ℂ) : ℂ := d - b ^ 2 / a
 
-noncomputable def binaryGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+def binaryGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) *
     (a * (z.1 : ℂ) ^ 2 + 2 * b * (z.1 : ℂ) * (z.2 : ℂ) + d * (z.2 : ℂ) ^ 2))
 
-noncomputable def firstGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+def firstGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) / a * (z.1 : ℂ) ^ 2) *
     Complex.exp (-(Real.pi : ℂ) * schur a b d * (z.2 : ℂ) ^ 2 +
       2 * (Real.pi : ℂ) * (Complex.I * b / a * (z.1 : ℂ)) * (z.2 : ℂ))
 
-noncomputable def dualGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+def dualGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) / a * (z.1 : ℂ) ^ 2) *
     Complex.exp (-(Real.pi : ℂ) / (schur a b d) *
       ((z.2 : ℂ) - b / a * (z.1 : ℂ)) ^ 2)
@@ -69,7 +60,6 @@ private theorem binary_split (a b d : ℂ) (m n : ℤ) :
           2 * (Real.pi : ℂ) * (-(b * (n : ℂ))) * (m : ℂ)) := by
   dsimp [binaryGaussian]
   rw [← Complex.exp_add]
-  congr 1
   ring
 
 private theorem first_exponent_identity {a b d : ℂ} (ha : a ≠ 0) (k n : ℤ) :
@@ -79,9 +69,9 @@ private theorem first_exponent_identity {a b d : ℂ} (ha : a ≠ 0) (k n : ℤ)
         (-(Real.pi : ℂ) * schur a b d * (n : ℂ) ^ 2 +
           2 * (Real.pi : ℂ) * (Complex.I * b / a * (k : ℂ)) * (n : ℂ)) := by
   dsimp [schur]
-  field_simp [ha]
+  field_simp
   ring_nf
-  simp [Complex.I_sq]
+  simp
 
 private theorem first_transform_term {a b d : ℂ} (ha : a ≠ 0) (k n : ℤ) :
     Complex.exp (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2) *
@@ -113,7 +103,7 @@ private theorem first_poisson_slice {a b d : ℂ} (ha : 0 < a.re) (n : ℤ) :
     Complex.tsum_exp_neg_quadratic ha B
   calc
     (∑' m : ℤ, binaryGaussian a b d (m,n)) = C * ∑' m : ℤ, F m := hsplit
-    _ = C * ((1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k) := by rw [hpoisson]
+    _ = C * ((1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k) := by simp_all
     _ = (1 / a ^ (1 / 2 : ℂ)) * (C * ∑' k : ℤ, H k) := by ring
     _ = (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, firstGaussian a b d (k,n) := by
       congr 1
@@ -150,13 +140,13 @@ private theorem second_poisson_slice {a b d : ℂ}
       dsimp [B]
       field_simp
       ring_nf
-      simp [Complex.I_sq]
+      simp
     dsimp [H, dualGaussian, C, A]
     rw [hb]
     ring_nf
   calc
     (∑' n : ℤ, firstGaussian a b d (k,n)) = C * ∑' n : ℤ, F n := hsplit
-    _ = C * ((1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l) := by rw [hpoisson]
+    _ = C * ((1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l) := by simp_all
     _ = (1 / A ^ (1 / 2 : ℂ)) * (C * ∑' l : ℤ, H l) := by ring
     _ = (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
           ∑' l : ℤ, dualGaussian a b d (k,l) := by
@@ -164,7 +154,7 @@ private theorem second_poisson_slice {a b d : ℂ}
         (1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, dualGaussian a b d (k,l)
       congr 1
       rw [← tsum_mul_left]
-      exact tsum_congr hterm
+      simp_all
 
 theorem binary_gaussian_poisson {a b d : ℂ}
     (ha : 0 < a.re) (hδ : 0 < (schur a b d).re)
@@ -198,7 +188,7 @@ theorem binary_gaussian_poisson {a b d : ℂ}
           (∑' n : ℤ, ∑' k : ℤ, firstGaussian a b d (k,n)) := tsum_mul_left
     _ = (1 / a ^ (1 / 2 : ℂ)) *
           (∑' k : ℤ, ∑' n : ℤ, firstGaussian a b d (k,n)) := by
-      rw [hMcomm]
+      simp_all
     _ = (1 / a ^ (1 / 2 : ℂ)) *
           (∑' k : ℤ, (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
             ∑' l : ℤ, dualGaussian a b d (k,l)) := by
@@ -222,7 +212,7 @@ namespace GaussianShiftedPartition
 
 open ActualEisensteinCubic ConcreteTraceCRT ConcreteBreveE
 
-noncomputable def representative (c : O) (r : O ⧸ Ideal.span {c}) : O :=
+def representative (c : O) (r : O ⧸ Ideal.span {c}) : O :=
   Classical.choose (Ideal.Quotient.mk_surjective r)
 
 theorem representative_spec (c : O) (r : O ⧸ Ideal.span {c}) :
@@ -258,18 +248,18 @@ namespace RankTwoAffine
 
 open RankTwoComplex
 
-noncomputable def binaryGaussian (a b d u v : ℂ) (z : ℤ × ℤ) : ℂ :=
+def binaryGaussian (a b d u v : ℂ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) *
     (a * (z.1 : ℂ) ^ 2 + 2 * b * (z.1 : ℂ) * (z.2 : ℂ) + d * (z.2 : ℂ) ^ 2) +
     2 * (Real.pi : ℂ) * (u * (z.1 : ℂ) + v * (z.2 : ℂ)))
 
-noncomputable def firstGaussian (a b d u v : ℂ) (z : ℤ × ℤ) : ℂ :=
+def firstGaussian (a b d u v : ℂ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) / a * ((z.1 : ℂ) + Complex.I * u) ^ 2) *
     Complex.exp (-(Real.pi : ℂ) * schur a b d * (z.2 : ℂ) ^ 2 +
       2 * (Real.pi : ℂ) *
         (v + Complex.I * b / a * ((z.1 : ℂ) + Complex.I * u)) * (z.2 : ℂ))
 
-noncomputable def dualGaussian (a b d u v : ℂ) (z : ℤ × ℤ) : ℂ :=
+def dualGaussian (a b d u v : ℂ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (-(Real.pi : ℂ) / a * ((z.1 : ℂ) + Complex.I * u) ^ 2) *
     Complex.exp (-(Real.pi : ℂ) / (schur a b d) *
       ((z.2 : ℂ) + Complex.I *
@@ -283,7 +273,6 @@ private theorem binary_split (a b d u v : ℂ) (m n : ℤ) :
           2 * (Real.pi : ℂ) * (u - b * (n : ℂ)) * (m : ℂ)) := by
   dsimp [binaryGaussian]
   rw [← Complex.exp_add]
-  congr 1
   ring
 
 private theorem first_exponent_identity {a b d u v : ℂ} (ha : a ≠ 0) (k n : ℤ) :
@@ -296,9 +285,9 @@ private theorem first_exponent_identity {a b d u v : ℂ} (ha : a ≠ 0) (k n : 
           2 * (Real.pi : ℂ) *
             (v + Complex.I * b / a * ((k : ℂ) + Complex.I * u)) * (n : ℂ)) := by
   dsimp [schur]
-  field_simp [ha]
+  field_simp
   ring_nf
-  simp [Complex.I_sq]
+  simp
 
 private theorem first_transform_term {a b d u v : ℂ} (ha : a ≠ 0) (k n : ℤ) :
     Complex.exp (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2 +
@@ -332,7 +321,7 @@ private theorem first_poisson_slice {a b d u v : ℂ} (ha : 0 < a.re) (n : ℤ) 
     Complex.tsum_exp_neg_quadratic ha B
   calc
     (∑' m : ℤ, binaryGaussian a b d u v (m,n)) = C * ∑' m : ℤ, F m := hsplit
-    _ = C * ((1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k) := by rw [hpoisson]
+    _ = C * ((1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k) := by simp_all
     _ = (1 / a ^ (1 / 2 : ℂ)) * (C * ∑' k : ℤ, H k) := by ring
     _ = (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, firstGaussian a b d u v (k,n) := by
       congr 1
@@ -363,7 +352,7 @@ private theorem second_poisson_slice {a b d u v : ℂ}
     Complex.tsum_exp_neg_quadratic hδ B
   calc
     (∑' n : ℤ, firstGaussian a b d u v (k,n)) = C * ∑' n : ℤ, F n := hsplit
-    _ = C * ((1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l) := by rw [hpoisson]
+    _ = C * ((1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l) := by simp_all
     _ = (1 / A ^ (1 / 2 : ℂ)) * (C * ∑' l : ℤ, H l) := by ring
     _ = (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
           ∑' l : ℤ, dualGaussian a b d u v (k,l) := by
@@ -405,7 +394,7 @@ theorem affine_gaussian_poisson {a b d u v : ℂ}
           (∑' n : ℤ, ∑' k : ℤ, firstGaussian a b d u v (k,n)) := tsum_mul_left
     _ = (1 / a ^ (1 / 2 : ℂ)) *
           (∑' k : ℤ, ∑' n : ℤ, firstGaussian a b d u v (k,n)) := by
-      rw [hMcomm]
+      simp_all
     _ = (1 / a ^ (1 / 2 : ℂ)) *
           (∑' k : ℤ, (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
             ∑' l : ℤ, dualGaussian a b d u v (k,l)) := by
@@ -427,7 +416,7 @@ end RankTwoAffine
 
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT Complex
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem eisEmbedding_eval_norm_sq (x y : ℤ) :
     ‖eisEmbedding (ActualEisensteinCoordinates.eval x y)‖ ^ 2 =
@@ -435,16 +424,14 @@ theorem eisEmbedding_eval_norm_sq (x y : ℤ) :
   rw [eisEmbedding_eval, ← Complex.normSq_eq_norm_sq]
   have hre : ((x : ℂ) + (y : ℂ) * omega3).re =
       (x : ℝ) - (y : ℝ) / 2 := by
-    simp [omega3, Complex.add_re, Complex.mul_re]
+    simp [omega3]
     ring
   have him : ((x : ℂ) + (y : ℂ) * omega3).im =
       (y : ℝ) * Real.sqrt 3 / 2 := by
-    simp [omega3, Complex.add_im, Complex.mul_im]
+    simp [omega3]
     ring
   rw [Complex.normSq_apply, hre, him]
-  have hs : (Real.sqrt 3)^2 = (3:ℝ) := Real.sq_sqrt (by norm_num)
-  push_cast
-  nlinarith
+  grind
 
 theorem fiber_coordinates (a b x y m n : ℤ) :
     ActualEisensteinCoordinates.eval x y +
@@ -454,8 +441,7 @@ theorem fiber_coordinates (a b x y m n : ℤ) :
       (y+b*m+(a-b)*n) := by
   rw [ActualEisensteinCoordinates.eval_mul]
   simp only [ActualEisensteinCoordinates.eval]
-  push_cast
-  ring
+  grind
 
 theorem fiber_quadratic_expansion (a b x y m n : ℤ) :
     let q := a*a-a*b+b*b
@@ -466,8 +452,7 @@ theorem fiber_quadratic_expansion (a b x y m n : ℤ) :
       ((2*a-b)*x+(2*b-a)*y)*m +
       (-(a+b)*x+(2*a-b)*y)*n +
       (x*x-x*y+y*y) := by
-  dsimp
-  ring
+  linarith
 
 theorem eisEmbedding_fiber_norm_sq (a b x y m n : ℤ) :
     ‖eisEmbedding
@@ -479,35 +464,34 @@ theorem eisEmbedding_fiber_norm_sq (a b x y m n : ℤ) :
       (-(a+b)*x+(2*a-b)*y)*n +
       (x*x-x*y+y*y) : ℤ) := by
   rw [fiber_coordinates, eisEmbedding_eval_norm_sq]
-  exact_mod_cast fiber_quadratic_expansion a b x y m n
+  ring
 
 theorem coordinate_norm_pos_of_nonzero (a b : ℤ)
     (hc : ActualEisensteinCoordinates.eval a b ≠ 0) :
     0 < a*a-a*b+b*b := by
-  have he : eisEmbedding (ActualEisensteinCoordinates.eval a b) ≠ 0 :=
+  have he :=
     ConcreteTraceCRT.eisEmbedding_ne_zero hc
   have hn : 0 < ‖eisEmbedding (ActualEisensteinCoordinates.eval a b)‖ :=
     norm_pos_iff.mpr he
   have heq := eisEmbedding_eval_norm_sq a b
   exact_mod_cast (show (0:ℝ) < (a*a-a*b+b*b : ℤ) by
-    rw [← heq]
-    positivity)
+    nlinarith)
 
 end ActualEisensteinCubic
 
 namespace RankTwoEisShift
 
-noncomputable def Q (x y : ℝ) : ℝ := x ^ 2 - x * y + y ^ 2
+def Q (x y : ℝ) : ℝ := x ^ 2 - x * y + y ^ 2
 
-noncomputable def shifted (t x y : ℝ) (z : ℤ × ℤ) : ℂ :=
+def shifted (t x y : ℝ) (z : ℤ × ℤ) : ℂ :=
   Complex.exp (((-Real.pi * t * Q ((z.1 : ℝ) + x) ((z.2 : ℝ) + y) : ℝ) : ℂ))
 
-noncomputable def A (t : ℝ) : ℂ := (t : ℂ)
-noncomputable def B (t : ℝ) : ℂ := ((-t / 2 : ℝ) : ℂ)
-noncomputable def D (t : ℝ) : ℂ := (t : ℂ)
-noncomputable def U (t x y : ℝ) : ℂ := ((-t * (x - y / 2) : ℝ) : ℂ)
-noncomputable def V (t x y : ℝ) : ℂ := ((-t * (y - x / 2) : ℝ) : ℂ)
-noncomputable def C (t x y : ℝ) : ℂ :=
+def A (t : ℝ) : ℂ := (t : ℂ)
+def B (t : ℝ) : ℂ := ((-t / 2 : ℝ) : ℂ)
+def D (t : ℝ) : ℂ := (t : ℂ)
+def U (t x y : ℝ) : ℂ := ((-t * (x - y / 2) : ℝ) : ℂ)
+def V (t x y : ℝ) : ℂ := ((-t * (y - x / 2) : ℝ) : ℂ)
+def C (t x y : ℝ) : ℂ :=
   Complex.exp (((-Real.pi * t * Q x y : ℝ) : ℂ))
 
 private theorem shifted_eq_affine (t x y : ℝ) (m n : ℤ) :
@@ -524,16 +508,14 @@ private theorem schur_eis {t : ℝ} (ht : 0 < t) :
   have ht0 : (t : ℂ) ≠ 0 := by exact_mod_cast ne_of_gt ht
   dsimp [RankTwoComplex.schur, A, B, D]
   push_cast
-  field_simp [ht0]
-  ring
+  grind
 
 private theorem schur_eis_pos {t : ℝ} (ht : 0 < t) :
     0 < (RankTwoComplex.schur (A t) (B t) (D t)).re := by
   rw [schur_eis ht]
-  have h : 0 < 3 * t / 4 := by positivity
-  simpa using h
+  simp_all
 
-noncomputable def dualPhase (k l : ℤ) (x y : ℝ) : ℂ :=
+def dualPhase (k l : ℤ) (x y : ℝ) : ℂ :=
   Complex.exp ((((2 * Real.pi * ((k : ℝ) * x + (l : ℝ) * y) : ℝ) : ℂ)) * Complex.I)
 
 private theorem shifted_dual_term {t : ℝ} (ht : 0 < t) (x y : ℝ) (k l : ℤ) :
@@ -548,9 +530,9 @@ private theorem shifted_dual_term {t : ℝ} (ht : 0 < t) (x y : ℝ) (k l : ℤ)
   rw [← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_add]
   congr 1
   push_cast
-  field_simp [ht0]
+  field_simp
   ring_nf
-  simp [Complex.I_sq]
+  simp
   ring
 
 private theorem shifted_real_gauss_summable {t : ℝ} (ht : 0 < t) (y : ℝ) :
@@ -572,12 +554,12 @@ private theorem shifted_real_gauss_summable {t : ℝ} (ht : 0 < t) (y : ℝ) :
   simpa [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.exp_add] using
     (Real.exp_le_exp.mpr he)
 
-noncomputable def middlePhase (k n : ℤ) (x y : ℝ) : ℂ :=
+def middlePhase (k n : ℤ) (x y : ℝ) : ℂ :=
   Complex.exp ((((2 * Real.pi * (k : ℝ) * (x - ((n : ℝ) + y) / 2) : ℝ) : ℂ)) * Complex.I)
 
 private theorem middlePhase_norm (k n : ℤ) (x y : ℝ) :
     ‖middlePhase k n x y‖ = 1 := by
-  simp [middlePhase, Complex.norm_exp, Complex.mul_re]
+  simp [middlePhase, Complex.norm_exp]
 
 private theorem shifted_middle_term {t : ℝ} (ht : 0 < t) (x y : ℝ) (k n : ℤ) :
     C t x y *
@@ -593,9 +575,9 @@ private theorem shifted_middle_term {t : ℝ} (ht : 0 < t) (x y : ℝ) (k n : �
   rw [← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_add, ← Complex.exp_add]
   congr 1
   push_cast
-  field_simp [ht0]
+  field_simp
   ring_nf
-  simp [Complex.I_sq]
+  simp
   ring
 
 private theorem middle_norm {t : ℝ} (ht : 0 < t) (x y : ℝ) (k n : ℤ) :
@@ -604,8 +586,7 @@ private theorem middle_norm {t : ℝ} (ht : 0 < t) (x y : ℝ) (k n : ℤ) :
       Real.exp (-Real.pi * t⁻¹ * (k : ℝ) ^ 2) *
       Real.exp (-Real.pi * (3 * t / 4) * ((n : ℝ) + y) ^ 2) := by
   rw [shifted_middle_term ht]
-  simp [ middlePhase_norm, RankTwoPoisson.cg, Complex.norm_exp,
-    ← Complex.ofReal_intCast, ← Complex.ofReal_pow, mul_assoc]
+  simp [ middlePhase_norm, RankTwoPoisson.cg, Complex.norm_exp, ← Complex.ofReal_intCast, ← Complex.ofReal_pow]
 
 private theorem affine_middle_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     Summable (RankTwoAffine.firstGaussian (A t) (B t) (D t) (U t x y) (V t x y)) := by
@@ -613,10 +594,8 @@ private theorem affine_middle_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
   have ht3 : 0 < 3 * t / 4 := by positivity
   have h1 := RankTwoPoisson.real_gauss_summable htinv
   have h2 := shifted_real_gauss_summable ht3 y
-  have hmaj : Summable (fun z : ℤ × ℤ =>
-      Real.exp (-Real.pi * t⁻¹ * (z.1 : ℝ) ^ 2) *
-      Real.exp (-Real.pi * (3 * t / 4) * ((z.2 : ℝ) + y) ^ 2)) :=
-    h1.mul_of_nonneg h2 (fun _ => (Real.exp_pos _).le) (fun _ => (Real.exp_pos _).le)
+  have hmaj :=
+    h1.mul_of_nonneg h2 (fun _ => by positivity) (fun _ => by positivity)
   have hCmid : Summable (fun z : ℤ × ℤ =>
       C t x y * RankTwoAffine.firstGaussian (A t) (B t) (D t) (U t x y) (V t x y) z) := by
     refine hmaj.of_norm_bounded ?_
@@ -624,13 +603,11 @@ private theorem affine_middle_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     rw [middle_norm ht]
   have hC : C t x y ≠ 0 := Complex.exp_ne_zero _
   have h := hCmid.mul_left (C t x y)⁻¹
-  convert h using 1
-  ext z
-  simp [hC]
+  simp_all
 
 theorem dualPhase_norm (k l : ℤ) (x y : ℝ) :
     ‖dualPhase k l x y‖ = 1 := by
-  simp [dualPhase, Complex.norm_exp, Complex.mul_re]
+  simp [dualPhase, Complex.norm_exp]
 
 private theorem affine_dual_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     Summable (RankTwoAffine.dualGaussian (A t) (B t) (D t) (U t x y) (V t x y)) := by
@@ -648,18 +625,14 @@ private theorem affine_dual_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     simp [ dualPhase_norm]
   have hC : C t x y ≠ 0 := Complex.exp_ne_zero _
   have h := hCdual.mul_left (C t x y)⁻¹
-  convert h using 1
-  ext z
-  simp [hC]
+  simp_all
 
 private theorem shifted_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     Summable (shifted t x y) := by
   have ht4 : 0 < t / 4 := by positivity
   have h1 := RankTwoPoisson.real_gauss_summable ht4
-  have hbase : Summable (fun z : ℤ × ℤ =>
-      Real.exp (-Real.pi * (t / 4) * (z.1 : ℝ) ^ 2) *
-      Real.exp (-Real.pi * (t / 4) * (z.2 : ℝ) ^ 2)) :=
-    h1.mul_of_nonneg h1 (fun _ => (Real.exp_pos _).le) (fun _ => (Real.exp_pos _).le)
+  have hbase :=
+    h1.mul_of_nonneg h1 (fun _ => by positivity) (fun _ => by positivity)
   have hmaj : Summable (fun z : ℤ × ℤ =>
       Real.exp (Real.pi * t * (x ^ 2 + y ^ 2) / 2) *
         (Real.exp (-Real.pi * (t / 4) * (z.1 : ℝ) ^ 2) *
@@ -677,8 +650,8 @@ private theorem shifted_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     nlinarith [sq_nonneg ((z.2 : ℝ) + 2 * y)]
   have hl : ((z.1 : ℝ) ^ 2 + (z.2 : ℝ) ^ 2) / 4 -
       (x ^ 2 + y ^ 2) / 2 ≤ Q ((z.1 : ℝ) + x) ((z.2 : ℝ) + y) := by
-    nlinarith [hq, hm, hn]
-  have hpt : 0 ≤ Real.pi * t := (mul_pos Real.pi_pos ht).le
+    nlinarith
+  have hpt : 0 ≤ Real.pi * t := by positivity
   have hmul := mul_le_mul_of_nonneg_left hl hpt
   have he : -Real.pi * t * Q ((z.1 : ℝ) + x) ((z.2 : ℝ) + y) ≤
       Real.pi * t * (x ^ 2 + y ^ 2) / 2 +
@@ -696,9 +669,7 @@ private theorem affine_original_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
       C t x y * RankTwoAffine.binaryGaussian (A t) (B t) (D t) (U t x y) (V t x y) z) :=
     hS.congr (fun z => shifted_eq_affine t x y z.1 z.2)
   have h := hCA.mul_left (C t x y)⁻¹
-  convert h using 1
-  ext z
-  simp [hC]
+  simp_all
 
 theorem shifted_eisenstein_gaussian_poisson {t : ℝ} (ht : 0 < t) (x y : ℝ) :
     (∑' z : ℤ × ℤ, shifted t x y z) =
@@ -733,7 +704,7 @@ theorem shifted_eisenstein_gaussian_poisson {t : ℝ} (ht : 0 < t) (x y : ℝ) :
       exact shifted_eq_affine t x y z.1 z.2
     _ = C t x y * (pref * (∑' z : ℤ × ℤ,
           RankTwoAffine.dualGaussian (A t) (B t) (D t) (U t x y) (V t x y) z)) := by
-      rw [haff]
+      simp_all
     _ = pref * (∑' z : ℤ × ℤ,
           C t x y * RankTwoAffine.dualGaussian (A t) (B t) (D t)
             (U t x y) (V t x y) z) := by

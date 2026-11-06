@@ -28,12 +28,12 @@ theorem latticeL_eq_of_coefficients {N M : ℕ} [NeZero N] [NeZero M]
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
     intro z hz
     exact (regularizedLatticeL_differentiableAt w
-      (by intro h; simp [h] at hz)).differentiableWithinAt
+      (by intro h; simp_all)).differentiableWithinAt
   have hva : AnalyticOnNhd ℂ (regularizedLatticeL v) {z : ℂ | 0 < z.re} := by
     apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt 0)).2
     intro z hz
     exact (regularizedLatticeL_differentiableAt v
-      (by intro h; simp [h] at hz)).differentiableWithinAt
+      (by intro h; simp_all)).differentiableWithinAt
   have hident := Continuation.product_identity_on_halfPlane 0 1
     (regularizedLatticeL w) (fun _ => 1) (regularizedLatticeL v)
     hwa analyticOnNhd_const hva (by
@@ -47,7 +47,7 @@ theorem latticeL_eq_of_coefficients {N M : ℕ} [NeZero N] [NeZero M]
   have hs₀ : s ≠ 0 := by intro h; simp [h] at hs
   simp only [mul_one, regularizedLatticeL_eq w hs₀ hs₁,
     regularizedLatticeL_eq v hs₀ hs₁] at hident
-  exact mul_left_cancel₀ (sub_ne_zero.mpr hs₁) hident
+  grind
 end SevenEighths.HeckeTheta
 
 namespace SevenEighths.HeckeFamily

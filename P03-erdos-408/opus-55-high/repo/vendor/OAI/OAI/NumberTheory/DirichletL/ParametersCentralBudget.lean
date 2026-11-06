@@ -22,7 +22,7 @@ theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
         (13/16)*(159*ε+t+t+7*t)+2*t+(3/2)*(2*t)+
           (26*e+(N+8)*eps+t+t/6)+(t+t+t)+t≤49/440640 := by
   let t := min (Δ/8) (1/100000000)
-  have ht : 0<t := lt_min (by positivity) (by norm_num)
+  have ht : 0<t := by positivity
   have htΔ : t≤Δ/8 := min_le_left _ _
   have ht1 : t≤1/100000000 := min_le_right _ _
   refine ⟨t,ht,by linarith,ht1,by norm_num,by norm_num,by linarith,
@@ -31,7 +31,7 @@ theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
   let allowance := t/((N:ℝ)+2000)
   have hden : 0<(N:ℝ)+2000 := by positivity
   have ha : 0<allowance := div_pos ht hden
-  have ha0 : allowance≤t/2000 := div_le_div_of_nonneg_left ht.le (by norm_num) (by linarith [Nat.cast_nonneg (α:=ℝ) N])
+  have ha0 : allowance≤t/2000 := div_le_div_of_nonneg_left ht.le (by norm_num) (by simp)
   have hap : allowance*((N:ℝ)+2000)=t := by dsimp [allowance];field_simp
   refine ⟨allowance,ha,?_⟩
   intro ε e eps hε hεa he hea heps hepsa
@@ -40,8 +40,7 @@ theorem exists_central_budget (Δ : ℝ) (hΔ : 0<Δ) :
   have hepsN : ((N:ℝ)+2000)*eps≤t := by
     have h := mul_le_mul_of_nonneg_left hepsa hden.le
     nlinarith
-  have heps8 : ((N:ℝ)+8)*eps≤t := by nlinarith
-  constructor <;> nlinarith
+  grind
 end SevenEighths.Parameters
 
 end

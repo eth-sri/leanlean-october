@@ -8,7 +8,7 @@ public import Mathlib.Analysis.InnerProductSpace.Calculus
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.HeckeDetectorRowwise
 
@@ -29,9 +29,8 @@ theorem norm_sq_le_anchor_integral (F F' : ℝ→ℂ)
       nlinarith [sq_nonneg (‖F t‖-‖F' t‖)])
   simp only [Pi.pow_apply] at hh
   have hm := intervalIntegral.integral_mono_interval (μ:=volume) (le_refl a) hx.1 hx.2
-    (Filter.Eventually.of_forall (fun t => show 0≤G t by dsimp [G]; positivity))
+    (Filter.Eventually.of_forall (fun t => show 0≤G t by positivity))
     (hG.intervalIntegrable a b)
-  change ‖F x‖^2≤‖F a‖^2+∫ t in a..b, G t
   linarith
 
 theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
@@ -51,13 +50,13 @@ theorem rowwise_energy {ι : Type*} (rows : Finset ι) (F F' : ι→ℝ→ℂ)
     (fun i hi => (hg i hi).intervalIntegrable a b)] at hs
   have hm : (∫ t in a..b, ∑ i∈rows, (‖F i t‖^2+‖F' i t‖^2))≤(b-a)*(2*E) := by
     have hh := intervalIntegral.integral_mono_on (μ:=volume) hab
-      ((continuous_finsetSum rows (fun i hi => hg i hi)).intervalIntegrable a b)
-      (continuous_const.intervalIntegrable a b)
+      ((continuous_finsetSum rows (by omega)).intervalIntegrable a b)
+      (by simp)
       (fun t ht => show (∑ i∈rows, (‖F i t‖^2+‖F' i t‖^2))≤2*E by
         rw [Finset.sum_add_distrib]
-        linarith [henergy t ht,henergy' t ht])
+        grind)
     simpa only [intervalIntegral.integral_const,smul_eq_mul] using hh
-  have ha := henergy a ⟨le_refl a,hab⟩
+  have ha := henergy a (by grind)
   nlinarith
 
 theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
@@ -82,13 +81,13 @@ theorem rowwise_energy_two {ι : Type*} (rows : Finset ι)
   have he (j : Fin 2) (x : ℝ) (hx : x∈Icc a b) :
       ∑ i∈rows, ‖F j 0 i x (py i)‖^2≤(1+2*(d-c))*E :=
     rowwise_energy rows (fun i => F j 0 i x) (fun i => F j 1 i x)
-      (fun i hi => cy j 0 i hi x) (fun i hi => cy j 1 i hi x)
-      (fun i hi y => hdy j i hi x y) c d E hcd py hpy
+      (by grind) (by grind)
+      (by grind) c d E hcd py hpy
       (fun y hy => henergy j 0 x hx y hy) (fun y hy => henergy j 1 x hx y hy)
   exact rowwise_energy rows (fun i x => F 0 0 i x (py i))
     (fun i x => F 1 0 i x (py i))
     (fun i hi => cx 0 0 i hi (py i)) (fun i hi => cx 1 0 i hi (py i))
-    (fun i hi x => hdx 0 i hi x (py i)) a b ((1+2*(d-c))*E) hab px hpx
+    (by grind) a b ((1+2*(d-c))*E) hab px hpx
     (he 0) (he 1)
 
 end SevenEighths.HeckeDetectorRowwise

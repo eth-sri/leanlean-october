@@ -9,33 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,40 +33,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CubicRamified
-open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 
 def cubicExp (n : ℤ) : O := omega ^ (n % 3).toNat
 
@@ -101,8 +84,7 @@ def linearRay (u v : ℤ) (x : O) : O :=
 lemma linearRay_primaryCoord (u v A B : ℤ) :
     linearRay u v (primaryCoord A B) = cubicExp (u*A + v*B) := by
   simp only [linearRay, primaryCoord, ShortDraftLatticeCount.coords_eval]
-  rw [show (1 + 3*A - 1) / 3 = A by omega,
-    show 3*B / 3 = B by omega]
+  simp
 
 lemma exists_primaryCoord (x : O) (hx : lambda ^ 2 ∣ x - 1) :
     ∃ A B : ℤ, x = primaryCoord A B := by
@@ -115,14 +97,13 @@ lemma exists_primaryCoord (x : O) (hx : lambda ^ 2 ∣ x - 1) :
   change z = (A : O) + (B : O) * omega at hAB
   refine ⟨A, B, ?_⟩
   rw [primaryCoord_eq]
-  rw [hAB] at hz
-  linear_combination hz
+  grind
 
 lemma primaryCoord_mul (A B C D : ℤ) :
     primaryCoord A B * primaryCoord C D =
       primaryCoord (A+C+3*(A*C-B*D)) (B+D+3*(A*D+B*C-B*D)) := by
   simp only [primaryCoord, ActualEisensteinCoordinates.eval_mul]
-  congr 1 <;> ring
+  ring
 
 lemma linearRay_one (u v : ℤ) : linearRay u v 1 = 1 := by
   have hone : (1 : O) = primaryCoord 0 0 := by rw [primaryCoord_eq]; simp
@@ -138,8 +119,7 @@ lemma linearRay_mul (u v : ℤ) (x y : O)
   simp only [linearRay_primaryCoord]
   rw [← cubicExp_add]
   apply cubicExp_eq_of_dvd_sub
-  refine ⟨u*(A*C-B*D)+v*(A*D+B*C-B*D), ?_⟩
-  ring
+  grind
 
 theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
     (hprime : ∀ p : O, Prime p → lambda ^ 2 ∣ p-1 → symbol x p = linearRay u v p)
@@ -153,11 +133,11 @@ theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
   | empty => simp only [Multiset.prod_zero, symbol_one, linearRay_one]
   | @cons p s ih =>
     have hp := hs p (Multiset.mem_cons_self _ _)
-    have hss : ∀ r ∈ s, Prime r ∧ lambda ^ 2 ∣ r-1 :=
+    have hss :=
       fun r hr => hs r (Multiset.mem_cons_of_mem hr)
     rw [Multiset.prod_cons, symbol_mul_denominator,
       hprime p hp.1 hp.2, ih hss,
-      linearRay_mul u v p s.prod hp.2 (primary_multiset_prod s (fun r hr => (hss r hr).2))]
+      linearRay_mul u v p s.prod hp.2 (primary_multiset_prod s (by grind))]
 
 theorem symbol_lambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
     symbol lambda y = linearRay 1 0 y := by
@@ -166,10 +146,10 @@ theorem symbol_lambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
   let : (Ideal.span {p} : Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-    primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
+    primary_maximal_divisor_good p hprimary _ (by simp)
   obtain ⟨A,B,hpAB⟩ := exists_primaryCoord p hprimary
   rw [symbol, idealSymbol_prime _ hg]
-  have hc := cubicValue_lambda_primary (Ideal.span {p}) hg A B (by rw [hpAB])
+  have hc := cubicValue_lambda_primary (Ideal.span {p}) hg A B (by simp_all)
   rw [hc, hpAB, linearRay_primaryCoord]
   simp [cubicExp]
 
@@ -180,10 +160,10 @@ theorem symbol_omega_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
   let : (Ideal.span {p} : Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-    primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
+    primary_maximal_divisor_good p hprimary _ (by simp)
   obtain ⟨A,B,hpAB⟩ := exists_primaryCoord p hprimary
   rw [symbol, idealSymbol_prime _ hg]
-  have hc := cubicValue_omega_primary (Ideal.span {p}) hg A B (by rw [hpAB])
+  have hc := cubicValue_omega_primary (Ideal.span {p}) hg A B (by simp_all)
   rw [hc, hpAB, linearRay_primaryCoord]
   simp [cubicExp, sub_eq_add_neg]
 
@@ -197,7 +177,7 @@ theorem cubicValue_traceLambda_primary (P : Ideal O) [P.IsMaximal]
     cubicValue_omega_primary P hg A B hP, cubicValue_lambda_primary P hg A B hP]
   change cubicExp (2*A-B) * cubicExp A = cubicExp (-B)
   rw [← cubicExp_add]
-  exact cubicExp_eq_of_dvd_sub ⟨A, by ring⟩
+  exact cubicExp_eq_of_dvd_sub (by omega)
 
 theorem symbol_traceLambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
     symbol traceLambda y = linearRay 0 (-1) y := by
@@ -206,12 +186,11 @@ theorem symbol_traceLambda_eq_linearRay (y : O) (hy : lambda ^ 2 ∣ y-1) :
   let : (Ideal.span {p} : Ideal O).IsMaximal :=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-    primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
+    primary_maximal_divisor_good p hprimary _ (by simp)
   obtain ⟨A,B,hpAB⟩ := exists_primaryCoord p hprimary
   rw [symbol, idealSymbol_prime _ hg]
-  have hc := cubicValue_traceLambda_primary (Ideal.span {p}) hg A B (by rw [hpAB])
-  rw [hc, hpAB, linearRay_primaryCoord]
-  simp
+  have hc := cubicValue_traceLambda_primary (Ideal.span {p}) hg A B (by simp_all)
+  simp [hc, hpAB, linearRay_primaryCoord]
 
 theorem linearRay_congr_mod_nine (u v : ℤ) (x y : O)
     (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
@@ -235,7 +214,7 @@ theorem linearRay_congr_mod_nine (u v : ℤ) (x y : O)
   rw [linearRay_primaryCoord, linearRay_primaryCoord]
   apply cubicExp_eq_of_dvd_sub
   refine ⟨u*E+v*F, ?_⟩
-  linear_combination u*ha + v*hb
+  grind
 
 theorem symbol_lambda_congr_mod_nine (x y : O)
     (hx : lambda ^ 2 ∣ x-1) (hy : lambda ^ 2 ∣ y-1) (hxy : (9 : O) ∣ x-y) :
@@ -252,7 +231,7 @@ theorem symbol_traceLambda_congr_mod_nine (x y : O)
 end CubicRamified
 
 namespace CubicJacobiGlobal
-open ActualEisensteinCubic CompletedGauss CubicRamified
+open CompletedGauss CubicRamified
 
 theorem primary_ne_zero (a : O) (ha : lambda ^ 2 ∣ a-1) : a ≠ 0 := by
   obtain ⟨A,B,rfl⟩ := exists_primaryCoord a ha
@@ -280,7 +259,7 @@ theorem symbol_neg_one (a : O) (ha : lambda ^ 2 ∣ a-1) : symbol (-1) a = 1 := 
     let : (Ideal.span {p} : Ideal O).IsMaximal :=
       PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
     have hg : lambda ∉ (Ideal.span {p} : Ideal O) :=
-      primary_maximal_divisor_good p hprimary _ (Ideal.subset_span (by simp))
+      primary_maximal_divisor_good p hprimary _ (by simp)
     rw [symbol, idealSymbol_prime _ hg, map_neg, map_one, A3_cubicChar_neg_one]
     simp [linearRay]) a ha
   simpa [linearRay] using h
@@ -295,9 +274,7 @@ theorem symbol_isUnit_ne_zero (x a : O) (hx : IsUnit x) (ha : lambda ^ 2 ∣ a-1
   have h : symbol (u : O) a * symbol (↑u⁻¹ : O) a = 1 := by
     rw [← symbol_mul_numerator _ _ a ha, ← Units.val_mul, mul_inv_cancel,
       Units.val_one, symbol_one_numerator a ha]
-  intro hz
-  rw [hz, zero_mul] at h
-  exact zero_ne_one h
+  grind
 
 theorem symbol_unit_congr_mod_nine (x a b : O) (hx : IsUnit x)
     (ha : lambda ^ 2 ∣ a-1) (hb : lambda ^ 2 ∣ b-1) (hab : (9 : O) ∣ a-b) :
@@ -315,7 +292,7 @@ theorem symbol_unit_congr_mod_nine (x a b : O) (hx : IsUnit x)
   rcases hu with h | h | h | h | h | h
   · simp only [h, Units.val_one, symbol_one_numerator _ ha, symbol_one_numerator _ hb]
   · simp only [h, Units.val_neg, Units.val_one, symbol_neg_one _ ha, symbol_neg_one _ hb]
-  · simpa only [h, hη] using hω
+  · simp_all
   · simpa only [h, Units.val_neg, hη, symbol_neg_numerator _ _ ha,
       symbol_neg_numerator _ _ hb] using hω
   · simpa only [h, Units.val_pow_eq_pow_val, hη, symbol_pow_numerator _ _ ha,
@@ -336,7 +313,7 @@ private theorem associated_congr_denominator {x y a b : O} (hxy : Associated x y
     _ = symbol y b := hy
     _ = symbol x b * symbol (u : O) b := by rw [← hu, symbol_mul_numerator _ _ b hb]
     _ = symbol x b * symbol (u : O) a := by
-      rw [symbol_unit_congr_mod_nine (u : O) b a u.isUnit hb ha (by simpa only [neg_sub] using dvd_neg.mpr hab)]
+      rw [symbol_unit_congr_mod_nine (u : O) b a u.isUnit hb ha (by simpa using dvd_neg.mpr hab)]
 
 private theorem ramified_prime : Prime lambda := by
   let : Fact (Nat.Prime 3) := ⟨Nat.prime_three⟩
@@ -363,19 +340,19 @@ theorem symbol_denominator_congr (x a b : O)
     (ha : lambda ^ 2 ∣ a-1) (hb : lambda ^ 2 ∣ b-1)
     (h9 : (9 : O) ∣ a-b) (hx : x ∣ a-b) : symbol x a = symbol x b := by
   induction x using UniqueFactorizationMonoid.induction_on_prime with
-  | h₁ => have heq : a = b := sub_eq_zero.mp (zero_dvd_iff.mp hx); rw [heq]
+  | h₁ => have heq := sub_eq_zero.mp (zero_dvd_iff.mp hx); simp_all
   | h₂ u hu => exact symbol_unit_congr_mod_nine u a b hu ha hb h9
   | h₃ x p hx0 hp ih =>
-    have hpab : p ∣ a-b := (dvd_mul_right p x).trans hx
+    have hpab := (dvd_mul_right p x).trans hx
     have hxab : x ∣ a-b := (dvd_mul_left x p).trans hx
     rw [symbol_mul_numerator _ _ a ha, symbol_mul_numerator _ _ b hb,
       symbol_prime_denominator_congr p a b hp ha hb h9, ih hxab]
-    exact hpab
+    omega
 
 end CubicJacobiGlobal
 
 namespace PrimaryIdealUnitReindex
-open ActualEisensteinCubic ActualEisensteinCoordinates ShortDraftLatticeCount
+open ActualEisensteinCoordinates
 
 def unitCoordinates : Finset (ℤ × ℤ) :=
   {(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1)}
@@ -385,8 +362,8 @@ theorem q_eq_one_iff_unitCoordinates (z : ℤ × ℤ) : q z = 1 ↔ z ∈ unitCo
   constructor
   · intro h
     have hs := coordinate_squares a b 1 (by norm_num) (le_of_eq h)
-    have ha : -1 ≤ a ∧ a ≤ 1 := by constructor <;> nlinarith [sq_nonneg (a - 1), sq_nonneg (a + 1)]
-    have hb : -1 ≤ b ∧ b ≤ 1 := by constructor <;> nlinarith [sq_nonneg (b - 1), sq_nonneg (b + 1)]
+    have ha : -1 ≤ a ∧ a ≤ 1 := by constructor <;> nlinarith
+    have hb : -1 ≤ b ∧ b ≤ 1 := by constructor <;> nlinarith
     rcases ha with ⟨ha1, ha2⟩
     rcases hb with ⟨hb1, hb2⟩
     interval_cases a <;> interval_cases b <;> norm_num [q, unitCoordinates] at *
@@ -399,8 +376,7 @@ theorem unit_coordinate_mem (u : Oˣ) : coords u.val ∈ unitCoordinates := by
   have hn := (rational_qNat_eq_one_iff u.val).mpr u.isUnit
   have hz := qO_nonneg u.val
   change (q (coords u.val)).toNat = 1 at hn
-  have hi : ((q (coords u.val)).toNat : ℤ) = 1 := by exact_mod_cast hn
-  simpa only [Int.toNat_of_nonneg hz] using hi
+  omega
 
 def unitCoordinateMap (u : Oˣ) : {z : ℤ × ℤ // z ∈ unitCoordinates} :=
   ⟨coords u.val, unit_coordinate_mem u⟩
@@ -431,11 +407,11 @@ theorem card_units_eq_six : Nat.card Oˣ = 6 := by
 
 end PrimaryIdealUnitReindex
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
+open FiniteGaussPhase ActualEisensteinCoordinates
 open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson
-open PrimaryIdealUnitReindex CompletedGauss
+open CompletedGauss
 
 theorem rowCoprimeMask_unit_mul {α : Type*} (R : α → Ideal O)
     (S : Finset α) (u : Oˣ) (z : O) :
@@ -450,7 +426,7 @@ theorem rowCoprimeMask_norm_le_one {α : Type*} (R : α → Ideal O)
 end QuadraticUnitInvariance
 
 namespace GaussGeneratorTransport
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
+open EisensteinSchwartzPoisson FiniteGaussPhase
 
 theorem canonical_masked_radial_poisson_product
     {α ι : Type*} [DecidableEq α] [Fintype ι]
@@ -483,20 +459,11 @@ theorem canonical_masked_radial_poisson_product
   let F : Finset α → ℝ → ℂ := fun E t => paperRadialFourier W
     (M * t / (‖eisEmbedding (primeSubsetGenerator R E)‖ ^ 2 * ‖eisEmbedding (∏ i, p i)‖ ^ 2))
   have hu := gauss_weighted_finite_radial_sum_transport p hp hcop hg j S.powerset a F
-  change ((M : ℂ) * canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hg j /
-      (‖eisEmbedding (∏ i, p i)‖ : ℂ)) *
-        (∑ E ∈ S.powerset, a E * ∑' h : O, star (finiteSexticRow (fun i => Ideal.span {p i}) hg j h) *
-          F E (‖eisEmbedding h‖ ^ 2)) = _
-  calc
-    _ = ((M : ℂ) / (‖eisEmbedding (∏ i, p i)‖ : ℂ)) *
-      (canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hg j *
-        ∑ E ∈ S.powerset, a E * ∑' h : O,
-          star (finiteSexticRow (fun i => Ideal.span {p i}) hg j h) * F E (‖eisEmbedding h‖ ^ 2)) := by ring
-    _ = _ := by rw [hu]; ring
+  grind
 end GaussGeneratorTransport
 
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
+open FiniteGaussPhase ActualEisensteinCoordinates
 open QuadraticGaussRay MixedCrossSeparation QuadraticInitialBound
 open GaussGeneratorTransport EisensteinSchwartzPoisson
 
@@ -504,8 +471,7 @@ theorem odd_of_quadraticRayValue_norm_eq_one (r : EisensteinEPrimaryPhase.Coord)
     (hr : ‖quadraticRayValue r‖ = 1) : EisensteinEPrimaryPhase.odd r := by
   rcases r with ⟨a, b⟩
   fin_cases a <;> fin_cases b <;>
-    norm_num [EisensteinEPrimaryPhase.odd, quadraticRayValue, breveGaussianFourTerms_formula,
-      zpow_neg, Complex.I_sq, Complex.I_pow_three, Complex.inv_I, ZMod.val] at *
+    norm_num [EisensteinEPrimaryPhase.odd, quadraticRayValue, breveGaussianFourTerms_formula, ZMod.val] at *
 
 theorem quadraticBlock_union_eq_one_of_same_ray
     {ι : Type*} [DecidableEq ι]
@@ -546,28 +512,27 @@ theorem same_ray_quadratic_pair_poisson
   have hcAB : Pairwise (Function.onFun IsCoprime
       (fun i : (A ∪ B : Finset ι) => Ideal.span {p i.val})) := by
     intro i k hik
-    exact hcop (fun h => hik (Subtype.ext h))
+    exact hcop (by grind)
   have ht := canonical_masked_radial_poisson_product R hinj S
-    (fun i : (A ∪ B : Finset ι) => p i.val) (fun i => hp i.val) hcAB
-    (fun i => hg i.val) (fun i => hchar i.val) (fun _ => 3)
-    (fun _ => by decide) (fun _ => by decide) W M hM
+    (fun i : (A ∪ B : Finset ι) => p i.val) (by grind) hcAB
+    (by grind) (fun i => hchar i.val) (fun _ => 3)
+    (by omega) (by omega) W M hM
   have hγ := quadraticBlock_union_eq_one_of_same_ray p hp hcop hg hchar A B hd hray
   rw [quadraticBlock_eq_productGauss p hp hcop hg (A ∪ B)] at hγ
   rw [hγ, mul_one, Finset.prod_coe_sort] at ht
   have hrow (z : O) : finiteSexticRow (fun i : (A ∪ B : Finset ι) => Ideal.span {p i.val})
-      (fun i => hg i.val) (fun _ => 3) z =
+      (by grind) (fun _ => 3) z =
       quadraticRow (fun i => Ideal.span {p i}) hg A z *
         quadraticRow (fun i => Ideal.span {p i}) hg B z := by
     rw [← quadraticRow_eq_canonical (fun i => Ideal.span {p i}) hg (A ∪ B) z,
       quadraticRow_disjoint_union _ _ _ _ hd]
   simp only [hrow, star_mul, quadraticRow_star] at ht
-  simpa only [mul_comm] using ht
+  grind
 
 end QuadraticUnitInvariance
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace EisensteinSchwartzPoisson
-open ActualEisensteinCubic ConcreteTraceCRT
 
 end EisensteinSchwartzPoisson
 

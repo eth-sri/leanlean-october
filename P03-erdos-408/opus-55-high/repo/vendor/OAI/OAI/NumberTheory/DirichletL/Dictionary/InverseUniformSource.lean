@@ -8,19 +8,19 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorInverseFiberCount
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
 open HeckeInverseAmplification HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial
+open HeckeDetectorCoefficientTransfer
 
 lemma positiveAnnular_support_sharp : Function.support positiveAnnular⊆Ioo (1/2) 2 := by
   intro x hx
   have hx0 : 0≤x := by have := (positiveAnnular_support hx).1; linarith
   have he : DyadicTransfer.annularCutoff cutoff x≠0 := by
     rwa [←positiveAnnular_eq x hx0]
-  simpa using HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx0 0 (by simpa using he)
+  simpa using HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx0 0 (by simp_all)
 
 lemma ratioProfile_zero_of_four_le (R : ℝ) (hR : 4≤R) :
     ratioProfile cutoff positiveAnnular R=0 := by
@@ -37,7 +37,7 @@ lemma inverseDetectorTest_zero_of_four_le (scaled reverse : Bool) (n : ℕ) (R �
     ext x
     rw [inverseDetectorSchwartz_apply]
     simp only [baseProfile,ratioProfile_zero_of_four_le R hR]
-    cases reverse <;> simp [orientedProfile,twistProfile,HeckeDyadic.shift,logTest_apply]
+    cases reverse <;> simp [orientedProfile, twistProfile, logTest_apply]
   rw [inverseDetectorTest,hz,map_zero]
 
 theorem inverseDetectorTest_uniform_all_ratios (S : Finset (ℕ×ℕ)) :
@@ -48,7 +48,7 @@ theorem inverseDetectorTest_uniform_all_ratios (S : Finset (ℕ×ℕ)) :
   refine ⟨J,C,hC,?_⟩
   intro scaled reverse n hn R hR σ hσ t
   by_cases hh : R≤4
-  · exact hb scaled reverse n hn R ⟨hR,hh⟩ σ hσ t
+  · grind
   · rw [inverseDetectorTest_zero_of_four_le _ _ _ _ _ _ (le_of_not_ge hh),map_zero]
     positivity
 

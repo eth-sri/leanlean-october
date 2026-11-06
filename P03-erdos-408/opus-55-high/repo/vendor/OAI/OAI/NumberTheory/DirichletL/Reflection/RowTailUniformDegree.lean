@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Reflection.FamilyTailUniformDegree
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 
 theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
-    ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
-      (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
-      (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal Eis))
+    ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ]
+      (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
+      (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (jF : φ→ℕ) (Pset : Finset (Ideal ActualEisensteinCubic.O))
       (D : ∀ P : Pset, IsCoprime K P.val →
         ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ P∈Pset, ∀ i, ringChar (Eis⧸(F.reflected K hK (S P)).ideal i)≠2) →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ P∈Pset, ∀ i, ringChar (ActualEisensteinCubic.O⧸(F.reflected K hK (S P)).ideal i)≠2) →
       (∀ i,jF i<6) → (∀ P∈Pset,(∏ j,(S P).ideal j)=P) →
-    ∀ (u : Eisˣ) (θ X T QK QP : ℝ) (r aw : Ideal Eis→ℂ),
+    ∀ (u : ActualEisensteinCubic.Oˣ) (θ X T QK QP : ℝ) (r aw : Ideal ActualEisensteinCubic.O→ℂ),
       0<X → 0<T → 0<QK → 0<QP →
       (Ideal.absNorm K:ℝ)≤QK → (∀ P∈Pset,(Ideal.absNorm P:ℝ)≤QP) →
       ‖r K‖≤1 → (∀ P∈Pset,‖aw P‖≤1) →
@@ -55,7 +54,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
     rcases i with f | k | p
     · exact hj f
     · norm_num [reflectedExponent]
-    · norm_num [reflectedExponent]
+    · positivity
   have hs (P : L) : Summable (block P) :=
     literalDyadicBlock_summable (F.reflected K hK (S P.val.val)) (D P.val P.property) s hc hN hbase
       (hchar P.val.val P.val.property) (reflectedExponent jF) hj' (slotIndices φ (PrimeIndex K) σ)
@@ -73,7 +72,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
     congr 1
     apply tsum_congr
     intro i
-    by_cases hi : i∈J <;> simp [J] at hi ⊢ <;> simp [hi,block]
+    by_cases hi : i∈J <;> simp [J] at hi ⊢ <;> simp [block]
   have hw (P : L) : ‖r K*aw P.val.val‖≤1 := by
     rw [norm_mul]
     exact (mul_le_mul hr (haw P.val.val P.val.property) (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)
@@ -82,7 +81,7 @@ theorem original_family_row_tail_uniform_degree (lo hi : ℝ) (hlo : 0<lo) (A : 
   apply hh.trans
   apply mul_le_mul_of_nonneg_right
   · exact_mod_cast (Fintype.card_subtype_le (fun P : Pset => IsCoprime K P.val)).trans_eq (Fintype.card_coe Pset)
-  · positivity
+  positivity
 end
 end SevenEighths.InverseReflectedPhase
 

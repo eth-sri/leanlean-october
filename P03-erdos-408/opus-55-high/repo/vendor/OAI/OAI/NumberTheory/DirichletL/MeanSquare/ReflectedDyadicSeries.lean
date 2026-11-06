@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,45 +31,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace InitialMeanSquare
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 
 section
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -93,7 +71,7 @@ variable {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open SecondPassArithmetic JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 def initialBinCost {ι : Type*} [DecidableEq ι]
@@ -113,15 +91,14 @@ def initialBinCost {ι : Type*} [DecidableEq ι]
 
 end InitialMeanSquare
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open CanonicalQuadraticSieve CompletedDyadic
 
 end
 
-open ActualEisensteinCubic
 
 theorem completed_conductor_norm_bound {ι : Type*} [Fintype ι]
     (I Q : Ideal O) (hI : I≠0) (hQ : Q≠0)
@@ -132,7 +109,7 @@ theorem completed_conductor_norm_bound {ι : Type*} [Fintype ι]
   have hn : 0<Ideal.absNorm (I*Q) := Nat.pos_of_ne_zero (fun hz =>
     mul_ne_zero hI hQ (Ideal.absNorm_eq_zero_iff.mp hz))
   have hh := Nat.le_of_dvd hn (map_dvd Ideal.absNorm hd)
-  exact_mod_cast (by simpa only [map_mul] using hh)
+  exact_mod_cast (by simp_all)
 
 def completedShellWindow (x : ℝ) : ℂ :=
   if -Real.log 2≤x ∧ x≤0 then 1 else 0
@@ -142,8 +119,7 @@ theorem completedShellWindow_support (x : ℝ) (h : completedShellWindow x≠0) 
   have hx : -Real.log 2≤x ∧ x≤0 := by
     by_contra hn
     exact h (by simp [completedShellWindow,hn])
-  apply abs_le.mpr
-  exact ⟨hx.1,hx.2.trans (Real.log_nonneg (by norm_num))⟩
+  grind
 
 theorem completedShellWindow_norm (x : ℝ) : ‖completedShellWindow x‖≤1 := by
   unfold completedShellWindow
@@ -154,10 +130,10 @@ theorem completedShellWindow_log (x U : ℝ) (hx : 0<x) (hU : 0<U)
   apply ite_eq_left
   constructor
   · have hhalf : (1/2:ℝ)≤x/U := (le_div_iff₀ hU).mpr (by linarith)
-    have hh := Real.strictMonoOn_log.monotoneOn (by norm_num : (1/2:ℝ)∈Set.Ioi 0)
-      (show x/U∈Set.Ioi 0 from div_pos hx hU) hhalf
-    simpa only [one_div,Real.log_inv] using hh
-  · exact Real.log_nonpos (div_nonneg hx.le hU.le) ((div_le_one hU).mpr hhi)
+    have hh := Real.strictMonoOn_log.monotoneOn (by simp)
+      (by grind) hhalf
+    simp_all
+  · exact Real.log_nonpos (by positivity) ((div_le_one hU).mpr hhi)
 
 def reflectedDyadicCoefficient {ι : Type*} [Fintype ι]
     (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
@@ -169,7 +145,7 @@ def reflectedDyadicCoefficient {ι : Type*} [Fintype ι]
     ((4*r*Real.sqrt (Ideal.absNorm (reflectionExtractedDivisor P j e 1*n):ℝ)*
       (Ideal.absNorm (reflectionExtractedDivisor P j e 2*v):ℝ):ℝ):ℂ)
 
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open CanonicalQuadraticSieve CompletedDyadic
 
 def reflectedBranchBlock {ι : Type*} [Fintype ι]
     (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)

@@ -8,26 +8,25 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerAllocation
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
 open InverseInitialEnergyCallerSector
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def modeCoefficient (Ψ:Eis→*ℂ)(j:Eis)(Z D B v θ H:ℝ)
+def modeCoefficient (Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(Z D B v θ H:ℝ)
     (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) : ℂ :=
   outerCoefficient p hp hcop hg Ψ j (sourcePoint x ∅ ∅) ρ *
     secondOuterPhase (profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2)
       (relativeLog (coordinates p (sourcePoint x ∅ ∅)) Z D B v θ H)
 
-def allocatedMode (u:Eisˣ)(pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)
+def allocatedMode (u:ActualEisensteinCubic.Oˣ)(pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)
     (slots J₁ J₂:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
     (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) : ℂ :=
@@ -43,9 +42,9 @@ def allocatedMode (u:Eisˣ)(pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)
 
 theorem rowMode_eq_allocations
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:Eisˣ)
+    (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:ActualEisensteinCubic.Oˣ)
     (hu:unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
-    (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(slots:Finset σ)
     (lists:σ→Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:ℝ→ℂ)(Z D B v θ H:ℝ)
     (ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) :
     rowMode p hp hcop hg hpr pool Ψ j slots lists a ω₁ ω₂ Z D B v θ H x ρ z=
@@ -66,8 +65,8 @@ theorem rowMode_eq_allocations
   ring
 
 theorem modeCoefficient_norm_le
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (Ψ:Eis→*ℂ)(hΨ:∀n,‖Ψ n‖≤1)(j:Eis)(Z D B v θ H:ℝ)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(hΨ:∀n,‖Ψ n‖≤1)(j:ActualEisensteinCubic.O)(Z D B v θ H:ℝ)
     (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) :
     ‖modeCoefficient p hp hcop hg Ψ j Z D B v θ H x ρ z‖≤‖secondRayCoefficient ρ‖ := by
   simp only [modeCoefficient,norm_mul,secondOuterPhase_norm,mul_one]

@@ -9,33 +9,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,27 +30,23 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace ActualEisensteinCubic
 
@@ -79,7 +61,7 @@ section
   simp only [activeSupport, Finset.union_eq_empty, Finset.sdiff_eq_empty_iff_subset] at he
   exact ⟨fun hi => he.1 hi, fun hi => he.2 hi⟩
 
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
  theorem finiteSexticRow_of_isEmpty {ι : Type*} [Fintype ι] [IsEmpty ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -121,7 +103,7 @@ open ConcreteTraceCRT EisensteinSchwartzPoisson
   rw [canonicalNormalizedGauss, canonicalGaussSum_of_isEmpty,
     finitePrimeModulus_norm_of_isEmpty, Complex.ofReal_one, div_one]
 
-noncomputable def squarefreePairPoissonZeroMode
+def squarefreePairPoissonZeroMode
     {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hinj : Function.Injective P) (hgood : ∀ i, lambda ∉ P i)
     (S T : Finset ι) (W : 𝓢(ℝ, ℂ)) (scale : ℝ) : ℂ :=
@@ -165,17 +147,16 @@ theorem primeDensity_nonneg_le_one
         (Ideal.absNorm_eq_zero_iff.not.mpr (NeZero.ne (P i)))
     constructor
     · exact sub_nonneg.mpr ((div_le_one (by linarith)).mpr hnorm)
-    · have : 0 ≤ (1 : ℝ) / Ideal.absNorm (P i) := by positivity
-      linarith
-  exact ⟨Finset.prod_nonneg (fun i _ => (hfactor i).1),
-    Finset.prod_le_one₀ (fun i _ => (hfactor i).1) (fun i _ => (hfactor i).2)⟩
+    · simp
+  exact ⟨Finset.prod_nonneg (by grind),
+    Finset.prod_le_one₀ (by grind) (by simp)⟩
 
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
-noncomputable def idealPairPoissonZeroMode
+def idealPairPoissonZeroMode
     (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
     (hFgood : ∀ I ∈ F,
       ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
@@ -187,16 +168,16 @@ noncomputable def idealPairPoissonZeroMode
 
 end ConcretePrimeRowBridge
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
-noncomputable def idealPrimeDensity (F : Finset (Ideal O)) (I : Ideal O) : ℝ :=
+def idealPrimeDensity (F : Finset (Ideal O)) (I : Ideal O) : ℝ :=
   ∏ i ∈ idealSupport F I, (1 - (1 : ℝ) / Ideal.absNorm i.val)
 
 theorem idealPrimeDensity_mem_Icc
@@ -214,11 +195,10 @@ end ShortDraftHeckeBridge
 namespace ConcretePrimeRowBridge
 
 section
-open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 end
 
-open ActualEisensteinCubic ShortDraftHeckeBridge
 
 theorem idealSupport_image_eq_factors
     (F : Finset (Ideal O)) {I : Ideal O} (hI : I ∈ F) :
@@ -230,7 +210,7 @@ theorem idealSupport_image_eq_factors
   · rintro ⟨p, hp, rfl⟩
     exact (mem_idealSupport_iff F I p).mp hp
   · intro hP
-    let p : primePool F := ⟨P, mem_primePool_iff.mpr ⟨I, hI, hP⟩⟩
+    let p : primePool F := ⟨P, mem_primePool_iff.mpr (by grind)⟩
     exact ⟨p, (mem_idealSupport_iff F I p).mpr hP, rfl⟩
 
 theorem idealSupport_product_eq
@@ -240,8 +220,7 @@ theorem idealSupport_product_eq
     hsI.ne_zero).mp hsI
   calc
     _ = ∏ P ∈ (idealSupport F I).image Subtype.val, P := by
-      rw [Finset.prod_image]
-      exact fun a ha b hb h => Subtype.val_injective h
+      simp
     _ = ∏ P ∈ (UniqueFactorizationMonoid.normalizedFactors I).toFinset, P := by
       rw [idealSupport_image_eq_factors F hI]
     _ = (UniqueFactorizationMonoid.normalizedFactors I).prod := by
@@ -281,7 +260,6 @@ theorem activePrimeModulus_norm_sq
 end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
-open ActualEisensteinCubic ShortDraftHeckeBridge
 
 end ConcretePrimeRowBridge
 

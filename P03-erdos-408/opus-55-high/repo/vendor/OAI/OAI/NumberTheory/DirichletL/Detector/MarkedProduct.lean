@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.SourceExclusions
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeEuler ProbeEulerFinsupp
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeEuler ProbeEulerFinsupp
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions S)
     (η : HeckeFamily.Character) (P : PrimeIdeal) (hP : P.val∉S) (x w z : ℂ)
@@ -21,19 +20,19 @@ lemma source_idealHighLocalFactor_ne_zero (S : Finset Id) (hS : SourceExclusions
   rw [idealHighLocalFactor_rational η P (outside_prime_supported S hS.bad P hP) x w z hx hw hz]
   have hQ : (1:ℝ)<Ideal.absNorm P.val := by
     have hh := hS.tail.norm_four P hP
-    exact_mod_cast (by omega : 1<Ideal.absNorm P.val)
+    exact_mod_cast (by omega)
   have hQ0 : (0:ℝ)<Ideal.absNorm P.val := by linarith
   have hD : ‖HeckeFamily.idealCoeff η P.val*(Ideal.absNorm P.val:ℂ)^(-x)‖<1 := by
-    rw [norm_mul,Complex.norm_natCast_cpow_of_pos (by exact_mod_cast hQ0),Complex.neg_re]
-    apply (mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) (HeckeFamily.idealCoeff_norm_le_one η P.val)).trans_lt
+    rw [norm_mul,Complex.norm_natCast_cpow_of_pos (by simp_all),Complex.neg_re]
+    apply (mul_le_of_le_one_left (by positivity) (HeckeFamily.idealCoeff_norm_le_one η P.val)).trans_lt
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ (by linarith)
   have hV : ‖(Ideal.absNorm P.val:ℂ)^(-6*z)‖<1 := by
-    rw [Complex.norm_natCast_cpow_of_pos (by exact_mod_cast hQ0)]
+    rw [Complex.norm_natCast_cpow_of_pos (by simp_all)]
     apply Real.rpow_lt_one_of_one_lt_of_neg hQ
-    norm_num [Complex.mul_re]
+    norm_num
     linarith
   have hW : ‖(Ideal.absNorm P.val:ℂ)^(-w)‖<1 := by
-    rw [Complex.norm_natCast_cpow_of_pos (by exact_mod_cast hQ0),Complex.neg_re]
+    rw [Complex.norm_natCast_cpow_of_pos (by simp_all),Complex.neg_re]
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ (by linarith)
   apply mul_ne_zero
   · exact div_ne_zero (one_sub_ne_zero_of_norm_lt_one _ hD)
@@ -50,19 +49,19 @@ theorem markedIdealHighSeries_eq_product (S : Finset Id) (hS : SourceExclusions 
   let R := fun P : PrimeIdeal=>if P∈T then
     idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z else 1
   have hR : HasProd R (∏P∈T,idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z) := by
-    have hh := hasProd_prod_of_ne_finset_one (s:=T) (f:=R) (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
+    have hh := hasProd_prod_of_ne_finset_one (s:=T) (f:=R) (L:=SummationFilter.unconditional PrimeIdeal) (by grind)
     simpa only [R,Finset.prod_ite_mem,Finset.inter_self] using hh
   have he := (excludedIdealHighSeries_hasProd S hS.prime η x w z hx hw hz).mul hR
   have heq (P : PrimeIdeal) :
       (∑'b : HighValuation,excludedHighPrimeTerm S η x w z P b)*R P=
       ∑'b : HighValuation,markedLocal T completedValuationMark (excludedHighPrimeTerm S η x w z) P b := by
     by_cases hp : P∈T
-    · rw [selectedLocal_outside S hS.prime T η P (hT P hp) x w z hx hw hz,ite_eq_left hp]
+    · rw [selectedLocal_outside S hS.prime T η P (by grind) x w z hx hw hz,ite_eq_left hp]
       have hu : (∑'b : HighValuation,excludedHighPrimeTerm S η x w z P b)=idealHighLocalFactor η P.val x w z := by
         simpa only [excludedHighPrimeTerm,excludedHighArray,ite_eq_right (hT P hp)] using
           excludedHighLocalFactor S hS.prime η x w z hx hw hz P
       rw [hu,show R P=idealMarkedLocalFactor η P x w z/idealHighLocalFactor η P.val x w z from ite_eq_left hp]
-      exact mul_div_cancel₀ _ (source_idealHighLocalFactor_ne_zero S hS η P (hT P hp) x w z hx hw hz)
+      exact mul_div_cancel₀ _ (source_idealHighLocalFactor_ne_zero S hS η P (by grind) x w z hx hw hz)
     · simp only [R,hp,ite_false,mul_one,markedLocal,one_mul]
   have he' : HasProd (fun P : PrimeIdeal=>∑'b : HighValuation,
       markedLocal T completedValuationMark (excludedHighPrimeTerm S η x w z) P b)

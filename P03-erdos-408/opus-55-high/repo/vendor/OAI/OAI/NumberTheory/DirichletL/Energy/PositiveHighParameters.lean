@@ -8,27 +8,20 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalProfileControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighParameters
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceLivePower CenteredMomentEnergyOriginalSource
+open HeckeFamily
+open CenteredMomentEnergyState
 open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyOriginalProfileControl
-open CenteredMomentEnergyOriginalHighReflectionSymmetric
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
+open CenteredMomentSourceInputTailUniform
+open CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 variable (η₀:Character)(θ:α→ RayQuotient.Characters M H)
 variable (W:ℝ→ ℂ)(hW:Continuous W)(aslot bslot lo hi:ℝ)(haslot:0<aslot)
 variable (hWs:Function.support W⊆Set.Icc aslot bslot)
@@ -43,7 +36,7 @@ lemma actual_width_le (hZ:1<Z):
     Real.logb Z s.radial.scale+Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.width:=by
   have hn:0<(s.character.modulus.absNorm:ℝ):=by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr s.character.modulus_ne_bot)
-  have hc:Real.logb Z (s.character.modulus.absNorm:ℝ)≤s.characterWidth:=
+  have hc:=
     (Real.logb_le_iff_le_rpow hZ hn).mpr s.modulus_bound
   rw [s.scale_eq,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
   exact add_le_add_right hc _
@@ -51,7 +44,7 @@ lemma actual_width_le (hZ:1<Z):
 lemma actual_conductor_scale (hZ:1<Z):
     s.radial.scale*(s.character.modulus.absNorm:ℝ)≤Z^s.width:=by
   rw [s.scale_eq,NaturalState.width,Real.rpow_add (zero_lt_one.trans hZ)]
-  exact mul_le_mul_of_nonneg_left s.modulus_bound (Real.rpow_nonneg (by linarith) _)
+  exact mul_le_mul_of_nonneg_left s.modulus_bound (by positivity)
 
 omit [DecidableEq α] in
 lemma balanced_control (N:ℕ)(hN:Fintype.card α≤N)(S:Finset (ℕ×ℕ)):

@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Reflection.HeightTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
+variable {ι : Type*} [Fintype ι] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 def retainedDyads (scale B : ℝ) : Finset (ℕ×ℕ×ℕ) :=
   (retainedDyadicBox scale B).filter (fun i => rawDyadicCenter scale i≤B)
@@ -25,10 +24,10 @@ lemma mem_retainedDyads (scale B : ℝ) (hs : 0<scale) (i : ℕ×ℕ×ℕ) :
 lemma literalDyadicBlock_summable (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
-    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
+    (hN : (9:ActualEisensteinCubic.O)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
+    (hchar : ∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
-    (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) (u : Eisˣ) :
+    (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) (u : ActualEisensteinCubic.Oˣ) :
     Summable (literalDyadicBlock G D s hc j S W X u) := by
   have hs := ((literalRawSeries_summable_norm G D s hc hN hbase hchar j hj S W lo hi hlo hWs hW X hX).of_norm).prod_factor u
   have hh := (dualDyadicIndexEquiv.symm.summable_iff.mpr hs).sigma
@@ -47,8 +46,7 @@ lemma tsum_sub_finset_eq_tail {α : Type*} (f : α→ℂ) (hf : Summable f) (A :
         apply tsum_congr
         intro i
         by_cases hi : i∈A <;> simp [hi]
-  rw [ht] at hh
-  exact eq_sub_of_add_eq' hh |>.symm
+  grind
 
 end
 end SevenEighths.InverseReflectedPhase

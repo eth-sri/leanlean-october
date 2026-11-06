@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanCoefficients
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -18,12 +17,11 @@ theorem primeGroups_prod_split {R : Type*} [CommMonoid R] (P : PrimeGroups)
     (f : P.Group → R) :
     (∏ g : P.Group, f g) = (∏ g : P.SmallGroup, f g.val) * ∏ g : P.BigGroup, f g.val := by
   let e : {g : P.Group // ¬ P.big g = false} ≃ P.BigGroup :=
-    Equiv.subtypeEquivRight (fun g => by cases P.big g <;> simp)
+    Equiv.subtypeEquivRight (fun g => by simp)
   have hc : (∏ g : {g : P.Group // ¬ P.big g = false}, f g.val) =
       ∏ g : P.BigGroup, f g.val := Fintype.prod_equiv e _ _ (fun _ => rfl)
   have he := Fintype.prod_subtype_mul_prod_subtype (fun g : P.Group => P.big g = false) f
-  rw [hc] at he
-  exact he.symm
+  simp_all
 
 theorem markMass_split (P : PrimeGroups) (M : ℕ) :
     P.markMass M = (∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℤ))) *
@@ -75,7 +73,7 @@ theorem reconstructed_initial_mass (S : LifespanAssignment P n) (y : P.SmallResi
   rw [Q.stateBefore_initial, memoryMass_empty]
   have hp := hy 0
   rw [offset_zero, translateSmallResidues_zero] at hp
-  exact ite_eq_left hp
+  simp_all
 
 
 end ResiduePath

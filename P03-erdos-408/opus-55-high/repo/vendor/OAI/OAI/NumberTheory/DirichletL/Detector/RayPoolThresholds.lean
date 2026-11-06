@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem power_pool_thresholds {ι : Type*} [Fintype ι]
@@ -35,7 +35,7 @@ theorem power_pool_thresholds {ι : Type*} [Fintype ι]
   refine ⟨hZ,h480,hsmall.le,fun j=>⟨h480.trans (hmono j),hmod.trans_le (hmono j)⟩,?_⟩
   intro j P hP
   have hp := pool_norm_bounds C S hc.le hd (Real.rpow_pos_of_pos hZ0 _) P hP
-  have hn : c*Z^ellMin<(P.val.absNorm:ℝ) := (hmono j).trans_lt (by simpa only [mul_comm] using hp.1)
+  have hn : c*Z^ellMin<(P.val.absNorm:ℝ) := (hmono j).trans_lt (by linarith)
   exact ⟨hn.le,prime_coprime_of_norm_gt η P (hmod.trans hn),(mem_pool C S c d _ P).mp hP |>.2.2.2⟩
 
 variable (M : Id) [NeZero M]
@@ -63,9 +63,9 @@ theorem power_ray_mass_and_normalizer {ι : Type*} [Fintype ι]
       (ray_pool_mass_eventually_positive M H hH S (W j) c d hc hd (hsupp j)
         (hW j) (hcompact j) (hp j) (hW0 j) (hne j))
   have hi := ProbeRayNormalization.ray_principalScalar_inverse_subpower M H hH Finset.univ S W
-    (fun _=>c) (fun _=>d) ell (fun _ _=>hc) (fun _ _=>hd) (fun j _=>hsupp j)
-    (fun j _=>hW j) (fun j _=>hcompact j) (fun j _=>hp j) (fun j _=>hW0 j) (fun j _=>hne j)
-    (fun j _=>hell j) eps heps
+    (fun _=>c) (fun _=>d) ell (by grind) (by grind) (by grind)
+    (by grind) (by grind) (by grind) (by grind) (by grind)
+    (by grind) eps heps
   filter_upwards [hm,hi] with Z hmass hinv
   exact ⟨hmass,hinv⟩
 end SevenEighths.ProbeRaySlots

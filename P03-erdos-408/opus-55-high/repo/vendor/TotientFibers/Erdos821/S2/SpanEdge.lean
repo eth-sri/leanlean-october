@@ -8,7 +8,6 @@ public import Erdos821.S2.PhysicalCompatibility
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -59,7 +58,7 @@ theorem promotionIndex_injective (S : LifespanAssignment P n) (hq : Q.Valid) (i 
     _ = (memoryEntry (Q.memoryAfter S i.castSucc g) (Q.promotionIndex S i g j)).1 :=
       (Q.promotionIndex_spec S i g j).symm
     _ = (memoryEntry (Q.memoryAfter S i.castSucc g) (Q.promotionIndex S i g k)).1 :=
-      congrArg (fun h => (memoryEntry (Q.memoryAfter S i.castSucc g) h).1) he
+      by grind
     _ = _ := Q.promotionIndex_spec S i g k
 
 def reconstructedTransferChoice (S : LifespanAssignment P n) (y : P.SmallResidues) (i : Fin n) :
@@ -93,7 +92,7 @@ theorem memoryAfter_member_form (S : LifespanAssignment P n) (i : Fin (n + 1)) (
   have he := Q.memoryAfter_eq_map S i g
   have hm := Eq.mp (congrArg (fun m : P.Memory g.val => z ∈ m) he) hz
   obtain ⟨p, hp, he⟩ := Multiset.mem_map.mp hm
-  exact ⟨p, hp, he.symm⟩
+  grind
 
 theorem source_activeVisit (i : Fin n) (g : P.BigGroup) (j : Fin (J + F.ell)) :
     i.castSucc ∈ Q.activeVisits g (Q.source i g.val j) := by
@@ -112,7 +111,7 @@ theorem span_active_hit (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
   rcases he : S g p with _ | ⟨birth, stop⟩
   · rw [he] at hs
     rw [hs] at hi
-    exact False.elim (Finset.notMem_empty i hi)
+    simp_all
   · rw [he] at hs
     exact hs.2.2.2.2 i hi
 
@@ -132,8 +131,7 @@ theorem promotion_translated_zero (S : LifespanAssignment P n) (hS : Q.lifespanV
   rw [he]
   have hh := Q.span_active_hit S hS i.succ g (Q.target i g.val j.val) (Q.target_activeVisit i g j.val)
   rw [residuePath_offset_succ] at hh
-  simp only [Int.cast_sub, Int.cast_add] at hh ⊢
-  linear_combination hh
+  grind
 
 end ResiduePath
 

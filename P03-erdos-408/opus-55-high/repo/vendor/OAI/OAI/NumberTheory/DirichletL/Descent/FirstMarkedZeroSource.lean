@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
-      (coeff:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ)
-      (m₁ m₂:O) (test₁ test₂:CubeCoordinates ι→Finset ι→ℂ)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal ActualEisensteinCubic.O))
+      (coeff:CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→ℂ) (Ψ₁ Ψ₂:ActualEisensteinCubic.O→*ℂ)
+      (m₁ m₂:ActualEisensteinCubic.O) (test₁ test₂:CubeCoordinates ι→Finset ι→ℂ)
       (extra₁ extra₂ : CubeCoordinates ι→Finset ι)
       (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
       (W:𝓢(ℝ,ℂ)) (Γ G₁ G₂ L K B F:ℝ),
@@ -71,7 +70,7 @@ theorem full_marked_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     Γ (Cm*(B^2*L)^ε*G₁) (Cm*(B^2*L)^ε*G₂) L K B F
     hΓ (by positivity) (by positivity) hL hB hF hΨ₁ hΨ₂ hadm hb₁ hb₂ hI0 hIF hcoeff ht₁ ht₂
     (fun b hb U hU=>hs₁ b hb U (mul_ne_zero_iff.mp hU).2)
-  exact hh.trans_eq (by ring)
+  linarith
 
 end SevenEighths.InverseMoment
 

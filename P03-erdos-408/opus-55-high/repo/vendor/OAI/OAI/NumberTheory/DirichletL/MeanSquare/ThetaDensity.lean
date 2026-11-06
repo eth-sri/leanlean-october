@@ -8,31 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open EisensteinEmbedding
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -52,60 +43,49 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace InitialMeanSquare
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open SecondPassArithmetic SecondPassIntegration JointLogSeparation
+open scoped Classical ContDiff
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration
 open FirstPassCubeLabels (columnLog)
 
 end
 
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalRowCompletion
 
 end InitialMeanSquare
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff MatrixGroups
+open scoped Classical Topology ContDiff
 
 lemma cuspBarrierField_local_model (p : SpatialCoordinates) (hp : 0<p 2) :
     (cuspBarrierField 2 3 =ᶠ[𝓝 p] (fun _ => 1)) ∨
@@ -126,7 +106,7 @@ lemma cuspBarrierField_local_model (p : SpatialCoordinates) (hp : 0<p 2) :
       rw [eventually_all_finset]
       intro x hxT
       apply (rowHeight_contDiffAt _ (fullCuspRow_ne_zero x) p hp).continuousAt.eventually_lt_const
-      have hn : rowHeight (fullCuspRow x) p≤1 := not_lt.mp (fun h => hx ⟨x,h⟩)
+      have hn : rowHeight (fullCuspRow x) p≤1 := by grind
       linarith
     filter_upwards [hT,hsmall] with q hq hqT
     change 1+fullCuspProfileField (cuspBarrierProfile 2 3) q=1
@@ -134,8 +114,8 @@ lemma cuspBarrierField_local_model (p : SpatialCoordinates) (hp : 0<p 2) :
       intro x
       apply cuspBarrierProfile_zero 2 3 (by norm_num)
       by_cases hmem : x∈T
-      · exact (hqT x hmem).le
-      · exact (hq x hmem).le.trans (by norm_num)
+      · grind
+      · grind
     simp only [fullCuspProfileField,hz,tsum_zero,add_zero]
 
 lemma cuspBarrierProfile_log_derivative_bound :
@@ -144,7 +124,7 @@ lemma cuspBarrierProfile_log_derivative_bound :
   have hd := (contDiff_infty_iff_deriv.mp (cuspBarrierProfile_smooth 2 3)).2.continuous
   obtain ⟨C,hC⟩ := ((isCompact_Icc : IsCompact (Set.Icc (1:ℝ) 3)).image hd.abs).bddAbove
   let D := max 1 (3*max C 0)
-  have hD : 0≤D := le_trans (by norm_num) (le_max_left _ _)
+  have hD : 0≤D := by positivity
   refine ⟨D,hD,fun v hv => ?_⟩
   by_cases hhigh : 3<v
   · have he : cuspBarrierProfile 2 3 =ᶠ[𝓝 v] (fun x => x-1) := by
@@ -153,10 +133,9 @@ lemma cuspBarrierProfile_log_derivative_bound :
     have hder : deriv (cuspBarrierProfile 2 3) v=1 := by rw [he.deriv_eq]; simp
     rw [hder,mul_one,abs_of_pos (by linarith),he.self_of_nhds]
     have h := mul_le_mul_of_nonneg_right (le_max_left 1 (3*max C 0)) (show 0≤v by linarith)
-    dsimp only [D]
-    nlinarith
+    linarith
   · have hCv : |deriv (cuspBarrierProfile 2 3) v|≤max C 0 :=
-      (hC (Set.mem_image_of_mem _ (show v∈Set.Icc (1:ℝ) 3 from ⟨hv.le,not_lt.mp hhigh⟩))).trans (le_max_left _ _)
+      (hC (by grind)).trans (by simp)
     have h1 : |v*deriv (cuspBarrierProfile 2 3) v|≤3*max C 0 := by
       rw [abs_mul,abs_of_pos (by linarith)]
       exact mul_le_mul (not_lt.mp hhigh) hCv (abs_nonneg _) (by positivity)
@@ -173,14 +152,14 @@ lemma cuspBarrierField_scaled_deriv_bound :
     simpa only [Function.update_eq_self] using ((continuous_axis_update p j).continuousAt (x := p j)).tendsto
   rcases cuspBarrierField_local_model p hp with hz | ⟨x,hx,he⟩
   · have hzCast : (fun q => (cuspBarrierField 2 3 q:ℂ)) =ᶠ[𝓝 p] (fun _ => (1:ℂ)) :=
-      hz.mono (fun q hq => congrArg (fun v : ℝ => (v:ℂ)) hq)
+      hz.mono (by simp)
     have hzC := hzCast.comp_tendsto ht
     change axisSlice (fun q => (cuspBarrierField 2 3 q:ℂ)) p j =ᶠ[𝓝 (p j)] (fun _ => (1:ℂ)) at hzC
     rw [hzC.deriv_eq,deriv_const,mul_zero,norm_zero,hz.self_of_nhds,mul_one]
-    exact hD
+    omega
   · have heCast : (fun q => (cuspBarrierField 2 3 q:ℂ)) =ᶠ[𝓝 p]
         (fun q => ((1+cuspBarrierProfile 2 3 (rowHeight (fullCuspRow x) q):ℝ):ℂ)) :=
-      he.mono (fun q hq => congrArg (fun v : ℝ => (v:ℂ)) hq)
+      he.mono (by grind)
     have heC := heCast.comp_tendsto ht
     change axisSlice (fun q => (cuspBarrierField 2 3 q:ℂ)) p j =ᶠ[𝓝 (p j)]
       (fun t => ((1+cuspBarrierProfile 2 3 (rowHeight (fullCuspRow x) (Function.update p j t)):ℝ):ℂ)) at heC
@@ -201,7 +180,7 @@ lemma cuspBarrierField_scaled_deriv_bound :
     rw [hid,norm_mul,Complex.norm_real,Complex.norm_real,Real.norm_eq_abs,Real.norm_eq_abs]
     apply (mul_le_of_le_one_left (abs_nonneg _) (rowLogD_hyperbolic_bound _ (fullCuspRow_ne_zero x) p hp j)).trans
     rw [he.self_of_nhds]
-    exact hbound _ hx
+    simp_all
 
 lemma kernelBarrier_scaled_fderiv_bound :
     ∃D : ℝ,0≤D ∧ ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -221,7 +200,7 @@ lemma kernelBarrier_scaled_fderiv_bound :
   rw [←(euclideanAxisSlice_derivatives f hf p hp j).1,ha.deriv_eq]
   change _≤D*cuspBarrier 2 3 (euclideanToHyperbolic p)
   rw [cuspBarrier_euclidean_eq 2 3 p hp]
-  exact hbound p.ofLp hp j
+  simp_all
 
 lemma kernelBarrier_scaled_real_fderiv_bound :
     ∃D : ℝ,0≤D ∧ ∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -249,9 +228,7 @@ lemma kernelExhaustionProfile_euler_bounded :
       ((hasDerivAt_id v).div_const c))
   change HasDerivAt (kernelExhaustionProfile n) (0-deriv (cuspTransition 1 2) (v/c)*(1/c)) v at hd
   rw [hd.deriv]
-  have he : v*(0-deriv (cuspTransition 1 2) (v/c)*(1/c))= -(v/c*deriv (cuspTransition 1 2) (v/c)) := by ring
-  rw [he,abs_neg]
-  exact hbound (v/c)
+  grind
 
 lemma kernelExhaustionCutoff_scaled_fderiv_bound :
     ∃C : ℝ,0≤C ∧ ∀n : ℕ,∀p : EuclideanSpatial,0<p 2→∀j : Fin 3,
@@ -273,23 +250,22 @@ lemma kernelExhaustionCutoff_scaled_fderiv_bound :
   rw [Complex.real_smul,←Complex.ofReal_mul,←Complex.ofReal_mul,Complex.norm_real,Real.norm_eq_abs]
   calc
     |p 2*(fderiv ℝ phi p (euclideanCoordinateVector j)*deriv (kernelExhaustionProfile n) (phi p))|
-      = |p 2*fderiv ℝ phi p (euclideanCoordinateVector j)| *|deriv (kernelExhaustionProfile n) (phi p)| := by rw [←abs_mul]; congr 1; ring
+      = |p 2*fderiv ℝ phi p (euclideanCoordinateVector j)| *|deriv (kernelExhaustionProfile n) (phi p)| := by grind
     _ ≤ (D*phi p)*|deriv (kernelExhaustionProfile n) (phi p)| :=
-      mul_le_mul_of_nonneg_right (hgrad p hp j) (abs_nonneg _)
+      mul_le_mul_of_nonneg_right (by grind) (abs_nonneg _)
     _ = D*|phi p*deriv (kernelExhaustionProfile n) (phi p)| := by
       rw [abs_mul,abs_of_nonneg (le_trans zero_le_one (kernelQuotientBarrier_one_le 2 3 (by norm_num) (by norm_num) _))]
       ring
-    _ ≤ D*B := mul_le_mul_of_nonneg_left (hprofile n (phi p)) hD
+    _ ≤ D*B := mul_le_mul_of_nonneg_left (by grind) hD
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace SixthPowerAverage
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge hiding O
 open EisensteinSchwartzPoisson hiding O
 open IdealMobiusDivisorSum hiding O
-open ConcreteTraceCRT ShortDraftHeckeBridge
+open ShortDraftHeckeBridge
 open QuadraticInitialBound hiding O
 
 def totientDensity (I : Ideal ActualEisensteinCubic.O) : ℂ :=

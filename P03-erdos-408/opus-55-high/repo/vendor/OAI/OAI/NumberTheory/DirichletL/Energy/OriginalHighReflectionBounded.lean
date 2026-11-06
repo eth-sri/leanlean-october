@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceProfileBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionBounded
@@ -22,11 +22,10 @@ open CenteredMomentEnergyReferenceProfileBudget
 open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
 open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
 open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem original_high_power
     (Wslot:ℝ→ℂ)(aslot bslot lo hi:ℝ)
@@ -38,7 +37,7 @@ theorem original_high_power
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),
     ∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e Lslot κ:ℝ)(η₀:Character)(Q:Ideal O)(K:ℝ),0≤e → 0≤K →
+      ∀(e Lslot κ:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤e → 0≤K →
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap e κ Z η₀ Q degree S K →
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
@@ -136,8 +135,7 @@ theorem original_high_power
   refine le_trans ?_ (hlast.trans_eq ?_)
   · dsimp only [P,Qmain,Qerror] at hfirst
     convert hfirst using 1 <;> (try dsimp only [E,A]) <;> ring
-  · dsimp only [E,A]
-    ring
+  ring
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionBounded
 

@@ -9,11 +9,10 @@ public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff FourierTransform SchwartzMap Nat
+open scoped ContDiff FourierTransform Nat
 open MeasureTheory
 
 namespace Erdos821.P5Energy
-open Blueprint.Analytic
 
 /-- The dilated amplitude `u ↦ K̂(c e^{-u})`. -/
 def amp (c u : ℝ) : ℂ := localKernelFourier (c * Real.exp (-u))
@@ -55,23 +54,23 @@ theorem amp_iter_bound (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, ∀ c u :
   have hf : ContDiff ℝ ∞ (fun u : ℝ => c * Real.exp (-u)) := by fun_prop
   have hcomp := norm_iteratedFDeriv_comp_le (g := localKernelFourier)
     (f := fun u : ℝ => c * Real.exp (-u)) (n := i) localKernelFourier_contDiff hf
-    (by exact_mod_cast le_top) u (C := C / D ^ (N + 2)) (D := D)
-    (fun k hk => by simpa [hD, hx] using hbound k (hk.trans hi) x)
+    (by simp) u (C := C / D ^ (N + 2)) (D := D)
+    (fun k hk => by grind)
     (fun k hk1 hk2 => by
       rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_scaled_exp]
       have hnorm : ‖c * ((-1) ^ k * Real.exp (-u))‖ = |x| := by
         rw [hx, Real.norm_eq_abs, abs_mul, abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul,
           abs_mul, abs_of_pos (Real.exp_pos _)]
       rw [hnorm]
-      calc |x| ≤ D := by rw [hD]; linarith
+      calc |x| ≤ D := by linarith
         _ ≤ D ^ k := le_self_pow₀ hD1 (by omega))
   have hamp : amp c = localKernelFourier ∘ (fun u : ℝ => c * Real.exp (-u)) := rfl
   rw [hamp]
   refine hcomp.trans ?_
   have hfact : (i ! : ℝ) ≤ 2 := by
-    interval_cases i <;> norm_num [Nat.factorial]
+    interval_cases i <;> norm_num
   have hpowi : D ^ i ≤ D ^ 2 := pow_le_pow_right₀ hD1 hi
-  have hsplit : D ^ (N + 2) = D ^ N * D ^ 2 := pow_add D N 2
+  have hsplit : D ^ (N + 2) = D ^ N * D ^ 2 := by ring
   have hDN : 0 < D ^ N := pow_pos hDpos N
   have hD2 : 0 < D ^ 2 := pow_pos hDpos 2
   calc (i ! : ℝ) * (C / D ^ (N + 2)) * D ^ i ≤ 2 * (C / D ^ (N + 2)) * D ^ 2 := by
@@ -88,7 +87,7 @@ theorem amp_iter_bound_le_two (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, �
   intro i hi c u hu
   refine (hbound i hi c u).trans ?_
   have he : Real.exp (-u) * Real.exp u = 1 := by rw [← Real.exp_add]; simp
-  have heu : Real.exp u ≤ Real.exp 2 := Real.exp_le_exp.mpr hu
+  have heu := Real.exp_le_exp.mpr hu
   have he1 : 1 ≤ Real.exp 2 := by
     have := Real.add_one_le_exp 2; linarith
   have hcx : 1 + |c| ≤ Real.exp 2 * (1 + |c * Real.exp (-u)|) := by
@@ -96,28 +95,26 @@ theorem amp_iter_bound_le_two (N : ℕ) : ∃ B : ℝ, 0 < B ∧ ∀ i ≤ 2, �
       rw [abs_mul, abs_of_pos (Real.exp_pos _), mul_assoc, he, mul_one]
     rw [hc]
     have h0 : 0 ≤ |c * Real.exp (-u)| := abs_nonneg _
-    nlinarith [mul_le_mul_of_nonneg_left heu h0]
+    nlinarith
   have hpos : 0 < 1 + |c * Real.exp (-u)| := by positivity
   have hpow : (1 + |c|) ^ N ≤ Real.exp 2 ^ N * (1 + |c * Real.exp (-u)|) ^ N := by
     rw [← mul_pow]; exact pow_le_pow_left₀ (by positivity) hcx N
   rw [div_le_div_iff₀ (by positivity) (by positivity)]
-  calc B * (1 + |c|) ^ N ≤ B * (Real.exp 2 ^ N * (1 + |c * Real.exp (-u)|) ^ N) :=
-        mul_le_mul_of_nonneg_left hpow hB.le
-    _ = B * Real.exp 2 ^ N * (1 + |c * Real.exp (-u)|) ^ N := by ring
+  nlinarith
 
 /-- Binomial bookkeeping for second-order Leibniz bounds. -/
 theorem choose_sum_bound {n : ℕ} (hn : n ≤ 2) (a b : ℕ → ℝ) (A B : ℝ)
     (ha0 : ∀ i, 0 ≤ a i) (hb0 : ∀ i, 0 ≤ b i) (ha : ∀ i ≤ n, a i ≤ A) (hb : ∀ i ≤ n, b i ≤ B) :
     ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * a i * b (n - i) ≤ 4 * A * B := by
-  have hA : 0 ≤ A := (ha0 0).trans (ha 0 (Nat.zero_le _))
-  have hB : 0 ≤ B := (hb0 0).trans (hb 0 (Nat.zero_le _))
+  have hA : 0 ≤ A := (ha0 0).trans (by grind)
+  have hB : 0 ≤ B := (hb0 0).trans (by grind)
   calc ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * a i * b (n - i)
       ≤ ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * A * B := by
         apply Finset.sum_le_sum
         intro i hi
-        have hi' : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
-        apply mul_le_mul (mul_le_mul_of_nonneg_left (ha i hi') (by positivity))
-          (hb (n - i) (Nat.sub_le n i)) (hb0 _) (by positivity)
+        have hi' := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
+        apply mul_le_mul (mul_le_mul_of_nonneg_left (by grind) (by positivity))
+          (by grind) (hb0 _) (by positivity)
     _ = (2 : ℝ) ^ n * A * B := by
         rw [← Finset.sum_mul, ← Finset.sum_mul]
         congr 2
@@ -134,10 +131,10 @@ theorem mul_iter_bound {f g : ℝ → ℂ} (hf : ContDiff ℝ ∞ f) (hg : ContD
     (hB : ∀ i ≤ 2, ‖iteratedFDeriv ℝ i g u‖ ≤ B) :
     ∀ n ≤ 2, ‖iteratedFDeriv ℝ n (fun y => f y * g y) u‖ ≤ 4 * A * B := by
   intro n hn
-  refine (norm_iteratedFDeriv_mul_le hf hg u (by exact_mod_cast le_top)).trans ?_
+  refine (norm_iteratedFDeriv_mul_le hf hg u (by simp)).trans ?_
   exact choose_sum_bound hn (fun i => ‖iteratedFDeriv ℝ i f u‖)
-    (fun i => ‖iteratedFDeriv ℝ i g u‖) A B (fun _ => norm_nonneg _) (fun _ => norm_nonneg _)
-    (fun i hi => hA i (hi.trans hn)) (fun i hi => hB i (hi.trans hn))
+    (fun i => ‖iteratedFDeriv ℝ i g u‖) A B (by simp) (by simp)
+    (by grind) (by grind)
 
 /-- Iterated derivatives vanish off a closed interval containing the support. -/
 theorem iteratedFDeriv_eq_zero_of_notMem {g : ℝ → ℂ}
@@ -158,12 +155,12 @@ theorem norm_fourier_le_of_support {f : ℝ → ℂ} (hsupp : ∀ u ∉ Set.Icc 
     {A : ℝ} (hA : ∀ u, ‖f u‖ ≤ A) (η : ℝ) : ‖𝓕 f η‖ ≤ 4 * A := by
   rw [Real.fourier_real_eq_integral_exp_smul]
   rw [← setIntegral_eq_integral_of_forall_compl_eq_zero (s := Set.Icc (-2 : ℝ) 2)
-    (fun u hu => by simp [hsupp u hu])]
-  have hfin : volume (Set.Icc (-2 : ℝ) 2) < ⊤ := by simp [Real.volume_Icc]
+    (fun u hu => by simp_all)]
+  have hfin : volume (Set.Icc (-2 : ℝ) 2) < ⊤ := by simp
   refine (norm_setIntegral_le_of_norm_le_const hfin (C := A) (fun u _ => ?_)).trans ?_
-  · rw [norm_smul, Complex.norm_exp_ofReal_mul_I, one_mul]; exact hA u
+  · rw [norm_smul, Complex.norm_exp_ofReal_mul_I, one_mul]; simp_all
   · have : volume.real (Set.Icc (-2 : ℝ) 2) = 4 := by
-      simp [Measure.real, Real.volume_Icc]; norm_num
+      simp; norm_num
     rw [this]; linarith
 
 /-- Two integrations by parts: decay of the Fourier transform of a compactly supported `C²`
@@ -180,7 +177,7 @@ theorem fourier_decay_of_compact {g : ℝ → ℂ} (hg : ContDiff ℝ ∞ g)
   have hint : ∀ n : ℕ, Integrable (iteratedDeriv n g) := by
     intro n
     apply Continuous.integrable_of_hasCompactSupport
-    · exact hg.continuous_iteratedDeriv n (by exact_mod_cast le_top)
+    · exact hg.continuous_iteratedDeriv n (by simp)
     · apply HasCompactSupport.of_support_subset_isCompact isCompact_Icc
       intro u hu
       by_contra hnot
@@ -188,9 +185,9 @@ theorem fourier_decay_of_compact {g : ℝ → ℂ} (hg : ContDiff ℝ ∞ g)
   have h0 : ‖𝓕 g η‖ ≤ 4 * A := by
     have := norm_fourier_le_of_support (f := iteratedDeriv 0 g) (hzero 0) (hbd 0 (by norm_num)) η
     simpa using this
-  have h2 : ‖𝓕 (iteratedDeriv 2 g) η‖ ≤ 4 * A :=
+  have h2 :=
     norm_fourier_le_of_support (hzero 2) (hbd 2 le_rfl) η
-  have hF := Real.fourier_iteratedDeriv (f := g) (N := 2) (n := 2) (hg.of_le (by exact_mod_cast le_top))
+  have hF := Real.fourier_iteratedDeriv (f := g) (N := 2) (n := 2) (hg.of_le (by simp))
     (fun n _ => hint n) le_rfl
   rw [hF] at h2
   have hnorm : ‖(2 * (Real.pi : ℂ) * Complex.I * (η : ℂ)) ^ 2 • 𝓕 g η‖ =
@@ -202,9 +199,7 @@ theorem fourier_decay_of_compact {g : ℝ → ℂ} (hg : ContDiff ℝ ∞ g)
         Real.norm_eq_abs, Real.norm_eq_abs, abs_mul, abs_mul, abs_of_pos Real.pi_pos]
       simp
     rw [this, sq_abs]
-  simp only at h2
-  rw [hnorm] at h2
-  nlinarith
+  linarith
 
 /-- The compact amplitude product whose `u`-Fourier transform is the Mellin kernel. -/
 def gfun (c c' u : ℝ) : ℂ := logCompactWeight u * (amp c u * (starRingEnd ℂ) (amp c' u))
@@ -252,7 +247,7 @@ theorem gfun_iter_bound (N : ℕ) : ∃ A : ℝ, 0 < A ∧ ∀ c c' : ℝ, ∀ i
         B / (1 + |c'|) ^ N := by
       intro k hk
       rw [conj_amp_eq, Complex.conjLIE.norm_iteratedFDeriv_comp_left]
-      exact hamp k hk c' u hu2
+      exact by grind
     have hprod := mul_iter_bound (amp_contDiff c) (conj_amp_contDiff c') u
       (fun k hk => hamp k hk c u hu2) hconj
     have hall := mul_iter_bound logCompactWeight_contDiff
@@ -263,8 +258,7 @@ theorem gfun_iter_bound (N : ℕ) : ∃ A : ℝ, 0 < A ∧ ∀ c c' : ℝ, ∀ i
         ((1 + |c|) ^ N * (1 + |c'|) ^ N) = 16 * W * B ^ 2 := by
       field_simp
       ring
-    rw [hexp]
-    nlinarith [sq_nonneg B]
+    simp_all
   · rw [iteratedFDeriv_eq_zero_of_notMem (gfun_support c c') i hu, norm_zero]
     positivity
 

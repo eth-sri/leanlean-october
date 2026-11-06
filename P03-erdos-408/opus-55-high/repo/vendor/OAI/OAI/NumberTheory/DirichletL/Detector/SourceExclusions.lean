@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighLFactorization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve UniqueFactorizationMonoid ProbeEuler
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve UniqueFactorizationMonoid
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma outside_prime_supported (S : Finset Id) (hbad : fixedBadPrimes⊆S)
     (P : PrimeIdeal) (hP : P.val∉S) : Supported P.val := by
@@ -23,7 +22,7 @@ lemma outside_prime_supported (S : Finset Id) (hbad : fixedBadPrimes⊆S)
     simpa only [normalizedFactors_irreducible P.property.irreducible,normalize_eq,
       Multiset.mem_singleton] using hQ
   subst Q
-  exact (prime_good_iff_not_bad P.val).mpr (fun h=>hP (hbad h))
+  exact (prime_good_iff_not_bad P.val).mpr (by grind)
 
 structure SourceExclusions (S : Finset Id) : Prop where
   prime : ∀P∈S,Prime P

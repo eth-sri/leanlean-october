@@ -11,7 +11,6 @@ public import Erdos821.P3Clean.TiltedIdealKernel
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -40,9 +39,7 @@ theorem cleanBigMultiplier_average_error (F : FixedData) (n : ℕ)
     by_cases h : bigBan ν a b u
     · simp only [cleanBigMultiplier, ite_eq_left h, mul_one, mul_zero, add_zero]
       rw [← Complex.ofReal_one, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
-      rw [abs_of_nonneg (by linarith : 0 ≤
-        Real.sqrt (freshDensity F n ν a) * Real.sqrt (freshDensity F n ν b) - 1)]
-      linarith
+      grind
     · simp only [cleanBigMultiplier, ite_eq_right h, mul_zero, zero_sub, norm_neg, norm_one, mul_one]
       linarith
   calc
@@ -68,7 +65,7 @@ theorem normalizedTiltedBannedRaw_forward (A : Model F P J m) (n : ℕ) (theta :
   intro u _
   by_cases hm : (A.pattern v).matchesBig a b
   · by_cases hban : bigBan (A.pattern v) a b u
-    · have hg : (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u := ⟨hm, hban⟩
+    · have hg : (A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u := by grind
       simp only [ite_eq_left hm, ite_eq_left hg, cleanBigMultiplier, ite_eq_left hban,
         mul_one, bigSignedCoefficient, ite_true]
       have h := normalizedFreshDensityFactor F P n (A.pattern v) a b hb hm
@@ -79,17 +76,10 @@ theorem normalizedTiltedBannedRaw_forward (A : Model F P J m) (n : ℕ) (theta :
               Real.sqrt (freshDensity F n (A.pattern v) b) : ℝ) := by
         exact_mod_cast h
       simp only [Complex.ofReal_mul, Complex.ofReal_div] at hc ⊢
-      calc
-        _ = (((A.pattern v).bigAuxMass u : ℂ) *
-            ((Real.sqrt (activeDensity F n a) : ℂ) / (Real.sqrt (activeDensity F n b) : ℂ) *
-              (tiltedFreshMass F n (A.pattern v) b : ℂ))) *
-            ((A.pattern v).coefficient a b u * imaginaryPower ((A.pattern v).DBig a u) A.zeta) *
-            phase (theta * ((A.pattern v).DBig a u : ℝ)) := by ring
-        _ = _ := by rw [hc]; ring
-    · have hg : ¬ ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u) := fun h => hban h.2
+      grind
+    · have hg : ¬ ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u) := by grind
       simp only [ite_eq_left hm, ite_eq_right hg, cleanBigMultiplier, ite_eq_right hban, mul_zero]
-  · have hg : ¬ ((A.pattern v).matchesBig a b ∧ bigBan (A.pattern v) a b u) := fun h => hm h.1
-    simp only [ite_eq_right hm, ite_eq_right hg, mul_zero]
+  grind
 
 theorem densityNormalizedKernel_averageBig (n : ℕ)
     (K : P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → ℂ) :
@@ -98,10 +88,6 @@ theorem densityNormalizedKernel_averageBig (n : ℕ)
   funext a b
   simp only [densityNormalizedKernel, averageBigKernel, activeDensity_actBig,
     Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p _
-  apply Finset.sum_congr rfl
-  intro q _
   ring
 
 theorem averageBigKernel_sub (K H : P.BigLabels (J + F.ell) → P.BigLabels (J + F.ell) → ℂ) :

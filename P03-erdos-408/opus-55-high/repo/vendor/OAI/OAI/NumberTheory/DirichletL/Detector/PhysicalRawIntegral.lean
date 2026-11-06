@@ -8,29 +8,27 @@ public import OAI.NumberTheory.DirichletL.Detector.RawNestedJoin
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open ProbeMellinBoundary CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-local instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
-local instance : MeasurableSpace O := ⊤
-local instance : MeasurableSingletonClass O := ⟨fun _=>trivial⟩
-local instance : MeasurableSpace (Ideal O) := ⊤
-local instance : MeasurableSingletonClass (Ideal O) := ⟨fun _=>trivial⟩
-local instance (S : Finset (Ideal O)) : MeasurableSpace (SourceRawIndex S) := ⊤
-local instance (S : Finset (Ideal O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
+local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+local instance : Countable (Ideal ActualEisensteinCubic.O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
+local instance : MeasurableSpace ActualEisensteinCubic.O := ⊤
+local instance : MeasurableSingletonClass ActualEisensteinCubic.O := ⟨fun _=>trivial⟩
+local instance : MeasurableSpace (Ideal ActualEisensteinCubic.O) := ⊤
+local instance : MeasurableSingletonClass (Ideal ActualEisensteinCubic.O) := ⟨fun _=>trivial⟩
+local instance (S : Finset (Ideal ActualEisensteinCubic.O)) : MeasurableSpace (SourceRawIndex S) := ⊤
+local instance (S : Finset (Ideal ActualEisensteinCubic.O)) : MeasurableSingletonClass (SourceRawIndex S) := ⟨fun _=>trivial⟩
 
-def rawPhysicalTotalIntegral (η : HeckeFamily.Character) (S : Finset (Ideal O))
-    (hS : ∀P∈S,P.IsMaximal) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
+def rawPhysicalTotalIntegral (η : HeckeFamily.Character) (S : Finset (Ideal ActualEisensteinCubic.O))
+    (hS : ∀P∈S,P.IsMaximal) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
   ((1/(2*Real.pi):ℝ):ℂ)^3*
     ∫p : SourceRawIndex S×HeightSpace,originalRawOnLines η S hS D W0 W1 X Y Z p.1 p.2
       ∂((Measure.count:Measure (SourceRawIndex S)).prod heightMeasure)
 
 theorem rawNestedPhysicalProbe_eq_integral (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
+    (hbad : fixedBadPrimes⊆S) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
@@ -67,8 +65,8 @@ theorem rawNestedPhysicalProbe_eq_integral (η : HeckeFamily.Character)
   congr 1 ; ring
 
 theorem markedPhysicalProbe_eq_raw_integral (η : HeckeFamily.Character)
-    (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
-    (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal) (hpS : ∀P∈S,Prime P)
+    (hbad : fixedBadPrimes⊆S) (hSne : S.Nonempty) (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Set.Icc a0 b0) (hW1 : Function.support W1⊆Set.Icc a1 b1)
     (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :

@@ -10,31 +10,30 @@ public import OAI.NumberTheory.DirichletL.Inversion.ShortCanonicalNormalization
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped Classical
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
-local notation "Eis" => ActualEisensteinCubic.O
+open ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseMoment
 universe u v
 
-def idealLists {σ : Type u} (F : Finset (Ideal Eis))
-    (lists : σ→Finset (primePool F)) (j : σ) : Finset (Ideal Eis) :=
+def idealLists {σ : Type u} (F : Finset (Ideal ActualEisensteinCubic.O))
+    (lists : σ→Finset (primePool F)) (j : σ) : Finset (Ideal ActualEisensteinCubic.O) :=
   (lists j).image Subtype.val
 
-def transportCoeff {σ : Type u} (F : Finset (Ideal Eis))
-    (a : σ→primePool F→ℂ) (j : σ) (P : Ideal Eis) : ℂ :=
+def transportCoeff {σ : Type u} (F : Finset (Ideal ActualEisensteinCubic.O))
+    (a : σ→primePool F→ℂ) (j : σ) (P : Ideal ActualEisensteinCubic.O) : ℂ :=
   if h:P∈primePool F then a j ⟨P,h⟩ else 0
 
-@[simp] theorem transportCoeff_val {σ : Type u} (F : Finset (Ideal Eis))
+@[simp] theorem transportCoeff_val {σ : Type u} (F : Finset (Ideal ActualEisensteinCubic.O))
     (a : σ→primePool F→ℂ) (j : σ) (i : primePool F) :
     transportCoeff F a j i.val=a j i := by simp [transportCoeff]
 
-def idealWeights {σ : Type u} (F : Finset (Ideal Eis))
+def idealWeights {σ : Type u} (F : Finset (Ideal ActualEisensteinCubic.O))
     (lists : σ→Finset (primePool F)) (a : σ→primePool F→ℂ)
     (j : σ) (P : idealLists F lists j) : ℂ := transportCoeff F a j P.val
 
 lemma tuple_mark_product {σ : Type u} [Fintype σ] [DecidableEq σ]
-    (lists : σ→Finset (Ideal Eis)) (w : ∀j,lists j→ℂ) (A : Ideal Eis) :
+    (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (w : ∀j,lists j→ℂ) (A : Ideal ActualEisensteinCubic.O) :
     tupleDivisibilityMark lists w A=
       ∏j,∑P:lists j,if P.val∣A then w j P else 0 := by
   unfold tupleDivisibilityMark
@@ -43,14 +42,12 @@ lemma tuple_mark_product {σ : Type u} [Fintype σ] [DecidableEq σ]
       apply Finset.sum_congr rfl
       intro p hp
       rw [←Finset.prod_mul_distrib]
-      apply Finset.prod_congr rfl
-      intro j hj
-      split_ifs <;> simp
+      simp
     _ = _ := (Fintype.prod_sum (fun j (P : lists j)=>if P.val∣A then w j P else 0)).symm
 
 theorem indexed_mark_eq_tuple {σ : Type u} [DecidableEq σ]
-    (F : Finset (Ideal Eis)) (slots : Finset σ) (lists : σ→Finset (primePool F))
-    (a : σ→primePool F→ℂ) (A : Ideal Eis) :
+    (F : Finset (Ideal ActualEisensteinCubic.O)) (slots : Finset σ) (lists : σ→Finset (primePool F))
+    (a : σ→primePool F→ℂ) (A : Ideal ActualEisensteinCubic.O) :
     indexedIdealMark (fun i:primePool F=>i.val) slots lists a A=
       tupleDivisibilityMark (fun j:slots=>idealLists F lists j.val)
         (fun j:slots=>idealWeights F lists a j.val) A := by
@@ -60,14 +57,13 @@ theorem indexed_mark_eq_tuple {σ : Type u} [DecidableEq σ]
   apply Finset.prod_congr rfl
   intro j hj
   change _ = ∑P:idealLists F lists j.val,if P.val∣A then transportCoeff F a j.val P.val else 0
-  rw [Finset.sum_coe_sort (idealLists F lists j.val) (fun P : Ideal Eis=>if P∣A then transportCoeff F a j.val P else 0)]
+  rw [Finset.sum_coe_sort (idealLists F lists j.val) (fun P : Ideal ActualEisensteinCubic.O=>if P∣A then transportCoeff F a j.val P else 0)]
   change (∑i∈lists j.val,if i.val∣A then a j.val i else 0)=
     ∑P∈(lists j.val).image Subtype.val,if P∣A then transportCoeff F a j.val P else 0
-  rw [Finset.sum_image (fun i hi k hk h=>Subtype.ext h)]
-  simp only [transportCoeff_val]
+  simp
 
 lemma idealLists_disjoint {σ : Type u} [DecidableEq σ]
-    (F : Finset (Ideal Eis)) (slots : Finset σ) (lists : σ→Finset (primePool F))
+    (F : Finset (Ideal ActualEisensteinCubic.O)) (slots : Finset σ) (lists : σ→Finset (primePool F))
     (h : (slots:Set σ).Pairwise (fun j k=>Disjoint (lists j) (lists k))) :
     Pairwise (fun j k:slots=>Disjoint (idealLists F lists j.val) (idealLists F lists k.val)) := by
   intro j k hjk
@@ -75,14 +71,14 @@ lemma idealLists_disjoint {σ : Type u} [DecidableEq σ]
   intro P hP hQ
   obtain ⟨i,hi,he⟩:=Finset.mem_image.mp hP
   obtain ⟨i',hi',he'⟩:=Finset.mem_image.mp hQ
-  have hii : i=i' := Subtype.ext (he.trans he'.symm)
-  have hjk' : j.val≠k.val := fun he=>hjk (Subtype.ext he)
-  exact Finset.disjoint_left.mp (h j.property k.property hjk') hi (hii.symm ▸ hi')
+  have hii : i=i' := by grind
+  have hjk' : j.val≠k.val := by grind
+  exact Finset.disjoint_left.mp (h j.property k.property hjk') hi (by grind)
 
-lemma idealLists_prime_data {σ : Type u} (F : Finset (Ideal Eis))
+lemma idealLists_prime_data {σ : Type u} (F : Finset (Ideal ActualEisensteinCubic.O))
     (hF : ∀I∈F,Admissible I) (lists : σ→Finset (primePool F))
-    (j : σ) (P : Ideal Eis) (hP : P∈idealLists F lists j) :
-    P.IsMaximal ∧ goodLambda∉P ∧ Prime P ∧ ringChar (Eis⧸P)≠2 := by
+    (j : σ) (P : Ideal ActualEisensteinCubic.O) (hP : P∈idealLists F lists j) :
+    P.IsMaximal ∧ goodLambda∉P ∧ Prime P ∧ ringChar (ActualEisensteinCubic.O⧸P)≠2 := by
   obtain ⟨i,hi,rfl⟩:=Finset.mem_image.mp hP
   refine ⟨inferInstance,poolGood F hF i,?_,poolOdd F hF i⟩
   exact Ideal.prime_of_isPrime (NeZero.ne i.val) inferInstance

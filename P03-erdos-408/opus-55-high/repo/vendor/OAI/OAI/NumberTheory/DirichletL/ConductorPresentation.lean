@@ -16,14 +16,9 @@ variable {R : Type*} [CommRing R] [Finite R]
 theorem FactorsThroughIdeal.bot (χ : MulChar R ℂ) : FactorsThroughIdeal χ ⊥ := by
   rw [factorsThroughIdeal_iff]
   intro u hu
-  have hu1 : (u : R) = 1 := sub_eq_zero.mp hu
-  rw [hu1, map_one]
+  have hu1 := sub_eq_zero.mp hu
+  simp_all
 
-theorem FactorsThroughIdeal.pow {χ : MulChar R ℂ} {I : Ideal R}
-    (hχ : FactorsThroughIdeal χ I) (n : ℕ) : FactorsThroughIdeal (χ ^ n) I := by
-  rw [factorsThroughIdeal_iff] at hχ ⊢
-  intro u hu
-  rw [MulChar.pow_apply_coe, hχ u hu, one_pow]
 
 end FiniteConductor
 
@@ -57,7 +52,7 @@ theorem source_le_comap (M : Ideal A) (I : Ideal (A ⧸ M)) :
   intro a ha
   change Ideal.Quotient.mk M a ∈ I
   rw [Ideal.Quotient.eq_zero_iff_mem.mpr ha]
-  exact I.zero_mem
+  simp
 
 end Transport
 
@@ -71,8 +66,7 @@ theorem comap_ne_bot (M : Ideal A) [Finite (A ⧸ M)] (I : Ideal (A ⧸ M)) :
     rw [absNorm_comap_eq_quotient_card]
     exact Nat.card_pos
   intro hzero
-  rw [hzero, Ideal.absNorm_bot] at hpos
-  exact (lt_irrefl 0) hpos
+  simp_all
 
 theorem exists_primitive_presentation_above_quotient
     (M : Ideal A) [Finite (A ⧸ M)] (χ : MulChar (A ⧸ M) ℂ)
@@ -87,8 +81,7 @@ theorem exists_primitive_presentation_above_quotient
   refine ⟨I.comap (Ideal.Quotient.mk M), quotientCharacter M I ψ,
     source_le_comap M I, Ideal.comap_mono hJI, comap_ne_bot M I,
     primitive_quotientCharacter M I ψ hprimitive, hnorm, ?_⟩
-  intro a
-  simpa only [quotientCharacter_mk] using hmask (Ideal.Quotient.mk M a)
+  simp_all
 
 theorem exists_primitive_presentation (M : Ideal A) [Finite (A ⧸ M)]
     (χ : MulChar (A ⧸ M) ℂ) :

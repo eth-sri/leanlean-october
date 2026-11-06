@@ -10,21 +10,19 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondSourceDiagonal
-open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSourceSecondZeroEnergy CenteredMomentCommonRadialData
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass
+open CenteredMomentSourceMass
 open CenteredMomentExceptionalAmplitudePair CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀{ι:Type*}[Fintype ι][DecidableEq ι],Fintype.card ι≤N →
       ∀(a b:ℝ),0<a → 0≤b → ∀(s:Input ι)(p:Profiles a b),
-      s.W₁=p.profile 0 → s.W₂=p.profile 1 → ∀(R seed:Ideal O),seed≠0 →
+      s.W₁=p.profile 0 → s.W₂=p.profile 1 → ∀(R seed:Ideal HeckeFamily.O),seed≠0 →
       ∀κ:ℂ,
       ‖κ*sourceSecondZero (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) s.η s.t‖/volume s.toData≤
@@ -47,9 +45,9 @@ theorem actual_second_zero (N:ℕ)(ε:ℝ)(hε:0<ε):
     intro x;rw [hw2];exact SchwartzMap.norm_le_seminorm ℝ _ _
   have hh:=(hbound hcard s.η s.t R s.ν s.ν_bound s.W s.P s.M (fun i=>max 0 (s.hi i)) s.W₁ s.W₂
     (SchwartzMap.seminorm ℝ 0 0 (p.profile 0)) (SchwartzMap.seminorm ℝ 0 0 (p.profile 1)) b b
-    hM (apply_nonneg _ _) (apply_nonneg _ _) hhi hb hb s.W_bound hW1 hW2
+    hM (by positivity) (by positivity) hhi hb hb s.W_bound hW1 hW2
     hslotzero (by rw [hw1];exact hz 0) (by rw [hw2];exact hz 1)
-    (fun i x hx=>((s.support i hx).2).trans (le_max_right _ _))
+    (fun i x hx=>((s.support i hx).2).trans (by simp))
     (by intro x hx;rw [hw1] at hx;exact (p.support 0 hx).2)
     (by intro x hx;rw [hw2] at hx;exact (p.support 1 hx).2)
     s.X₁ s.X₂ s.Y₁ s.Y₂ (s.X₁*s.X₂) 1 1 seed s.P_pos s.X₁_pos s.X₂_pos s.Y₁_pos s.Y₂_pos

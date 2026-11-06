@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationConjugation
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate
+open scoped ComplexConjugate
 open Complex
 namespace SevenEighths.HeckeDetectorCoefficientTransfer
 open HeckeFamily HeckeDyadic HeckeInverseAmplification

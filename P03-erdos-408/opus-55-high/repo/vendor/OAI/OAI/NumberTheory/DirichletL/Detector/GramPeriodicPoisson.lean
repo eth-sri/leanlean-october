@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open MeasureTheory Filter
-open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProductSpace
+open scoped Classical FourierTransform SchwartzMap
 
 namespace ProbeGramPeriodicPoisson
 
@@ -36,8 +36,7 @@ def rightInjection : ℂ →L[ℝ] Joint :=
 @[simp] theorem point_eq_add (x y : ℂ) :
     point x y = leftInjection x + rightInjection y := by
   change WithLp.toLp 2 (x,y) = WithLp.toLp 2 (x,0) + WithLp.toLp 2 (0,y)
-  rw [← WithLp.toLp_add]
-  simp
+  simp [← WithLp.toLp_add]
 
 theorem slice_isometry (y : ℂ) : Isometry (fun x : ℂ => point x y) := by
   apply Isometry.of_dist_eq
@@ -137,7 +136,7 @@ theorem partialFourier_integrable (W : 𝓢(Joint, ℂ)) (η : ℂ) :
     (by fun_prop : Continuous G).aestronglyMeasurable
     (Eventually.of_forall fun z => by
       simp only [G, Circle.smul_def, smul_eq_mul, norm_mul, Circle.norm_coe, one_mul]
-      exact le_rfl)
+      simp)
   have hGp : Integrable (fun z : ℂ × ℂ => G (WithLp.toLp 2 z)) :=
     (WithLp.volume_preserving_toLp ℂ ℂ).integrable_comp_of_integrable hG
   change Integrable (fun x : ℂ => ∫ y : ℂ,
@@ -175,8 +174,8 @@ theorem product_decay (W : 𝓢(Joint, ℂ)) (x y : ℂ) :
   have hy := WithLp.norm_snd_le ℂ (point x y)
   change ‖x‖ ≤ ‖point x y‖ at hx
   change ‖y‖ ≤ ‖point x y‖ at hy
-  have hx2 : 1+‖x‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg (point x y), norm_nonneg x, norm_nonneg y]
-  have hy2 : 1+‖y‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg (point x y), norm_nonneg x, norm_nonneg y]
+  have hx2 : 1+‖x‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg x]
+  have hy2 : 1+‖y‖^2 ≤ (1+‖point x y‖)^2 := by nlinarith [norm_nonneg y]
   have hpow : (1+‖x‖^2)^2 * (1+‖y‖^2)^2 ≤ (1+‖point x y‖)^8 := by
     calc
       _ ≤ ((1+‖point x y‖)^2)^2 * ((1+‖point x y‖)^2)^2 := by gcongr
@@ -207,7 +206,7 @@ theorem planeMajorant_eisenstein_summable :
     ‖ConcreteTraceCRT.eisEmbedding m.val‖ ^ (-4:ℝ)
   rw [show (-4:ℝ) = -(4:ℝ) by rfl, Real.rpow_neg hn.le, Real.rpow_ofNat]
   apply inv_anti₀ (by positivity)
-  nlinarith [sq_nonneg (‖ConcreteTraceCRT.eisEmbedding m.val‖^2)]
+  nlinarith
 
 theorem joint_eisenstein_summable_norm (W : 𝓢(Joint, ℂ)) :
     Summable (fun m : ActualEisensteinCubic.O × ActualEisensteinCubic.O =>
@@ -216,7 +215,7 @@ theorem joint_eisenstein_summable_norm (W : 𝓢(Joint, ℂ)) :
     planeMajorant_eisenstein_summable
     (fun _ => by unfold planeMajorant; positivity)
     (fun _ => by unfold planeMajorant; positivity)
-  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _
+  apply Summable.of_nonneg_of_le (by simp) _
     (hs.mul_left (productDecayConstant W))
   intro m
   exact norm_le_product_majorant W _ _
@@ -226,7 +225,7 @@ theorem joint_weighted_summable {R : Type*} (q : ActualEisensteinCubic.O → R)
     Summable (fun m : ActualEisensteinCubic.O × ActualEisensteinCubic.O =>
       a (q m.1,q m.2) * W (embeddingPair m)) := by
   apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _
+  apply Summable.of_nonneg_of_le (by grind) _
     ((joint_eisenstein_summable_norm W).mul_left B)
   intro m
   rw [norm_mul]
@@ -252,7 +251,7 @@ theorem norm_inverse_lineDeriv (g : 𝓢(ℂ, ℂ)) (v x : ℂ) :
     ‖(𝓕⁻ (∂_{v} g)) x‖ = (2 * Real.pi) * |inner ℝ x v| * ‖(𝓕⁻ g) x‖ := by
   have ht : (fun u : ℂ => inner ℝ u v).HasTemperateGrowth := by fun_prop
   have hc : ‖(-(2 * Real.pi * Complex.I) : ℂ)‖ = 2 * Real.pi := by
-    simp [Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    simp
   rw [SchwartzMap.fourierInv_lineDerivOp_eq]
   simp only [smul_apply, SchwartzMap.smulLeftCLM_apply_apply ht,
     norm_smul]
@@ -266,7 +265,7 @@ theorem inner_sq_mul_norm_inverse_le (g : 𝓢(ℂ, ℂ)) (v x : ℂ) :
   calc
     _ ≤ ((2 * Real.pi)^2 * (inner ℝ x v)^2) * ‖(𝓕⁻ g) x‖ :=
       mul_le_mul_of_nonneg_right (le_mul_of_one_le_left (sq_nonneg _) hp) (norm_nonneg _)
-    _ = _ := by rw [← sq_abs (inner ℝ x v)]; ring
+    _ = _ := by grind
 
 theorem norm_sq_mul_norm_inverse_le (g : 𝓢(ℂ, ℂ)) (x : ℂ) :
     ‖x‖^2 * ‖(𝓕⁻ g) x‖ ≤
@@ -276,9 +275,9 @@ theorem norm_sq_mul_norm_inverse_le (g : 𝓢(ℂ, ℂ)) (x : ℂ) :
   have hi := inner_sq_mul_norm_inverse_le g Complex.I x
   have he : (inner ℝ x (1:ℂ))^2 + (inner ℝ x Complex.I)^2 = ‖x‖^2 := by
     rw [Complex.sq_norm]
-    simp [Complex.inner, Complex.normSq_apply, sq]
+    simp [Complex.normSq_apply, sq]
   rw [← he, add_mul]
-  exact add_le_add h1 hi
+  linarith
 
 theorem norm_inverse_leftSlice_le (F : 𝓢(Joint, ℂ)) (η x : ℂ) :
     ‖(𝓕⁻ (leftSlice F η)) x‖ ≤
@@ -350,7 +349,7 @@ theorem norm_partialFourier_le (W : 𝓢(Joint, ℂ)) (η x : ℂ) :
   have h := inverse_leftSlice_second_decay (𝓕 W) η x
   have hd : ‖(𝓕⁻ (leftSlice (𝓕 W) η)) x‖ ≤
       secondDecayBound (𝓕 W) * planeMajorant η / (1+‖x‖^2)^2 :=
-    (le_div_iff₀ (by positivity)).mpr (by nlinarith [h])
+    (le_div_iff₀ (by positivity)).mpr (by linarith)
   convert hd using 1
   simp only [planeMajorant, div_eq_mul_inv]
   ring
@@ -367,8 +366,7 @@ theorem planeMajorant_cartesian_summable :
   apply inv_anti₀ (by positivity)
   rw [Complex.sq_norm]
   simp only [complexPoint, Complex.normSq_apply]
-  nlinarith [sq_nonneg (p.1:ℝ), sq_nonneg (p.2:ℝ),
-    mul_nonneg (sq_nonneg (p.1:ℝ)) (sq_nonneg (p.2:ℝ))]
+  nlinarith
 
 def cartesianPoint (p : ℤ × ℤ) : ℂ := complexPoint (p.1:ℝ) (p.2:ℝ)
 
@@ -379,7 +377,7 @@ theorem joint_cartesian_summable_norm (W : 𝓢(Joint, ℂ)) :
     planeMajorant_cartesian_summable
     (fun _ => by unfold planeMajorant; positivity)
     (fun _ => by unfold planeMajorant; positivity)
-  exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+  exact Summable.of_nonneg_of_le (by simp)
     (fun _ => norm_le_product_majorant W _ _) (hs.mul_left (productDecayConstant W))
 
 theorem partialFourier_cartesian_summable_norm (W : 𝓢(Joint, ℂ)) :
@@ -389,7 +387,7 @@ theorem partialFourier_cartesian_summable_norm (W : 𝓢(Joint, ℂ)) :
     planeMajorant_cartesian_summable
     (fun _ => by unfold planeMajorant; positivity)
     (fun _ => by unfold planeMajorant; positivity)
-  exact Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+  exact Summable.of_nonneg_of_le (by simp)
     (fun _ => norm_partialFourier_le W _ _) (hs.mul_left (secondDecayBound (𝓕 W)))
 
 theorem rightSlice_isometry (x : ℂ) : Isometry (fun y : ℂ => point x y) := by
@@ -452,13 +450,13 @@ private theorem cartesian_swap_tsum (F : 𝓢(Joint, ℂ)) :
 private theorem partial_cartesian_eq_fourier (W : 𝓢(Joint, ℂ)) :
     (∑' n : ℤ × ℤ, ∑' m : ℤ × ℤ,
       partialFourier W (cartesianPoint n) (cartesianPoint m)) =
-      ∑' p : (ℤ × ℤ) × (ℤ × ℤ), (𝓕 W) (point (cartesianPoint p.1) (cartesianPoint p.2)) := by
-  exact (tsum_congr (partial_cartesian_poisson W)).trans (cartesian_swap_tsum (𝓕 W))
+      ∑' p : (ℤ × ℤ) × (ℤ × ℤ), (𝓕 W) (point (cartesianPoint p.1) (cartesianPoint p.2)) :=
+  (tsum_congr (partial_cartesian_poisson W)).trans (cartesian_swap_tsum (𝓕 W))
 
 theorem joint_cartesian_poisson (W : 𝓢(Joint, ℂ)) :
     (∑' p : (ℤ × ℤ) × (ℤ × ℤ), W (point (cartesianPoint p.1) (cartesianPoint p.2))) =
-      ∑' p : (ℤ × ℤ) × (ℤ × ℤ), (𝓕 W) (point (cartesianPoint p.1) (cartesianPoint p.2)) := by
-  exact (joint_cartesian_eq_partial W).trans (partial_cartesian_eq_fourier W)
+      ∑' p : (ℤ × ℤ) × (ℤ × ℤ), (𝓕 W) (point (cartesianPoint p.1) (cartesianPoint p.2)) :=
+  (joint_cartesian_eq_partial W).trans (partial_cartesian_eq_fourier W)
 
 def blockMap (A : ℂ ≃L[ℝ] ℂ) : Joint ≃L[ℝ] Joint :=
   ((A.toLinearEquiv.prodCongr A.toLinearEquiv).withLpCongr 2).toContinuousLinearEquiv
@@ -491,8 +489,7 @@ def jointDual (A : Joint ≃L[ℝ] Joint) : Joint →L[ℝ] Joint :=
 
 theorem joint_inner_linear_dual (A : Joint ≃L[ℝ] Joint) (x y : Joint) :
     inner ℝ (A x) (jointDual A y) = inner ℝ x y := by
-  rw [jointDual, ContinuousLinearMap.adjoint_inner_right]
-  simp
+  simp [jointDual, ContinuousLinearMap.adjoint_inner_right]
 
 theorem jointDual_blockMap (A : ℂ ≃L[ℝ] ℂ) (ξ η : ℂ) :
     jointDual (blockMap A) (point ξ η) = point (dualMap A ξ) (dualMap A η) := by
@@ -514,7 +511,7 @@ theorem joint_integral_comp_linearEquiv (A : Joint ≃L[ℝ] Joint) (f : Joint �
   change (∫ y : Joint, f y ∂Measure.map A volume) = (∫ x : Joint, f (A x)) at h
   rw [hm, integral_smul_measure, ENNReal.toReal_ofReal
     (show 0 ≤ jointInverseJacobian A from abs_nonneg _)] at h
-  exact h.symm
+  simp_all
 
 theorem joint_fourier_comp_linearEquiv (A : Joint ≃L[ℝ] Joint)
     (f : Joint → ℂ) (w : Joint) :
@@ -563,7 +560,7 @@ theorem joint_affine_poisson (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) 
   have h := joint_cartesian_poisson (jointAffine W A b)
   simp only [jointAffine_apply, joint_fourier_affine] at h
   rw [tsum_const_smul''] at h
-  exact h
+  omega
 
 def jointFrequency (c : ℂ) (hc : c ≠ 0) (p : (ℤ × ℤ) × (ℤ × ℤ)) : Joint :=
   point (eisensteinDualFrequency c hc p.1) (eisensteinDualFrequency c hc p.2)
@@ -599,7 +596,7 @@ theorem actual_joint_coset_poisson (W : 𝓢(Joint, ℂ)) (b : O × O) (c : O) (
         (eisEmbedding b.2 + A (cartesianPoint p.2)) =
           point (A (cartesianPoint p.1)+eisEmbedding b.1)
             (A (cartesianPoint p.2)+eisEmbedding b.2)
-      simp only [add_comm]
+      ring
     _ = _ := h
 
 theorem joint_dual_summable_norm (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) :
@@ -616,7 +613,7 @@ theorem joint_dual_summable_norm (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joi
     simp [abs_of_pos hJ]
   simp_rw [hn] at hs
   have hi := hs.mul_left (jointInverseJacobian A)⁻¹
-  simpa only [← mul_assoc, inv_mul_cancel₀ hJ.ne', one_mul] using hi
+  grind
 
 theorem jointFrequency_summable_norm (W : 𝓢(Joint, ℂ)) (c : ℂ) (hc : c ≠ 0) :
     Summable (fun p : (ℤ × ℤ) × (ℤ × ℤ) => ‖(𝓕 W) (jointFrequency c hc p)‖) := by
@@ -714,7 +711,7 @@ theorem actual_joint_periodic_fourier (W : 𝓢(Joint, ℂ)) (c : O) (hc : c ≠
 @[simp] theorem jointFrequency_zero (c : ℂ) (hc : c ≠ 0) :
     jointFrequency c hc 0 = 0 := by
   have h : complexPoint (0:ℝ) 0 = 0 := by apply Complex.ext <;> rfl
-  simp [jointFrequency, eisensteinDualFrequency, h, point]
+  simp [jointFrequency, eisensteinDualFrequency, h]
 
 @[simp] theorem residueFourier_zero (c : O) (hc : c ≠ 0)
     (a : Residue c × Residue c → ℂ) :
@@ -736,22 +733,16 @@ theorem residueFourier_norm_le (c : O) (hc : c ≠ 0)
       norm_sum_le _ _
     _ ≤ ∑ r : Residue c × Residue c, B := by
       apply Finset.sum_le_sum
-      intro r hr
-      simpa only [norm_mul, Circle.norm_coe, mul_one] using hB r
+      simp_all
     _ = _ := by
-      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_prod,
-        Nat.cast_mul, Ideal.absNorm_apply, Submodule.cardQuot_apply,
-        Nat.card_eq_fintype_card, Residue, pow_two]
+      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_prod, Nat.cast_mul, Ideal.absNorm_apply, Submodule.cardQuot_apply, Nat.card_eq_fintype_card, pow_two]
 
 theorem principal_joint_inverse_covolume (c : O) (hc : c ≠ 0) :
     (2 / (Real.sqrt 3 * ‖eisEmbedding c‖^2))^2 *
       (Ideal.absNorm (Ideal.span {c}) : ℝ)^2 = 4/3 := by
   have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hc)
   rw [← eisEmbedding_norm_sq_eq_absNorm_span]
-  have hs : (Real.sqrt 3)^2 = (3:ℝ) := Real.sq_sqrt (by norm_num)
-  have hs0 : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
-  field_simp
-  nlinarith
+  grind
 
 theorem norm_periodic_zero_mean_le (W : 𝓢(Joint, ℂ)) (c : O) (hc : c ≠ 0)
     (a : Residue c × Residue c → ℂ) (B : ℝ) (hB : ∀ r, ‖a r‖ ≤ B)
@@ -770,13 +761,13 @@ theorem norm_periodic_zero_mean_le (W : 𝓢(Joint, ℂ)) (c : O) (hc : c ≠ 0)
     rw [norm_mul]
     exact mul_le_mul_of_nonneg_right (residueFourier_norm_le c hc a B hB p) (norm_nonneg _)
   have hsF : Summable (fun p => ‖F p‖) :=
-    Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hnorm
+    Summable.of_nonneg_of_le (by simp) hnorm
       ((jointFrequency_summable_norm W (eisEmbedding c) (eisEmbedding_ne_zero hc)).mul_left _)
   have heq : (∑' p : {p : (ℤ × ℤ) × (ℤ × ℤ) // p ≠ 0}, F p.val) = ∑' p, F p := by
     apply tsum_subtype_eq_of_support_subset
     intro p hp
     change F p ≠ 0 at hp
-    exact fun h => hp (h ▸ hF0)
+    exact fun h => by grind
   have hb : ‖∑' p, F p‖ ≤ q^2 * B *
       ∑' p : {p : (ℤ × ℤ) × (ℤ × ℤ) // p ≠ 0},
         ‖(𝓕 W) (jointFrequency (eisEmbedding c) (eisEmbedding_ne_zero hc) p.val)‖ := by
@@ -809,7 +800,7 @@ def scaleMap (t : ℝ) (ht : 0 < t) : Joint ≃L[ℝ] Joint :=
 @[simp] theorem scaleMap_apply (t : ℝ) (ht : 0 < t) (z : Joint) :
     scaleMap t ht z = t⁻¹ • z := by
   apply WithLp.ofLp_injective
-  apply Prod.ext <;> simp [scaleMap, blockMap_apply, complexMulEquiv_apply, point, Algebra.smul_def]
+  apply Prod.ext <;> simp [scaleMap, point]
 
 theorem scaleMap_dual (t : ℝ) (ht : 0 < t) (z : Joint) :
     jointDual (scaleMap t ht) z = t • z := by
@@ -817,7 +808,7 @@ theorem scaleMap_dual (t : ℝ) (ht : 0 < t) (z : Joint) :
   conv_lhs => rw [hz]
   rw [scaleMap, jointDual_blockMap, dual_mul_apply, dual_mul_apply]
   apply WithLp.ofLp_injective
-  apply Prod.ext <;> simp [point, Algebra.smul_def]
+  apply Prod.ext <;> simp [point]
 
 theorem scaleMap_inverseJacobian (t : ℝ) (ht : 0 < t) :
     jointInverseJacobian (scaleMap t ht) = t^4 := by
@@ -835,8 +826,7 @@ def scaledSource (W : 𝓢(Joint, ℂ)) (t : ℝ) (ht : 0 < t) : 𝓢(Joint, ℂ
 
 theorem fourier_scaledSource (W : 𝓢(Joint, ℂ)) (t : ℝ) (ht : 0 < t) (z : Joint) :
     (𝓕 (scaledSource W t ht)) z = t^4 • (𝓕 W) (t • z) := by
-  rw [scaledSource, joint_fourier_affine, scaleMap_inverseJacobian, scaleMap_dual]
-  simp
+  simp [scaledSource, joint_fourier_affine, scaleMap_inverseJacobian, scaleMap_dual]
 
 theorem scaledSource_physicalPoint (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N) (m : O × O) :
     scaledSource W (Real.sqrt N) (Real.sqrt_pos.mpr hN) (embeddingPair m) =
@@ -847,7 +837,7 @@ theorem scaledSource_physicalPoint (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N)
 def generatorRotation (c : ℂ) : ℂ := (‖c‖:ℂ) / starRingEnd ℂ c
 
 theorem norm_generatorRotation (c : ℂ) (hc : c ≠ 0) : ‖generatorRotation c‖ = 1 := by
-  simp [generatorRotation, Complex.norm_real, norm_ne_zero_iff.mpr hc]
+  simp [generatorRotation, norm_ne_zero_iff.mpr hc]
 
 theorem scaled_jointFrequency_eq (c : ℂ) (hc : c ≠ 0) (N : ℝ) (hN : 0 < N)
     (p : (ℤ × ℤ) × (ℤ × ℤ)) :
@@ -860,7 +850,7 @@ theorem scaled_jointFrequency_eq (c : ℂ) (hc : c ≠ 0) (N : ℝ) (hN : 0 < N)
       generatorRotation c * (Real.sqrt (N/‖c‖^2):ℂ) * explicitDualFrequency 1 v := by
     rw [eisensteinDualFrequency_explicit, hs]
     simp only [generatorRotation, explicitDualFrequency, map_one, div_one, Complex.ofReal_div]
-    have hnC : (‖c‖:ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hn
+    have hnC := Complex.ofReal_ne_zero.mpr hn
     field_simp
   apply WithLp.ofLp_injective
   change (Real.sqrt N • eisensteinDualFrequency c hc p.1,
@@ -872,13 +862,13 @@ theorem scaled_jointFrequency_eq (c : ℂ) (hc : c ≠ 0) (N : ℝ) (hN : 0 < N)
 theorem sqrt_ratio_decay (N q : ℝ) (hN : 0 < N) (hq : 0 < q) (A : ℕ) :
     (Real.sqrt (N/q))^(-((2*A:ℕ):ℝ)) = (q/N)^A := by
   rw [Real.rpow_neg (Real.sqrt_nonneg _), Real.rpow_natCast, pow_mul,
-    Real.sq_sqrt (div_nonneg hN.le hq.le), ← inv_pow, inv_div]
+    Real.sq_sqrt (by positivity), ← inv_pow, inv_div]
 
 theorem physical_weighted_summable (W : 𝓢(Joint, ℂ)) (N : ℝ) (hN : 0 < N)
     (d : O × O → ℂ) (B : ℝ) (hB : ∀ m, ‖d m‖ ≤ B) :
     Summable (fun m : O × O => d m * W (ProbeGramLatticeDecay.physicalPoint N m)) := by
   apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _
+  apply Summable.of_nonneg_of_le (by grind) _
     ((ProbeGramLatticeDecay.physical_summable W N hN).mul_left B)
   intro m
   rw [norm_mul]
@@ -894,7 +884,7 @@ theorem principal_high_bound (A : ℕ) (hA : 2 < A) :
           C * ProbeGramLatticeDecay.sourceControl S W * B * N^2 *
             ((Ideal.absNorm (Ideal.span {c}) : ℝ)/N)^A := by
   obtain ⟨S,C,hC,hhigh⟩ := ProbeGramLatticeDecay.dual_fourier_lattice_bound A hA
-  refine ⟨S,(4/3)*C,mul_pos (by norm_num) hC,?_⟩
+  refine ⟨S,(4/3)*C,by positivity,?_⟩
   intro W c hc a B hB0 hB hmean N hN hscale
   let q : ℝ := Ideal.absNorm (Ideal.span {c})
   have hq : 0 < q := by
@@ -903,8 +893,8 @@ theorem principal_high_bound (A : ℕ) (hA : 2 < A) :
     exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hc))
   have hL : 1 ≤ Real.sqrt (N/q) := by
     apply Real.le_sqrt_of_sq_le
-    norm_num only [one_pow]
-    exact (le_div_iff₀ hq).mpr (by simpa only [one_mul] using hscale)
+    norm_num only
+    exact (le_div_iff₀ hq).mpr (by linarith)
   let u : ℂ := generatorRotation (eisEmbedding c)
   have hu : ‖u‖ = 1 := norm_generatorRotation _ (eisEmbedding_ne_zero hc)
   have ht4 : (Real.sqrt N)^4 = N^2 := by
@@ -914,7 +904,7 @@ theorem principal_high_bound (A : ℕ) (hA : 2 < A) :
         (jointFrequency (eisEmbedding c) (eisEmbedding_ne_zero hc) p)‖ =
       N^2 * ‖(𝓕 W) (ProbeGramLatticeDecay.scaledDualPoint (Real.sqrt (N/q)) u p)‖ := by
     rw [fourier_scaledSource, norm_smul, Real.norm_eq_abs,
-      abs_of_nonneg (pow_nonneg (Real.sqrt_nonneg _) _), ht4,
+      abs_of_nonneg (by positivity), ht4,
       scaled_jointFrequency_eq _ _ N hN]
     rw [eisEmbedding_norm_sq_eq_absNorm_span]
   have h := norm_periodic_zero_mean_le
@@ -949,7 +939,7 @@ theorem principal_annular_periodic_bound (A : ℕ) (hA : 2 < A)
   obtain ⟨Sh,Ch,hCh,hh⟩ := principal_high_bound A hA
   refine ⟨Sl∪Sh,Cl+Ch,add_pos hCl hCh,?_⟩
   intro W hW c hc d B hB0 hB hm N hN
-  refine ⟨physical_weighted_summable W N hN _ B (fun m => hB _),?_⟩
+  refine ⟨physical_weighted_summable W N hN _ B (by grind),?_⟩
   have hSl : Cl*ProbeGramLatticeDecay.sourceControl Sl W ≤
       (Cl+Ch)*ProbeGramLatticeDecay.sourceControl (Sl∪Sh) W :=
     mul_le_mul (le_add_of_nonneg_right hCh.le)
@@ -960,7 +950,7 @@ theorem principal_annular_periodic_bound (A : ℕ) (hA : 2 < A)
     mul_le_mul (le_add_of_nonneg_left hCl.le)
       (ProbeGramLatticeDecay.sourceControl_mono Finset.subset_union_right W)
       (ProbeGramLatticeDecay.sourceControl_nonneg _ _) (by positivity)
-  have hratio : 0 ≤ (Ideal.absNorm (Ideal.span {c}) : ℝ)/N := div_nonneg (by positivity) hN.le
+  have hratio : 0 ≤ (Ideal.absNorm (Ideal.span {c}) : ℝ)/N := by positivity
   by_cases hscale : (Ideal.absNorm (Ideal.span {c}) : ℝ) ≤ N
   · have hp : ((Ideal.absNorm (Ideal.span {c}) : ℝ)/N)^A ≤ 1 :=
       pow_le_one₀ hratio ((div_le_one hN).mpr hscale)
@@ -968,12 +958,12 @@ theorem principal_annular_periodic_bound (A : ℕ) (hA : 2 < A)
     exact (hh W c hc d B hB0 hB hm N hN hscale).trans
       (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hSh hB0) (sq_nonneg _))
-        (pow_nonneg hratio _))
+        (by positivity))
   · have hp : 1 ≤ ((Ideal.absNorm (Ideal.span {c}) : ℝ)/N)^A :=
       one_le_pow₀ ((le_div_iff₀ hN).mpr (by linarith))
     rw [min_eq_left hp, mul_one]
     exact (hl W hW (fun m => d (quotientPair c m)) B hB0
-      (fun m => hB _) N hN).2.trans
+      (by grind) N hN).2.trans
         (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hSl hB0) (sq_nonneg _))
 
 theorem ideal_annular_periodic_bound (A : ℕ) (hA : 2 < A)

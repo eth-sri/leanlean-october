@@ -22,9 +22,9 @@ lemma sourceMellinWeight_eq_scale (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x
 
 lemma sourceScale_continuous (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
     Continuous (fun q : (ℂ × ℂ) × ℂ =>sourceScale X Y Z q.1.1 q.1.2 q.2) := by
-  have hx : (X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hX.ne'
-  have hy : (Y:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hY.ne'
-  have hz : (Z:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hZ.ne'
+  have hx := Complex.ofReal_ne_zero.mpr hX.ne'
+  have hy := Complex.ofReal_ne_zero.mpr hY.ne'
+  have hz := Complex.ofReal_ne_zero.mpr hZ.ne'
   unfold sourceScale
   exact (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>(1/2:ℂ)-q.2)).const_cpow (Or.inl hx)).mul
     (((by fun_prop : Continuous (fun q : (ℂ × ℂ) × ℂ =>q.1.1+q.2-1)).const_cpow (Or.inl hz)))) |>.mul
@@ -34,7 +34,7 @@ lemma sourceScale_norm (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (x w z : �
     ‖sourceScale X Y Z x w z‖=X^(1/2-z.re)*Z^(x.re+z.re-1)*Y^(w.re-1) := by
   simp only [sourceScale,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hX,
     Complex.norm_cpow_eq_rpow_re_of_pos hY,Complex.norm_cpow_eq_rpow_re_of_pos hZ]
-  norm_num [Complex.sub_re,Complex.add_re]
+  simp
 
 theorem sourceMellinWeight_initial_integrable (W0 W1 : SchwartzMap ℝ ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)

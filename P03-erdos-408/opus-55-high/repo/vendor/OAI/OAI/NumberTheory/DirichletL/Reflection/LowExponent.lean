@@ -10,19 +10,18 @@ public import OAI.NumberTheory.DirichletL.Detector.LowReflectedLength
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
+open scoped Classical
+open CubicEisenstein CompletedGauss InverseTerminalWidths
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {a c₀ : Eis} {mode : Bool}
+variable {a c₀ : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem original_surviving_low_exponent
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c₀ mode)) (hc₀ : c₀≠0)
     (kK kP η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hη : 0<η) :
     ∃ Z₀ : ℝ,1<Z₀ ∧
-    ∀ (J I F Q Q₀ : Ideal Eis) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
+    ∀ (J I F Q Q₀ : Ideal ActualEisensteinCubic.O) (_hJ : J≠0) (_hI : I≠0) (_hQ : Q≠0),
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
-    ∀ (A : Finset (FreeReflection.pool J Q Q₀)) (e : A→Fin 3) (column : Ideal Eis→Ideal Eis→ℂ)
+    ∀ (A : Finset (FreeReflection.pool J Q Q₀)) (e : A→Fin 3) (column : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ)
       (Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot : ℝ) (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<X → 0<QK → 0<QP →
       (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d) →
@@ -55,7 +54,7 @@ theorem original_surviving_low_exponent
   intro hscale hret hsurv
   let G := (poolPrimeFamily J Q Q₀).restrict A
   let j := fun b : A => completedLocalExponent J F b.val.val
-  have hz : 1<Z := lt_of_lt_of_le hZ₀ hZ
+  have hz : 1<Z := by linarith
   have hpair := (poolPrimeFamily J Q Q₀).restrict_pairwise (poolPrimeFamily_pairwise J Q Q₀) A
   obtain ⟨hv,hell,hel,hwidth⟩ := hgates G hpair j column e Z X QK QP δ i hZ hX hK hP hret hsurv
   rw [←heH,←heza,←heN] at hwidth
@@ -72,10 +71,10 @@ theorem original_surviving_low_exponent
     (Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2)))
     (ramifiedWidth Z i.1) shift (5*η)
     hd hd1 (by positivity) (by linarith) (by linarith) (by linarith)
-    hN0 hNA hS0 hB0 (by linarith) (by linarith) (by linarith) (by linarith) (by linarith) (hshift.trans (by linarith)) ?_
+    hN0 hNA hS0 hB0 (by linarith) (by linarith) (by linarith) (by linarith) (by linarith) (by linarith) ?_
   · have hb := retained_extracted_log_budget (familyRawScale G s X QK QP) Z δ Lscale Lrow Lslot η
       (kK*QK) (kP*QP) (familyRawScale_pos G s hc₀ X QK QP hX hK hP) hz
-      (mul_pos hkK hK) (mul_pos hkP hP) hscale hconst hrowcap hslotcap i hret
+      (by positivity) (by positivity) hscale hconst hrowcap hslotcap i hret
       (frozenExtracted G j e 1) (frozenExtracted G j e 2)
       (frozenExtracted_ne_zero G j e 1) (frozenExtracted_ne_zero G j e 2)
     rw [←heH,←heza] at hb

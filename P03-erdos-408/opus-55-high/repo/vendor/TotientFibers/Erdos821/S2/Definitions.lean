@@ -9,7 +9,6 @@ public import Mathlib.Data.Fintype.Perm
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 
@@ -17,7 +16,6 @@ namespace Erdos821.S2
 
 /-- §1 logarithmic scales. -/
 def L (x : ℝ) : ℝ := Real.log x
-def T (x : ℝ) : ℝ := Real.log (L x)
 
 structure FixedData where
   a : ℝ
@@ -54,8 +52,6 @@ namespace PrimeGroups
 variable (P : PrimeGroups)
 abbrev Group := Fin P.count
 abbrev Prime (g : P.Group) := {p : ℕ // p ∈ P.primes g}
-def omegaGroup (g : P.Group) (n : ℤ) : ℕ := (P.primes g |>.filter (fun p : ℕ => (p : ℤ) ∣ n)).card
-def omega (n : ℤ) : ℕ := ∑ g, P.omegaGroup g n
 
 abbrev BigGroup := {g : P.Group // P.big g = true}
 abbrev BigLabels (M : ℕ) := (g : P.BigGroup) → Fin M → P.Prime g.val

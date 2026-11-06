@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorFourierActual
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff
 noncomputable section
 
 abbrev cutoff : SchwartzMap ℝ ℂ := QuadraticInitialBound.sieveCutoff
 
 lemma cutoff_one (x : ℝ) (hx : 0 ≤ x) (hx1 : x ≤ 1) : cutoff x = 1 := by
-  simp only [cutoff, QuadraticInitialBound.sieveCutoff_apply,
-    QuadraticInitialBound.sieveBump_eq_one hx hx1, Complex.ofReal_one]
+  simp only [QuadraticInitialBound.sieveCutoff_apply, QuadraticInitialBound.sieveBump_eq_one hx hx1, Complex.ofReal_one]
 
 lemma cutoff_zero (x : ℝ) (hx : 2 ≤ x) : cutoff x = 0 := by
   rw [QuadraticInitialBound.sieveCutoff_apply]
@@ -22,7 +21,7 @@ lemma cutoff_zero (x : ℝ) (hx : 2 ≤ x) : cutoff x = 0 := by
     (show QuadraticInitialBound.sieveBump.rOut ≤ dist x 0 by
       change 2 ≤ dist x 0
       simpa [dist_zero_right, Real.norm_eq_abs, abs_of_nonneg (by linarith : 0 ≤ x)] using hx)
-  rw [hh, Complex.ofReal_zero]
+  simp_all
 
 lemma cutoff_norm_le (x : ℝ) : ‖cutoff x‖ ≤ 1 := by
   rw [QuadraticInitialBound.sieveCutoff_apply, Complex.norm_real, Real.norm_eq_abs,
@@ -32,7 +31,7 @@ lemma cutoff_norm_le (x : ℝ) : ‖cutoff x‖ ≤ 1 := by
 lemma annular_log_bound (x : ℝ) (hx : 0 ≤ x)
     (hactive : DyadicTransfer.annularCutoff cutoff x ≠ 0) : |Real.log x| ≤ Real.log 2 := by
   have hh := HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx 0
-    (by simpa using hactive)
+    (by simp_all)
   norm_num at hh
   have hx0 : 0 < x := by linarith
   have hlo := Real.log_le_log (by norm_num : 0 < (2 : ℝ)⁻¹)
@@ -46,7 +45,7 @@ theorem exists_product_log_cutoff :
       ∀ x y : ℝ, 0 ≤ x → 0 ≤ y →
         DyadicTransfer.annularCutoff cutoff x ≠ 0 → DyadicTransfer.annularCutoff cutoff y ≠ 0 →
         Ω (Real.log x+Real.log y) = 1 := by
-  have hlog : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
+  have hlog : 0 ≤ Real.log 2 := by positivity
   obtain ⟨Ω,hc,hs,hone,hsupp,hzero⟩ :=
     FourierBridge.exists_complex_smooth_cutoff (2*Real.log 2) (by positivity)
   refine ⟨Ω,hc,hs,hsupp,?_⟩
@@ -54,7 +53,7 @@ theorem exists_product_log_cutoff :
   apply hone
   have hb1 := annular_log_bound x hx hax
   have hb2 := annular_log_bound y hy hay
-  exact (abs_add_le _ _).trans (by linarith)
+  grind
 
 end
 end SevenEighths.HeckeDetectorProfiles

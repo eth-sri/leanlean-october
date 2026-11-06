@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPrioritySource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalRetainedGates
 open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityRetainedSource InversePrioritySecondSource InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open InverseWholePriorityRetainedSource InverseInitialArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def retainedSource (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
@@ -33,7 +32,7 @@ lemma original_parent_witness
     ∃y∈original,forgetAppended (Jo:=Jo) (secondParentOf x)=parent p y := by
   have hp := ((mem_unifiedSource p pool _ (fun _=>cutoff) x).mp hx).1
   obtain ⟨y,hy,q,hq,he⟩ := (mem_wholeAssignedParents p (fun x=>extra x.cube) original negative J lists _).mp hp
-  exact ⟨y,hy,by simpa only [forget_attach] using congrArg (forgetAppended (Jo:=Jo)) he.symm⟩
+  exact ⟨y,hy,by simpa using congrArg (forgetAppended (Jo:=Jo)) he.symm⟩
 
 lemma original_coordinates
     (extra : CubeCoordinates ι→Finset ι) (original : Finset (Source ι Jo))
@@ -86,7 +85,7 @@ lemma original_numeric_gates (extra : CubeCoordinates ι→Finset ι)
   intro x hx
   obtain ⟨y,hy,hb,hc,hd,hq,ho⟩ := original_coordinates p extra original negative J lists pool cutoff x hx
   rw [hb,hc,hd,hq]
-  refine ⟨hB₁ y hy,hB₂ y hy,hA y hy,hC y hy,?_,(hJ y hy).1,(hJ y hy).2,hD y hy⟩
+  refine ⟨by grind,by grind,hA y hy,hC y hy,?_,by grind,by grind,hD y hy⟩
   simpa only [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span,primeProductNorm] using hQ y hy
 
 end SevenEighths.InverseMomentGlobalRetainedGates

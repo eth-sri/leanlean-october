@@ -7,7 +7,6 @@ public import Erdos821.S2.PhysicalPathTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -47,7 +46,7 @@ theorem closedPhysicalExpression_eq :
   apply Finset.sum_congr rfl
   intro Q _
   by_cases h : Q.Valid ∧ Q.offset (Fin.last n) = 0 <;>
-    simp [closedPathCoefficient, h]
+    simp [closedPathCoefficient]
 
 theorem closed_replacement_bound (X epsilon : ℝ)
     (hreplace : ∀ Q : ResiduePath A n, Q.Valid →
@@ -83,15 +82,12 @@ theorem closed_replacement_bound (X epsilon : ℝ)
       intro Q _
       by_cases hv : Q.Valid ∧ Q.offset (Fin.last n) = 0
       · simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-        exact mul_le_mul_of_nonneg_left (hreplace Q hv.1) (norm_nonneg _)
+        exact mul_le_mul_of_nonneg_left (by grind) (norm_nonneg _)
       · simp only [closedPathCoefficient, ite_eq_right hv, norm_zero, zero_mul, le_refl]
     _ = epsilon * closedAbsoluteResidueExpression A n := by
       unfold closedAbsoluteResidueExpression
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro Q _
-      dsimp only [res]
-      ring
+      grind
 
 
 end Erdos821.S2Core

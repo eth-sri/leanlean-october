@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators ContDiff
+open scoped Classical
 namespace SevenEighths.InverseInitialDyadicAssembly
 open CenteredMomentSectorLocalization CenteredMomentDyadicCount
 open Filter
@@ -26,7 +26,7 @@ theorem cutoff_support (i:Fin 4) :
 
 theorem window_exponent_nonneg (Z b:ℝ)(hZ:1<Z)(hb:0<b)
     (k:ℤ)(hk:k∈indices 1 b) : 0≤exponent Z k := by
-  have hs:1≤dyadicScale k := ((mem_indices_iff_scale 1 b (by norm_num) hb k).mp hk).1
+  have hs := ((mem_indices_iff_scale 1 b (by norm_num) hb k).mp hk).1
   exact Real.logb_nonneg hZ hs
 
 theorem window_exponent_eventual_upper (C η:ℝ)(_hC:0<C)(hη:0<η) :
@@ -41,12 +41,7 @@ theorem window_exponent_eventual_upper (C η:ℝ)(_hC:0<C)(hη:0<η) :
   have hs:=((mem_indices_iff_scale 1 b (by norm_num) hb k).mp hk).2
   apply (Real.rpow_le_rpow_left_iff hZ).mp
   rw [exponent_scale Z hZ,Real.rpow_add (by positivity)]
-  calc
-    dyadicScale k≤4*b:=hs
-    _≤4*(C*Z^R):=mul_le_mul_of_nonneg_left hbR (by norm_num)
-    _=(4*C)*Z^R:=by ring
-    _≤Z^η*Z^R:=mul_le_mul_of_nonneg_right ht (Real.rpow_nonneg (by positivity) _)
-    _=Z^R*Z^η:=mul_comm _ _
+  nlinarith
 
 end SevenEighths.InverseInitialDyadicAssembly
 

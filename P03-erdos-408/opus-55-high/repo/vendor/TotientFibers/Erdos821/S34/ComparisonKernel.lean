@@ -12,7 +12,7 @@ public import Erdos821.S34.DirichletApproximation
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.Blueprint.Analytic
@@ -58,9 +58,9 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
   let ξ := L x ^ (-ξExp)
   let S := L x ^ q
   let δ := K * L x ^ (-DExp)
-  have hQ : (Q : ℝ) ≤ L x ^ q := Nat.floor_le (Real.rpow_nonneg hLp.le _)
+  have hQ : (Q : ℝ) ≤ L x ^ q := Nat.floor_le (by positivity)
   have hξ : 0 < ξ := Real.rpow_pos_of_pos hLp _
-  have hδ : 0 ≤ δ := mul_nonneg hK.le (Real.rpow_nonneg hLp.le _)
+  have hδ : 0 ≤ δ := by positivity
   have hS : 0 < S := Real.rpow_pos_of_pos hLp _
   have hS1 : 1 ≤ S := Real.one_le_rpow hL1 hq.le
   have hρa (n : ℕ) (hn : 0 < n) : rho G a n ≤ L x ^ κ / n := hAtom G hG a ha n hn
@@ -126,7 +126,7 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
         simpa only [hX, hY, U, V] using hrUV
       have hm := dyadic_comparison_bilinear G a b Q h ξ U V (L x ^ κ) θ β ζ u r
         (dyadRestriction G b k f) (dyadRestriction G a j g)
-        hU1 hV1 (Real.rpow_nonneg hLp.le _) hr hcop hθ hβ hWidth.1 hWidth.2 hg hf hρa hρb
+        hU1 hV1 (by positivity) hr hcop hθ hβ hWidth.1 hWidth.2 hg hf hρa hρb
         (fun F => (hFrame G hG a ha Q h hQ hWidth.1 F).2)
         (fun F => (hFrame G hG b hb Q h hQ hWidth.1 F).2)
       have hcost := minor_power_precision (L x) integerBilinearConstant B κ P.d U V r
@@ -139,15 +139,14 @@ theorem comparison_kernel_proof : Erdos821.Blueprint.Analytic.comparison_kernel_
   have hbound := comparison_bound_from_dyads G a b Q h ξ θ ζ (L x ^ (-B)) f g hE hdyadic
   have hNA : ((occupiedDyads G a).card : ℝ) ≤ L x ^ (P.d + 1) := hDyads G hG a ha
   have hNB : ((occupiedDyads G b).card : ℝ) ≤ L x ^ (P.d + 1) := hDyads G hG b hb
-  have hcard := mul_le_mul hNA hNB (Nat.cast_nonneg _) (Real.rpow_nonneg hLp.le _)
+  have hcard := mul_le_mul hNA hNB (Nat.cast_nonneg _) (by positivity)
   have hcost : ((occupiedDyads G a).card : ℝ) * (occupiedDyads G b).card * L x ^ (-B) ≤ L x ^ (-A) := by
     calc
       _ ≤ (L x ^ (P.d + 1) * L x ^ (P.d + 1)) * L x ^ (-B) := mul_le_mul_of_nonneg_right hcard hE
       _ = L x ^ (2 * (P.d + 1) - B) := by
         rw [← Real.rpow_add hLp, ← Real.rpow_add hLp]
-        congr 1
         ring
-      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (by dsimp [B]; linarith)
+      _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hL1 (by linarith)
   exact hbound.trans (mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right hcost (tuple_norm_nonneg G b f)) (tuple_norm_nonneg G a g))
 

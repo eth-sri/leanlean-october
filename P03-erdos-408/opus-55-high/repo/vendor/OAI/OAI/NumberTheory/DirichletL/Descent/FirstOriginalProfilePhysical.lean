@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstHeightBudget
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels
+open JointLogSeparation
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open InverseMomentFirstProfileUniform
 theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -21,29 +20,29 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
     (hU : ∀ i,Function.support (U₀ i) ⊆ Set.Icc (-M₀ i) (M₀ i))
     (hg₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (Aker J : ℕ) :
-    ∃ Cprofile Kpush : ℝ,0 ≤ Cprofile ∧ 0<Kpush ∧ ∀ {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
+    ∃ Cprofile Kpush : ℝ,0 ≤ Cprofile ∧ 0<Kpush ∧ ∀ {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (_hc : ∀ i,ringChar (Eis⧸Ideal.span {p i})≠2)
+    (_hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F : Finset ι) (outer:Finset κ) (b : κ→SecondPassArithmetic.CubeCoordinates ι) (common : κ→Finset ι)
-    (Ψ₁ Ψ₂ : Eis→*ℂ) (mleft mright : Eis) (dd:κ→Eis) (H₁ H₂ selector : κ→Finset ι→ℂ)
-    (labels : κ→Finset (Ideal Eis)) (a : κ→Ideal Eis×Eis→ℂ) (Γ Y : ℝ)
+    (Ψ₁ Ψ₂ : ActualEisensteinCubic.O→*ℂ) (mleft mright : ActualEisensteinCubic.O) (dd:κ→ActualEisensteinCubic.O) (H₁ H₂ selector : κ→Finset ι→ℂ)
+    (labels : κ→Finset (Ideal ActualEisensteinCubic.O)) (a : κ→Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O→ℂ) (Γ Y : ℝ)
     (_hΨ₁ : ∀ u,‖Ψ₁ u‖≤1) (_hΨ₂ : ∀ u,‖Ψ₂ u‖≤1)
     (_hΓ : 0≤Γ) (_hY : 0<Y)
     (_hlabels : ∀k∈outer,∀ f∈labels k,Squarefree f) (_hn : ∀k∈outer,∀ f∈labels k,f≠0)
     (_ha : ∀k∈outer,∀ x∈firstRetainedSource p (labels k) (b k) Y,‖a k x‖≤Γ)
     (ω₁ ω₂ : ℝ → ℂ) (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ : ℝ)
-    (A₁ A₂ C R : (Σ _ : κ,Ideal Eis×Eis) → ℝ) (K L : ℝ) (_hK : 0<K) (s : Fin 9→ℝ)
+    (A₁ A₂ C R : (Σ _ : κ,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) → ℝ) (K L : ℝ) (_hK : 0<K) (s : Fin 9→ℝ)
     (_hs : ∀ i,0<s i)
-    (selected : Finset (Σ _ : κ,Ideal Eis×Eis))
+    (selected : Finset (Σ _ : κ,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O))
     (_hselected : selected⊆firstGlobalRetainedSource p outer labels b Y),
     let source := selected
-    let C₁ := fun x : (Σ _ : κ,Ideal Eis×Eis) => firstCanonicalCoefficient p hp hcop hg (b x.1) (common x.1) true Ψ₁ mleft (dd x.1) (H₁ x.1) x.2
-    let C₂ := fun x : (Σ _ : κ,Ideal Eis×Eis) => firstCanonicalCoefficient p hp hcop hg (b x.1) (common x.1) false Ψ₂ mright (dd x.1) (H₂ x.1) x.2
-    let w := fun x : (Σ _ : κ,Ideal Eis×Eis) => retainedCubeWeight p hp hcop hg (b x.1) (common x.1) Ψ₁ Ψ₂ mleft mright (dd x.1) (a x.1) x.2
+    let C₁ := fun x : (Σ _ : κ,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) => firstCanonicalCoefficient p hp hcop hg (b x.1) (common x.1) true Ψ₁ mleft (dd x.1) (H₁ x.1) x.2
+    let C₂ := fun x : (Σ _ : κ,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) => firstCanonicalCoefficient p hp hcop hg (b x.1) (common x.1) false Ψ₂ mright (dd x.1) (H₂ x.1) x.2
+    let w := fun x : (Σ _ : κ,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O) => retainedCubeWeight p hp hcop hg (b x.1) (common x.1) Ψ₁ Ψ₂ mleft mright (dd x.1) (a x.1) x.2
     ∀ (_hpos : ∀ x∈source,0<A₁ x ∧ 0<A₂ x ∧ 0<C x ∧ 0<R x ∧ dd x.1≠0 ∧ x.2.2≠0)
     (_hρ : ∀ i,|ρ i| ≤ B₀ i) (_hc₁ : 1 ≤ c₁) (_hc₂ : 1 ≤ c₂)
     (_hc₁b : c₁ ≤ bcap) (_hc₂b : c₂ ≤ bcap) (_hL : 0 ≤ L)
@@ -91,8 +90,8 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
   have hb:=he p hp hg hinj hcop hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd H₁ H₂ selector labels a Γ Y
     hΨ₁ hΨ₂ hΓ hY hlabels hn ha ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂ A₁ A₂ C R K L hK s hs selected hselected
     hpos hρ hc₁ hc₂ hc₁b hc₂b hL hω₁ hω₂ hcut (Benergy/P₁) (Benergy/P₂) (by positivity) (by positivity)
-    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₁).mpr;convert hleft z using 1 ; dsimp only [P₁] ; ring)
-    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₂).mpr;convert hright z using 1 ; dsimp only [P₂] ; ring)
+    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₁).mpr;convert hleft z using 1 ; linarith)
+    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₂).mpr;convert hright z using 1 ; linarith)
   have hroot:Real.sqrt (Benergy/P₁)*Real.sqrt (Benergy/P₂)=Benergy*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹):=by
     simp only [div_eq_mul_inv,Real.sqrt_mul hBenergy]
     calc

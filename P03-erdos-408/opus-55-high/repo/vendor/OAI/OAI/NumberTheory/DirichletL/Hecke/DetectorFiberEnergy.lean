@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePlain
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.HeckeDetectorFiberEnergy
 open HeckeFamily HeckeDyadic HeckeDetectorWitnessRows HeckeDetectorRowwisePolynomial
@@ -37,8 +37,7 @@ theorem inverse_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label
     (fun u => (w u).frequency) hσ hf
     (by simpa using hraw 0 (by omega)) (by simpa using hraw 1 (by omega))
     (by simpa using hraw 2 (by omega))
-  refine hb.trans ?_
-  nlinarith
+  linarith
 
 theorem plain_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label→Character)
     (U a ε tstar T allowance : ℝ) (i : ℕ) (ha : 0≤a)
@@ -63,8 +62,7 @@ theorem plain_energy {Row Label : Type*} (rows : Finset Row) (χ : Row→Label�
   have hb := HeckeDetectorRowwisePlain.plain_squared_rowwise rows (fun u => χ u label) W D hD S hcover
     P 0 1 (-height) height E (by norm_num) (by linarith) hE (fun u => (w u).zero.re)
     (fun u => (w u).frequency) hσ hf hraw
-  refine hb.trans ?_
-  nlinarith
+  linarith
 
 end SevenEighths.HeckeDetectorFiberEnergy
 

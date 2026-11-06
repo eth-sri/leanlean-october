@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
@@ -68,7 +68,7 @@ theorem inverseSchwartz_operator_uniform (reverse : Bool) (n : ℕ) (V W : ℝ�
       (frequencyTwist (inverseLogSchwartz reverse n V W a b ha hV hW hs (σ,R)) (t/(2*Real.pi)))≤B*(1+‖t‖)^J :=
     (hbound (σ,R) hp (t/(2*Real.pi))).trans
       (mul_le_mul_of_nonneg_left (pow_le_pow_left₀ (by positivity) (by linarith) J) hB.le)
-  exact (mul_le_mul_of_nonneg_left hb hA.le).trans_eq (by ring)
+  nlinarith
 
 end SevenEighths.DetectorDictionaryInverseUniform
 

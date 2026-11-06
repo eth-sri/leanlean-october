@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.TuplePrime
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbePhysical
 open CompletedGauss CanonicalQuadraticSieve ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem indexedCompensatedHigh_principal_continued {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)

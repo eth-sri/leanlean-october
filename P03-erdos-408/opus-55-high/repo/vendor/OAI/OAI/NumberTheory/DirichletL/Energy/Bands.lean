@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.RayMaskedFloorState
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentEnergyBands
 open HeckeFamily CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
 
 def length (Z X:ℝ):ℝ:=Real.logb Z (max 1 X)
 
 lemma length_nonneg (Z X:ℝ)(hZ:1<Z):0≤length Z X:=
   Real.logb_nonneg hZ (le_max_left _ _)
 
-def ZeroAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
+def ZeroAt (Q:Ideal HeckeFamily.O)(a b bΦ Bmask L M ε Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤M→
   ∀p:Profiles a b,∀t X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
@@ -29,12 +28,12 @@ def ZeroAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
       (1+‖t‖)^degree*Z^(s.width+ε)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal HeckeFamily.O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→
@@ -55,7 +54,7 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
     (ha:0<a)(hb:0≤b)(hbΦ:0<bΦ)(hmask:0≤Bmask)(hε:0<ε)(hLs:0≤Lslot)
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
-      ∀η₀:Character,∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Q:Ideal O,Q≤M→
+      ∀η₀:Character,∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Q:Ideal HeckeFamily.O,Q≤M→
         PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi
           (ε/16) ε κ Z η₀ Q degree S C:=by
   have hs (T:Finset α):=CenteredMomentRayMaskedFloor.exists_positive_floor (α:=T)
@@ -69,7 +68,7 @@ theorem exists_positive_bottom (W:ℝ→ℂ)(aslot bslot:ℝ)(haslot:0<aslot)
     dsimp [C₀];linarith
   refine ⟨∑T:Finset α,J T,S₀,C₀,hC₀,?_⟩
   intro η₀
-  have hall:∀ᶠZ:ℝ in atTop,∀T:Finset α,_:=Filter.eventually_all.mpr (fun T=>hbound T η₀)
+  have hall:=Filter.eventually_all.mpr (fun T=>hbound T η₀)
   filter_upwards [hall,eventually_gt_atTop (1:ℝ)] with Z hZ hZ1
   refine ⟨hZ1,?_⟩
   intro Q hQM T θ w σ v t height hw hwL hσlo hσhi hheight hv s hQ hs p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂ hcapacity

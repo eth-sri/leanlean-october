@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical SchwartzMap ComplexConjugate
 open MeasureTheory
 namespace SevenEighths.CenteredMomentUniformReflectionProfile
 open HeckeFamily FourierBridge EisensteinSchwartzPoisson
@@ -26,7 +26,7 @@ theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
         (1+s)^A*(∫v : ℝ,(1+‖v‖)^J*‖density v‖)≤C*D ∧
         (∀v : ℝ,(1+s)^A*(1+‖v‖)^J*‖density v‖≤C*D) := by
   obtain ⟨C,hC,hsep⟩ := LocalLogFourier.coupled_positive_log_separation_linear_constant
-    (fun _ : Unit=>V) (fun _=>1) (fun _=>M) (fun _=>hM) (fun _=>hV) A J
+    (fun _ : Unit=>V) (fun _=>1) (fun _=>M) (by grind) (by grind) A J
   obtain ⟨H,K,hK,hEuler⟩ := paperRadialFourier_euler_source_weighted_bound
     A (J+(volume : Measure ℝ).integrablePower)
   refine ⟨H,(C+1)*K,by positivity,?_⟩
@@ -35,9 +35,9 @@ theorem source_separation (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (paperRadialFourier_contDiffOn G) (K*D) (by positivity)
     (fun j hj x hx=>(hEuler G j hj x hx.le).trans
       (mul_le_mul_of_nonneg_left hGD hK.le)) s hs
-  have hconst : C*(K*D)≤((C+1)*K)*D := by nlinarith [mul_pos hK hD]
+  have hconst : C*(K*D)≤((C+1)*K)*D := by nlinarith
   exact ⟨density,(fun y=>by simpa using hid (fun _ : Unit=>y)),hi,
-    hm.trans hconst,fun v=>(hp v).trans hconst⟩
+    hm.trans hconst,by grind⟩
 
 theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (hV : ∀y,V y≠0 → |y|≤M) (A J : ℕ) :
@@ -84,15 +84,13 @@ theorem actual_one_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     ring
   have hpoint (i : ι) : ∀v,‖(e i • d i) v‖≤envelope (K*D) J v := by
     have hh := normalized_density_bound A 0 J (s i) 0 (K*D) (hs i) (d i)
-      (by simpa using hp i)
+      (by grind)
     simpa [heightScale,e] using hh
   have hh := row_density_energy (fun i=>(e i • d i:𝓢(ℝ,ℂ))) φ (envelope (K*D) J)
-    (fun v=>(1+‖v‖)^J) (envelope_pos (K*D) (mul_pos hK hD) J)
+    (fun v=>(1+‖v‖)^J) (envelope_pos (K*D) (by positivity) J)
     (by intro v;positivity) hpoint hint (envelope_integrable (K*D) J) E hE henergy
   rw [envelope_integral] at hh
-  simp_rw [←hsource] at hh
-  convert hh using 1
-  ring
+  grind
 
 lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
     (hreal : ∀y,conj (V y)=V y) (X v : ℝ) (hX : 0<X) :
@@ -109,8 +107,7 @@ lemma inverse_annular_frequency (χ : Character) (V : ℝ→ℂ)
   rw [CenteredMomentTwistedReflection.polynomial_twisted_source χ.inverse _ X v hX,
     polynomial_inverse_plain χ _ X hX,ht,
     ←CenteredMomentTwistedReflection.polynomial_twisted_source χ _ X (-v) hX]
-  congr 2
-  ring
+  simp
 
 theorem actual_inverse_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
     (hV : ∀y,V y≠0 → |y|≤M) (hreal : ∀y,conj (V y)=V y) (A J : ℕ) :
@@ -133,7 +130,7 @@ theorem actual_inverse_uniform (V : ℝ→ℂ) (M : ℝ) (hM : 0≤M)
       ‖HeckeDyadic.polynomial (χ i) false (logWindow V) (X i) 0 (-2*Real.pi*v)*P i‖ := by
     rw [inverse_annular_frequency (χ i) V hreal (X i) v (hX i),norm_mul,
       Complex.norm_conj,←norm_mul]
-  simpa only [he] using henergy v
+  grind
 
 lemma polynomial_const_mul (χ : Character) (W : ℝ→ℂ) (X σ omega : ℝ) (c : ℂ) :
     HeckeDyadic.polynomial χ false (fun x=>c*W x) X σ omega=

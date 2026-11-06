@@ -50,7 +50,7 @@ lemma slotProduct_reindex (e : ι ≃ κ) {J : ℕ} (A : κ → Finset (Fin J)) 
     slotProduct (fun g => A (e g)) a = slotProduct A fun k => a (e.symm k) := by
   unfold slotProduct
   rw [← Equiv.prod_comp e]
-  simp only [Equiv.symm_apply_apply]
+  simp
 
 /-- `FamilyBound` for the reindexed groups gives it for the original ones. -/
 lemma FamilyBound.reindex (e : ι ≃ κ) {q₀ : ℝ} {m₀ J : ℕ} {C₁ C E C₃ C₄ x : ℝ}
@@ -59,10 +59,10 @@ lemma FamilyBound.reindex (e : ι ≃ κ) {q₀ : ℝ} {m₀ J : ℕ} {C₁ C E 
     FamilyBound q₀ m₀ J C₁ C E C₃ C₄ x P big := by
   obtain ⟨N, A, B, β, φ, φ', ψ, ψ', U, U', h₁, h₂, h₃, h₄, h₅, h₆, h₇, h₈⟩ := h
   refine ⟨N, fun ν g => A ν (e g), fun ν g => B ν (e g), β, φ, φ', ψ, ψ', U, U',
-    fun ν g => h₁ ν (e g), fun ν g hg => h₂ ν (e g) (by simpa using hg), fun ν => ?_,
+    by grind, fun ν g hg => h₂ ν (e g) (by simp_all), fun ν => ?_,
     h₄, h₅, h₆, h₇, ?_⟩
   · obtain ⟨⟨g, hg⟩, ⟨g', hg'⟩⟩ := h₃ ν
-    exact ⟨⟨e.symm g, by simpa using hg⟩, ⟨e.symm g', by simpa using hg'⟩⟩
+    exact ⟨⟨e.symm g, by simp_all⟩, ⟨e.symm g', by simp_all⟩⟩
   intro ζ hζ X hX₁ hX₂ S S' f g hS hf hg hnf hng
   have := h₈ ζ hζ X hX₁ hX₂ S S' f g hS hf hg (by rwa [physicalNormSq_reindex])
     (by rwa [physicalNormSq_reindex])

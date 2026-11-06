@@ -8,14 +8,12 @@ public import OAI.NumberTheory.DirichletL.Detector.GramPhysicalScale
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open ConcreteTraceCRT CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+local notation "Id" => Ideal ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
 def commonResidualScale (C : SupportedIdeal) (Y : ℝ) : ℝ := Y/Ideal.absNorm C.val
@@ -25,7 +23,7 @@ lemma common_column_ratio (C I : SupportedIdeal) (Y : ℝ) :
     (Ideal.absNorm (supportedIdealProduct C I).val:ℝ)/Y=(Ideal.absNorm I.val:ℝ)/commonResidualScale C Y := by
   rw [supported_dilation_norm,Nat.cast_mul,commonResidualScale,div_div_eq_mul_div]
   ring
-lemma common_kernel_scale (C I J : SupportedIdeal) (k : O) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q) :
+lemma common_kernel_scale (C I J : SupportedIdeal) (k : ActualEisensteinCubic.O) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q) :
     Q*‖eisEmbedding (primaryGenerator C.val*k)‖^2/
       ‖eisEmbedding (primaryGenerator (supportedIdealProduct C I).val*primaryGenerator (supportedIdealProduct C J).val)‖^2=
       frequencyScale C k Y Q/
@@ -36,12 +34,12 @@ lemma common_kernel_scale (C I J : SupportedIdeal) (k : O) (Y Q : ℝ) (hY : 0<Y
   ring
 
 theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
-    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C : SupportedIdeal) (k : O)
-    (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (hpr : λ₀^2∣r-1) (hk : k=u.val*λ₀^a*(2:O)^b*r)
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C : SupportedIdeal) (k : ActualEisensteinCubic.O)
+    (u : ActualEisensteinCubic.Oˣ) (a b : ℕ) (r : ActualEisensteinCubic.O) (hr : Supported (Ideal.span {r}))
+    (hpr : ConcretePrimeRowBridge.goodLambda^2∣r-1) (hk : k=u.val*ConcretePrimeRowBridge.goodLambda^a*(2:ActualEisensteinCubic.O)^b*r)
+    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉P i) (c : ι→ℕ)
     (hc : ∀i,1≤c i) (hcop : Pairwise (Function.onFun IsCoprime P)) (he : C.val=∏i,P i^c i)
-    [Fintype (O⧸∏i,P i^c i)] [∀i,Fintype (O⧸P i^c i)]
+    [Fintype (ActualEisensteinCubic.O⧸∏i,P i^c i)] [∀i,Fintype (ActualEisensteinCubic.O⧸P i^c i)]
     (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
     (U : SchwartzMap ℝ ℂ) (v : ℝ) :
     let N:=commonResidualScale C Y
@@ -60,12 +58,12 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
       paperRadialFourier U (Q*‖eisEmbedding (primaryGenerator C.val*k)‖^2/
         ‖eisEmbedding (primaryGenerator (supportedIdealProduct C I).val*primaryGenerator (supportedIdealProduct C J).val)‖^2)
       else 0)=
-      ∑D∈divisorPool F Subtype.val,(moebius D:ℂ)*∑'n : O,∑'m : O,
+      ∑D∈divisorPool F Subtype.val,(moebius D:ℂ)*∑'n : ActualEisensteinCubic.O,∑'m : ActualEisensteinCubic.O,
         jointExtension S hS σ (primaryGenerator C.val) k u a b r hr P hg c (primaryGenerator D*n) (primaryGenerator D*m)*
           shellProfile W v U (frequencyScale C k Y Q) (‖eisEmbedding n‖^2/(N/Ideal.absNorm D))
             (‖eisEmbedding m‖^2/(N/Ideal.absNorm D)) := by
   dsimp only
-  have hpc : λ₀^2∣primaryGenerator C.val-1 :=
+  have hpc : ConcretePrimeRowBridge.goodLambda^2∣primaryGenerator C.val-1 :=
     (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).2
   rw [←original_window_mobius_lattice S hS hbad σ (primaryGenerator C.val) k hpc
     u a b r hr P hg c W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)
@@ -75,10 +73,10 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
   apply Finset.sum_congr rfl
   intro J hJ
   split_ifs with hIJ
-  · have hni : Supported (Ideal.span {primaryGenerator I.val}) := (supported_span_primaryGenerator_iff _).mpr I.property
-    have hnj : Supported (Ideal.span {primaryGenerator J.val}) := (supported_span_primaryGenerator_iff _).mpr J.property
-    have hpi : λ₀^2∣primaryGenerator I.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2
-    have hpj : λ₀^2∣primaryGenerator J.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).2
+  · have hni := (supported_span_primaryGenerator_iff _).mpr I.property
+    have hnj := (supported_span_primaryGenerator_iff _).mpr J.property
+    have hpi : ConcretePrimeRowBridge.goodLambda^2∣primaryGenerator I.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).2
+    have hpj : ConcretePrimeRowBridge.goodLambda^2∣primaryGenerator J.val-1 := (primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ J.property)).2
     have hij : IsCoprime (primaryGenerator I.val) (primaryGenerator J.val) := by
       apply (Ideal.isCoprime_span_singleton_iff _ _).mp
       simpa only [(primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ I.property)).1,
@@ -86,13 +84,13 @@ theorem original_common_window_source (S : Finset Id) (hS : ∀p∈S,p.IsMaximal
     have hf : Ideal.span {primaryGenerator C.val}=∏i,P i^c i := by
       rw [(primaryGenerator_spec _ (supported_primaryGenerator_ne_zero _ C.property)).1,he]
     rw [jointExtension_source S hS σ (primaryGenerator C.val) k
-      ((supported_span_primaryGenerator_iff _).mpr C.property) u a b r hr hpr hk P hg c hc hcop hf
+      (by grind) u a b r hr hpr hk P hg c hc hcop hf
       _ _ hni hnj hpi hpj hij]
     rw [lowGramCoefficient_eq_primary S hS hbad σ,lowGramCoefficient_eq_primary S hS hbad σ,
       common_kernel_scale C I J k Y Q hY hQ,common_column_ratio,common_column_ratio]
     simp only [supported_dilation_generator,shellProfile,star_mul]
     ring
-  · rfl
+  simp
 
 end SevenEighths.ProbeGramCommon
 end

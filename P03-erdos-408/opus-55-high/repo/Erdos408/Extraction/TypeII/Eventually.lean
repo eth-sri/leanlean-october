@@ -28,7 +28,6 @@ theorem eventually_lay (K : ℕ) (CN : ℝ) :
   have hK : (0 : ℝ) ≤ K := Nat.cast_nonneg K
   have h1 : |CN| * logLogLog x + 2 ≤ (|CN| + 2) * (logLogLog x ^ 2 + 1) := by
     nlinarith [abs_nonneg CN, sq_nonneg (logLogLog x - 1)]
-  have h2 := mul_le_mul_of_nonneg_left h1 (show 0 ≤ 50 * (K : ℝ) by positivity)
   nlinarith
 
 /-- Band primes are below the slots: `exp(2 L^{0.19}) ≤ x^{c/T²⁰}`. -/
@@ -46,8 +45,7 @@ theorem eventually_small (c : ℝ) (hc : 0 < c) :
   rw [mul_div_assoc', le_div_iff₀ hT20]
   have h3 : Real.log x ^ (19 / 100 : ℝ) * Real.log x ^ (1 / 100 : ℝ) =
       Real.log x ^ (20 / 100 : ℝ) := by rw [← Real.rpow_add hL0]; norm_num
-  have h4 := mul_le_mul_of_nonneg_left h1 (show 0 ≤ 2 * Real.log x ^ (19 / 100 : ℝ) by
-    positivity)
+  have h4 := mul_le_mul_of_nonneg_left h1 (by positivity)
   nlinarith
 
 /-- `1/c₃ ≤ T⁴`. -/
@@ -85,8 +83,7 @@ theorem eventually_le_div (C : ℝ) :
   rcases le_or_gt C 0 with hC | hC
   · have : 0 ≤ Real.log x := hL0.le
     nlinarith [pow_pos (show (0 : ℝ) < logLog x by linarith) 25]
-  · have := mul_le_mul h2 h1 (by positivity) (by positivity)
-    linarith
+  nlinarith
 
 /-- `C ≤ T^{-21} L`. -/
 theorem eventually_le_gammaL (C : ℝ) :
@@ -102,8 +99,7 @@ theorem eventually_le_gammaL (C : ℝ) :
   rcases le_or_gt C 0 with hC | hC
   · have : 0 < logLog x ^ (21 : ℝ) := by positivity
     nlinarith
-  · have := mul_le_mul h2 h1 (by positivity) (by positivity)
-    linarith
+  nlinarith
 
 /-- `L³ ≤ κ x`. -/
 theorem eventually_L3 (κ : ℝ) (hκ : 0 < κ) :
@@ -135,7 +131,7 @@ theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
   set T := logLog x
   have hL0 : 0 < L := by linarith
   have hT0 : 0 < T := by linarith
-  have hl2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hl2 : 0 < Real.log 2 := by positivity
   have hlog2 : Real.log 2 < 1 := by have := Real.log_two_lt_d9; linarith
   have hll2 : -1 ≤ Real.log (Real.log 2) := by
     have h12 : (1 / 2 : ℝ) ≤ Real.log 2 := by have := Real.log_two_gt_d9; linarith
@@ -156,17 +152,17 @@ theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
       div_le_div_of_nonneg_right (div_le_self hL0.le hT25) hc₃.le
     calc Real.log (L / T ^ 25 / c₃) ≤ Real.log (L / c₃) := Real.log_le_log hpos hle
       _ = T - Real.log c₃ := Real.log_div hL0.ne' hc₃.ne'
-      _ ≤ T + |Real.log c₃| := by linarith [neg_abs_le (Real.log c₃)]
+      _ ≤ T + |Real.log c₃| := by grind
   have hE : E / Real.log 2 ≤ |E| / Real.log 2 :=
     div_le_div_of_nonneg_right (le_abs_self E) hl2.le
-  have he : 0 < Real.exp 1 := Real.exp_pos 1
+  have he := Real.exp_pos 1
   have hLHS : 2 * Real.exp 1 * (Real.log (L ^ (45 / 100 : ℝ) / Real.log 2) + E / Real.log 2 +
       1 / 2) + Real.log (L / T ^ 25 / c₃) ≤ D * T := by
     have h1' : Real.log (L ^ (45 / 100 : ℝ) / Real.log 2) + E / Real.log 2 + 1 / 2 ≤
         (3 + |E| / Real.log 2) * T := by
       have : 0 ≤ |E| / Real.log 2 := by positivity
       nlinarith
-    have h2' := mul_le_mul_of_nonneg_left h1' (show 0 ≤ 2 * Real.exp 1 by positivity)
+    have h2' := mul_le_mul_of_nonneg_left h1' (by positivity)
     have : |Real.log c₃| ≤ |Real.log c₃| * T := le_mul_of_one_le_right (abs_nonneg _) hT
     rw [hD]
     nlinarith
@@ -178,7 +174,7 @@ theorem eventually_rank (E c₃ : ℝ) (hc₃ : 0 < c₃) :
     have e2 : L ^ (5 / 100 : ℝ) * L ^ (1 / 2 : ℝ) ≤ L ^ (55 / 100 : ℝ) := by
       rw [← Real.rpow_add hL0]; norm_num
     have hD0 : 0 ≤ D := by rw [hD]; positivity
-    calc D * T * T ^ (21 : ℝ) = D * T ^ (22 : ℝ) := by rw [mul_assoc, e]
+    calc D * T * T ^ (21 : ℝ) = D * T ^ (22 : ℝ) := by grind
       _ ≤ L ^ (5 / 100 : ℝ) * L ^ (1 / 2 : ℝ) := mul_le_mul h2 h1 (by positivity) (by positivity)
       _ ≤ L ^ (55 / 100 : ℝ) := e2
   linarith

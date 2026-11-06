@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.HorizontalIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -55,8 +54,8 @@ theorem buffered_horizontal_join_arbitrary_decay {K : ℕ}
     (a+16*e) 2 A (by linarith) hA hm (fun v hv=>(hslice v hv).1) hnorm
   refine ⟨hi,hb.trans ?_⟩
   calc
-    _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith : 2-(a+16*e)≤2) hA
-    _ = _ := by dsimp [A];ring
+    _ ≤ 2*A := mul_le_mul_of_nonneg_right (by linarith) hA
+    _ = _ := by ring
 
 end SevenEighths.ProbeHighRowFamily
 

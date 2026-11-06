@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.Moments.PlainGlobalEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SevenEighths.CenteredMomentPlainPositiveScale
 open HeckeFamily HeckeDyadic CenteredMomentPlainGlobalActual CenteredMomentPlainGlobalEnergy
-open CenteredMomentHeckeTwist CenteredMomentDetectorDictionary
+open CenteredMomentHeckeTwist
 
  theorem small_polynomial (χ:Character)(W:SchwartzMap ℝ ℂ)(a b:ℝ)(ha:0<a)
     (hWs:Function.support (W:ℝ→ℂ)⊆Set.Icc a b)(D freq:ℝ)(hD:0<D)(hD1:D≤1):

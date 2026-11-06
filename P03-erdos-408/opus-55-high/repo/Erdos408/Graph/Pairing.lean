@@ -85,7 +85,7 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
       _ = _ := Finset.sum_congr rfl fun a _ => Equiv.sum_comp (actEquiv τ) fun b =>
           (A.stateMass (n, a) : ℂ) * s * A.physicalRaw false (n, a) (n', b) * t
   have hcard : ((Fintype.card (G.Permutations (J + F.ell)) : ℂ) ^ 2) ≠ 0 :=
-    pow_ne_zero 2 (Nat.cast_ne_zero.mpr Fintype.card_ne_zero)
+    by simp
   calc _ = ∑ ab : G.Labels (J + F.ell) × G.Labels (J + F.ell),
           ∑ πτ : G.Permutations (J + F.ell) × G.Permutations (J + F.ell),
             ((Fintype.card (G.Permutations (J + F.ell)) : ℂ) ^ 2)⁻¹ *
@@ -95,8 +95,7 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
         refine Finset.sum_congr rfl fun ab _ => ?_
         rw [Model.physicalKernel, ← Fintype.sum_prod_type', Finset.mul_sum, Finset.mul_sum,
           Finset.sum_mul]
-        refine Finset.sum_congr rfl fun πτ _ => ?_
-        ring
+        grind
     _ = ∑ πτ : G.Permutations (J + F.ell) × G.Permutations (J + F.ell),
           ((Fintype.card (G.Permutations (J + F.ell)) : ℂ) ^ 2)⁻¹ *
             ∑ a : G.Labels (J + F.ell), ∑ b : G.Labels (J + F.ell),
@@ -109,7 +108,7 @@ lemma sum_physicalKernel {F : FixedData} {J m : ℕ} (A : Model F G J m) (n n' :
     _ = _ := by
         simp_rw [hperm, Finset.sum_const, Finset.card_univ, Fintype.card_prod, nsmul_eq_mul,
           ← mul_assoc]
-        rw [Nat.cast_mul, ← pow_two, mul_inv_cancel₀ hcard, one_mul]
+        grind
 
 /-! ### The pairing -/
 
@@ -127,7 +126,7 @@ theorem pairing_eq_sum {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_map.mp hn
     obtain ⟨h₁, h₂⟩ := hS k hk
     rw [Finset.mem_Ico, Int.ceil_le, Int.lt_ceil]
-    exact ⟨by exact_mod_cast h₁, by exact_mod_cast h₂⟩
+    simp_all
   · intro n _ hn
     have : extend S f n = 0 := by
       refine ite_eq_right fun h => hn (Finset.mem_map.mpr ⟨n.toNat, h.2, ?_⟩)
@@ -178,8 +177,7 @@ lemma sum_stateMass {F : FixedData} {J m : ℕ} (A : Model F G J m) (n : ℕ) :
   rw [sum_vals (fun p => if ∀ g, Function.Injective (p g) ∧ ∀ i, p g i ∣ n then
     G.markMass (J + F.ell) else 0), markMass_eq, physicalLists, Finset.card_filter,
     Nat.cast_sum, Finset.sum_mul]
-  refine Finset.sum_congr rfl fun p _ => ?_
-  split_ifs <;> simp
+  simp
 
 /-- Upstream's norm of `extend S f` on the dyad is the physical norm. -/
 lemma normOn_extend {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
@@ -195,7 +193,7 @@ lemma normOn_extend {F : FixedData} {J m : ℕ} (A : Model F G J m) (X : ℝ)
     obtain ⟨k, hk, rfl⟩ := Finset.mem_map.mp hn
     obtain ⟨h₁, h₂⟩ := hS k hk
     rw [Finset.mem_Ico, Int.ceil_le, Int.lt_ceil]
-    exact ⟨by exact_mod_cast h₁, by exact_mod_cast h₂⟩
+    simp_all
   · intro n _ hn
     have : extend S f n = 0 := by
       refine ite_eq_right fun h => hn (Finset.mem_map.mpr ⟨n.toNat, h.2, ?_⟩)

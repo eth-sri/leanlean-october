@@ -9,25 +9,24 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFreeExcep
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorPlainExceptional
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
+open HeckeFamily HeckeDyadic HeckeInverseAmplification
+open CenteredMomentDetectorDictionary
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorEnergyInitialState
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
+open CenteredMomentSourceRow CenteredMomentSourceMass
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
 open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
-variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
+open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open CenteredMomentPrimeSlot CenteredMomentRowNorm
+open ConcreteTraceCRT ActualEisensteinCubic
+variable {M:Ideal HeckeFamily.O}{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
-def retainedSourceEnergy (keep:O→Prop)
+def retainedSourceEnergy (keep:HeckeFamily.O→Prop)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)
     (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(Φ:𝓢(ℝ,ℂ)):ℝ:=
   sourceRestrictedEnergy keep (finiteColumns (fiberPool F selected))
@@ -35,7 +34,7 @@ def retainedSourceEnergy (keep:O→Prop)
     ((U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val))
 
 theorem retained_positive_energy_le_source
-    (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
+    (keep:HeckeFamily.O→Prop)(Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
     (F:Fiber M H Label Slot U a ε tstar T allowance i)(η:Character)
     (selected:Finset Slot)(j k:ℕ)(σ t:ℝ)(hU:0<U)
     (hkeep:∀u∈F.rows,keep u.val):
@@ -43,10 +42,9 @@ theorem retained_positive_energy_le_source
       retainedSourceEnergy keep F η selected j k σ t Φ:=by
   let Q:=finiteColumns (fiberPool F selected)
   let c:=fun I:supportedColumns Q=>fiberCoefficient F η selected j k σ t I*heightCoeff η 0 I
-  let rows:Finset O:=F.rows.image Subtype.val
+  let rows:Finset HeckeFamily.O:=F.rows.image Subtype.val
   have ht:0<(U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val):=
-    mul_pos (mul_pos (Real.rpow_pos_of_pos hU _) (Real.rpow_pos_of_pos hU _))
-      (Finset.prod_pos (fun _ _=>Real.rpow_pos_of_pos hU _))
+    by positivity
   have he (u:FreeRow):
       ‖detectorPositiveRow F η selected j k σ t u‖^2=
       ‖rowPolynomial Finset.univ (sourceGenerator Q) c u.val‖^2/
@@ -58,14 +56,11 @@ theorem retained_positive_energy_le_source
       (height_source_row η 0 Q (fiberCoefficient F η selected j k σ t) u.val).symm
   have hb:=finite_energy_le_restricted keep Finset.univ
     (sourceGenerator Q) (sourceGenerator_supported Q) c Φ U hU rows
-    (by
-      intro z hz
-      obtain ⟨u,hu,rfl⟩:=Finset.mem_image.mp hz
-      exact hkeep u hu) (fun z=>hΦ _) (by
+    (by grind) (by grind) (by
       intro z hz
       obtain ⟨u,hu,rfl⟩:=Finset.mem_image.mp hz
       have hn:‖eisEmbedding u.val‖^2/U∈Set.Icc (0:ℝ) 1:=by
-        refine ⟨div_nonneg (sq_nonneg _) hU.le,(div_le_one hU).mpr ?_⟩
+        refine ⟨by positivity,(div_le_one hU).mpr ?_⟩
         rw [eisEmbedding_norm_sq_eq_absNorm_span]
         exact F.row_norm u hu
       rw [hone _ hn,Complex.one_re])
@@ -76,7 +71,7 @@ theorem retained_positive_energy_le_source
       rw [Finset.sum_div]
     _=(∑z∈rows,‖rowPolynomial Finset.univ (sourceGenerator Q) c z‖^2)/
         ((U^F.m)*(U^F.m)*∏s:selected,U^(F.widths s.val)):=by
-      rw [Finset.sum_image (fun x _ y _ hxy=>Subtype.val_injective hxy)]
+      rw [Finset.sum_image (by simp)]
     _≤_:=div_le_div_of_nonneg_right hb ht.le
 
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
@@ -108,7 +103,7 @@ theorem source_fibers_eventually_retained (S:ProbeFinalAssembly.SourceData D)(η
   apply Finset.eq_empty_iff_forall_notMem.mpr
   intro u hu
   obtain ⟨hu,hex⟩:=Finset.mem_filter.mp hu
-  exact ((source_keep_iff S η₀ u).mp (hk u hu)) hex
+  exact ((source_keep_iff S η₀ u).mp (by grind)) hex
 
 theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Character):
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀rows:Finset FreeRow,
@@ -133,7 +128,7 @@ theorem source_batch_plain_retained (S:ProbeFinalAssembly.SourceData D)(η:Chara
   refine ⟨hZ,?_⟩
   intro rows hrows d hd a ε tstar T allowance i B hB hdata hprofile hwidth
     bin label J K hne selected j k σ t F η₀
-  have hU:0<Z^d:=Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _
+  have hU:0<Z^d:=by positivity
   have hdataF:F.rowData=momentData η₀:=by
     change B.data label=momentData η₀
     rw [hdata,sourceMomentData_base]

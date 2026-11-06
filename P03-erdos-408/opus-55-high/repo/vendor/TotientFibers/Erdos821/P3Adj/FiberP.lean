@@ -6,7 +6,6 @@ public import Erdos821.P3Adj.Basic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -29,7 +28,7 @@ lemma zero_of_mem_of_valid {m : P.Memory g.val} {b : ℕ}
     (hvalid : birthValid (P := P) (g := g) m b) {v : P.Particle g.val}
     (hv : v ∈ m) : v.2 = 0 := by
   by_contra hne
-  have hpos : 0 < m.count v := Multiset.count_pos.mpr hv
+  have hpos := Multiset.count_pos.mpr hv
   have hz := hvalid.2 v hne
   omega
 
@@ -43,7 +42,7 @@ lemma fiberP_card :
     simp only [fiberP]
     by_cases h : birthValid (P := P) (g := g) m 0
     · rw [ite_eq_left h]
-      have hcard : m.card = 0 := h.1
+      have hcard := h.1
       have hm0 : m = 0 := Multiset.card_eq_zero.mp hcard
       rw [hm0]
       have hof : ∀ p : Fin 0 → P.Prime g.val,
@@ -71,7 +70,7 @@ lemma fiberP_card :
       · have hne : ∀ p : Fin 0 → P.Prime g.val,
             ¬ (zeroBirthBatch (P := P) (g := g.val) p = m) := by
           intro p hp
-          have hc : (zeroBirthBatch (P := P) (g := g.val) p).card = 0 := birth_card p
+          have hc := birth_card p
           rw [hp] at hc
           exact hcard hc
         have hempty : Finset.univ.filter (fun p : Fin 0 → P.Prime g.val =>
@@ -80,7 +79,7 @@ lemma fiberP_card :
           intro p hp
           simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hp
           exact hne p hp
-        rw [hempty, Finset.card_empty]
+        simp_all
   | succ b ih =>
     simp only [fiberP]
     by_cases h : birthValid (P := P) (g := g) m (b + 1)
@@ -128,12 +127,12 @@ lemma fiberP_card :
             Multiset.mem_cons_self v _
           rw [hp] at hmem
           exact hmem
-        have herase : v ::ₘ (m.erase v) = m := Multiset.cons_erase hv_mem
+        have herase := Multiset.cons_erase hv_mem
         have hcons : v ::ₘ (zeroBirthBatch (P := P) (g := g.val) (fun i : Fin b => p i.succ))
             = v ::ₘ (m.erase v) := by
           have hmp_eq1 : v ::ₘ
-              (zeroBirthBatch (P := P) (g := g.val) (fun i : Fin b => p i.succ)) = m := by
-            exact hp
+              (zeroBirthBatch (P := P) (g := g.val) (fun i : Fin b => p i.succ)) = m :=
+            hp
           exact hmp_eq1.trans herase.symm
         exact (Multiset.cons_inj_right v).mp hcons
       -- Fiber splits by head particle; sum head fibers via IH
@@ -164,8 +163,7 @@ lemma fiberP_card :
               simp
             rw [hp] at hmem_multi
             exact hmem_multi
-          exact ⟨(⟨p 0, 0⟩ : P.Particle g.val), hv_mem, rfl,
-            htail _ p rfl hp⟩
+          grind
         · rintro ⟨v, hv_mem, hv_eq, htail_eq⟩
           have hof : List.ofFn (fun i => (⟨p i, 0⟩ : P.Particle g.val))
               = (⟨p 0, 0⟩ : P.Particle g.val) ::
@@ -190,7 +188,7 @@ lemma fiberP_card :
         intro v _ w _ hvw
         apply Finset.disjoint_filter.mpr
         intro p _ hpa hpb
-        exact hvw (hpa.1.symm.trans hpb.1)
+        exact by grind
       have hcard_sum : (m.toFinset.biUnion (fun v =>
           Finset.univ.filter (fun p : Fin (b + 1) → P.Prime g.val =>
             ((⟨p 0, 0⟩ : P.Particle g.val)) = v ∧
@@ -207,11 +205,11 @@ lemma fiberP_card :
         intro v hv
         have hv_mem : v ∈ m := Multiset.mem_toFinset.mp hv
         have hcard_erase : (m.erase v).card = b := by
-          have hcard : (m.erase v).card + 1 = m.card :=
+          have hcard :=
             Multiset.card_erase_add_one hv_mem
           omega
         refine ⟨hcard_erase, fun w hw => ?_⟩
-        have hle : (m.erase v).count w ≤ m.count w :=
+        have hle :=
           Multiset.count_le_of_le w (Multiset.erase_le v m)
         have hz := hzero w hw
         omega
@@ -224,22 +222,22 @@ lemma fiberP_card :
         apply Finset.card_bij (fun p _ => (fun i : Fin b => p i.succ))
         · intro p hp
           simp only [fiberP, Finset.mem_filter, Finset.mem_univ, true_and] at hp ⊢
-          exact hp.2
+          grind
         · intro p1 hp1 p2 hp2 heq
-          have h0_1 : ((⟨p1 0, 0⟩ : P.Particle g.val)) = v :=
+          have h0_1 :=
             (Finset.mem_filter.mp hp1).2.1
-          have h0_2 : ((⟨p2 0, 0⟩ : P.Particle g.val)) = v :=
+          have h0_2 :=
             (Finset.mem_filter.mp hp2).2.1
           have hfst : p1 0 = p2 0 := by
             have e1 : p1 0 = ((((⟨p1 0, 0⟩ : P.Particle g.val))) : P.Particle g.val).1 := rfl
             have e2 : p2 0 = ((((⟨p2 0, 0⟩ : P.Particle g.val))) : P.Particle g.val).1 := rfl
             rw [e1, e2, h0_1, h0_2]
-          have htail_eq : (fun i : Fin b => p1 i.succ) = (fun i : Fin b => p2 i.succ) := heq
-          have hp1_eq : p1 = Fin.cons (p1 0) (fun i : Fin b => p1 i.succ) := by
-            exact (Fin.cons_self_tail p1).symm
-          have hp2_eq : p2 = Fin.cons (p2 0) (fun i : Fin b => p2 i.succ) := by
-            exact (Fin.cons_self_tail p2).symm
-          have hhead_eq : p1 0 = p2 0 := hfst
+          have htail_eq := heq
+          have hp1_eq : p1 = Fin.cons (p1 0) (fun i : Fin b => p1 i.succ) :=
+            (Fin.cons_self_tail p1).symm
+          have hp2_eq : p2 = Fin.cons (p2 0) (fun i : Fin b => p2 i.succ) :=
+            (Fin.cons_self_tail p2).symm
+          have hhead_eq := hfst
           rw [hhead_eq, htail_eq] at hp1_eq
           rw [hp1_eq]
           exact hp2_eq.symm
@@ -247,7 +245,7 @@ lemma fiberP_card :
           simp only [fiberP, Finset.mem_filter, Finset.mem_univ, true_and] at hp'
           -- prime head from particle v
           have hv_mem : v ∈ m := Multiset.mem_toFinset.mp hv
-          have hv_zero : v.2 = 0 := zero_of_mem_of_valid ⟨hcard, hzero⟩ hv_mem
+          have hv_zero := zero_of_mem_of_valid ⟨hcard, hzero⟩ hv_mem
           have hmk : ((⟨v.1, 0⟩ : P.Particle g.val)) = v := by
             have e : v = ⟨v.1, v.2⟩ := rfl
             rw [hv_zero] at e
@@ -256,7 +254,7 @@ lemma fiberP_card :
               = p' := by
             apply funext
             intro i
-            exact Fin.cons_succ (α := fun _ => P.Prime g.val) v.1 p' i
+            exact by simp
           have hhead : ((⟨(Fin.cons (α := fun _ => P.Prime g.val) v.1 p') 0, 0⟩ : P.Particle g.val))
               = v := by
             rw [Fin.cons_zero (α := fun _ => P.Prime g.val) v.1 p']
@@ -298,9 +296,9 @@ lemma fiberP_card :
       have hcount_sum : ∑ v ∈ m.toFinset, m.count v = b + 1 := by
         rw [Multiset.toFinset_sum_count_eq, hcard]
       have hDpos : 0 < ∏ w : P.Particle g.val, (m.count w).factorial :=
-        Finset.prod_pos fun w _ => Nat.factorial_pos _
+        by positivity
       have hsum_univ : ∑ w ∈ (Finset.univ : Finset (P.Particle g.val)), m.count w = b + 1 := by
-        rw [Multiset.sum_count_eq_card (fun a _ => Finset.mem_univ a), hcard]
+        rw [Multiset.sum_count_eq_card (by simp), hcard]
       have hDvd : (∏ w : P.Particle g.val, (m.count w).factorial) ∣ (b + 1).factorial := by
         have h1 := Nat.prod_factorial_dvd_factorial_sum (Finset.univ : Finset (P.Particle g.val))
           (fun w => m.count w)
@@ -311,13 +309,13 @@ lemma fiberP_card :
           = (m.count v) * b.factorial := by
         intro v hv
         have hv_mem : v ∈ m := Multiset.mem_toFinset.mp hv
-        have hcpos : 0 < m.count v := Multiset.count_pos.mpr hv_mem
+        have hcpos := Multiset.count_pos.mpr hv_mem
         have hcard_erase : (m.erase v).card = b := by
-          have hcard2 : (m.erase v).card + 1 = m.card :=
+          have hcard2 :=
             Multiset.card_erase_add_one hv_mem
           omega
         have hsum_v : ∑ w ∈ (Finset.univ : Finset (P.Particle g.val)), (m.erase v).count w = b := by
-          rw [Multiset.sum_count_eq_card (fun a_ _ => Finset.mem_univ a_), hcard_erase]
+          rw [Multiset.sum_count_eq_card (by simp), hcard_erase]
         have hDvd_v : (∏ w : P.Particle g.val, ((m.erase v).count w).factorial) ∣ b.factorial := by
           have h1 := Nat.prod_factorial_dvd_factorial_sum (Finset.univ : Finset (P.Particle g.val))
             (fun w => (m.erase v).count w)
@@ -333,7 +331,7 @@ lemma fiberP_card :
             = ∏ w ∈ Finset.univ.erase v, (((m.erase v).count w).factorial) := by
           apply Finset.prod_congr rfl
           intro w hw
-          have hne : w ≠ v := Finset.ne_of_mem_erase hw
+          have hne := Finset.ne_of_mem_erase hw
           rw [(Multiset.count_erase_of_ne hne m).symm]
         have hD_eq : (∏ w : P.Particle g.val, (m.count w).factorial)
             = m.count v * ∏ w : P.Particle g.val, (((m.erase v).count w).factorial) := by
@@ -347,7 +345,7 @@ lemma fiberP_card :
               * (b.factorial / ∏ w : P.Particle g.val, (((m.erase v).count w).factorial))
             = m.count v * ((∏ w : P.Particle g.val, (((m.erase v).count w).factorial))
               * (b.factorial / ∏ w : P.Particle g.val, (((m.erase v).count w).factorial))) := by
-              rw [hD_eq]; ring
+              grind
           _ = m.count v * b.factorial := by
               rw [Nat.mul_div_cancel' hDvd_v]
       have hmul : (∏ w : P.Particle g.val, (m.count w).factorial)
@@ -362,9 +360,7 @@ lemma fiberP_card :
           exact hterm v hv
         rw [hcongr, ← Finset.sum_mul, hcount_sum]
         exact (Nat.factorial_succ b).symm
-      have hfin : (∏ w : P.Particle g.val, (m.count w).factorial)
-          * ((b + 1).factorial / ∏ w : P.Particle g.val, (m.count w).factorial)
-          = (b + 1).factorial :=
+      have hfin :=
         Nat.mul_div_cancel' hDvd
       have hcancel := hmul.trans hfin.symm
       exact mul_left_cancel₀ (ne_of_gt hDpos) hcancel
@@ -375,7 +371,7 @@ lemma fiberP_card :
           exact h ⟨hcard, hzero'⟩
         push Not at hzero_neg
         obtain ⟨v, hv1, hv2⟩ := hzero_neg
-        have hpos : 0 < m.count v := Nat.pos_of_ne_zero hv2
+        have hpos := Nat.pos_of_ne_zero hv2
         have hmem : v ∈ m := Multiset.count_pos.mp hpos
         have hne : ∀ p : Fin (b + 1) → P.Prime g.val,
             ¬ (zeroBirthBatch (P := P) (g := g.val) p = m) := by
@@ -389,20 +385,18 @@ lemma fiberP_card :
           obtain ⟨i, hi⟩ := hmem_birth
           cases v with
           | mk q r =>
-            have h1 : p i = q := congrArg Sigma.fst hi
-            subst h1
-            exact hv1 (eq_of_heq (Sigma.mk.inj_iff.mp hi).2).symm
+            grind
         have hempty : Finset.univ.filter (fun p : Fin (b + 1) → P.Prime g.val =>
             zeroBirthBatch (P := P) (g := g.val) p = m) = ∅ := by
           apply Finset.eq_empty_of_forall_notMem
           intro p hp
           simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hp
           exact hne p hp
-        rw [hempty, Finset.card_empty]
+        grind
       · have hne : ∀ p : Fin (b + 1) → P.Prime g.val,
           ¬ (zeroBirthBatch (P := P) (g := g.val) p = m) := by
           intro p hp
-          have hcard_p : (zeroBirthBatch (P := P) (g := g.val) p).card = b + 1 := birth_card p
+          have hcard_p := birth_card p
           rw [hp] at hcard_p
           exact hcard hcard_p
         have hempty : Finset.univ.filter (fun p : Fin (b + 1) → P.Prime g.val =>
@@ -411,6 +405,6 @@ lemma fiberP_card :
           intro p hp
           simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hp
           exact hne p hp
-        rw [hempty, Finset.card_empty]
+        grind
 
 end Erdos821.P3Adj

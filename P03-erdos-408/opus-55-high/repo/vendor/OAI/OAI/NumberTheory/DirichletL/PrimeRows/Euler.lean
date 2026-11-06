@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Character
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalRowCompletion
-local notation "O" => HeckeFamily.O
 
 def targetRow (η : Character) (u : FreeRow) : Character := η.product (rawRow u).inverse
 
-theorem rowCharacter_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem rowCharacter_hasProd (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (u : FreeRow)
     (s : ℂ) (hs : 1<s.re) :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S} =>
@@ -23,9 +22,9 @@ theorem rowCharacter_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   apply LFunction_hasProd_outside (rowCharacter S hS u) S (idealRowHom u.val) _ s hs
   intro P
   rw [rowCharacter_coeff S hS hbad,highExclusion_prime]
-  split_ifs <;> simp only [zero_mul,one_mul]
+  simp
 
-theorem targetRow_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem targetRow_hasProd (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow)
     (s : ℂ) (hs : 1<s.re) :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S} =>
@@ -41,10 +40,10 @@ def localCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ
     (1-idealRowHom u.val P.val*CubicEisenstein.fullIdealWeight w P.val)/
     (1-idealCoeff η P.val*starRingEnd ℂ (idealRowHom u.val P.val)*CubicEisenstein.fullIdealWeight x P.val)
 
-def globalCorrection (S : Finset (Ideal O)) (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
+def globalCorrection (S : Finset (Ideal HeckeFamily.O)) (η : Character) (u : FreeRow) (x w z : ℂ) : ℂ :=
   ∏' P : {P : PrimeIdeal // P.val∉S},localCorrection η u P.val x w z
 
-theorem localCorrection_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem localCorrection_hasProd (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (η : Character) (u : FreeRow)
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S} =>localCorrection η u P.val x w z)
@@ -53,7 +52,7 @@ theorem localCorrection_hasProd (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
           LFunction ((targetRow η u).excludePrimes S hS) x) := by
   have hx1 : 1<x.re := by linarith
   have hw1 : 1<w.re := by linarith
-  have hz1 : 1<(6*z).re := by norm_num [Complex.mul_re]; linarith
+  have hz1 : 1<(6*z).re := by norm_num; linarith
   have hF := excludedIdealHighSeries_row_hasProd_outside S hS η u.val x w z hx hw hz
   have hZ := (fixedSourcePrincipal_hasProd S hS (6*z) hz1).inv₀
     (LFunction_ne_zero_of_one_lt_re (fixedSourcePrincipal S hS) hz1)

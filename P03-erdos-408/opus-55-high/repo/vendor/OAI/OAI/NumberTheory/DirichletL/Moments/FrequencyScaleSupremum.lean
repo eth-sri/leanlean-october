@@ -8,8 +8,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators ContDiff Topology
-open MeasureTheory Set Complex
+open scoped Classical ContDiff
+open Set Complex
 namespace SevenEighths.CenteredMomentFrequencyScaleSupremum
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorDyadicBridge FourierBridge
 open CenteredMomentScaleSupremum (scaleTest scaleTest_continuous scaleTest_support)
@@ -43,7 +43,6 @@ theorem frequencyScaleSum_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ) (f
         (coefficient χ inv J*logPhase (freq/(2*Real.pi)) (Real.log (J.absNorm : ℝ)))*(((J.absNorm : ℝ)*(Real.exp (-l)*(-1))) •
           deriv W ((J.absNorm : ℝ)*Real.exp (-l)))
       rw [Complex.real_smul]
-      push_cast
       ring
   convert hE.mul (HasDerivAt.sum (u:=S) hd) using 1
   · ext t
@@ -64,7 +63,7 @@ lemma ratio_frequency_phase (x l freq : ℝ) (hx : 0<x) :
   have hh := norm_phase x (Real.exp l) hx (Real.exp_pos l) 0 (freq/(2*Real.pi))
   rw [ht] at hh
   simp only [neg_zero,Complex.cpow_zero,one_mul,zero_re,zero_im,sub_zero] at hh
-  rw [←hh,Real.log_div hx.ne' (Real.exp_pos l).ne',Real.log_exp]
+  rw [←hh,Real.log_div hx.ne' (by positivity),Real.log_exp]
   rw [show Real.log x-l=(-l)+Real.log x by ring,logPhase_add]
 
 theorem frequencyScaleSum_eq_polynomial (χ : Character) (inv : Bool) (W : ℝ→ℂ)
@@ -117,8 +116,8 @@ theorem paired_rowwise_scales {ι : Type*} (rows : Finset ι)
   have eqV (i : ι) (k : Fin 2) (y : ℝ) (hy : y∈Icc low high) :=
     frequencyScaleSum_norm (ψ i) false (scaleTest V k) (freq₂ i) T y
       (scaleSupport_cover _ c d high y hd (scaleTest_support V c d hVs k) hy.2)
-  have hc (j k : Fin 2) (i : ι) : Continuous (Function.uncurry (F j k i)) := by
-    exact (((frequencyScaleSum_continuous (χ i) false _ (freq₁ i) S (scaleTest_continuous W hW j)).comp
+  have hc (j k : Fin 2) (i : ι) : Continuous (Function.uncurry (F j k i)) :=
+    (((frequencyScaleSum_continuous (χ i) false _ (freq₁ i) S (scaleTest_continuous W hW j)).comp
       continuous_fst).mul ((frequencyScaleSum_continuous (ψ i) false _ (freq₂ i) T
       (scaleTest_continuous V hV k)).comp continuous_snd)).mul continuous_const
   have hx (k : Fin 2) (i : ι) (x y : ℝ) :
@@ -132,7 +131,7 @@ theorem paired_rowwise_scales {ι : Type*} (rows : Finset ι)
       ((frequencyScaleSum_deriv (ψ i) false V (freq₂ i) T (hV.differentiable (by simp)) y).const_mul
         (frequencyScaleSum (χ i) false (scaleTest W j) (freq₁ i) S x)).mul_const (P i)
   have hh := rowwise_energy_two rows F (fun j k i _=>hc j k i)
-    (fun k i _ x y=>hx k i x y) (fun j i _ x y=>hy j i x y)
+    (by grind) (by grind)
     lo hi low high E hlh hlw lx ly hlx hly (by
       intro j k x hx y hy
       simpa only [F,norm_mul,eqW _ j x hx,eqV _ k y hy] using henergy j k x hx y hy)
@@ -141,7 +140,7 @@ theorem paired_rowwise_scales {ι : Type*} (rows : Finset ι)
   intro i hi
   dsimp only [F]
   simp only [norm_mul]
-  rw [eqW i 0 (lx i) (hlx i hi),eqV i 0 (ly i) (hly i hi)]
+  rw [eqW i 0 (lx i) (by grind),eqV i 0 (ly i) (by grind)]
   simp only [scaleTest,ite_true]
 
 end SevenEighths.CenteredMomentFrequencyScaleSupremum

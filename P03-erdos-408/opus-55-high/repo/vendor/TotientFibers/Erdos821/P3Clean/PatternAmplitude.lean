@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.TiltedIdealKernel
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -22,7 +21,7 @@ def patternAmplitude (A : Model F P J m) (v : Fin A.patternCount) : ℝ :=
 theorem coefficient_norm_le_amplitude (A : Model F P J m) (v : Fin A.patternCount)
     (a b : P.BigLabels (J + F.ell)) (u : P.BigAux J) :
     ‖(A.pattern v).coefficient a b u‖ ≤ patternAmplitude A v := by
-  apply le_csSup (Set.finite_range _).bddAbove
+  apply le_csSup (by simp)
   exact ⟨(a, b, u), rfl⟩
 
 theorem patternAmplitude_nonneg (A : Model F P J m) (v : Fin A.patternCount) :
@@ -36,8 +35,7 @@ theorem patternAmplitude_nonneg (A : Model F P J m) (v : Fin A.patternCount) :
       ext x
       simp
     change 0 ≤ sSup (Set.range (fun z : T => ‖(A.pattern v).coefficient z.1 z.2.1 z.2.2‖))
-    rw [hr]
-    simp
+    simp [hr]
   | inr h =>
     obtain ⟨a, b, u⟩ := h.some
     exact (norm_nonneg _).trans (coefficient_norm_le_amplitude A v a b u)

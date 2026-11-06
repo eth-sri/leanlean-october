@@ -9,28 +9,27 @@ public import OAI.NumberTheory.DirichletL.IdealEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss CanonicalQuadraticSieve
+open ConcretePrimeRowBridge CubicEisenstein ProbeEuler ProbeRow
 
-lemma primaryGenerator_prime_power (p : O) (hp : p≠0) (hprimary : goodLambda^2∣p-1) (e : ℕ) :
+lemma primaryGenerator_prime_power (p : ActualEisensteinCubic.O) (hp : p≠0) (hprimary : goodLambda^2∣p-1) (e : ℕ) :
     primaryGenerator ((Ideal.span {p})^e)=p^e := by
   rw [primaryGenerator_pow,primaryGenerator_span p hp hprimary]
 
-lemma prime_power_small_squarefree (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (e : ℕ) (he : e≤1) :
+lemma prime_power_small_squarefree (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (e : ℕ) (he : e≤1) :
     Squarefree ((Ideal.span {p})^e) := by
-  have hP : Prime (Ideal.span {p}:Ideal O) :=
+  have hP :=
     Ideal.prime_of_isPrime (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero) inferInstance
   have hcases : e=0 ∨ e=1 := by omega
   rcases hcases with rfl|rfl
-  · simpa only [pow_zero] using (squarefree_one : Squarefree (1:Ideal O))
-  · simpa only [pow_one] using hP.squarefree
+  · simp
+  simp_all
 
-theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hprimary : goodLambda^2∣p-1)
+theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (e l k m : ℕ) (he : e≤1) :
     bareIdealHighCoefficient η 1 ((Ideal.span {p})^e) ((Ideal.span {p})^l)
       ((Ideal.span {p})^k) ((Ideal.span {p})^m) =
@@ -48,27 +47,26 @@ theorem bareIdealHighCoefficient_at_prime (η : HeckeFamily.Character) (p : O) (
   have hH : (p^m)^6=p^(6*m) := by rw [←pow_mul,Nat.mul_comm m 6]
   simp only [hA,hH,Ideal.span_singleton_pow]
 
-lemma fullIdealWeight_power (s : ℂ) (I : Ideal O) (n : ℕ) :
+lemma fullIdealWeight_power (s : ℂ) (I : Ideal ActualEisensteinCubic.O) (n : ℕ) :
     fullIdealWeight s (I^n)=fullIdealWeight s I^n := (IdealEuler.normWeight s).map_pow I n
 
-lemma prime_spectral_weights (p : O) (hp : p≠0) (e l k m : ℕ) (x w z : ℂ) :
+lemma prime_spectral_weights (p : ActualEisensteinCubic.O) (hp : p≠0) (e l k m : ℕ) (x w z : ℂ) :
     fullIdealWeight (x+1/2) ((Ideal.span {p})^e) *
       fullIdealWeight (1+3*x) ((Ideal.span {p})^l) *
       fullIdealWeight w ((Ideal.span {p})^k) * fullIdealWeight (6*z) ((Ideal.span {p})^m) =
     (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(x+1/2)*(e:ℂ)-(1+3*x)*(l:ℂ)-w*(k:ℂ)-6*z*(m:ℂ)) := by
-  have hI : (Ideal.span {p}:Ideal O)≠0 := Ideal.span_singleton_eq_bot.not.mpr hp
+  have hI : (Ideal.span {p}:Ideal ActualEisensteinCubic.O)≠0 := Ideal.span_singleton_eq_bot.not.mpr hp
   have hQ : (Ideal.absNorm (Ideal.span {p}):ℂ)≠0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr hI
   simp only [fullIdealWeight_power]
   simp only [fullIdealWeight,ite_eq_right hI]
   rw [←Complex.cpow_mul_nat,←Complex.cpow_mul_nat,←Complex.cpow_mul_nat,←Complex.cpow_mul_nat,
     ←Complex.cpow_add _ _ hQ,←Complex.cpow_add _ _ hQ,←Complex.cpow_add _ _ hQ]
-  congr 1
   ring
 
-theorem bareIdealHighSummand_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
+theorem bareIdealHighSummand_at_prime (η : HeckeFamily.Character) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+    (hchar : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (e l k m : ℕ) (he : e≤1) (x w z : ℂ) :
     bareIdealHighSummand η 1 x w z ((Ideal.span {p})^e) ((Ideal.span {p})^l)
       ((Ideal.span {p})^k) ((Ideal.span {p})^m) =
@@ -81,13 +79,13 @@ theorem bareIdealHighSummand_at_prime (η : HeckeFamily.Character) (p : O) (hp :
   simpa only [mul_assoc] using
     bareSourceCoefficient_weighted_prime η p hp hg hchar hprimary hs e l k m he _ x w z
 
-def idealHighLocalFactor (η : HeckeFamily.Character) (P : Ideal O) (x w z : ℂ) : ℂ :=
+def idealHighLocalFactor (η : HeckeFamily.Character) (P : Ideal ActualEisensteinCubic.O) (x w z : ℂ) : ℂ :=
   ∑ e : Fin 2, ∑' l, ∑' k, ∑' m,
     bareIdealHighSummand η 1 x w z (P^e.val) (P^l) (P^k) (P^m)
 
-theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
+theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+    (hchar : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (x w z : ℂ) :
     idealHighLocalFactor η (Ideal.span {p}) x w z =
       sourcePrincipalSeries p hp hg (targetMonoid η p) (actualACube η p) x w z := by
@@ -102,9 +100,9 @@ theorem idealHighLocalFactor_eq_source (η : HeckeFamily.Character) (p : O) (hp 
   intro m
   exact bareIdealHighSummand_at_prime η p hp hg hchar hprimary hs e.val l k m (by omega) x w z
 
-theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
+theorem idealHighLocalFactor_euler_identity (η : HeckeFamily.Character) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+    (hchar : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
     (hs : Supported (Ideal.span {p})) (x w z : ℂ)
     (hV : ‖coordV (Ideal.absNorm (Ideal.span {p})) z‖<1)
     (hR : ‖coordR (Ideal.absNorm (Ideal.span {p})) ((actualACube η p)^2) x z‖<1)

@@ -14,16 +14,15 @@ open EisensteinTheta
 
 theorem normForm_nonneg (x y : ℝ) : 0 ≤ normForm x y := by
   unfold normForm
-  nlinarith [sq_nonneg (x - y), sq_nonneg x, sq_nonneg y]
+  nlinarith
 
 theorem normForm_eq_zero_iff (x y : ℝ) : normForm x y = 0 ↔ x = 0 ∧ y = 0 := by
   constructor
   · intro h
     unfold normForm at h
     have hx : x ^ 2 = 0 := by
-      nlinarith [sq_nonneg (x - y), sq_nonneg x, sq_nonneg y]
-    have hy : y ^ 2 = 0 := by nlinarith [sq_nonneg (x - y), sq_nonneg x, sq_nonneg y]
-    exact ⟨sq_eq_zero_iff.mp hx, sq_eq_zero_iff.mp hy⟩
+      nlinarith
+    simp_all
   · rintro ⟨rfl, rfl⟩
     simp [normForm]
 
@@ -34,16 +33,16 @@ theorem normForm_ge_half_norm_sq (n : ℤ × ℤ) :
   unfold normForm
   rcases le_total |(n.1 : ℝ)| |(n.2 : ℝ)| with h | h
   · rw [max_eq_right h, sq_abs]
-    nlinarith [sq_nonneg ((n.1 : ℝ) - n.2), sq_nonneg (n.1 : ℝ)]
+    nlinarith
   · rw [max_eq_left h, sq_abs]
-    nlinarith [sq_nonneg ((n.1 : ℝ) - n.2), sq_nonneg (n.2 : ℝ)]
+    nlinarith
 
 theorem summable_pair_norm_rpow {k : ℝ} (hk : 2 < k) :
     Summable (fun n : ℤ × ℤ => ‖n‖ ^ (-k)) := by
   have h := (finTwoArrowEquiv ℤ).symm.summable_iff.mpr
     (EisensteinSeries.summable_one_div_norm_rpow hk)
-  have hn (n : ℤ) : (n.natAbs : ℝ) = ‖n‖ := by
-    exact congrArg (fun x : NNReal => (x : ℝ)) (NNReal.natCast_natAbs n)
+  have hn (n : ℤ) : (n.natAbs : ℝ) = ‖n‖ :=
+    congrArg (fun x : NNReal => (x : ℝ)) (NNReal.natCast_natAbs n)
   simpa only [finTwoArrowEquiv_symm_apply, Function.comp_def,
     EisensteinSeries.norm_eq_max_natAbs, Matrix.cons_val_zero,
     Matrix.cons_val_one, Prod.norm_def, Nat.cast_max, hn] using h
@@ -68,8 +67,7 @@ theorem summable_normForm_neg_rpow {σ : ℝ} (hσ : 1 < σ) :
         rw [Real.mul_rpow (by norm_num) (sq_nonneg _)]
         congr 1
         rw [← Real.rpow_two, ← Real.rpow_mul (norm_nonneg _)]
-        congr 1
-        ring
+        simp
 
 theorem summable_one_div_normForm_rpow {σ : ℝ} (hσ : 1 < σ) :
     Summable (fun n : ℤ × ℤ => 1 / normForm n.1 n.2 ^ σ) := by

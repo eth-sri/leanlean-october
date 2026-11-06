@@ -7,22 +7,21 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonRadialCost
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentAllocationCost
-local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 lemma sqrt_nat_le_add_one (n:ℕ) : Real.sqrt (n:ℝ)≤(n:ℝ)+1 := by
   apply Real.sqrt_le_iff.mpr
   constructor
   · positivity
-  · nlinarith [sq_nonneg (n:ℝ),Nat.cast_nonneg (α:=ℝ) n]
+  nlinarith
 
 omit [DecidableEq ι] in
  theorem paired_card_subpower (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
-    ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι) (C D:Ideal O),C≠0 → D≠0 →
+    ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι) (C D:Ideal ActualEisensteinCubic.O),C≠0 → D≠0 →
       ∀Z:ℝ,1<Z → (Ideal.absNorm C:ℝ)≤Z^B → (Ideal.absNorm D:ℝ)≤Z^B →
       (Real.sqrt ((actualAllocations s.pools C).card:ℝ)*Real.sqrt ((actualAllocations s.pools D).card:ℝ))*
         (((actualAllocations s.pools C).card:ℝ)*((actualAllocations s.pools D).card:ℝ))≤C0*Z^δ := by
@@ -32,7 +31,7 @@ omit [DecidableEq ι] in
   refine ⟨(D0+1)^4,by positivity,?_⟩
   intro s C D hC hD Z hZ hNC hND
   have hz:0<Z:=zero_lt_one.trans hZ
-  have bound (I:Ideal O) (hI:I≠0) (hn:(Ideal.absNorm I:ℝ)≤Z^B):
+  have bound (I:Ideal ActualEisensteinCubic.O) (hI:I≠0) (hn:(Ideal.absNorm I:ℝ)≤Z^B):
       ((actualAllocations s.pools I).card:ℝ)+1≤(D0+1)*Z^(B*ε):=by
     have hi:(1:ℝ)≤Ideal.absNorm I:=by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
     have hh:=hcard (le_refl (Fintype.card (ι⊕Fin 2))) s.pools I hI
@@ -66,7 +65,7 @@ omit [DecidableEq ι] in
 
 omit [DecidableEq ι] in
  theorem card_squared_subpower (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
-    ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι) (C:Ideal O),C≠0 →
+    ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι) (C:Ideal ActualEisensteinCubic.O),C≠0 →
       ∀Z:ℝ,1<Z → (Ideal.absNorm C:ℝ)≤Z^B →
       ((actualAllocations s.pools C).card:ℝ)^2≤C0*Z^δ := by
   obtain ⟨C0,hC0,hbound⟩:=paired_card_subpower (ι:=ι) B δ hB hδ

@@ -19,7 +19,7 @@ cutoff on each box, and bound each box by the Type II estimate.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 section Weights
 
@@ -47,9 +47,8 @@ theorem factorWeight_prime (hL : 1 ≤ Real.log x)
     split_ifs at h with hm
     · refine ⟨hm.2, fun p hp => ?_⟩
       rw [Nat.Prime.primeFactors hm.1, mem_singleton] at hp
-      subst hp
-      exact hexpγ.trans hm.2.le
-    · exact absurd rfl h
+      grind
+    simp_all
 
 /-- The unstripped proxy is a factor weight. -/
 theorem factorWeight_unstripped (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < γ) (hj : 1 ≤ j)
@@ -63,17 +62,17 @@ theorem factorWeight_unstripped (hx : 1 < x) (hL : 1 ≤ Real.log x) (hγ : 0 < 
     unfold unstrippedProxy at h
     split_ifs at h with hxm
     · refine ⟨hxm, fun p hp => ?_⟩
-      have hg : dampedWeight x j m ≠ 0 := fun h0 => h (by rw [h0, zero_div])
+      have hg : dampedWeight x j m ≠ 0 := fun h0 => h (by simp_all)
       by_cases hpP : p ∈ candidatePrimes x
       · exact (mem_candidatePrimes hL hpP).2.1
       · unfold dampedWeight at hg
         split_ifs at hg with hrough
         · have hpm : p ∈ (candidateStrip x m).primeFactors := by
             rw [candidateStrip, primeFactors_stripPrimes, mem_filter]
-            exact ⟨hp, hpP⟩
-          exact hexpY.trans (hrough p hpm).le
-        · exact absurd rfl hg
-    · exact absurd rfl h
+            exact by grind
+          grind
+        simp_all
+    simp_all
 
 /-- Facts about the companion of factor weights. -/
 theorem tupleWeight_support {r : ℕ} (hr : 1 ≤ r) {V : Fin r → ℕ → ℝ}
@@ -81,18 +80,18 @@ theorem tupleWeight_support {r : ℕ} (hr : 1 ≤ r) {V : Fin r → ℕ → ℝ}
     (h : tupleWeight (Icc 1 N) V n ≠ 0) :
     x ^ γ < n ∧ ∀ p ∈ n.primeFactors, Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p := by
   obtain ⟨m, hmS, hprod, hne⟩ := exists_of_tupleWeight_ne_zero _ h
-  have hpos : ∀ k, 1 ≤ m k := fun k => (mem_Icc.1 (hmS k)).1
+  have hpos : ∀ k, 1 ≤ m k := by grind
   have hk := (hV ⟨0, hr⟩).support _ (hne ⟨0, hr⟩)
   refine ⟨?_, fun p hp => ?_⟩
   · rw [← hprod]
     calc x ^ γ < m ⟨0, hr⟩ := hk.1
       _ ≤ ((∏ k, m k : ℕ) : ℝ) := by
-          exact_mod_cast Finset.single_le_prod (fun k _ => hpos k) (mem_univ _)
+          exact_mod_cast Finset.single_le_prod (by grind) (mem_univ _)
   · rw [← hprod] at hp
     obtain ⟨hpp, hpd, -⟩ := Nat.mem_primeFactors.1 hp
     obtain ⟨k, -, hpk⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 hpd
     have hk0 : m k ≠ 0 := by have := hpos k; omega
-    exact ((hV k).support _ (hne k)).2 p (Nat.mem_primeFactors.2 ⟨hpp, hpk, hk0⟩)
+    exact ((hV k).support _ (hne k)).2 p (by grind)
 
 end Weights
 
@@ -110,7 +109,7 @@ theorem cutPsi_eq_zero (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ
     (hh : ⌊κ * x + 1⌋₊ < h) : cutPsi Φ E x h = 0 := by
   unfold cutPsi
   by_contra hne
-  have hΦ0 : Φ (((h : ℝ) - 1) / x) ≠ 0 := fun h0 => hne (by rw [h0, zero_mul])
+  have hΦ0 : Φ (((h : ℝ) - 1) / x) ≠ 0 := fun h0 => hne (by simp_all)
   have h1 := (hΦ.2.2.1 _ hΦ0).2
   rw [div_le_iff₀ hx] at h1
   have h2 : κ * x + 1 < h := (Nat.floor_lt (by positivity)).1 hh
@@ -122,7 +121,7 @@ theorem abs_cutPsi_le (hΦ : IsCutoff κ CΦ M x Φ) (hx : 0 < x) (hκ : 0 < κ)
     (hSE : ∀ h : ℕ, 1 ≤ h → (h : ℝ) ≤ x ^ 2 → |E h| ≤ SE) (h : ℕ) :
     |cutPsi Φ E x h| ≤ M 0 * SE := by
   unfold cutPsi
-  have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by
+  have hM0 := fun y => by
     have := hΦ.2.2.2 0 y
     simpa using this
   have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
@@ -178,9 +177,9 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
   set α := primeProxyDiff x γ j
   have hx0 : 0 < x := by linarith
   have hκ0 : 0 < κ := by linarith
-  have hlam1 : 1 ≤ lam := hxγ.trans hlam
-  have hmu1 : 1 ≤ mu := hxγ.trans hmu
-  have hM0 : ∀ y, |Φ y| ≤ M 0 := fun y => by simpa using hΦ.2.2.2 0 y
+  have hlam1 : 1 ≤ lam := by linarith
+  have hmu1 : 1 ≤ mu := by linarith
+  have hM0 := fun y => by simpa using hΦ.2.2.2 0 y
   have hM00 : 0 ≤ M 0 := (abs_nonneg _).trans (hM0 0)
   have hLr : 0 ≤ Real.log x ^ (-12 : ℝ) := Real.rpow_nonneg (Real.log_pos hx).le _
   -- split off the frozen cutoff
@@ -205,8 +204,8 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
       have : (0 : ℝ) ≤ (clusterSets K (inertPerCluster K CN x)).card * 𝒩 *
           (C₂ * (κ * x) * Real.log x ^ (-12 : ℝ)) :=
         mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hE.norm_pos.le)
-          (mul_nonneg (mul_nonneg hC₂ (by positivity)) hLr)
-      exact mul_nonneg hM00 this
+          (by positivity)
+      positivity
     obtain ⟨h1, h2⟩ := hΦ.2.2.1 _ hz
     rw [le_div_iff₀ hx0] at h1
     rw [div_le_iff₀ hx0] at h2
@@ -226,11 +225,9 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
     have hlm : lam < m := (Nat.floor_lt (by linarith)).1 hm1
     have hmn : mu < n := (Nat.floor_lt (by linarith)).1 hn1
     have hm2' : (m : ℝ) ≤ lam * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < m := by linarith
-      exact_mod_cast this.ne')).1 hm2
+      omega)).1 hm2
     have hn2' : (n : ℝ) ≤ mu * (1 + δ) := (Nat.le_floor_iff' (by
-      have : (0 : ℝ) < n := by linarith
-      exact_mod_cast this.ne')).1 hn2
+      omega)).1 hn2
     have hfr := abs_cutoff_freeze_le hΦ hx0 hκ (by linarith) (by linarith) hδ0 hδ1 hlm hm2' hmn
       hn2'
     have hβ0 := (hββ n).1
@@ -250,15 +247,15 @@ theorem abs_box_term_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE
         push_cast
         linarith
       have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) :=
-        (abs_nonneg _).trans hfr
+        by grind
       calc |Φ ((((m * n : ℕ) : ℝ) - 1) / x) - Φ (lam * mu / x)| * |E (m * n - 1)| * |α m| *
             βc n ≤ (M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x)) * SE * 1 *
               β n := by
             gcongr
-            · exact hα m
-            · exact (hββ n).2
+            · grind
+            grind
         _ = _ := by ring
-    · have : |Φ ((((m * n : ℕ) : ℝ) - 1) / x) - Φ (lam * mu / x)| = 0 :=
+    · have  :=
         le_antisymm hfr (abs_nonneg _)
       rw [this]
       simp
@@ -301,7 +298,7 @@ theorem sum_cells_variation_le (A : ℕ) (lam : ℕ → ℝ) (hmono : ∀ a, lam
   calc ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n : ℝ) ≤ X then τ else 0) * SE * β n
       = τ * SE * β n * ∑ m ∈ Ioc ⌊lam 0⌋₊ ⌊lam A⌋₊, (if (m * n : ℝ) ≤ X then (1 : ℝ) else 0) := by
         rw [mul_sum]
-        exact sum_congr rfl fun m _ => by split_ifs <;> ring
+        simp
     _ ≤ τ * SE * β n * (X / n) := mul_le_mul_of_nonneg_left hcount (by
         have := hβ n; positivity)
     _ = τ * SE * X * (β n / n) := by ring
@@ -373,13 +370,12 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
         intro m₀ hm₀
         have hm₀1 : 1 ≤ m₀ := by have := (mem_Ioc.1 hm₀).1; omega
         exact sum_Icc_eq_sum_cells _ lam hmono hlam0 hA
-          (fun n _ hn => by rw [hβs n (hlam00 ▸ hn), mul_zero])
+          (fun n _ hn => by simp_all)
           (fun n hn => by rw [hΨ0 _ (lt_of_lt_of_le hn (Nat.le_mul_of_pos_left n hm₀1)),
             zero_mul, zero_mul])
       rw [sum_congr rfl hinner]
       exact sum_comm
-    · rw [hlam00] at hm
-      exact sum_eq_zero fun n _ => by rw [hαs m hm, mul_zero, zero_mul]
+    · simp_all
     · exact sum_eq_zero fun n hn => by
         have := (mem_Icc.1 hn).1
         rw [hΨ0 _ (lt_of_lt_of_le hm (Nat.le_mul_of_pos_right m this)), zero_mul, zero_mul]
@@ -399,7 +395,7 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
     exact h
   have hτ : 0 ≤ M 1 * logLog x ^ (CΦ * 1) * ((3 * δ * (κ * x + 1) + 1) / x) :=
     mul_nonneg (by
-      have := cutoff_deriv_bound_nonneg hΦ 1; push_cast at this; exact this) (by positivity)
+      have := cutoff_deriv_bound_nonneg hΦ 1; grind) (by positivity)
   have hvar := sum_cells_variation_le (X := 4 * (κ * x + 1)) A lam hmono hτ hSE0
     (by positivity) β hβ0
   calc _ ≤ ∑ a ∈ range A, ∑ b ∈ range A, |∑ m₀ ∈ Ioc ⌊lam a⌋₊ ⌊lam (a + 1)⌋₊,
@@ -420,8 +416,7 @@ theorem abs_clipped_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE 
         simp only [sum_add_distrib, sum_const, card_range, nsmul_eq_mul]
         ring
     _ ≤ _ := by
-        rw [hlam00] at hvar ⊢
-        exact add_le_add le_rfl hvar
+        linarith
 
 /-- One telescoping step of E4. -/
 theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩 SE δ : ℝ}
@@ -461,7 +456,7 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
   have hκx : κ * x ≤ x ^ 2 := by nlinarith
   have hΨ0 : ∀ h, N < h → cutPsi Φ E x h = 0 := fun h hh => cutPsi_eq_zero hΦ hx0 hκ0 hh
   have hΨ := abs_cutPsi_le (E := E) hΦ hx0 hκ0 hκx hxκ hSE0 hSE
-  have hV0 : ∀ i m, 0 ≤ V i m := fun i => (hV i).nonneg
+  have hV0 := fun i => (hV i).nonneg
   set β := tupleWeight (Icc 1 N) V with hβdef
   have hβ0 : ∀ n, 0 ≤ β n := tupleWeight_nonneg _ hV0
   set βc : ℕ → ℝ := fun n => if β n ≤ L ^ (3 : ℝ) then β n else 0 with hβcdef
@@ -489,7 +484,7 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
       exfalso
       obtain ⟨hmS, hprod⟩ := mem_filter.1 hm
       have hne : ∏ i, m i ≠ 0 := Finset.prod_ne_zero_iff.2 fun i _ => by
-        have := (mem_Icc.1 (Fintype.mem_piFinset.1 hmS i)).1; omega
+        grind
       exact hne hprod
     have hβt : ∀ n, 0 ≤ βt n ∧ βt n ≤ β n * (dampedWeight x j n * cmul (fun _ => (r : ℝ)) n) /
         L ^ (3 : ℝ) := by
@@ -526,7 +521,7 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
     exact mul_le_mul_of_nonneg_left hprod hS
   · -- the clipped part, box by box
     have hββ : ∀ n, 0 ≤ βc n ∧ βc n ≤ β n := fun n => by
-      simp only [hβcdef]; split_ifs <;> simp [hβ0 n]
+      grind
     have hβc : ∀ n, βc n ≠ 0 →
         (∀ p ∈ n.primeFactors, Real.exp (Real.log x ^ (28 / 100 : ℝ)) ≤ p) ∧
         0 ≤ βc n ∧ βc n ≤ Real.log x ^ (3 : ℝ) := by
@@ -534,7 +529,7 @@ theorem abs_single_step_le {q cw : ℝ} {K : ℕ} {CN c Ch Cj κ CΦ C₂ x 𝒩
       simp only [hβcdef] at hn ⊢
       split_ifs at hn ⊢ with h
       · exact ⟨(tupleWeight_support hr hV hn).2, hβ0 n, h⟩
-      · exact absurd rfl hn
+      · grind
     have hβs : ∀ n : ℕ, (n : ℝ) ≤ x ^ γ → βc n = 0 := by
       intro n hn
       have : β n = 0 := by

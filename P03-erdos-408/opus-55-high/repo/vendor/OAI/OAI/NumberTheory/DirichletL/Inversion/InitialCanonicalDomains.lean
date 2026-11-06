@@ -8,15 +8,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseInitialCanonicalDomains
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
+open ConcreteTraceCRT InverseMoment
+open InverseInitialArithmetic
 open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
 open InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges
-open InverseInitialEnergyCallerSource CanonicalQuadraticSieve
-local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
+open CanonicalQuadraticSieve
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
@@ -33,18 +32,18 @@ theorem window_power_bounds
   obtain ⟨_,_,hd,hv,hh⟩:=retained_source_windows p S ψ lo hi hψ Z D B v θ H hZ hx
   have hpow (i:Fin 4)(r:ℝ):hi i*Z^r≤Z^(r+η):=by
     rw [Real.rpow_add hZ]
-    exact (mul_le_mul_of_nonneg_right (hhi i) (Real.rpow_nonneg hZ.le _)).trans_eq (mul_comm _ _)
-  exact ⟨hd.trans (hpow 1 θ),hv.trans (hpow 2 v),hh.trans (hpow 3 H)⟩
+    exact (mul_le_mul_of_nonneg_right (hhi i) (by positivity)).trans_eq (by linarith)
+  exact ⟨hd.trans (by grind),hv.trans (by grind),hh.trans (by grind)⟩
 
 include hp hcop hg in
 theorem actual_window_domains
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
     (Z D B v θ H η:ℝ)(hZ:0<Z)(hhi:∀i,hi i≤Z^η):
-    ∀x∈coprimeSource p (windowSource p S ψ Z D B v θ H),∀u:Oˣ,
+    ∀x∈coprimeSource p (windowSource p S ψ Z D B v θ H),∀u:ActualEisensteinCubic.Oˣ,
       (initialChild (toTuple p (sectorSource u x))).2.1∈idealRange (Z^(θ+v+2*η)) ∧
       (initialChild (toTuple p (sectorSource u x))).2.2∈
         nonzeroChildFrequencyBall 1 (Z^(θ+H+2*η)) := by

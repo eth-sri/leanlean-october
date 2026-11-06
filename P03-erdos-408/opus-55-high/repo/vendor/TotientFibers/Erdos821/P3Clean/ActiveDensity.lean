@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.DensityIdentification
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -40,7 +39,7 @@ theorem tiltedFreshMass_density (F : FixedData) (n : ℕ) (ν : Pattern P J F.el
   apply Finset.prod_congr rfl
   intro i _
   by_cases hi : ν.shared g.val i
-  · simp only [ite_eq_left hi, one_mul]
+  · simp_all
   · simp only [ite_eq_right hi, tiltedMu_eq_mu_mul]
 
 theorem activeDensity_pos (F : FixedData) (n : ℕ)
@@ -51,7 +50,7 @@ theorem activeDensity_pos (F : FixedData) (n : ℕ)
   intro g _
   apply Finset.prod_pos
   intro i _
-  exact inv_pos.mpr (hb g (a g i))
+  exact inv_pos.mpr (by grind)
 
 theorem freshDensity_pos (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
@@ -62,8 +61,8 @@ theorem freshDensity_pos (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
   apply Finset.prod_pos
   intro i _
   split_ifs
-  · exact zero_lt_one
-  · exact inv_pos.mpr (hb g (a g i))
+  · simp
+  · exact inv_pos.mpr (by grind)
 
 theorem density_reversal (F : FixedData) (n : ℕ) (ν : Pattern P J F.ell m)
     (a b : P.BigLabels (J + F.ell)) (h : ν.matchesBig a b) :

@@ -11,12 +11,12 @@ namespace SevenEighths.ProbeEuler
 
 lemma rpow_le_half (Q a : ℝ) (hQ : 4 ≤ Q) (ha : a ≤ -(1/2)) : Q^a ≤ 1/2 := by
   have hQ0 : 0 < Q := by linarith
-  have hs : 0 < Real.sqrt Q := Real.sqrt_pos.mpr hQ0
+  have hs := Real.sqrt_pos.mpr hQ0
   have hs2 := Real.sq_sqrt hQ0.le
   calc
     Q^a ≤ Q^(-(1/2:ℝ)) := Real.rpow_le_rpow_of_exponent_le (by linarith) ha
     _ = (Real.sqrt Q)⁻¹ := by rw [Real.rpow_neg hQ0.le, ← Real.sqrt_eq_rpow]
-    _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ hs]; nlinarith [Real.sqrt_nonneg Q]
+    _ ≤ 1/2 := by rw [← one_div, div_le_iff₀ hs]; nlinarith
 
 theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
     (hQ : 4 ≤ Q) (hA : ‖A‖ ≤ 1) (heta : ‖eta‖ ≤ 1) (hv : ‖v‖ ≤ 1)
@@ -43,8 +43,8 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   have hVh : ‖V‖ ≤ 1/2 := hV.trans (rpow_le_half Q _ hQ (by norm_num))
   have hRh : ‖R‖ ≤ 1/2 := hR.trans (rpow_le_half Q _ hQ (by norm_num))
   have hDh : ‖D‖ ≤ 1/2 := hD.trans (rpow_le_half Q _ hQ (by norm_num))
-  have hWh : ‖W‖ ≤ 1 := by
-    exact hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by norm_num : -(19/20:ℝ) ≤ 0)).trans_eq (Real.rpow_zero Q))
+  have hWh : ‖W‖ ≤ 1 :=
+    hW.trans ((Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)).trans_eq (Real.rpow_zero Q))
   have hqi : ‖(Q:ℂ)⁻¹‖ ≤ 1 := by
     rw [norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hQ0, ← one_div]
     exact (div_le_one hQ0).mpr hQ1
@@ -54,7 +54,7 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   have hprod (a b a' b' : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b)
       (haa : a ≤ Q^a') (hbb : b ≤ Q^b') (he : a'+b' ≤ -(363/200:ℝ)) : a*b ≤ T := by
     calc
-      a*b ≤ Q^a' * Q^b' := mul_le_mul haa hbb hb (Real.rpow_nonneg hQ0.le _)
+      a*b ≤ Q^a' * Q^b' := mul_le_mul haa hbb hb (by positivity)
       _ = Q^(a'+b') := (Real.rpow_add hQ0 _ _).symm
       _ ≤ T := Real.rpow_le_rpow_of_exponent_le hQ1 he
   have hKV : ‖K‖*‖V‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hK hV (by norm_num)
@@ -62,7 +62,7 @@ theorem unramifiedClosed_second_region_bound (Q : ℝ) (A eta v x w z : ℂ)
   have hDW : ‖D‖*‖W‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hD hW (by norm_num)
   have hVW : ‖V‖*‖W‖ ≤ T := hprod _ _ _ _ (norm_nonneg _) (norm_nonneg _) hV hW (by norm_num)
   have hDVW : ‖D‖*‖V‖*‖W‖ ≤ T :=
-    (mul_le_of_le_one_right (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hWh).trans hDV
+    (mul_le_of_le_one_right (by positivity) hWh).trans hDV
   let P := markedFactor R V (Q:ℂ)⁻¹ K (-D+W*R) 1
   have hE : ‖P+D‖ ≤ 28*T := by
     have h := ProbeLocal.unramified_marked_error_bound R V (Q:ℂ)⁻¹ K W D hRh hVh hqi hDh

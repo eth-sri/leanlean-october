@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseInitialArithmetic (sourceIdeal)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def secondVariableCutoff {Jo : ℕ} (parent : SecondParentSource ι Jo) (R : Finset ι → Finset ι → ℝ)
-    (G E : Finset ι) : Finset Eis :=
+    (G E : Finset ι) : Finset ActualEisensteinCubic.O :=
   childFrequencyBall (secondParentDivisor p parent*primeSubsetGenerator (fun i => Ideal.span {p i}) E) (R G E)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
@@ -35,10 +34,10 @@ theorem second_variable_original_support {Jo : ℕ} (parent : SecondParentSource
 
 theorem truncated_second_attached_variable [Fintype κ]
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis)
+    (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (X Y : ℝ) (R : Finset ι → Finset ι → ℝ)
     (label : Finset ι → SecondExpansionData ι → κ) :

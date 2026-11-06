@@ -33,8 +33,8 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open scoped MeasureTheory
+open MeasureTheory
 
 noncomputable section
 
@@ -62,17 +62,16 @@ private lemma kernelMeasure_compl_ball_eq_zero_of_tsupport_subset {deltaLoss : �
     intro x hx
     have hx' : x ∉ tsupport ψ := by
       intro hx_ts
-      exact hx (hψsupp hx_ts)
+      exact by grind
     exact image_eq_zero_of_notMem_tsupport (f := ψ) hx'
-  have hmeas : MeasurableSet ((Metric.ball (0 : E) deltaLoss)ᶜ) :=
+  have hmeas :=
     (measurableSet_ball : MeasurableSet (Metric.ball (0 : E) deltaLoss)).compl
   have hEq :
       Set.EqOn (fun x : E => ENNReal.ofReal (ψ x)) 0 ((Metric.ball (0 : E) deltaLoss)ᶜ) := by
     intro x hx
     simp [hψzero x hx]
   -- Expand `kernelMeasure` and note the density is identically `0` on the set.
-  simp [kernelMeasure, MeasureTheory.withDensity_apply, hmeas,
-    MeasureTheory.setLIntegral_eq_zero
+  simp [kernelMeasure, hmeas, MeasureTheory.setLIntegral_eq_zero
       (μ := (volume : Measure E))
       (s := (Metric.ball (0 : E) deltaLoss)ᶜ) hmeas hEq]
 
@@ -93,14 +92,14 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
     ⟨kernelMeasure_univ (E := E) (ψ := ψ) hψc hψcs hψ0 hψint⟩
   have hμzero : μ ((Metric.ball (0 : E) deltaLoss)ᶜ) = 0 := by
     simpa [μ] using kernelMeasure_compl_ball_eq_zero_of_tsupport_subset (E := E) (ψ := ψ) hψsupp
-  have hAE_ball : (Metric.ball (0 : E) deltaLoss) ∈ MeasureTheory.ae μ :=
+  have hAE_ball :=
     (MeasureTheory.mem_ae_iff.2 hμzero)
   -- On `Metric.ball 0 deltaLoss`, the squared translation error is bounded by `η²`.
   have hAE_bound :
       ∀ᵐ t : E ∂μ,
         ‖‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2‖ ≤ η ^ 2 := by
     filter_upwards [hAE_ball] with t ht
-    have hle : ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ≤ η := hmod t ht
+    have hle := hmod t ht
     have hsq :
         ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2 ≤ η ^ 2 :=
       (sq_le_sq₀ (norm_nonneg _) hη).2 hle
@@ -118,7 +117,7 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
         (C := η ^ 2) hAE_bound)
   have hμreal : μ.real Set.univ = 1 := by
     -- `μ` is a probability measure.
-    simp [MeasureTheory.measureReal_def]
+    simp
   have hnonneg_int :
       0 ≤ ∫ t,
             ‖(translateL2 (μ := (volume : Measure E)) (-t)) F - F‖ ^ 2
@@ -134,7 +133,7 @@ theorem integral_norm_sq_translateL2_sub_le_sq_of_tsupport_subset_ball
     have := hnorm_int
     -- Replace `‖·‖` by `abs` in `ℝ` and simplify `μ.real univ = 1`.
     simpa [Real.norm_eq_abs, hμreal, mul_one] using this
-  simpa [abs_of_nonneg hnonneg_int, μ] using habs
+  grind
 
 end Volume
 

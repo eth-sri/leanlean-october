@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationRaw
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -78,22 +78,20 @@ theorem no_slot_endpoint
     amplified_energy_power U A b p r κ hUp
   have hexp := hbudget r hr hrR
   have hpow : U^(1+5*p+κ*(1+6*p+r)+ε/2)≤U^(sourceExponent r+ε) :=
-    Real.rpow_le_rpow_of_exponent_le hU (by dsimp [p]; linarith)
+    Real.rpow_le_rpow_of_exponent_le hU (by linarith)
   calc
     _ ≤ 4*(1+2*Real.log (x*b))*(C*N*(N*D)^κ)*Real.log x/(d*x) := hav
     _ = C*(4/d)*(N*(N*D)^κ/x)*((1+2*Real.log (b*x))*Real.log x) := by
-      rw [mul_comm x b]
       ring
     _ = (C*(4/d)*F)*((1+2*Real.log (b*x))*Real.log x)*
         U^(1+5*p+κ*(1+6*p+r)) := by rw [hnorm]; ring
     _ ≤ (C*(4/d)*F)*(Klog*U^(ε/2))*U^(1+5*p+κ*(1+6*p+r)) := by
-      apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hUp.le _)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
       exact mul_le_mul_of_nonneg_left hlog' (by positivity)
     _ = C*K*U^(1+5*p+κ*(1+6*p+r)+ε/2) := by
       rw [Real.rpow_add hUp (1+5*p+κ*(1+6*p+r)) (ε/2)]
-      dsimp [K]
-      ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left hpow (mul_nonneg hC hK)
+      linarith
+    _ ≤ _ := mul_le_mul_of_nonneg_left hpow (by positivity)
 
 end SevenEighths.HeckeInverseAmplification
 

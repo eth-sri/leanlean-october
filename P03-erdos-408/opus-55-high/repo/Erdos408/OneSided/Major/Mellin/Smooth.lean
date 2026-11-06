@@ -30,15 +30,15 @@ variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [NormedAddComm
 /-- A directional derivative of a smooth function is smooth. -/
 theorem contDiff_fderiv_apply {f : E → F} (hf : ContDiff ℝ ∞ f) (d : E) :
     ContDiff ℝ ∞ fun x => fderiv ℝ f x d :=
-  (hf.fderiv_right (by exact_mod_cast le_rfl)).clm_apply contDiff_const
+  (hf.fderiv_right (by simp)).clm_apply contDiff_const
 
 /-- `‖D^k ∂_d f‖ ≤ ‖d‖ ‖D^{k + 1} f‖`. -/
 theorem norm_iteratedFDeriv_fderiv_apply_le {f : E → F} (hf : ContDiff ℝ ∞ f) (d : E) (k : ℕ)
     (x : E) :
     ‖iteratedFDeriv ℝ k (fun x => fderiv ℝ f x d) x‖ ≤ ‖d‖ * ‖iteratedFDeriv ℝ (k + 1) f x‖ := by
   have h := (ContinuousLinearMap.apply ℝ F d).norm_iteratedFDeriv_comp_left (n := k)
-    ((hf.fderiv_right (m := ∞) (by exact_mod_cast le_rfl)).contDiffAt (x := x))
-    (by exact_mod_cast le_top)
+    ((hf.fderiv_right (m := ∞) (by simp)).contDiffAt (x := x))
+    (by simp)
   rw [norm_iteratedFDeriv_fderiv] at h
   refine h.trans (mul_le_mul_of_nonneg_right ?_ (norm_nonneg _))
   exact ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _) fun L => by
@@ -68,19 +68,19 @@ theorem iteratedDeriv_two_comp_line {f : E → F} (hf : ContDiff ℝ ∞ f) (a d
 theorem exists_norm_iteratedFDeriv_le {f : E → F} (hf : ContDiff ℝ ∞ f) (hc : HasCompactSupport f)
     (n : ℕ) : ∃ P : ℝ, ∀ j ≤ n, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := by
   have hb : ∀ j : ℕ, ∃ P : ℝ, ∀ x, ‖iteratedFDeriv ℝ j f x‖ ≤ P := fun j =>
-    (hf.continuous_iteratedFDeriv (by exact_mod_cast le_top)).bounded_above_of_compact_support
+    (hf.continuous_iteratedFDeriv (by simp)).bounded_above_of_compact_support
       (hc.iteratedFDeriv j)
   induction n with
   | zero =>
     obtain ⟨P, hP⟩ := hb 0
-    exact ⟨P, fun j hj x => by rw [Nat.le_zero.1 hj]; exact hP x⟩
+    exact ⟨P, fun j hj x => by rw [Nat.le_zero.1 hj]; simp_all⟩
   | succ n ih =>
     obtain ⟨P, hP⟩ := ih
     obtain ⟨Q, hQ⟩ := hb (n + 1)
     refine ⟨max P Q, fun j hj x => ?_⟩
     rcases Nat.le_succ_iff.1 hj with hj | rfl
-    · exact (hP j hj x).trans (le_max_left _ _)
-    · exact (hQ x).trans (le_max_right _ _)
+    · simp_all
+    simp_all
 
 /-- The derivatives of the twist `e(c y)`. -/
 theorem iteratedDeriv_twist (c : ℝ) (k : ℕ) :
@@ -110,30 +110,29 @@ theorem norm_iteratedFDeriv_twist_le {φ : ℝ → ℂ} (hφ : ContDiff ℝ ∞ 
       (contDiff_const.mul contDiff_id)))
   have hb : 1 ≤ 2 * π * (1 + |c|) := by
     nlinarith [two_le_pi, abs_nonneg c]
-  refine (norm_iteratedFDeriv_mul_le hφ he y (by exact_mod_cast le_top)).trans ?_
+  refine (norm_iteratedFDeriv_mul_le hφ he y (by simp)).trans ?_
   -- each term is at most `C(i, j) P (2π(1 + |c|))^i`
   have hterm : ∀ j ∈ Finset.range (i + 1), (i.choose j : ℝ) * ‖iteratedFDeriv ℝ j φ y‖ *
       ‖iteratedFDeriv ℝ (i - j) (fun y : ℝ =>
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ ≤
       (i.choose j : ℝ) * (P * (2 * π * (1 + |c|)) ^ i) := by
     intro j hj
-    have hj' : j ≤ i := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
+    have hj' := Nat.lt_succ_iff.1 (Finset.mem_range.1 hj)
     have he' : ‖iteratedFDeriv ℝ (i - j) (fun y : ℝ =>
         Complex.exp (2 * π * Complex.I * ((c * y : ℝ) : ℂ))) y‖ = (2 * π * |c|) ^ (i - j) := by
       rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_twist, norm_mul, norm_pow,
         Complex.norm_exp]
-      simp [abs_of_pos pi_pos]
+      simp
     rw [he', mul_assoc]
-    refine mul_le_mul_of_nonneg_left (mul_le_mul (hP j hj' y) ?_ (by positivity)
+    refine mul_le_mul_of_nonneg_left (mul_le_mul (by grind) ?_ (by positivity)
       ((norm_nonneg _).trans (hP 0 (Nat.zero_le _) y))) (Nat.cast_nonneg _)
     calc (2 * π * |c|) ^ (i - j) ≤ (2 * π * (1 + |c|)) ^ (i - j) := by
           gcongr
           linarith
-      _ ≤ (2 * π * (1 + |c|)) ^ i := pow_le_pow_right₀ hb (Nat.sub_le i j)
+      _ ≤ (2 * π * (1 + |c|)) ^ i := pow_le_pow_right₀ hb (by omega)
   refine (Finset.sum_le_sum hterm).trans (le_of_eq ?_)
   rw [← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
-  push_cast
-  ring
+  grind
 
 /-- The plateau `ψ(t) = s(5 - t) s(5 + t)`. -/
 theorem plateau_eq_mul (t : ℝ) :
@@ -146,7 +145,7 @@ theorem plateau_eq_mul (t : ℝ) :
 
 /-- The plateau `ψ` is smooth. -/
 theorem contDiff_plateau : ContDiff ℝ ∞ plateau := by
-  have h : plateau = fun t => smoothTransition (5 - t) * smoothTransition (5 + t) :=
+  have h :=
     funext plateau_eq_mul
   rw [h]
   exact (smoothTransition.contDiff.comp (contDiff_const.sub contDiff_id)).mul

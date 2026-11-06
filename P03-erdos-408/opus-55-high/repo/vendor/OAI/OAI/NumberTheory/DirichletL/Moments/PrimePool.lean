@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationCount
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentPrimePool
 open HeckeFamily PNT.AnnularPrimeMass CenteredMomentAmplificationCount
@@ -28,7 +28,7 @@ theorem annular_weighted_card_bound (C : Set (Ideal O)) (S : Finset (Ideal O))
       apply Finset.sum_le_sum
       intro P hP
       have hn := (norm_bounds_of_mem_annularPrimeIdeals ha.le hab hx (Finset.mem_sdiff.mp hP).1).1
-      apply mul_le_mul (hW _) _ (Real.rpow_nonneg (Nat.cast_nonneg _) _) hB
+      apply mul_le_mul (hW _) _ (by positivity) hB
       exact Real.rpow_le_rpow_of_nonpos (mul_pos ha hx) (by nlinarith) (by norm_num)
     _ = _ := by
       rw [Finset.sum_const,nsmul_eq_mul,Real.mul_rpow ha.le hx.le]
@@ -50,7 +50,7 @@ theorem eventually_primePool_card (S : Finset (Ideal O)) (W : ℝ → ℝ)
       c*x/Real.log x ≤ (primePool M H S a b x).card := by
   obtain ⟨c,hcpos,hlower⟩ := RayPrimeNormalizer.eventually_lower_bound M H hH S W hW hc hp hW0 hWne
   let D : ℝ := B*a^(-5/6 : ℝ)
-  have hD : 0 < D := mul_pos hB (Real.rpow_pos_of_pos ha _)
+  have hD : 0 < D := by positivity
   refine ⟨c/D,div_pos hcpos hD,?_⟩
   filter_upwards [hlower,eventually_gt_atTop (1 : ℝ)] with x hlow hx
   have hx0 : 0 < x := zero_lt_one.trans hx
@@ -60,16 +60,16 @@ theorem eventually_primePool_card (S : Finset (Ideal O)) (W : ℝ → ℝ)
   change c*x^(1/6 : ℝ)/Real.log x ≤ weightedPrimeSumDeleted _ S W x at hlow
   have hpower : x*x^(-5/6 : ℝ) = x^(1/6 : ℝ) := by
     calc
-      _ = x^(1 : ℝ)*x^(-5/6 : ℝ) := by rw [Real.rpow_one]
+      _ = x^(1 : ℝ)*x^(-5/6 : ℝ) := by simp
       _ = x^((1 : ℝ)+(-5/6)) := (Real.rpow_add hx0 _ _).symm
       _ = _ := by norm_num
   have hmul : (c*x/Real.log x)*x^(-5/6 : ℝ) ≤
       ((primePool M H S a b x).card * D)*x^(-5/6 : ℝ) := by
     calc
       _ = c*(x*x^(-5/6 : ℝ))/Real.log x := by ring
-      _ = _ := by rw [hpower]
+      _ = _ := by simp_all
       _ ≤ _ := hlow.trans hu
-  have hcancel := le_of_mul_le_mul_right hmul (Real.rpow_pos_of_pos hx0 (-5/6 : ℝ))
+  have hcancel := le_of_mul_le_mul_right hmul (by positivity)
   convert (div_le_iff₀ hD).mpr hcancel using 1 ; ring
 
 end FixedRay
@@ -83,9 +83,9 @@ theorem eligiblePool_card_lower (P : Finset (Ideal O)) (hp : ∀ Q ∈ P, Prime 
     (hupper : (Ideal.absNorm R : ℝ) ≤ Z^B) :
     (P.card : ℝ) - B/ℓ ≤ (eligiblePool P R).card := by
   have hbad := large_prime_divisor_count (P.filter (fun Q => Q ∣ R))
-    (fun Q hQ => hp Q (Finset.mem_filter.mp hQ).1) R hR
-    (fun Q hQ => (Finset.mem_filter.mp hQ).2) Z ℓ B hZ hℓ
-    (fun Q hQ => hlower Q (Finset.mem_filter.mp hQ).1) hupper
+    (by grind) R hR
+    (by simp) Z ℓ B hZ hℓ
+    (by grind) hupper
   have he := Finset.card_filter_add_card_filter_not (s := P) (fun Q => Q ∣ R)
   have her : ((P.filter (fun Q => Q ∣ R)).card : ℝ) + (eligiblePool P R).card = P.card := by
     exact_mod_cast he

@@ -6,7 +6,6 @@ public import Mathlib.Basic.Finite.Prod
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge

@@ -7,7 +7,6 @@ public import Erdos821.S2.MemoryEdge
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -74,7 +73,7 @@ theorem active_subset (i : Fin (n + 1)) : Q.active i ⊆ P.allPrimes := by
   intro p hp
   obtain ⟨g, _, hp⟩ := Finset.mem_biUnion.mp hp
   obtain ⟨h, _, rfl⟩ := Finset.mem_image.mp hp
-  exact Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, (Q.labels i g h).property⟩
+  exact Finset.mem_biUnion.mpr (by grind)
 
 theorem active_card_le (i : Fin (n + 1)) : (Q.active i).card ≤ (J + F.ell) * P.count := by
   calc
@@ -85,7 +84,7 @@ theorem active_card_le (i : Fin (n + 1)) : (Q.active i).card ≤ (J + F.ell) * P
       intro g _
       simpa using Finset.card_image_le (s := (Finset.univ : Finset (Fin (J + F.ell))))
         (f := fun h => (Q.labels i g h).val)
-    _ = _ := by simp [PrimeGroups.Group, Nat.mul_comm]
+    _ = _ := by simp [Nat.mul_comm]
 
 end ResiduePath
 

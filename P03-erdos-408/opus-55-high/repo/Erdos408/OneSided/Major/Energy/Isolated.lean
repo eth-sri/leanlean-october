@@ -50,7 +50,7 @@ theorem continuous_primePoly {P : ℝ} {PS : Finset ℕ} (hPS : ∀ p ∈ PS, p 
   unfold primePoly
   refine continuous_const.mul (continuous_finsetSum _ fun p hp => ?_)
   exact continuous_const.mul
-    ((continuous_natCast_cpow_mul_I (hPS p hp)).comp (continuous_snd.add continuous_fst))
+    ((continuous_natCast_cpow_mul_I (by grind)).comp (continuous_snd.add continuous_fst))
 
 /-- `|P_s(t)| ≤ 2` for a set of primes in `[P, 2P)` with `P ≥ 1`: there are at most `P + 1`
 integers in `[P, 2P)`. -/
@@ -78,12 +78,10 @@ theorem norm_primePoly_le_two {P : ℝ} (hP : 1 ≤ P) {PS : Finset ℕ}
         gcongr
         refine (norm_sum_le _ _).trans (sum_le_sum fun p hp => ?_)
         rw [norm_mul, Complex.norm_natCast_cpow_of_pos (hPS p hp).1.pos]
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.I_re, mul_zero,
-          Complex.ofReal_im, Complex.I_im, mul_one, sub_self, Real.rpow_zero, mul_one]
+        simp only [Complex.mul_re, Complex.I_re, mul_zero, Complex.ofReal_im, Complex.I_im, sub_self, Real.rpow_zero, mul_one]
         exact DirichletCharacter.norm_le_one χ _
     _ ≤ P⁻¹ * (P + 1) := by
-        rw [sum_const, nsmul_eq_mul, mul_one]
-        gcongr
+        simp_all
     _ ≤ 2 := by
         rw [mul_add, inv_mul_cancel₀ hP0.ne']
         have : P⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hP
@@ -97,8 +95,8 @@ theorem integral_indicator_Icc_le {T c : ℝ} (hT : 0 ≤ T) (hc : 0 ≤ c) (m :
   have h : volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ 1 := by
     calc volume.real (Set.Icc m (m + 1) ∩ Set.Ioc (-T) T) ≤ volume.real (Set.Icc m (m + 1)) :=
           measureReal_mono Set.inter_subset_left measure_Icc_lt_top.ne
-      _ = 1 := by rw [Real.volume_real_Icc_of_le (by linarith)]; ring
-  exact mul_le_of_le_one_left hc h
+      _ = 1 := by simp
+  nlinarith
 
 /-! ### The isolated energy -/
 
@@ -129,7 +127,7 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
   have hHn : 0 < d.Hn := (Real.rpow_pos_of_pos (by linarith) _).trans_le hd.Hn_ge
   have hN : Continuous N := continuous_unmarkedPoly hHn ψ
   have hP : 1 ≤ P := (Real.one_le_exp (Real.rpow_nonneg hL0 _)).trans hP1
-  have hPS0 : ∀ p ∈ PS, p ≠ 0 := fun p hp => (hPS p hp).1.ne_zero
+  have hPS0 := fun p hp => (hPS p hp).1.ne_zero
   have hPc : Continuous fun τ => primePoly P PS χ ξ τ := by
     have h := (continuous_primePoly (P := P) hPS0 χ).comp (Continuous.prodMk_right ξ)
     exact h
@@ -161,7 +159,7 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
       calc (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2
           = ‖primePoly P PS χ ξ τ‖ ^ 2 * ‖M τ * N τ‖ ^ 2 := by ring
         _ ≤ (L ^ (-As)) ^ 2 * ‖M τ * N τ‖ ^ 2 := by gcongr
-        _ = L ^ (-(2 * As)) * ‖M τ * N τ‖ ^ 2 := by rw [h₁]
+        _ = L ^ (-(2 * As)) * ‖M τ * N τ‖ ^ 2 := by grind
         _ ≤ G τ := le_add_of_nonneg_right hind
     -- where `P_s` is large, `⌊τ⌋` is in the sparse family
     · set m₀ := ⌊τ⌋
@@ -173,13 +171,13 @@ theorem eventually_integral_isolated_le {C CX alo ahi g B As cG : ℝ} (halo : 1
         refine ⟨⟨?_, ?_⟩, τ, hm₀, hm₀', hTZ', hlarge⟩
         · have h₁ : -(⌈Z⌉ : ℝ) ≤ τ := by
             linarith [Int.le_ceil Z, (abs_le.1 hTZ').1]
-          have h₂ : -⌈Z⌉ ≤ m₀ := Int.le_floor.2 (by exact_mod_cast h₁)
+          have h₂ : -⌈Z⌉ ≤ m₀ := Int.le_floor.2 (by grind)
           linarith
         · have h₁ : τ ≤ (⌈Z⌉ : ℝ) := by linarith [Int.le_ceil Z, (abs_le.1 hTZ').2]
           exact Int.floor_le_iff.2 (by linarith)
-      have hε : ‖M τ‖ ≤ ε := hMε τ hτT
+      have hε := hMε τ hτT
       have hε0 : 0 ≤ ε := (norm_nonneg _).trans hε
-      have hNτ : ‖N τ‖ ≤ ‖N (τm m₀)‖ := hτmax m₀ τ hm₀ hm₀'
+      have hNτ := hτmax m₀ τ hm₀ hm₀'
       have hPs := norm_primePoly_le_two hP hPS χ ξ τ
       calc (‖primePoly P PS χ ξ τ‖ * ‖M τ * N τ‖) ^ 2
           ≤ (2 * (ε * ‖N (τm m₀)‖)) ^ 2 := by

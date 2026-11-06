@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.OriginalBlock
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
       1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ C → 1 ≤ T →
-    ∀ (R r t : Ideal Eis), R ≠ 0 → r ≠ 0 → T ≤ (Ideal.absNorm t : ℝ) →
-    ∀ (rows nset Pset : Finset (Ideal Eis)) (D : Finset HybridColumnData)
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ),
+    ∀ (R r t : Ideal ActualEisensteinCubic.O), R ≠ 0 → r ≠ 0 → T ≤ (Ideal.absNorm t : ℝ) →
+    ∀ (rows nset Pset : Finset (Ideal ActualEisensteinCubic.O)) (D : Finset HybridColumnData)
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L ≤ (Ideal.absNorm P : ℝ) ∧
@@ -53,7 +52,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     apply d.residual_norm_bounds N B C T (by linarith) (by linarith) hC0 hT0
       (hn _ hd'.2.2.2.1).2 hd'.2.2.2.2 hd'.2.1
     simpa only [hd'.1] using ht
-  have hcBound (d : HybridColumnData) (hd : d ∈ D) (c : Ideal Eis)
+  have hcBound (d : HybridColumnData) (hd : d ∈ D) (c : Ideal ActualEisensteinCubic.O)
       (hdc : d.common = r * c) : c ≠ 0 ∧ (Ideal.absNorm c : ℝ) ≤ A := by
     have hcz : c ≠ 0 := by
       intro hz
@@ -63,12 +62,12 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     have hdcN := (hD d hd).2.2.1
     rw [hdc, map_mul, Nat.cast_mul] at hdcN
     simpa only [mul_comm] using hdcN
-  have hpair (p : Ideal Eis × Ideal Eis) (hp : p ∈ Q.image Prod.fst) :
+  have hpair (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (hp : p ∈ Q.image Prod.fst) :
       Squarefree (p.1 * p.2) ∧ (Ideal.absNorm (p.1 * p.2) : ℝ) ≤ X ∧
       p.2 ≠ 0 ∧ (Ideal.absNorm p.2 : ℝ) ≤ H := by
     obtain ⟨u, hu, hup⟩ := Finset.mem_image.mp hp
     obtain ⟨d, hd, he, hdc⟩ := quotientGridSupport_origin r hr D u.1 u.2 hu
-    have he' : (d.residualN, d.residualB) = p := he.trans hup
+    have he' := he.trans hup
     have hm := congrArg Prod.fst he'
     have hh := congrArg Prod.snd he'
     have hdB : d.residualB ≠ 0 :=
@@ -77,8 +76,8 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
       by simpa only [← hm, ← hh] using (hnorm d hd).2.2,
       by simpa only [← hh] using hdB,
       by simpa only [← hh] using (hnorm d hd).2.1⟩
-  have hcset (p : Ideal Eis × Ideal Eis) (hp : p ∈ Q.image Prod.fst)
-      (c : Ideal Eis) (hc : c ∈ gridCommonSupport Q p.1) :
+  have hcset (p : Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O) (hp : p ∈ Q.image Prod.fst)
+      (c : Ideal ActualEisensteinCubic.O) (hc : c ∈ gridCommonSupport Q p.1) :
       c ≠ 0 ∧ (Ideal.absNorm c : ℝ) ≤ A ∧ (r * c) * p.1 ∈ nset := by
     obtain ⟨d, hd, hm, hdc⟩ := quotientGridCommonSupport_origin r hr D p.1 c hc
     have hc' := hcBound d hd c hdc
@@ -104,7 +103,7 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
     hrows hn hP ha (fun p hp => ⟨(hpair p hp).1, (hpair p hp).2.1⟩)
     (fun p hp => (hpair p hp).2.2) hcset
     (fun p _ c _ => extractedGridCoefficient_norm_le_one _ R t beta hbGrid (r * c) p.1 p.2)
-  have hrow (k : Ideal Eis) (hk : k ∈ quotientSupport (R * r) rows) :=
+  have hrow (k : Ideal ActualEisensteinCubic.O) (hk : k ∈ quotientSupport (R * r) rows) :=
     gridDivisorHybridBlock_extract (hybridGridSupport D) Pset a beta t k R r hR hr
       (hrows _ ((mem_quotientSupport (R * r) k (mul_ne_zero hR hr) rows).mp hk)).1
       (fun P hP' => (hP P hP').1)
@@ -133,9 +132,9 @@ theorem hybrid_extracted_dyadic_block_nonempty (ε : ℝ) (hε : 0 < ε) :
 theorem hybrid_extracted_dyadic_block (ε : ℝ) (hε : 0 < ε) :
     ∃ C₀ : ℝ, 0 < C₀ ∧ ∀ K N B L C T : ℝ,
       1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ C → 1 ≤ T →
-    ∀ (R r t : Ideal Eis), R ≠ 0 → r ≠ 0 → T ≤ (Ideal.absNorm t : ℝ) →
-    ∀ (rows nset Pset : Finset (Ideal Eis)) (D : Finset HybridColumnData)
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → Ideal Eis → ℂ),
+    ∀ (R r t : Ideal ActualEisensteinCubic.O), R ≠ 0 → r ≠ 0 → T ≤ (Ideal.absNorm t : ℝ) →
+    ∀ (rows nset Pset : Finset (Ideal ActualEisensteinCubic.O)) (D : Finset HybridColumnData)
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L ≤ (Ideal.absNorm P : ℝ) ∧

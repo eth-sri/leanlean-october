@@ -84,7 +84,7 @@ theorem grid_zero (δ : ℝ) : grid δ 0 = 1 := by
 
 /-- The grid is monotone for `δ ≥ 0`. -/
 theorem grid_mono {δ : ℝ} (hδ : 0 ≤ δ) : Monotone (grid δ) := fun i j hij =>
-  Nat.floor_mono (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_right (by exact_mod_cast hij) hδ))
+  Nat.floor_mono (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_right (by simp_all) hδ))
 
 /-- Every grid point is at least `1`. -/
 theorem one_le_grid {δ : ℝ} (hδ : 0 ≤ δ) (i : ℕ) : 1 ≤ grid δ i := by
@@ -95,8 +95,8 @@ theorem one_le_grid {δ : ℝ} (hδ : 0 ≤ δ) (i : ℕ) : 1 ≤ grid δ i := b
 theorem mem_gridPiece {δ : ℝ} {i m : ℕ} (hm : m ∈ gridPiece δ i) :
     Real.exp (i * δ) < m ∧ (m : ℝ) ≤ Real.exp ((i + 1 : ℕ) * δ) := by
   rw [gridPiece, mem_Ioc, grid, grid] at hm
-  exact ⟨(Nat.floor_lt (Real.exp_pos _).le).1 hm.1,
-    (Nat.le_floor_iff (Real.exp_pos _).le).1 hm.2⟩
+  exact ⟨(Nat.floor_lt (by positivity)).1 hm.1,
+    (Nat.le_floor_iff (by positivity)).1 hm.2⟩
 
 /-- The points of a grid interval are positive. -/
 theorem gridPiece_pos {δ : ℝ} {i m : ℕ} (hm : m ∈ gridPiece δ i) : m ≠ 0 := by
@@ -110,14 +110,13 @@ theorem gridPiece_subset_Icc (δ : ℝ) (i : ℕ) : gridPiece δ i ⊆ Icc 1 (gr
   intro m hm
   have h0 := gridPiece_pos hm
   rw [gridPiece, mem_Ioc] at hm
-  exact mem_Icc.2 ⟨Nat.one_le_iff_ne_zero.2 h0, hm.2⟩
+  grind
 
 /-- `e^δ - 1 ≤ 2δ` for `0 ≤ δ ≤ 1`. -/
 theorem exp_sub_one_le_two_mul {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1) :
     Real.exp δ - 1 ≤ 2 * δ := by
-  have := Real.abs_exp_sub_one_le (x := δ) (by rw [abs_of_nonneg hδ0]; exact hδ)
-  rw [abs_of_nonneg hδ0, abs_of_nonneg (by linarith [Real.add_one_le_exp δ])] at this
-  exact this
+  have := Real.abs_exp_sub_one_le (x := δ) (by grind)
+  grind
 
 /-- `e^{(i+1)δ} = e^δ e^{iδ}`. -/
 theorem exp_succ_mul (δ : ℝ) (i : ℕ) :
@@ -128,7 +127,7 @@ theorem exp_succ_mul (δ : ℝ) (i : ℕ) :
 
 /-- `⌊e^{iδ}⌋ ≤ e^{iδ}`. -/
 theorem grid_le (δ : ℝ) (i : ℕ) : (grid δ i : ℝ) ≤ Real.exp (i * δ) :=
-  Nat.floor_le (Real.exp_pos _).le
+  Nat.floor_le (by positivity)
 
 /-- `⌊e^{(i+1)δ}⌋ ≤ 2e^{iδ}` for `0 ≤ δ ≤ 1/2`. -/
 theorem grid_succ_le {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (i : ℕ) :
@@ -136,7 +135,7 @@ theorem grid_succ_le {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) (i : ℕ)
   refine (grid_le δ (i + 1)).trans ?_
   rw [exp_succ_mul]
   have := exp_sub_one_le_two_mul hδ0 (by linarith)
-  exact mul_le_mul_of_nonneg_right (by linarith) (Real.exp_pos _).le
+  exact mul_le_mul_of_nonneg_right (by linarith) (by positivity)
 
 /-- The grid interval `i` has at most `3δ e^{iδ}` points once `δ e^{iδ} ≥ 1`. -/
 theorem card_gridPiece_le {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) {i : ℕ}
@@ -147,7 +146,7 @@ theorem card_gridPiece_le {δ : ℝ} (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2) {i :
   rw [exp_succ_mul] at hhi
   have := exp_sub_one_le_two_mul hδ0 (by linarith)
   have h2 : (Real.exp δ - 1) * Real.exp (i * δ) ≤ 2 * δ * Real.exp (i * δ) :=
-    mul_le_mul_of_nonneg_right this (Real.exp_pos _).le
+    mul_le_mul_of_nonneg_right this (by positivity)
   nlinarith
 
 /-! ### The decomposition into boxes -/
@@ -179,7 +178,7 @@ theorem twistedPoly_eq_sum_boxSum (hδ : 0 ≤ δ) (hψ : ∀ y, ψ y ≠ 0 → 
     intro p hp
     obtain ⟨hp2, hpY⟩ := hPs p hp
     refine mem_Ioc.2 ⟨by omega, ?_⟩
-    have : (p : ℝ) ≤ G := by nlinarith [show (2 : ℝ) ≤ p by exact_mod_cast hp2]
+    have : (p : ℝ) ≤ G := by nlinarith [show (2 : ℝ) ≤ p by simp_all]
     exact_mod_cast this
   -- the boxes add up to `κ Y⁻¹ ∑_{p ∈ Ps} ∑_{n ∈ (1, G]} F p n`
   have hR : ∑ j ∈ range I, ∑ i ∈ range I, boxSum Y σ δ h k Ps κ H ψ j i t =
@@ -230,9 +229,7 @@ theorem twistedPoly_eq_sum_boxSum (hδ : 0 ≤ δ) (hψ : ∀ y, ψ y ≠ 0 → 
   refine sum_bij_ne_zero (fun n _ _ => p * n) ?_ ?_ ?_ ?_
   · intro n hn hF0
     have h0 : ψ (((p * n : ℕ) : ℝ) / Y) ≠ 0 := fun h0 => hF0 (by
-      show ψ (((p * n : ℕ) : ℝ) / Y) * _ * _ * _ * _ = 0
-      rw [h0]
-      simp)
+      grind)
     obtain ⟨h1, h2⟩ := hψ _ h0
     rw [le_div_iff₀ hY0, one_mul] at h1
     rw [div_le_iff₀ hY0] at h2
@@ -244,7 +241,7 @@ theorem twistedPoly_eq_sum_boxSum (hδ : 0 ≤ δ) (hψ : ∀ y, ψ y ≠ 0 → 
     obtain ⟨hwI, hpw⟩ := mem_filter.1 hw
     obtain ⟨hw1, hw2⟩ := mem_Icc.1 hwI
     have hFw : F p (w / p) = F' w p := by simp only [hF, hF', Nat.mul_div_cancel' hpw]
-    refine ⟨w / p, mem_Ioc.2 ⟨?_, ?_⟩, by rwa [hFw], Nat.mul_div_cancel' hpw⟩
+    refine ⟨w / p, mem_Ioc.2 ⟨?_, ?_⟩, by grind, Nat.mul_div_cancel' hpw⟩
     · have h2p : 2 * p ≤ w := by
         have : ((2 * p : ℕ) : ℝ) ≤ w := by
           push_cast
@@ -266,8 +263,7 @@ theorem boxResidual_add (G₁ G₂ : ℕ → ℂ) (i β : ℕ) (t : ℝ) :
     boxResidual σ δ k (fun n => G₁ n + G₂ n) i β t =
       boxResidual σ δ k G₁ i β t + boxResidual σ δ k G₂ i β t := by
   simp only [boxResidual, ← sum_add_distrib]
-  refine sum_congr rfl fun n _ => ?_
-  ring
+  grind
 
 /-- One box splits into its corner term over the classes `n ≡ β (mod k)` and the corner
 error: `T_{ji} = W ∑_{β < k} A_β B_β + E_{ji}`. -/
@@ -304,7 +300,7 @@ theorem boxSum_eq (hk : k ≠ 0) (j i : ℕ) (t : ℝ) :
     rw [hfilt]
     simp only [hZ, hX, mul_sum]
     refine sum_congr rfl fun n hn => ?_
-    have hnβ : n ≡ β [MOD k] := (mem_filter.1 hn).2
+    have hnβ := (mem_filter.1 hn).2
     have htw : twist h k (p * n) = twist h k (p * β) :=
       exp_twist_eq_of_modEq h hk (hnβ.mul_left p)
     rw [htw, Nat.cast_mul, Complex.natCast_mul_natCast_cpow, Complex.natCast_mul_natCast_cpow]
@@ -335,9 +331,7 @@ theorem boxSum_eq (hk : k ≠ 0) (j i : ℕ) (t : ℝ) :
     field_simp
   rw [← sub_eq_iff_eq_add, hmain, hcorner, boxWeight, Finset.mul_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun β _ => ?_
-  rw [hsmall, hres, ← hr]
-  linear_combination (κ * (Y : ℂ)⁻¹ * ψ (r / Y) * ((∑ p ∈ boxPrimes δ Ps j, X p β) * Z β)) *
-    hone.symm
+  grind
 
 /-! ### Norms and continuity -/
 
@@ -350,7 +344,7 @@ theorem norm_twist (h : ℤ) (k m : ℕ) : ‖twist h k m‖ = 1 := by
 /-- `t ↦ m^{it}` is continuous for `m ≠ 0`. -/
 theorem continuous_natCast_cpow {m : ℕ} (hm : m ≠ 0) :
     Continuous fun t : ℝ => (m : ℂ) ^ ((t : ℂ) * Complex.I) :=
-  Continuous.const_cpow (by fun_prop) (Or.inl (by exact_mod_cast hm))
+  Continuous.const_cpow (by fun_prop) (Or.inl (by positivity))
 
 /-- The small-prime polynomial of a box is continuous. -/
 theorem continuous_boxSmall (j β : ℕ) : Continuous (boxSmall σ δ h k Ps j β) :=
@@ -392,7 +386,7 @@ theorem norm_boxSmall_le (j β : ℕ) (t : ℝ) :
         calc (Real.exp (j * δ))⁻¹ * ‖(p : ℂ) ^ ((σ : ℂ) * Complex.I)‖ *
               ‖(p : ℂ) ^ ((t : ℂ) * Complex.I)‖ ≤ (Real.exp (j * δ))⁻¹ * 1 * 1 := by gcongr
           _ = (Real.exp (j * δ))⁻¹ := by ring
-    _ = (boxPrimes δ Ps j).card * (Real.exp (j * δ))⁻¹ := by rw [sum_const, nsmul_eq_mul]
+    _ = (boxPrimes δ Ps j).card * (Real.exp (j * δ))⁻¹ := by simp
 
 /-- In the box `(j, i)`, `r < pn ≤ e^{2δ} r` for the corner `r = e^{jδ} e^{iδ}`. -/
 theorem corner_lt_mul {p n j i : ℕ} (hp : p ∈ gridPiece δ j) (hn : n ∈ gridPiece δ i) :
@@ -401,13 +395,12 @@ theorem corner_lt_mul {p n j i : ℕ} (hp : p ∈ gridPiece δ j) (hn : n ∈ gr
   obtain ⟨hp1, hp2⟩ := mem_gridPiece hp
   obtain ⟨hn1, hn2⟩ := mem_gridPiece hn
   push_cast
-  refine ⟨mul_lt_mul'' hp1 hn1 (Real.exp_pos _).le (Real.exp_pos _).le, ?_⟩
+  refine ⟨mul_lt_mul'' hp1 hn1 (by positivity) (by positivity), ?_⟩
   calc (p : ℝ) * n ≤ Real.exp ((j + 1 : ℕ) * δ) * Real.exp ((i + 1 : ℕ) * δ) :=
         mul_le_mul hp2 hn2 (by positivity) (by positivity)
     _ = Real.exp (2 * δ) * (Real.exp (j * δ) * Real.exp (i * δ)) := by
         rw [← Real.exp_add, ← Real.exp_add, ← Real.exp_add]
-        push_cast
-        ring_nf
+        grind
 
 /-- The boxes away from the corner range `Y/4 ≤ r ≤ 2Y`, or without primes, vanish. -/
 theorem boxSum_eq_zero (hY : 0 < Y) (hδ : δ ≤ 1 / 2) (hψ : ∀ y, ψ y ≠ 0 → 1 ≤ y ∧ y ≤ 2)
@@ -416,7 +409,7 @@ theorem boxSum_eq_zero (hY : 0 < Y) (hδ : δ ≤ 1 / 2) (hψ : ∀ y, ψ y ≠ 
     boxSum Y σ δ h k Ps κ H ψ j i t = 0 := by
   rw [boxSum]
   rcases hji with h0 | hji
-  · rw [h0, sum_empty, mul_zero]
+  · simp_all
   refine mul_eq_zero_of_right _ (sum_eq_zero fun p hp => sum_eq_zero fun n hn => ?_)
   obtain ⟨h1, h2⟩ := corner_lt_mul (mem_filter.1 hp).1 hn
   have he : Real.exp (2 * δ) ≤ 3 := by
@@ -434,8 +427,7 @@ theorem boxSum_eq_zero (hY : 0 < Y) (hδ : δ ≤ 1 / 2) (hψ : ∀ y, ψ y ≠ 
         mul_le_mul_of_nonneg_right he (by positivity)
       linarith
     · linarith
-  rw [hψ0]
-  ring
+  simp_all
 
 /-- The corner error of one term: `|ψ(pn/Y) - ψ(r/Y)| ≤ 12 δ M₁(1)`. -/
 theorem norm_corner_sub_le (hY : 0 < Y) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
@@ -460,9 +452,9 @@ theorem norm_corner_sub_le (hY : 0 < Y) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
     · have := (hψ _ h0).2
       rwa [div_le_iff₀ hY] at this
   have hexp : Real.exp (2 * δ) - 1 ≤ 4 * δ := by
-    have := Real.abs_exp_sub_one_le (x := 2 * δ) (by rw [abs_of_nonneg (by linarith)]; linarith)
+    have := Real.abs_exp_sub_one_le (x := 2 * δ) (by grind)
     rw [abs_of_nonneg (show 0 ≤ 2 * δ by linarith),
-      abs_of_nonneg (show 0 ≤ Real.exp (2 * δ) - 1 by linarith [Real.add_one_le_exp (2 * δ)])]
+      abs_of_nonneg (show 0 ≤ Real.exp (2 * δ) - 1 by simp_all)]
       at this
     linarith
   refine (norm_sub_le_of_iteratedDeriv_one hψd hM _ _).trans ?_
@@ -472,7 +464,7 @@ theorem norm_corner_sub_le (hY : 0 < Y) (hδ0 : 0 ≤ δ) (hδ : δ ≤ 1 / 2)
         linarith
     _ ≤ M * (4 * δ * (2 * Y) / Y) := by
         gcongr
-    _ = 8 * δ * M := by field_simp; ring
+    _ = 8 * δ * M := by grind
     _ ≤ 12 * δ * M := by nlinarith
 
 /-- **The corner error of a box (E6 separation).**
@@ -510,14 +502,14 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
     have hD := norm_corner_sub_le hY hδ0 hδ hψ hψd hM (mem_filter.1 hp).1 hn
     simp only [hc, norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hY.le, norm_twist,
       mul_one]
-    have hcp : ‖((p * n : ℕ) : ℂ) ^ ((σ : ℂ) * Complex.I)‖ ≤ 1 :=
+    have hcp :=
       IntegerKernel.norm_natCast_cpow_I_mul_le σ (p * n)
     calc ‖κ‖ * Y⁻¹ * ‖ψ (((p * n : ℕ) : ℝ) / Y) - ψ (Real.exp (j * δ) * Real.exp (i * δ) / Y)‖ *
           ‖((p * n : ℕ) : ℂ) ^ ((σ : ℂ) * Complex.I)‖ * ‖H n‖
         ≤ Kc * Y⁻¹ * (12 * δ * M) * 1 * Hc := by
           gcongr
-          · exact hH n
-      _ = c₀ := by rw [hc₀, mul_one]
+          simp_all
+      _ = c₀ := by linarith
   have hS : gridPiece δ i ⊆ Icc 1 N := gridPiece_subset_Icc δ i
   have hN0 : 0 ≤ b - a + 8 * N * (1 + Real.log N) := by
     have : (1 : ℝ) ≤ N := by exact_mod_cast one_le_grid hδ0 (i + 1)
@@ -527,8 +519,8 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
   have hcont : ∀ p ∈ s, Continuous fun t : ℝ => (p : ℂ) ^ ((t : ℂ) * Complex.I) *
       ∑ n ∈ gridPiece δ i, c p n * (n : ℂ) ^ ((t : ℂ) * Complex.I) := fun p hp =>
     (continuous_natCast_cpow (gridPiece_pos (mem_filter.1 hp).1)).mul
-      (continuous_sum_cpow (fun n hn => gridPiece_pos hn) _)
-  have hCS := integral_norm_sum_sq_le s (fun _ => 1) (fun _ _ => norm_one.le) _ hcont hab
+      (continuous_sum_cpow (by grind) _)
+  have hCS := integral_norm_sum_sq_le s (fun _ => 1) (by simp) _ hcont hab
   simp only [one_mul] at hCS
   refine hCS.trans ?_
   have hper : ∀ p ∈ s, ∫ t in a..b, ‖(p : ℂ) ^ ((t : ℂ) * Complex.I) *
@@ -537,7 +529,7 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
     intro p hp
     have hQ := integral_norm_sum_cpow_sq_le N (gridPiece δ i) hS (c p) a b
     refine le_trans (intervalIntegral.integral_mono_on hab ((hcont p hp).norm.pow 2
-      |>.intervalIntegrable a b) ((continuous_sum_cpow (fun n hn => gridPiece_pos hn) _).norm.pow
+      |>.intervalIntegrable a b) ((continuous_sum_cpow (by grind) _).norm.pow
         2 |>.intervalIntegrable a b) fun t _ => ?_) (hQ.trans ?_)
     · simp only [Pi.pow_apply]
       rw [norm_mul, mul_pow]
@@ -548,14 +540,14 @@ theorem integral_boxErr_le {a b : ℝ} (hab : a ≤ b) (hY : 0 < Y) (hδ0 : 0 �
       nlinarith
     · gcongr
       calc ∑ n ∈ gridPiece δ i, ‖c p n‖ ^ 2 ≤ ∑ n ∈ gridPiece δ i, c₀ ^ 2 :=
-            sum_le_sum fun n hn => pow_le_pow_left₀ (norm_nonneg _) (hcn p hp n hn) 2
-        _ = (gridPiece δ i).card * c₀ ^ 2 := by rw [sum_const, nsmul_eq_mul]
+            sum_le_sum fun n hn => pow_le_pow_left₀ (norm_nonneg _) (by grind) 2
+        _ = (gridPiece δ i).card * c₀ ^ 2 := by simp
   calc (s.card : ℝ) * ∑ p ∈ s, ∫ t in a..b, ‖(p : ℂ) ^ ((t : ℂ) * Complex.I) *
         ∑ n ∈ gridPiece δ i, c p n * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2
       ≤ s.card * ∑ p ∈ s, (b - a + 8 * N * (1 + Real.log N)) *
           ((gridPiece δ i).card * c₀ ^ 2) := by
         gcongr with p hp
-        exact hper p hp
+        grind
     _ = (s.card : ℝ) ^ 2 * ((b - a + 8 * N * (1 + Real.log N)) *
           ((gridPiece δ i).card * c₀ ^ 2)) := by
         rw [sum_const, nsmul_eq_mul]
@@ -571,9 +563,9 @@ theorem integral_corner_le {a b : ℝ} (hab : a ≤ b) (W : ℂ) (A B : ℕ → 
   simp_rw [hW]
   rw [intervalIntegral.integral_const_mul]
   gcongr
-  have := integral_norm_sum_sq_le (range k) (fun _ => 1) (fun _ _ => norm_one.le)
+  have := integral_norm_sum_sq_le (range k) (fun _ => 1) (by simp)
     (fun β t => A β t * B β t) (fun β _ => (hA β).mul (hB β)) hab
-  simpa only [one_mul, card_range] using this
+  simp_all
 
 end Decomposition
 

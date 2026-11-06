@@ -12,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Moments.SuccessorPaidParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedFourCoefficients
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
@@ -24,8 +24,6 @@ open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
 open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
 open CenteredMomentFirstMixedExceptionalLow CenteredMomentFirstMixedDiagonal
 open CenteredMomentSuccessorPaidParameters
-local notation "O"=>HeckeFamily.O
-local notation "Ray"=>RayFourExpansion.RayCharacter
 
 def reference (q V C Z allowance:ℝ):ℝ:=q*(V/C)^2*Z^allowance
 
@@ -35,7 +33,7 @@ def mainCores (q V C Z allowance Kmain ell deficit paid eps saving r:ℝ):Fin 4�
     (V/C)*Kmain*(V/C)^eps/reference q V C Z allowance,
     (V/C)*Kmain*Z^(-saving)/reference q V C Z allowance]
 
-def errorCores (p:O)(k:ℕ)(q V C Z allowance Kerror deficit paid eps saving r:ℝ):Fin 4→ℝ:=
+def errorCores (p:HeckeFamily.O)(k:ℕ)(q V C Z allowance Kerror deficit paid eps saving r:ℝ):Fin 4→ℝ:=
   ![(V/C)*localErrorCost p (k-1)*q*Z^(errorMoving p Z k)*
       (V/C/(normValue p)^k)*Z^(errorRemoval p Z k+deficit/6+paid)/reference q V C Z allowance,
     (V/C)*localErrorCost p (k-1)*(V/C/(normValue p)^k)^((1:ℝ)/3)*
@@ -47,26 +45,26 @@ def lossVector (sigma delta reserve paid eps Mcap saving:ℝ):Fin 4→ℝ:=
   ![paid,3*sigma/2+5*(delta+reserve)/6,
     2*sigma+delta+reserve+eps*Mcap,2*sigma+delta+reserve-saving]
 
-def averagedCoefficients (P:Finset (Ideal O))(mainFactor:ℝ)(H main:Fin 4→ℝ)
-    (error:elementPool P→Fin 3→Ray→Fin 4→ℝ):Fin 4→ℝ:=fun j=>
+def averagedCoefficients (P:Finset (Ideal HeckeFamily.O))(mainFactor:ℝ)(H main:Fin 4→ℝ)
+    (error:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ):Fin 4→ℝ:=fun j=>
   (56/(P.card:ℝ))*(mainFactor*H j*main j+
-    ∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*∑χ:Ray,H j*error p i χ j)
+    ∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*∑χ:RayFourExpansion.RayCharacter,H j*error p i χ j)
 
 lemma actual_valuation_mass : (∑i:Fin 3,16*(errorIndex i+2:ℝ)^2)=1872 := by
   norm_num [Fin.sum_univ_succ,errorIndex]
 
-theorem actual_error_average (P:Finset (Ideal O))(hne:P.Nonempty)
+theorem actual_error_average (P:Finset (Ideal HeckeFamily.O))(hne:P.Nonempty)
     (hp:∀Q∈P,Prime Q)(hbad:∀Q∈P,Q∉fixedBadPrimes)
-    (f:elementPool P→Fin 3→Ray→ℝ)(E:ℝ)(_hE:0≤E)
+    (f:elementPool P→Fin 3→RayFourExpansion.RayCharacter→ℝ)(E:ℝ)(_hE:0≤E)
     (hf:∀p i χ,f p i χ≤E):
     (1/(P.card:ℝ))*(∑p:elementPool P,∑i:Fin 3,
-      16*(errorIndex i+2:ℝ)^2*∑χ:Ray,f p i χ)≤
-        1872*(Fintype.card Ray:ℝ)*E := by
+      16*(errorIndex i+2:ℝ)^2*∑χ:RayFourExpansion.RayCharacter,f p i χ)≤
+        1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ)*E := by
   have hn:(0:ℝ)<P.card:=by exact_mod_cast hne.card_pos
   have hc:Fintype.card (elementPool P)=P.card:=by
     rw [Fintype.card_coe,elementPool_card P hp hbad]
-  have hh:(∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*∑χ:Ray,f p i χ)≤
-      ∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*∑χ:Ray,E:=by
+  have hh:(∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*∑χ:RayFourExpansion.RayCharacter,f p i χ)≤
+      ∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*∑χ:RayFourExpansion.RayCharacter,E:=by
     apply Finset.sum_le_sum
     intro p _
     apply Finset.sum_le_sum
@@ -92,7 +90,7 @@ lemma main_paid_core (q V C Z allowance Kmain ell deficit paid eps saving r:ℝ)
   apply Real.rpow_le_rpow_of_exponent_le hZ.le
   linarith
 
-lemma error_paid_core (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)
+lemma error_paid_core (p:HeckeFamily.O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)
     (q V C Z allowance Kerror deficit paid eps saving r:ℝ)
     (hq:0<q)(hV:0<V)(hC:0<C)(hZ:1<Z)(hB:0≤allowance)(hdef:0≤deficit):
     errorCores p k q V C Z allowance Kerror deficit paid eps saving r 0≤Z^(deficit+paid) := by
@@ -115,13 +113,13 @@ lemma error_paid_core (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)
     _≤1*Z^(deficit/6+paid-allowance):=mul_le_mul_of_nonneg_right hs (Real.rpow_nonneg hz.le _)
     _≤Z^(deficit+paid):=by rw [one_mul];apply Real.rpow_le_rpow_of_exponent_le hZ.le;linarith
 
-theorem actual_main_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem actual_main_cores (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve paid eps saving r Mdecl Mcap:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)(hM:0≤Mdecl)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
     (hlow:Real.logb Z V≤5*Mdecl/6)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let Kmain:=mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
@@ -200,16 +198,16 @@ theorem actual_main_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supp
         dsimp [lossVector]
         linarith
 
-theorem actual_error_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem actual_error_cores (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve paid eps saving r Mdecl Mcap:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0≤sigma)(heps:0≤eps)(hM:0≤Mdecl)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
     (hlow:Real.logb Z V≤5*Mdecl/6)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
-    (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))(hbad:fixedBadPrimes⊆Sbad)
-    (p:O)(hp:p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
+    (M:Ideal HeckeFamily.O)[NeZero M](H:Subgroup (HeckeFamily.O⧸M)ˣ)(Sbad:Finset (Ideal HeckeFamily.O))(hbad:fixedBadPrimes⊆Sbad)
+    (p:HeckeFamily.O)(hp:p∈elementPool (primePool M H Sbad (1/2) 1 (Z^(sigma/3))))
     (k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let Kerror:=errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
@@ -277,29 +275,29 @@ theorem actual_error_cores (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Sup
     dsimp [lossVector]
     linarith
 
-def sourceCoefficients (P:Finset (Ideal O))(mainFactor:ℝ)(amain:Fin 4→ℝ)
-    (aerror:elementPool P→Fin 3→Ray→Fin 4→ℝ)(alpha:Fin 4→ℝ):Fin 4→ℝ:=fun j=>
+def sourceCoefficients (P:Finset (Ideal HeckeFamily.O))(mainFactor:ℝ)(amain:Fin 4→ℝ)
+    (aerror:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ)(alpha:Fin 4→ℝ):Fin 4→ℝ:=fun j=>
   (56/(P.card:ℝ))*(mainFactor*amain j+
     ∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*localErrorCost p (errorIndex i)*
-      ∑χ:Ray,aerror p i χ j*((normValue p)^(errorIndex i+1))^(-alpha j))
+      ∑χ:RayFourExpansion.RayCharacter,aerror p i χ j*((normValue p)^(errorIndex i+1))^(-alpha j))
 
 lemma shortened_power (V q:ℝ)(k:ℕ)(alpha:ℝ)(hV:0≤V)(hq:0≤q):
     (V/q^k)^alpha=V^alpha*(q^k)^(-alpha):=by
   rw [Real.div_rpow hV (pow_nonneg hq k),Real.rpow_neg (pow_nonneg hq k),div_eq_mul_inv]
 
-theorem source_coefficients_identity (P:Finset (Ideal O))(mainFactor V:ℝ)(hV:0≤V)
-    (amain:Fin 4→ℝ)(aerror:elementPool P→Fin 3→Ray→Fin 4→ℝ)(alpha:Fin 4→ℝ):
+theorem source_coefficients_identity (P:Finset (Ideal HeckeFamily.O))(mainFactor V:ℝ)(hV:0≤V)
+    (amain:Fin 4→ℝ)(aerror:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ)(alpha:Fin 4→ℝ):
     (∑j:Fin 4,sourceCoefficients P mainFactor amain aerror alpha j*V^(alpha j))=
     (56/(P.card:ℝ))*(mainFactor*(∑j:Fin 4,amain j*V^(alpha j))+
       ∑p:elementPool P,∑i:Fin 3,(16*(errorIndex i+2:ℝ)*localErrorCost p (errorIndex i))*
-        (errorIndex i+2:ℝ)*∑χ:Ray,∑j:Fin 4,aerror p i χ j*
+        (errorIndex i+2:ℝ)*∑χ:RayFourExpansion.RayCharacter,∑j:Fin 4,aerror p i χ j*
           (V/(normValue p)^(errorIndex i+1))^(alpha j)) := by
-  have hnorm:∀p:O,0≤normValue p:=by intro p;unfold normValue;positivity
-  let f:=fun (j:Fin 4) (p:elementPool P) (i:Fin 3) (χ:Ray)=>
+  have hnorm:∀p:HeckeFamily.O,0≤normValue p:=by intro p;unfold normValue;positivity
+  let f:=fun (j:Fin 4) (p:elementPool P) (i:Fin 3) (χ:RayFourExpansion.RayCharacter)=>
     16*(errorIndex i+2:ℝ)^2*localErrorCost p (errorIndex i)*
       (aerror p i χ j*((normValue p)^(errorIndex i+1))^(-alpha j))*V^(alpha j)
-  have hswap:(∑j:Fin 4,∑p:elementPool P,∑i:Fin 3,∑χ:Ray,f j p i χ)=
-      ∑p:elementPool P,∑i:Fin 3,∑χ:Ray,∑j:Fin 4,f j p i χ:=by
+  have hswap:(∑j:Fin 4,∑p:elementPool P,∑i:Fin 3,∑χ:RayFourExpansion.RayCharacter,f j p i χ)=
+      ∑p:elementPool P,∑i:Fin 3,∑χ:RayFourExpansion.RayCharacter,∑j:Fin 4,f j p i χ:=by
     rw [Finset.sum_comm]
     apply Finset.sum_congr rfl
     intro p _
@@ -311,21 +309,21 @@ theorem source_coefficients_identity (P:Finset (Ideal O))(mainFactor V:ℝ)(hV:0
     _=(56/(P.card:ℝ))*∑j:Fin 4,
         (mainFactor*amain j*V^(alpha j)+
           (∑p:elementPool P,∑i:Fin 3,16*(errorIndex i+2:ℝ)^2*localErrorCost p (errorIndex i)*
-            ∑χ:Ray,aerror p i χ j*((normValue p)^(errorIndex i+1))^(-alpha j))*V^(alpha j)):=by
+            ∑χ:RayFourExpansion.RayCharacter,aerror p i χ j*((normValue p)^(errorIndex i+1))^(-alpha j))*V^(alpha j)):=by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro j _
       unfold sourceCoefficients
       ring
     _=(56/(P.card:ℝ))*(mainFactor*(∑j:Fin 4,amain j*V^(alpha j))+
-        ∑j:Fin 4,∑p:elementPool P,∑i:Fin 3,∑χ:Ray,f j p i χ):=by
+        ∑j:Fin 4,∑p:elementPool P,∑i:Fin 3,∑χ:RayFourExpansion.RayCharacter,f j p i χ):=by
       congr 1
       rw [Finset.sum_add_distrib]
       congr 1
       · simp only [Finset.mul_sum,mul_assoc]
       · simp only [f,Finset.sum_mul,Finset.mul_sum,mul_assoc]
     _=(56/(P.card:ℝ))*(mainFactor*(∑j:Fin 4,amain j*V^(alpha j))+
-        ∑p:elementPool P,∑i:Fin 3,∑χ:Ray,∑j:Fin 4,f j p i χ):=by rw [hswap]
+        ∑p:elementPool P,∑i:Fin 3,∑χ:RayFourExpansion.RayCharacter,∑j:Fin 4,f j p i χ):=by grind
     _=_:=by
       congr 2
       apply Finset.sum_congr rfl
@@ -339,18 +337,17 @@ theorem source_coefficients_identity (P:Finset (Ideal O))(mainFactor V:ℝ)(hV:0
       apply Finset.sum_congr rfl
       intro j _
       rw [shortened_power V (normValue p) _ _ hV (hnorm _)]
-      dsimp [f]
-      ring
+      linarith
 
-theorem averaged_coefficients_bound (P:Finset (Ideal O))(hne:P.Nonempty)
+theorem averaged_coefficients_bound (P:Finset (Ideal HeckeFamily.O))(hne:P.Nonempty)
     (hp:∀Q∈P,Prime Q)(hbad:∀Q∈P,Q∉fixedBadPrimes)
     (Z ell primeLoss mainFactor:ℝ)(hZ:1<Z)(hloss:0≤primeLoss)
     (hfactor:0≤mainFactor)(hcard:Z^(ell-primeLoss)≤(P.card:ℝ))
-    (H main loss:Fin 4→ℝ)(error:elementPool P→Fin 3→Ray→Fin 4→ℝ)
+    (H main loss:Fin 4→ℝ)(error:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ)
     (hH:∀j,0≤H j)(hm:∀j,Z^(-ell)*main j≤Z^(loss j))
     (he:∀p i χ j,error p i χ j≤Z^(loss j)):
     ∀j,averagedCoefficients P mainFactor H main error j≤
-      56*(mainFactor+1872*(Fintype.card Ray:ℝ))*H j*Z^(loss j+primeLoss) := by
+      56*(mainFactor+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ))*H j*Z^(loss j+primeLoss) := by
   have hz:0<Z:=zero_lt_one.trans hZ
   have hn:(0:ℝ)<P.card:=by exact_mod_cast hne.card_pos
   have hinv:(1/(P.card:ℝ))≤Z^(-ell+primeLoss):=by
@@ -366,52 +363,52 @@ theorem averaged_coefficients_bound (P:Finset (Ideal O))(hne:P.Nonempty)
     calc
       _≤(1/(P.card:ℝ))*Z^(ell+loss j):=mul_le_mul_of_nonneg_left hm' (by positivity)
       _≤Z^(-ell+primeLoss)*Z^(ell+loss j):=mul_le_mul_of_nonneg_right hinv (by positivity)
-      _=Z^(loss j+primeLoss):=by rw [←Real.rpow_add hz];congr 1;ring
+      _=Z^(loss j+primeLoss):=by rw [←Real.rpow_add hz];ring
   have herr:=actual_error_average P hne hp hbad (fun p i χ=>H j*error p i χ j)
     (H j*Z^(loss j)) (mul_nonneg (hH j) (Real.rpow_nonneg hz.le _)) (fun p i χ=>mul_le_mul_of_nonneg_left (he p i χ j) (hH j))
   have hl:Z^(loss j)≤Z^(loss j+primeLoss):=
     Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   have herr':(1/(P.card:ℝ))*(∑p:elementPool P,∑i:Fin 3,
-      16*(errorIndex i+2:ℝ)^2*∑χ:Ray,H j*error p i χ j)≤
-      1872*(Fintype.card Ray:ℝ)*(H j*Z^(loss j+primeLoss)):=
+      16*(errorIndex i+2:ℝ)^2*∑χ:RayFourExpansion.RayCharacter,H j*error p i χ j)≤
+      1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ)*(H j*Z^(loss j+primeLoss)):=
     herr.trans (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hl (hH j)) (by positivity))
   calc
     _=56*(mainFactor*H j*((1/(P.card:ℝ))*main j)+
       (1/(P.card:ℝ))*(∑p:elementPool P,∑i:Fin 3,
-        16*(errorIndex i+2:ℝ)^2*∑χ:Ray,H j*error p i χ j)):=by
+        16*(errorIndex i+2:ℝ)^2*∑χ:RayFourExpansion.RayCharacter,H j*error p i χ j)):=by
       unfold averagedCoefficients;ring
     _≤56*(mainFactor*H j*Z^(loss j+primeLoss)+
-      1872*(Fintype.card Ray:ℝ)*(H j*Z^(loss j+primeLoss))):=by
+      1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ)*(H j*Z^(loss j+primeLoss))):=by
       exact mul_le_mul_of_nonneg_left (add_le_add
         (mul_le_mul_of_nonneg_left hmain (mul_nonneg hfactor (hH j))) herr') (by norm_num)
     _=_:=by ring
 
 theorem actual_low_four_coefficients
-    (M:Ideal O)[NeZero M](Hray:Subgroup (O⧸M)ˣ)(Sbad:Finset (Ideal O))
+    (M:Ideal HeckeFamily.O)[NeZero M](Hray:Subgroup (HeckeFamily.O⧸M)ˣ)(Sbad:Finset (Ideal HeckeFamily.O))
     (hbad:fixedBadPrimes⊆Sbad)
-    (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+    (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
     (K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0<sigma)(heps:0≤eps)(hM:0≤Mdecl)
     (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
     (hlow:Real.logb Z V≤5*Mdecl/6)(hloss:0≤primeLoss)(hMamp:0≤Mamp)
     (hcard:Z^(sigma/3-primeLoss)≤(primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))).card)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (H:Fin 4→ℝ)(hH:∀j,0≤H j)(rmain:ℝ)
-    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→Ray→ℝ):
+    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→RayFourExpansion.RayCharacter→ℝ):
     let P:=primePool M Hray Sbad (1/2) 1 (Z^(sigma/3));
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let K0:=nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z;
     let main:=mainCores (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z (allowance C D Z)
       (mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0 (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve)
       (sigma/3) (Mdecl-M0) paid eps saving rmain;
-    let error:=fun (p:elementPool P) (i:Fin 3) (χ:Ray)=>
+    let error:=fun (p:elementPool P) (i:Fin 3) (χ:RayFourExpansion.RayCharacter)=>
       errorCores p (errorIndex i+1) (τ.modulus.absNorm:ℝ) V (C.absNorm:ℝ) Z (allowance C D Z)
         (errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ)) K0 (Real.logb Z (C.absNorm:ℝ))
           sigma delta reserve p (errorIndex i+1)) (Mdecl-M0) paid eps saving (rerror p i χ);
     ∀j,averagedCoefficients P ((Mamp+2*sigma)/(sigma/6)) H main error j≤
-      56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card Ray:ℝ))*H j*
+      56*((Mamp+2*sigma)/(sigma/6)+1872*(Fintype.card RayFourExpansion.RayCharacter:ℝ))*H j*
         Z^(Mdecl-M0+lossVector sigma delta reserve paid eps Mcap saving j+primeLoss) := by
   dsimp only
   have hz:0<Z:=zero_lt_one.trans hZ
@@ -421,7 +418,7 @@ theorem actual_low_four_coefficients
   have hmain:=actual_main_cores η τ C D hC hD hCD E K V Z sigma delta reserve paid eps saving
     rmain Mdecl Mcap hK hV hZ hs.le heps hM hcap hactual hlow hmod
   have herror:=fun (p:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))))
-      (i:Fin 3) (χ:Ray)=>
+      (i:Fin 3) (χ:RayFourExpansion.RayCharacter)=>
     actual_error_cores η τ C D hC hD hCD E K V Z sigma delta reserve paid eps saving
       (rerror p i χ) Mdecl Mcap hK hV hZ hs.le heps hM hcap hactual hlow hmod
       M Hray Sbad hbad p p.property (errorIndex i+1)
@@ -431,11 +428,11 @@ theorem actual_low_four_coefficients
     (fun Q hQ=>(primePool_data M Hray Sbad hbad _ _ _ Q hQ).2)
     Z (sigma/3) primeLoss ((Mamp+2*sigma)/(sigma/6)) hZ hloss
     (div_nonneg (by linarith) (by positivity)) hcard H _ _ _ hH
-    (by simpa only [neg_div] using hmain) herror
+    (by grind) herror
 
-theorem source_normalized_identity (P:Finset (Ideal O))(mainFactor b V C q Z allowance eps:ℝ)
+theorem source_normalized_identity (P:Finset (Ideal HeckeFamily.O))(mainFactor b V C q Z allowance eps:ℝ)
     (N:ℕ)(alpha:Fin 4→ℝ)(amain:Fin 4→ℝ)
-    (aerror:elementPool P→Fin 3→Ray→Fin 4→ℝ)
+    (aerror:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ)
     (hV:0<V)(hC:0<C)(hq:0<q)(hZ:0<Z):
     ∀j,CenteredMomentFirstCommonReferencePower.normalizedPower b V C q Z allowance eps
         (sourceCoefficients P mainFactor amain aerror alpha j) N (alpha j)=
@@ -444,7 +441,7 @@ theorem source_normalized_identity (P:Finset (Ideal O))(mainFactor b V C q Z all
         (fun p i χ j=>(V/C)*localErrorCost p (errorIndex i)*aerror p i χ j*
           (V/C/(normValue p)^(errorIndex i+1))^(alpha j)/reference q V C Z allowance) j := by
   have hx:0<V/C:=div_pos hV hC
-  have hnorm:∀p:O,0≤normValue p:=by intro p;unfold normValue;positivity
+  have hnorm:∀p:HeckeFamily.O,0≤normValue p:=by intro p;unfold normValue;positivity
   intro j
   have hden:reference q V C Z allowance≠0:=by unfold reference;positivity
   have he:CenteredMomentFirstCommonReferencePower.normalizedPower b V C q Z allowance eps
@@ -462,12 +459,12 @@ theorem source_normalized_identity (P:Finset (Ideal O))(mainFactor b V C q Z all
   simp only [div_eq_mul_inv,mul_add,add_mul,Finset.mul_sum,Finset.sum_mul]
   ring_nf
 
-lemma source_coefficients_nonneg (P:Finset (Ideal O))(mainFactor:ℝ)(hmain:0≤mainFactor)
-    (amain:Fin 4→ℝ)(aerror:elementPool P→Fin 3→Ray→Fin 4→ℝ)(alpha:Fin 4→ℝ)
+lemma source_coefficients_nonneg (P:Finset (Ideal HeckeFamily.O))(mainFactor:ℝ)(hmain:0≤mainFactor)
+    (amain:Fin 4→ℝ)(aerror:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ)(alpha:Fin 4→ℝ)
     (ha:∀j,0≤amain j)(he:∀p i χ j,0≤aerror p i χ j):
     ∀j,0≤sourceCoefficients P mainFactor amain aerror alpha j := by
   intro j
-  have hc:∀p:O,∀n:ℕ,0≤localErrorCost p n:=by
+  have hc:∀p:HeckeFamily.O,∀n:ℕ,0≤localErrorCost p n:=by
     intro p n
     have hn:0≤normValue p:=by unfold normValue;positivity
     unfold localErrorCost
@@ -487,7 +484,7 @@ lemma source_coefficients_nonneg (P:Finset (Ideal O))(mainFactor:ℝ)(hmain:0≤
 def mainPowers (q Z Kmain ell deficit paid saving r:ℝ):Fin 4→ℝ:=
   ![q*Z^(ell+deficit/6+paid),Kmain^((5:ℝ)/6)*Z^(-2*max r 0/3),Kmain,Kmain*Z^(-saving)]
 
-def errorPowers (p:O)(k:ℕ)(q Z Kerror deficit paid saving r:ℝ):Fin 4→ℝ:=
+def errorPowers (p:HeckeFamily.O)(k:ℕ)(q Z Kerror deficit paid saving r:ℝ):Fin 4→ℝ:=
   ![q*Z^(errorMoving p Z k)*Z^(errorRemoval p Z k+deficit/6+paid),
     Kerror^((5:ℝ)/6)*Z^(-2*max r 0/3),Kerror,Kerror*Z^(-saving)]
 
@@ -498,20 +495,20 @@ lemma main_core_power (q V C Z allowance Kmain ell deficit paid eps saving r:ℝ
   intro j
   fin_cases j <;> simp [mainCores,mainPowers,CenteredMomentSecondChildPowerBudget.powers] <;> ring
 
-lemma error_core_power (p:O)(k:ℕ)(q V C Z allowance Kerror deficit paid eps saving r:ℝ):
+lemma error_core_power (p:HeckeFamily.O)(k:ℕ)(q V C Z allowance Kerror deficit paid eps saving r:ℝ):
     ∀j,errorCores p k q V C Z allowance Kerror deficit paid eps saving r j=
       (V/C)*localErrorCost p (k-1)*errorPowers p k q Z Kerror deficit paid saving r j*
         (V/C/(normValue p)^k)^(CenteredMomentSecondChildPowerBudget.powers eps j)/reference q V C Z allowance := by
   intro j
   fin_cases j <;> simp [errorCores,errorPowers,CenteredMomentSecondChildPowerBudget.powers] <;> ring
 
-theorem actual_power_reference_identity (P:Finset (Ideal O))(mainFactor b V C q Z allowance eps:ℝ)
+theorem actual_power_reference_identity (P:Finset (Ideal HeckeFamily.O))(mainFactor b V C q Z allowance eps:ℝ)
     (N:ℕ)(H:Fin 4→ℝ)(Kmain ell deficit paid saving rmain:ℝ)
-    (Kerror rerror:elementPool P→Fin 3→Ray→ℝ)
+    (Kerror rerror:elementPool P→Fin 3→RayFourExpansion.RayCharacter→ℝ)
     (hV:0<V)(hC:0<C)(hq:0<q)(hZ:0<Z):
     let alpha:=CenteredMomentSecondChildPowerBudget.powers eps;
     let amain:=fun j=>H j*mainPowers q Z Kmain ell deficit paid saving rmain j;
-    let aerror:=fun (p:elementPool P) (i:Fin 3) (χ:Ray) (j:Fin 4)=>
+    let aerror:=fun (p:elementPool P) (i:Fin 3) (χ:RayFourExpansion.RayCharacter) (j:Fin 4)=>
       H j*errorPowers p (errorIndex i+1) q Z (Kerror p i χ) deficit paid saving (rerror p i χ) j;
     ∀j,CenteredMomentFirstCommonReferencePower.normalizedPower b V C q Z allowance eps
       (sourceCoefficients P mainFactor amain aerror alpha j) N (alpha j)=
@@ -536,8 +533,7 @@ theorem actual_power_reference_identity (P:Finset (Ideal O))(mainFactor b V C q 
     apply Finset.sum_congr rfl
     intro χ _
     rw [error_core_power]
-    simp only [Nat.add_sub_cancel]
-    ring
+    grind
 
 end SevenEighths.CenteredMomentFirstAmplifiedFourCoefficients
 

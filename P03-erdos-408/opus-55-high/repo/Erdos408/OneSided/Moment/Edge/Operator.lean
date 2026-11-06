@@ -50,15 +50,14 @@ theorem norm_sum_star_mul_le (S : Finset α) (a b : α → ℂ) :
       Real.sqrt (∑ x ∈ S, ‖a x‖ ^ 2) * Real.sqrt (∑ x ∈ S, ‖b x‖ ^ 2) := by
   refine (norm_sum_le _ _).trans ?_
   calc ∑ x ∈ S, ‖star (a x) * b x‖ = ∑ x ∈ S, ‖a x‖ * ‖b x‖ := by
-        refine sum_congr rfl fun x _ => ?_
-        rw [norm_mul, norm_star]
+        simp
     _ ≤ _ := Real.sum_mul_le_sqrt_mul_sqrt _ _ _
 
 /-- A square bound gives a bound of the square roots. -/
 private theorem sqrt_le_of_sq_le {A F c : ℝ} (hc : 0 ≤ c) (h : A ≤ c ^ 2 * F) :
     Real.sqrt A ≤ c * Real.sqrt F := by
   calc Real.sqrt A ≤ Real.sqrt (c ^ 2 * F) := Real.sqrt_le_sqrt h
-    _ = c * Real.sqrt F := by rw [Real.sqrt_mul (sq_nonneg c), Real.sqrt_sq hc]
+    _ = c * Real.sqrt F := by simp_all
 
 /-! ### Bilinear form -/
 
@@ -83,8 +82,8 @@ theorem kerLe_of_bilinear {S : Finset α} {S' : Finset β} {k : α → β → �
   set g : α → ℂ := fun x => ∑ y ∈ S', k x y * f y with hg
   set A := ∑ x ∈ S, ‖g x‖ ^ 2 with hA
   set F := ∑ y ∈ S', ‖f y‖ ^ 2
-  have hA0 : 0 ≤ A := sum_nonneg fun x _ => sq_nonneg _
-  have hF0 : 0 ≤ F := sum_nonneg fun y _ => sq_nonneg _
+  have hA0 : 0 ≤ A := sum_nonneg (by simp)
+  have hF0 : 0 ≤ F := sum_nonneg (by simp)
   -- `⟨g, k f⟩ = ‖g‖²`
   have hgg : ‖∑ x ∈ S, star (g x) * g x‖ = A := by
     have : ∑ x ∈ S, star (g x) * g x = ((A : ℝ) : ℂ) := by
@@ -96,18 +95,15 @@ theorem kerLe_of_bilinear {S : Finset α} {S' : Finset β} {k : α → β → �
   have h1 := h f g
   rw [hgg] at h1
   -- `A ≤ c √A √F` gives `√A ≤ c √F`
-  have hsA : Real.sqrt A * Real.sqrt A = A := Real.mul_self_sqrt hA0
+  have hsA := Real.mul_self_sqrt hA0
   have h2 : Real.sqrt A ≤ c * Real.sqrt F := by
     rcases (Real.sqrt_nonneg A).eq_or_lt with h0 | hpos
     · rw [← h0]
-      exact mul_nonneg hc (Real.sqrt_nonneg _)
-    · have : Real.sqrt A * Real.sqrt A ≤ c * Real.sqrt F * Real.sqrt A := by
-        rw [hsA]
-        linarith
-      exact le_of_mul_le_mul_right this hpos
-  calc A = Real.sqrt A ^ 2 := (Real.sq_sqrt hA0).symm
+      positivity
+    · nlinarith
+  calc A = Real.sqrt A ^ 2 := by linarith
     _ ≤ (c * Real.sqrt F) ^ 2 := pow_le_pow_left₀ (Real.sqrt_nonneg _) h2 2
-    _ = c ^ 2 * F := by rw [mul_pow, Real.sq_sqrt hF0]
+    _ = c ^ 2 * F := by grind
 
 /-! ### Basic operations -/
 
@@ -115,7 +111,7 @@ theorem kerLe_of_bilinear {S : Finset α} {S' : Finset β} {k : α → β → �
 theorem KerLe.mono {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c c' : ℝ} (hk : KerLe S S' k c)
     (hc : 0 ≤ c) (hcc : c ≤ c') : KerLe S S' k c' := fun f =>
   (hk f).trans (mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hc hcc 2)
-    (sum_nonneg fun _ _ => sq_nonneg _))
+    (sum_nonneg (by simp)))
 
 /-- The zero kernel has norm zero. -/
 theorem kerLe_zero (S : Finset α) (S' : Finset β) : KerLe S S' (fun _ _ => 0) 0 := fun f => by
@@ -125,7 +121,7 @@ theorem kerLe_zero (S : Finset α) (S' : Finset β) : KerLe S S' (fun _ _ => 0) 
 theorem KerLe.add {S : Finset α} {S' : Finset β} {k₁ k₂ : α → β → ℂ} {c₁ c₂ : ℝ}
     (h₁ : KerLe S S' k₁ c₁) (h₂ : KerLe S S' k₂ c₂) (hc₁ : 0 ≤ c₁) (hc₂ : 0 ≤ c₂) :
     KerLe S S' (fun x y => k₁ x y + k₂ x y) (c₁ + c₂) := by
-  refine kerLe_of_bilinear (add_nonneg hc₁ hc₂) fun f g => ?_
+  refine kerLe_of_bilinear (by positivity) fun f g => ?_
   have e : ∑ x ∈ S, star (g x) * ∑ y ∈ S', (k₁ x y + k₂ x y) * f y =
       ∑ x ∈ S, star (g x) * ∑ y ∈ S', k₁ x y * f y +
         ∑ x ∈ S, star (g x) * ∑ y ∈ S', k₂ x y * f y := by
@@ -147,9 +143,8 @@ theorem KerLe.sum {S : Finset α} {S' : Finset β} (s : Finset ι) {k : ι → �
   | empty => simpa using kerLe_zero S S'
   | insert i s hi ih =>
     simp only [sum_insert hi]
-    exact (hk i (mem_insert_self i s)).add (ih (fun j hj => hk j (mem_insert_of_mem hj))
-      fun j hj => hc j (mem_insert_of_mem hj)) (hc i (mem_insert_self i s))
-      (sum_nonneg fun j hj => hc j (mem_insert_of_mem hj))
+    exact (hk i (by simp)).add (by grind) (by grind)
+      (sum_nonneg (by grind))
 
 /-- A scalar multiple of a kernel. -/
 theorem KerLe.const_mul {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {c : ℝ}
@@ -160,7 +155,7 @@ theorem KerLe.const_mul {S : Finset α} {S' : Finset β} {k : α → β → ℂ}
         refine sum_congr rfl fun x _ => ?_
         have e : ∑ y ∈ S', a * k x y * f y = a * ∑ y ∈ S', k x y * f y := by
           rw [mul_sum]
-          exact sum_congr rfl fun y _ => by ring
+          exact by ring
         rw [e, norm_mul, mul_pow]
     _ ≤ ‖a‖ ^ 2 * (c ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2) :=
         mul_le_mul_of_nonneg_left (hk f) (sq_nonneg _)
@@ -175,21 +170,21 @@ theorem KerLe.mul_diag {S : Finset α} {S' : Finset β} {k : α → β → ℂ} 
         refine sum_le_sum fun x hx => ?_
         have e : ∑ y ∈ S', φ x * k x y * φ' y * f y = φ x * ∑ y ∈ S', k x y * (φ' y * f y) := by
           rw [mul_sum]
-          exact sum_congr rfl fun y _ => by ring
+          exact by ring
         rw [e, norm_mul, mul_pow]
         exact mul_le_of_le_one_left (sq_nonneg _)
-          (pow_le_one₀ (norm_nonneg _) (hφ x hx))
+          (pow_le_one₀ (norm_nonneg _) (by grind))
     _ ≤ c ^ 2 * ∑ y ∈ S', ‖φ' y * f y‖ ^ 2 := hk _
     _ ≤ c ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2 := by
         refine mul_le_mul_of_nonneg_left (sum_le_sum fun y hy => ?_) (sq_nonneg c)
         rw [norm_mul, mul_pow]
-        exact mul_le_of_le_one_left (sq_nonneg _) (pow_le_one₀ (norm_nonneg _) (hφ' y hy))
+        exact mul_le_of_le_one_left (sq_nonneg _) (pow_le_one₀ (norm_nonneg _) (by grind))
 
 /-- A kernel agreeing with a bounded one on the index sets is bounded. -/
 theorem KerLe.congr {S : Finset α} {S' : Finset β} {k k' : α → β → ℂ} {c : ℝ}
     (hk : KerLe S S' k c) (h : ∀ x ∈ S, ∀ y ∈ S', k x y = k' x y) : KerLe S S' k' c := fun f => by
   calc ∑ x ∈ S, ‖∑ y ∈ S', k' x y * f y‖ ^ 2 = ∑ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2 :=
-        sum_congr rfl fun x hx => by rw [sum_congr rfl fun y hy => by rw [← h x hx y hy]]
+        sum_congr rfl fun x hx => by simp_all
     _ ≤ _ := hk f
 
 /-! ### Embeddings and blocks -/
@@ -212,8 +207,7 @@ theorem KerLe.comp_embed {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : 
       constructor
       · rintro ⟨hy', h⟩
         exact he' hy' hy h
-      · rintro rfl
-        exact ⟨hy, rfl⟩
+      · simp_all
     show ∑ y' ∈ S' with e' y' = e' y, f y' = f y
     rw [hfib, sum_singleton]
   have hF0 : ∀ w, w ∉ S'.image e' → F w = 0 := by
@@ -221,26 +215,23 @@ theorem KerLe.comp_embed {S : Finset α} {S' : Finset β} {T : Finset γ} {T' : 
     refine sum_eq_zero fun y hy => ?_
     exact (hw (mem_image.2 ⟨y, (mem_filter.1 hy).1, (mem_filter.1 hy).2⟩)).elim
   have himg : S'.image e' ⊆ T' := fun w hw => by
-    obtain ⟨y, hy, rfl⟩ := mem_image.1 hw
-    exact hmap' y hy
+    grind
   have hsum : ∀ v, ∑ y ∈ S', G v (e' y) * f y = ∑ w ∈ T', G v w * F w := by
     intro v
-    rw [← sum_subset himg fun w _ hw => by rw [hF0 w hw, mul_zero], sum_image he']
-    exact sum_congr rfl fun y hy => by rw [hFe y hy]
+    rw [← sum_subset himg fun w _ hw => by simp_all, sum_image he']
+    exact sum_congr rfl fun y hy => by simp_all
   have hnorm : ∑ w ∈ T', ‖F w‖ ^ 2 = ∑ y ∈ S', ‖f y‖ ^ 2 := by
-    rw [← sum_subset himg fun w _ hw => by rw [hF0 w hw, norm_zero, sq, mul_zero], sum_image he']
-    exact sum_congr rfl fun y hy => by rw [hFe y hy]
+    rw [← sum_subset himg fun w _ hw => by simp_all, sum_image he']
+    exact sum_congr rfl fun y hy => by simp_all
   have himgS : S.image e ⊆ T := fun v hv => by
-    obtain ⟨x, hx, rfl⟩ := mem_image.1 hv
-    exact hmap x hx
+    grind
   calc ∑ x ∈ S, ‖∑ y ∈ S', G (e x) (e' y) * f y‖ ^ 2
       = ∑ v ∈ S.image e, ‖∑ w ∈ T', G v w * F w‖ ^ 2 := by
-        rw [sum_image he]
-        exact sum_congr rfl fun x _ => by rw [hsum]
+        simp_all
     _ ≤ ∑ v ∈ T, ‖∑ w ∈ T', G v w * F w‖ ^ 2 :=
         sum_le_sum_of_subset_of_nonneg himgS fun v _ _ => sq_nonneg _
     _ ≤ c ^ 2 * ∑ w ∈ T', ‖F w‖ ^ 2 := hG F
-    _ = c ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2 := by rw [hnorm]
+    _ = c ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2 := by simp_all
 
 /-- **Block decomposition**: if `k(x, y) ≠ 0` only when the labels `κ x` and `κ' y` agree, and
 every block has norm at most `c`, then `k` has norm at most `c`. -/
@@ -256,15 +247,13 @@ theorem KerLe.block [DecidableEq ι] {S : Finset α} {S' : Finset β} {k : α �
     refine sum_congr rfl fun y hy => ?_
     split_ifs with h
     · rfl
-    · by_cases hz : k x y = 0
-      · rw [hz, zero_mul]
-      · exact (h (hk x hx y hy hz).symm).elim
+    · grind
   calc ∑ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2
       = ∑ i ∈ I, ∑ x ∈ S.filter (κ · = i), ‖∑ y ∈ S'.filter (κ' · = i), k x y * f y‖ ^ 2 := by
         rw [← sum_fiberwise_of_maps_to (g := κ) (t := I) fun x hx =>
           mem_union_left _ (mem_image_of_mem κ hx)]
         refine sum_congr rfl fun i _ => sum_congr rfl fun x hx => ?_
-        rw [hrow x (mem_filter.1 hx).1, (mem_filter.1 hx).2]
+        simp_all
     _ ≤ ∑ i ∈ I, c ^ 2 * ∑ y ∈ S'.filter (κ' · = i), ‖f y‖ ^ 2 :=
         sum_le_sum fun i _ => hblock i f
     _ = c ^ 2 * ∑ y ∈ S', ‖f y‖ ^ 2 := by
@@ -284,36 +273,36 @@ theorem wkerLe_of_schur {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
     (hcol : ∀ y ∈ S', ∑ x ∈ S, μ x * ‖k x y‖ ≤ C * ν y) :
     WKerLe S S' μ ν k (Real.sqrt (R * C)) := by
   intro f
-  rw [Real.sq_sqrt (mul_nonneg hR hC)]
+  rw [Real.sq_sqrt (by positivity)]
   -- Cauchy–Schwarz in each row
   have hpt : ∀ x ∈ S, ‖∑ y ∈ S', k x y * f y‖ ^ 2 ≤ R * ∑ y ∈ S', ‖k x y‖ * ‖f y‖ ^ 2 := by
     intro x hx
     have h1 : ‖∑ y ∈ S', k x y * f y‖ ≤ ∑ y ∈ S', ‖k x y‖ * ‖f y‖ :=
-      (norm_sum_le _ _).trans (le_of_eq (sum_congr rfl fun y _ => norm_mul _ _))
+      (norm_sum_le _ _).trans (by simp)
     have h2 : (∑ y ∈ S', ‖k x y‖ * ‖f y‖) ^ 2 ≤
         (∑ y ∈ S', ‖k x y‖) * ∑ y ∈ S', ‖k x y‖ * ‖f y‖ ^ 2 :=
-      sum_sq_le_sum_mul_sum_of_sq_le_mul _ (fun y _ => norm_nonneg _)
-        (fun y _ => mul_nonneg (norm_nonneg _) (sq_nonneg _)) fun y _ => le_of_eq (by ring)
+      sum_sq_le_sum_mul_sum_of_sq_le_mul _ (by simp)
+        (fun y _ => by positivity) (by grind)
     calc ‖∑ y ∈ S', k x y * f y‖ ^ 2 ≤ (∑ y ∈ S', ‖k x y‖ * ‖f y‖) ^ 2 :=
           pow_le_pow_left₀ (norm_nonneg _) h1 2
       _ ≤ _ := h2
       _ ≤ R * ∑ y ∈ S', ‖k x y‖ * ‖f y‖ ^ 2 :=
-          mul_le_mul_of_nonneg_right (hrow x hx)
-            (sum_nonneg fun y _ => mul_nonneg (norm_nonneg _) (sq_nonneg _))
+          mul_le_mul_of_nonneg_right (by grind)
+            (sum_nonneg fun y _ => by positivity)
   calc ∑ x ∈ S, μ x * ‖∑ y ∈ S', k x y * f y‖ ^ 2
       ≤ ∑ x ∈ S, μ x * (R * ∑ y ∈ S', ‖k x y‖ * ‖f y‖ ^ 2) :=
-        sum_le_sum fun x hx => mul_le_mul_of_nonneg_left (hpt x hx) (hμ x hx)
+        sum_le_sum fun x hx => mul_le_mul_of_nonneg_left (by grind) (by grind)
     _ = R * ∑ y ∈ S', ‖f y‖ ^ 2 * ∑ x ∈ S, μ x * ‖k x y‖ := by
         rw [mul_sum]
         simp_rw [mul_sum]
         rw [sum_comm]
-        refine sum_congr rfl fun y _ => sum_congr rfl fun x _ => by ring
+        grind
     _ ≤ R * ∑ y ∈ S', ‖f y‖ ^ 2 * (C * ν y) :=
         mul_le_mul_of_nonneg_left (sum_le_sum fun y hy =>
-          mul_le_mul_of_nonneg_left (hcol y hy) (sq_nonneg _)) hR
+          mul_le_mul_of_nonneg_left (by grind) (sq_nonneg _)) hR
     _ = R * C * ∑ y ∈ S', ν y * ‖f y‖ ^ 2 := by
         rw [mul_assoc, mul_sum, mul_sum, mul_sum]
-        exact sum_congr rfl fun y _ => by ring
+        grind
 
 /-- **The Schur test**: absolute row sums at most `R` and column sums at most `C` give norm at
 most `√(R C)`. -/
@@ -322,9 +311,9 @@ theorem kerLe_of_schur {S : Finset α} {S' : Finset β} {k : α → β → ℂ} 
     (hcol : ∀ y ∈ S', ∑ x ∈ S, ‖k x y‖ ≤ C) : KerLe S S' k (Real.sqrt (R * C)) := by
   intro f
   have h := wkerLe_of_schur (μ := fun _ : α => (1 : ℝ)) (ν := fun _ : β => (1 : ℝ)) hR hC
-    (fun _ _ => zero_le_one)
-    hrow (fun y hy => by simpa using hcol y hy) f
-  simpa using h
+    (by simp)
+    hrow (fun y hy => by simp_all) f
+  simp_all
 
 /-- The trivial bound: entries of modulus at most `M` give norm at most `M √(|S| |S'|)`. -/
 theorem kerLe_of_norm_le {S : Finset α} {S' : Finset β} {k : α → β → ℂ} {M : ℝ} (hM : 0 ≤ M)
@@ -356,19 +345,19 @@ theorem wkerLe_of_kerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
       rw [mul_sum]
       refine sum_congr rfl fun y hy => ?_
       have : (Real.sqrt (ν y) : ℂ) ≠ 0 := by
-        exact_mod_cast (Real.sqrt_pos.2 (hν y hy)).ne'
+        exact_mod_cast (by grind)
       rw [hg]
       field_simp
     rw [e, norm_mul, mul_pow, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _),
-      Real.sq_sqrt (hμ x hx)]
+      Real.sq_sqrt (by grind)]
   have e2 : ∀ y ∈ S', ‖g y‖ ^ 2 = ν y * ‖f y‖ ^ 2 := by
     intro y hy
     rw [hg]
     dsimp only
     rw [norm_mul, mul_pow, Complex.norm_real, Real.norm_of_nonneg (Real.sqrt_nonneg _),
-      Real.sq_sqrt (hν y hy).le]
+      Real.sq_sqrt (by grind)]
   rw [sum_congr rfl e1, ← sum_congr rfl e2]
-  exact h
+  omega
 
 /-- **Conjugation from counting measure**: with `μ, ν > 0`, a weighted bound for `k` gives the
 bound for the kernel `√μ(x) k(x, y) / √ν(y)` in `ℓ²`. -/
@@ -391,13 +380,12 @@ theorem kerLe_of_wkerLe {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν :
       Real.sq_sqrt (hμ x hx)]
   have e2 : ∀ y ∈ S', ν y * ‖f y‖ ^ 2 = ‖g y‖ ^ 2 := by
     intro y hy
-    have hs : (0 : ℝ) < Real.sqrt (ν y) := Real.sqrt_pos.2 (hν y hy)
+    have hs := Real.sqrt_pos.2 (hν y hy)
     rw [hf]
     dsimp only
     rw [norm_div, Complex.norm_real, Real.norm_of_nonneg hs.le, div_pow,
       Real.sq_sqrt (hν y hy).le, mul_div_assoc', mul_div_cancel_left₀ _ (hν y hy).ne']
-  rw [sum_congr rfl e1, ← sum_congr rfl e2]
-  exact h
+  simp_all
 
 /-- A kernel vanishing on the index sets has weighted norm at most any `c ≥ 0`. -/
 theorem wkerLe_of_eq_zero {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν : β → ℝ}
@@ -405,10 +393,8 @@ theorem wkerLe_of_eq_zero {S : Finset α} {S' : Finset β} {μ : α → ℝ} {ν
     WKerLe S S' μ ν k c := by
   intro f
   calc ∑ x ∈ S, μ x * ‖∑ y ∈ S', k x y * f y‖ ^ 2 = 0 := by
-        refine sum_eq_zero fun x hx => ?_
-        rw [sum_eq_zero fun y hy => by rw [hk x hx y hy, zero_mul]]
-        simp
+        simp_all
     _ ≤ c ^ 2 * ∑ y ∈ S', ν y * ‖f y‖ ^ 2 :=
-        mul_nonneg (sq_nonneg c) (sum_nonneg fun y hy => mul_nonneg (hν y hy) (sq_nonneg _))
+        mul_nonneg (sq_nonneg c) (sum_nonneg fun y hy => mul_nonneg (by grind) (sq_nonneg _))
 
 end Erdos408.OneSided

@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.SlotProducts
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open MeasureTheory CanonicalQuadraticSieve CompletedGauss
+open scoped Classical
+open MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem common_measure_energy {Ω κ : Type*} [MeasurableSpace Ω] [Fintype κ]
     (μ : Measure Ω) (b : Ω → ℂ) (φ : κ → Ω → ℂ) (E : ℝ) (hE : 0 ≤ E)

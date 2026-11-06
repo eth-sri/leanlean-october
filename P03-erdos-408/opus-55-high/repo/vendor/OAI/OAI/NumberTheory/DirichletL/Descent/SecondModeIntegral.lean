@@ -7,18 +7,16 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondModeEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap
+open scoped Classical
+open InverseSecondFibers ActualEisensteinCubic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-theorem second_geometric_energy_of_bound (K : ℕ) (labels : Finset (Ideal Eis))
-    (rows : Finset Eis) (Γ : Finset OuterTriple) (F G : SecondChild → ℂ)
+theorem second_geometric_energy_of_bound (K : ℕ) (labels : Finset (Ideal ActualEisensteinCubic.O))
+    (rows : Finset ActualEisensteinCubic.O) (Γ : Finset OuterTriple) (F G : SecondChild → ℂ)
     (E : ℝ) (hE : 0 ≤ E)
     (hF : ∀ γ ∈ Γ,secondLabelEnergy K labels rows F γ ≤ E)
     (hG : ∀ γ ∈ Γ,secondLabelEnergy K labels rows G γ ≤ E) :
@@ -31,7 +29,7 @@ theorem second_geometric_energy_of_bound (K : ℕ) (labels : Finset (Ideal Eis))
     rw [Finset.mul_sum]
     apply Finset.sum_le_sum
     intro γ hγ
-    simpa only [mul_comm] using mul_le_mul_of_nonneg_left (hP γ hγ) (tripleDivisorWeight_nonneg K γ)
+    simpa only [mul_comm] using mul_le_mul_of_nonneg_left (by grind) (tripleDivisorWeight_nonneg K γ)
   calc
     _ ≤ Real.sqrt (E*∑ γ ∈ Γ,tripleDivisorWeight K γ) *
         Real.sqrt (E*∑ γ ∈ Γ,tripleDivisorWeight K γ) :=

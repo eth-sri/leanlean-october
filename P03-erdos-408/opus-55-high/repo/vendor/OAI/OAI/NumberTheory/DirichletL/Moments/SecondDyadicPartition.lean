@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.DyadicCount
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicPartition
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
+open HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
+open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
 open CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
-local notation "O" => ActualEisensteinCubic.O
 
 abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))
 
@@ -30,9 +29,9 @@ theorem dyadic_product_partition (a b q : Fin 4→ℝ)
   simp_rw [he]
   simp
 
-theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
+theorem physical_kernel_dyadic_partition (C D I J : Ideal ActualEisensteinCubic.O)
     (hC : Supported C) (hD : Supported D) (hI : Supported I) (hJ : Supported J)
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
+    (A h : ActualEisensteinCubic.O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K)
     (a b : Fin 4→ℝ) (ha : ∀i,0<a i)
     (hband : ∀i, (![secondEffectiveScale C D A K,normValue h,
       (Ideal.absNorm I:ℝ),(Ideal.absNorm J:ℝ)] : Fin 4→ℝ) i∈Set.Icc (a i) (b i)) :
@@ -49,10 +48,10 @@ theorem physical_kernel_dyadic_partition (C D I J : Ideal O)
               (Real.log ((Ideal.absNorm J:ℝ)/dyadicScale (n 3))) := by
   let q : Fin 4→ℝ := ![secondEffectiveScale C D A K,normValue h,
     (Ideal.absNorm I:ℝ),(Ideal.absNorm J:ℝ)]
-  have he : (∑ n : Blocks a b,((∏i : Fin 4,dyadicWeight (n i) (q i)):ℝ):ℝ)=1 :=
+  have he :=
     dyadic_product_partition a b q ha hband
   calc
-    _ = physicalKernel C D W K R (A*h) I J*(1:ℂ) := (mul_one _).symm
+    _ = physicalKernel C D W K R (A*h) I J*(1:ℂ) := by simp
     _ = ∑ n : Blocks a b,physicalKernel C D W K R (A*h) I J*
         ((∏i : Fin 4,dyadicWeight (n i) (q i):ℝ):ℂ) := by
       rw [←Finset.mul_sum,←Complex.ofReal_sum,he,Complex.ofReal_one]

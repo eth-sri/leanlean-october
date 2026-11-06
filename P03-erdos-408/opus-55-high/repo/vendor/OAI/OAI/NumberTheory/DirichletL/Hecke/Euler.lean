@@ -21,8 +21,7 @@ theorem idealTerm_eq_weighted (χ : Character) (s : ℂ) (I : Ideal O) :
   change idealCoeff χ I / (Ideal.absNorm I : ℂ)^s =
     idealCoeff χ I * CubicEisenstein.fullIdealWeight s I
   by_cases hI : I = 0
-  · rw [hI, map_zero]
-    simp
+  · grind
   · simp only [CubicEisenstein.fullIdealWeight, hI, ite_false,
       Complex.cpow_neg, div_eq_mul_inv]
 

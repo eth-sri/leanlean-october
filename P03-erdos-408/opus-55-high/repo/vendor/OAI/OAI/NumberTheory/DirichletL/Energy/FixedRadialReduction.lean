@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSourceReduction
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFixedRadialReduction
@@ -19,7 +19,6 @@ open CenteredMomentEnergyOriginalSource CenteredMomentEnergyFixedRadialEntry
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputFirstRemainder
 open CenteredMomentSourceInputTailUniform
 open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -32,7 +31,7 @@ theorem actual_original_reduction (bΦ:ℝ)(hbΦ:0<bΦ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→(∀i,s.hi i≤hi i)→
-      ∀(R:Ideal O)(r:Radial),Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ→
+      ∀(R:Ideal HeckeFamily.O)(r:Radial),Function.support (r.profile:ℝ→ℂ)⊆Set.Iic bΦ→
       volume s≤Z^B→(r.scale)⁻¹≤Z^B→
       CenteredMomentInductionEnergy.energy s.η (fixedBadMask*idealGenerator R) 1 s.t
         s.W₁ s.W₂ s.slots s.toData.coefficient s.P s.X₁ s.X₂ r.keep r.profile r.scale≤

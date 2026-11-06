@@ -12,10 +12,8 @@ namespace SevenEighths.InverseMoment
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 open ActualEisensteinCubic
-open FirstPassCubeLabels
-open SecondPassArithmetic
 
 noncomputable local instance markedQuotientField (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Field (ActualEisensteinCubic.O ⧸ P) := Ideal.Quotient.field P
@@ -69,7 +67,7 @@ theorem row_slot_cross_phase
       (hg i) (hg k) (p i) (p k) rfl rfl (hpr i) (hpr k)
   have hnot : p k ∉ Ideal.span {p i} := by
     intro hm
-    have hle : Ideal.span {p k} ≤ Ideal.span {p i} :=
+    have hle :=
       Ideal.span_le.mpr (Set.singleton_subset_iff.mpr hm)
     have ht := (hcop hik).sup_eq
     rw [sup_eq_left.mpr hle] at ht
@@ -77,9 +75,7 @@ theorem row_slot_cross_phase
   have h6 : MixedCrossSeparation.crossSymbol p hg i k ^ 6 = 1 := by
     simpa only [MixedCrossSeparation.crossSymbol, map_pow, ite_eq_right hnot] using
       canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hg i) (p k)
-  calc
-    _ = MixedCrossSeparation.crossSymbol p hg i k ^ 6 := by rw [← hs]; ring
-    _ = 1 := h6
+  grind
 
 omit [DecidableEq ι] in
 theorem row_slot_product_phase
@@ -92,7 +88,7 @@ theorem row_slot_product_phase
   apply Finset.prod_eq_one
   intro k hk
   exact row_slot_cross_phase p hcop hg hpr i k (fun h =>
-    (Finset.disjoint_left.mp hRP) hi (h.symm ▸ hk))
+    (Finset.disjoint_left.mp hRP) hi (by grind))
 
 end
 

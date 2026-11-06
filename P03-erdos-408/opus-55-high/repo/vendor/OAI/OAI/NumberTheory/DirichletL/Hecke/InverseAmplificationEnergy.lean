@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationMask
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
-open Set Complex
+open scoped Classical ContDiff
+open Set
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
 

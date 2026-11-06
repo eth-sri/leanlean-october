@@ -5,7 +5,6 @@ public import Erdos821.S2Empty.BigAsymptotic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -61,7 +60,7 @@ theorem smallPhysical_split (P : PrimeGroups) (M : ℕ) (y : P.SmallResidues)
       smallLocalGood g (y g)
         (fun i => (labelSplitEquiv P M).symm (s, b) g.val i)) ↔
     ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g)
-  constructor <;> intro h g <;> simpa [hfun g] using h g
+  simp_all
 
 def bigLabelWeight (F : FixedData) (P : PrimeGroups) (n M : ℕ)
     (a : BigLabels P M) : ℝ :=
@@ -86,16 +85,16 @@ theorem full_label_sum_factor (F : FixedData) (P : PrimeGroups) (n M : ℕ)
   calc
     _ = ∑ z : SmallLabels P M × BigLabels P M,
         if ∀ g : P.SmallGroup, smallLocalGood g (y g) (z.1 g) then
-          bigLabelWeight F P n M z.2 else 0 := by
-      exact Fintype.sum_equiv E
+          bigLabelWeight F P n M z.2 else 0 :=
+      Fintype.sum_equiv E
         (fun a => if P.smallPhysical y a then bigLabelWeight F P n M (E a).2 else 0)
         (fun z => if ∀ g : P.SmallGroup, smallLocalGood g (y g) (z.1 g) then
           bigLabelWeight F P n M z.2 else 0)
-        (by intro a; simp [hphys a])
+        (by grind)
     _ = ∑ s : SmallLabels P M, ∑ b : BigLabels P M,
         if ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) then
-          bigLabelWeight F P n M b else 0 := by
-      exact Fintype.sum_prod_type'
+          bigLabelWeight F P n M b else 0 :=
+      Fintype.sum_prod_type'
         (fun (s : SmallLabels P M) b => if ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) then
           bigLabelWeight F P n M b else 0)
     _ = (∑ s : SmallLabels P M,
@@ -110,9 +109,7 @@ theorem full_label_sum_factor (F : FixedData) (P : PrimeGroups) (n M : ℕ)
           by_cases hs : ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) <;> simp [hs]
         _ = _ := by
           rw [Finset.sum_mul]
-          apply Finset.sum_congr rfl
-          intro s _
-          by_cases hs : ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) <;> simp [hs]
+          grind
 
 
 end Erdos821.S2Empty

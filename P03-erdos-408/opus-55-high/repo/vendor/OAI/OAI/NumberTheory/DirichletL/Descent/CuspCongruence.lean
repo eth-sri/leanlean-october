@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.MarkedReflection
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical ContDiff
+open scoped Classical ContDiff
 open MeasureTheory CompletedGauss CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
     (d : ι → SourceCuspDatum) (w : ι → ℂ) (F : ℝ → ℂ)
@@ -21,7 +20,7 @@ private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
     (∑ i, w i * (d i).smoothedKernel W X) =
       (1 / (2 * Real.pi) : ℂ) * ∫ t : ℝ,
         besselSmoothingIntegrand F thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I) := by
-  let : Countable Eis := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
+  let : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let G : ι → ℝ → ℂ := fun i => cuspBarProfile cubicSourceConjugateFunction (d i).point
   let J : ι → ℝ → ℂ := fun i t =>
     besselSmoothingIntegrand (G i) thetaBesselScale (Vstar W) X ((-1 : ℂ) + t * Complex.I)
@@ -57,7 +56,7 @@ private theorem cusp_sum_kernel_integral {ι : Type*} [Fintype ι]
 theorem cusp_kernel_sum_congr {ι κ : Type*} [Fintype ι] [Fintype κ]
     (d : ι → SourceCuspDatum) (w : ι → ℂ)
     (e : κ → SourceCuspDatum) (z : κ → ℂ)
-    (hmult : ∀ n : Eis,
+    (hmult : ∀ n : ActualEisensteinCubic.O,
       (∑ i, w i * ShortDraftTrace.breveE (-cuspFrequency n * (d i).point)) =
         ∑ k, z k * ShortDraftTrace.breveE (-cuspFrequency n * (e k).point))
     (W : ℝ → ℂ) (lo hi : ℝ) (hlo : 0 < lo)
@@ -72,17 +71,17 @@ theorem cusp_kernel_sum_congr {ι κ : Type*} [Fintype ι] [Fintype κ]
       ← finiteConjugateSource_wirtingerBar_sum _ _ v hv,
       finiteConjugateSource_wirtingerBar, finiteConjugateSource_wirtingerBar]
     simp_rw [hmult]
-  rw [cusp_sum_kernel_integral d w F (fun _ _ => rfl) W lo hi hlo hsupp hW X hX,
+  rw [cusp_sum_kernel_integral d w F (by grind) W lo hi hlo hsupp hW X hX,
     cusp_sum_kernel_integral e z F hprofile W lo hi hlo hsupp hW X hX]
 
 theorem markedCompletedT_of_cusp_multiplier {ι κ : Type*} [Fintype κ]
-    (p : ι → Eis) (S : Finset ι) (hp : ∀ i ∈ S, Prime (p i))
-    (Ψ : Eis →* ℂ) (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
-    (Q : Ideal Eis) (hperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
-    (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]
-    (hcQ : Ideal.span {c} ≤ Ideal.span {(9 : Eis)} * (Q * Ideal.span {∏ i ∈ S, p i}))
+    (p : ι → ActualEisensteinCubic.O) (S : Finset ι) (hp : ∀ i ∈ S, Prime (p i))
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ x, ‖Ψ x‖ ≤ 1)
+    (Q : Ideal ActualEisensteinCubic.O) (hperiod : CanonicalCoefficientClass.FactorsModulo Q Ψ)
+    (c : ActualEisensteinCubic.O) (hc : c ≠ 0) [Fintype (ActualEisensteinCubic.O ⧸ Ideal.span {c})]
+    (hcQ : Ideal.span {c} ≤ Ideal.span {(9 : ActualEisensteinCubic.O)} * (Q * Ideal.span {∏ i ∈ S, p i}))
     (d : κ → SourceCuspDatum) (w : κ → ℂ)
-    (hmult : ∀ n : Eis, (∑ k, w k * ShortDraftTrace.breveE (-cuspFrequency n * (d k).point)) =
+    (hmult : ∀ n : ActualEisensteinCubic.O, (∑ k, w k * ShortDraftTrace.breveE (-cuspFrequency n * (d k).point)) =
       markedThetaQuotient p S Ψ c (Ideal.Quotient.mk _ n))
     (W : ℝ → ℂ) (hWcompact : HasCompactSupport W)
     (lo hi : ℝ) (hlo : 0 < lo) (hsupp : Function.support W ⊆ Set.Icc lo hi)

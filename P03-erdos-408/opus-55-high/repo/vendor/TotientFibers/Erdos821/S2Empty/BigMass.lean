@@ -5,7 +5,6 @@ public import Erdos821.S2Empty.BigTilted
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -31,7 +30,7 @@ theorem big_tilted_sum_le_inv (F : FixedData) (P : PrimeGroups) (n : ℕ)
         ring
       _ = (P.V g.val)⁻¹ * ∑ p : P.Prime g.val, (p.val : ℝ)⁻¹ := by
         rw [Finset.mul_sum]
-      _ = 1 := by rw [hVeq, inv_mul_cancel₀ hV.ne']
+      _ = 1 := by grind
   have hterm (p : P.Prime g.val) :
       tiltedMu F P n g.val p ≤ P.mu g.val p * (1 - e)⁻¹ := by
     have hp : (p.val : ℝ) ≠ 0 := by
@@ -39,13 +38,13 @@ theorem big_tilted_sum_le_inv (F : FixedData) (P : PrimeGroups) (n : ℕ)
     have hpPos : 0 < (p.val : ℝ) := by
       exact_mod_cast (P.prime g.val p.val p.property).pos
     have hbasePos : 0 < baselinePrime F n p.val :=
-      lt_of_lt_of_le (by linarith) (hfloor p)
+      by grind
     have hratio : (baselinePrime F n p.val)⁻¹ ≤ (1 - e)⁻¹ :=
       (inv_le_inv₀ hbasePos hden).mpr (hfloor p)
     have htilt : tiltedMu F P n g.val p =
         P.mu g.val p * (baselinePrime F n p.val)⁻¹ := by
       unfold tiltedMu PrimeGroups.mu
-      field_simp [hV.ne', hp, hbasePos.ne']
+      field_simp
     rw [htilt]
     have hmuNonneg : 0 ≤ P.mu g.val p := by
       unfold PrimeGroups.mu
@@ -54,8 +53,7 @@ theorem big_tilted_sum_le_inv (F : FixedData) (P : PrimeGroups) (n : ℕ)
   calc
     _ ≤ ∑ p : P.Prime g.val, P.mu g.val p * (1 - e)⁻¹ := by
       apply Finset.sum_le_sum
-      intro p hp
-      exact hterm p
+      simp_all
     _ = 1 * (1 - e)⁻¹ := by rw [← Finset.sum_mul, hmuSum]
     _ = (1 - e)⁻¹ := by ring
 

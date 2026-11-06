@@ -31,7 +31,7 @@ theorem normBound_tiltedBannedKernel (A : Model F P J m) (n : â„•) (C D atom : â
   | false =>
     rw [tiltedBannedKernel_backward A n theta hb]
     exact normBound_weightedAdjoint _ _ _ (fun a => (tiltedIdealMass_pos F n hb a).ne')
-      (normBound_tiltedBannedKernel_forward A n (-theta) C D atom hD hat hV hb hatom hsqrt (hideal (-theta)))
+      (normBound_tiltedBannedKernel_forward A n (-theta) C D atom hD hat hV hb hatom hsqrt (by grind))
   | true =>
     exact normBound_tiltedBannedKernel_forward A n theta C D atom hD hat hV hb hatom hsqrt (hideal theta)
 

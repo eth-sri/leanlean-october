@@ -33,7 +33,7 @@ def chernoffTheta : ℝ := 1 - Real.exp (-1)
 /-- `θ > 0`. -/
 lemma chernoffTheta_pos : 0 < chernoffTheta := by
   rw [chernoffTheta, sub_pos]
-  linarith [Real.exp_neg_one_lt_d9]
+  simp
 
 /-- `θ ≤ 1`. -/
 lemma chernoffTheta_le_one : chernoffTheta ≤ 1 := by
@@ -58,7 +58,7 @@ lemma sum_patternWeight_mul_exp_eq (c₁ x : ℝ) (w : ℕ) {F : Finset (Finset 
       ∏ g ∈ candidateGroups x, (if g ∈ F then 1 - chernoffTheta * successCoin c₁ g w else 1) :=
     prod_congr rfl fun g _ => by
       unfold chernoffTheta
-      split_ifs <;> ring
+      grind
   rw [hl, prod_ite_mem, inter_eq_right.2 hF] at h
   rw [h]
   refine sum_congr rfl fun P _ => ?_
@@ -135,7 +135,7 @@ lemma ell_le_one (n : ℕ) : ell n ≤ 1 := by
 lemma ell_le_natCast_mul_zpow (n : ℕ) : ell n ≤ (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) := by
   unfold ell
   rcases Nat.lt_or_ge n 3 with h | h
-  · interval_cases n <;> norm_num [Nat.choose]
+  · interval_cases n <;> norm_num
   · have h0 : 0 ≤ (n : ℝ) * (1 / 2 : ℝ) ^ ((n : ℤ) - 1) := by positivity
     have : (n : ℝ) ≤ (n.choose 2 : ℝ) := by
       rw [Nat.choose_two_right]
@@ -208,21 +208,18 @@ lemma sum_lowSubsets_eq (g : Finset ℕ) (α : ℝ) (w : ℕ) :
     ext K
     simp only [lowSubsets, mem_filter, mem_powerset, s, subset_iff]
     constructor
-    · rintro ⟨⟨h1, h2⟩, h3⟩
-      exact ⟨fun p hp => ⟨h1 hp, h3 p hp⟩, h2⟩
-    · rintro ⟨h1, h2⟩
-      exact ⟨⟨fun p hp => (h1 hp).1, h2⟩, fun p hp => (h1 hp).2⟩
+    · simp_all
+    · simp_all
   have : ∑ K ∈ lowSubsets g, lowCoeff α K.card * (if ∀ p ∈ K, p ∣ w then 1 else 0) =
       ∑ K ∈ (lowSubsets g).filter (fun K => ∀ p ∈ K, p ∣ w), lowCoeff α K.card := by
     rw [sum_filter]
-    exact sum_congr rfl fun K _ => by split_ifs <;> ring
+    exact sum_congr rfl fun K _ => by simp
   rw [this, hfilt, sum_filter,
     sum_powerset_apply_card (fun m => if m ≤ 2 then lowCoeff α m else 0)]
   simp only [nsmul_eq_mul]
-  rw [sum_range_choose_mul_eq _ _ fun m hm => by simp [show ¬ m ≤ 2 by omega]]
+  rw [sum_range_choose_mul_eq _ _ fun m hm => by simp_all]
   simp only [lowCoeff, ell, primeCount, s]
-  norm_num
-  ring
+  grind
 
 /-- The expansion of `∏_{g ∈ F} (1 - α_g ℓ(ω_g(u)))` over choices of at most two primes in each
 group: the term of `κ` is `∏_g c_{α_g}(|κ_g|)` times `[∀ p ∈ ⋃ κ_g, p ∣ u]`. -/
@@ -241,7 +238,7 @@ theorem prod_one_sub_mul_ell_eq (F : Finset (Finset ℕ)) (α : Finset ℕ → �
   congr 1
   apply propext
   simp only [mem_biUnion, mem_univ, true_and, forall_exists_index]
-  exact ⟨fun h p g hp => h g trivial p hp, fun h g _ p hp => h p g hp⟩
+  grind
 
 end
 

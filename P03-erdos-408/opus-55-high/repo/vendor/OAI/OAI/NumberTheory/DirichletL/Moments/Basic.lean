@@ -14,7 +14,7 @@ public import Mathlib.Algebra.Group.Commute.Units
 
 namespace OAI
 
-open scoped BigOperators NNReal
+open scoped NNReal
 namespace SevenEighths.CenteredMoment
 noncomputable section
 
@@ -39,7 +39,7 @@ def ofResidueMask {S : Type*} [CommRing S] (ρ : M →* R)
     (ρ : M →* R) (χ : MulChar R ℂ) (puncture : M →* S) :
     (ofResidueMask ρ χ puncture).keep 1 := by
   change IsUnit (puncture 1)
-  simp only [map_one, isUnit_one]
+  simp
 
 def MaskedCharacter.value (d : MaskedCharacter M R) (a : M) : ℂ :=
   @ite ℂ (d.keep a) (Classical.propDecidable _) (d.character (d.residue a)) 0
@@ -48,7 +48,7 @@ def MaskedCharacter.value (d : MaskedCharacter M R) (a : M) : ℂ :=
     d.value (a * b) = d.value a * d.value b := by
   classical
   simp only [MaskedCharacter.value, d.keep_mul, map_mul]
-  split_ifs <;> simp_all
+  grind
 
 def normTwist (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
   ((N a : ℝ) : ℂ) ^ (Complex.I * t)
@@ -56,7 +56,7 @@ def normTwist (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
 @[simp] theorem normTwist_mul (N : M →* ℝ≥0) (t : ℝ) (a b : M) :
     normTwist N t (a * b) = normTwist N t a * normTwist N t b := by
   simp only [normTwist, map_mul, NNReal.coe_mul, Complex.ofReal_mul]
-  exact Complex.mul_cpow_ofReal_nonneg (N a).coe_nonneg (N b).coe_nonneg _
+  exact Complex.mul_cpow_ofReal_nonneg (by positivity) (by positivity) _
 
 def coefficient (d : MaskedCharacter M R) (N : M →* ℝ≥0) (t : ℝ) (a : M) : ℂ :=
   d.value a * normTwist N t a
@@ -82,17 +82,14 @@ theorem volume_products_eq (c I₁ I₂ : ℂ) (t X₁ X₂ Y₁ Y₂ : ℝ)
       ← Complex.mul_cpow_ofReal_nonneg hY₁ hY₂, ← Complex.ofReal_mul,
       ← Complex.ofReal_mul, hscale]
   unfold volumeTerm
-  calc
-    _ = c ^ 2 * I₁ * I₂ *
-      ((X₁ : ℂ) ^ (1 + Complex.I * t) * (X₂ : ℂ) ^ (1 + Complex.I * t)) := by ring
-    _ = _ := by rw [hpow]; ring
+  grind
 
 theorem centered_error_identity (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
     (hmain : a₁ * a₂ = b₁ * b₂) :
     A₁ * A₂ - B₁ * B₂ =
       (A₁ - a₁) * A₂ + a₁ * (A₂ - a₂) -
         (B₁ - b₁) * B₂ - b₁ * (B₂ - b₂) := by
-  linear_combination hmain
+  grind
 
 theorem norm_centered_le (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
     (hmain : a₁ * a₂ = b₁ * b₂) :
@@ -109,7 +106,7 @@ theorem norm_centered_le (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
     _ ≤ ((‖(A₁ - a₁) * A₂‖ + ‖a₁ * (A₂ - a₂)‖) +
         ‖(B₁ - b₁) * B₂‖) + ‖b₁ * (B₂ - b₂)‖ :=
       add_le_add (add_le_add (norm_add_le _ _) le_rfl) le_rfl
-    _ = _ := by simp only [norm_mul]
+    _ = _ := by simp
 
 theorem norm_centered_le_of_approx
     (A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ : ℂ)
@@ -121,10 +118,10 @@ theorem norm_centered_le_of_approx
     (hvA₂ : ‖A₂‖ ≤ C * X₂) (hva₁ : ‖a₁‖ ≤ C * X₁)
     (hvB₂ : ‖B₂‖ ≤ C * Y₂) (hvb₁ : ‖b₁‖ ≤ C * Y₁) :
     ‖A₁ * A₂ - B₁ * B₂‖ ≤ E * C * (X₁ + X₂ + Y₁ + Y₂) := by
-  have h₁ := mul_le_mul hA₁ hvA₂ (norm_nonneg A₂) hE
-  have h₂ := mul_le_mul hA₂ hva₁ (norm_nonneg a₁) hE
-  have h₃ := mul_le_mul hB₁ hvB₂ (norm_nonneg B₂) hE
-  have h₄ := mul_le_mul hB₂ hvb₁ (norm_nonneg b₁) hE
+  have h₁ := mul_le_mul hA₁ hvA₂ (by positivity) hE
+  have h₂ := mul_le_mul hA₂ hva₁ (by positivity) hE
+  have h₃ := mul_le_mul hB₁ hvB₂ (by positivity) hE
+  have h₄ := mul_le_mul hB₂ hvb₁ (by positivity) hE
   have h := norm_centered_le A₁ A₂ B₁ B₂ a₁ a₂ b₁ b₂ hmain
   nlinarith
 
@@ -132,8 +129,7 @@ theorem scale_le_product_div {X Y T L : ℝ}
     (hX : 0 ≤ X) (hL : 0 < L) (hY : L ≤ Y) (hprod : X * Y = T) :
     X ≤ T / L := by
   apply (le_div_iff₀ hL).mpr
-  rw [← hprod]
-  exact mul_le_mul_of_nonneg_left hY hX
+  nlinarith
 
 theorem sum_scales_le {X₁ X₂ Y₁ Y₂ T L : ℝ}
     (hL : 0 < L) (hX₁ : L ≤ X₁) (hX₂ : L ≤ X₂)
@@ -166,22 +162,20 @@ theorem centered_saving_of_approx
   have hs := sum_scales_le hL hX₁ hX₂ hY₁ hY₂ hprodX hprodY
   calc
     _ ≤ E * C * (X₁ + X₂ + Y₁ + Y₂) := h
-    _ ≤ E * C * (4 * (T / L)) := mul_le_mul_of_nonneg_left hs (mul_nonneg hE hC)
+    _ ≤ E * C * (4 * (T / L)) := mul_le_mul_of_nonneg_left hs (by positivity)
     _ = _ := by ring
 
 theorem normalized_centered_saving (D : ℂ) (T L C E : ℝ)
     (hT : 0 < T) (hbound : ‖D‖ ≤ 4 * E * C * (T / L)) :
     ‖(Real.sqrt T : ℂ)⁻¹ * D‖ ≤ 4 * E * C * (Real.sqrt T / L) := by
-  have hs : 0 < Real.sqrt T := Real.sqrt_pos.mpr hT
+  have hs := Real.sqrt_pos.mpr hT
   rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hs.le]
   calc
     _ ≤ (Real.sqrt T)⁻¹ * (4 * E * C * (T / L)) :=
       mul_le_mul_of_nonneg_left hbound (inv_nonneg.mpr hs.le)
     _ = 4 * E * C * ((T / Real.sqrt T) / L) := by ring
     _ = _ := by
-      have hdiv : T / Real.sqrt T = Real.sqrt T :=
-        (div_eq_iff hs.ne').mpr (Real.mul_self_sqrt hT.le).symm
-      rw [hdiv]
+      simp
 
 end
 end SevenEighths.CenteredMoment

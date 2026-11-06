@@ -8,9 +8,9 @@ namespace OAI
 
 namespace SevenEighths.IdealLogDerivative
 
-open ActualEisensteinCubic UniqueFactorizationMonoid IdealEuler
+open ActualEisensteinCubic IdealEuler
 open IdealMobiusDivisorSum (idealDivisors mem_idealDivisors)
-open scoped BigOperators Classical Topology
+open scoped Classical
 
 noncomputable section
 
@@ -30,12 +30,12 @@ theorem coeff_summable (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) : LSeriesSummable (coeff a) s := by
   apply Summable.of_norm
   have h := (IdealMangoldt.coeff_LSeriesSummable (fun _ => 1)
-    (fun _ => zero_le_one) (fun _ => le_refl _) hs).norm
-  apply h.of_nonneg_of_le (fun _ => norm_nonneg _)
+    (by simp) (by simp) hs).norm
+  apply h.of_nonneg_of_le (by simp)
   intro n
   apply LSeries.norm_term_le
   simpa only [Complex.norm_real, Real.norm_eq_abs,
-    abs_of_nonneg (IdealMangoldt.coeff_nonneg (fun _ => 1) (fun _ => zero_le_one) n)]
+    abs_of_nonneg (IdealMangoldt.coeff_nonneg (fun _ => 1) (by simp) n)]
     using norm_coeff_le a ha n
 
 theorem primePow_coprime_factor {B C : Ideal O} (h : IsPrimePow (B * C))
@@ -48,9 +48,9 @@ theorem primePow_coprime_factor {B C : Ideal O} (h : IsPrimePow (B * C))
   have hB := associated_iff_eq.mp hBi
   have hC := associated_iff_eq.mp hCj
   by_cases hi0 : i = 0
-  · left; simpa only [hi0, pow_zero] using hB
+  · simp_all
   by_cases hj0 : j = 0
-  · right; simpa only [hj0, pow_zero] using hC
+  · simp_all
   exact (hP.not_isUnit (hBC (hB ▸ dvd_pow_self P hi0) (hC ▸ dvd_pow_self P hj0))).elim
 
 theorem value_mul_coprime {B C : Ideal O} (hBC : IsRelPrime B C) :
@@ -61,8 +61,7 @@ theorem value_mul_coprime {B C : Ideal O} (hBC : IsRelPrime B C) :
   · subst B
     simp only [one_mul, IdealMangoldt.value_one, ite_self, ite_true, zero_add]
   by_cases hC : C = 1
-  · subst C
-    simp only [mul_one, IdealMangoldt.value_one, ite_self, ite_true, add_zero]
+  · simp_all
   have hnot : ¬IsPrimePow (B * C) := by
     intro h
     exact (primePow_coprime_factor h hBC).elim hB hC
@@ -70,7 +69,7 @@ theorem value_mul_coprime {B C : Ideal O} (hBC : IsRelPrime B C) :
 
 theorem idealDivisors_one : idealDivisors (1 : Ideal O) = {1} := by
   ext D
-  rw [mem_idealDivisors (show (1 : Ideal O) ≠ ⊥ from one_ne_zero), Finset.mem_singleton]
+  rw [mem_idealDivisors (by positivity), Finset.mem_singleton]
   exact isUnit_iff_dvd_one.symm.trans isUnit_iff_eq_one
 
 theorem idealDivisors_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
@@ -80,9 +79,9 @@ theorem idealDivisors_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
   constructor
   · intro hD
     obtain ⟨j, hj, hDj⟩ := (dvd_prime_pow hP k).mp hD
-    exact ⟨j, Finset.mem_range.mpr (by omega), (associated_iff_eq.mp hDj).symm⟩
+    exact ⟨j, by grind, (associated_iff_eq.mp hDj).symm⟩
   · rintro ⟨j, hj, rfl⟩
-    exact pow_dvd_pow P (by simpa only [Finset.mem_range, Nat.lt_succ_iff] using hj)
+    exact pow_dvd_pow P (by simp_all)
 
 theorem sum_value_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
     (∑ D ∈ idealDivisors (P ^ k), (IdealMangoldt.value D : ℂ)) =
@@ -93,8 +92,7 @@ theorem sum_value_prime_pow (P : Ideal O) (hP : Prime P) (k : ℕ) :
         IdealMangoldt.value_one, Complex.ofReal_zero, Nat.cast_zero, zero_mul]
     | succ k ih =>
       rw [Finset.sum_range_succ, ih, IdealMangoldt.value_pow hP (Nat.succ_pos k)]
-      push_cast
-      ring
+      grind
   · exact fun i _ j _ hij => pow_injective_of_not_isUnit hP.not_isUnit hP.ne_zero hij
 
 theorem sum_value_mul (B C : Ideal O) (hB : B ≠ 0) (hC : C ≠ 0)
@@ -128,14 +126,13 @@ theorem sum_value_divisors (B : Ideal O) (hB : B ≠ 0) :
     (∑ D ∈ idealDivisors B, (IdealMangoldt.value D : ℂ)) =
       (Real.log (Ideal.absNorm B) : ℂ) := by
   induction B using UniqueFactorizationMonoid.induction_on_coprime with
-  | h0 => exact (hB rfl).elim
+  | h0 => simp_all
   | h1 hunit =>
     rw [isUnit_iff_eq_one.mp hunit, idealDivisors_one, Finset.sum_singleton]
     simp only [IdealMangoldt.value_one, map_one, Nat.cast_one, Real.log_one]
   | hpr k hP =>
     rw [sum_value_prime_pow _ hP k, map_pow, Nat.cast_pow, Real.log_pow]
-    push_cast
-    rfl
+    simp
   | @hcp B C hBC ihB ihC =>
     have hB0 : B ≠ 0 := left_ne_zero_of_mul hB
     have hC0 : C ≠ 0 := right_ne_zero_of_mul hB
@@ -149,10 +146,10 @@ theorem value_le_log_norm (B : Ideal O) :
   · obtain ⟨P, k, hP, hk, rfl⟩ := h
     rw [IdealMangoldt.value_pow hP hk, map_pow, Nat.cast_pow, Real.log_pow]
     apply le_mul_of_one_le_left
-    · exact Real.log_natCast_nonneg _
+    · positivity
     · exact_mod_cast hk
   · rw [IdealMangoldt.value, ite_eq_right h]
-    exact Real.log_natCast_nonneg _
+    positivity
 
 theorem weighted_eq_term (a : Ideal O →*₀ ℂ) (s : ℂ) (B : Ideal O) :
     weighted a s B = LSeries.term (fun _ => a B) s (Ideal.absNorm B) := by
@@ -170,16 +167,15 @@ theorem weighted_hasDerivAt (a : Ideal O →*₀ ℂ) (s : ℂ) (B : Ideal O) :
   simp_rw [weighted_eq_term]
   convert LSeries.hasDerivAt_term (fun _ => a B) (Ideal.absNorm B) s using 1
   by_cases hn : Ideal.absNorm B = 0
-  · simp only [hn, LSeries.term_zero, mul_zero]
-  · simp only [LSeries.term_of_ne_zero hn, LSeries.logMul, Complex.natCast_log,
-      mul_div_assoc]
+  · simp_all
+  · simp only [LSeries.term_of_ne_zero hn, Complex.natCast_log, mul_div_assoc]
 
 theorem log_weighted_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) :
     HasSum (fun B : Ideal O => (Real.log (Ideal.absNorm B) : ℂ) * weighted a s B)
       (-deriv (series a) s) := by
   obtain ⟨x, hx, hxs⟩ := exists_between hs
-  have hu := weighted_summable_norm a ha (x : ℂ) (by simpa using hx)
+  have hu := weighted_summable_norm a ha (x : ℂ) (by omega)
   have hd (B : Ideal O) : DifferentiableOn ℂ (fun z => weighted a z B) {z : ℂ | x < z.re} :=
     fun z _ => (weighted_hasDerivAt a z B).differentiableAt.differentiableWithinAt
   have hU : IsOpen {z : ℂ | x < z.re} := isOpen_lt continuous_const Complex.continuous_re
@@ -190,12 +186,12 @@ theorem log_weighted_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤
   have H := Complex.hasSum_deriv_of_summable_norm hu hd hU hbound hxs
   simp_rw [(weighted_hasDerivAt a s _).deriv] at H
   unfold IdealEuler.series
-  simpa only [neg_neg] using H.neg
+  simpa using H.neg
 
 theorem mangoldt_weighted_summable_norm (a : Ideal O →*₀ ℂ)
     (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re) :
     Summable (fun B : Ideal O => ‖(IdealMangoldt.value B : ℂ) * weighted a s B‖) := by
-  apply (log_weighted_hasSum a ha s hs).summable.norm.of_nonneg_of_le (fun _ => norm_nonneg _)
+  apply (log_weighted_hasSum a ha s hs).summable.norm.of_nonneg_of_le (by grind)
   intro B
   simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs,
     abs_of_nonneg (IdealMangoldt.value_nonneg B), abs_of_nonneg (Real.log_natCast_nonneg _)]
@@ -226,7 +222,7 @@ theorem mulFiber_value_sum (B : Ideal O) (hB : B ≠ 0) :
       e.tsum_eq (fun D => (IdealMangoldt.value D.val : ℂ))
     _ = ∑ D ∈ idealDivisors B, (IdealMangoldt.value D : ℂ) := by
       rw [tsum_fintype]
-      exact (Finset.sum_subtype (idealDivisors B) (fun _ => Iff.rfl)
+      exact (Finset.sum_subtype (idealDivisors B) (by simp)
         (fun D => (IdealMangoldt.value D : ℂ))).symm
     _ = _ := sum_value_divisors B hB
 
@@ -249,11 +245,11 @@ theorem coeff_LSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
     · subst B
       have hz (p : CompletedGauss.MulFiber 0) : F p.val = 0 := by
         simp only [F, p.property, map_zero, mul_zero]
-      simp only [hz, tsum_zero, map_zero, mul_zero]
+      simp_all
     · calc
         _ = (∑' p : CompletedGauss.MulFiber B, (IdealMangoldt.value p.val.1 : ℂ)) * f B := by
           rw [← tsum_mul_right]
-          exact tsum_congr (fun p => by simp only [F, p.property])
+          grind
         _ = _ := by rw [mulFiber_value_sum B hB]
   have hsum := hF.hasSum.tsum_fiberwise (fun p : Ideal O × Ideal O => p.1 * p.2)
   change HasSum (fun B : Ideal O => ∑' p : CompletedGauss.MulFiber B, F p.val) _ at hsum
@@ -267,9 +263,7 @@ theorem coeff_LSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
         (weighted_summable_norm a ha s hs)
     _ = ∑' p, F p := by
       apply tsum_congr
-      intro p
-      simp only [F, map_mul]
-      ring
+      grind
     _ = -deriv (series a) s := hsum.unique (log_weighted_hasSum a ha s hs)
 
 theorem coeff_LSeries_eq_neg_logDeriv (a : Ideal O →*₀ ℂ)

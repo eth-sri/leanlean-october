@@ -8,7 +8,6 @@ public import Mathlib.Analysis.Complex.Basic
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Lowrank
 
@@ -47,9 +46,6 @@ theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → 
           rw [mul_assoc, Complex.star_def, Complex.conj_mul']
       _ = _ := by
           rw [hxa, Finset.mul_sum]
-          apply Finset.sum_congr rfl
-          intro b _
-          rw [← hxa]
           ring
   have hle : wnorm mass x ^ 2 ≤ C * wnorm mass x * wnorm mass h := by
     rw [wnorm_sq mass hm x]
@@ -57,16 +53,13 @@ theorem applyK_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (K : β → 
       Finset.sum_nonneg fun s _ => mul_nonneg (hm s) (sq_nonneg _)
     calc ∑ s, mass s * ‖x s‖ ^ 2 = ‖((∑ s, mass s * ‖x s‖ ^ 2 : ℝ) : ℂ)‖ := by
           rw [Complex.norm_real, Real.norm_of_nonneg hnn]
-      _ = _ := by rw [heq]
+      _ = _ := by simp_all
       _ ≤ _ := hK x h
   have hw := wnorm_nonneg mass x
   have hh := wnorm_nonneg mass h
   rcases hw.eq_or_lt with h0 | hpos
-  · rw [← h0]
-    exact mul_nonneg hC hh
-  · have : wnorm mass x * wnorm mass x ≤ wnorm mass x * (C * wnorm mass h) := by
-      nlinarith
-    exact le_of_mul_le_mul_left this hpos
+  · nlinarith
+  nlinarith
 
 /-- Sum over alternating state paths: ghost kernels on `(b i, a i)`, edges on `(a i, b (i+1))`. -/
 def pathSum (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : Fin n → β → β → ℂ) (u v : β → ℂ) : ℂ :=
@@ -133,10 +126,6 @@ theorem pathSum_eq : ∀ (n : ℕ) (G : Fin (n + 1) → β → β → ℂ) (E : 
       rw [hih]
       congr 1
       simp only [tailVec, applyK, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro s' _
-      apply Finset.sum_congr rfl
-      intro t' _
       ring
 
 theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) (hCG : 0 ≤ CG) :
@@ -156,7 +145,7 @@ theorem tailVec_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
       set w := tailVec n (fun i => G i.succ) (fun i => E i.succ) v
       have h2 := applyK_bound mass hm (G (Fin.succ 0)) CG hCG (hG _) w
       have h3 := applyK_bound mass hm (E 0) (c 0) (hc 0) (hE 0) (applyK (G (Fin.succ 0)) w)
-      have hprod : 0 ≤ ∏ i : Fin n, c i.succ := Finset.prod_nonneg fun i _ => hc i.succ
+      have hprod : 0 ≤ ∏ i : Fin n, c i.succ := Finset.prod_nonneg (by grind)
       change wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w)) ≤ _
       rw [Fin.prod_univ_succ]
       calc wnorm mass (applyK (E 0) (applyK (G (Fin.succ 0)) w))
@@ -178,7 +167,7 @@ theorem pathSum_bound (mass : β → ℝ) (hm : ∀ s, 0 ≤ mass s) (CG : ℝ) 
   have hf := wnorm_nonneg mass f
   calc _ ≤ CG * wnorm mass f * wnorm mass (tailVec n G E v) := h1
     _ ≤ CG * wnorm mass f * (CG ^ n * (∏ i, c i) * wnorm mass v) :=
-        mul_le_mul_of_nonneg_left h2 (mul_nonneg hCG hf)
+        mul_le_mul_of_nonneg_left h2 (by positivity)
     _ = _ := by ring
 
 end Erdos821.P3Lowrank

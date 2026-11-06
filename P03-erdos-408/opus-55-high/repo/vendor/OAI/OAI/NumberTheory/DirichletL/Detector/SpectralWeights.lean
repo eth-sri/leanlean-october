@@ -17,8 +17,7 @@ lemma signed_diagonal_phase (omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
     apply inv_eq_of_mul_eq_one_left
     simpa only [pow_two] using ho
   rw [zpow_neg, zpow_natCast, zpow_natCast, ← inv_pow, hi, ← pow_add]
-  congr 1
-  omega
+  ring
 
 lemma source_signed_phase (C omega : ℂ) (ho : omega^2=1) (e l k : ℕ) :
     C^l * omega^((((e+3*l)*k:ℕ):ℤ)-(e*l+l.choose 2:ℕ)) =
@@ -37,13 +36,12 @@ lemma spectral_power_split (Q : ℝ) (hQ : 0<Q) (x w z : ℂ) (e l k m : ℕ) :
   have h3 : ((Q:ℂ)^(-x))^3/(Q:ℂ) = (Q:ℂ)^(-1-3*x) := by
     rw [← Complex.cpow_nat_mul (Q:ℂ) 3 (-x)]
     calc
-      _ = (Q:ℂ)^(3*(-x)) / (Q:ℂ)^(1:ℂ) := by rw [Complex.cpow_one]; norm_num
+      _ = (Q:ℂ)^(3*(-x)) / (Q:ℂ)^(1:ℂ) := by simp
       _ = (Q:ℂ)^(3*(-x)-1) := (Complex.cpow_sub _ _ hn).symm
-      _ = _ := by congr 1; ring
+      _ = _ := by ring
   rw [h1, h3, ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
     ← Complex.cpow_mul_nat, ← Complex.cpow_mul_nat,
     ← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn, ← Complex.cpow_add _ _ hn]
-  congr 1
   ring
 
 lemma cpow_half_eq_sqrt (Q : ℝ) (hQ : 0≤Q) :
@@ -70,25 +68,22 @@ theorem sourceWeightedScalar_eq (Q : ℝ) (hQ : 0<Q)
   simp only [localCubePhase, one_pow, one_mul] at hphase
   unfold localCubePhase
   rw [hphase, mul_pow a C, hG]
-  simp only [mul_pow, div_pow]
-
   ring
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 
-lemma firstGauss_eq_gamma_sqrt (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) :
+lemma firstGauss_eq_gamma_sqrt (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) :
     primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 =
       localGamma p hp.ne_zero hg 1 *
         (Real.sqrt (Ideal.absNorm (Ideal.span {p})):ℂ) := by
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  let : Fintype (O ⧸ Ideal.span {p}) := Fintype.ofFinite _
+  let : Field (ActualEisensteinCubic.O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
+  let : Fintype (ActualEisensteinCubic.O ⧸ Ideal.span {p}) := Fintype.ofFinite _
   have hQ : 0 < (Ideal.absNorm (Ideal.span {p}):ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
       (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero))
   have hs : (Real.sqrt (Ideal.absNorm (Ideal.span {p})):ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr hQ).ne'
+    exact_mod_cast (by positivity)
   unfold localGamma
   rw [pow_one, ProbePhase.normalizedTraceGauss_eq_normalizedGauss]
   simp only [ProbeGauss.normalizedGauss, ← Nat.card_eq_fintype_card]
@@ -96,8 +91,8 @@ lemma firstGauss_eq_gamma_sqrt (p : O) (hp : Prime p)
   rw [div_mul_cancel₀ _ hs]
   simp only [primeGauss, map_one, one_mul, tsum_fintype, gaussSum]
 
-theorem sourceWeightedScalar_actual (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p})
+theorem sourceWeightedScalar_actual (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p})
     (eta a x w z scalar : ℂ) (e l k m : ℕ) :
     sourceWeightedScalar (Ideal.absNorm (Ideal.span {p})) eta a
       (localGamma p hp.ne_zero hg 1) (star (localGamma p hp.ne_zero hg 3))

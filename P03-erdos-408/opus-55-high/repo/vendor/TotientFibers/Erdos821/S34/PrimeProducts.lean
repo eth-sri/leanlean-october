@@ -8,7 +8,7 @@ public import Mathlib.Data.Nat.Factorization.Defs
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -20,24 +20,22 @@ theorem count_nat_ofFn (j : ℕ) (f : Fin j → ℕ) (p : ℕ) :
   | zero => simp
   | succ j ih =>
     rw [List.ofFn_succ, Fin.sum_univ_succ, List.count_cons, ih]
-    by_cases h : f 0 = p
-    · simp [h, Nat.add_comm]
-    · simp [h]
+    grind
 
 theorem tuple_factorization (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ)
     (z : S34.Core.Tuple G k) :
     (S34.Core.product G k z).factorization =
       ∑ g, ∑ i, Finsupp.single (z g i).val 1 := by
   have hrow (g : Fin G.size) : (∏ i, (z g i).val) ≠ 0 :=
-    Finset.prod_ne_zero_iff.mpr fun i _ => (G.prime g _ (z g i).property).ne_zero
+    Finset.prod_ne_zero_iff.mpr fun i _ => (G.prime g _ (by grind)).ne_zero
   unfold S34.Core.product
   rw [Nat.factorization_prod (fun g _ => hrow g)]
   apply Finset.sum_congr rfl
   intro g _
-  rw [Nat.factorization_prod (fun i _ => (G.prime g _ (z g i).property).ne_zero)]
+  rw [Nat.factorization_prod (fun i _ => (G.prime g _ (by grind)).ne_zero)]
   apply Finset.sum_congr rfl
   intro i _
-  exact (G.prime g _ (z g i).property).factorization
+  exact (G.prime g _ (by grind)).factorization
 
 theorem group_count_factorization (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ)
     (z : S34.Core.Tuple G k) (g : Fin G.size) (p : ℕ) (hp : p ∈ G.primes g) :
@@ -51,11 +49,10 @@ theorem group_count_factorization (G : S34.Core.PrimeGroups) (k : Fin G.size →
     intro i _
     have hneq : (z h i).val ≠ p := by
       intro heq
-      have hmem : p ∈ G.primes h := heq ▸ (z h i).property
+      have hmem := heq ▸ (z h i).property
       exact Finset.disjoint_left.mp (G.disjoint h g hne) hmem hp
-    simp [hneq]
-  · intro hcontra
-    exact False.elim (hcontra (Finset.mem_univ g))
+    simp_all
+  simp
 
 theorem group_row_perm (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ)
     (z w : S34.Core.Tuple G k) (g : Fin G.size)
@@ -71,7 +68,7 @@ theorem group_row_perm (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ)
       obtain ⟨i, hi⟩ := List.mem_ofFn.mp h
       apply hp
       rw [← hi]
-      exact (v g i).property
+      exact by grind
     rw [List.count_eq_zero.mpr (hmem z), List.count_eq_zero.mpr (hmem w)]
 
 def tupleFiber (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ) (n : ℕ) :
@@ -107,9 +104,8 @@ theorem tupleFiber_card_le (G : S34.Core.PrimeGroups) (k : Fin G.size → ℕ) (
         gcongr with g
         calc
           _ ≤ (List.ofFn (fun i => (z₀ g i).val)).permutations.length := List.toFinset_card_le _
-          _ = _ := by rw [List.length_permutations]; simp
-  · rw [Finset.not_nonempty_iff_eq_empty.mp hne]
-    simp
+          _ = _ := by simp [List.length_permutations]
+  simp_all
 
 end
 end Erdos821.S34Core

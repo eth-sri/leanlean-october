@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem calibrated_physicalRow_w_growth (eps : ℝ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail eps S)
@@ -77,10 +76,10 @@ theorem calibrated_physicalRow_w_growth (eps : ℝ)
   calc
     _ ≤ L*(Cn*N^(3/5+1:ℝ)*(3+|w.im|)^2)*(Ch*N)*(∏P:T,A P) := by
       rw [norm_mul]
-      apply mul_le_mul _ hg (norm_nonneg _) (by dsimp [L,N];positivity)
-      apply mul_le_mul _ hh'' (norm_nonneg _) (by dsimp [L,N];positivity)
+      apply mul_le_mul _ hg (norm_nonneg _) (by positivity)
+      apply mul_le_mul _ hh'' (norm_nonneg _) (by positivity)
       exact mul_le_mul_of_nonneg_left hn'' (by positivity)
-    _ = C*(3+|w.im|)^2 := by dsimp [C];ring
+    _ = C*(3+|w.im|)^2 := by ring
     _ ≤ (1+C)*(3+|w.im|)^2 := mul_le_mul_of_nonneg_right (by linarith) (sq_nonneg _)
 
 end SevenEighths.ProbeHighRowFamily

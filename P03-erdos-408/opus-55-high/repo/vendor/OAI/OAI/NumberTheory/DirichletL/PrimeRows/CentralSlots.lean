@@ -9,11 +9,9 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeLocal
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
+open HeckeInverseAmplification ProbePhysical
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 
 lemma row_phase_norm_one_of_not_dvd (u : FreeRow) (P : PrimeIdeal)
     (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) :
@@ -21,8 +19,8 @@ lemma row_phase_norm_one_of_not_dvd (u : FreeRow) (P : PrimeIdeal)
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
-  have hg := supported_prime_data p hp (hspan.symm ▸ hs)
+  let : (Ideal.span {p}:Ideal HeckeFamily.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  have hg := supported_prime_data p hp (by grind)
   have hnot : ¬p∣u.val := by
     intro hd
     apply hn

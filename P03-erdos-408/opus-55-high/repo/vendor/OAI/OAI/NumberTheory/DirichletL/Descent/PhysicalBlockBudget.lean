@@ -15,7 +15,7 @@ theorem second_source_scalar_norm (Y E V X : ℝ)
     (hY : 0<Y) (hE : 0<E) (hV : 0<V) (hX : 0<X) (a : ℂ) :
     ‖(Y:ℂ)*a*((E*V*X:ℝ):ℂ)⁻¹‖ = ‖a‖*(Y/(E*V*X)) := by
   rw [norm_mul,norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,
-    Complex.norm_real,Real.norm_eq_abs,abs_of_pos hY,abs_of_pos (by positivity : 0<E*V*X)]
+    Complex.norm_real,Real.norm_eq_abs,abs_of_pos hY,abs_of_pos (by positivity)]
   ring
 
 theorem physical_block_rpow_budget
@@ -57,7 +57,7 @@ theorem physical_block_scalar_budget
   have hh := mul_le_mul_of_nonneg_left
     (physical_block_rpow_budget Z hZ M r ell V δ A B R j t g θ v η τ π ε εmass hclip hεmass)
     (mul_nonneg hC (norm_nonneg ray))
-  convert hh using 1 ; ring
+  linarith
 
 end SevenEighths.InverseMoment
 

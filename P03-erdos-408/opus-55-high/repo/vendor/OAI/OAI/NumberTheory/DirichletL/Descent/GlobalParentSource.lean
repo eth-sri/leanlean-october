@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityPhysical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
 open InverseFirstPriorityParents
@@ -44,7 +44,7 @@ theorem sum_globalParentSource {A:Type*}[AddCommMonoid A]
     have he':=congrArg eraseFirstQuotient he
     simp only [erase_fillFirstQuotient,eraseFirstQuotient_eq _ (houter x hx),
       eraseFirstQuotient_eq _ (houter y hy)] at he'
-    exact hxy he'.symm
+    simp_all
 
 end SevenEighths.InverseMoment
 

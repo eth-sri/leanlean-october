@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Canonical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentCommonSupport
 open CenteredMomentCorrelation
 variable {A : Type*} [CommRing A]
@@ -24,7 +24,7 @@ def principalCRT (d a : A) (h : IsCoprime d a) :
 @[simp] theorem principalCRT_mk (d a : A) (h : IsCoprime d a) (x : A) :
     principalCRT d a h (Ideal.Quotient.mk _ x) =
       (Ideal.Quotient.mk _ x, Ideal.Quotient.mk _ x) := by
-  ext <;> simp [principalCRT, Ideal.quotEquivOfEq_mk]
+  ext <;> simp [principalCRT]
 
 lemma coprime_mul_dvd_iff (d a n : A) (h : IsCoprime d a) :
     d * a ∣ n ↔ d ∣ n ∧ a ∣ n := by
@@ -44,7 +44,7 @@ theorem isUnit_residue_of_coprime (d a : A) (h : IsCoprime d a) :
     IsUnit (Ideal.Quotient.mk (Ideal.span {d}) a) := by
   obtain ⟨u, v, huv⟩ := h
   apply IsUnit.of_mul_eq_one (Ideal.Quotient.mk (Ideal.span {d}) v)
-  have hd : Ideal.Quotient.mk (Ideal.span {d}) d = 0 :=
+  have hd :=
     Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.subset_span (Set.mem_singleton d))
   have hm := congrArg (Ideal.Quotient.mk (Ideal.span {d})) huv
   simpa only [map_add, map_mul, map_one, hd, mul_zero, zero_mul, zero_add, mul_comm] using hm
@@ -60,12 +60,12 @@ theorem full_congruence_split (D E a b x y j : A)
       Ideal.Quotient.mk (Ideal.span {a}) (E * b * x) = Ideal.Quotient.mk _ j ∧
       Ideal.Quotient.mk (Ideal.span {b}) (D * a * y) = Ideal.Quotient.mk _ (-j) := by
   rw [full_product_congruence D E a b _ ha hb hab]
-  have hzeroa : Ideal.Quotient.mk (Ideal.span {a}) a = 0 :=
+  have hzeroa :=
     (residue_eq_zero_iff_dvd a a).mpr dvd_rfl
-  have hzerob : Ideal.Quotient.mk (Ideal.span {b}) b = 0 :=
+  have hzerob :=
     (residue_eq_zero_iff_dvd b b).mpr dvd_rfl
   have heq : (E * b) * x - (D * a) * y - j = E * (b * x) - D * (a * y) - j := by ring
-  refine and_congr (by rw [heq]) (and_congr ?_ ?_)
+  refine and_congr (by ring) (and_congr ?_ ?_)
   · rw [← residue_eq_zero_iff_dvd]
     simp only [map_sub, map_mul, hzeroa, mul_zero, zero_mul, sub_zero]
     exact sub_eq_zero
@@ -88,14 +88,12 @@ theorem sum_residual_constraints
     constructor
     · intro h
       rw [← h, ← mul_assoc, Units.inv_mul, one_mul]
-    · intro h
-      rw [h, ← mul_assoc, Units.mul_inv, one_mul]
+    · simp_all
   have hb (y : T) : (b : T) * y = k ↔ y = (↑b⁻¹ : T) * k := by
     constructor
     · intro h
       rw [← h, ← mul_assoc, Units.inv_mul, one_mul]
-    · intro h
-      rw [h, ← mul_assoc, Units.mul_inv, one_mul]
+    · simp_all
   simp only [Fintype.sum_prod_type, ha, hb]
   rw [Finset.sum_mul, Finset.sum_mul]
   apply Finset.sum_congr rfl
@@ -106,8 +104,8 @@ theorem sum_residual_constraints
   intro y _
   by_cases h : p x y
   · simp only [h, true_and, star_mul]
-    simp [ite_and, Finset.sum_ite_eq', mul_assoc, mul_left_comm, mul_comm]
-  · simp [h]
+    simp [ite_and, mul_assoc, mul_left_comm, mul_comm]
+  simp_all
 
 theorem fullCorrelation_unit_change
     {X Y R : Type*} [CommRing X] [CommRing Y] [CommRing R]
@@ -132,7 +130,7 @@ theorem fullCorrelation_unit_change
   · simp only [h, ite_true]
     rw [hχ x, hψ y, star_mul]
     ring
-  · simp only [h, ite_false, mul_zero]
+  grind
 
 lemma character_unit_inverse {X : Type*} [CommRing X] [Fintype X]
     (χ : MulChar X ℂ) (u : Xˣ) : χ (↑u⁻¹ : X) = star (χ (u : X)) := by
@@ -161,7 +159,7 @@ theorem scaledCommonCorrelation_eq (D E a b : A)
       star (χD (Ideal.Quotient.mk _ b)) * χE (Ideal.Quotient.mk _ a) *
         fullModulusCorrelation D E χD χE j := by
   have h := fullCorrelation_unit_change
-    (scaledResidue D E (D * E) rfl) (scaledResidue E D (D * E) (mul_comm _ _))
+    (scaledResidue D E (D * E) rfl) (scaledResidue E D (D * E) (by ring))
     χD χE (residueUnit D b hDb) (residueUnit E a hEa) (Ideal.Quotient.mk _ j)
   simpa only [residueUnit_coe, character_unit_inverse, star_star,
     scaledCommonCorrelation, fullModulusCorrelation] using h
@@ -191,7 +189,7 @@ theorem fullModulusCorrelation_extract (D E a b : A)
   let β := residueUnit b (D * a) (((IsCoprime.mul_left_iff.mp hb).1.symm).mul_right hab.symm)
   let p := fun x : Residue D => fun y : Residue E =>
     scaledResidue D E (D * E) rfl (Ideal.Quotient.mk _ b * x) -
-      scaledResidue E D (D * E) (mul_comm _ _) (Ideal.Quotient.mk _ a * y) =
+      scaledResidue E D (D * E) (by ring) (Ideal.Quotient.mk _ a * y) =
         Ideal.Quotient.mk _ j
   have hextract : fullModulusCorrelation (D * a) (E * b) χDa χEb j =
       ∑ x : Residue D × Residue a, ∑ y : Residue E × Residue b,

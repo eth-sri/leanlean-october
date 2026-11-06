@@ -9,20 +9,19 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalCRT
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationGlobal
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentGaussEnergy
 open CenteredMomentAmplification ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
-theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+theorem full_column_unchanged (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ)
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ)
     (hn1 : n ≠ 1) (hn6 : n ≠ 6) (hn7 : n ≠ 7)
-    (a : O) (ha : Supported (Ideal.span {a})) (hcop : IsCoprime p a)
-    (h : O) (hph : ¬p ∣ h) :
+    (a : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (hcop : IsCoprime p a)
+    (h : ActualEisensteinCubic.O) (hph : ¬p ∣ h) :
     sexticGauss (p^n*a) (mul_ne_zero (pow_ne_zero _ hp.ne_zero) (supported_element_ne_zero a ha))
       (p^6*h) =
     sexticGauss (p^n*a) (mul_ne_zero (pow_ne_zero _ hp.ne_zero) (supported_element_ne_zero a ha)) h := by
@@ -37,20 +36,20 @@ theorem full_column_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
       mul_comm (p^6) h,gauss_prime_power_unchanged p hp hs hg hc n
         (by omega) (by omega) (by omega) h hph]
 
-def amplificationError {α : Type*} (S : Finset α) (a : α → O)
+def amplificationError {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (ν : α → ℕ) (p : O) (k : ℕ) (h : O) : ℂ :=
+    (ν : α → ℕ) (p : ActualEisensteinCubic.O) (k : ℕ) (h : ActualEisensteinCubic.O) : ℂ :=
   ∑ i ∈ S, if ν i = k then c i *
     (gaussRow (a i) (ha i) h - gaussRow (a i) (ha i) (p^6*h)) else 0
 
-theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
+theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+    (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (ν : α → ℕ) (r : α → O) (hr : ∀ i, Supported (Ideal.span {r i}))
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
+    (ν : α → ℕ) (r : α → ActualEisensteinCubic.O) (hr : ∀ i, Supported (Ideal.span {r i}))
     (hfactor : ∀ i ∈ S, a i = p^(ν i)*r i)
-    (hcop : ∀ i ∈ S, IsCoprime p (r i)) (h : O) (hph : ¬p ∣ h) :
+    (hcop : ∀ i ∈ S, IsCoprime p (r i)) (h : ActualEisensteinCubic.O) (hph : ¬p ∣ h) :
     gaussPolynomial S a ha c h = gaussPolynomial S a ha c (p^6*h) +
       amplificationError S a ha c ν p 1 h + amplificationError S a ha c ν p 6 h +
       amplificationError S a ha c ν p 7 h := by
@@ -58,42 +57,39 @@ theorem polynomial_amplification {α : Type*} (S : Finset α) (a : α → O)
   apply Finset.sum_congr rfl
   intro i hi
   by_cases h1 : ν i = 1
-  · simp only [h1,ite_true,show ¬(1:ℕ)=6 by decide,show ¬(1:ℕ)=7 by decide,ite_false]
-    ring
+  · grind
   · by_cases h6 : ν i = 6
-    · simp only [h6,ite_true,show ¬(6:ℕ)=1 by decide,show ¬(6:ℕ)=7 by decide,ite_false]
-      ring
+    · grind
     · by_cases h7 : ν i = 7
-      · simp only [h7,ite_true,show ¬(7:ℕ)=1 by decide,show ¬(7:ℕ)=6 by decide,ite_false]
-        ring
+      · grind
       · simp only [h1,h6,h7,ite_false,add_zero]
         congr 1
         unfold gaussRow
         congr 1
         have he := full_column_unchanged p hp hs hg hc (ν i) h1 h6 h7
-          (r i) (hr i) (hcop i hi) h hph
-        simpa only [hfactor i hi] using he.symm
+          (r i) (hr i) (by grind) h hph
+        simp_all
 
-def primeRemainder (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) : O :=
+def primeRemainder (p : ActualEisensteinCubic.O) (hp : Prime p) (a : ActualEisensteinCubic.O) (ha : a ≠ 0) : ActualEisensteinCubic.O :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_spec (p : O) (hp : Prime p) (a : O) (ha : a ≠ 0) :
+theorem primeRemainder_spec (p : ActualEisensteinCubic.O) (hp : Prime p) (a : ActualEisensteinCubic.O) (ha : a ≠ 0) :
     a = p^(multiplicity p a)*primeRemainder p hp a ha ∧ ¬p ∣ primeRemainder p hp a ha :=
   Classical.choose_spec ((FiniteMultiplicity.of_prime_left hp ha).exists_eq_pow_mul_and_not_dvd)
 
-theorem primeRemainder_supported (p : O) (hp : Prime p) (a : O)
+theorem primeRemainder_supported (p : ActualEisensteinCubic.O) (hp : Prime p) (a : ActualEisensteinCubic.O)
     (ha : Supported (Ideal.span {a})) :
     Supported (Ideal.span {primeRemainder p hp a (supported_element_ne_zero a ha)}) := by
   have hs := ha
   rw [(primeRemainder_spec p hp a (supported_element_ne_zero a ha)).1,
     ← Ideal.span_singleton_mul_span_singleton,supported_mul_iff] at hs
-  exact hs.2
+  simp_all
 
-theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α → O)
+theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
+    (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (h : O) (hph : ¬p ∣ h) :
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2) (h : ActualEisensteinCubic.O) (hph : ¬p ∣ h) :
     gaussPolynomial S a ha c h = gaussPolynomial S a ha c (p^6*h) +
       amplificationError S a ha c (fun i => multiplicity p (a i)) p 1 h +
       amplificationError S a ha c (fun i => multiplicity p (a i)) p 6 h +
@@ -104,7 +100,7 @@ theorem polynomial_amplification_actual {α : Type*} (S : Finset α) (a : α →
   · exact fun i _ => (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).1
   · exact fun i _ => hp.irreducible.coprime_iff_not_dvd.mpr
       (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).2
-  · exact hph
+  omega
 
 theorem norm_four_sum_sq (a b c d : ℂ) :
     ‖a+b+c+d‖^2 ≤ 4*(‖a‖^2+‖b‖^2+‖c‖^2+‖d‖^2) := by
@@ -132,15 +128,15 @@ theorem eligible_pool_average {β : Type*} (P : Finset β) (hP : P.Nonempty)
     simpa only [Finset.sum_const,nsmul_eq_mul,← Finset.mul_sum] using hb
   rw [div_mul_eq_mul_div]
   apply (le_div_iff₀ hc).mpr
-  convert hb using 1 ; ring
+  linarith
 
-theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)
+theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i})) (c : α → ℂ)
-    (P : Finset O) (hP : P.Nonempty) (hp : ∀ p ∈ P, Prime p)
+    (P : Finset ActualEisensteinCubic.O) (hP : P.Nonempty) (hp : ∀ p ∈ P, Prime p)
     (hs : ∀ p ∈ P, Supported (Ideal.span {p}))
     (hgood : ∀ p ∈ P, goodLambda ∉ Ideal.span {p})
-    (hc : ∀ p ∈ P, ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (h : O) (hph : ∀ p ∈ P, ¬p ∣ h) :
+    (hc : ∀ p ∈ P, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
+    (h : ActualEisensteinCubic.O) (hph : ∀ p ∈ P, ¬p ∣ h) :
     ‖gaussPolynomial S a ha c h‖^2 ≤ (4 / (P.card : ℝ)) *
       ∑ p ∈ P, (‖gaussPolynomial S a ha c (p^6*h)‖^2 +
         ‖amplificationError S a ha c (fun i => multiplicity p (a i)) p 1 h‖^2 +
@@ -149,8 +145,8 @@ theorem polynomial_pool_bound {α : Type*} (S : Finset α) (a : α → O)
   apply eligible_pool_average P hP
   intro p hpP
   let : (Ideal.span {p}).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible (hp p hpP).irreducible
-  exact polynomial_amplification_actual S a ha c p (hp p hpP) (hs p hpP)
-    (hgood p hpP) (hc p hpP) h (hph p hpP)
+  exact polynomial_amplification_actual S a ha c p (by grind) (by grind)
+    (by grind) (by grind) h (by grind)
 
 end SevenEighths.CenteredMomentAmplificationGlobal
 

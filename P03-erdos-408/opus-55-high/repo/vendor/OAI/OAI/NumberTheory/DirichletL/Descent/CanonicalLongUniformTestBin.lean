@@ -9,13 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
 open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstLabelCell InverseMomentFirstSecondHeightCost CompletedHeight
-open FourierBridge JointLogSeparation
-local notation "O"=>ActualEisensteinCubic.O
+open JointLogSeparation
 
 theorem actual_marked_bin_uniform_test
     (a₀ b₀:ℝ)(ha₀:0<a₀)(hb₀:0≤b₀)
@@ -34,7 +33,7 @@ theorem actual_marked_bin_uniform_test
     ∀epsFirst epsSecond:ℝ,0<epsFirst → 0<epsSecond → ∀degree:ℕ,
       ∃Ccoef C:ℝ,0<Ccoef ∧ 0≤C ∧
     ∀(test:ℝ → ℂ)(hs₀:Function.support test⊆Set.Icc a₀ b₀)(hTest:ContDiff ℝ ∞ test),
-    ∀{σ:Type}[DecidableEq σ](S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(hSp:∀P∈S,Prime P),
+    ∀{σ:Type}[DecidableEq σ](S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(hSp:∀P∈S,Prime P),
       let F:=InitialMeanSquare.outsideSquarefreeIdeals S D;
       let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad;
       letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
@@ -44,7 +43,7 @@ theorem actual_marked_bin_uniform_test
       let hcop:=poolPrimary_coprime F hF;
       let hg:=poolPrimary_good F hF;
       let om:=radialFromLog Vlog (Vlog.smooth ⊤) Alog hbox;
-      ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal O))(Ψ:O →* ℂ)(m:O)
+      ∀(Q:Finset (primePool F →₀ ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))(Ψ:ActualEisensteinCubic.O →* ℂ)(m:ActualEisensteinCubic.O)
         (slots:Finset σ)(lists:σ → Finset (primePool F))(weights:σ → primePool F → ℂ)
         (Z M r ell V H₀ pi epschild A loss lossFinal:ℝ),
         2≤Z → 2≤Z^eta → Real.exp 1≤Z^eta → 0≤M → r+3*ell+V≤Lcap → M≤Lcap →
@@ -79,7 +78,7 @@ theorem actual_marked_bin_uniform_test
   obtain ⟨ω₁₁,ω₁₂,ω₂₁,ω₂₂,af₁,bf₁,af₂,bf₂,window,bw,
     haf₁,hab₁,haf₂,hab₂,hw₁₁,hw₁₂,hw₂₁,hw₂₂,hs₁₁,hs₁₂,hs₂₁,hs₂₂,hbw,hbwb,hbwexp,he⟩:=
     actual_long_parent_energy om (Real.exp (-Alog)) (Real.exp Alog) (Real.exp_pos _) hs
-      Lcap eta tau saving em ed hcap (Real.exp_pos _).le heta heta1 htau htau1 hem hed K
+      Lcap eta tau saving em ed hcap (by positivity) heta heta1 htau htau1 hem hed K
   refine ⟨ω₁₁,ω₁₂,ω₂₁,ω₂₂,af₁,bf₁,af₂,bf₂,window,bw,
     haf₁,hab₁,haf₂,hab₂,hw₁₁,hw₁₂,hw₂₁,hw₂₂,hs₁₁,hs₁₂,hs₂₁,hs₂₂,hbw,hbwb,hbwexp,?_⟩
   intro epsFirst epsSecond hepsF hepsS degree
@@ -109,7 +108,7 @@ theorem actual_marked_bin_uniform_test
   let E:=C*Gamma^2*(1+A)*Z^(r+3*ell+V+lossFinal)
   have hE:0≤E:=by dsimp [E];positivity
   refine (actual_long_bin_normalized_energy S D hbad hSp Q labels Ψ m test a₀ b₀ ha₀ hb₀ hs₀ hTest
-    Vlog hone Z r ell V H₀ (Z^M) E d hz hD (Real.rpow_pos_of_pos hz _) hE hQlo hQhi slots lists weights ?_).trans_eq ?_
+    Vlog hone Z r ell V H₀ (Z^M) E d hz hD (by positivity) hE hQlo hQhi slots lists weights ?_).trans_eq ?_
   · intro ξ
     have hbnd:=hparent (poolPrimary F) (poolPrimary_ne_zero F hF) hg' hinj
       (poolPrimary_coprime F hF) (poolPrimary_odd F hF) hpr Finset.univ Q labels Ψ m (m*excludedGenerator S)
@@ -119,7 +118,7 @@ theorem actual_marked_bin_uniform_test
       (by intro v hv;rw [cubeIdeal_primeProduct_norm F hF];exact hQhi v hv)
       hrcap hellcap hVcap hwin hpi hpieta hemcost hedcost hechild hsave hloss hcard hpar hprincipal hretained htail
       hΨ hA hsf hn hlabels hslots hweights (hleft ξ) (hright ξ)
-    have hc (I:Ideal O) := funext (actualLongCoefficient_complete S D hbad Ψ m H₀ (Z^ell) ξ I)
+    have hc (I:Ideal ActualEisensteinCubic.O) := funext (actualLongCoefficient_complete S D hbad Ψ m H₀ (Z^ell) ξ I)
     have hrow: (fun I z=>varyingReopenedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
         (poolPrimary_coprime F hF) hg' Finset.univ Q
         (separatedCubeCoefficient (fun v=>reopenedCubeCoefficient H₀
@@ -145,7 +144,7 @@ theorem actual_marked_bin_uniform_test
           (primeProductNorm (poolPrimary F) T/Z^r)) z) (hc I).symm
     · dsimp [E,Gamma,d]
       ring
-  · dsimp [E,Gamma,moment]
+  linarith
 
 end SevenEighths.InverseMoment
 

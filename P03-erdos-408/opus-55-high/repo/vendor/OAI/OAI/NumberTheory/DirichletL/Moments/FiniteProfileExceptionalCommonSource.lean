@@ -10,40 +10,38 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonExceptionalGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentCommonLinearNormalization CenteredMomentCommonPairedSource
-open CenteredMomentCommonExceptionalCost CenteredMomentCommonExceptionalMass CenteredMomentCommonExceptionalGates
-open CenteredMomentExceptionalAsymmetricSource CenteredMomentExceptionalMaskedSource
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
+open CenteredMomentCommonExceptionalCost
+open CenteredMomentExceptionalMaskedSource
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFiniteProfileExceptional
-local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
 
 theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(ε δ θ B Lbound:ℝ)
     (hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤Lbound):
-    ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
+    ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal HeckeFamily.O,Q≠0 → ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s v:Input ι)(p q:Profiles wlo whi),(∀i,v.lo i=lo i) → (∀i,v.hi i=hi i) →
       (∀i,1≤s.P i) → (∀i,1≤v.P i) →
       s.W₁=p.profile 0 → s.W₂=p.profile 1 → v.W₁=q.profile 0 → v.W₂=q.profile 1 →
-      ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R seed:Ideal O),R≠0 → seed∣C → seed∣D →
+      ∀(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)(R seed:Ideal HeckeFamily.O),R≠0 → seed∣C → seed∣D →
       ∀rLeft rRight:ℝ,
       Z^rLeft≤s.X₁ → Z^rLeft≤s.X₂ → Z^rLeft≤s.Y₁ → Z^rLeft≤s.Y₂ →
       Z^rRight≤v.X₁ → Z^rRight≤v.X₂ → Z^rRight≤v.Y₁ → Z^rRight≤v.Y₂ →
-      ∀rows:Finset O,(∀z∈rows,z≠0) →
+      ∀rows:Finset HeckeFamily.O,(∀z∈rows,z≠0) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow s.η Q fixedBadMask 1 z) →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow v.η Q fixedBadMask 1 z) →
-      (∀z∈rows,(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
-      (∀z∈rows,(v.η.modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
-      ∀Ds:Finset (Ideal O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z^Lbound) →
+      (∀z∈rows,(s.η.modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+        (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+      (∀z∈rows,(v.η.modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+        (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+      ∀Ds:Finset (Ideal HeckeFamily.O),(∀L∈Ds,(moebius L:ℂ)≠0 → (L.absNorm:ℝ)≤Z^Lbound) →
       (∑L∈Ds,‖(moebius L:ℂ)‖*∑z∈rows,
         ‖normalizedColumn s C hC R seed L z‖*‖normalizedColumn v D hD R seed L z‖)≤
         K*(rows.card:ℝ)*Z^(2*ε+δ-max (rLeft-Real.logb Z (C.absNorm:ℝ)) 0)*
@@ -77,7 +75,7 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
     · intro z hz
       exact common_admissible v q D R Q hD.1 hR d Z B rRight hZ.1 z (hn z hz) hvP
         (hvEx z hz) (hvCond z hz) hvW₁ hvW₂ hvX₁ hvX₂ hvY₁ hvY₂
-    · exact hDs
+    · omega
   apply (whole_paired_columns s v C D hC hD R seed hsC hsD Ds rows).trans
   calc
     _≤∑c:actualAllocations s.pools C,∑d:actualAllocations v.pools D,
@@ -86,7 +84,7 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
       apply Finset.sum_le_sum
       intro c hc
       exact Finset.sum_le_sum (fun d hd=>mul_le_mul_of_nonneg_left (hb c d)
-        (mul_nonneg (norm_nonneg _) (norm_nonneg _)))
+        (by positivity))
     _=H*(∑c:actualAllocations s.pools C,∑d:actualAllocations v.pools D,
       (‖commonScalar s C R c‖*‖commonScalar v D R d‖)*
         profileMass Sprofile (commonData s C R c) (commonData v D R d) p q J):=by
@@ -100,7 +98,7 @@ theorem actual_common_exceptional (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:
       (profileMass Sprofile s.toData v.toData p q J*frozenProfile s*frozenProfile v/
         ((C.absNorm:ℝ)*D.absNorm))):=
       mul_le_mul_of_nonneg_left (hmass Sprofile s v C D R hC.1 hD.1 p q J) hH
-    _=_:=by dsimp only [H];ring
+    _=_:=by linarith
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 

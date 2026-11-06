@@ -81,19 +81,19 @@ theorem selected_short_bound {δ x t r : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' 
     rw [←plain_at_crossing δ x t hd]
     unfold plainExponent
     have hh := mul_le_mul_of_nonneg_left hr (show 0≤2-8*x/9 by linarith)
-    nlinarith [mul_nonneg hδ (sub_nonneg.mpr hh)]
+    nlinarith
   · intro hr
     rw [←inverse_at_crossing δ x t hd]
     unfold inverseExponent
     have hh := mul_le_mul_of_nonneg_left hr (show 0≤1-x by linarith)
-    nlinarith [mul_nonneg hδ (sub_nonneg.mpr hh)]
+    nlinarith
 
 lemma short_ge_base {δ x t : ℝ} (hδ : 0≤δ) (_hx : 0≤x) (hx' : x≤1/2)
     (ht : t≤3/2) : 1-δ≤shortExponent δ x t := by
   have hd : 0<denominator x := lt_of_lt_of_le (by norm_num) (denominator_lower hx')
   have hp : 0≤primeWeight x := mul_nonneg (by linarith) (by linarith)
   unfold shortExponent
-  exact le_add_of_nonneg_right (mul_nonneg (div_nonneg (mul_nonneg hδ hp) hd.le) (by linarith))
+  exact le_add_of_nonneg_right (by positivity)
 
 theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
     (hm : 1/3-γ≤m) (hm' : m≤1/2) (hΔ : 0≤Δ) (hΔ' : Δ≤1/8) (hγ : 0≤γ) :
@@ -102,13 +102,13 @@ theorem capacity_loss {q m Δ γ : ℝ} (_hq : 0≤q) (hq' : q≤1/2)
   have hden : (16 : ℝ)≤(9/2)*(9/2+12*Δ) := by nlinarith
   have hqmul : q*(1-2*m)≤(1/2)*(1/3+2*γ) :=
     mul_le_mul hq' (by linarith) (by linarith) (by norm_num)
-  have hn := mul_le_mul_of_nonneg_right hqmul (show 0≤24*Δ by positivity)
-  have hg := mul_le_mul_of_nonneg_left hΔ' (show 0≤24*γ by positivity)
+  have hn := mul_le_mul_of_nonneg_right hqmul (by positivity)
+  have hg := mul_le_mul_of_nonneg_left hΔ' (by positivity)
   have he : 2*q*(1-2*m)*(2/9-1/(9/2+12*Δ)) =
       24*q*(1-2*m)*Δ/((9/2)*(9/2+12*Δ)) := by field_simp; ring
   rw [he]
-  apply (div_le_iff₀ (show 0<(9/2)*(9/2+12*Δ) by positivity)).mpr
-  have hb := mul_le_mul_of_nonneg_left hden (show 0≤Δ/4+2*γ by positivity)
+  apply (div_le_iff₀ (by positivity)).mpr
+  have hb := mul_le_mul_of_nonneg_left hden (by positivity)
   nlinarith
 
 theorem plain_capacity_comparison {δ x Δ t r m γ : ℝ}
@@ -127,24 +127,17 @@ theorem plain_capacity_comparison {δ x Δ t r m γ : ℝ}
   have herror := mul_le_mul_of_nonneg_right hc' hγ
   have hid : (1-2*δ*m-2*(δ*x)*(1-2*m)*(2/9))-plainExponent δ x t r =
       δ*(2-8*x/9)*(t-r-m) := by unfold plainExponent; ring
-  have hid' : 1-2*δ*m-2*(δ*x)*(1-2*m)/(9/2+12*Δ) =
-      (1-2*δ*m-2*(δ*x)*(1-2*m)*(2/9)) +
-      2*(δ*x)*(1-2*m)*(2/9-1/(9/2+12*Δ)) := by ring
-  rw [hid']
-  linarith
+  grind
 
 lemma inverse_zero_capacity {δ r ν : ℝ} (hδ : 0≤δ)
     (hcap : (1-r)/2≤ν) : 1-δ*r≤1-δ+2*δ*ν := by
-  have hh := mul_le_mul_of_nonneg_left hcap hδ
   nlinarith
 
 lemma plain_zero_capacity {δ m κ ν : ℝ} (hδ : 0≤δ) (hκ : 0<κ)
     (hκ' : κ≤1) (hν : 0≤ν) (hcap : (1-2*m)/(6*κ)≤ν) :
     1-2*δ*m≤1-δ+6*δ*ν := by
-  have hh := (div_le_iff₀ (show 0<6*κ by positivity)).mp hcap
+  have hh := (div_le_iff₀ (by positivity)).mp hcap
   have hk := mul_le_mul_of_nonneg_right hκ' hν
-  have hm : 1-2*m≤6*ν := by nlinarith
-  have hh' := mul_le_mul_of_nonneg_left hm hδ
   nlinarith
 
 lemma long_count_bound {δ r t γ : ℝ} (hδ : δ≤5/6) (_hγ : 0≤γ)

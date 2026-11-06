@@ -9,7 +9,7 @@ public import Mathlib.Analysis.MellinInversion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open MeasureTheory Set Filter Complex
 namespace SevenEighths.GammaDetectorExpansion
 open GammaZeroDetector HeckeFamily
@@ -24,7 +24,7 @@ theorem gamma_line_integrable : Integrable (fun t : ℝ => Gamma (line t)) := by
   apply (integrable_inv_one_add_sq.const_mul C).mono'
   · apply Continuous.aestronglyMeasurable
     apply continuous_iff_continuousAt.mpr
-    exact fun t => (gamma_differentiableAt_right (by simp : 0 < (line t).re)).continuousAt.comp
+    exact fun t => (gamma_differentiableAt_right (by simp)).continuousAt.comp
       (by unfold line; fun_prop)
   · filter_upwards [] with t
     have hb := hbound (line t) (by simp) (by simp)
@@ -32,7 +32,7 @@ theorem gamma_line_integrable : Integrable (fun t : ℝ => Gamma (line t)) := by
     have hp : 1+t^2 ≤ (1+|t|)^2 := by nlinarith [sq_abs t, abs_nonneg t]
     rw [← div_eq_mul_inv]
     apply (le_div_iff₀ (by positivity)).mpr
-    nlinarith [norm_nonneg (Gamma (line t))]
+    nlinarith
 
 theorem gamma_mellin_inverse {x : ℝ} (hx : 0 < x) :
     ((2*Real.pi : ℝ) : ℂ)⁻¹ *
@@ -42,7 +42,7 @@ theorem gamma_mellin_inverse {x : ℝ} (hx : 0 < x) :
     rw [Gamma_eq_integral hs, GammaIntegral_eq_mellin]
   have hf : MellinConvergent f (2 : ℂ) := by
     simpa only [MellinConvergent, f, smul_eq_mul, mul_comm] using
-      (GammaIntegral_convergent (by norm_num : 0 < (2 : ℂ).re))
+      (GammaIntegral_convergent (by simp))
   have hline (t : ℝ) : mellin f (line t) = Gamma (line t) := hm _ (by simp)
   have hv : VerticalIntegrable (mellin f) 2 := by
     change Integrable (fun t : ℝ => mellin f (line t))
@@ -51,7 +51,7 @@ theorem gamma_mellin_inverse {x : ℝ} (hx : 0 < x) :
   change (1/(2*Real.pi)) • (∫ t : ℝ, (x : ℂ)^(-line t) • mellin f (line t)) = f x at hi
   simp_rw [hline] at hi
   simp only [smul_eq_mul, f, ofReal_exp, ofReal_neg] at hi
-  convert hi using 1; simp [one_div, Complex.real_smul]
+  simp_all
 
 def gammaTerm (a : ℂ) (N : ℝ) (ρ : ℂ) (Y : ℝ) (t : ℝ) : ℂ :=
   (Y : ℂ)^(line t)*Gamma (line t)*a*(N : ℂ)^(-(ρ+line t))
@@ -72,7 +72,7 @@ theorem gammaTerm_integral (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ :
   calc
     _ = (a*(N : ℂ)^(-ρ))*(((2*Real.pi : ℝ) : ℂ)⁻¹ *
       ∫ t : ℝ, ((N/Y : ℝ) : ℂ)^(-line t)*Gamma (line t)) := by ring
-    _ = _ := by rw [gamma_mellin_inverse (div_pos hN hY)]; push_cast; rw [neg_div]
+    _ = _ := by rw [gamma_mellin_inverse (by positivity)]; push_cast; ring
 
 @[simp] theorem gammaTerm_zero (N : ℝ) (ρ : ℂ) (Y t : ℝ) : gammaTerm 0 N ρ Y t = 0 := by
   simp [gammaTerm]
@@ -92,7 +92,7 @@ theorem gammaTerm_integrable (a : ℂ) {N Y : ℝ} (hN : 0 < N) (hY : 0 < Y) (ρ
     have hg : Continuous (fun t : ℝ => Gamma (line t)) := by
       apply continuous_iff_continuousAt.mpr
       intro t
-      exact (gamma_differentiableAt_right (by simp : 0 < (line t).re)).continuousAt.comp hl.continuousAt
+      exact (gamma_differentiableAt_right (by simp)).continuousAt.comp hl.continuousAt
     have hy := (differentiable_id.const_cpow (Or.inl (ofReal_ne_zero.mpr hY.ne'))).continuous.comp hl
     have hn := (((differentiable_const ρ).add differentiable_id).neg.const_cpow
       (Or.inl (ofReal_ne_zero.mpr hN.ne'))).continuous.comp hl
@@ -108,16 +108,15 @@ theorem gamma_expansion {ι : Type*} [Countable ι] (a : ι → ℂ) (N : ι →
   have hint (i : ι) : Integrable (gammaTerm (a i) (N i) ρ Y) := by
     by_cases hi : N i = 0
     · rw [hzero i hi]
-      have he : gammaTerm 0 (N i) ρ Y = fun _ : ℝ => 0 := funext (gammaTerm_zero _ _ _)
-      rw [he]
-      exact integrable_zero ℝ ℂ volume
-    · exact gammaTerm_integrable _ (lt_of_le_of_ne (hN i) (Ne.symm hi)) hY ρ
+      have he : gammaTerm 0 (N i) ρ Y = fun _ : ℝ => 0 := funext (by simp)
+      simp_all
+    · exact gammaTerm_integrable _ (by grind) hY ρ
   have hnorm (i : ι) (t : ℝ) :
       ‖gammaTerm (a i) (N i) ρ Y t‖ =
         (Y^2*(‖a i‖*(N i)^(-(ρ.re+2))))*‖Gamma (line t)‖ := by
     by_cases hi : N i = 0
-    · simp [hzero i hi]
-    · exact gammaTerm_norm _ (lt_of_le_of_ne (hN i) (Ne.symm hi)) hY ρ t
+    · simp_all
+    · exact gammaTerm_norm _ (by grind) hY ρ t
   have hnormsum : Summable (fun i => ∫ t : ℝ, ‖gammaTerm (a i) (N i) ρ Y t‖) := by
     simp_rw [hnorm, integral_const_mul]
     convert hsum.mul_left (Y^2*(∫ t : ℝ, ‖Gamma (line t)‖)) using 1
@@ -128,9 +127,9 @@ theorem gamma_expansion {ι : Type*} [Countable ι] (a : ι → ℂ) (N : ι →
   have he (i : ι) : (((2*Real.pi : ℝ) : ℂ)⁻¹) * (∫ t : ℝ, gammaTerm (a i) (N i) ρ Y t) =
       a i*(N i : ℂ)^(-ρ)*Complex.exp (-(N i : ℂ)/(Y : ℂ)) := by
     by_cases hn : N i = 0
-    · simp [hzero i hn]
-    · exact gammaTerm_integral _ (lt_of_le_of_ne (hN i) (Ne.symm hn)) hY ρ
-  simpa only [he] using hi
+    · simp_all
+    · exact gammaTerm_integral _ (by grind) hY ρ
+  simp_all
 
 private instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
@@ -149,7 +148,7 @@ theorem cutoffTerm_outside (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 
   · subst J; exact cutoffTerm_zero χ V D s
   · have hn : 2*D < (J.absNorm : ℝ) := by
       by_contra h
-      exact hJ ((mem_cutoffSet hD.le).mpr ⟨hzero, le_of_not_gt h⟩)
+      exact hJ ((mem_cutoffSet hD.le).mpr (by grind))
     have hv := hV ((J.absNorm : ℝ)/D) ((le_div_iff₀ hD).mpr hn.le)
     simp [cutoffTerm, hv]
 
@@ -215,8 +214,7 @@ theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD :
   · simp [pairCoefficient_zero_norm χ V D p hp]
   · have hn : 0 < pairNorm p := lt_of_le_of_ne (by unfold pairNorm; positivity) (Ne.symm hp)
     rw [norm_mul, norm_cpow_eq_rpow_re_of_pos hn]
-    simp only [neg_re, add_re]
-    norm_num
+    simp
 
 theorem pairGamma_tsum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
     (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re)

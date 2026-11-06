@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstFreshEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 open SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 theorem firstBlockOuterWeight_norm_le
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (selector : Finset ι → ℂ) (r : RayCharacter × RayCharacter) (D : Finset ι) (h : Eis) :
+    (selector : Finset ι → ℂ) (r : RayCharacter × RayCharacter) (D : Finset ι) (h : ActualEisensteinCubic.O) :
     ‖firstBlockOuterWeight p selector r D h‖ ≤ ‖crossCoeff r.1 r.2‖*‖selector D‖ := by
   have hprime (i : ι) : Prime (Ideal.span {p i}) :=
     Ideal.prime_of_isPrime (NeZero.ne (Ideal.span {p i})) inferInstance
@@ -36,20 +35,20 @@ def firstOldLabelCoefficient (hp : ∀ i,p i ≠ 0)
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (C : Finset ι → ℂ) (c d : Eis) (f : Ideal Eis) : Finset ι → ℂ :=
+    (negative : Bool) (C : Finset ι → ℂ) (c d : ActualEisensteinCubic.O) (f : Ideal ActualEisensteinCubic.O) : Finset ι → ℂ :=
   firstBareCubeCoefficient p hp hg hcop B v ε₁ ε₂ negative
     (originalLabelColumn p hg B ε₁ ε₂ negative C c (ConcretePrimeRowBridge.idealGenerator f)) d
 
 theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ K : ℝ,0 < K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (_hinj : Function.Injective (fun i => Ideal.span {p i}))
       (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
       (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
       (F B : Finset ι) (selector : Finset ι → ℂ) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool),
       (∀ j∈B,0 < v j) → ∀ (negative : Bool) (C : Finset ι → ℂ)
-      (ω : ℝ → ℂ) (X t : ℝ),0 < X → ∀ (c d : Eis)
-      (source : Finset (Ideal Eis × Eis)) (rows : Finset Eis) (w : Ideal Eis × Eis → ℂ) (M Y : ℝ),
+      (ω : ℝ → ℂ) (X t : ℝ),0 < X → ∀ (c d : ActualEisensteinCubic.O)
+      (source : Finset (Ideal ActualEisensteinCubic.O × ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O) (w : Ideal ActualEisensteinCubic.O × ActualEisensteinCubic.O → ℂ) (M Y : ℝ),
       0 ≤ M → 0 ≤ Y → (∀ x∈source,Squarefree x.1) →
       (∀ x∈source,DescentWeightedCauchy.firstElementRowMap (dilationLabel p B v ε₁ ε₂) x ∈ rows) →
       (∀ z∈rows,z ≠ 0) → (∀ z∈rows,(Ideal.absNorm (Ideal.span {z}):ℝ) ≤ Y) →
@@ -96,7 +95,7 @@ theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
           intro x hx
           have hh := mul_le_mul_of_nonneg_left
             (firstBlockOuterWeight_norm_le p hinj selector r D x.2) (norm_nonneg (w x))
-          exact (mul_le_mul_of_nonneg_right hh (sq_nonneg _)).trans_eq (by ring)
+          nlinarith
         _ ≤ _ := mul_le_mul_of_nonneg_left
           (hpush p hp hinj hcop hg F D B v ε₁ ε₂ hv negative
             (if negative then r.1 else r.2) C ω X t hX c d source rows w M Y

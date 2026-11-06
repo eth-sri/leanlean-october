@@ -7,24 +7,23 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalNormal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeTwist
-open CenteredMomentHeckeCancellation CenteredMomentLattice
+open HeckeFamily CenteredMomentHeckeTwist
 local notation "O" => HeckeFamily.O
 
 theorem rectangle_source_control (a b ε B : ℝ)
     (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃ J : ℕ, ∃ S : Finset (ℕ×ℕ), (0,0)∈S ∧
-      ∀ Q : Ideal O, Q≠0 → ∃ C : ℝ, 0<C ∧
+      ∀ Q : Ideal HeckeFamily.O, Q≠0 → ∃ C : ℝ, 0<C ∧
       ∀ W₁ W₂ : 𝓢(ℝ,ℂ),
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
       ∀ Z : ℝ, 1≤Z → ∀ η χ ψ : Character,
       (Ideal.absNorm χ.modulus:ℝ)≤Z^B → Q≤ψ.modulus →
       CenteredExceptionalProfile.InducedBy χ ψ →
-      ∀ m A z : O, ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀ m A z : HeckeFamily.O, ConcretePrimeRowBridge.goodLambda∣m → (2:HeckeFamily.O)∣m →
       (∀ n,elementCoeff χ n=CanonicalRowCompletion.rowTwist
         (HeckeRowClosure.elementHom η) m 1 (A*z) n) →
       ∀ t X₁ X₂ Y₁ Y₂ T L : ℝ, 0<L →

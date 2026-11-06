@@ -9,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.FirstWShift
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-lemma FirstTail.mono_parameter {eps eps' : ℝ} {S : Finset (Ideal O)}
+lemma FirstTail.mono_parameter {eps eps' : ℝ} {S : Finset (Ideal HeckeFamily.O)}
     (h : FirstTail eps S) (hle : eps≤eps') : FirstTail eps' S := by
   have hp : 0<eps' := h.positive.trans_le hle
   refine ⟨hp,h.norm_four,?_⟩
@@ -26,9 +25,8 @@ lemma FirstTail.mono_parameter {eps eps' : ℝ} {S : Finset (Ideal O)}
   apply mul_le_mul_of_nonneg_left _ (by norm_num)
   apply Real.rpow_le_rpow_of_exponent_le
   · have hn := h.norm_four P.val P.property
-    exact_mod_cast (by omega : 1≤P.val.val.absNorm)
-  · have hm := min_le_min_right (1/50:ℝ) hle
-    linarith
+    exact_mod_cast (by omega)
+  grind
 
 theorem continuedRowOnLines_first_w_transport {K : ℕ}
     (l r ξ : ℝ) (hl : -(1/100:ℝ)≤l) (hlr : l≤r) (hξ : (17/50:ℝ)≤ξ)
@@ -48,13 +46,13 @@ theorem continuedRowOnLines_first_w_transport {K : ℕ}
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro q
-  exact nonprincipal_first_w_integral_eq (1/2) (by norm_num) S hS (by norm_num;exact hfirst) hmax P hPS η u hu
+  exact nonprincipal_first_w_integral_eq (1/2) (by norm_num) S hS (by grind) hmax P hPS η u hu
     W0 W1 a1 b1 ha1 hW1 X Y Z hY ((2:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I) l r hlr
-    (by norm_num) hl (by simpa using hξ) (by norm_num;linarith)
+    (by norm_num) hl (by simp_all) (by norm_num;linarith)
 
 theorem rowIntegral_first_w_lines {K : ℕ}
     (υ r : ℝ) (hυ : -(1/100:ℝ)≤υ) (hυ3 : υ≤3) (hr : (17/50:ℝ)≤r)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -72,11 +70,11 @@ theorem rowIntegral_first_w_lines {K : ℕ}
   have hw := continuedRowOnLines_first_w_transport υ 3 r hυ hυ3 hr S hS hmax hfirst P hPS η u hu W0 W1
     a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
   exact ⟨continuedPhysicalRowKernel_first_integrable υ r hυ hr S hS hmax hfirst P hPS η u hu W0 W1
-    a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ,hphysical.trans (by rw [hw])⟩
+    a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ,hphysical.trans (by simp_all)⟩
 
 theorem rowIntegral_central_start {K : ℕ}
     (a e : ℝ) (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)

@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Structure
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -18,8 +17,7 @@ variable {P : PrimeGroups}
 theorem V_pos_of_prime (g : P.Group) (p : P.Prime g) : 0 < P.V g := by
   unfold PrimeGroups.V
   apply Finset.sum_pos'
-  · intro n hn
-    exact inv_nonneg.mpr (Nat.cast_nonneg n)
+  · simp
   · refine ⟨p.val, p.property, ?_⟩
     exact inv_pos.mpr (by exact_mod_cast (P.prime g p.val p.property).pos)
 
@@ -32,7 +30,7 @@ theorem mu_sum (g : P.Group) (hV : P.V g ≠ 0) : (∑ p : P.Prime g, P.mu g p) 
   classical
   have hsum : (∑ p : P.Prime g, (p.val : ℝ)⁻¹) = P.V g := by
     symm
-    exact Finset.sum_subtype (P.primes g) (fun _ => Iff.rfl) (fun p => (p : ℝ)⁻¹)
+    exact Finset.sum_subtype (P.primes g) (by simp) (fun p => (p : ℝ)⁻¹)
   simp only [PrimeGroups.mu, mul_inv_rev]
   rw [← Finset.sum_mul, hsum, mul_inv_cancel₀ hV]
 

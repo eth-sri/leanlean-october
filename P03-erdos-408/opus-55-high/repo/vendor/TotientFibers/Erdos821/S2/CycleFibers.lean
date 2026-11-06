@@ -8,7 +8,6 @@ public import Erdos821.S2.CycleSigns
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
@@ -31,7 +30,7 @@ lemma cycleSelection_disjoint {a : ℕ} {π : Finset (Finset (Fin a))}
   obtain ⟨C, _, rfl⟩ := Finset.mem_image.mp hd
   have hBC : B.val ≠ C.val := by
     intro h
-    exact hcd (congrArg (fun B : π => (τ B).val) (Subtype.ext h))
+    exact by grind
   apply Equiv.Perm.disjoint_iff_disjoint_support.mpr
   rw [(cycleChoice_spec τ B).2, (cycleChoice_spec τ C).2]
   exact hπ.2 B.property C.property hBC
@@ -64,7 +63,7 @@ lemma cycleProduct_blocks {a : ℕ} {π : Finset (Finset (Fin a))}
   · intro hB
     let C : π := ⟨B, hB⟩
     exact Finset.mem_image.mpr ⟨(τ C).val,
-      Finset.mem_image.mpr ⟨C, Finset.mem_univ _, rfl⟩, (cycleChoice_spec τ C).2⟩
+      Finset.mem_image.mpr (by simp), (cycleChoice_spec τ C).2⟩
 
 lemma cycleProduct_injective {a : ℕ} {π : Finset (Finset (Fin a))}
     (hπ : BirthCollection π) : Function.Injective (cycleProduct hπ) := by
@@ -75,14 +74,13 @@ lemma cycleProduct_injective {a : ℕ} {π : Finset (Finset (Fin a))}
   apply Subtype.ext
   have hc : (τ B).val ∈ cycleSelection τ' := by
     rw [← hsets]
-    exact Finset.mem_image.mpr ⟨B, Finset.mem_univ _, rfl⟩
+    exact Finset.mem_image.mpr (by simp)
   obtain ⟨C, _, hC⟩ := Finset.mem_image.mp hc
   have hCB : C = B := by
     apply Subtype.ext
     have hs := congrArg Equiv.Perm.support hC
     simpa only [(cycleChoice_spec τ' C).2, (cycleChoice_spec τ B).2] using hs
-  subst C
-  exact hC.symm
+  grind
 
 lemma exists_cycleChoices {a : ℕ} {π : Finset (Finset (Fin a))}
     (hπ : BirthCollection π) (σ : Equiv.Perm (Fin a))
@@ -100,11 +98,11 @@ lemma exists_cycleChoices {a : ℕ} {π : Finset (Finset (Fin a))}
     constructor
     · intro hd
       obtain ⟨B, _, rfl⟩ := Finset.mem_image.mp hd
-      exact hc B
+      grind
     · intro hd
-      let B : π := ⟨d.support, by rw [← hσ]; exact Finset.mem_image.mpr ⟨d, hd, rfl⟩⟩
-      have he : c B = d := cycleFactors_support_injective σ (hc B) hd (hs B)
-      exact Finset.mem_image.mpr ⟨B, Finset.mem_univ _, he⟩
+      let B : π := ⟨d.support, by rw [← hσ]; exact Finset.mem_image.mpr (by grind)⟩
+      have he := cycleFactors_support_injective σ (hc B) hd (hs B)
+      exact Finset.mem_image.mpr (by grind)
   refine ⟨τ, ?_⟩
   apply Equiv.Perm.cycleFactorsFinset_injective
   exact (cycleProduct_factors hπ τ).trans hsel
@@ -125,17 +123,17 @@ theorem permutationsWithBlocks_card {a : ℕ} (π : Finset (Finset (Fin a)))
     · intro h
       obtain ⟨_, hσ⟩ := Finset.mem_filter.mp h
       obtain ⟨τ, rfl⟩ := exists_cycleChoices hπ σ hσ
-      exact Finset.mem_image.mpr ⟨τ, Finset.mem_univ _, rfl⟩
+      grind
   rw [← himage, Finset.card_image_of_injOn (cycleProduct_injective hπ).injOn, Finset.card_univ]
   calc
     Fintype.card (CycleChoices π) = ∏ B : π, (cyclesOn B.val).card := by
-      simp only [CycleChoices, Fintype.card_pi, Fintype.card_coe]
+      simp only [Fintype.card_pi, Fintype.card_coe]
     _ = ∏ B : π, (B.val.card - 1).factorial := by
       apply Finset.prod_congr rfl
       intro B _
       exact cyclesOn_card B.val (hπ.1 B.val B.property)
-    _ = ∏ B ∈ π, (B.card - 1).factorial := by
-      exact Finset.prod_coe_sort π (fun B => (B.card - 1).factorial)
+    _ = ∏ B ∈ π, (B.card - 1).factorial :=
+      Finset.prod_coe_sort π (fun B => (B.card - 1).factorial)
 
 
 end Erdos821.S2

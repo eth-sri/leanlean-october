@@ -8,10 +8,9 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 lemma ramifiedStrictSelected_from_entry (eta a rho x w z : ℂ) (j : ℕ) (b : ℝ)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p})) (heta : ‖eta‖≤1) (ha : ‖a‖≤1)
@@ -31,7 +30,7 @@ lemma ramifiedStrictSelected_from_entry (eta a rho x w z : ℂ) (j : ℕ) (b : �
   have h1V : ‖1-coordV Q z‖≤3/2 := by change ‖coordV Q z‖≤1/2 at hv;linarith
   have hphase : ‖star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x‖≤Q^x.re := by
     rw [norm_mul,norm_star,←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
+    exact mul_le_of_le_one_left (by positivity) heta
   unfold ramifiedStrictSelected
   rw [div_eq_mul_inv]
   simp only [norm_mul] at hphase ⊢
@@ -48,7 +47,7 @@ theorem ramifiedStrictSelected_central_norm (eta a rho x w z : ℂ)
       6*(Ideal.absNorm (Ideal.span {p}):ℝ)^(1-w.re) := by
   have hb := ramifiedStrictSelected_from_entry p hp hg eta a rho x w z j (1-x.re-w.re)
     hQ heta ha hx hz (sourceRowTerm_central_strict_norm p hp hg hc eta a rho x w z heta ha hρ j hj)
-  convert hb using 1 ; congr 2 ; ring
+  grind
 
 include hc in
 theorem ramifiedStrictSelected_boundary_norm (eta a rho x w z : ℂ)
@@ -59,7 +58,7 @@ theorem ramifiedStrictSelected_boundary_norm (eta a rho x w z : ℂ)
       6*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-w.re) := by
   have hb := ramifiedStrictSelected_from_entry p hp hg eta a rho x w z j (-x.re-w.re)
     hQ heta ha hx hz (sourceRowTerm_central_boundary_norm p hp hg hc eta a rho x w z heta ha hρ j hj)
-  convert hb using 1 ; congr 2 ; ring
+  grind
 end SevenEighths.ProbeEuler
 end
 

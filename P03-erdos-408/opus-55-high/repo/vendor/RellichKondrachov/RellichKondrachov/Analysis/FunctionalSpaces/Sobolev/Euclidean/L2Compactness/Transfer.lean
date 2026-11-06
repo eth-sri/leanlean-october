@@ -34,7 +34,7 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology Convolution Pointwise
+open scoped ENNReal MeasureTheory Convolution Pointwise
 open MeasureTheory Set
 
 noncomputable section
@@ -68,8 +68,8 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   let s : Set E := Kψ (K := K) (ψ := ψ)
   have hs_compact : IsCompact s := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
-  have hs : MeasurableSet s := hs_compact.measurableSet
-  have hs_lt_top : (volume : Measure E) s < (⊤ : ℝ≥0∞) :=
+  have hs := hs_compact.measurableSet
+  have hs_lt_top :=
     hs_compact.measure_lt_top (μ := (volume : Measure E))
   let μs : Measure E := (volume : Measure E).restrict s
   have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨hs_lt_top⟩
@@ -188,16 +188,15 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
       simpa [g] using hF
     filter_upwards [hF_ae_full] with x hx
     intro hxnot
-    have : smoothFun (E := E) (K := K) ψ u x - smoothFun (E := E) (K := K) ψ v x = 0 :=
+    have  :=
       hsupport x hxnot
     simpa [hx] using this
   have hF_ind :
       (s.indicator g =ᵐ[(volume : Measure E)] g) := by
     filter_upwards [hF0] with x hx
     by_cases hxmem : x ∈ s
-    · simp [g, hxmem]
-    · have : g x = 0 := hx hxmem
-      simp [g, hxmem, this]
+    · simp_all
+    · simp_all
   -- Conclude `‖F‖ = ‖Fs‖` using `extendByZeroₗᵢ` and the indicator identity.
   let Fext :
       MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume : Measure E) :=
@@ -220,11 +219,11 @@ private lemma dist_smoothL2_le_mul_dist_smoothBCF (hK : IsCompact K) (hKm : Meas
       (s.indicator (fun x : E => (Fs : E → ℝ) x) =ᵐ[(volume : Measure E)] s.indicator g) := by
     filter_upwards [hFs_on] with x hx
     by_cases hxmem : x ∈ s
-    · simp [hxmem, hx hxmem]
-    · simp [hxmem]
+    · simp_all
+    · simp_all
   have hFext_ae' :
-      (Fext : E → ℝ) =ᵐ[(volume : Measure E)] g := by
-    exact hFext_ae.trans (hindicator.trans hF_ind)
+      (Fext : E → ℝ) =ᵐ[(volume : Measure E)] g :=
+    hFext_ae.trans (hindicator.trans hF_ind)
   have hFext_eq : Fext = F := by
     refine MeasureTheory.Lp.ext ?_
     simpa [g, F] using hFext_ae'
@@ -248,8 +247,8 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   let s : Set E := Kψ (K := K) (ψ := ψ)
   have hs_compact : IsCompact s := isCompact_Kψ (K := K) (ψ := ψ) hK hψcs
-  have hs : MeasurableSet s := hs_compact.measurableSet
-  have hs_lt_top : (volume : Measure E) s < (⊤ : ℝ≥0∞) :=
+  have hs := hs_compact.measurableSet
+  have hs_lt_top :=
     hs_compact.measure_lt_top (μ := (volume : Measure E))
   let μs : Measure E := (volume : Measure E).restrict s
   have : Fact ((volume : Measure E) s < (⊤ : ℝ≥0∞)) := ⟨hs_lt_top⟩
@@ -277,7 +276,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
     by_cases hmS0 : mS = 0
     · let c : (E →₂[(volume : Measure E)] ℝ) :=
         smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs (0 : _)
-      refine ⟨{c}, by simp [c], ?_⟩
+      refine ⟨{c}, by simp, ?_⟩
       intro w hw
       rcases hw with ⟨u, huU, rfl⟩
       have hle :=
@@ -295,11 +294,7 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
           rw [hmS0', zero_mul] at hle'
           simpa [c] using hle'
         exact le_antisymm this dist_nonneg
-      refine mem_iUnion.2 ?_
-      refine ⟨c, mem_iUnion.2 ?_⟩
-      refine ⟨by simp, ?_⟩
-      -- membership in the open ball follows from `dist = 0` and `ε > 0`
-      simpa [Metric.mem_ball, hdist0] using hε
+      simp_all
     · have hmSpos : 0 < mS := lt_of_le_of_ne hmS (Ne.symm hmS0)
       let deltaLoss : ℝ := ε / mS
       have hδpos : 0 < deltaLoss := div_pos hε hmSpos
@@ -318,8 +313,8 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
               u ∈ U ∧
                 smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u = f.1 := by
         intro f
-        have hf_t : f.1 ∈ t := (htFin_mem (f := f.1)).1 f.2
-        have hfA : f.1 ∈ A := htAsub hf_t
+        have hf_t := (htFin_mem (f := f.1)).1 f.2
+        have hfA := htAsub hf_t
         rcases hfA with ⟨u, huU, huEq⟩
         exact ⟨u, huU, huEq⟩
       choose uOf huOfU huOfEq using hrep
@@ -331,11 +326,11 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
       rcases hw with ⟨u, huU, rfl⟩
       have hBu : (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u) ∈ A := by
         exact ⟨u, huU, rfl⟩
-      have : smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u ∈ ⋃ x ∈ t, Metric.ball x deltaLoss :=
+      have  :=
         htCover hBu
       rcases mem_iUnion.1 this with ⟨f, hf⟩
       rcases mem_iUnion.1 hf with ⟨hf_t, hf_ball⟩
-      have hf_tFin : f ∈ tFin := (htFin_mem (f := f)).2 hf_t
+      have hf_tFin := (htFin_mem (f := f)).2 hf_t
       let f' : ι := ⟨f, hf_tFin⟩
       have hf_ball' :
           dist (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs u) f < deltaLoss := hf_ball
@@ -356,9 +351,9 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
                   (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs (uOf f')) < mS * deltaLoss := by
             exact mul_lt_mul_of_pos_left hdist' hmSpos
           have hmul : mS * deltaLoss = ε := by
-            have hmS_ne : mS ≠ 0 := ne_of_gt hmSpos
+            have hmS_ne := ne_of_gt hmSpos
             calc
-              mS * deltaLoss = mS * (ε / mS) := by simp [deltaLoss]
+              mS * deltaLoss = mS * (ε / mS) := by linarith
               _ = mS * ε / mS := (mul_div_assoc mS ε mS).symm
               _ = ε := by simpa using (mul_div_cancel_left₀ ε hmS_ne)
           simpa [hmul] using this
@@ -370,11 +365,11 @@ theorem smoothL2_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurable
       -- show the chosen center lies in `tL2`
       exact ⟨f', rfl⟩
   -- Compactness follows from total boundedness + completeness of `L²`.
-  have hTB_closure : TotallyBounded (closure B) := hTB_B.closure
+  have hTB_closure := hTB_B.closure
   have hcomplete : IsComplete (closure B) := isClosed_closure.isComplete
-  have hcompact_closure : IsCompact (closure B) :=
+  have hcompact_closure :=
     isCompact_iff_totallyBounded_isComplete.2 ⟨hTB_closure, hcomplete⟩
-  simpa [B, U] using hcompact_closure
+  omega
 
 end Volume
 

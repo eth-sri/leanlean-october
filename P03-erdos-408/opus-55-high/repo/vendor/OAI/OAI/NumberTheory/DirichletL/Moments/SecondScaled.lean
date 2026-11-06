@@ -9,27 +9,26 @@ public import OAI.NumberTheory.DirichletL.Moments.ChildRows
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondScaled
 open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
 open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
-open CenteredMomentSecondDescent CenteredMomentProductCRT CenteredMomentUnequal CenteredMomentPartition
+open RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
-def movingCoefficient {α : Type*} (A : O) (a : α → O) (c : α → ℂ) (i : α) : ℂ :=
+def movingCoefficient {α : Type*} (A : ActualEisensteinCubic.O) (a : α → ActualEisensteinCubic.O) (c : α → ℂ) (i : α) : ℂ :=
   c i*idealRowHom A (Ideal.span {a i})
 
-theorem divisorCoefficient_moving {α : Type*} (L : Ideal O) (A : O) (a : α → O)
+theorem divisorCoefficient_moving {α : Type*} (L : Ideal ActualEisensteinCubic.O) (A : ActualEisensteinCubic.O) (a : α → ActualEisensteinCubic.O)
     (c : α → ℂ) (χ : RayCharacter) (i : α) :
     divisorCoefficient L a (movingCoefficient A a c) χ i =
       divisorCoefficient L a c χ i*idealRowHom A (Ideal.span {a i}) := by
   unfold divisorCoefficient movingCoefficient
-  split_ifs <;> ring
+  grind
 
-theorem actual_scaled_row_children {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
-    (D E A₀ : O) (a : α → O) (b : β → O)
+theorem actual_scaled_row_children {α β : Type*} (rows : Finset ActualEisensteinCubic.O) (S : Finset α) (T : Finset β)
+    (D E A₀ : ActualEisensteinCubic.O) (a : α → ActualEisensteinCubic.O) (b : β → ActualEisensteinCubic.O)
     (hD : Supported (Ideal.span {D})) (hE : Supported (Ideal.span {E}))
     (ha : ∀ i, Supported (Ideal.span {a i})) (hb : ∀ j, Supported (Ideal.span {b j}))
     (hpD : ConcretePrimeRowBridge.goodLambda^2 ∣ D-1)
@@ -37,7 +36,7 @@ theorem actual_scaled_row_children {α β : Type*} (rows : Finset O) (S : Finset
     (hpa : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
     (hpb : ∀ j, ConcretePrimeRowBridge.goodLambda^2 ∣ b j-1)
     (hcopA : ∀ i, IsCoprime (D*E) (a i)) (hcopB : ∀ j, IsCoprime (D*E) (b j))
-    (q : O → ℂ) (c : α → ℂ) (d : β → ℂ) (K : O → α → β → ℂ) :
+    (q : ActualEisensteinCubic.O → ℂ) (c : α → ℂ) (d : β → ℂ) (K : ActualEisensteinCubic.O → α → β → ℂ) :
     (∑ z ∈ rows, q z * ∑ i ∈ S, ∑ j ∈ T,
       (if IsCoprime (a i) (b j) then
         actualCorrelation (D*a i) (E*b j)

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroUnbalancedOriginalGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentFiniteProfileExceptional
 open CenteredMomentEnergyZeroUnbalancedOriginalPower
 open CenteredMomentEnergyZeroUnbalancedOriginalGates
-local notation "O"=>HeckeFamily.O
 
 theorem original_unbalanced_from_zero_low
     (a b bΦ rho ε Mcap Bmask:ℝ)
@@ -26,7 +25,7 @@ theorem original_unbalanced_from_zero_low
     ∃d xi L:ℝ,0<d ∧ 0<xi ∧ xi≤rho/100 ∧ Mcap+Bmask+xi≤L ∧ L≤Mcap+Bmask+rho/100 ∧
     ∀S:Finset (ℕ×ℕ),∃J:ℕ,∃U:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
+      ∀(e:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤e → 0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap e Z degree S K →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → rho≤s.width →s.width≤Mcap →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →
@@ -55,7 +54,7 @@ theorem original_unbalanced_from_zero_low
     exact hZ.2 e Q degree K he hK hlow s hQ hslo hs p t X₁ X₂ hX₁ hX₂
       (raw_short_bound Z s.width X₁ hZ.1 hX₁ hshort) hlong.2.2
   rcases min_le_iff.mp hshort with hshort|hshort
-  · exact hordered p X₁ X₂ hX₁ hX₂ hshort hlarge
+  · grind
   · let p':Profiles a b:={
       profile:=![p.profile 1,p.profile 0]
       support:=by
@@ -75,13 +74,12 @@ theorem original_unbalanced_from_zero_low
           CenteredMomentRetainedEnergy.positiveSlotRow s.character s.mask 1 z
           (p.profile 0) (p.profile 1) (fun _:Fin 0=>∅) (fun _:Fin 0=>0)
           (fun _:Fin 0=>1) t X₁ X₂:=by
-        simp only [p',Matrix.cons_val_zero,Matrix.cons_val_one,Matrix.cons_val_fin_one]
+        simp only [p', Matrix.cons_val_zero, Matrix.cons_val_one]
         unfold CenteredMomentRetainedEnergy.positiveSlotRow
         rw [mul_comm X₂ X₁]
         ring
       rw [hh]
-    have hh:=hordered p' X₂ X₁ hX₂ hX₁ hshort (by linarith)
-    simpa only [hswap,hpcontrol] using hh
+    grind
 
 end SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginal
 

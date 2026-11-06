@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorDyadicBridge
 open HeckeFamily HeckeDyadic HeckeDetectorFourier
@@ -26,7 +26,7 @@ lemma norm_phase (x D : ℝ) (hx : 0<x) (hD : 0<D) (s : ℂ) (t : ℝ) :
   unfold FourierBridge.logPhase HeckeDyadic.shift
   rw [← Complex.exp_add, ← Complex.exp_add, Real.log_div hx.ne' hD.ne']
   congr 1
-  have hs : s=(s.re : ℂ)+(s.im : ℂ)*I := (Complex.re_add_im s).symm
+  have hs := (Complex.re_add_im s).symm
   rw [hs]
   simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, I_im, mul_zero,
     sub_zero, add_zero, add_im, mul_im, mul_one, zero_add]
@@ -36,7 +36,6 @@ lemma norm_phase (x D : ℝ) (hx : 0<x) (hD : 0<D) (s : ℂ) (t : ℝ) :
 lemma normalization (D : ℝ) (hD : 0<D) (s : ℂ) :
     (D : ℂ)^((1/2 : ℂ)-s)*(D : ℂ)^(-(1/2 : ℂ))=(D : ℂ)^(-s) := by
   rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
-  congr 1
   ring
 
 lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
@@ -65,10 +64,7 @@ lemma polynomial_eq_finite (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
   · subst J
     dsimp only [f]
     rw [coefficient_zero, zero_mul, zero_mul]
-  have hw : W ((J.absNorm : ℝ)/D)=0 := by
-    by_contra hw
-    exact hJ (hcover J hj hw)
-  simp [f,hw]
+  grind
 
 theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ)
     (D : ℝ) (hD : 0<D) (s : ℂ) (t : ℝ) (S : Finset (Ideal O))
@@ -85,10 +81,7 @@ theorem phase_sum_eq_polynomial (χ : Character) (inverse : Bool) (W : ℝ→ℂ
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (hS J hJ))
   have hp := norm_phase (J.absNorm : ℝ) D hnorm hD s t
   simp only [Complex.ofReal_natCast] at hp
-  calc
-    _ = coefficient χ inverse J*W ((J.absNorm : ℝ)/D)*
-        ((J.absNorm : ℂ)^(-s)*FourierBridge.logPhase t (Real.log ((J.absNorm : ℝ)/D))) := by ring
-    _ = _ := by rw [hp]; ring
+  grind
 
 def inverseProfile (V W : ℝ→ℂ) (Dstar D : ℝ) (x : ℝ) : ℂ :=
   V (D*x/Dstar)*W x
@@ -96,8 +89,7 @@ def inverseProfile (V W : ℝ→ℂ) (Dstar D : ℝ) (x : ℝ) : ℂ :=
 lemma inverseProfile_at_norm (V W : ℝ→ℂ) (Dstar D x : ℝ) (hD : 0<D) :
     inverseProfile V W Dstar D (x/D)=V (x/Dstar)*W (x/D) := by
   unfold inverseProfile
-  congr 2
-  field_simp
+  grind
 
 lemma weighted_eq (χ : Character) (s : ℂ) (J : Ideal O) (hJ : J≠0) :
     IdealEuler.weighted (idealCoeff χ) s J=idealCoeff χ J*(J.absNorm : ℂ)^(-s) := by
@@ -114,7 +106,7 @@ theorem plain_phase_eq (χ : Character) (W : ℝ→ℂ) (D : ℝ) (hD : 0<D)
   unfold phasePolynomial
   apply Finset.sum_congr rfl
   intro J hJ
-  rw [plainCoefficient, weighted_eq χ s J (hS J hJ)]
+  rw [plainCoefficient, weighted_eq χ s J (by grind)]
   rfl
 
 theorem inverse_phase_eq (χ : Character) (V W : ℝ→ℂ) (Dstar D : ℝ) (hD : 0<D)
@@ -128,14 +120,13 @@ theorem inverse_phase_eq (χ : Character) (V W : ℝ→ℂ) (Dstar D : ℝ) (hD 
   unfold phasePolynomial
   apply Finset.sum_congr rfl
   intro J hJ
-  rw [inverseCoefficient, weighted_eq χ s J (hS J hJ), inverseProfile_at_norm V W Dstar D _ hD]
+  rw [inverseCoefficient, weighted_eq χ s J (by grind), inverseProfile_at_norm V W Dstar D _ hD]
   simp only [coefficient, ite_true]
   ring
 
 lemma normalization_norm (D : ℝ) (hD : 0<D) (s : ℂ) :
     ‖(D : ℂ)^((1/2 : ℂ)-s)‖=D^(1/2-s.re) := by
   rw [Complex.norm_cpow_eq_rpow_re_of_pos hD]
-  congr 1
   simp
 
 theorem pair_phase_norm (χ : Character) (V W₁ W₂ : ℝ→ℂ) (Dstar D N : ℝ)

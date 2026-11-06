@@ -8,24 +8,23 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondCenterSector
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers RayFourExpansion
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open InverseInitialArithmetic (sourceIdeal)
 open InversePrincipalEnergy InverseSecondPrincipalCaller
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
-  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 theorem first_parent_full_second_source
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo : ℕ} (parent : SecondParentSource ι Jo) (F D : Finset ι)
     (hq : parent.quotient = sourceIdeal p D)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
+    (negative : Bool) (χ : RayCharacter) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (coeff : σ→ι→ℂ)
     (hD : ∀ i∈slots,Disjoint (lists i) D)
     (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a) (hs : Function.support om⊆Set.Icc a b)
@@ -63,8 +62,7 @@ theorem first_parent_full_second_source
           (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K :=
       first_fresh_parent_radial_truncated p hp hg hinj hc parent F D hq negative χ Ψ m
         slots lists coeff hD om a b ha hs X height Y hX hY core K
-    _ = _ := congrArg (fun v=>v + secondSourceTail p hp hg hinj F Ψ₀ (secondParentPuncture p m parent)
-        (secondParentLabel p parent) (secondParentDivisor p parent) H₀ rowMajorant Y K) hret
+    _ = _ := by grind
 
 end
 end SevenEighths.InverseMoment

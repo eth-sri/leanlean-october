@@ -9,7 +9,6 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-open scoped BigOperators
 noncomputable section
 
 theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)
@@ -18,14 +17,14 @@ theorem bounded_finset_coefficient_sum_sq {C : Type*} (s : Finset C)
   classical
   have h := finite_expansion_energy ({()} : Finset Unit) s
     (fun _ => s) (fun _ => b) (fun _ => f) (s.card : ℝ)
-    (by simp) (by simpa using hb) (by simp)
-  simpa using h
+    (by simp) (by simp_all) (by simp)
+  simp_all
 
 theorem bounded_coefficient_sum_sq {C : Type*} [Fintype C]
     (b f : C → ℂ) (hb : ∀ c, ‖b c‖ ≤ 1) :
     ‖∑ c, b c * f c‖ ^ 2 ≤ (Fintype.card C : ℝ) * ∑ c, ‖f c‖ ^ 2 := by
   classical
-  simpa using bounded_finset_coefficient_sum_sq Finset.univ b f (by simpa using hb)
+  simpa using bounded_finset_coefficient_sum_sq Finset.univ b f (by simp_all)
 
 theorem positive_triple_enlarge {M H C : Type*}
     [DecidableEq M] [DecidableEq H] [DecidableEq C]
@@ -47,11 +46,11 @@ theorem positive_triple_enlarge {M H C : Type*}
     intro u hu
     obtain ⟨p, hp, rfl⟩ := Finset.mem_image.mp hu
     have hp' := Finset.mem_sigma.mp hp
-    exact Finset.mem_product.mpr ⟨hh p.1 hp'.1, hm p.1 hp'.1 p.2 hp'.2⟩
+    exact by grind
   have hb := Finset.sum_le_sum_of_injOn f hf.injOn hmapped
     (f := fun p : Σ _p : M × H, C => E p.1.2 p.1.1 p.2)
     (g := fun u : H × (M × C) => E u.1 u.2.1 u.2.2)
-    (by intros; exact le_rfl) (by intro u _ _; exact hE _ _ _)
+    (by grind) (by grind)
   simpa only [Finset.sum_sigma, Finset.sum_product] using hb
 
 theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
@@ -77,7 +76,7 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
     rw [(Finset.mem_filter.mp hx).2]
   have hf := finite_expansion_energy target source
     (fun y => source.filter (fun x => φ x = y)) (fun _ _ => 1) (fun _ => a) D
-    (fun _ _ => Finset.filter_subset _ _) (by simp) hfiber
+    (by simp) (by simp) hfiber
   have hf' : (∑ y ∈ target, ‖f y‖ ^ 2) ≤ D * ∑ x ∈ source, ‖a x‖ ^ 2 := by
     have hrhs : (∑ x ∈ source, ∑ y ∈ target,
         if x ∈ source.filter (fun x => φ x = y) then ‖a x‖ ^ 2 else 0) =
@@ -89,9 +88,7 @@ theorem column_fiber_sieve {K X Y : Type*} [DecidableEq X] [DecidableEq Y]
     simpa only [one_mul, f] using hf
   simp_rw [he]
   exact (hsieve f).trans (by
-    calc
-      _ ≤ Q * (D * ∑ x ∈ source, ‖a x‖ ^ 2) := mul_le_mul_of_nonneg_left hf' hQ
-      _ = _ := by ring)
+    nlinarith)
 
 end
 end SevenEighths.InverseMoment

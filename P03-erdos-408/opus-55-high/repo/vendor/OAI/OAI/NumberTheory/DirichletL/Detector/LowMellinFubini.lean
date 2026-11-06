@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.LowRowMellin
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
-open MeasureTheory CompletedGauss
+open scoped ContDiff
+open MeasureTheory
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma lowRowMellinIntegrand_common_support (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
@@ -30,7 +29,7 @@ lemma lowRowMellinIntegrand_common_support (C : CalibrationData) (W0 W1 Ω : ℝ
     rw [lowAdditiveCoefficient_outer_zero C W1 Y r.1 r.2 v h,mul_zero]
   · have ho : Ω (elementNorm r.2/lowPhysicalScale C X Y)=0 := by
       by_contra ho
-      exact hr ⟨h,ho⟩
+      exact by grind
     simp [lowRowMellinIntegrand,ho]
 
 lemma lowRowMellinIntegrand_mul_summable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
@@ -39,8 +38,7 @@ lemma lowRowMellinIntegrand_mul_summable (C : CalibrationData) (W0 W1 Ω : ℝ�
     Summable (fun r=>lowRowMellinIntegrand C W0 W1 Ω X Y r v*B r) := by
   obtain ⟨R,hR⟩ := lowRowMellinIntegrand_common_support C W0 W1 Ω hW1 hΩ X Y hX hY
   apply summable_of_ne_finset_zero (s:=R)
-  intro r hr
-  rw [hR v r hr,zero_mul]
+  simp_all
 
 lemma lowRowMellinIntegrand_sum_integrable (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (a0 b0 : ℝ) (ha0 : 0<a0) (hW0 : Function.support W0⊆Set.Icc a0 b0)
@@ -70,7 +68,7 @@ lemma lowRowMellinIntegrand_tsum_integral (C : CalibrationData) (W0 W1 Ω : ℝ�
     apply tsum_eq_sum
     intro r hr
     rw [hR v r hr,zero_mul]
-  rw [tsum_eq_sum (s:=R) (fun r hr=>by simp only [hR _ r hr,zero_mul,integral_zero])]
+  rw [tsum_eq_sum (s:=R) (fun r hr=>by simp_all)]
   simp_rw [he]
   exact (integral_finsetSum R (fun r _=>(lowRowMellinIntegrand_integrable C W0 W1 Ω a0 b0 ha0 hW0 hWs hΩ0 X Y hX hY r).mul_const _)).symm
 
@@ -83,9 +81,9 @@ theorem physicalRowWeight_tsum_low_mellin (C : CalibrationData) (W0 W1 : ℝ→�
         ∫v : ℝ,∑'r : PhysicalRowIndex,
           lowRowMellinIntegrand C W0 W1 (lowOuterCutoff (a0*a1) (max 1 (b0*b1))) X Y r v*B r := by
   let Ω := lowOuterCutoff (a0*a1) (max 1 (b0*b1))
-  have hΩ : HasCompactSupport Ω := lowOuterCutoff_compact _ _ (mul_pos ha0 ha1) (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
-  have hΩ0 : Ω 0=0 := lowOuterCutoff_small _ _ (mul_pos ha0 ha1) 0 (by positivity)
-  have hW1c : HasCompactSupport W1 := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
+  have hΩ : HasCompactSupport Ω := lowOuterCutoff_compact _ _ (by positivity) (by positivity)
+  have hΩ0 : Ω 0=0 := lowOuterCutoff_small _ _ (by positivity) 0 (by positivity)
+  have hW1c := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hW1
   simp_rw [physicalRowWeight_low_mellin C W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 hWs X Y hX hY]
   simp_rw [mul_assoc,←integral_mul_const]
   repeat rw [tsum_mul_left]

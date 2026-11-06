@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalPair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentEnergyState
 open HeckeFamily CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
 open CenteredMomentFiniteProfileExceptional
 open CenteredMomentInductionEnergy QuadraticInitialBound
-local notation "O"=>HeckeFamily.O
 
 structure NaturalState (Z Bmask bΦ:ℝ) where
   character : Character
-  fixedModulus : Ideal O
-  puncture : Ideal O
+  fixedModulus : Ideal HeckeFamily.O
+  puncture : Ideal HeckeFamily.O
   radial : Radial
   rowWidth : ℝ
   characterWidth : ℝ
@@ -42,7 +41,7 @@ def width (s:NaturalState Z Bmask bΦ):ℝ := s.rowWidth+s.characterWidth
 lemma width_nonneg (s:NaturalState Z Bmask bΦ):0≤s.width :=
   add_nonneg s.row_nonneg s.character_nonneg
 
-def mask (s:NaturalState Z Bmask bΦ):O :=
+def mask (s:NaturalState Z Bmask bΦ):HeckeFamily.O :=
   fixedBadMask*ConcretePrimeRowBridge.idealGenerator s.puncture
 
 def plainEnergy (s:NaturalState Z Bmask bΦ) {a b:ℝ} (p:Profiles a b)
@@ -65,7 +64,7 @@ lemma radical_bound (s:NaturalState Z Bmask bΦ):
     (map_dvd Ideal.absNorm (Ideal.dvd_iff_le.mpr (Ideal.le_radical (I:=s.puncture))))
 end NaturalState
 
-def ZeroBound (Q:Ideal O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×ℕ))(C Z₀:ℝ):Prop :=
+def ZeroBound (Q:Ideal HeckeFamily.O) (a b bΦ Bmask M ε:ℝ)(degree:ℕ)(S:Finset (ℕ×ℕ))(C Z₀:ℝ):Prop :=
   ∀Z:ℝ,Z₀≤Z→∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤M→
   ∀p:Profiles a b,∀t X₁ X₂:ℝ,0<X₁→0<X₂→
     s.plainEnergy p t X₁ X₂≤

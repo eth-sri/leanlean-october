@@ -9,9 +9,7 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic InverseSecondFibers CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.InverseMoment

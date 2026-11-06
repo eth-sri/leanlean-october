@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionarySlots
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 open CenteredMomentHeckeSlots CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
 
-lemma normalizedSlot_character (η ν : Character) (m A z : O)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t D : ℝ) :
+lemma normalizedSlot_character (η ν : Character) (m A z : HeckeFamily.O)
+    (S : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (t D : ℝ) :
     normalizedSlot η m A z S (fun P=>idealCoeff ν P*β P) t D=
       normalizedSlot (η.product ν) m A z S β t D := by
   unfold normalizedSlot rowSlot
@@ -25,7 +24,7 @@ lemma normalizedSlot_character (η ν : Character) (m A z : O)
   rw [idealCoeff_product]
   ring
 
-lemma product_row_presentation (η χ ν : Character) (m A z : O)
+lemma product_row_presentation (η χ ν : Character) (m A z : HeckeFamily.O)
     (hrow : ∀n,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n) :
     ∀n,elementCoeff (χ.product ν) n=rowTwist (elementHom (η.product ν)) m 1 (A*z) n := by
   intro n
@@ -35,8 +34,8 @@ lemma product_row_presentation (η χ ν : Character) (m A z : O)
   rw [elementCoeff_product]
   ring
 
-theorem relative_normalizedSlot_eq_ray (M : Ideal O) (H : Subgroup (O⧸M)ˣ)
-    (η χ ν : Character) (m A z : O)
+theorem relative_normalizedSlot_eq_ray (M : Ideal HeckeFamily.O) (H : Subgroup (HeckeFamily.O⧸M)ˣ)
+    (η χ ν : Character) (m A z : HeckeFamily.O)
     (hrow : ∀n,elementCoeff χ n=rowTwist (elementHom η) m 1 (A*z) n)
     (W : ℝ→ℂ) (b D σ t v : ℝ) (hD : 0<D) :
     normalizedSlot η m A z (primePool M H b D)

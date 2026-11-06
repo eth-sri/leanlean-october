@@ -10,33 +10,22 @@ noncomputable section
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -45,41 +34,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (activeGaussRowFactor)
@@ -110,20 +92,20 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
   let q : activeSupport T S → O := fun i => p i.val
   let hQ := activePrimes_pairwise_isCoprime P hinj T S
   let j := activeExponent T S
-  let row := finiteSexticRow Q (fun i => hg i.val) j
+  let row := finiteSexticRow Q (by grind) j
   let n := ∏ i, q i
   have hr (z : O) : star (finiteSquarefreeRow P hg T z) * finiteSquarefreeRow P hg S z = row z := by
     rw [finiteSquarefreeRow_pair_activeSupport]
     simp [Finset.disjoint_iff_inter_eq_empty.mp hd.symm, rowCoprimeMask, row, Q, j]
   have h := canonical_masked_radial_poisson_collected P hinj M Q hQ
-    (fun i => hg i.val) (fun i => hc i.val) j
+    (by grind) (fun i => hc i.val) j
     (activeExponent_ne_zero T S) (activeExponent_lt_six T S) W Y hY
   have hn : ‖eisEmbedding (finitePrimeModulus Q)‖ = ‖eisEmbedding n‖ :=
     GaussGeneratorTransport.finitePrimeModulus_norm_eq_product q
   dsimp only at h
   rw [hn] at h
   have ht := GaussGeneratorTransport.gauss_weighted_finite_radial_sum_transport
-    q (fun i => hp i.val) hQ (fun i => hg i.val) j M.powerset
+    q (by grind) hQ (by grind) j M.powerset
     (fun E => let e := primeSubsetGenerator P E
       (UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ) * row e /
         (‖eisEmbedding e‖ ^ 2 : ℝ))
@@ -131,19 +113,16 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
       paperRadialFourier W (Y * t / (‖eisEmbedding e‖ ^ 2 * ‖eisEmbedding n‖ ^ 2)))
   calc
     _ = ∑' z : O, rowCoprimeMask P M z * row z * W (‖eisEmbedding z‖ ^ 2 / Y) := by
-      apply tsum_congr
-      intro z
-      rw [hr]
+      grind
     _ = ((Y : ℂ) / (‖eisEmbedding n‖ : ℂ)) *
-        (canonicalNormalizedGauss Q hQ (fun i => hg i.val) j *
+        (canonicalNormalizedGauss Q hQ (by grind) j *
           ∑ E ∈ M.powerset,
             ((UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ) * row (primeSubsetGenerator P E) /
               (‖eisEmbedding (primeSubsetGenerator P E)‖ ^ 2 : ℝ)) *
             ∑' k : O, star (row k) * paperRadialFourier W
               (Y * ‖eisEmbedding k‖ ^ 2 /
                 (‖eisEmbedding (primeSubsetGenerator P E)‖ ^ 2 * ‖eisEmbedding n‖ ^ 2))) := by
-      rw [h]
-      ring
+      grind
     _ = _ := by
       rw [ht]
       simp only [Finset.mul_sum, ← tsum_mul_left]
@@ -156,9 +135,7 @@ theorem masked_pair_second_poisson {ι : Type*} [DecidableEq ι]
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
@@ -182,11 +159,9 @@ end
 
 section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical SchwartzMap
 
 section
-open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -195,7 +170,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
 open FirstPassCubeLabels (primeProductNorm_pos)
 
@@ -208,14 +182,12 @@ end
 
 section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+open scoped Classical
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic
+open scoped Classical
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
@@ -223,9 +195,9 @@ local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.fini
 
 theorem exists_label_unit (f : O) (I : Ideal O) (hf : Ideal.span {f} = I) :
     ∃ u : Oˣ, f = (u : O) * idealGenerator I := by
-  have hs : Ideal.span {idealGenerator I} = Ideal.span {f} := (span_idealGenerator I).trans hf.symm
+  have hs := (span_idealGenerator I).trans hf.symm
   obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hs
-  exact ⟨u, by simpa only [mul_comm] using hu.symm⟩
+  grind
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]

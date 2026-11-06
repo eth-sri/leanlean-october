@@ -10,16 +10,14 @@ public import OAI.NumberTheory.DirichletL.Descent.ClippedChild
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseSecondSourceBlocks
+open InverseInitialClippedColumns
+open InverseFirstPriorityParents
+open InverseWholePriorityRetainedSource RayFourExpansion
 theorem global_priority_fixed_child_step_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
     (hsupport:Function.support om⊆Set.Icc lo hi) (negative:Bool)
@@ -30,26 +28,26 @@ theorem global_priority_fixed_child_step_uniform_types
     ∃ (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (loFresh hiFresh : ℝ),
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
-      ∀ J:ℕ, ∃ C Cbin Czero Ctail : ℝ,0 ≤ C ∧ 0≤Cbin ∧ 0≤Czero ∧ 0≤Ctail ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
+      ∀ J:ℕ, ∃ C Cbin Czero Ctail : ℝ,0 ≤ C ∧ 0≤Cbin ∧ 0≤Czero ∧ 0≤Ctail ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (_hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     {Jo : ℕ} (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (InverseFirstPriorityParents.Source ι Jo))
     (_hvalid:∀x∈original,InverseFirstPriorityParents.SourceValid p x)
     (_hextra:∀x∈original,extra x.cube⊆x.cube.support)
     (w:InverseFirstPriorityParents.Source ι Jo→ℂ) (_hw:∀x∈original,‖w x‖≤1)
-    (Ψ:Eis→*ℂ) (m:Eis)
+    (Ψ:ActualEisensteinCubic.O→*ℂ) (m:ActualEisensteinCubic.O)
     (slots:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
     (cutoff:Finset ι→Finset ι→ℝ)
 ,
     ∀
         (Y:ℝ) (R:Finset σ→BlockIndex→ℝ) (L Z X εchild : ℝ) (Vlabel:BlockIndex→ℝ)
         (ell Ractive j tcount eta : ℝ) (M r V delta Acol Bfirst pi b : ℝ) (ρ : Fin 6 → ℝ) (t : ℝ)
-        (labels : Finset σ→BlockIndex→Finset (Ideal Eis)) (A : ℝ),
+        (labels : Finset σ→BlockIndex→Finset (Ideal ActualEisensteinCubic.O)) (A : ℝ),
       hi≤b → b≤bcap → (slots:Set σ).PairwiseDisjoint lists→slots.card≤K → 0≤A → (∀(ray:RayCharacter×RayCharacter)(core:FirstCoreIndex)(assigned:Finset σ), assigned⊆slots →
     let source:=InverseMomentGlobalRetainedGates.geometrySource p (unifiedSource p pool
       (InverseMomentWholePriorityParents.wholeAssignedParents p (fun x=>extra x.cube) original negative assigned lists) (fun _=>cutoff)) b X;
@@ -136,16 +134,16 @@ theorem global_priority_fixed_child_step_uniform_types
     v₁ af bf bcap haf hbcap ((subset_tsupport _).trans hs₁) (v₁.smooth ⊤)
   obtain ⟨w₂,a₂,b₂,ha₂,hab₂,hw₂,hsw₂,hfixed₂⟩:=canonical_actual_child_uniform
     v₂ af bf bcap haf hbcap ((subset_tsupport _).trans hs₂) (v₂.smooth ⊤)
-  refine ⟨w₁,w₂,min a₁ a₂,max b₁ b₂,lt_min ha₁ ha₂,
-    (min_le_left _ _).trans (hab₁.trans (le_max_left _ _)),hw₁,hw₂,
-    hsw₁.trans (Set.Icc_subset_Icc (min_le_left _ _) (le_max_left _ _)),
-    hsw₂.trans (Set.Icc_subset_Icc (min_le_right _ _) (le_max_right _ _)),?_⟩
+  refine ⟨w₁,w₂,min a₁ a₂,max b₁ b₂,by positivity,
+    (min_le_left _ _).trans (hab₁.trans (by simp)),hw₁,hw₂,
+    hsw₁.trans (Set.Icc_subset_Icc (by simp) (by simp)),
+    hsw₂.trans (Set.Icc_subset_Icc (by simp) (by simp)),?_⟩
   intro J
   obtain ⟨C₁,hC₁,he₁⟩:=hfixed₁ J
   obtain ⟨C₂,hC₂,he₂⟩:=hfixed₂ J
   obtain ⟨C,Cbin,Czero,Ctail,hC,hCbin,hCzero,hCtail,he⟩:=hstep (2*J)
   let Cmax:=max C₁ C₂
-  have hmax:0≤Cmax:=hC₁.le.trans (le_max_left _ _)
+  have hmax:0≤Cmax:=by positivity
   refine ⟨C*Cmax,Cbin,Czero,Ctail,mul_nonneg hC hmax,hCbin,hCzero,hCtail,?_⟩
   intro ι σ _ _ p hp _ hcop hg hpr hinj hc Jo extra pool original hvalid hextra w hw Ψ m slots lists a cutoff
     Y R L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst pi b ρ t labels A
@@ -153,7 +151,7 @@ theorem global_priority_fixed_child_step_uniform_types
     hYone hscale hy hyi hx hPcap hcubeCap₁ hcubeCap₂ hactiveCap hcommonCap hquotCap hrad hcutoff
   have hout:=he p hp hcop hg hpr hinj hc extra pool original hvalid hextra w hw Ψ m slots lists a cutoff
     Y R L Z X εchild Vlabel ell Ractive j tcount eta M r V delta Acol Bfirst pi b ρ t labels (Cmax*A)
-    hhib hdisj hslots (mul_nonneg hmax hA)
+    hhib hdisj hslots (by positivity)
   have hnew:
       (Z^(firstKappa M r ell V delta Acol Bfirst Ractive)*Real.exp ((9/2:ℝ)*(eta*Real.log Z)))*
         globalPriorityOriginalEnergy p hg hp hinj extra pool original w negative Ψ m slots lists a om X t Y ≤
@@ -172,7 +170,7 @@ theorem global_priority_fixed_child_step_uniform_types
           ((labels assigned d).filter Squarefree) (nonzeroChildFrequencyBall 1 (R assigned d)) (secondLabelWeight K)
           (fun f hf=>pow_nonneg (Nat.cast_nonneg _) _) Z X _
           (A*Z^(max 0 (secondCellColumnExponent Z X d)+Vlabel d+εchild)) d false u hZ hX
-          (hgeomcell.trans (mul_le_mul_of_nonneg_right hbcap' hX.le)) (mul_nonneg hA (Real.rpow_nonneg (zero_lt_one.trans hZ).le _))
+          (hgeomcell.trans (mul_le_mul_of_nonneg_right hbcap' hX.le)) (by positivity)
           (fun s=>hleft z d hd s J₁ hJ₁ γ hγ)
         change _≤(Cmax*A)*Z^(_)*_
         apply hh.trans
@@ -180,7 +178,7 @@ theorem global_priority_fixed_child_step_uniform_types
           unfold tripleHeight coordinateHeight
           positivity
         have hE:0≤A*Z^(max 0 (secondCellColumnExponent Z X d)+Vlabel d+εchild):=
-          mul_nonneg hA (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
+          by positivity
         convert mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_left C₁ C₂) hE) hH using 1 ; ring
       · intro z d hd u J₂ hJ₂ γ hγ
@@ -189,7 +187,7 @@ theorem global_priority_fixed_child_step_uniform_types
           ((labels assigned d).filter Squarefree) (nonzeroChildFrequencyBall 1 (R assigned d)) (secondLabelWeight K)
           (fun f hf=>pow_nonneg (Nat.cast_nonneg _) _) Z X _
           (A*Z^(max 0 (secondCellColumnExponent Z X d)+Vlabel d+εchild)) d true u hZ hX
-          (hgeomcell.trans (mul_le_mul_of_nonneg_right hbcap' hX.le)) (mul_nonneg hA (Real.rpow_nonneg (zero_lt_one.trans hZ).le _))
+          (hgeomcell.trans (mul_le_mul_of_nonneg_right hbcap' hX.le)) (by positivity)
           (fun s=>hright z d hd s J₂ hJ₂ γ hγ)
         change _≤(Cmax*A)*Z^(_)*_
         apply hh.trans
@@ -197,11 +195,11 @@ theorem global_priority_fixed_child_step_uniform_types
           unfold tripleHeight coordinateHeight
           positivity
         have hE:0≤A*Z^(max 0 (secondCellColumnExponent Z X d)+Vlabel d+εchild):=
-          mul_nonneg hA (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
+          by positivity
         convert mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (le_max_right C₁ C₂) hE) hH using 1 ; ring
     all_goals assumption
-  convert hnew using 1 ; ring
+  linarith
 end SevenEighths.InverseMoment
 
 end

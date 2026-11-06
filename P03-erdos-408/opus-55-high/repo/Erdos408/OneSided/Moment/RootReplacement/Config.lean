@@ -38,8 +38,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
-open scoped Matrix
+open Finset
 
 variable {K : ℕ}
 
@@ -131,9 +130,9 @@ theorem confInd_mem_Icc (x : ℝ) (d : Data K) (Y d₀ : ℝ) (ω : Conf x d Y d
 theorem dampDefect_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
   unfold dampDefect
-  have h₁ : Real.sqrt q ≤ 1 := Real.sqrt_le_one.mpr hq₁.le
-  have h₀ : 0 ≤ Real.sqrt q := Real.sqrt_nonneg q
-  split_ifs <;> constructor <;> linarith
+  have h₁ := Real.sqrt_le_one.mpr hq₁.le
+  have h₀ := Real.sqrt_nonneg q
+  grind
 
 /-- The line factor lies in `[0, 1]` for `q ∈ (0, 1)`. -/
 theorem confLineFactor_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} {d : Data K}
@@ -141,7 +140,7 @@ theorem confLineFactor_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} 
     0 ≤ confLineFactor q p ω l ∧ confLineFactor q p ω l ≤ 1 := by
   have hind : ∀ j, (0 : ℝ) ≤ (if l = confLines p ω j then 1 else 0) ∧
       (if l = confLines p ω j then (1 : ℝ) else 0) ≤ 1 := fun j => by
-    split_ifs <;> norm_num
+    grind
   have hfac : ∀ j, 0 ≤ 1 - dampDefect q (2 * momentPower x) j *
         (if l = confLines p ω j then (1 : ℝ) else 0) ∧
       1 - dampDefect q (2 * momentPower x) j *
@@ -156,7 +155,7 @@ theorem confLineFactor_mem_Icc {q : ℝ} (hq : 0 < q) (hq₁ : q < 1) {x : ℝ} 
   have hB₀ := prod_nonneg (s := (range (2 * momentPower x + 1)).filter (· ∉ activeSet p ω))
     fun j _ => (hfac j).1
   refine ⟨mul_nonneg (prod_nonneg fun j _ => (hind j).1) hB₀,
-    (mul_le_mul_of_nonneg_right hA hB₀).trans (by rw [one_mul]; exact hB)⟩
+    (mul_le_mul_of_nonneg_right hA hB₀).trans (by linarith)⟩
 
 /-! ### The line-free states among the square states -/
 
@@ -284,9 +283,7 @@ theorem freeRootModel_edgeOp_eq (A₀ : ℝ) (s s' : (freeRootModel d Y d₀ u v
 theorem visitInd_eq_zero_of_ne_one {t : (squareModel d Y d₀).State x d}
     (ht : visitInd x d Y d₀ u v r t ≠ 1) : visitInd x d Y d₀ u v r t = 0 := by
   unfold visitInd at ht ⊢
-  split_ifs at ht ⊢ with h
-  · exact (ht rfl).elim
-  · rfl
+  simp_all
 
 /-- The line-free weight of a path is the kernel `𝒮 𝒯 𝒮` along the included path, times the
 visit indicators: every visit carries `g` once or twice, and `g² = g`. -/
@@ -297,20 +294,20 @@ theorem pathWeight_eq_prod_confKernel {A₀ : ℝ} {N : ℕ} (hN : 0 < N)
         (toSquare (path j.succ))) * ∏ j, (visitInd x d Y d₀ u v r (toSquare (path j)) : ℂ) := by
   simp only [pathWeight, freeRootModel_edgeOp_eq]
   by_cases h : ∀ j, visitInd x d Y d₀ u v r (toSquare (path j)) = 1
-  · simp [h]
+  · simp_all
   -- step: a visit with `g = 0` kills both sides
   push Not at h
   obtain ⟨k, hk⟩ := h
   have hk₀ := visitInd_eq_zero_of_ne_one hk
-  rw [prod_eq_zero (mem_univ k) (by rw [hk₀, Complex.ofReal_zero]), mul_zero]
+  rw [prod_eq_zero (mem_univ k) (by simp_all), mul_zero]
   by_cases hl : k = Fin.last N
   · have hk0 : k ≠ 0 := by
       rw [hl]
-      exact Fin.ext_iff.not.2 (by simp; omega)
+      exact Fin.ext_iff.not.2 (by positivity)
     obtain ⟨j, rfl⟩ := Fin.exists_succ_eq.2 hk0
-    exact prod_eq_zero (mem_univ j) (by rw [hk₀, Complex.ofReal_zero, mul_zero])
+    exact prod_eq_zero (mem_univ j) (by simp_all)
   · obtain ⟨j, rfl⟩ := Fin.exists_castSucc_eq.2 hl
-    exact prod_eq_zero (mem_univ j) (by rw [hk₀, Complex.ofReal_zero, zero_mul, zero_mul])
+    exact prod_eq_zero (mem_univ j) (by simp_all)
 
 end Square
 

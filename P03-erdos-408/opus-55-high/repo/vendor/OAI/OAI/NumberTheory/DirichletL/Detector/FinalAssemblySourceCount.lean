@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyCountParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
-open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorRowCount HeckeDetectorAdaptiveCutoff
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeDetectorPhysicalSelection HeckeDetectorAmplitudeFirst HeckeDetectorAdaptiveCutoff
 open ProbeHighRowFamily
 
 theorem balanced_source_count_from_raw_moments
@@ -55,7 +55,7 @@ theorem balanced_source_count_from_raw_moments
   apply hcard.trans
   exact mul_le_mul_of_nonneg_right
     (hpref d hd hd' C a ε (cutoff (2*a-1) q) (Z^τ) ((Z^d)^(τ/(2*dmax))) i
-      hC ha' B hslots hbin) (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _)
+      hC ha' B hslots hbin) (by positivity)
 
 theorem high_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -93,7 +93,7 @@ theorem high_source_count_from_raw_moments
   apply hcard.trans
   exact mul_le_mul_of_nonneg_right
     (hpref d hd hd' C a ε (cutoff (2*a-1) q) (Z^τ) ((Z^d)^(τ/(2*dmax))) i
-      hC ha' B hslots hbin) (Real.rpow_nonneg (Real.rpow_nonneg (by linarith) _) _)
+      hC ha' B hslots hbin) (by positivity)
 
 theorem adaptive_source_count_from_raw_moments
     (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -126,18 +126,18 @@ theorem adaptive_source_count_from_raw_moments
   obtain ⟨KH,hKH,hhigh⟩ := high_source_count_from_raw_moments
     M H hH S φ hφ hφc hφp hφ0 hφne a₀ b₀ B₀ ha₀ hab₀ hB₀ hφs hφB εm hεm
     Label N n dmin dmax τ logCost heightCost momentCost binWidth hdmin hdmax hτ hl hh hb counts
-  refine ⟨max KB KH,lt_of_lt_of_le hKB (le_max_left _ _),?_⟩
+  refine ⟨max KB KH,by positivity,?_⟩
   filter_upwards [hbalanced,hhigh,eventually_ge_atTop (1:ℝ)] with Z hb hh hZ
   intro d hd hd' a ε Δ ν C q i hi ha ha' hε hε' hΔ hΔ' hν hC Slot B hslots hbin hne hq hmom
   by_cases hδ : 2*a-1≤5/6
   · simp only [ite_eq_left hδ] at hmom
     have hc := hb d hd hd' a ε Δ ν C q i hi ha hδ ha' hε hε' hΔ hΔ' hν hC B hslots hbin hne hq hmom
     simp only [adaptiveRowExponent,ite_eq_left hδ]
-    exact hc.trans (by gcongr;exact le_max_left _ _)
+    exact hc.trans (by gcongr;simp)
   · simp only [ite_eq_right hδ] at hmom
-    have hc := hh d hd hd' a ε Δ C q i hi (lt_of_not_ge hδ) ha' hε hε' hC B hslots hbin hmom
+    have hc := hh d hd hd' a ε Δ C q i hi (by linarith) ha' hε hε' hC B hslots hbin hmom
     simp only [adaptiveRowExponent,ite_eq_right hδ]
-    exact hc.trans (by gcongr;exact le_max_right _ _)
+    exact hc.trans (by gcongr;simp)
 
 end SevenEighths.ProbeFinalAssembly
 

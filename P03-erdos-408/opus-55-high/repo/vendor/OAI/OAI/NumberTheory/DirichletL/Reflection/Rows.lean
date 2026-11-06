@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.Canonical
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 namespace PrimeFamily
 variable {ι κ : Type*}
@@ -33,41 +31,41 @@ lemma sum_pairwise (G : PrimeFamily ι) (H : PrimeFamily κ)
   intro i k hik
   cases i with
   | inl i => cases k with
-    | inl k => exact hG (fun h => hik (congrArg Sum.inl h))
+    | inl k => exact hG (by grind)
     | inr k => exact hcross i k
   | inr i => cases k with
     | inl k => exact (hcross k i).symm
-    | inr k => exact hH (fun h => hik (congrArg Sum.inr h))
+    | inr k => exact hH (by grind)
 
-def residual (K : Ideal Eis) (hK : Admissible K) : PrimeFamily (PrimeIndex K) where
+def residual (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) : PrimeFamily (PrimeIndex K) where
   ideal := fun P => P.val
   maximal _P := inferInstance
   good := admissiblePrimeGood K hK
 
-lemma residual_product (K : Ideal Eis) (hK : Admissible K) :
+lemma residual_product (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) :
     (∏ P, (residual K hK).ideal P) = K := admissible_primeIndex_product K hK
 
-lemma residual_dvd (K : Ideal Eis) (hK : Admissible K) (P : PrimeIndex K) : P.val ∣ K :=
+lemma residual_dvd (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (P : PrimeIndex K) : P.val ∣ K :=
   Ideal.dvd_iff_le.mpr (primeIndex_le K hK.1 P)
 
-lemma residual_pairwise (K : Ideal Eis) (hK : Admissible K) :
+lemma residual_pairwise (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) :
     Pairwise (Function.onFun IsCoprime (residual K hK).ideal) := by
   intro P Q hPQ
   apply Ideal.isCoprime_of_isMaximal
   intro h
   exact hPQ (Subtype.ext h)
 
-def reflected {φ σ : Type*} (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K)
+def reflected {φ σ : Type*} (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K)
     (S : PrimeFamily σ) : PrimeFamily (φ ⊕ (PrimeIndex K ⊕ σ)) := F.sum ((residual K hK).sum S)
 
 lemma reflected_product {φ σ : Type*} [Fintype φ] [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) :
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ) :
     (∏ i, (F.reflected K hK S).ideal i) = (∏ i, F.ideal i)*K*(∏ i, S.ideal i) := by
   rw [reflected,sum_product,sum_product,residual_product]
   ring
 
 lemma reflected_pairwise {φ σ : Type*} [Fintype σ]
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ)
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal))
     (hS : Pairwise (Function.onFun IsCoprime S.ideal))
     (hKS : IsCoprime K (∏ i, S.ideal i))
@@ -85,7 +83,7 @@ lemma reflected_pairwise {φ σ : Type*} [Fintype σ]
     | inr i => exact hFS f i
 
 lemma reflected_period {φ σ : Type*}
-    (F : PrimeFamily φ) (K : Ideal Eis) (hK : Admissible K) (S : PrimeFamily σ) (N : Eis)
+    (F : PrimeFamily φ) (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : PrimeFamily σ) (N : ActualEisensteinCubic.O)
     (hF : ∀ f, IsCoprime (Ideal.span {N}) (F.ideal f))
     (hK' : IsCoprime (Ideal.span {N}) K)
     (hS : ∀ i, IsCoprime (Ideal.span {N}) (S.ideal i)) :

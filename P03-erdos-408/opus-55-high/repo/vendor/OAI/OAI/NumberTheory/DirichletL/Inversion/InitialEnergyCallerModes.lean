@@ -9,22 +9,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 open SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialKernelBridge
 open SevenEighths.InverseInitialEnergyCallerFamily SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialEnergyCallerModes
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem canonicalColumn_marked_sum
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Point ι) (hE : x.divisor⊆x.common)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis)
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j h : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (Z D B v : ℝ) :
     (∑ N∈(F\x.overlap).powerset,
@@ -33,11 +32,11 @@ theorem canonicalColumn_marked_sum
       ∑ J∈slots.powerset,primeMark J lists a (x.common∪x.overlap)*
         finiteCanonicalMarkedRow p hp hcop hg F Ψ (j*quotient p x)
           (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
-          (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:Eis)^5*h))
+          (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h))
           (slots\J) lists a W (Z^(columnCenter D B v)) := by
   have hgen (A : Finset ι) : primaryGenerator (sourceIdeal p A)≠0 := by
     rw [sourceIdeal_gen p hp hpr A]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
+    exact Finset.prod_ne_zero_iff.mpr (by grind)
   have hd : Ideal.span {primaryGenerator (sourceIdeal p x.divisor)}=sourceIdeal p x.divisor :=
     (primaryGenerator_spec _ (hgen _)).1
   have ht : Ideal.span {quotient p x}=sourceIdeal p (x.common\x.divisor) :=
@@ -50,14 +49,13 @@ theorem canonicalColumn_marked_sum
     apply mul_right_cancel₀ (hgen x.divisor)
     simpa only [Units.val_one,one_mul] using hu.symm
   subst u
-  have he := hsplit F Ψ j ((unitSector p hp hpr x:Eis)^5*h) slots lists a W
+  have he := hsplit F Ψ j ((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h) slots lists a W
     (Z^(columnCenter D B v))
   simp only [Units.val_one,one_pow,one_mul] at he
   convert he using 1
   · apply Finset.sum_congr rfl
     intro N hN
-    simp only [canonicalColumn,primaryGenerator_mul,sourceIdeal_gen p hp hpr x.overlap,
-      secondChildColumn,columnRatio_actual,Finset.union_assoc]
+    simp only [canonicalColumn, primaryGenerator_mul, sourceIdeal_gen p hp hpr x.overlap, columnRatio_actual, Finset.union_assoc]
   · rfl
 
 def sourcePoint (x : Source (ι:=ι) 0) (N M : Finset ι) : Point ι where
@@ -90,14 +88,14 @@ theorem sourcePoint_unitSector
     unitSector p hp hpr (sourcePoint x N M)=unitSector p hp hpr (sourcePoint x ∅ ∅) := by
   have hgen : primaryGenerator (sourceIdeal p x.divisor)≠0 := by
     rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
+    exact Finset.prod_ne_zero_iff.mpr (by grind)
   apply Units.val_injective
   apply mul_right_cancel₀ hgen
   exact (unitSector_spec p hp hpr (sourcePoint x N M)).symm.trans
     (unitSector_spec p hp hpr (sourcePoint x ∅ ∅))
 
 def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (j h : Eis) (x : Source (ι:=ι) 0)
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j h : ActualEisensteinCubic.O) (x : Source (ι:=ι) 0)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (W : ℝ→ℂ) (Z D B v : ℝ) : ℂ :=
   ∑ J∈slots.powerset,primeMark J lists a (x.common∪x.overlap)*
@@ -105,13 +103,13 @@ def markedModeColumn (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       (j*quotient p (sourcePoint x ∅ ∅))
       (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
       (primaryGenerator (sourceIdeal p x.divisor)*
-        ((unitSector p hp hpr (sourcePoint x ∅ ∅):Eis)^5*h))
+        ((unitSector p hp hpr (sourcePoint x ∅ ∅):ActualEisensteinCubic.O)^5*h))
       (slots\J) lists a W (Z^(columnCenter D B v))
 
 theorem canonicalPairMode_rectangle
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (x : Source (ι:=ι) 0) (hE : x.divisor⊆x.common)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (j : Eis)
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ) (ρ : SecondRayIndex)
     (z : JointLogSeparation.Frequency × (Fin 6→ℝ)) :

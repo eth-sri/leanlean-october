@@ -8,7 +8,6 @@ public import Mathlib.Data.Nat.Choose.Sum
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -24,8 +23,6 @@ def multFact (z : Multiset α) : ℝ :=
 omit [Fintype α] in
 lemma multFact_pos (z : Multiset α) : 0 < multFact z := by
   unfold multFact
-  apply Finset.prod_pos
-  intro u _
   positivity
 
 -- Sum over multisets of fixed size with factorial denominators.

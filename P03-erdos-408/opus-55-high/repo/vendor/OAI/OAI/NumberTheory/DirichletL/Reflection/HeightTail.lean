@@ -10,11 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff SchwartzMap
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
+variable {ι : Type*} [Fintype ι] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 end
 end SevenEighths.InverseReflectedPhase

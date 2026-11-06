@@ -10,25 +10,24 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+open CompletedGauss ConcretePrimeRowBridge
+open CanonicalQuadraticSieve InverseInitialClippedColumns
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (labels:Finset (Ideal O))(hlabels:∀I∈labels,primaryGenerator I≠0)
-    (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z F R:ℝ)(hZ:0<Z) :
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(hlabels:∀I∈labels,primaryGenerator I≠0)
+    (weight:Ideal ActualEisensteinCubic.O→ℝ)(W:ℝ→ℂ)(X Z F R:ℝ)(hZ:0<Z) :
     normalizedColumnEnergy p hp hcop hg pool Ψ m slots lists a labels
       (nonzeroChildFrequencyBall 1 R) weight W X Z F=
     Z^(-F)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
       ‖finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (idealGenerator I) k slots lists a W X‖^2) := by
   have hn:‖((Z^(-F/2):ℝ):ℂ)‖^2=Z^(-F) := by
-    rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (Real.rpow_pos_of_pos hZ _),
+    rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (by positivity),
       ←Real.rpow_mul_natCast hZ.le]
     congr 1
     ring
@@ -37,16 +36,16 @@ theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][De
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro I hI
-  rw [canonical_ball_generator_energy p hp hcop hg pool Ψ m I (hlabels I hI)]
+  rw [canonical_ball_generator_energy p hp hcop hg pool Ψ m I (by grind)]
   ring
 
 theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
-    (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
-    (Ψ:O→*ℂ)(m:O)(slots:Finset σ)
+    (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)
     (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
     (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
-    (labels:Finset (Ideal O))(hlabels:∀I∈labels,Supported I)
-    (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z Fexp R:ℝ)(hZ:0<Z) :
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(hlabels:∀I∈labels,Supported I)
+    (weight:Ideal ActualEisensteinCubic.O→ℝ)(W:ℝ→ℂ)(X Z Fexp R:ℝ)(hZ:0<Z) :
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
@@ -63,7 +62,7 @@ theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
   dsimp only
   exact (normalizedColumnEnergy_eq_generator_sum (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m slots lists a labels
-    (fun I hI=>supported_primaryGenerator_ne_zero I (hlabels I hI)) weight W X Z Fexp R hZ).symm
+    (fun I hI=>supported_primaryGenerator_ne_zero I (by grind)) weight W X Z Fexp R hZ).symm
 
 end SevenEighths.InverseMoment
 

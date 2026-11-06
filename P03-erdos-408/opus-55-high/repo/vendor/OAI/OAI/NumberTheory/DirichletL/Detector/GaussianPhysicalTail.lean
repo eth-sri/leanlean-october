@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianPhysicalTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
-open MeasureTheory CompletedGauss FourierBridge
+open scoped Classical
+open MeasureTheory FourierBridge
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def gaussianPhysicalFamilyIntegral {α ι : Type*} [Fintype ι]
     (η : HeckeFamily.Character) (C : CalibrationData) (W0 W1 : ℝ→ℂ)
@@ -42,7 +41,7 @@ lemma gaussianPhysicalFamily_mass_eq {α ι : Type*} [Fintype ι]
   rw [Finset.sum_product]
   apply Finset.sum_congr rfl
   intro k hk
-  rw [tsum_eq_sum (s:=R) (fun r hr=>by rw [hR k hk r hr,norm_zero]),Finset.mul_sum]
+  rw [tsum_eq_sum (s:=R) (fun r hr=>by simp_all),Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro r hr
   rw [norm_mul]
@@ -66,10 +65,8 @@ lemma gaussianPhysicalFamily_integral_eq {α ι : Type*} [Fintype ι]
   rw [Finset.sum_product]
   apply Finset.sum_congr rfl
   intro k hk
-  rw [tsum_eq_sum (s:=R) (fun r hr=>by rw [hR k hk r hr,zero_mul]),Finset.mul_sum,Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro r hr
-  ring
+  rw [tsum_eq_sum (s:=R) (fun r hr=>by simp_all),Finset.mul_sum,Finset.sum_mul]
+  grind
 
 theorem gaussianPhysicalFamily_remote (V : SchwartzMap ℝ ℂ)
     (hV : HasCompactSupport (V:ℝ→ℂ)) (N : ℕ) :

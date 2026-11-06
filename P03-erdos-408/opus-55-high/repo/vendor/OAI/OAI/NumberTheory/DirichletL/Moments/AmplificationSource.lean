@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Moments.LiveDomain
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSource
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
+open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
 open CenteredMomentAmplificationAllocation CenteredMomentGaussEnergy
-open CenteredMomentSupportedCorrelation CenteredMomentSourceRow CenteredMomentLiveDomain
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSupportedCorrelation CenteredMomentSourceRow
 
- theorem primeRoot_ne_zero (p : O) (hp : p ≠ 0) (k : ℕ) : primeRoot p k ≠ 0 := by
+ theorem primeRoot_ne_zero (p : ActualEisensteinCubic.O) (hp : p ≠ 0) (k : ℕ) : primeRoot p k ≠ 0 := by
   unfold primeRoot
   apply Complex.ofReal_ne_zero.mpr
   apply Real.sqrt_ne_zero'.mpr
@@ -25,11 +24,11 @@ local notation "O" => ActualEisensteinCubic.O
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hp))
 
-theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
+theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i}))
     (hap : ∀ i, goodLambda^2 ∣ a i-1) (c : α → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) :
+    (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
+    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : ActualEisensteinCubic.O) :
     amplificationError S a ha c (fun i => multiplicity p (a i)) p (n+1) h =
       (primeRoot p (n+1)*errorScalar p hp.ne_zero n h)*
         gaussPolynomial S
@@ -48,9 +47,9 @@ theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
     let r := primeRemainder p hp (a i) (supported_element_ne_zero _ (ha i))
     have hr := primeRemainder_supported p hp (a i) (ha i)
     have hcop : IsCoprime p r := hp.irreducible.coprime_iff_not_dvd.mpr
-      (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).2
+      (primeRemainder_spec p hp (a i) (by grind)).2
     have hf : a i=p^(n+1)*r := by
-      simpa only [hv] using (primeRemainder_spec p hp (a i) (supported_element_ne_zero _ (ha i))).1
+      simpa only [hv] using (primeRemainder_spec p hp (a i) (by grind)).1
     have he := central_error_shortening p r n hs hr hpp
       (primeRemainder_primary p hp hpp (a i) (ha i) (hap i)) hcop h
     have he' : gaussRow (a i) (ha i) h-gaussRow (a i) (ha i) (p^6*h) =
@@ -58,14 +57,13 @@ theorem original_error_shortening {α : Type*} (S : Finset α) (a : α → O)
           (residualCharacter p (n+1) r*gaussRow r hr h)) := by
       have hh := (div_eq_iff (primeRoot_ne_zero p hp.ne_zero (n+1))).mp he
       simp only [hf,errorScalar]
-      exact hh.trans (by ring)
-    rw [he']
-    ring
-  · simp only [ite_eq_right hv,zero_mul,mul_zero]
+      exact by grind
+    grind
+  simp_all
 
-theorem source_error_shortening (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) :
+theorem source_error_shortening (S : Finset (Ideal ActualEisensteinCubic.O)) (c : Ideal ActualEisensteinCubic.O → ℂ)
+    (p : ActualEisensteinCubic.O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
+    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : ActualEisensteinCubic.O) :
     amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h =

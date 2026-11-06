@@ -7,44 +7,43 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.KernelTransfer
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson FourierBridge
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic ConcretePrimeRowBridge
+open EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma log_shell_ratio (K q : ℝ) (hK : 0 < K) (hq : K / 2 ≤ q ∧ q ≤ K) :
     |Real.log (q / K)| ≤ 4 := by
   apply CanonicalQuadraticSieve.middleRatio_log_bound
   constructor
   · apply (le_div_iff₀ hK).mpr
-    linarith [hq.1]
+    linarith
   · apply (div_le_iff₀ hK).mpr
-    linarith [hq.2]
+    linarith
 
 lemma log_inverse_shell_ratio (N q : ℝ) (hN : 0 < N) (hq : N / 2 ≤ q ∧ q ≤ N) :
     |Real.log (N / q)| ≤ 4 := by
-  have hq0 : 0 < q := by linarith [hq.1]
+  have hq0 : 0 < q := by linarith
   apply CanonicalQuadraticSieve.middleRatio_log_bound
   constructor
   · apply (le_div_iff₀ hq0).mpr
-    linarith [hq.2]
+    linarith
   · apply (div_le_iff₀ hq0).mpr
-    linarith [hq.1]
+    linarith
 
 lemma radial_product_log_identity (M K N q u v : ℝ)
     (hK : 0 < K) (hN : 0 < N) (hq : 0 < q) (hu : 0 < u) (hv : 0 < v) :
     (M * K / N ^ 2) * Real.exp (Real.log (q / K) + (Real.log (N / u) + Real.log (N / v))) =
       M * q / (u * v) := by
-  rw [Real.exp_add, Real.exp_add, Real.exp_log (div_pos hq hK),
-    Real.exp_log (div_pos hN hu), Real.exp_log (div_pos hN hv)]
+  rw [Real.exp_add, Real.exp_add, Real.exp_log (by positivity),
+    Real.exp_log (by positivity), Real.exp_log (by positivity)]
   field_simp
 
 theorem cubic_frequency_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M K N : ℝ) (_hM : 0 < M) (_hK : 0 < K) (_hN : 0 < N)
-        (rows : m → O) (cols : n → Ideal O)
+        (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, K / 2 ≤ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ∧
           (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ K)
@@ -76,7 +75,7 @@ theorem cubic_frequency_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     (fun i => log_shell_ratio K _ hK (hrows i))
     (fun j => log_inverse_shell_ratio N _ hN (hcols j).2)
   simp_rw [radial_product_log_identity M K N _ _ _ hK hN (hq _) (hn _) (hn _)] at hp
-  exact hp
+  omega
 
 end
 end SevenEighths.CubicSieve

@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Detector.GramLatticeDecay
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical FourierTransform SchwartzMap RealInnerProductSpace
+open scoped Classical SchwartzMap
 
 namespace ProbeGramAnnularLattice
 open ProbeGramLatticeDecay ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-local notation "O" => ActualEisensteinCubic.O
 
 def AnnularSupport (a b : ℝ) (W : 𝓢(Joint, ℂ)) : Prop :=
   Function.support W ⊆ {z : Joint | a ≤ ‖z.fst‖^2 ∧ ‖z.fst‖^2 ≤ b ∧
     a ≤ ‖z.snd‖^2 ∧ ‖z.snd‖^2 ≤ b}
 
-theorem scaled_embedding_norm_sq (m : O) (N : ℝ) (hN : 0 ≤ N) :
+theorem scaled_embedding_norm_sq (m : ActualEisensteinCubic.O) (N : ℝ) (hN : 0 ≤ N) :
     ‖eisEmbedding m / (Real.sqrt N : ℂ)‖^2 = ‖eisEmbedding m‖^2 / N := by
   rw [norm_div, div_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs, Real.sq_sqrt hN]
 
 theorem physical_sample_eq_zero (a b : ℝ) (ha : 0 < a) (hb : 0 < b)
     (W : 𝓢(Joint, ℂ)) (hW : AnnularSupport a b W)
-    (N : ℝ) (hN : 0 < N) (hsmall : N < b⁻¹) (m : O × O) :
+    (N : ℝ) (hN : 0 < N) (hsmall : N < b⁻¹) (m : ActualEisensteinCubic.O × ActualEisensteinCubic.O) :
     W (physicalPoint N m) = 0 := by
   by_contra h
   have hw := hW h
@@ -43,20 +42,20 @@ theorem physical_sample_eq_zero (a b : ℝ) (ha : 0 < a) (hb : 0 < b)
     simpa only [mul_inv_cancel₀ hb.ne'] using hh
   linarith
 
-def cauchyWeight (m : O) : ℝ := ((1+‖eisEmbedding m‖^2)^2)⁻¹
+def cauchyWeight (m : ActualEisensteinCubic.O) : ℝ := ((1+‖eisEmbedding m‖^2)^2)⁻¹
 
 theorem cauchyWeight_summable : Summable cauchyWeight := by
-  change Summable (fun m : O => ((1+‖eisEmbedding m‖^2)^2)⁻¹)
+  change Summable (fun m : ActualEisensteinCubic.O => ((1+‖eisEmbedding m‖^2)^2)⁻¹)
   simpa only [one_mul] using scaled_eisenstein_cauchy_summable 1 zero_lt_one
 
-theorem cauchyWeight_mass_le : (∑' m : O, cauchyWeight m) ≤ 4*(1+Real.pi)^2 := by
+theorem cauchyWeight_mass_le : (∑' m : ActualEisensteinCubic.O, cauchyWeight m) ≤ 4*(1+Real.pi)^2 := by
   simpa only [cauchyWeight, one_mul] using scaled_eisenstein_cauchy_small 1 zero_lt_one le_rfl
 
 theorem physical_subunit_majorant (W : 𝓢(Joint, ℂ))
-    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) (m : O × O) :
+    (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) (m : ActualEisensteinCubic.O × ActualEisensteinCubic.O) :
     ‖W (physicalPoint N m)‖ ≤ (2:ℝ)^8 * sourceControl (Finset.Iic (8,0)) W *
       (cauchyWeight m.1 * cauchyWeight m.2) := by
-  have hn (m : O) : ‖eisEmbedding m‖^2 ≤ ‖eisEmbedding m / (Real.sqrt N : ℂ)‖^2 := by
+  have hn (m : ActualEisensteinCubic.O) : ‖eisEmbedding m‖^2 ≤ ‖eisEmbedding m / (Real.sqrt N : ℂ)‖^2 := by
     rw [scaled_embedding_norm_sq m N hN.le, le_div_iff₀ hN]
     exact mul_le_of_le_one_right (sq_nonneg _) hN1
   have hd : (1+‖eisEmbedding m.1‖^2)^2 * (1+‖eisEmbedding m.2‖^2)^2 ≤
@@ -69,21 +68,21 @@ theorem physical_subunit_majorant (W : 𝓢(Joint, ℂ))
       (eisEmbedding m.2 / (Real.sqrt N : ℂ)))
   dsimp only [cauchyWeight]
   rw [← mul_inv, ← div_eq_mul_inv, le_div_iff₀ (by positivity)]
-  simpa only [mul_comm] using hp
+  linarith
 
 theorem physical_subunit_bound (W : 𝓢(Joint, ℂ))
     (N : ℝ) (hN : 0 < N) (hN1 : N ≤ 1) :
-    (∑' m : O × O, ‖W (physicalPoint N m)‖) ≤
+    (∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, ‖W (physicalPoint N m)‖) ≤
       ((2:ℝ)^8*(4*(1+Real.pi)^2)^2) * sourceControl (Finset.Iic (8,0)) W := by
   have hg := cauchyWeight_summable
   have hp := hg.mul_of_nonneg hg (fun _ => by unfold cauchyWeight; positivity)
     (fun _ => by unfold cauchyWeight; positivity)
   calc
-    _ ≤ ∑' m : O × O, ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*
+    _ ≤ ∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*
         (cauchyWeight m.1*cauchyWeight m.2) :=
       (physical_summable W N hN).tsum_le_tsum (physical_subunit_majorant W N hN hN1)
         (hp.mul_left _)
-    _ = ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(∑' m : O, cauchyWeight m)^2 := by
+    _ = ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(∑' m : ActualEisensteinCubic.O, cauchyWeight m)^2 := by
       rw [tsum_mul_left, ← hg.tsum_mul_tsum hg hp, pow_two]
     _ ≤ ((2:ℝ)^8*sourceControl (Finset.Iic (8,0)) W)*(4*(1+Real.pi)^2)^2 := by
       apply mul_le_mul_of_nonneg_left _ (mul_nonneg (by positivity) (sourceControl_nonneg _ _))
@@ -94,7 +93,7 @@ theorem physical_subunit_bound (W : 𝓢(Joint, ℂ))
 theorem annular_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : 𝓢(Joint, ℂ)), AnnularSupport a b W → ∀ (N : ℝ), 0 < N →
-        (∑' m : O × O, ‖W (physicalPoint N m)‖) ≤ C * sourceControl S W * N^2 := by
+        (∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, ‖W (physicalPoint N m)‖) ≤ C * sourceControl S W * N^2 := by
   obtain ⟨S₀,C₀,hC₀,h₀⟩ := physical_lattice_bound
   let K : ℝ := (2:ℝ)^8*(4*(1+Real.pi)^2)^2
   have hK : 0 < K := by dsimp [K]; positivity
@@ -110,9 +109,9 @@ theorem annular_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     exact mul_le_mul (le_add_of_nonneg_right (by positivity)) hS₀
       (sourceControl_nonneg _ _) (by positivity)
   · by_cases hs : N < b⁻¹
-    · have hz : (∑' m : O × O, ‖W (physicalPoint N m)‖) = 0 := by
+    · have hz : (∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, ‖W (physicalPoint N m)‖) = 0 := by
         calc
-          _ = ∑' _m : O × O, (0:ℝ) := tsum_congr (fun m => by
+          _ = ∑' _m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, (0:ℝ) := tsum_congr (fun m => by
             rw [physical_sample_eq_zero a b ha hb W hW N hN hs m, norm_zero])
           _ = 0 := tsum_zero
       rw [hz]
@@ -134,9 +133,9 @@ theorem annular_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
             (mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hC₀.le)
               (sourceControl_nonneg _ _)) (sq_nonneg _)
 
-theorem weighted_summable (W : 𝓢(Joint, ℂ)) (d : O × O → ℂ) (B : ℝ)
+theorem weighted_summable (W : 𝓢(Joint, ℂ)) (d : ActualEisensteinCubic.O × ActualEisensteinCubic.O → ℂ) (B : ℝ)
     (hd : ∀ m, ‖d m‖ ≤ B) (N : ℝ) (hN : 0 < N) :
-    Summable (fun m : O × O => d m * W (physicalPoint N m)) := by
+    Summable (fun m : ActualEisensteinCubic.O × ActualEisensteinCubic.O => d m * W (physicalPoint N m)) := by
   apply Summable.of_norm
   apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ ((physical_summable W N hN).mul_left B)
   intro m
@@ -146,23 +145,23 @@ theorem weighted_summable (W : 𝓢(Joint, ℂ)) (d : O × O → ℂ) (B : ℝ)
 theorem annular_weighted_lattice_bound (a b : ℝ) (ha : 0 < a) (hab : a < b) :
     ∃ (S : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ (W : 𝓢(Joint, ℂ)), AnnularSupport a b W →
-      ∀ (d : O × O → ℂ) (B : ℝ), 0 ≤ B → (∀ m, ‖d m‖ ≤ B) →
+      ∀ (d : ActualEisensteinCubic.O × ActualEisensteinCubic.O → ℂ) (B : ℝ), 0 ≤ B → (∀ m, ‖d m‖ ≤ B) →
       ∀ (N : ℝ), 0 < N →
-        Summable (fun m : O × O => d m * W (physicalPoint N m)) ∧
-        ‖∑' m : O × O, d m * W (physicalPoint N m)‖ ≤ C * sourceControl S W * B * N^2 := by
+        Summable (fun m : ActualEisensteinCubic.O × ActualEisensteinCubic.O => d m * W (physicalPoint N m)) ∧
+        ‖∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, d m * W (physicalPoint N m)‖ ≤ C * sourceControl S W * B * N^2 := by
   obtain ⟨S,C,hC,hbound⟩ := annular_lattice_bound a b ha hab
   refine ⟨S,C,hC,?_⟩
   intro W hW d B hB hd N hN
   refine ⟨weighted_summable W d B hd N hN,?_⟩
   calc
-    _ ≤ ∑' m : O × O, B * ‖W (physicalPoint N m)‖ := by
+    _ ≤ ∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, B * ‖W (physicalPoint N m)‖ := by
       apply (norm_tsum_le_tsum_norm ((weighted_summable W d B hd N hN).norm)).trans
       apply ((weighted_summable W d B hd N hN).norm).tsum_le_tsum _
         ((physical_summable W N hN).mul_left B)
       intro m
       rw [norm_mul]
       exact mul_le_mul_of_nonneg_right (hd m) (norm_nonneg _)
-    _ = B * ∑' m : O × O, ‖W (physicalPoint N m)‖ := tsum_mul_left
+    _ = B * ∑' m : ActualEisensteinCubic.O × ActualEisensteinCubic.O, ‖W (physicalPoint N m)‖ := tsum_mul_left
     _ ≤ B * (C * sourceControl S W * N^2) := mul_le_mul_of_nonneg_left (hbound W hW N hN) hB
     _ = _ := by ring
 

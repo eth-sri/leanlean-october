@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,41 +31,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson UnrestrictedIdealReindex TruncatedPrincipalPoisson
+open ConcretePrimeRowBridge
+open EisensteinSchwartzPoisson
 
 def squarefreeIdealRange (K : ℝ) : Finset (Ideal O) := (idealsUpTo ⌊K⌋₊).filter Squarefree
 
@@ -104,7 +85,7 @@ theorem tsum_squarefree_norm_cutoff (K : ℝ) (f : Ideal O → ℂ) :
   have he : Function.Injective e := by
     intro B C h
     apply Subtype.ext
-    exact congrArg (fun D : {B : Ideal O // Squarefree B} => D.val) h
+    exact by grind
   let F : {B : Ideal O // Squarefree B} → ℂ := fun B =>
     if (Ideal.absNorm B.val : ℝ) ≤ K then f B.val else 0
   have hs : Function.support F ⊆ Set.range e := by
@@ -112,7 +93,7 @@ theorem tsum_squarefree_norm_cutoff (K : ℝ) (f : Ideal O → ℂ) :
     have hN : (Ideal.absNorm B.val : ℝ) ≤ K := by
       by_contra hn
       exact hB (ite_eq_right hn)
-    exact ⟨⟨B.val, mem_squarefreeIdealRange.mpr ⟨B.property, hN⟩⟩, Subtype.ext rfl⟩
+    exact ⟨⟨B.val, mem_squarefreeIdealRange.mpr (by grind)⟩, Subtype.ext rfl⟩
   have ht := he.tsum_eq hs
   change (∑' B, F B) = _
   rw [← ht, tsum_fintype]
@@ -137,7 +118,6 @@ end CanonicalQuadraticSieve
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
@@ -184,7 +164,7 @@ theorem truncatedSecondZero_eq_density
   have hh : star (H G) * H G = (‖H G‖ ^ 2 : ℝ) := by
     rw [mul_comm, Complex.star_def, Complex.mul_conj, Complex.normSq_eq_norm_sq]
   rw [hi, norm_mul, mul_pow, Complex.ofReal_mul]
-  rw [mul_assoc (↑(‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) G‖ ^ 2)) (star (H G)), hh]
+  grind
 
 omit [DecidableEq ι] in
 theorem secondDiagonalMass_nonneg_le
@@ -213,12 +193,11 @@ theorem truncatedSecondZero_norm_le
   rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs,
     Complex.norm_of_nonneg (secondDiagonalMass_nonneg_le p hg F Ψ m c d H).1]
   exact mul_le_mul_of_nonneg_left (secondDiagonalMass_nonneg_le p hg F Ψ m c d H).2
-    (mul_nonneg (abs_nonneg _) (norm_nonneg _))
+    (by positivity)
 
 end
 section
 
-open ActualEisensteinCubic
 
 def secondDyadicSector {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
     (F : Finset ι) (K : Finset ι → Finset ι → Finset O) (R : Finset ι)
@@ -232,8 +211,6 @@ theorem sum_secondDyadicSector {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
       ∑ x ∈ secondExpansionSector F (fun G E => (K G E).erase 0) R, H x := by
   simp only [secondDyadicSector, Finset.sum_filter]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro x hx
   simp
 
 variable {ι κ : Type*} [DecidableEq ι] [DecidableEq κ] [Fintype κ]
@@ -266,9 +243,7 @@ end
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
-open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstPassCubeLabels (columnLog jLabel b0Label)
@@ -276,9 +251,7 @@ open JointLogSeparation (tripleCoefficient)
 
 end
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
-open ActualEisensteinCubic
+open scoped Classical SchwartzMap
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -290,9 +263,7 @@ namespace SecondPassIntegration
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open scoped Classical SchwartzMap
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -302,15 +273,11 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 
 end SecondPassIntegration
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open JointLogSeparation
 open FirstPassCubeLabels (b0Label)
 
 variable {ι : Type*} [DecidableEq ι]

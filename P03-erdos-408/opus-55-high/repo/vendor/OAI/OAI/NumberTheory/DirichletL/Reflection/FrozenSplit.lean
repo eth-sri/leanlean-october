@@ -7,20 +7,18 @@ public import OAI.NumberTheory.DirichletL.Reflection.ThreeBlocks
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss FiniteGaussPhase
+open scoped Classical
+open CubicEisenstein CompletedGauss FiniteGaussPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
-noncomputable local instance frozenSplitFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+variable {ι : Type*} [Fintype ι] {p : ι → ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
+noncomputable local instance frozenSplitFinite (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
 def frozenArgument [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) : Eis →* ℂ :=
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) : ActualEisensteinCubic.O →* ℂ :=
   ∏ i ∈ F, frozenCofactorCharacter (Ideal.span {p i}) (hg i) (j i)
 
 def frozenCore [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (c : Eis)
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (c : ActualEisensteinCubic.O)
     (j : ι → ℕ) (F : Finset ι) : ℂ :=
   ∏ i ∈ F, frozenPrimeScalar (p i) c (hp i) (hg i) (j i) *
     frozenCofactorCharacter (Ideal.span {p i}) (hg i) (j i) (∏ k ∈ F.erase i, p k)
@@ -36,7 +34,7 @@ theorem frozen_cofactor_split (hp : ∀ i, p i ≠ 0) (R S F : Finset ι)
 
 theorem frozenPhase_split [∀ i, (Ideal.span {p i}).IsMaximal]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ)
+    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ)
     (R S F : Finset ι) (hRS : Disjoint R S) (hF : Disjoint (R ∪ S) F)
     (hu : (R ∪ S) ∪ F = Finset.univ) :
     frozenPhase D hp hg j F = frozenCore hp hg c j F *
@@ -57,11 +55,11 @@ theorem frozenPhase_split [∀ i, (Ideal.span {p i}).IsMaximal]
 
 omit [Fintype ι] in
 theorem frozenArgument_norm_le_one [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) (z : Eis) :
+    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι) (z : ActualEisensteinCubic.O) :
     ‖frozenArgument hg j F z‖ ≤ 1 := by
   simp only [frozenArgument,MonoidHom.finsetProd_apply,norm_prod]
   apply Finset.prod_le_one₀
-  · intro i hi; exact norm_nonneg _
+  · simp
   · intro i hi
     unfold frozenCofactorCharacter
     split_ifs

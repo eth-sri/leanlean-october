@@ -10,20 +10,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification HeckeDyadic CanonicalQuadraticSieve
-open CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT
+open HeckeFamily HeckeInverseAmplification HeckeDyadic
+open ConcretePrimeRowBridge ConcreteTraceCRT
 open InverseInitialDetectorSource
-open InverseMoment InverseInitialProfile InverseInitialRawDictionary InverseInitialPhysicalSlots
+open InverseMoment InverseInitialRawDictionary InverseInitialPhysicalSlots
 open InverseInitialConjugateEnergy InverseInitialEnergyCallerWindow InverseInitialExcludedPeriod
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawConjugateGates
 open IdealMobiusDivisorSum Filter
-local notation "O"=>HeckeFamily.O
 
 theorem deletedSelectedSource_tuple {ι:Type*}[Fintype ι](data:RowData)
-    (M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
-    (U r bW:ℝ)(b ell:ι→ℝ)(ζ:ι→ℂ)(u:O):
+    (M:Ideal HeckeFamily.O)[NeZero M](H:Subgroup (HeckeFamily.O⧸M)ˣ)(W:ℝ→ℂ)(V:ι→ℝ→ℂ)
+    (U r bW:ℝ)(b ell:ι→ℝ)(ζ:ι→ℂ)(u:HeckeFamily.O):
     deletedSelectedSource data M H W V U r 0 0 bW b ell ζ u=
       ∑x:Tuple (fun i=>livePrimes M H (V i) (b i) (U^(ell i))),
         (∏i,star (primeProfile (V i) (U^(ell i)) (ζ i) (x i).val)/
@@ -53,14 +52,14 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     ∃degree:ℕ,∀data:RowData,∃C U₀:ℝ,0<C ∧ 1<U₀ ∧
     ∀U:ℝ,U₀≤U →
     ∀{ι:Type}[Fintype ι],Fintype.card ι≤K →
-    ∀(M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)(ell:ι→ℝ)(ζ:ι→ℂ),
+    ∀(M:Ideal HeckeFamily.O)[NeZero M](H:Subgroup (HeckeFamily.O⧸M)ˣ)(ell:ι→ℝ)(ζ:ι→ℂ),
       (∀i,0≤ell i) → (∀i,(ζ i).re≤1) →
       (((Finset.univ:Finset ι):Set ι).PairwiseDisjoint
         (fun i=>livePrimes M H F.W 2 (U^(ell i)))) →
       (∀i,((deletedBase data).modulus.absNorm:ℝ)<U^(ell i)) →
     ∀r:ℝ,0≤r → r+2*(∑i,ell i)<1 → 2*r+8*(∑i,ell i)<3 →
     ∀j∈idealDivisors (∏P∈excluded data,P),
-    ∀rows:Finset O,(∀u∈rows,‖eisEmbedding u‖^2≤U) → ∀θ:ℝ,
+    ∀rows:Finset HeckeFamily.O,(∀u∈rows,‖eisEmbedding u‖^2≤U) → ∀θ:ℝ,
       (∑u∈rows,‖deletedSelectedSource data M H (childLogTest W θ) (fun _=>F.W)
         U (shiftedExponent data U r j) 0 0 bo (fun _=>2) ell ζ u‖^2)≤
         C*U^(1+εm)*((1+‖θ‖)^degree)^2 := by
@@ -73,20 +72,19 @@ theorem deleted_source_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   refine ⟨C,max U₀ Ushift,hC,lt_max_of_lt_left hU₀,?_⟩
   intro U hU ι inst hK M neM H ell ζ hell hζ hdis hlarge r hr hfirst hsecond j hj rows hrows θ
   have hU0:U₀≤U:=(le_max_left _ _).trans hU
-  have hUone:1<U:=hU₀.trans_le hU0
+  have hUone:1<U:=by linarith
   have hUp:0<U:=zero_lt_one.trans hUone
-  have hjshift: r-eta≤shiftedExponent data U r j ∧ shiftedExponent data U r j≤r ∧
-      U^(shiftedExponent data U r j)=U^r/(j.absNorm:ℝ):=
+  have hjshift:=
     (hshift U ((le_max_right _ _).trans hU)).2 j hj r
-  let L:ι→Finset (Ideal O):=fun i=>livePrimes M H F.W 2 (U^(ell i))
-  let coeff:ι→Ideal O→ℂ:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
+  let L:ι→Finset (Ideal HeckeFamily.O):=fun i=>livePrimes M H F.W 2 (U^(ell i))
+  let coeff:ι→Ideal HeckeFamily.O→ℂ:=fun i P=>star (primeProfile F.W (U^(ell i)) (ζ i) P)/
     idealCoeff (deletedBase data) P
-  have hg (i:ι)(P:Ideal O)(hP:P∈L i):
+  have hg (i:ι)(P:Ideal HeckeFamily.O)(hP:P∈L i):
       Prime P ∧ InverseInitialExcludedPool.outside (excluded data) P ∧
       idealCoeff (deletedBase data) P≠0 ∧ ‖idealCoeff (deletedBase data) P‖=1 ∧
       ‖coeff i P‖≤1:=
-    deleted_source_live_prime F data M H _ (Real.rpow_pos_of_pos hUp _) (ζ i) (hζ i) (hlarge i) P hP
-  have hratio (i:ι)(P:Ideal O)(hP:P∈L i):((P.absNorm:ℝ)/U^(ell i))∈Set.Icc (1:ℝ) 2:=
+    deleted_source_live_prime F data M H _ (by positivity) (ζ i) (hζ i) (hlarge i) P hP
+  have hratio (i:ι)(P:Ideal HeckeFamily.O)(hP:P∈L i):((P.absNorm:ℝ)/U^(ell i))∈Set.Icc (1:ℝ) 2:=
     F.complex_support (Finset.mem_filter.mp hP).2
   have hh:=henergy U hU0 hK L ell coeff hell
     (fun i P hP=>(hg i P hP).1)

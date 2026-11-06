@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.Split
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
+open scoped Classical
+open CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem separate_product_congruence {A : Type*} [CommRing A]
     (M f r r₀ P P₀ : A) (hr : M^2 ∣ r-r₀) (hP : M^2 ∣ P-P₀) :
@@ -18,11 +17,11 @@ theorem separate_product_congruence {A : Type*} [CommRing A]
   have h := dvd_add (dvd_mul_of_dvd_left hr P) (dvd_mul_of_dvd_right hP r₀)
   convert dvd_mul_of_dvd_right h f using 1 ; ring
 
-def separateSector (M r P : Eis) :
-    (Eis ⧸ Ideal.span {M^2}) × (Eis ⧸ Ideal.span {M^2}) :=
+def separateSector (M r P : ActualEisensteinCubic.O) :
+    (ActualEisensteinCubic.O ⧸ Ideal.span {M^2}) × (ActualEisensteinCubic.O ⧸ Ideal.span {M^2}) :=
   (Ideal.Quotient.mk _ r, Ideal.Quotient.mk _ P)
 
-theorem separateSector_product (M f r r₀ P P₀ : Eis)
+theorem separateSector_product (M f r r₀ P P₀ : ActualEisensteinCubic.O)
     (h : separateSector M r P = separateSector M r₀ P₀) :
     M^2 ∣ f*r*P-f*r₀*P₀ := by
   apply separate_product_congruence
@@ -30,7 +29,7 @@ theorem separateSector_product (M f r r₀ P P₀ : Eis)
   · exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp (congrArg Prod.snd h))
 
 theorem controlled_bad_phase_eq {ι κ : Type*} [Fintype ι] [Fintype κ]
-    {p : ι → Eis} {p₀ : κ → Eis} {N a c : Eis} {mode : Bool}
+    {p : ι → ActualEisensteinCubic.O} {p₀ : κ → ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
     (D : ControlledStratumArithmetic p N a c mode)
     (D₀ : ControlledStratumArithmetic p₀ N a c mode) (hc : c ≠ 0)
     (hbad : ramifiedTraceLambda^3*c ∣ N)

@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Laws
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -25,7 +24,7 @@ theorem prefixPrimeProduct_pos (J : ℕ) (d : SmallLabels P J) : 0 < prefixPrime
   intro g _
   apply Finset.prod_pos
   intro j _
-  exact (P.prime g.val (d g j).val (d g j).property).pos
+  exact (P.prime g.val (d g j).val (by simp)).pos
 
 theorem DBig_pos (ν : Pattern P J ell m) (a : P.BigLabels (J + ell)) (u : P.BigAux J) :
     0 < ν.DBig a u := by
@@ -35,8 +34,8 @@ theorem DBig_pos (ν : Pattern P J ell m) (a : P.BigLabels (J + ell)) (u : P.Big
   apply Finset.prod_pos
   intro i _
   split_ifs
-  · exact (P.prime g.val (u g i).val (u g i).property).pos
-  · exact (P.prime g.val (a g (ν.slot i)).val (a g (ν.slot i)).property).pos
+  · exact (P.prime g.val (u g i).val (by simp)).pos
+  · exact (P.prime g.val (a g (ν.slot i)).val (by simp)).pos
 
 theorem smallPrefixProduct_eq (J ell : ℕ) (a : SmallLabels P (J + ell)) :
     smallPrefixProduct J (Nat.le_add_right J ell) a =
@@ -111,7 +110,7 @@ theorem edgeDelta_join (A : Model F P J m) (ν : Pattern P J F.ell m) (forward :
     edgeDelta A ν forward (joinLabels a b) (joinLabels v u) =
       bigStep A ν forward (smallArrayPrefix J F.ell a) b u := by
   simp only [edgeDelta, D_join, Nat.cast_mul, bigStep]
-  split_ifs <;> ring
+  grind
 
 theorem rawEdgeValid_empty_join (A : Model F P J m) (ν : Pattern P J F.ell m)
     (forward : Bool) (a c : SmallLabels P (J + F.ell))
@@ -132,8 +131,7 @@ theorem rawEdgeValid_empty_join (A : Model F P J m) (ν : Pattern P J F.ell m)
         ∀ g : P.BigGroup,
           t.2 g = translateMemory (bigStep A ν forward (smallArrayPrefix J F.ell a) b u) (s.2 g) := by
     simp only [translatePending, Prod.ext_iff, funext_iff]
-  rw [ht]
-  tauto
+  grind
 
 def rawCleanCoefficient (A : Model F P J m) (n : ℕ) (theta : ℝ) (forward : Bool)
     (ν : Pattern P J F.ell m) (u : P.Aux J)

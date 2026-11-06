@@ -7,20 +7,19 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRadialData
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonRadialSource
-open CenteredMomentCommonRadialData CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
+open CenteredMomentCommonRadialData CenteredMomentRadialEligibleEnergy
 open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum
+open CenteredMomentAmplificationLiveMask CenteredMomentCommonRawScale
+open CenteredMomentRestrictedSource CenteredMomentHeckeColumnWindow
+open CenteredMomentFirstSectors CanonicalQuadraticSieve
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
- def sourceEnergy (s:Input ι) (r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O) : ℝ :=
+ def sourceEnergy (s:Input ι) (r:Radial) (C:Ideal ActualEisensteinCubic.O) (hC:Supported C) (R seed L:Ideal ActualEisensteinCubic.O) : ℝ :=
   let Q:=finiteColumns (Fintype.piFinset s.pools)
   let β:=finiteColumnCoefficient (Fintype.piFinset s.pools)
     (profileCoefficient R s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
@@ -28,11 +27,11 @@ local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
     (fun I=>if IsCoprime C I ∧ L∣I then β (C*I) else 0)
     (heightCoeff s.η s.t) r.profile r.scale/(s.X₁*s.X₂*∏i,s.P i)
 
- def commonCost (s:Input ι) (C:Ideal O) : ℝ :=
+ def commonCost (s:Input ι) (C:Ideal ActualEisensteinCubic.O) : ℝ :=
   ((actualAllocations s.pools C).card:ℝ)*
     (((∏i,s.M i)^2*(max 1 s.upper)^Fintype.card ι)/(Ideal.absNorm C:ℝ))
 
- theorem live_source_eq (s:Input ι) (r:Radial) (C R L:Ideal O) (B:actualAllocations s.pools C) :
+ theorem live_source_eq (s:Input ι) (r:Radial) (C R L:Ideal ActualEisensteinCubic.O) (B:actualAllocations s.pools C) :
     sourceRestrictedEnergy r.keep
       (finiteColumns (liveBox s.pools B.val (alloc_ne s C B)))
       (finiteColumnCoefficient (liveBox s.pools B.val (alloc_ne s C B))

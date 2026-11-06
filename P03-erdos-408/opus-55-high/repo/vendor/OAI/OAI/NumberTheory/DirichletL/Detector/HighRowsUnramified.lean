@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 lemma rowMarkedTerm_unramified (eta a X W V rho : ℂ) (e l k m : ℕ) :
     rowMarkedTerm p hp hg eta a X W V rho 0 e l k m=
@@ -50,8 +49,7 @@ lemma rowClosedMarked_unramified (eta a X W V rho : ℂ) (hρ : rho^6=1)
     principalMarkedSeries_eq p hp hg hc _ _ _ _ _ hV
       (by simpa only [evenRatio_unit _ _ _ _ _ hρ] using hR),
     evenRatio_unit _ _ _ _ _ hρ]
-  congr 1
-  field_simp
+  grind
 
 include hc in
 
@@ -85,7 +83,7 @@ theorem sourceRowSeries_unramified_euler (eta a rho x w z : ℂ) (hρ : rho^6=1)
   unfold unramifiedClosed ProbeLocal.continuedCorrection
   dsimp only
   simp only [coordW,coordD,Complex.ofReal_natCast] at hD hw ⊢
-  field_simp [hD,hv,hw]
+  field_simp
   ; ring
 
 end SevenEighths.ProbeEuler

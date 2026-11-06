@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.AllocatedRayDictionary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyNaturalInputMatches
 open HeckeFamily HeckePrimeAnnular CenteredMomentPrimeSlot
 open CenteredMomentEnergyState CenteredMomentFiniteProfileExceptional
 open CenteredMomentCommonRadialData CenteredMomentNaturalFixedRaySource
-open CenteredMomentInductionEnergy CenteredMomentHeckeSlots CenteredMomentRetainedEnergy
 local notation "O" => HeckeFamily.O
 
 def profile (W : ℝ → ℂ) (σ freq y : ℝ) : ℂ :=
@@ -47,9 +46,9 @@ theorem exists_profile_bound (W : ℝ → ℂ) (hW : Continuous W)
   intro σ hσ freq y
   by_cases hz : W y = 0
   · simpa only [profile, hz, zero_mul, norm_zero] using
-      (zero_le_one.trans (le_max_left 1 C))
+      (zero_le_one.trans (by simp))
   · rw [profile_norm W a b ha hWs]
-    exact (hb σ hσ y (hWs hz)).trans (le_max_right _ _)
+    simp_all
 
 def profileBound (W : ℝ → ℂ) (hW : Continuous W)
     (a b lo hi : ℝ) (ha : 0 < a)
@@ -71,9 +70,9 @@ lemma norm_profile_le (W : ℝ → ℂ) (hW : Continuous W)
 
 section Input
 variable {ι : Type*} [Fintype ι]
-variable (Q : Ideal O) [NeZero Q]
-local instance : Finite (O ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne Q)
-variable (H : Subgroup (O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
+variable (Q : Ideal HeckeFamily.O) [NeZero Q]
+local instance : Finite (HeckeFamily.O ⧸ Q) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne Q)
+variable (H : Subgroup (HeckeFamily.O ⧸ Q)ˣ) (hH : RayOrthogonality.globalUnits Q ≤ H)
 variable (η₀ : Character) (θ : ι → RayQuotient.Characters Q H)
 variable (W : ℝ → ℂ) (hW : Continuous W)
 variable (aslot bslot lo hi : ℝ) (haslot : 0 < aslot)

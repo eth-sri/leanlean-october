@@ -11,15 +11,11 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 noncomputable def primeMonomial {ι : Type*} (p : ℕ) (z : ι → ℂ) (S : Finset ι) : ℂ :=
   Complex.exp (-(Real.log p : ℂ)*(∑ i∈S, z i))

@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Reflection.ActiveProducts
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-def fixedSlotTupleSet (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) : Finset (σ→Ideal Eis) :=
+def fixedSlotTupleSet (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) : Finset (σ→Ideal ActualEisensteinCubic.O) :=
   (Fintype.piFinset L).filter fun p => ∀ j i,p i≠F j
 
-lemma mem_fixedSlotTupleSet (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (p : σ→Ideal Eis) :
+lemma mem_fixedSlotTupleSet (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) (p : σ→Ideal ActualEisensteinCubic.O) :
     p∈fixedSlotTupleSet L F ↔ (∀ i,p i∈L i) ∧ ∀ j i,p i≠F j := by
   simp only [fixedSlotTupleSet,Finset.mem_filter,Fintype.mem_piFinset]
 
-lemma fixedSlotTupleSet_product_injective (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis)
+lemma fixedSlotTupleSet_product_injective (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O)
     (hL : Pairwise (fun i j => Disjoint (L i) (L j))) (hprime : ∀ i,∀ P∈L i,Prime P) :
-    Set.InjOn slotTupleProduct (↑(fixedSlotTupleSet L F) : Set (σ→Ideal Eis)) :=
+    Set.InjOn slotTupleProduct (↑(fixedSlotTupleSet L F) : Set (σ→Ideal ActualEisensteinCubic.O)) :=
   (slotTupleProduct_injective_on L hL hprime).mono (fun p hp => (mem_fixedSlotTupleSet L F p).mp hp |>.1)
 
-def supportedSlotTupleEquiv (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis) (K : Ideal Eis) :
+def supportedSlotTupleEquiv (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (F : φ→Ideal ActualEisensteinCubic.O) (K : Ideal ActualEisensteinCubic.O) :
     supportedSlotChoices L F K ≃ {p : fixedSlotTupleSet L F // IsCoprime K (slotTupleProduct p.val)} where
   toFun p := ⟨⟨fun i => (p.val i).val,(mem_fixedSlotTupleSet L F _).mpr ⟨fun i => (p.val i).property,p.property.2⟩⟩,p.property.1⟩
   invFun p := ⟨fun i => ⟨p.val.val i,((mem_fixedSlotTupleSet L F _).mp p.val.property).1 i⟩,

@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMoment
 
 theorem actual_rank_reference_cutoffs : RankReferenceCutoffs :=by

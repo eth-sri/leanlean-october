@@ -39,7 +39,7 @@ theorem mem_primesIoc {y z : ℝ} {q : ℕ} :
 /-- `q ∈ primesIoc 1 x` iff `q` is a prime with `q ≤ x`. -/
 theorem mem_primesIoc_one {x : ℝ} {q : ℕ} : q ∈ primesIoc 1 x ↔ q.Prime ∧ (q : ℝ) ≤ x := by
   rw [mem_primesIoc]
-  exact ⟨fun h => ⟨h.1, h.2.2⟩, fun h => ⟨h.1, by exact_mod_cast h.1.one_lt, h.2⟩⟩
+  exact ⟨by grind, fun h => ⟨h.1, by exact_mod_cast h.1.one_lt, h.2⟩⟩
 
 /-- Prime sums over `(y, z]` and `(z, w]` add up to the sum over `(y, w]`. -/
 theorem sum_primesIoc_add (g : ℕ → ℝ) {y z w : ℝ} (hyz : y ≤ z) (hzw : z ≤ w) :

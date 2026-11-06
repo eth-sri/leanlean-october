@@ -11,18 +11,17 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicGeometry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate
+open scoped Classical ComplexConjugate
 open Filter
 
 namespace SevenEighths.ProbeDetectorPlainMarkedFineField
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorBatch
 open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles ProbeHighRowFamily ProbeFinalAssembly
 open QuadraticInitialBound CenteredMomentDetectorDictionary
-open CenteredMomentEnergyBands CenteredMomentEnergyState CenteredMomentInductionEnergy
+open CenteredMomentEnergyBands
 open CenteredMomentDetectorEnergyInitialState CenteredMomentDetectorPlainMarkedState
 open CenteredMomentDetectorPlainMomentParameters CenteredMomentNaturalFixedRaySource
-open CenteredMomentFiniteProfileExceptional CenteredMomentDetectorPlainFiberSource
-local notation "O"=>HeckeFamily.O
+open CenteredMomentDetectorPlainFiberSource
 
 def PositiveFineSourceInput {Δ:ℝ}{D:Parameters.HighData Δ}(S:SourceData D)(mesh:ℝ):Prop:=
   ∀bΦ:ℝ,0<bΦ→∃degree:ℕ,∃seminorms:Finset (ℕ×ℕ),
@@ -75,12 +74,12 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
     exact HeckeDetectorDyadicGeometry.uniform_scale_threshold (1/200) (U₀ label) (by norm_num)
   let Cfinal:=Csum*(1+diagonalControl radialMajorant)*Cprofile
   have hdiag:0≤diagonalControl radialMajorant:=diagonalControl_nonneg _
-  refine ⟨Cfinal,by dsimp [Cfinal];positivity,?_⟩
+  refine ⟨Cfinal,by positivity,?_⟩
   filter_upwards [hsource η (delta D) (fixed_parameters D).1,hscale] with Z hs hscale
   refine ⟨hs.1,?_⟩
   intro rows hrows d hd a tstar T allowance i B hB hdata hprof hwidth hupper hreal
     bin label left right hne height hheight hexternal F selected hselected hcap j k hjk σ hσ t ht
-  have hU:1<Z^d:=source_base_gt_one D Z d hs.1 hd
+  have hU:=source_base_gt_one D Z d hs.1 hd
   obtain ⟨state,hchar,hQ,hpuncture,hΦ,hK,hkeep,hwidthstate,hcapacity,hwidths,hrow⟩:=
     hs.2 rows hrows d hd a D.ε tstar T allowance i B hB hdata hprof hwidth hupper hreal
       bin label left right hne selected hselected hcap
@@ -93,12 +92,12 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
     exact (Parameters.fine_slot_widths D (fun _=>mesh) hmesh hfine d hd s.val).2
   have hpos:=hU₀ label (Z^d) (hscale label d hd) selected (fun _=>1)
     (fun s=>F.widths s.val) (fun _=>(33/50:ℝ)) (fun s=>-(F.external s.val).im)
-    0 height hw hwcap (fun _=>le_rfl) (fun _=>le_rfl) hheight
-    (fun s=>by change |-(B.external s.val).im|≤height; simpa only [abs_neg] using hexternal s.val)
+    0 height hw hwcap (by simp) (by simp) hheight
+    (fun s=>by change |-(B.external s.val).im|≤height; simpa using hexternal s.val)
     state hQ hstate (detectorProfiles F.reverse j k σ t) ((Z^d)^F.m) ((Z^d)^F.m)
-    (Real.rpow_pos_of_pos (zero_lt_one.trans hU) _) (Real.rpow_pos_of_pos (zero_lt_one.trans hU) _)
-    (by simpa only [Real.rpow_one] using hf.2.2.2.2.1)
-    (by simpa only [Real.rpow_one] using hf.2.2.2.2.1) hcapacity
+    (by positivity) (by positivity)
+    (by simpa using hf.2.2.2.2.1)
+    (by simpa using hf.2.2.2.2.1) hcapacity
   have heq:=CenteredMomentDetectorPlainRelativeClass.energy_eq S.modulus ⊤ le_top
     state.character (data label) (fun (_:selected)=>1) state.mask 1
     ((detectorProfiles F.reverse j k σ t).profile 0)
@@ -116,7 +115,7 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
     _≤C label*diagonalControl state.radial.profile*
         (detectorProfiles F.reverse j k σ t).control seminorms ^2*
         (1+|(0:ℝ)|+height)^degree*(Z^d)^(state.width+stageError D):=by
-      exact heq.le.trans hpos
+      linarith
     _≤(Cfinal*(1+height)^(J+degree))*(Z^d)^(1+D.t):=by
       rw [hΦ]
       have hpow:=Real.rpow_le_rpow_of_exponent_le hU.le hexp
@@ -126,10 +125,10 @@ theorem source_batch_plain_marked_fine {Δ:ℝ}{D:Parameters.HighData Δ}
             (1+|(0:ℝ)|+height)^degree)*(Z^d)^(state.width+stageError D):=by ring
         _≤(Csum*(1+diagonalControl radialMajorant))*
           (Cprofile*(1+height)^(J+degree))*(Z^d)^(1+D.t):=by
-          apply mul_le_mul _ hpow (Real.rpow_nonneg (zero_lt_one.trans hU).le _) (by positivity)
+          apply mul_le_mul _ hpow (by positivity) (by positivity)
           apply mul_le_mul _ hnorm (by positivity) (by positivity)
           exact mul_le_mul (hClabel label) (by linarith) hdiag hCsum.le
-        _=_:=by dsimp [Cfinal];ring
+        _=_:=by linarith
 end SevenEighths.ProbeDetectorPlainMarkedFineField
 
 end

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowBands
 open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot QuadraticInitialBound
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
 
-def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
+def ZeroLowAt (Q:Ideal HeckeFamily.O)(a b bΦ Bmask L M ε Z:ℝ)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
   ∀s:NaturalState Z Bmask bΦ,s.fixedModulus=Q→s.width≤M→
   ∀p:Profiles a b,∀t X₁ X₂:ℝ,0<X₁→0<X₂→X₁≤Z^L→X₂≤Z^L→
@@ -26,12 +25,12 @@ def ZeroLowAt (Q:Ideal O)(a b bΦ Bmask L M ε Z:ℝ)
       (1+‖t‖)^degree*Z^(s.width+ε)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def PositiveLowAt (W:ℝ→ℂ)(bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z:ℝ)
-    (η₀:Character)(Q:Ideal O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
+    (η₀:Character)(Q:Ideal HeckeFamily.O)(degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ):Prop:=
   ∀T:Finset α,∀(θ:T→RayQuotient.Characters M H)(w σ v:T→ℝ)(t height:ℝ),
     (∀i,0≤w i)→(∀i,w i≤Lslot)→(∀i,lo≤σ i)→(∀i,σ i≤hi)→
     0≤height→(∀i,|v i|≤height)→

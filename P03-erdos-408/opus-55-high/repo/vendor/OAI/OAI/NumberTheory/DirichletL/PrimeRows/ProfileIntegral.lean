@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.Detector.InitialScales
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open ProbePhysical ProbeMellinBoundary
@@ -44,8 +43,8 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
   let E : ℝ := X^(1/2-r)*Z^(σ+r-1)*Y^(υ-1)
   have hE : 0≤E := by dsimp [E];positivity
   let M : HeightSpace→ℝ := fun p=>jointHeight p.1.1 p.1.2 p.2^4*‖onLines W0 W1 σ r υ p‖
-  have hMi : Integrable M heightMeasure := (hM σ hσ r hr υ hυ).1
-  have hMb : (∫p,M p ∂heightMeasure)≤D := (hM σ hσ r hr υ hυ).2
+  have hMi : Integrable M heightMeasure := by grind
+  have hMb : (∫p,M p ∂heightMeasure)≤D := by grind
   let f : HeightSpace→ℝ := fun p=>‖sourceMellinWeight W0 W1 X Y Z
     ((σ:ℂ)+p.1.1*Complex.I) ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I)‖*F p
   have hfm : AEStronglyMeasurable f heightMeasure :=
@@ -63,10 +62,10 @@ theorem source_profile_integral_bound (W0 W1 : SchwartzMap ℝ ℂ)
     rw [hs]
     calc
       _ ≤ (E*‖onLines W0 W1 σ r υ p‖)*(A*(81*jointHeight p.1.1 p.1.2 p.2^4)) :=
-        mul_le_mul_of_nonneg_left h1 (mul_nonneg hE (norm_nonneg _))
-      _ = _ := by dsimp [M];ring
+        mul_le_mul_of_nonneg_left h1 (by positivity)
+      _ = _ := by linarith
   have hfi : Integrable f heightMeasure := (hMi.const_mul (E*A*81)).mono' hfm
-    (Filter.Eventually.of_forall fun p=>by rw [Real.norm_eq_abs,abs_of_nonneg (hf0 p)];exact hfb p)
+    (Filter.Eventually.of_forall fun p=>by rw [Real.norm_eq_abs,abs_of_nonneg (hf0 p)];grind)
   refine ⟨hfi,?_⟩
   calc
     (∫p,f p ∂heightMeasure) ≤ ∫p,(E*A*81)*M p ∂heightMeasure :=

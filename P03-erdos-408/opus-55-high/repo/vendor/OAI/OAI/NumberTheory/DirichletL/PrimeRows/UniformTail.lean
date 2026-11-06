@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CoarseAmplitude
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem uniform_original_x_height_tail (K : ℕ)
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
@@ -58,7 +57,7 @@ theorem uniform_original_x_height_tail (K : ℕ)
       exact continuedRowOnLines_eq_amplitude ..
     rw [hfun]
     exact ht
-  apply le_trans _ ((ht'.2 H hH).trans_eq (by dsimp [A];ring))
+  apply le_trans _ ((ht'.2 H hH).trans_eq (by ring))
   apply setIntegral_mono_set ht'.1.norm.integrableOn (Filter.Eventually.of_forall (fun _=>norm_nonneg _))
   apply Filter.Eventually.of_forall
   intro p hp

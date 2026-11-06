@@ -71,7 +71,7 @@ theorem identityClass_iff_generator {I : Ideal A} (hI : I ≠ ⊥) :
     rw [hua, ← hq]
     change (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) *
       (w : A ⧸ M) * (w⁻¹ : (A ⧸ M)ˣ) = _
-    rw [mul_assoc, ← Units.val_mul, mul_inv_cancel, Units.val_one, mul_one]
+    simp
   · intro h
     exact ⟨hI, _, Ideal.span_singleton_generator I, h⟩
 
@@ -86,16 +86,16 @@ theorem sum_idealCharacters (I : Ideal A) :
   · subst I
     simp [idealCharacter, identityClass]
   · have heq (χ : Characters M H) : idealCharacter M H hH χ I =
-        (χ : MulChar (A ⧸ M) ℂ) (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) := by
-      exact IdealCharacter.ofResidue_of_generator M χ _ hI (Ideal.span_singleton_generator I)
-    simp only [heq, sum_characters, identityClass_iff_generator M H hH hI, classNumber]
+        (χ : MulChar (A ⧸ M) ℂ) (Ideal.Quotient.mk M (Submodule.IsPrincipal.generator I)) :=
+      IdealCharacter.ofResidue_of_generator M χ _ hI (Ideal.span_singleton_generator I)
+    simp only [heq, sum_characters, identityClass_iff_generator M H hH hI]
 
 theorem average_idealCharacters (I : Ideal A) :
     (∑ χ : Characters M H, idealCharacter M H hH χ I) / (classNumber M H : ℂ) =
       if I ∈ identityClass M H then 1 else 0 := by
   rw [sum_idealCharacters]
   have hn : (classNumber M H : ℂ) ≠ 0 := by exact_mod_cast (classNumber_pos M H).ne'
-  split_ifs <;> simp [hn]
+  grind
 
 end
 end SevenEighths.RayQuotient

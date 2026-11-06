@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.CleanCoefficients
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -70,7 +69,7 @@ theorem bigFreshMass_row_sum (ν : Pattern P J ell m)
     (∑ b : P.BigLabels (J + ell), if ν.matchesBig a b then bigFreshMass ν mu b else 0) = 1 := by
   have h := refreshKernel_row_sum
     (fun z : P.BigGroup × Fin (J + ell) => ν.shared z.1.val z.2)
-    (fun z => mu z.1) (fun z => hmu z.1) (flattenBigLabels P (J + ell) a)
+    (fun z => mu z.1) (by grind) (flattenBigLabels P (J + ell) a)
   have hs := Equiv.sum_comp (flattenBigLabels P (J + ell))
     (fun b => refreshKernel
       (fun z : P.BigGroup × Fin (J + ell) => ν.shared z.1.val z.2)

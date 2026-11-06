@@ -13,18 +13,16 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeNonprincipal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeRayCharacterFamily
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve CanonicalRowCompletion UniqueFactorizationMonoid
-local notation "O" => HeckeFamily.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-def fixedTwistSupport : Finset (Ideal O) :=
-  (normalizedFactors (M*Ideal.span {rowMaskElement}*Ideal.span {(72:O)})).toFinset
+def fixedTwistSupport : Finset (Ideal HeckeFamily.O) :=
+  (normalizedFactors (M*Ideal.span {rowMaskElement}*Ideal.span {(72:HeckeFamily.O)})).toFinset
 
 omit [NeZero M] in
 theorem fixedTwistSupport_prime : ∀P∈fixedTwistSupport M,Prime P := by
@@ -34,7 +32,7 @@ theorem fixedTwistSupport_prime : ∀P∈fixedTwistSupport M,Prime P := by
 lemma inverse_twist_base_modulus (θ : RayQuotient.Characters M H) :
     ((fixedSourcePrincipal ∅ (by simp)).product
       (HeckeRayQuotient.character M H hH θ).inverse).modulus=M := by
-  change (1:Ideal O)⊓M=M
+  change (1:Ideal HeckeFamily.O)⊓M=M
   simp
 
 theorem large_supported_twists_nonprincipal (u : FreeRow)
@@ -43,11 +41,11 @@ theorem large_supported_twists_nonprincipal (u : FreeRow)
     (θ : RayQuotient.Characters M H) :
     (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).residue≠1 := by
   obtain ⟨v,hv⟩ := exists_supported_primary_unit u.val hs
-  let r : O := (v:O)*u.val
-  have hspan : (Ideal.span {r}:Ideal O)=Ideal.span {u.val} :=
+  let r : HeckeFamily.O := (v:HeckeFamily.O)*u.val
+  have hspan : (Ideal.span {r}:Ideal HeckeFamily.O)=Ideal.span {u.val} :=
     Ideal.span_singleton_mul_left_unit v.isUnit u.val
   have hr : Supported (Ideal.span {r}) := hspan.symm ▸ hs
-  have hx : (1:O)^4*u.val=(v⁻¹:Oˣ).val*λ₀^0*(2:O)^0*r := by simp [r]
+  have hx : (1:HeckeFamily.O)^4*u.val=(v⁻¹:HeckeFamily.Oˣ).val*ConcretePrimeRowBridge.goodLambda^0*(2:HeckeFamily.O)^0*r := by simp [r]
   let η := (fixedSourcePrincipal ∅ (by simp)).product
     (HeckeRayQuotient.character M H hH θ).inverse
   let χ := (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).inverse
@@ -68,13 +66,13 @@ theorem large_supported_twists_nonprincipal (u : FreeRow)
 
 theorem raw_twisted_conductor (u : FreeRow) (θ : RayQuotient.Characters M H) :
     (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).modulus.absNorm≤
-      conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm := by
+      conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm := by
   have ht := HeckePrimeScale.twisted_modulus_bound M H hH (rawRow u).inverse θ
   change _≤(rawRow u).modulus.absNorm*M.absNorm at ht
   exact ht.trans (by simpa only [mul_assoc,mul_left_comm,mul_comm] using
     Nat.mul_le_mul_right M.absNorm (rawRow_conductor u))
 omit [NeZero M] in
-theorem canonical_amplitude_raw (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem canonical_amplitude_raw (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : fixedBadPrimes⊆S) (u : FreeRow) (W : ℝ→ℂ) (a b D : ℝ)
     (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
     (hsmall : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
@@ -89,19 +87,19 @@ theorem canonical_amplitude_raw (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     apply Complex.ext <;> simp [HeckeDyadic.shift]
   simp only [HeckePrimeAnnular.annularWeight,he]
   by_cases hw : W ((P.absNorm:ℝ)/D)=0
-  · simp [hw]
+  · simp_all
   have hPS : P∉S := by
     intro hPS
     have hh := (lt_div_iff₀ hD).mp (hW hw).1
     have := hsmall P hPS
     linarith
   rw [idealCoeff_inverse_conj,rawRow_prime_outside S hS hbad u ⟨P,hp⟩ hPS]
-  exact mul_assoc _ _ _
+  ring
 
 omit H hH in
 theorem large_supported_twists_eventually (d : ℝ) (hd : 0<d) :
     ∀ᶠZ : ℝ in Filter.atTop,∀u : FreeRow,Z^d≤rowNorm u →
-      Supported (Ideal.span {u.val}) → ∀(H : Subgroup (O ⧸ M)ˣ)
+      Supported (Ideal.span {u.val}) → ∀(H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
       (hH : RayOrthogonality.globalUnits M≤H) (θ : RayQuotient.Characters M H),
       (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).residue≠1 := by
   filter_upwards [(tendsto_rpow_atTop hd).eventually
@@ -111,19 +109,19 @@ theorem large_supported_twists_eventually (d : ℝ) (hd : 0<d) :
 
 omit M H hH in
 theorem source_maximum_dominates {ι : Type*} [Fintype ι]
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (u : FreeRow)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P) (η : Character) (u : FreeRow)
     (ψ : ι→Character) (T : ℝ) :
     detectorMaximum ψ T≤detectorMaximum (sourceDetectorFamily S hS η u ψ) T := by
   rcases lt_or_ge (51/100:ℝ) (detectorMaximum ψ T) with hm|hm
   · obtain ⟨j,s,hz,hpole,ht,heq⟩ := detectorMaximum_attained ψ T hm
     rw [←heq]
     exact detector_zero_re_le_maximum (sourceDetectorFamily S hS η u ψ) T (Sum.inr j)
-      (by rw [heq];exact hm.le) ht hz hpole
+      (by linarith) ht hz hpole
   · exact hm.trans (detectorMaximum_bounds _ T).1
 
 omit M H hH in
 theorem source_nonprincipal_maximum_dominates {ι : Type*} [Fintype ι]
-    (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P) (η : Character) (u : FreeRow)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P) (η : Character) (u : FreeRow)
     (ψ : ι→Character) (hψ : ∀j,(ψ j).residue≠1) (T : ℝ) :
     HeckeDetectorZeros.zeroMaximum ψ hψ T≤detectorMaximum (sourceDetectorFamily S hS η u ψ) T := by
   rw [←detectorMaximum_eq_nonprincipal ψ hψ T]

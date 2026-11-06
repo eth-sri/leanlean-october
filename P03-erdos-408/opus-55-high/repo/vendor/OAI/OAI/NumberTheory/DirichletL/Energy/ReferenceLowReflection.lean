@@ -9,25 +9,24 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowReflection
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
+open HeckeFamily HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyReferenceLowMoments CenteredMomentEnergyReferenceLowWindow
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
-open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
+open CenteredMomentNaturalFixedRaySource
 open CenteredMomentPrimeSlot CenteredMomentFiniteProfileExceptional QuadraticInitialBound
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentAllocatedNaturalRadial
-open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem reference_from_low
     (a b bΦ epsilon xi saving Lreflect:ℝ)
@@ -37,7 +36,7 @@ theorem reference_from_low
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
       ∀(Wslot:ℝ→ℂ)(bslot Bmask L Lslot lo hi Mcap ε κ:ℝ)
-        (η₀:Character)(Q:Ideal O)(K:ℝ),0≤K →
+        (η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤K →
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap ε κ Z η₀ Q degree S K →
       0≤Bmask →
@@ -87,13 +86,13 @@ theorem reference_from_low
     have hd:0≤diagonalControl s.radial.profile:=by unfold diagonalControl; positivity
     positivity
   · intro v j k x hx
-    have hwindow:=reflection_window_length Z (max 0 (s.width-along+xi)) x hZ.1 (le_max_left _ _) hx
+    have hwindow:=reflection_window_length Z (max 0 (s.width-along+xi)) x hZ.1 (by positivity) hx
     exact hchild Wslot bslot bΦ Bmask L Lslot lo hi Mcap ε κ Z η₀ Q K hK hlow hBmask
       F θ w σ freq t height hw hwL hσlo hσhi hheight hfreq s hQ hs Wshort hsShort
       j k v (Real.exp x) (Z^bshort) (Real.exp_pos _) (Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _)
       (hwindow.2.trans (Real.rpow_le_rpow_of_exponent_le hZ.1.le hL))
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hbshort)
-      (by linarith [hwindow.1]) (by linarith [hwindow.1])
+      (by linarith) (by linarith)
 
 end SevenEighths.CenteredMomentEnergyReferenceLowReflection
 

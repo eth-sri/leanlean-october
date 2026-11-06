@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 open MeasureTheory FourierBridge JointLogSeparation
 noncomputable section
 
@@ -31,9 +31,7 @@ theorem density_finite_sum {ι κ : Type*} [Fintype ι] (s : Finset κ)
   apply integral_congr_ae
   filter_upwards with z
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  grind
 
 end
 end SevenEighths.InverseMoment

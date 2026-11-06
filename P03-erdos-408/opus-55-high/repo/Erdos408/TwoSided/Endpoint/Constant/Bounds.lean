@@ -46,7 +46,7 @@ theorem eventually_abs_slotMean_div_le (c vlo : ℝ) (d : ℕ) (hc : 0 < c) (hvl
       exact mem_Icc.2 ⟨hpr.one_lt.le, Nat.le_floor hpx⟩
     calc ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p ≤ ∑ p ∈ Icc 1 ⌊x⌋₊, ((p : ℝ))⁻¹ := by
           simp_rw [one_div]
-          exact sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => by positivity
+          exact sum_le_sum_of_subset_of_nonneg hsub (by simp)
       _ ≤ 1 + Real.log ⌊x⌋₊ := OneSided.sum_Icc_inv_le _
       _ ≤ 1 + L := by
           have h0 : (0 : ℝ) < ⌊x⌋₊ := by exact_mod_cast Nat.floor_pos.2 hx.le
@@ -54,7 +54,7 @@ theorem eventually_abs_slotMean_div_le (c vlo : ℝ) (d : ℕ) (hc : 0 < c) (hvl
       _ ≤ 2 * L := by linarith
   have hV0 : 0 < V := by linarith
   rw [abs_div, abs_of_pos hV0, div_le_iff₀ hV0, Real.rpow_natCast]
-  have hs0 : 0 ≤ ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p := sum_nonneg fun _ _ => by positivity
+  have hs0 : 0 ≤ ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p := by positivity
   calc |slotMean x u v Bc| ≤ (2 * L) ^ (d + 1) :=
         hC.trans (pow_le_pow_left₀ hs0 hsum _)
     _ = 2 ^ (d + 1) / vlo * L ^ (d + 1) * vlo := by field_simp; ring
@@ -73,7 +73,7 @@ theorem eventually_coprime (Cm : ℝ) :
   intro d k hd hk1 hk hp
   set L := Real.log x with hL
   have hL0 : 0 < L := by linarith
-  have hlog0 : 0 < Real.log L := Real.log_pos hL1
+  have hlog0 := Real.log_pos hL1
   -- `L^{C_m} < exp(L^{1/10})`
   have hlt : L ^ Cm < Real.exp (L ^ (1 / 10 : ℝ)) := by
     rw [Real.rpow_def_of_pos hL0]
@@ -93,8 +93,7 @@ theorem eventually_coprime (Cm : ℝ) :
   refine Nat.coprime_of_dvd fun p hpr hpd hpk => ?_
   have hk0 : k ≠ 0 := by omega
   have hpk' : (p : ℝ) ≤ k := by exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero hk0) hpk
-  have := hp p (Nat.mem_primeFactors.2 ⟨hpr, hpd, hd⟩)
-  linarith
+  grind
 
 /-- The primes of a small group lie in `[exp(L^{0.27}), exp(L^{0.36})]`. -/
 theorem mem_smallGroup_bounds {c₀ C₀ vlo vhi x : ℝ} {ι : Type} [Fintype ι] [DecidableEq ι]

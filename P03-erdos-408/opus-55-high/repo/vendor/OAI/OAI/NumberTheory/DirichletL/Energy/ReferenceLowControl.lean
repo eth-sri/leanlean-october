@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceChildProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLowControl
 open CenteredMomentEnergyReferenceChildProfiles
@@ -38,8 +38,6 @@ theorem reflected_child_control (a b:ℝ)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)
       (mul_le_mul_of_nonneg_left hgrowth (mul_nonneg hD.le (sourceControl_nonneg _ _)))) 2
   apply (mul_le_mul_of_nonneg_right hprof (by positivity)).trans_eq
   simp only [mul_pow] at *
-  rw [pow_add,show (1+|t|+height)^(2*n)=((1+|t|+height)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul],
-    show (1+‖v‖)^(2*n)=((1+‖v‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 end SevenEighths.CenteredMomentEnergyReferenceLowControl

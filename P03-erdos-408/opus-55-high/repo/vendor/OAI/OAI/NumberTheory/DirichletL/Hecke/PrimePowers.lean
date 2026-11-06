@@ -8,9 +8,9 @@ public import OAI.NumberTheory.DirichletL.PrimeCounting.IdealPrimeMass
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckePrimePowers
-open HeckeFamily UniqueFactorizationMonoid
+open HeckeFamily
 
 theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime : ¬Prime I) :
     CompletedGauss.PowerfulIdeal I := by
@@ -19,13 +19,12 @@ theorem nonprime_primePow_powerful {I : Ideal O} (hpow : IsPrimePow I) (hprime :
     by_contra h
     have hk1 : k=1 := by omega
     subst k
-    exact hprime (by simpa using hP)
+    exact hprime (by simp_all)
   refine ⟨pow_ne_zero _ hP.ne_zero,?_⟩
   intro Q hQ
   rw [hP.irreducible.normalizedFactors_pow] at hQ ⊢
   have hQP := (Multiset.mem_replicate.mp hQ).2
-  subst Q
-  simpa using hk2
+  simp_all
 
 def logWeight (I : Ideal O) : ℝ := IdealMangoldt.value I / Real.log (Ideal.absNorm I)
 
@@ -35,7 +34,7 @@ theorem logWeight_nonneg (I : Ideal O) : 0≤logWeight I :=
 theorem logWeight_le_one (I : Ideal O) : logWeight I≤1 := by
   by_cases hlog : Real.log (Ideal.absNorm I)=0
   · simp [logWeight,hlog]
-  · apply (div_le_one (lt_of_le_of_ne (Real.log_natCast_nonneg _) (Ne.symm hlog))).mpr
+  · apply (div_le_one (by positivity)).mpr
     exact IdealLogDerivative.value_le_log_norm I
 
 theorem logWeight_prime {P : Ideal O} (hP : Prime P) : logWeight P=1 := by
@@ -59,8 +58,8 @@ theorem sum_prime_extraction (χ : Character) (S : Finset (Ideal O)) (f : Ideal 
   · simp only [hP, ite_true, not_true_eq_false, and_false, ite_false,
       logWeight_prime hP, Complex.ofReal_one, one_mul, sub_self]
   · by_cases hp : IsPrimePow I
-    · simp [hP,hp]
-    · simp [hP,hp,logWeight_eq_zero hp]
+    · simp_all
+    · simp [hP, logWeight_eq_zero hp]
 
 theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ (χ : Character) (S : Finset (Ideal O)) (f : Ideal O→ℂ)
@@ -89,7 +88,7 @@ theorem prime_extraction_error (ε : ℝ) (hε : 0<ε) :
         (mul_le_of_le_one_right (logWeight_nonneg I) (idealCoeff_norm_le_one χ I)).trans
           (logWeight_le_one I)
       exact (mul_le_mul_of_nonneg_right hcoeff (norm_nonneg _)).trans
-        (by simpa using hf I (Finset.mem_filter.mp hI).1)
+        (by simp_all)
     _ = (A.card : ℝ)*B := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right hA hB
 

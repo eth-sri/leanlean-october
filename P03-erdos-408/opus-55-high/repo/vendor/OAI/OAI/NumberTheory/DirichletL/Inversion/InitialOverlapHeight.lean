@@ -10,8 +10,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory FourierBridge
+open scoped Classical SchwartzMap
+open MeasureTheory
 namespace SevenEighths.InverseInitialOverlapHeight
 open InverseInitialOverlapFourier InverseMoment JointLogSeparation
 
@@ -30,7 +30,7 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
   let f : κ→ℝ→ℂ := fun k t=>φ k t/(h t:ℂ)
   have he (k:κ)(t:ℝ) : b t*f k t=density (frequencyTwist g θ) xj t*φ k t := by
     dsimp [b,f]
-    have hn : (h t:ℂ)≠0 := by exact_mod_cast (hp t).ne'
+    have hn : (h t:ℂ)≠0 := by exact_mod_cast (by positivity)
     field_simp
   have hbnorm (t:ℝ) : ‖b t‖=h t*‖density (frequencyTwist g θ) xj t‖ := by
     rw [show b t=density (frequencyTwist g θ) xj t*(h t:ℂ) from rfl,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (hp t),mul_comm]
@@ -42,12 +42,12 @@ theorem twisted_polynomial_measure_energy (g:𝓢(ℝ,ℂ))(J:ℕ) :
     simpa only [he] using hφ k
   have henergy (t:ℝ) : (∑k,‖f k t‖^2)≤E := by
     simp only [f,norm_div,Complex.norm_real,Real.norm_eq_abs,abs_of_pos (hp t),div_pow,←Finset.sum_div]
-    apply (div_le_iff₀ (sq_pos_of_pos (hp t))).mpr
+    apply (div_le_iff₀ (by positivity)).mpr
     exact hbound t
   have hbint : (∫t:ℝ,‖b t‖)≤C*(1+‖θ‖)^(J+(volume:Measure ℝ).integrablePower) := by
     simpa only [hbnorm,h,density_norm]
       using hboundMoment θ
-  have hb0 : 0≤∫t:ℝ,‖b t‖ := integral_nonneg fun _=>norm_nonneg _
+  have hb0 : 0≤∫t:ℝ,‖b t‖ := by positivity
   have hh := common_measure_energy volume b f E hE hb hf henergy
   simp only [he] at hh
   exact hh.trans (by

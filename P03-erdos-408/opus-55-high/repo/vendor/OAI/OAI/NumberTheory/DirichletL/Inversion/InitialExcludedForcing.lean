@@ -8,18 +8,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
 open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedForcing
 open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
+open InverseInitialRayAttachment InverseInitialArithmetic
 open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialLargePool
 open InverseInitialExcludedPool InverseInitialExcludedOverlap
-open InverseInitialCommonTuples InverseInitialCommonTransform
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialCommonTuples
 
-theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
+theorem pool_product_outside (F E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
     (hF:∀I∈F,outside E I)(A:Finset (primePool F)):
     outside E (∏i∈A,i.val) := by
   intro Q hQ hd
@@ -29,11 +28,11 @@ theorem pool_product_outside (F E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
 
 theorem residual_excluded_forcing
     (W:ℝ→ℂ)(Z r z G b:ℝ)(hZ:0<Z)(hW:∀x,W x≠0→x≤b)
-    (E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
-    {P j:Ideal O}(hP:Admissible P)(hj:j∣P)(hPE:outside E P)
-    (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
+    (E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
+    {P j:Ideal ActualEisensteinCubic.O}(hP:Admissible P)(hj:j∣P)(hPE:outside E P)
+    (F:Finset (Ideal ActualEisensteinCubic.O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
     (hsub:columns (originalOutside (originalSource Z r b) E) P j⊆F)
-    (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)(u:O):
+    (η:Ideal ActualEisensteinCubic.O→*ℂ)(hη:∀I,¬outside E I→η I=0)(u:ActualEisensteinCubic.O):
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
     residualNormalizedPolynomial (originalSource Z r b) P j η (fun _=>1) W Z r z G u=
@@ -64,24 +63,18 @@ theorem residual_excluded_forcing
       ((∏i∈A,i.val)∈columns (originalSource Z r b) P j):=by
     rw [columns_filter _ E hE hP.2.1 hj hPE,Finset.mem_filter]
     exact and_iff_left (pool_product_outside F E hE hFE A)
-  dsimp only
-  simp only [hm,hmem]
-  linear_combination
-    (supportMobius (fun i:primePool F=>Ideal.span {poolPrimary F i}) A *
-      elementCharacter η (∏i∈A,poolPrimary F i) *
-      star (finiteSquarefreeRow (fun i:primePool F=>Ideal.span {poolPrimary F i})
-        (poolPrimary_good F hF) A u))*he
+  grind
 
 variable {κ:Type*}
 theorem original_tuples_excluded_input
     (W:ℝ→ℂ)(Z r z G b:ℝ)(hZ:0<Z)(hW:∀x,W x≠0→x≤b)
-    (E:Finset (Ideal O))(hE:∀Q∈E,Prime Q)
-    (T:Finset κ)(P:κ→Ideal O)(j:Ideal O)
+    (E:Finset (Ideal ActualEisensteinCubic.O))(hE:∀Q∈E,Prime Q)
+    (T:Finset κ)(P:κ→Ideal ActualEisensteinCubic.O)(j:Ideal ActualEisensteinCubic.O)
     (hP:∀k∈T,Admissible (P k))(hj:∀k∈T,j∣P k)
     (hPE:∀k∈T,outside E (P k))
-    (F:Finset (Ideal O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
+    (F:Finset (Ideal ActualEisensteinCubic.O))(hF:∀I∈F,Admissible I)(hFE:∀I∈F,outside E I)
     (hsub:tupleColumns (originalOutside (originalSource Z r b) E) T P j⊆F)
-    (η:Ideal O→*ℂ)(hη:∀I,¬outside E I→η I=0)(a:κ→ℂ)(u:O) :
+    (η:Ideal ActualEisensteinCubic.O→*ℂ)(hη:∀I,¬outside E I→η I=0)(a:κ→ℂ)(u:ActualEisensteinCubic.O) :
     let S := originalSource Z r b
     letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
       fun i=>by rw [poolPrimary_span F hF i];infer_instance
@@ -99,8 +92,8 @@ theorem original_tuples_excluded_input
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro k hk
-  rw [residual_excluded_forcing W Z r z G b hZ hW E hE (hP k hk) (hj k hk) (hPE k hk) F hF hFE
-    (fun c hc=>hsub (Finset.mem_biUnion.mpr ⟨k,hk,hc⟩)) η hη u]
+  rw [residual_excluded_forcing W Z r z G b hZ hW E hE (by grind) (by grind) (by grind) F hF hFE
+    (fun c hc=>hsub (Finset.mem_biUnion.mpr (by grind))) η hη u]
   ring
 
 end SevenEighths.InverseInitialExcludedForcing

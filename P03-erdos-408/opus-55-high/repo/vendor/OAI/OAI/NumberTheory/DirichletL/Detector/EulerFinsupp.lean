@@ -8,7 +8,7 @@ public import Mathlib.Analysis.Normed.Group.Tannery
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeEulerFinsupp
 
@@ -20,7 +20,7 @@ lemma finitePi_fin {β : Type*} (n : ℕ) (f : Fin n→β→ℂ)
   | zero =>
     constructor
     · exact (hasSum_fintype _).summable
-    · simp
+    simp
   | succ n ih =>
     have ht := ih (fun i=>f i.succ) (fun i=>hf i.succ)
     let e := Fin.consEquiv (fun _ : Fin (n+1)=>β)
@@ -31,7 +31,7 @@ lemma finitePi_fin {β : Type*} (n : ℕ) (f : Fin n→β→ℂ)
     constructor
     · rw [←e.summable_iff]
       simp only [Function.comp_def,he]
-      have hm : Summable (fun v : β×(Fin n→β)=>‖f 0 v.1‖ * ‖∏ i : Fin n,f i.succ (v.2 i)‖) :=
+      have hm :=
         (hf 0).mul_of_nonneg ht.1 (fun _=>norm_nonneg _) (fun _=>norm_nonneg _)
       simpa only [norm_mul] using hm
     · rw [←e.tsum_eq (fun v=>∏ i,f i (v i))]
@@ -70,7 +70,7 @@ lemma finiteEuler (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
   have he (v : {v : α→₀β // (v.support:Set α)⊆S}) :
       v.val.prod f=∏ a:S,f a.val (e v a) := by
     rw [←Finsupp.prod_subtypeDomain_index (p:=fun a=>a∈S) (fun a ha=>v.property ha)]
-    exact Finsupp.prod_fintype _ _ (fun a=>h0 a.val)
+    exact Finsupp.prod_fintype _ _ (by grind)
   simp_rw [he]
   rw [e.tsum_eq (fun v : S→β=>∏ a:S,f a.val (v a))]
   rw [(finitePi (fun a:S=>f a.val) (fun a=>hf a.val)).2]
@@ -88,12 +88,12 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     · intro v
       apply tendsto_const_nhds.congr'
       filter_upwards [eventually_ge_atTop v.support] with S hS
-      simp only [ite_eq_left hS]
+      simp_all
     · apply Filter.Eventually.of_forall
       intro S v
       split_ifs
-      · exact le_rfl
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      · simp
+      simp
   have he (S : Finset α) : (∑' v : α→₀β,if v.support⊆S then v.prod f else 0)=
       ∏a∈S,∑' b,f a b := by
     rw [←finiteEuler f h0 hf S]
@@ -103,7 +103,7 @@ theorem hasProd_of_summable (f : α→β→ℂ) (h0 : ∀a,f a 0=1)
       simp only [Set.indicator,Set.mem_ofPred_eq,Finset.coe_subset]
     · exact (tsum_subtype {v : α→₀β | (v.support:Set α)⊆S} (fun v=>v.prod f)).symm
   change Tendsto (fun S : Finset α=>∏a∈S,∑' b,f a b) atTop _
-  simpa only [he] using ht
+  simp_all
 
 end SevenEighths.ProbeEulerFinsupp
 end

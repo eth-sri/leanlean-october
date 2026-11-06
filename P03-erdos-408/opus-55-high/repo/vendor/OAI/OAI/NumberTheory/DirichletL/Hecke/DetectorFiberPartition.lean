@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDynamicSelection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorFiberPartition
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber
 open HeckeDetectorSupportedWitness HeckeDetectorWitnessRows HeckeDetectorPhysicalSelection
@@ -41,7 +41,7 @@ theorem card_eq_sum_fibers {Row Label Slot : Type*} [Fintype Label]
         (fiber rows χ U a ε tstar T allowance i w slots mesh hm widths physical bin label J K).card := by
   have hh := Finset.card_eq_sum_card_fiberwise (s:=rows) (t:=Finset.univ)
     (f:=fun u => (amplitudeLabel slots U ((2*a-1)/2) mesh hm widths physical u,
-      (w u).label,(w u).left,(w u).right)) (by intro u hu; exact Finset.mem_univ _)
+      (w u).label,(w u).left,(w u).right)) (by intro u hu; grind)
   simpa only [Fintype.sum_prod_type,Prod.mk.injEq,fiber] using hh
 
 def binValue {Slot : Type*} (slots : Finset Slot) (cap mesh : ℝ)

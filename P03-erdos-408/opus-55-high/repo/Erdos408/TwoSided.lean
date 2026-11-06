@@ -86,7 +86,7 @@ theorem twoSidedCorrelation_of_graphTransference (hG : GraphTransference) :
               ∑ ν, β ν * strippedComparison x q₀ Subtype.val (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν)
                 (ψ' ν) (centeredCore x q a u v Bc) G Ψ) -
             ∑ ν, β ν * strippedComparison x q₀ Subtype.val (Aν ν) (Bν ν) (φ ν) (φ' ν) (ψ ν)
-              (ψ' ν) (centeredCore x q a u v Bc) G Ψ‖ := by rw [add_sub_cancel_right]
+              (ψ' ν) (centeredCore x q a u v Bc) G Ψ‖ := by simp
       _ ≤ CG * L ^ (-A) + |CC| * L ^ (-A) := (norm_sub_le _ _).trans (add_le_add hraw hcmp')
       _ ≤ (|CG| + |CC|) * L ^ (-A) := by
           rw [add_mul]

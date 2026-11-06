@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.Hecke.Euler
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.HeckeDirichlet
 open HeckeFamily
 
@@ -43,8 +42,7 @@ theorem quotient_unit_of_norm_unit (z : O)
   have hn : (Ideal.absNorm (Ideal.span {z}) : O ⧸ modulus q) =
       Ideal.Quotient.mk (modulus q) z * Ideal.Quotient.mk (modulus q) w := by
     rw [← map_mul, ← hw, map_natCast]
-  rw [hn] at hi
-  exact isUnit_of_mul_isUnit_left hi
+  simp_all
 
 def residue (χ : DirichletCharacter ℂ q) : MulChar (O ⧸ modulus q) ℂ where
   toFun x := Quotient.liftOn' x (InitialMeanSquare.normCharacter χ) (by
@@ -67,8 +65,7 @@ def residue (χ : DirichletCharacter ℂ q) : MulChar (O ⧸ modulus q) ℂ wher
 
 theorem residue_unit_trivial (χ : DirichletCharacter ℂ q) (u : Oˣ) :
     residue χ (Ideal.Quotient.mk (modulus q) (u : O)) = 1 := by
-  rw [residue_mk, Ideal.span_singleton_eq_top.mpr u.isUnit, Ideal.absNorm_top]
-  simp
+  simp [residue_mk, Ideal.span_singleton_eq_top.mpr u.isUnit, Ideal.absNorm_top]
 
 variable [NeZero q]
 
@@ -121,13 +118,7 @@ theorem LFunction_eq_dirichlet_product_right (χ : DirichletCharacter ℂ q)
   have hD := ShortDraftHeckeBridge.pair_inverse_euler_identity χ
     (ShortDraftHeckeBridge.baseChangeChar χ) s hs
   rw [inverseSeries_eq_pairInverse_LSeries χ hs] at hH
-  have hne : LSeries (ShortDraftHeckeBridge.pairInverseCoeff χ
-      (ShortDraftHeckeBridge.baseChangeChar χ)) s ≠ 0 := by
-    intro h
-    rw [h, zero_mul] at hH
-    exact zero_ne_one hH
-  apply mul_left_cancel₀ hne
-  rw [hH, mul_comm, hD]
+  grind
 
 theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
     {s : ℂ} (h0 : s ≠ 0) (h1 : s ≠ 1) :
@@ -137,7 +128,7 @@ theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
   have hU : IsOpen U := (Set.toFinite ({0,1} : Set ℂ)).isClosed.isOpen_compl
   have hpc : IsPreconnected U :=
     ((Set.toFinite ({0,1} : Set ℂ)).countable.isConnected_compl_of_one_lt_rank
-      (Complex.rank_real_complex ▸ Nat.one_lt_ofNat)).isPreconnected
+      (by simp)).isPreconnected
   have hmem : s ∈ U := by simp [U, h0, h1]
   have htwo : (2 : ℂ) ∈ U := by norm_num [U]
   apply AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq (𝕜 := ℂ)
@@ -156,7 +147,7 @@ theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
       ((ShortDraftHeckeBridge.baseChangeChar χ).differentiableAt_LFunction z
         (Or.inl hz'))).differentiableWithinAt
   · filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds
-      (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
+      (by simp)] with z hz
     exact LFunction_eq_dirichlet_product_right χ hz
 
 theorem dirichlet_seven_eighths_of_hecke
@@ -170,7 +161,7 @@ theorem dirichlet_seven_eighths_of_hecke
   have hs0 : s ≠ 0 := by intro h; norm_num [h] at hs
   have h := hH (character χ) s hs (Or.inl hs1)
   rw [LFunction_eq_dirichlet_product χ hs0 hs1] at h
-  exact (mul_ne_zero_iff.mp h).1
+  simp_all
 
 end SevenEighths.HeckeDirichlet
 

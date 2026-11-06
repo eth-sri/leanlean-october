@@ -11,36 +11,31 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstChildProfileControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergySourceInputReindexGates
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
+open CenteredMomentCommonRadialData
 open CenteredMomentSourceInputReindex CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentFirstSecondInputGates CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstChildProfileControl CenteredMomentFirstAnnularInput
-open CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentOriginalChildEnergy
+open CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
 local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
 
 section Dictionary
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 end Dictionary
 
-lemma allocationLabels_map (e : α≃β) (s : Input α) (C : Ideal O) :
+lemma allocationLabels_map (e : α≃β) (s : Input α) (C : Ideal HeckeFamily.O) :
     (allocationLabels s.pools C).image (tupleMap e)=
       allocationLabels (reindex e s).pools C := by
   unfold allocationLabels
   rw [←pools_map,Finset.image_image,Finset.image_image]
   congr 1
 
-lemma actualAllocations_map (e : α≃β) (s : Input α) (C : Ideal O) :
+lemma actualAllocations_map (e : α≃β) (s : Input α) (C : Ideal HeckeFamily.O) :
     (actualAllocations s.pools C).image (tupleMap e)=
       actualAllocations (reindex e s).pools C := by
   change ((allocationLabels s.pools C).filter (fun B=>finiteTupleProduct B=C)).image (tupleMap e)=
@@ -48,7 +43,7 @@ lemma actualAllocations_map (e : α≃β) (s : Input α) (C : Ideal O) :
   rw [←allocationLabels_map e s C,Finset.filter_image]
   simp only [tupleMap_product]
 
-def allocationEquiv (e : α≃β) (s : Input α) (C : Ideal O) :
+def allocationEquiv (e : α≃β) (s : Input α) (C : Ideal HeckeFamily.O) :
     actualAllocations s.pools C ≃ actualAllocations (reindex e s).pools C where
   toFun B := ⟨tupleMap e B.val,by
     rw [←actualAllocations_map]
@@ -61,7 +56,7 @@ def allocationEquiv (e : α≃β) (s : Input α) (C : Ideal O) :
   left_inv B := Subtype.ext ((tupleMap e).symm_apply_apply B.val)
   right_inv B := Subtype.ext ((tupleMap e).apply_symm_apply B.val)
 
-@[simp] lemma allocationEquiv_val (e : α≃β) (s : Input α) (C : Ideal O)
+@[simp] lemma allocationEquiv_val (e : α≃β) (s : Input α) (C : Ideal HeckeFamily.O)
     (B : actualAllocations s.pools C) :
     (allocationEquiv e s C B).val=tupleMap e B.val := rfl
 

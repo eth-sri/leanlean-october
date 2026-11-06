@@ -10,41 +10,40 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceLiveColumn
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSourceRectangle
-open ActualEisensteinCubic HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle
+open HeckeFamily CenteredMomentHeckeExpansion CenteredMomentRectangle
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentExtraction CenteredMomentFirstSectors
-open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile CenteredMomentRemainingBox
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentFirstSectors
+open CenteredMomentSourceLiveColumn CenteredMomentCommonProfile
 variable {ι : Type*} [Fintype ι]
 
-def tuplePools (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
-    (ι⊕Fin 2)→Finset (Ideal O) := Sum.elim slots (fun j=>if j=0 then S₁ else S₂)
+def tuplePools (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O)) :
+    (ι⊕Fin 2)→Finset (Ideal ActualEisensteinCubic.O) := Sum.elim slots (fun j=>if j=0 then S₁ else S₂)
 
-def tuplePool (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) : Finset (Tuple ι) :=
+def tuplePool (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O)) : Finset (Tuple ι) :=
   Fintype.piFinset (tuplePools slots S₁ S₂)
 
-def pack (v : ι→Ideal O) (I J : Ideal O) : Tuple ι :=
+def pack (v : ι→Ideal ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O) : Tuple ι :=
   Sum.elim v (fun j=>if j=0 then I else J)
 
 omit [Fintype ι] in
-@[simp] theorem pack_slot (v : ι→Ideal O) (I J : Ideal O) (i : ι) :
+@[simp] theorem pack_slot (v : ι→Ideal ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O) (i : ι) :
     pack v I J (Sum.inl i)=v i := rfl
 omit [Fintype ι] in
-@[simp] theorem pack_left (v : ι→Ideal O) (I J : Ideal O) :
+@[simp] theorem pack_left (v : ι→Ideal ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O) :
     pack v I J (Sum.inr 0)=I := by simp [pack]
 omit [Fintype ι] in
-@[simp] theorem pack_right (v : ι→Ideal O) (I J : Ideal O) :
+@[simp] theorem pack_right (v : ι→Ideal ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O) :
     pack v I J (Sum.inr 1)=J := by simp [pack]
 
-theorem pack_product (v : ι→Ideal O) (I J : Ideal O) :
+theorem pack_product (v : ι→Ideal ActualEisensteinCubic.O) (I J : Ideal ActualEisensteinCubic.O) :
     finiteTupleProduct (pack v I J)=(∏ i,v i)*I*J := by
   simp only [finiteTupleProduct,Fintype.prod_sum_type,pack_slot,Fin.prod_univ_two,
     pack_left,pack_right,mul_assoc]
 
-def tuplePoolEquiv (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)) :
+def tuplePoolEquiv (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O)) :
     tuplePool slots S₁ S₂ ≃ ((∀ i,slots i)×S₁×S₂) where
   toFun v := ((fun i=>⟨v.val (Sum.inl i),Fintype.mem_piFinset.mp v.property (Sum.inl i)⟩),
     ⟨v.val (Sum.inr 0),by simpa [tuplePools] using Fintype.mem_piFinset.mp v.property (Sum.inr 0)⟩,
@@ -63,7 +62,7 @@ def tuplePoolEquiv (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O)
     | inr j => fin_cases j <;> rfl
   right_inv v := rfl
 
-theorem sum_tuplePool (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
+theorem sum_tuplePool (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O))
     (f : Tuple ι→ℂ) :
     (∑ v∈tuplePool slots S₁ S₂,f v)=
       ∑ v : (∀ i,slots i),∑ I : S₁,∑ J : S₂,f (pack (fun i=>v i) I J) := by
@@ -73,7 +72,7 @@ theorem sum_tuplePool (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal
     (∑ v : tuplePool slots S₁ S₂,f v) at he
   simpa only [Fintype.sum_prod_type] using he.symm
 
-theorem finite_column_regroup (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (w : Ideal O→ℂ) :
+theorem finite_column_regroup (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (w : Ideal ActualEisensteinCubic.O→ℂ) :
     (∑ I∈finiteColumns S,finiteColumnCoefficient S β I*w I)=
       ∑ v∈S,β v*w (finiteTupleProduct v) := by
   simp only [finiteColumnCoefficient,Finset.sum_mul]
@@ -83,16 +82,15 @@ theorem finite_column_regroup (S : Finset (Tuple ι)) (β : Tuple ι→ℂ) (w :
       apply Finset.sum_congr rfl
       intro I hI
       apply Finset.sum_congr rfl
-      intro v hv
-      rw [(Finset.mem_filter.mp hv).2]
+      simp_all
     _ = _ := Finset.sum_fiberwise_of_maps_to (fun v hv=>Finset.mem_image.mpr ⟨v,hv,rfl⟩) _
 
-def PlainCoverage (S : Finset (Ideal O)) (W : ℝ→ℂ) (B : Ideal O) (X Y : ℝ) : Prop :=
+def PlainCoverage (S : Finset (Ideal ActualEisensteinCubic.O)) (W : ℝ→ℂ) (B : Ideal ActualEisensteinCubic.O) (X Y : ℝ) : Prop :=
   ∀ I, W ((Ideal.absNorm (B*I):ℝ)/X)≠0 ∨ W ((Ideal.absNorm (B*I):ℝ)/Y)≠0 → I∈S
 
-theorem rectangle_zero_left (S₁ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
-    (B₁ B₂ : Ideal O) (X₁ X₂ Y₁ Y₂ : ℝ)
-    (h : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (I J : Ideal O) (hI : I∉S₁) :
+theorem rectangle_zero_left (S₁ : Finset (Ideal ActualEisensteinCubic.O)) (W₁ W₂ : ℝ→ℂ)
+    (B₁ B₂ : Ideal ActualEisensteinCubic.O) (X₁ X₂ Y₁ Y₂ : ℝ)
+    (h : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (I J : Ideal ActualEisensteinCubic.O) (hI : I∉S₁) :
     idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J)=0 := by
   have hx : W₁ ((Ideal.absNorm (B₁*I):ℝ)/X₁)=0 := by
     by_contra hn;exact hI (h I (Or.inl hn))
@@ -100,9 +98,9 @@ theorem rectangle_zero_left (S₁ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
     by_contra hn;exact hI (h I (Or.inr hn))
   simp only [idealRectangle,hx,hy,zero_mul,sub_self]
 
-theorem rectangle_zero_right (S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
-    (B₁ B₂ : Ideal O) (X₁ X₂ Y₁ Y₂ : ℝ)
-    (h : PlainCoverage S₂ W₂ B₂ X₂ Y₂) (I J : Ideal O) (hJ : J∉S₂) :
+theorem rectangle_zero_right (S₂ : Finset (Ideal ActualEisensteinCubic.O)) (W₁ W₂ : ℝ→ℂ)
+    (B₁ B₂ : Ideal ActualEisensteinCubic.O) (X₁ X₂ Y₁ Y₂ : ℝ)
+    (h : PlainCoverage S₂ W₂ B₂ X₂ Y₂) (I J : Ideal ActualEisensteinCubic.O) (hJ : J∉S₂) :
     idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J)=0 := by
   have hx : W₂ ((Ideal.absNorm (B₂*J):ℝ)/X₂)=0 := by
     by_contra hn;exact hJ (h J (Or.inl hn))
@@ -110,15 +108,15 @@ theorem rectangle_zero_right (S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
     by_contra hn;exact hJ (h J (Or.inr hn))
   simp only [idealRectangle,hx,hy,mul_zero,sub_self]
 
-theorem finite_plain_rectangle (S₁ S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ→ℂ)
-    (B₁ B₂ : Ideal O) (X₁ X₂ Y₁ Y₂ : ℝ)
+theorem finite_plain_rectangle (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O)) (W₁ W₂ : ℝ→ℂ)
+    (B₁ B₂ : Ideal ActualEisensteinCubic.O) (X₁ X₂ Y₁ Y₂ : ℝ)
     (h₁ : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (h₂ : PlainCoverage S₂ W₂ B₂ X₂ Y₂)
-    (f : Ideal O→Ideal O→ℂ) :
+    (f : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ) :
     (∑ I : S₁,∑ J : S₂,f I J*idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J))=
-      ∑' I : Ideal O,∑' J : Ideal O,f I J*idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J) := by
+      ∑' I : Ideal ActualEisensteinCubic.O,∑' J : Ideal ActualEisensteinCubic.O,f I J*idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J) := by
   symm
   rw [tsum_eq_sum (s := S₁)]
-  · rw [← Finset.sum_coe_sort S₁ (fun I=>∑' J : Ideal O,
+  · rw [← Finset.sum_coe_sort S₁ (fun I=>∑' J : Ideal ActualEisensteinCubic.O,
       f I J*idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J))]
     apply Finset.sum_congr rfl
     intro I hI
@@ -129,20 +127,20 @@ theorem finite_plain_rectangle (S₁ S₂ : Finset (Ideal O)) (W₁ W₂ : ℝ�
   · intro I hI
     simp only [rectangle_zero_left S₁ W₁ W₂ B₁ B₂ X₁ X₂ Y₁ Y₂ h₁ I _ hI,mul_zero,tsum_zero]
 
-def fullMaskedRectangle (η : Character) (m A z : O) (t : ℝ)
-    (slots : ι→Finset (Ideal O)) (ν Wslot : ι→Ideal O→ℂ)
-    (R L : Ideal O) (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) : ℂ :=
+def fullMaskedRectangle (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (ν Wslot : ι→Ideal ActualEisensteinCubic.O→ℂ)
+    (R L : Ideal ActualEisensteinCubic.O) (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O) : ℂ :=
   ∑ v : (∀ i,slots i),(∏ i,ν i (v i)*Wslot i (v i))*
-    ∑' I : Ideal O,∑' J : Ideal O,
-      (if IsCoprime ((∏ i,(v i:Ideal O))*I*J) R then (1:ℂ) else 0)*
-      (if L∣(∏ i,(v i:Ideal O))*I*J then (1:ℂ) else 0)*
-      rowWeight η m A z t ((∏ i,(v i:Ideal O))*I*J)*
+    ∑' I : Ideal ActualEisensteinCubic.O,∑' J : Ideal ActualEisensteinCubic.O,
+      (if IsCoprime ((∏ i,(v i:Ideal ActualEisensteinCubic.O))*I*J) R then (1:ℂ) else 0)*
+      (if L∣(∏ i,(v i:Ideal ActualEisensteinCubic.O))*I*J then (1:ℂ) else 0)*
+      rowWeight η m A z t ((∏ i,(v i:Ideal ActualEisensteinCubic.O))*I*J)*
       idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*I) (B₂*J)
 
-theorem source_polynomial_eq_full_masked_rectangle (η : Character) (m A z : O) (t : ℝ)
-    (slots : ι→Finset (Ideal O)) (S₁ S₂ : Finset (Ideal O))
-    (R L : Ideal O) (ν : ι→Ideal O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
-    (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O)
+theorem source_polynomial_eq_full_masked_rectangle (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (slots : ι→Finset (Ideal ActualEisensteinCubic.O)) (S₁ S₂ : Finset (Ideal ActualEisensteinCubic.O))
+    (R L : Ideal ActualEisensteinCubic.O) (ν : ι→Ideal ActualEisensteinCubic.O→ℂ) (Wslot : ι→ℝ→ℂ) (P : ι→ℝ)
+    (W₁ W₂ : ℝ→ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal ActualEisensteinCubic.O)
     (h₁ : PlainCoverage S₁ W₁ B₁ X₁ Y₁) (h₂ : PlainCoverage S₂ W₂ B₂ X₂ Y₂) :
     (∑ I∈finiteColumns (tuplePool slots S₁ S₂),
       finiteColumnCoefficient (tuplePool slots S₁ S₂)
@@ -162,15 +160,15 @@ theorem source_polynomial_eq_full_masked_rectangle (η : Character) (m A z : O) 
   simp only [profileCoefficient,pack_product,pack_slot,pack_left,pack_right]
   ring
 
-theorem plainCoverage_residualPool (S : Finset (Ideal O)) (W : ℝ→ℂ)
-    (B C : Ideal O) (hC : C≠0) (X Y : ℝ) (h : PlainCoverage S W B X Y) :
+theorem plainCoverage_residualPool (S : Finset (Ideal ActualEisensteinCubic.O)) (W : ℝ→ℂ)
+    (B C : Ideal ActualEisensteinCubic.O) (hC : C≠0) (X Y : ℝ) (h : PlainCoverage S W B X Y) :
     PlainCoverage (residualPool C hC S) W (B*C) X Y := by
   intro I hi
   apply (mem_residualPool C hC S I).mpr
   apply h (C*I)
   simpa only [mul_assoc] using hi
 
-def plainSupportPool (b X Y : ℝ) : Finset (Ideal O) := idealBall (b*X)∪idealBall (b*Y)
+def plainSupportPool (b X Y : ℝ) : Finset (Ideal ActualEisensteinCubic.O) := idealBall (b*X)∪idealBall (b*Y)
 
 theorem plainSupportPool_coverage (W : ℝ→ℂ) (b X Y : ℝ)
     (hW₀ : W 0=0) (hs : Function.support W⊆Set.Iic b) (hX : 0<X) (hY : 0<Y) :
@@ -182,15 +180,13 @@ theorem plainSupportPool_coverage (W : ℝ→ℂ) (b X Y : ℝ)
     apply (mem_idealBall _ _).mpr
     constructor
     · intro hI
-      subst I
-      apply hne
-      simp only [map_zero,Nat.cast_zero,zero_div,hW₀]
+      simp_all
     · exact (div_le_iff₀ hQ).mp (hs hne)
   obtain hi|hi := hi
-  · exact Finset.mem_union_left _ (cover X hX hi)
-  · exact Finset.mem_union_right _ (cover Y hY hi)
+  · exact Finset.mem_union_left _ (by grind)
+  · exact Finset.mem_union_right _ (by grind)
 
-theorem liveBox_eq_tuplePool (S : (ι⊕Fin 2)→Finset (Ideal O)) (B : Tuple ι)
+theorem liveBox_eq_tuplePool (S : (ι⊕Fin 2)→Finset (Ideal ActualEisensteinCubic.O)) (B : Tuple ι)
     (hB : ∀ i,B i≠0) :
     liveBox S B hB = tuplePool
       (fun i : liveIndices B=>residualPool (B (Sum.inl i.val)) (hB _) (S (Sum.inl i.val)))

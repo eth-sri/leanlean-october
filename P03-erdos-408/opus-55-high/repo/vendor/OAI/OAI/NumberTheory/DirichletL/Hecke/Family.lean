@@ -11,7 +11,6 @@ public import Mathlib.RingTheory.Ideal.Norm.AbsNorm
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.HeckeFamily
 
 abbrev K := CyclotomicField 3 ℚ
@@ -59,13 +58,13 @@ def coefficients (χ : Character) (a : Fin χ.period × Fin χ.period) : ℂ :=
 
 theorem elementCoeff_mul (χ : Character) (z w : O) :
     elementCoeff χ (z * w) = elementCoeff χ z * elementCoeff χ w := by
-  simp [elementCoeff, map_mul]
+  simp [elementCoeff]
 
 theorem elementCoeff_unit_mul (χ : Character) (u : Oˣ) (z : O) :
     elementCoeff χ ((u : O) * z) = elementCoeff χ z := by
   rw [elementCoeff_mul]
   have hu : elementCoeff χ (u : O) = 1 := χ.unit_trivial u
-  rw [hu, one_mul]
+  simp_all
 
 theorem quotient_period (χ : Character) :
     Ideal.Quotient.mk χ.modulus (χ.period : O) = 0 :=
@@ -73,7 +72,7 @@ theorem quotient_period (χ : Character) :
 
 theorem elementCoeff_add_period_mul (χ : Character) (z w : O) :
     elementCoeff χ (z + (χ.period : O) * w) = elementCoeff χ z := by
-  simp [elementCoeff, map_add, map_mul, quotient_period χ]
+  simp [elementCoeff, quotient_period χ]
 
 theorem periodicCoeff_eq_elementCoeff (χ : Character) (n : ℤ × ℤ) :
     HeckeTheta.periodicCoeff (coefficients χ) n =

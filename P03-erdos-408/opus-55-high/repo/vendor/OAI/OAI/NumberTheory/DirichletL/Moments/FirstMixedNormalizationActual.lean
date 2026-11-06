@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRoot
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalizationActual
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
 open CenteredMomentSecondHeightFamily
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
+open CenteredMomentFirstExceptionalPrefactor
 open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedAllowance
 open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentCanonicalFirst
-open CenteredMomentFirstScale ConcreteTraceCRT
+open CenteredMomentFirstScale
 open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
-local notation "O"=>HeckeFamily.O
 
-theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
+theorem actual_reference_width (η τ:Character)(C D:Ideal HeckeFamily.O)(hC:Supported C)
     (E:Finset (CommonIndex C D))(K Z:ℝ)(_hK:0<K)(_hZ:1<Z)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     Real.logb Z K+Real.logb Z (τ.modulus.absNorm:ℝ)-
       Real.logb Z ((Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}).absNorm:ℝ)-
@@ -38,11 +37,11 @@ theorem actual_reference_width (η τ:Character)(C D:Ideal O)(hC:Supported C)
   simp (disch := positivity) only [Real.logb_mul]
   ring
 
-theorem actual_exceptional_reference (η τ:Character)(C D:Ideal O)
+theorem actual_exceptional_reference (η τ:Character)(C D:Ideal HeckeFamily.O)
     (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
     (E:Finset (CommonIndex C D))(K V Z j g w wo ell:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
     let c:=Real.logb Z (C.absNorm:ℝ);
     let d:=Real.logb Z (D.absNorm:ℝ);
@@ -63,14 +62,14 @@ theorem actual_exceptional_reference (η τ:Character)(C D:Ideal O)
   dsimp only at hh ⊢
   rw [actual_reference_width η τ C D hC E K Z hK hZ hmod] at hh
   rw [nominal_equal_support C D _ hC.1 hD.1 hCD K V]
-  exact hh
+  omega
 
-theorem actual_error_reference_le (η τ:Character)(C D:Ideal O)
+theorem actual_error_reference_le (η τ:Character)(C D:Ideal HeckeFamily.O)
     (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
     (E:Finset (CommonIndex C D))(K V Z j g:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
-    (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
+    (p:HeckeFamily.O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
     let c:=Real.logb Z (C.absNorm:ℝ);
     let d:=Real.logb Z (D.absNorm:ℝ);
     let q:=Real.logb Z (τ.modulus.absNorm:ℝ);

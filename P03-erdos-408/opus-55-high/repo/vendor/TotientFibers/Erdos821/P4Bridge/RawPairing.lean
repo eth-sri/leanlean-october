@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.RawModel
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe
@@ -29,7 +28,7 @@ lemma rawPrefixKernel_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool
   unfold rawPrefixKernel rawTransition
   rw [splitBigLabels_labelJoin, splitBigLabels_labelJoin]
   have hp : (prefixSplit ν block).symm (s, a, b) = (prefixSplit ν block).symm (s', a', b') ↔
-      (s, a, b) = (s', a', b') := (prefixSplit ν block).symm.injective.eq_iff
+      (s, a, b) = (s', a', b') := by simp
   simp only [hp]
   have hprod := prefixProduct_labelJoin ν block s a b t
   rw [splitBigLabels_labelJoin] at hprod
@@ -137,11 +136,7 @@ lemma rawFullPair_conditional (ν : Pattern P J ell m) (block : P.BigGroup → B
   simp only [star_sum, star_mul, Complex.star_def, Complex.conj_ofReal,
     Finset.mul_sum, Finset.sum_mul, Complex.ofReal_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro t' _
-  apply Finset.sum_congr rfl
-  intro t _
-  ring
+  grind
 
 end
 end Erdos821.P4Bridge

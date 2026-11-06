@@ -7,7 +7,7 @@ public import Mathlib.Order.Filter.AtTopBot.Archimedean
 
 @[expose] public section
 
-open Filter Topology
+open Filter
 
 namespace Asymptotics
 

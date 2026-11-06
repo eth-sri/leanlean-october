@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
@@ -46,7 +46,7 @@ theorem source_dyadic_bounds (R dmax τ ε e κ η : ℝ)
   let C := (M+E)^2+1
   have hM : 0≤M := mul_nonneg hK.le (hprofile 2)
   have hE : 0≤E := mul_nonneg (mul_nonneg hK.le (hprofile (n+2))) (by positivity)
-  refine ⟨n,C,by dsimp [C]; positivity,?_⟩
+  refine ⟨n,C,by positivity,?_⟩
   intro Z d hZ hd hd' hT ι _ χ hχ a i ha ha' hmax j inverse W A B hA hWs hW
     r σ freq hQ hr hrR hfreq hheight hm₂ hmn
   let U := Z^d
@@ -93,11 +93,11 @@ theorem source_dyadic_bounds (R dmax τ ε e κ η : ℝ)
         _ = (K*profileBound (n+2))*(U^(2*R+2+η)/(1+Z^τ/2)^n) := by ring
         _ ≤ (K*profileBound (n+2))*((2 : ℝ)^n*U^p) :=
           mul_le_mul_of_nonneg_left ht (mul_nonneg hK.le (hprofile _))
-        _ = _ := by dsimp [E]; ring
+        _ = _ := by linarith
     have hn := hz.trans (add_le_add (le_refl _) herror)
     have hs := squared_bound_of_central_and_error z U M E p b ε hU hM hE hε.le hb hn
     apply hs.trans
-    apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by linarith) _)
+    apply mul_le_mul_of_nonneg_right _ (by positivity)
     dsimp [C]
     linarith
   have hpos : 0≤(a-1/2)*r := mul_nonneg (by linarith) hr

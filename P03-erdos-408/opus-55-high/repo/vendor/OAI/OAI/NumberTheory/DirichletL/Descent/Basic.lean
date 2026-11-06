@@ -38,7 +38,7 @@ theorem child_margins_sharp {F M Q Q' z c ell A t g theta V j delta eta : ℝ}
       3 * childM M ell A t g theta V j eta - 6 * z := by
   obtain ⟨h₁, h₂⟩ := h
   unfold childF childM decrease at *
-  constructor <;> linarith
+  grind
 
 theorem child_margins {F M Q Q' z c ell A t g theta V j delta eta : ℝ}
     (h : CanonicalMargins F M Q z c)
@@ -80,7 +80,7 @@ theorem initial_margins_sharp {m r z G P delta eta tau Q c₁ c₂ : ℝ}
       4 * initialF r z G P delta - 3 * initialM m r z G P eta tau -
         6 * (z - G) := by
   unfold initialF initialM
-  constructor <;> linarith
+  grind
 
 theorem initial_margins {m r z G P delta eta tau Q c₁ c₂ : ℝ}
     (h₁ : r + 2 * z ≤ m - c₁) (h₂ : 2 * r + 8 * z ≤ 3 * m - c₂)

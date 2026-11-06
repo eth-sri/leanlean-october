@@ -73,11 +73,11 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
     rcases lt_or_gt_of_ne hii with h | h
     · exact hdisj _ _ (hd.gap i i' h)
     · exact (hdisj _ _ (hd.gap i' i h)).symm
-  have hrough' : ∀ i, ∀ r ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ r ∣ m :=
+  have hrough' :=
     fun i => hrough _ (hd.window i).2
   have hV : ∀ i, 0 < harmonicMass (band x (d.a i)) := fun i => by
     linarith [(hmass _ (hd.window i).1).1]
-  have hle15 : ∀ i, L ^ d.a i ≤ L ^ (1 / 5 : ℝ) := fun i =>
+  have hle15 := fun i =>
     Real.rpow_le_rpow_of_exponent_le hL1 ((hd.window i).2.trans hahi.le)
   -- the scales
   have hHm : 2 ≤ d.Hm := (h2 _ hd.γ_ge).trans hd.Hm_ge
@@ -99,7 +99,7 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
     rw [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul] at this
     linarith
   have hYW : ∀ p ∈ d.labels x, Y < (∏ i, p i : ℕ) → 5 * Y ≤ roughLevel x := fun p hp hpY =>
-    by linarith [hlab p hp]
+    by grind
   -- pad products are below `2^{⌊L⌋ + 1}`
   have hN : ∀ z ∈ padSet x d J, ∏ c, z c < 2 ^ (⌊L⌋₊ + 1) := by
     intro z hz
@@ -108,12 +108,11 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
         _ ≤ ∏ _c : Fin K × Fin J, Real.exp (2 * L ^ (1 / 5 : ℝ)) :=
             prod_le_prod₀ (fun c _ => Nat.cast_nonneg _) fun c _ =>
               (le_exp_of_mem_band (mem_band_of_mem_padSet hz c)).trans
-                (Real.exp_le_exp.2 (by linarith [hle15 c.1]))
+                (Real.exp_le_exp.2 (by grind))
         _ = Real.exp (2 * K * J * L ^ (1 / 5 : ℝ)) := by
             rw [prod_const, card_univ, Fintype.card_prod, Fintype.card_fin, Fintype.card_fin,
               ← Real.exp_nat_mul]
-            push_cast
-            ring_nf
+            grind
     exact_mod_cast hzle.trans_lt hpad
   -- every atom `μ_i(p)` is at most `ε = 2 e^{-L^{a₋}}`
   set ε := 2 * Real.exp (-L ^ alo)
@@ -163,7 +162,7 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
       _ = L := Real.rpow_one L
   have hA : 160 + 1408 * L ^ (3 * A₀) ≤ 1568 * L ^ (3 * |A₀|) := by
     have h₁ : L ^ (3 * A₀) ≤ L ^ (3 * |A₀|) :=
-      Real.rpow_le_rpow_of_exponent_le hL1 (by linarith [le_abs_self A₀])
+      Real.rpow_le_rpow_of_exponent_le hL1 (by grind)
     have h₂ : 1 ≤ L ^ (3 * |A₀|) := Real.one_le_rpow hL1 (by positivity)
     linarith
   have hKJ : (K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ)) ≤
@@ -192,13 +191,11 @@ theorem eventually_square_decomposition {C CX alo ahi g : ℝ} (hCX : 1 ≤ CX)
           (4 * ((K : ℝ) + 1) ^ 2 * L ^ 2) * ε := by
           gcongr
       _ = c₁ * (L ^ (4 * C) * L ^ 3 * L ^ (3 * |A₀|) * L ^ 2) * Real.exp (-L ^ alo) := by
-          simp only [c₁, ε]
-          ring
+          linarith
   calc 16 * Y ^ 2 * B * ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε
       = d.X * Y * (16 * (L ^ (4 * C) * L ^ 3 * (160 + 1408 * L ^ (3 * A₀))) *
           ((K : ℝ) ^ 2 + (((K * J : ℕ) : ℝ) ^ 2 + 2 * (K * J : ℕ))) * ε) := by
-        simp only [B]
-        field_simp
+        grind
     _ ≤ d.X * Y * L ^ (-D') := by
         gcongr
     _ = 1 * d.X * 2 ^ j * L ^ (-D') := by ring

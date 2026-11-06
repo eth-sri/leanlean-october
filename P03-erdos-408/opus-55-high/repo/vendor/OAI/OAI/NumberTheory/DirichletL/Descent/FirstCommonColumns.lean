@@ -7,18 +7,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstCommonMeasure
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped Classical
+open FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
+open JointLogSeparation FourierBridge
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def firstCommonColumn (F D : Finset ι) (C : Finset ι → ℂ) (negative : Bool)
-    (χ : RayCharacter) (ω : ℝ → ℂ) (X t : ℝ) (h : Eis) : ℂ :=
+    (χ : RayCharacter) (ω : ℝ → ℂ) (X t : ℝ) (h : ActualEisensteinCubic.O) : ℂ :=
   supportConjugateSum (fun i => Ideal.span {p i}) hg (F\D)
     (fun U => (if negative then star (supportRay p χ (D∪U)) else supportRay p χ (D∪U)) *
       C (D∪U) * (if negative then star (ω (primeProductNorm p U/X)*
@@ -26,7 +25,7 @@ def firstCommonColumn (F D : Finset ι) (C : Finset ι → ℂ) (negative : Bool
         ω (primeProductNorm p U/X)*logPhase t (Real.log (primeProductNorm p U/X)))) h
 
 theorem firstCommonColumn_pair (F D : Finset ι) (C₁ C₂ : Finset ι → ℂ)
-    (r : RayCharacter × RayCharacter) (ω₁ ω₂ : ℝ → ℂ) (X₁ X₂ t₁ t₂ : ℝ) (h : Eis) :
+    (r : RayCharacter × RayCharacter) (ω₁ ω₂ : ℝ → ℂ) (X₁ X₂ t₁ t₂ : ℝ) (h : ActualEisensteinCubic.O) :
     (∑ U ∈ (F\D).powerset, ∑ V ∈ (F\D).powerset,
       firstCommonCoefficient p hg C₁ C₂ r D U V h *
         (ω₁ (primeProductNorm p U/X₁)*ω₂ (primeProductNorm p V/X₂)) *
@@ -42,12 +41,12 @@ theorem firstCommonColumn_pair (F D : Finset ι) (C₁ C₂ : Finset ι → ℂ)
   simp only [firstCommonCoefficient,Bool.false_eq_true,ite_false,ite_true,star_mul,star_star]
   ring
 
-def firstCommonOuterLog (A₁ A₂ C R : ℝ) (d h : Eis) (D : Finset ι) (s : Fin 9 → ℝ) : Fin 7 → ℝ :=
+def firstCommonOuterLog (A₁ A₂ C R : ℝ) (d h : ActualEisensteinCubic.O) (D : Finset ι) (s : Fin 9 → ℝ) : Fin 7 → ℝ :=
   ![Real.log (A₁/s 0),Real.log (A₂/s 1),Real.log (C/s 2),Real.log (‖eisEmbedding d‖^2/s 3),
     Real.log (R/s 4),Real.log (primeProductNorm p D/s 5),Real.log (‖eisEmbedding h‖^2/s 6)]
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-theorem first_common_source_mode (A₁ A₂ C R : ℝ) (d h : Eis) (s : Fin 9 → ℝ)
+theorem first_common_source_mode (A₁ A₂ C R : ℝ) (d h : ActualEisensteinCubic.O) (s : Fin 9 → ℝ)
     (j : FirstCommonIndex ι) (z : Frequency × (Fin 9 → ℝ)) :
     pureProfileMode firstLeftSlope firstRightSlope firstKernelSlope
       (firstRelativeLog (firstCommonNorms p A₁ A₂ C R d h j) s) z.1 z.2 =

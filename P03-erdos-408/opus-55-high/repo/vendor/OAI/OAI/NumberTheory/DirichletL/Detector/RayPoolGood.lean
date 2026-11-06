@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.RaySlots
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
-open Filter
+open scoped Classical
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical CanonicalQuadraticSieve PrincipalSignalComparison
+open HeckeFamily ProbePhysical CanonicalQuadraticSieve
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
@@ -23,7 +22,7 @@ theorem prime_coprime_of_norm_gt (η : Character) (P : PrimeIdeal)
   have hd : P.val∣η.modulus := Ideal.dvd_iff_le.mpr hηJ
   have hn := Nat.le_of_dvd (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr η.modulus_ne_bot))
     (map_dvd Ideal.absNorm hd)
-  exact (not_le_of_gt hN) (by exact_mod_cast hn)
+  exact (not_le_of_gt hN) (by simp_all)
 
 theorem pool_supported (C : Set Id) (S : Finset Id) (hS : SourceExclusions S)
     (a b x : ℝ) (P : PrimeIdeal) (hP : P∈pool C S a b x) : Supported P.val :=

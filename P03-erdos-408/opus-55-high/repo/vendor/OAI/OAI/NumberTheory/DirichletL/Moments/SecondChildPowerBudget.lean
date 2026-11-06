@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondChildPowerBudget
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEligibleEnergy
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentFirstChildProfileControl CenteredMomentCommonRadialPointwise
 open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-local notation "O"=>HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 omit [DecidableEq ι] in
 lemma endpoint_product (s : Input ι) (N : ℕ) (b : ℝ) (hb : 1≤b)
     (hu : s.upper≤b) (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i) :
     0≤∏i,s.hi i ∧ (∏i,s.hi i)≤b^N := by
-  refine ⟨Finset.prod_nonneg (fun i _=>hhi i),?_⟩
+  refine ⟨Finset.prod_nonneg (by grind),?_⟩
   calc
-    _≤∏i:ι,b:=Finset.prod_le_prod₀ (fun i _=>hhi i) (fun i _=>(s.upper_ge i).trans hu)
+    _≤∏i:ι,b:=Finset.prod_le_prod₀ (by grind) (fun i _=>(s.upper_ge i).trans hu)
     _=b^Fintype.card ι:=by simp
     _≤b^N:=pow_le_pow_right₀ hb hc
 
@@ -38,16 +37,16 @@ lemma main_cost (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ)
       (2*(b₁*b₂)*b^N*A^2)*(b^N*b₁*b₂)*
         CenteredMomentAmplificationChildInput.volume s*mass s^2 := by
   have hg:=CenteredMomentAmplificationChildSourceCaps.radius_le N b b₁ b₂ hb
-    (zero_le_one.trans h₁) (zero_le_one.trans h₂) s hc hhi
+    (by positivity) (by positivity) s hc hhi
     (fun i=>(s.upper_ge i).trans hu) hs₁ hs₂ hb₁ hb₂
   have hp:=profile_cost_bound s N b A hb hu hc hm
   have he : max 1 s.b₁*max 1 s.b₂≤b₁*b₂ :=
-    mul_le_mul (max_le h₁ hb₁) (max_le h₂ hb₂) (by positivity) (by linarith)
+    mul_le_mul (by grind) (by grind) (by positivity) (by linarith)
   have hp' : profileCost s≤(2*(b₁*b₂)*b^N*A^2)*mass s^2 := by
     apply hp.trans
     gcongr
   have hh:=mul_le_mul hp' hg.2 hg.1 (by positivity)
-  convert hh using 1 ; ring
+  linarith
 
 omit [DecidableEq ι] in
 lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) (N : ℕ) (b whi ε : ℝ)
@@ -62,7 +61,7 @@ lemma diagonal_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) (N : ℕ) (b whi 
   have hx0 : 0≤1+(∏i,s.hi i)*whi*whi := by nlinarith [mul_nonneg hp.1 (sq_nonneg whi)]
   have h:=mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hx0 hx (by linarith : 0≤1+ε))
     (sq_nonneg (2*SchwartzMap.seminorm ℝ 0 0 W₁*SchwartzMap.seminorm ℝ 0 0 W₂*mass s))
-  convert h using 1 ; ring
+  linarith
 
 omit [DecidableEq ι] in
 lemma tail_cost (s : Input ι) (W₁ W₂ : 𝓢(ℝ,ℂ)) :
@@ -78,7 +77,7 @@ lemma powers_nonneg (ε : ℝ) (hε : 0≤ε) : ∀j,0≤powers ε j := by
   fin_cases j <;> simp [powers,hε]
 
 def coefficients {wlo whi : ℝ} (N : ℕ) (b b₁ b₂ A : ℝ)
-    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal O)
+    (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi) (J : ℕ) (Q : Ideal HeckeFamily.O)
     (K t ε seedNorm : ℝ) (a : Fin 4→ℝ) : Fin 4→ℝ :=
   ![a 0*(2*(b₁*b₂)*b^N*A^2)*(b^N*b₁*b₂)/seedNorm,
     a 1*exceptionalConstant N b J Q K*p.control S^2*(1+‖t‖)^(2*J)*A^4/seedNorm,
@@ -88,7 +87,7 @@ def coefficients {wlo whi : ℝ} (N : ℕ) (b b₁ b₂ A : ℝ)
       SchwartzMap.seminorm ℝ 0 0 (p.profile 1))^2]
 
 def sourceCost {wlo whi : ℝ} (s : Input ι) (S : Finset (ℕ×ℕ))
-    (p : Profiles wlo whi) (J : ℕ) (Q : Ideal O) (K ε seedNorm : ℝ)
+    (p : Profiles wlo whi) (J : ℕ) (Q : Ideal HeckeFamily.O) (K ε seedNorm : ℝ)
     (a : Fin 4→ℝ) : ℝ :=
     a 0*profileCost s*sourceRadius s/seedNorm+
     a 1*profileFactor S s p J Q K*(CenteredMomentAmplificationChildInput.volume s)^(1/3:ℝ)/seedNorm+
@@ -103,7 +102,7 @@ theorem source_rhs {wlo whi : ℝ} (s : Input ι) (N : ℕ) (b b₁ b₂ A : ℝ
     (hc : Fintype.card ι≤N) (hhi : ∀i,0≤s.hi i)
     (hs₁ : 0≤s.b₁) (hs₂ : 0≤s.b₂) (hb₁ : s.b₁≤b₁) (hb₂ : s.b₂≤b₂)
     (hm : mass s≤A) (S : Finset (ℕ×ℕ)) (p : Profiles wlo whi)
-    (J : ℕ) (Q : Ideal O) (K ε seedNorm : ℝ) (hK : 0≤K) (hε : 0≤ε)
+    (J : ℕ) (Q : Ideal HeckeFamily.O) (K ε seedNorm : ℝ) (hK : 0≤K) (hε : 0≤ε)
     (hs : 0≤seedNorm) (a : Fin 4→ℝ) (ha : ∀j,0≤a j) :
     sourceCost s S p J Q K ε seedNorm a ≤
       (∑j,coefficients N b b₁ b₂ A S p J Q K s.t ε seedNorm a j*

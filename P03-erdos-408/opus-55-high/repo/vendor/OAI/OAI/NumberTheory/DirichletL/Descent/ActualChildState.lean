@@ -10,11 +10,10 @@ public import OAI.NumberTheory.DirichletL.Descent.SourceDepth
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
+open FirstPassCubeLabels InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def actualCellLabelExponent (Z B j eta : ℝ) (d : BlockIndex) : ℝ :=
   secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta
@@ -42,7 +41,7 @@ lemma actual_cell_label_nonneg (Z B j eta : ℝ) (d : BlockIndex)
   unfold actualCellLabelExponent secondFormalLabel
   positivity
 
-variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
+variable {ι : Type*} [DecidableEq ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
   [∀i,(Ideal.span {p i}).IsMaximal]
 include hp
 
@@ -63,18 +62,18 @@ theorem actual_cell_norm_centers {Jo Jn : ℕ}
   · calc
       _ ≤ 2*scales d i := hhi
       _ ≤ Z^eta*scales d i := mul_le_mul_of_nonneg_right hbin (dyadScale_pos _).le
-      _ = _ := by rw [←second_cell_scale_rpow Z d i hZ,←Real.rpow_add hz];congr 1;ring
+      _ = _ := by rw [←second_cell_scale_rpow Z d i hZ,←Real.rpow_add hz];ring
 
 theorem actual_cell_child_margins
     (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (hk : ∀x∈source,x.second.frequency≠0)
     (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d)
-    (u v : Oˣ) (m : O) (hm : m≠0)
+    (u v : ActualEisensteinCubic.Oˣ) (m : ActualEisensteinCubic.O) (hm : m≠0)
     (Z r ell V M Q z c A B t j eta : ℝ) (hZ : 1<Z)
     (hparent : CanonicalMargins (r+3*ell+V) M Q z c)
     (hA : 0≤A) (ht : 0≤t) (hV : 0≤V) (hj : 0≤j) (heta : 0≤eta) (hbin : 2≤Z^eta)
-    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Q)
+    (hQ : (Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Q)
     (h1 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z^(ell+eta))
     (h2 : ‖eisEmbedding (primeProduct p x.cube.support x.cube.rightExponent)‖^2≤Z^(ell+eta))
     (hT : (Ideal.absNorm x.quotient:ℝ)≤Z^(t+eta)) :
@@ -88,10 +87,10 @@ theorem actual_cell_child_margins
   apply actual_second_child_margins_from_cubes p hp hpr x (hs.second_divisor x hxs)
     (hs.quotient_nonzero x hxs) u v m hm Z (r+3*ell+V) M Q z c ell A t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) V j _ eta hZ hparent hA ht hV hj
-    (by unfold actualCellClipping;have := le_max_right 0 (secondCellColumnExponent Z (Z^(r-A-B-t)) d);linarith)
+    (by unfold actualCellClipping;grind)
     heta hQ h1 h2 hT
-  · simpa only [outerNorms,Matrix.cons_val_zero] using hG
-  · simpa only [outerNorms,Matrix.cons_val_one,Matrix.cons_val_zero] using hD
+  · simpa
+  · simpa
 
 theorem actual_cell_child_total_upper {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hs : ActualSecondSourceConditions p source)
@@ -111,11 +110,11 @@ theorem actual_cell_child_total_upper {Jo Jn : ℕ}
   have hD := (actual_cell_norm_centers p hp source hk d x hx Z eta hZ heta hbin 1).1
   have hgt := actual_second_common_center p hp x (hs.second_divisor x hxs) Z
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) eta hZ
-    (by simpa [outerNorms] using hG) (by simpa [outerNorms] using hD)
+    (by simpa) (by simpa)
   have hj := actual_second_label_center p hp x Z ell j eta hZ h1 h2 hJ
-  have hd : d∈keys p source := (mem_keys_iff p source d).mpr ⟨x,hx⟩
+  have hd := (mem_keys_iff p source d).mpr (by grind)
   have hc := second_cell_clipping_width Z (Z^(r-A-B-t)) b eta d hZ
-    (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) _) hb
+    (by positivity) hb
     (source_cell_joint_bound p hp source hk b _ hgeom d hd) hthreshold
   rw [actual_cell_total_transition Z r ell V A B t j eta d hZ]
   unfold childF decrease actualCellClipping

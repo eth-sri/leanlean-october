@@ -8,7 +8,7 @@ public import Erdos821.S34.OwnedLeafProofs
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -30,7 +30,7 @@ theorem frame_any_cell {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq 
     weightedFrameNorm w (frameCellApply w c χ ξ f) ≤
       (1 + (Fintype.card γ : ℝ) * δ / ξ) * weightedFrameNorm w f := by
   let cells := Finset.univ.image c
-  let c' : α → ↥cells := fun x => ⟨c x, Finset.mem_image.mpr ⟨x, Finset.mem_univ x, rfl⟩⟩
+  let c' : α → ↥cells := fun x => ⟨c x, by grind⟩
   have heq (x : α) (j : ↥cells) : c' x = j ↔ c x = j.val := Subtype.ext_iff
   have hm (j : ↥cells) : frameCellMass w c' j = frameCellMass w c j.val := by
     simp only [frameCellMass, heq]
@@ -41,12 +41,12 @@ theorem frame_any_cell {α κ γ : Type} [Fintype α] [Fintype γ] [DecidableEq 
       (a b : γ) (hab : a ≠ b) :
       ‖∑ x, if c' x = j then (w x : ℂ) * star (χ a x) * χ b x else 0‖ ≤ δ := by
     simp only [heq]
-    exact hgram j.val (by rwa [hm] at hj) a b hab
+    exact hgram j.val (by grind) a b hab
   have ht := cellFrameTask_proof α ↥cells γ w c' χ ξ δ hw hχ hξ hδ hg f
   have ha : frameCellApply w c' χ ξ f = frameCellApply w c χ ξ f := by
     funext X
     simp only [frameCellApply, hk]
-  rwa [ha] at ht
+  grind
 
 def cellApply (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
     (h ξ : ℝ) (f : Tuple G k → ℂ) (X : Tuple G k) : ℂ :=
@@ -70,7 +70,7 @@ theorem cell_operator_norm (G : PrimeGroups) (k : Fin G.size → ℕ) (Q : ℕ)
   have hg (j : ℤ) (hj : ξ ≤ frameCellMass w c j)
       (a b : ↥(primitiveCharacters Q)) (hab : a ≠ b) :
       ‖∑ z, if c z = j then (w z : ℂ) * star (χ a z) * χ b z else 0‖ ≤ δ := by
-    have he : a.val ≠ b.val := fun he => hab (Subtype.ext he)
+    have he : a.val ≠ b.val := by grind
     have ht := hgram j hj a.val a.property b.val b.property he
     simpa only [expect, w, c, χ, mul_ite, mul_zero, mul_assoc] using ht
   have hf := frame_any_cell w c χ ξ δ hw

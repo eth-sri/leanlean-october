@@ -39,7 +39,7 @@ theorem cmul_apply {loc : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) :
 theorem cmul_prime_pow (loc : ℕ → ℝ) {p : ℕ} (hp : p.Prime) (e : ℕ) :
     cmul loc (p ^ e) = loc p ^ e := by
   rw [cmul_apply (pow_ne_zero _ hp.ne_zero), hp.factorization_pow]
-  exact Finsupp.prod_single_index (pow_zero _)
+  simp
 
 theorem cmul_prime (loc : ℕ → ℝ) {p : ℕ} (hp : p.Prime) : cmul loc p = loc p := by
   simpa using cmul_prime_pow loc hp 1
@@ -59,34 +59,31 @@ theorem cmul_mul_loc (loc loc' : ℕ → ℝ) (n : ℕ) :
   by_cases hn : n = 0
   · simp [cmul, hn]
   rw [cmul_apply hn, cmul_apply hn, cmul_apply hn, ← Finsupp.prod_mul]
-  exact Finsupp.prod_congr fun p _ => mul_pow _ _ _
+  ring
 
 /-- `n = ∏_{p^e ∥ n} p^e` in `ℝ`. -/
 theorem natCast_eq_factorization_prod {n : ℕ} (hn : n ≠ 0) :
     (n : ℝ) = n.factorization.prod fun p e => (p : ℝ) ^ e := by
   conv_lhs => rw [← Nat.prod_factorization_pow_eq_self hn]
-  rw [Finsupp.prod, Finsupp.prod, Nat.cast_prod]
-  push_cast
-  rfl
+  simp
 
 /-- `n^θ` is completely multiplicative: `cmul (p ↦ p^θ) n = n^θ`. -/
 theorem cmul_rpow (θ : ℝ) {n : ℕ} (hn : n ≠ 0) :
     cmul (fun p => (p : ℝ) ^ θ) n = (n : ℝ) ^ θ := by
   rw [cmul_apply hn, natCast_eq_factorization_prod hn, Finsupp.prod, Finsupp.prod,
-    ← Real.finsetProd_rpow _ _ (fun p _ => by positivity)]
+    ← Real.finsetProd_rpow _ _ (by simp)]
   exact prod_congr rfl fun p _ => (Real.rpow_pow_comm (Nat.cast_nonneg p) θ _)
 
 /-- `1/n` is completely multiplicative. -/
 theorem cmul_inv {n : ℕ} (hn : n ≠ 0) : cmul (fun p => (p : ℝ)⁻¹) n = (n : ℝ)⁻¹ := by
   have h := cmul_rpow (-1) hn
   simp only [Real.rpow_neg_one] at h
-  exact h
+  omega
 
 /-- `f(n) / n` for a completely multiplicative `f`. -/
 theorem cmul_div {loc : ℕ → ℝ} {n : ℕ} (hn : n ≠ 0) :
     cmul loc n / n = cmul (fun p => loc p / p) n := by
-  rw [div_eq_mul_inv, ← cmul_inv hn, ← cmul_mul_loc]
-  rfl
+  simp [div_eq_mul_inv, ← cmul_inv hn, ← cmul_mul_loc]
 
 /-- `cmul loc n` only depends on `loc` at the prime factors of `n`. -/
 theorem cmul_congr {loc loc' : ℕ → ℝ} {n : ℕ} (h : ∀ p ∈ n.primeFactors, loc p = loc' p) :
@@ -95,12 +92,12 @@ theorem cmul_congr {loc loc' : ℕ → ℝ} {n : ℕ} (h : ∀ p ∈ n.primeFact
   · simp [cmul, hn]
   rw [cmul_apply hn, cmul_apply hn]
   exact Finsupp.prod_congr fun p hp => by
-    rw [h p (Nat.support_factorization n ▸ hp)]
+    simp_all
 
 /-- `cmul loc n = 0` when `loc` vanishes at a prime factor of `n`. -/
 theorem cmul_eq_zero {loc : ℕ → ℝ} {n p : ℕ} (hp : p ∈ n.primeFactors) (h : loc p = 0) :
     cmul loc n = 0 := by
-  have hn : n ≠ 0 := (Nat.mem_primeFactors.1 hp).2.2
+  have hn := (Nat.mem_primeFactors.1 hp).2.2
   rw [cmul_apply hn, Finsupp.prod]
   refine Finset.prod_eq_zero (Nat.support_factorization n ▸ hp) ?_
   rw [h, zero_pow]
@@ -112,13 +109,13 @@ theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc 
     (h1 : ∀ p, p.Prime → loc p < 1) (N : ℕ) :
     ∑ m ∈ Icc 1 N, cmul loc m ≤ ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - loc p)⁻¹ := by
   have hnorm : ∀ {p : ℕ}, p.Prime → ‖cmul loc p‖ < 1 := fun {p} hp => by
-    rw [cmul_prime loc hp, Real.norm_of_nonneg (h0 p hp)]
-    exact h1 p hp
+    rw [cmul_prime loc hp, Real.norm_of_nonneg (by grind)]
+    simp_all
   have hsum := (EulerProduct.summable_and_hasSum_factoredNumbers_prod_filter_prime_geometric
     hnorm (range (N + 1))).2
   have hprod : ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - cmul loc p)⁻¹ =
       ∏ p ∈ (range (N + 1)).filter Nat.Prime, (1 - loc p)⁻¹ :=
-    prod_congr rfl fun p hp => by rw [cmul_prime loc (mem_filter.1 hp).2]
+    prod_congr rfl fun p hp => by rw [cmul_prime loc (by grind)]
   rw [hprod] at hsum
   have hmem : ∀ m ∈ Icc 1 N, m ∈ Nat.factoredNumbers (range (N + 1)) := by
     intro m hm
@@ -128,7 +125,7 @@ theorem sum_cmul_le_prod {loc : ℕ → ℝ} (h0 : ∀ p, p.Prime → 0 ≤ loc 
     omega
   let s : Finset (Nat.factoredNumbers (range (N + 1))) :=
     (Icc 1 N).attach.map ⟨fun m => ⟨m.1, hmem m.1 m.2⟩, fun a b h => by
-      exact Subtype.ext (congrArg Subtype.val h :)⟩
+      simp_all⟩
   have hs : ∑ m ∈ Icc 1 N, cmul loc m = ∑ m ∈ s, cmul loc m := by
     rw [sum_map, ← sum_attach]
     rfl
@@ -140,7 +137,7 @@ theorem prod_inv_one_sub_le_exp {ι : Type*} (S : Finset ι) (y : ι → ℝ)
     (h0 : ∀ i ∈ S, 0 ≤ y i) (h1 : ∀ i ∈ S, y i ≤ 1 / 2) :
     ∏ i ∈ S, (1 - y i)⁻¹ ≤ Real.exp (2 * ∑ i ∈ S, y i) := by
   rw [mul_sum, Real.exp_sum]
-  refine Finset.prod_le_prod₀ (fun i hi => inv_nonneg.2 (by linarith [h1 i hi])) fun i hi => ?_
+  refine Finset.prod_le_prod₀ (fun i hi => inv_nonneg.2 (by grind)) fun i hi => ?_
   have hy0 := h0 i hi
   have hy1 := h1 i hi
   have hpos : 0 < 1 - y i := by linarith

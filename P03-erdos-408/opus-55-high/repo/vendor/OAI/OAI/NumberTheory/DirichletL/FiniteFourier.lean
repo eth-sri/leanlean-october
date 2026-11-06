@@ -12,7 +12,6 @@ public import Mathlib.NumberTheory.MulChar.Lemmas
 
 namespace OAI
 
-open scoped BigOperators
 
 namespace SevenEighths.FiniteFourier
 
@@ -51,11 +50,10 @@ theorem transform_inversion (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
       apply Finset.sum_congr rfl
       intro a _
       rw [mul_assoc, ← AddChar.map_add_eq_mul]
-      congr 2
       ring
     _ = (Fintype.card R : ℂ) * f x := by
       simp only [AddChar.sum_mulShift _ hψ, sub_eq_zero]
-      simp [mul_ite, mul_comm]
+      simp [mul_comm]
 
 theorem exists_nonzero_annihilator {a : R} (ha : ¬ IsUnit a) :
     ∃ b : R, b ≠ 0 ∧ a * b = 0 := by
@@ -63,9 +61,7 @@ theorem exists_nonzero_annihilator {a : R} (ha : ¬ IsUnit a) :
   apply ha
   apply IsLeftRegular.isUnit_of_finite
   apply isLeftRegular_iff_right_eq_zero_of_mul.mpr
-  intro b hb
-  by_contra hb0
-  exact h b hb0 hb
+  grind
 
 theorem exists_unit_stabilizer (χ : MulChar R ℂ) (hχ : IsPrimitiveOnIdeals χ)
     {a : R} (ha : ¬ IsUnit a) :
@@ -78,10 +74,7 @@ theorem exists_unit_stabilizer (χ : MulChar R ℂ) (hχ : IsPrimitiveOnIdeals �
     exact hb hbI
   obtain ⟨u, hu, hχu⟩ := hχ _ hI
   obtain ⟨c, hc⟩ := Ideal.mem_span_singleton.mp hu
-  refine ⟨u, ?_, hχu⟩
-  have hzero : a * ((u : R) - 1) = 0 := by
-    rw [hc, ← mul_assoc, hab, zero_mul]
-  linear_combination hzero
+  grind
 
 theorem gaussSum_mulShift_nonunit_eq_zero (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ)
@@ -92,27 +85,26 @@ theorem gaussSum_mulShift_nonunit_eq_zero (χ : MulChar R ℂ)
     ext x
     simp only [AddChar.mulShift_apply, ← mul_assoc, hu]
   have heq := gaussSum_mulShift χ (ψ.mulShift a) u
-  rw [hshift] at heq
-  exact eq_zero_of_mul_eq_self_left hχu heq
+  grind
 
 theorem primitive_gaussSum_mulShift (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (a : R) :
     gaussSum χ (ψ.mulShift a) = χ⁻¹ a * gaussSum χ ψ := by
   by_cases ha : IsUnit a
-  · simpa only [ha.unit_spec] using gaussSum_mulShift_eq χ ψ ha.unit
+  · simpa using gaussSum_mulShift_eq χ ψ ha.unit
   · rw [gaussSum_mulShift_nonunit_eq_zero χ hχ ψ ha,
       MulChar.map_nonunit _ ha, zero_mul]
 
 theorem transform_primitive_character (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (a : R) :
-    transform ψ χ a = χ⁻¹ a * gaussSum χ ψ := by
-  exact primitive_gaussSum_mulShift χ hχ ψ a
+    transform ψ χ a = χ⁻¹ a * gaussSum χ ψ :=
+  primitive_gaussSum_mulShift χ hχ ψ a
 
 theorem primitive_gaussSum_mul_conjugate (χ : MulChar R ℂ)
     (hχ : IsPrimitiveOnIdeals χ) (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive) :
     gaussSum χ ψ * star (gaussSum χ ψ) = (Fintype.card R : ℂ) := by
   have hinv := transform_inversion ψ hψ (fun x => χ x) 1
-  simp only [transform_primitive_character χ hχ, mul_one, map_one, mul_one] at hinv
+  simp only [transform_primitive_character χ hχ, map_one, mul_one] at hinv
   rw [star_gaussSum_eq]
   calc
     gaussSum χ ψ * gaussSum χ⁻¹ ψ⁻¹ =
@@ -120,8 +112,6 @@ theorem primitive_gaussSum_mul_conjugate (χ : MulChar R ℂ)
       change gaussSum χ ψ * (∑ a : R, χ⁻¹ a * ψ⁻¹ a) = _
       rw [Finset.mul_sum]
       simp only [AddChar.inv_apply]
-      apply Finset.sum_congr rfl
-      intro a _
       ring
     _ = (Fintype.card R : ℂ) := hinv
 

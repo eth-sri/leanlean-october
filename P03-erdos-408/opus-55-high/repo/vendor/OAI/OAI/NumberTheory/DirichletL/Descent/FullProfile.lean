@@ -7,8 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.RootWindows
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
+open scoped Classical SchwartzMap ContDiff
 noncomputable section
 
 def rootSchwartz {ι : Type*} (U : ι → ℝ → ℂ)

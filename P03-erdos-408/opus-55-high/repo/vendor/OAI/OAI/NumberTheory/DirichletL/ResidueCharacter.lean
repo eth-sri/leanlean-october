@@ -8,8 +8,6 @@ namespace OAI
 
 namespace SevenEighths.ResidueCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
 open scoped Classical
 
 noncomputable section
@@ -31,13 +29,13 @@ theorem inflate_apply {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) �
     inflate hML χ x = if IsUnit x then χ (Ideal.Quotient.factor hML x) else 0 := by
   by_cases hx : IsUnit x
   · obtain ⟨u, rfl⟩ := hx
-    simpa only [u.isUnit, ite_true] using inflate_apply_unit hML χ u
+    simpa using inflate_apply_unit hML χ u
   · simp only [hx, ite_false, MulChar.map_nonunit _ hx]
 
 theorem inflate_mk {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ) (a : A) :
     inflate hML χ (Ideal.Quotient.mk M a) =
       if IsUnit (Ideal.Quotient.mk M a) then χ (Ideal.Quotient.mk L a) else 0 := by
-  simpa only [Ideal.Quotient.factor_mk] using inflate_apply hML χ (Ideal.Quotient.mk M a)
+  simpa using inflate_apply hML χ (Ideal.Quotient.mk M a)
 
 theorem inflate_global_units {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
     (hχ : ∀ u : Aˣ, χ (Ideal.Quotient.mk L u) = 1) :
@@ -62,9 +60,9 @@ theorem isUnit_mk_inf_iff (I J : Ideal A) (a : A) :
     obtain ⟨b, rfl⟩ := Ideal.Quotient.mk_surjective b
     obtain ⟨c, rfl⟩ := Ideal.Quotient.mk_surjective c
     have hbI : a * b - 1 ∈ I :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hb)
+      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simp_all)
     have hcJ : a * c - 1 ∈ J :=
-      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simpa only [map_mul] using hc)
+      (Ideal.Quotient.mk_eq_one_iff_sub_mem _).mp (by simp_all)
     apply isUnit_iff_exists_inv.mpr
     refine ⟨Ideal.Quotient.mk (I ⊓ J) (b + c - a * b * c), ?_⟩
     rw [← map_mul]
@@ -95,11 +93,11 @@ theorem product_mk (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ) (ψ : MulChar (A
       χ (Ideal.Quotient.mk I a) * ψ (Ideal.Quotient.mk J a) := by
   rw [product, MulChar.mul_apply, inflate_mk, inflate_mk]
   by_cases ha : IsUnit (Ideal.Quotient.mk (I ⊓ J) a)
-  · simp only [ha, ite_true]
+  · simp_all
   · simp only [ha, ite_false, zero_mul]
     by_cases hI : IsUnit (Ideal.Quotient.mk I a)
     · have hJ : ¬ IsUnit (Ideal.Quotient.mk J a) := fun hJ =>
-        ha ((isUnit_mk_inf_iff I J a).mpr ⟨hI, hJ⟩)
+        ha ((isUnit_mk_inf_iff I J a).mpr (by grind))
       rw [MulChar.map_nonunit _ hJ, mul_zero]
     · rw [MulChar.map_nonunit _ hI, zero_mul]
 

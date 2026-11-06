@@ -8,7 +8,7 @@ public import Mathlib.Algebra.Group.Pi.Units
 
 namespace OAI
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section
 variable {A B : Type*} [CommRing A] [CommRing B] [Fintype A] [Fintype B]
@@ -24,7 +24,7 @@ theorem fullCorrelation_ringEquiv (e : A ≃+* B) (u v k : A) (f g : B → ℂ) 
   intro y
   have heq : v * x - u * y = k ↔ e v * e x - e u * e y = e k := by
     rw [← map_mul, ← map_mul, ← map_sub, e.injective.eq_iff]
-  simp only [RingEquiv.toEquiv_eq_coe, EquivLike.coe_coe, heq]
+  simp_all
 
 theorem fullCorrelation_pi {ι : Type*} [Fintype ι] {R : ι → Type*}
     [∀ i, CommRing (R i)] [∀ i, Fintype (R i)]
@@ -44,7 +44,7 @@ theorem fullCorrelation_pi {ι : Type*} [Fintype ι] {R : ι → Type*}
       rw [ite_eq_right hne]
       symm
       apply Finset.prod_eq_zero (Finset.mem_univ i)
-      simp only [hi, ite_false]
+      simp_all
   simp only [fullCorrelation]
   simp_rw [hterm]
   calc

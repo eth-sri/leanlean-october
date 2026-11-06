@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedChosenDual
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
+open scoped Classical
 open CanonicalRowCompletion
 noncomputable section
 
@@ -20,15 +20,9 @@ lemma sourceDependentExtension_at {X Y : Type*} {D : Y→Type*}
     (f : X→Y) (hinj : Function.Injective f) (C : ∀ x, D (f x))
     (fallback : ∀ y, D y) (x : X) :
     sourceDependentExtension f C fallback (f x)=C x := by
-  have h : ∃ z, f z=f x := ⟨x,rfl⟩
+  have h : ∃ z, f z=f x := by simp
   unfold sourceDependentExtension
-  rw [dite_eq_left h]
-  have he : h.choose=x := hinj h.choose_spec
-  have hcast : ∀ (z x : X) (hf : f z=f x), z=x → (hf ▸ C z)=C x := by
-    intro z x hf hx
-    subst x
-    rfl
-  exact hcast _ _ h.choose_spec he
+  grind
 
 variable {α β γ σ : Type*} [Fintype α] [Fintype β] [Fintype σ]
 
@@ -40,10 +34,8 @@ lemma markedActiveSet_injective (e : α⊕β≃γ) :
   rw [← complete_marked_set,← complete_marked_set,
     optionalPrimeActive_completeActiveSet,optionalPrimeActive_completeActiveSet] at hh
   apply Prod.ext
-  · have h := congrArg Finset.toLeft hh
-    simpa using h
-  · have h := congrArg Finset.toRight hh
-    simpa using h
+  · simp_all
+  simp_all
 
 theorem exists_marked_source_selection (e : α⊕β≃γ)
     (D : Finset (γ⊕σ)→Type*) (fallback : ∀ A, D A)

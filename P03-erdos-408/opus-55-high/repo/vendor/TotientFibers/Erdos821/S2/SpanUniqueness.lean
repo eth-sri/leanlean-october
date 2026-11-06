@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanLifecycle
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -29,8 +28,7 @@ theorem spanLiveAt_none (g : P.BigGroup) (p : P.Prime g.val)
     ¬ Q.spanLiveAt g p none i := by
   simp only [spanLiveAt, pendingBefore, pendingAfter, or_false]
   change Q.activeVisits g p = ∅ at hs
-  rw [hs]
-  simp
+  simp_all
 
 theorem spanLiveAt_some (g : P.BigGroup) (p : P.Prime g.val) (b e : Fin (n + 1))
     (hs : Q.spanValid g p (some (b, e))) (i : Fin (n + 1)) :
@@ -45,7 +43,7 @@ theorem spanLiveAt_some (g : P.BigGroup) (p : P.Prime g.val) (b e : Fin (n + 1))
     · exact Or.inl ha
     · by_cases hb : b < i
       · exact Or.inr (Or.inl ⟨hb, hi.2, ha⟩)
-      · have hib : i = b := le_antisymm (le_of_not_gt hb) hi.1
+      · have hib := le_antisymm (le_of_not_gt hb) hi.1
         have hbe : b ≠ e := by
           intro he
           apply ha
@@ -65,26 +63,24 @@ theorem span_eq_of_live_iff (g : P.BigGroup) (p : P.Prime g.val)
     | some be =>
       rcases be with ⟨b, e⟩
       have hl := (Q.spanLiveAt_some g p b e ht b).mpr ⟨le_rfl, ht.1⟩
-      exact False.elim (Q.spanLiveAt_none g p hs b ((he b).mpr hl))
+      exact False.elim (Q.spanLiveAt_none g p hs b (by grind))
   | some be =>
     rcases be with ⟨b, e⟩
     cases t with
     | none =>
       have hl := (Q.spanLiveAt_some g p b e hs b).mpr ⟨le_rfl, hs.1⟩
-      exact False.elim (Q.spanLiveAt_none g p ht b ((he b).mp hl))
+      exact False.elim (Q.spanLiveAt_none g p ht b (by grind))
     | some bf =>
       rcases bf with ⟨c, d⟩
       have hb := (Q.spanLiveAt_some g p c d ht b).mp
         ((he b).mp ((Q.spanLiveAt_some g p b e hs b).mpr ⟨le_rfl, hs.1⟩))
       have hc := (Q.spanLiveAt_some g p b e hs c).mp
-        ((he c).mpr ((Q.spanLiveAt_some g p c d ht c).mpr ⟨le_rfl, ht.1⟩))
+        ((he c).mpr ((Q.spanLiveAt_some g p c d ht c).mpr (by omega)))
       have he' := (Q.spanLiveAt_some g p c d ht e).mp
-        ((he e).mp ((Q.spanLiveAt_some g p b e hs e).mpr ⟨hs.1, le_rfl⟩))
+        ((he e).mp ((Q.spanLiveAt_some g p b e hs e).mpr (by omega)))
       have hd := (Q.spanLiveAt_some g p b e hs d).mp
-        ((he d).mpr ((Q.spanLiveAt_some g p c d ht d).mpr ⟨ht.1, le_rfl⟩))
-      have hbc : b = c := le_antisymm hc.1 hb.1
-      have hed : e = d := le_antisymm he'.2 hd.2
-      simp [hbc, hed]
+        ((he d).mpr ((Q.spanLiveAt_some g p c d ht d).mpr (by omega)))
+      grind
 
 theorem lifespan_eq_of_memories (S T : LifespanAssignment P n)
     (hS : Q.lifespanValid S) (hT : Q.lifespanValid T)
@@ -105,7 +101,7 @@ theorem lifespan_eq_of_memories (S T : LifespanAssignment P n)
     have hm := congrArg (fun s : Multiset (P.Prime g.val) => p ∈ s) he
     simpa only [pendingAfterPrimes, Finset.mem_val, Finset.mem_filter,
       Finset.mem_univ, true_and] using Iff.of_eq hm
-  exact or_congr Iff.rfl (or_congr hbefore hafter)
+  exact or_congr Iff.rfl (by grind)
 
 
 end ResiduePath

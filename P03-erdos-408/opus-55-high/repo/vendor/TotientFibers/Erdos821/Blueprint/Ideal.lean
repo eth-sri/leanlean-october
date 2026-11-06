@@ -7,7 +7,6 @@ public import Erdos821.Blueprint.Transference
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.Blueprint.Graph

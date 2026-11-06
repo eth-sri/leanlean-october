@@ -8,18 +8,17 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCubePriority
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseMomentWholePriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 
 def wholeExtractedSupport (extra : Source ι Jo→Finset ι)
     (negative : Bool) (x : Source ι Jo) : Finset ι := extra x∪extractedSupport negative x
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def wholeAssignmentSource (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
     (J : Finset σ) (lists : σ→Finset ι) :
@@ -96,7 +95,7 @@ theorem mem_wholeAssignedParents (extra : Source ι Jo→Finset ι) (source : Fi
     exact ⟨x,(mem_wholeAssignmentSource extra source negative J lists x q).mp hq |>.1,
       q,(mem_wholeAssignmentSource extra source negative J lists x q).mp hq |>.2,he⟩
   · rintro ⟨x,hx,q,hq,he⟩
-    exact ⟨(x,q),(mem_wholeAssignmentSource extra source negative J lists x q).mpr ⟨hx,hq⟩,he⟩
+    exact ⟨(x,q),(mem_wholeAssignmentSource extra source negative J lists x q).mpr (by grind),he⟩
 
 theorem whole_extracted_prime_dvd (extra : Source ι Jo→Finset ι)
     (x : Source ι Jo) (hx : x.cube.Admissible) (he : extra x⊆x.cube.support)
@@ -120,7 +119,7 @@ theorem whole_attach_old_support (extra : Source ι Jo→Finset ι)
     have hf : q∈((J.pi lists)×ˢ(J.pi lists)).filter
         (fun q=>∀ i,pairedSlotAssignment J J q i∈wholeExtractedSupport extra negative x) := by
       rwa [paired_assignment_filter]
-    exact (Finset.mem_filter.mp hf).2
+    exact by grind
   intro i
   refine Fin.addCases (fun k=>?_) (fun k=>?_) i
   · simpa only [attach,appendParent,parent,Fin.addCases_left] using hx.old_support k
@@ -147,10 +146,10 @@ theorem whole_assigned_family_conditions (hp : ∀ i,p i≠0)
   · intro y hy
     obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
     exact (hs x hx).first_divisor
-  · exact hE
+  · omega
   · intro y hy
     obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
-    exact whole_attach_old_support p extra negative J lists x (hs x hx) (he x hx) q hq
+    exact whole_attach_old_support p extra negative J lists x (by grind) (by grind) q hq
   · intro y hy
     obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
     exact sourceIdeal_ne_zero p hp x.quotientSupport

@@ -7,25 +7,19 @@ public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionPower
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionPower
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
+open HeckeFamily
+open CenteredMomentEnergyBands CenteredMomentInductionEnergy
+open CenteredMomentEnergyReferenceState
 open CenteredMomentRetainedEnergy
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
 omit [DecidableEq α] in
-lemma energy_swap (η:Character)(m A:O)(t:ℝ)(W₁ W₂:ℝ→ℂ)
-    (pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)(X₁ X₂:ℝ)
-    (keep:O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ):
+lemma energy_swap (η:Character)(m A:HeckeFamily.O)(t:ℝ)(W₁ W₂:ℝ→ℂ)
+    (pool:α→Finset (Ideal HeckeFamily.O))(β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)(X₁ X₂:ℝ)
+    (keep:HeckeFamily.O→Prop)(Φ:𝓢(ℝ,ℂ))(K:ℝ):
     energy η m A t W₁ W₂ pool β P X₁ X₂ keep Φ K=
       energy η m A t W₂ W₁ pool β P X₂ X₁ keep Φ K:=by
   unfold energy
@@ -36,7 +30,7 @@ lemma energy_swap (η:Character)(m A:O)(t:ℝ)(W₁ W₂:ℝ→ℂ)
     unfold positiveSlotRow
     rw [mul_comm X₁ X₂]
     ring
-  rw [hh]
+  simp_all
 
 theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width)
     (hX₁:0<X₁)(hX₂:0<X₂)
@@ -68,9 +62,9 @@ theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width
     exact Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   · rw [he₁,he₂,Real.logb_mul hX₁.ne' hX₂.ne']
 
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
 

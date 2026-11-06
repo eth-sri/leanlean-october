@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open SevenEighths.InverseSecondFibers IdealMobiusDivisorSum
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def tripleDivisorWeight (K : ℕ) (γ : OuterTriple) : ℝ :=
   ((idealDivisors γ.q0).card : ℝ)^(5+2*K) *
@@ -21,10 +20,10 @@ lemma tripleDivisorWeight_nonneg (K : ℕ) (γ : OuterTriple) :
     0 ≤ tripleDivisorWeight K γ := by unfold tripleDivisorWeight; positivity
 
 theorem ideal_divisor_power_small (j : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ I : Ideal Eis, I ≠ 0 →
+    ∃ C : ℝ, 0 < C ∧ ∀ I : Ideal ActualEisensteinCubic.O, I ≠ 0 →
       ((idealDivisors I).card : ℝ)^j ≤ C*(Ideal.absNorm I : ℝ)^ε := by
   have hj : 0 < (j+1 : ℝ) := by positivity
-  obtain ⟨C,hC,hb⟩ := IdealDivisorBound.ideal_divisor_small_power (ε/(j+1)) (div_pos hε hj)
+  obtain ⟨C,hC,hb⟩ := IdealDivisorBound.ideal_divisor_small_power (ε/(j+1)) (by positivity)
   refine ⟨C^(j+1), by positivity, ?_⟩
   intro I hI
   have hcard : (1 : ℝ) ≤ (idealDivisors I).card := by
@@ -37,9 +36,7 @@ theorem ideal_divisor_power_small (j : ℕ) (ε : ℝ) (hε : 0 < ε) :
       rw [mul_pow]
       congr 1
       rw [← Real.rpow_natCast, ← Real.rpow_mul (by positivity)]
-      congr 1
-      push_cast
-      field_simp
+      grind
 
 theorem tripleDivisorWeight_small (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ γ : OuterTriple,
@@ -56,11 +53,11 @@ theorem tripleDivisorWeight_small (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
         (Ct*(Ideal.absNorm γ.quotient : ℝ)^ε) *
         (Ct*(Ideal.absNorm γ.residual : ℝ)^ε) := by
       gcongr
-      · exact hq γ.q0 hq0
-      · exact ht γ.quotient ht0
-      · exact ht γ.residual hr0
+      · simp_all
+      · simp_all
+      simp_all
     _ = _ := by
-      rw [Real.mul_rpow (by positivity : 0 ≤ (Ideal.absNorm γ.q0 : ℝ)*Ideal.absNorm γ.quotient)
+      rw [Real.mul_rpow (by positivity)
         (by positivity), Real.mul_rpow (by positivity) (by positivity)]
       ring
 
@@ -70,14 +67,14 @@ theorem outerTriple_card (Γ : Finset OuterTriple) (B T R : ℝ)
     (hnorm : ∀ γ ∈ Γ, (Ideal.absNorm γ.q0 : ℝ) ≤ B ∧
       (Ideal.absNorm γ.quotient : ℝ) ≤ T ∧ (Ideal.absNorm γ.residual : ℝ) ≤ R) :
     (Γ.card : ℝ) ≤ 128^3*B*T*R := by
-  let f : OuterTriple → Ideal Eis × Ideal Eis × Ideal Eis := fun γ => (γ.q0,γ.quotient,γ.residual)
+  let f : OuterTriple → Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O × Ideal ActualEisensteinCubic.O := fun γ => (γ.q0,γ.quotient,γ.residual)
   have hf : Function.Injective f := by
     intro γ δ h
-    exact OuterTriple.ext (congrArg Prod.fst h)
-      (congrArg (fun z => z.2.1) h) (congrArg (fun z => z.2.2) h)
+    exact OuterTriple.ext (by grind)
+      (by grind) (by grind)
   have hc := DescentFiberCost.fixed_triple_count (Γ.image f) B T R hB hT hR
     (fun x hx => by obtain ⟨γ,hγ,rfl⟩ := Finset.mem_image.mp hx; exact hzero γ hγ)
-    (fun x hx => by obtain ⟨γ,hγ,rfl⟩ := Finset.mem_image.mp hx; exact hnorm γ hγ)
+    (fun x hx => by grind)
   simpa only [Finset.card_image_of_injective _ hf] using hc
 
 theorem triple_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
@@ -96,9 +93,9 @@ theorem triple_normalized_mass (K : ℕ) (ε : ℝ) (hε : 0 < ε) :
     obtain ⟨hq,ht,hr⟩ := hz γ hγ
     apply (hb γ hq ht hr).trans
     gcongr
-    · exact (hn γ hγ).1
-    · exact (hn γ hγ).2.1
-    · exact (hn γ hγ).2.2
+    · grind
+    · grind
+    · grind
   have hs : (∑ γ ∈ Γ, tripleDivisorWeight K γ) ≤
       (128^3*B*T*R)*(C*(B*T*R)^ε) := by
     calc

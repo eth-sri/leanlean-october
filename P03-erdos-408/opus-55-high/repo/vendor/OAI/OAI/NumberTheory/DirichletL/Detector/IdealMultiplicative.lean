@@ -11,10 +11,9 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
 open ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def highSupport (I J K L : Id) : Prop :=
   Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported L
@@ -44,8 +43,7 @@ lemma first_block_dvd (I J K L : Id) : I ∣ I*J*K*L := by
   ring
 
 lemma last_block_dvd (I J K L : Id) : L ∣ I*J*K*L := by
-  refine ⟨I*J*K,?_⟩
-  ring
+  simp
 
 theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     (I J K L I' J' K' L' : Id)
@@ -64,9 +62,9 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     have hab := primaryGenerator_coprime _ _ hsA hsB
       (hc3.mono (completed_block_dvd_cube I J K L) (completed_block_dvd_cube I' J' K' L'))
     have hba := primaryGenerator_coprime _ _ h'.2.2.2.2 hsA
-      (hcop.symm.pow_right.mono (last_block_dvd I' J' K' L') (completed_block_dvd_cube I J K L))
+      (hcop.symm.pow_right.mono (by simp) (completed_block_dvd_cube I J K L))
     have hab' := primaryGenerator_coprime _ _ h.2.2.2.2 hsB
-      (hcop.pow_right.mono (last_block_dvd I J K L) (completed_block_dvd_cube I' J' K' L'))
+      (hcop.pow_right.mono (by simp) (completed_block_dvd_cube I' J' K' L'))
     simp only [primaryGenerator_mul,primaryGenerator_pow] at hab hba hab'
     have he := bareSourceCoefficient_product_frequency η I I'
       ⟨h.1,supported_primaryGenerator_ne_zero I h.2.1⟩
@@ -97,11 +95,11 @@ theorem bareIdealHighCoefficient_mul (η : HeckeFamily.Character)
     unfold bareIdealHighCoefficient
     rw [dite_eq_right hprod]
     by_cases hi : highSupport I J K L
-    · have hj : ¬highSupport I' J' K' L' := fun hj=>h ⟨hi,hj⟩
+    · have hj : ¬highSupport I' J' K' L' := by grind
       unfold highSupport at hj
-      rw [dite_eq_right hj,mul_zero]
+      simp_all
     · unfold highSupport at hi
-      rw [dite_eq_right hi,zero_mul]
+      simp_all
 
 lemma fullIdealWeight_mul (s : ℂ) (I J : Id) :
     fullIdealWeight s (I*J)=fullIdealWeight s I*fullIdealWeight s J :=

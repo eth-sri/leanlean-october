@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.SmallNormalization
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance 10000] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -48,10 +47,7 @@ theorem physical_conditioning_log_gain (F : FixedData) :
   simp only [physicalSmallCoefficient_norm_sq F P J y _ hV]
   rw [← Finset.mul_sum]
   have h := mul_le_mul_of_nonneg_left (hbound x P hP hL J y f) hm
-  calc
-    _ ≤ smallMarkMass P (J + F.ell) *
-        ((L x) ^ Cs * ∑ a ∈ smallArrayStates P (J + F.ell) y, ‖f a‖ ^ 2) := h
-    _ = _ := by ring
+  linarith
 
 
 end Erdos821.P3Clean

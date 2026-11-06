@@ -7,20 +7,19 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstFreshEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def firstFreshSecondPoisson
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
+    (negative : Bool) (χ : RayCharacter) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O)
+    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : ActualEisensteinCubic.O)
     (r : FirstCoreIndex) (t Y : ℝ) : ℂ :=
   ∑ G ∈ (F\D).powerset, ∑ U ∈ ((F\D)\G).powerset, ∑ V ∈ ((F\D)\G).powerset,
     if Disjoint U V then overlapPairWeight p hg (firstCoreTwist negative χ Ψ r)
@@ -31,10 +30,10 @@ def firstFreshSecondPoisson
 
 theorem firstFreshSecondPoisson_fixed_pool
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
+    (negative : Bool) (χ : RayCharacter) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O)
+    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : ActualEisensteinCubic.O)
     (r : FirstCoreIndex) (t Y : ℝ) (hY : 0 < Y) :
     firstFreshSecondPoisson p hp hg hinj F D B v ε₁ ε₂ negative χ Ψ m H ω X c d r t Y =
     ∑ G∈F.powerset,∑ U∈(F\G).powerset,∑ V∈(F\G).powerset,
@@ -57,12 +56,12 @@ theorem firstFreshSecondPoisson_fixed_pool
 
 theorem first_fresh_core_energy_to_second
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
-    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis) (t : ℝ)
-    (rows : Finset Eis) (Y : ℝ) (hY : 0 < Y)
+    (negative : Bool) (χ : RayCharacter) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O)
+    (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : ActualEisensteinCubic.O) (t : ℝ)
+    (rows : Finset ActualEisensteinCubic.O) (Y : ℝ) (hY : 0 < Y)
     (hrows : ∀ z ∈ rows,(Ideal.absNorm (Ideal.span {z}):ℝ) ≤ Y)
     (hΨ : ‖Ψ (∏ i∈D,p i)‖ ≤ 1) :
     (∑ z∈rows,‖dilatedCoreRow p hp hcop hg F D B v ε₁ ε₂ negative χ
@@ -83,8 +82,7 @@ theorem first_fresh_core_energy_to_second
     _ = (32*512) * ∑ r : FirstCoreIndex,‖firstCoreOuter p hg B v ε₁ ε₂ negative Ψ m D r‖ *
         ∑ z∈rows,‖firstCoreInputRow p hg F D B v ε₁ ε₂ negative χ Ψ m H
           (fun u => ω (Real.exp u)) (columnLog p (primeProductNorm p D*X)) c d r (-t) z‖^2 := by
-      rw [← Finset.mul_sum,Finset.sum_comm]
-      simp only [Finset.mul_sum]
+      simp [← Finset.mul_sum,Finset.sum_comm]
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ (by norm_num)
       apply Finset.sum_le_sum

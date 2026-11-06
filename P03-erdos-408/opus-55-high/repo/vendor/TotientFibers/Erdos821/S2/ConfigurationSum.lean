@@ -9,7 +9,6 @@ public import Erdos821.S2.HistoryFinite
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -85,7 +84,7 @@ theorem distinctMemoryExpression_eq_lifespans (h : HistoryStructureProofs)
               (Q.val.ghostBirthPrimes S.val i g).card.factorial : ℕ) : ℂ) *
               (Q.val.reconstructedHistory S.val S.property y.val).Weight rho theta := by
   rw [distinctMemoryExpression_eq_configurations h A n hn hk rho theta]
-  simp only [SpanConfiguration, Fintype.sum_sigma, SpanConfiguration.history]
+  simp only [Fintype.sum_sigma, SpanConfiguration.history]
   apply Finset.sum_congr rfl
   intro Q _
   apply Finset.sum_congr rfl

@@ -48,7 +48,7 @@ def cutoffMass (κ x : ℝ) (Φ : ℝ → ℝ) : ℝ :=
 lemma abs_le_of_isCutoff {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ}
     (hΦ : IsCutoff κ CΦ M x Φ) (y : ℝ) : |Φ y| ≤ M 0 := by
   have := hΦ.2.2.2 0 y
-  rwa [iteratedDeriv_zero, Nat.cast_zero, mul_zero, rpow_zero, mul_one] at this
+  simp_all
 
 /-- The mass of a cutoff is nonnegative. -/
 lemma cutoffMass_nonneg {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ} (hx : 0 < x)
@@ -62,7 +62,7 @@ lemma cutoffMass_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} {Φ : ℝ → ℝ
   rw [cutoffMass, div_le_iff₀ hx]
   calc ∑ n ∈ Icc 1 ⌊κ * x⌋₊, Φ (n / x) ≤ ∑ _n ∈ Icc 1 ⌊κ * x⌋₊, M 0 :=
         sum_le_sum fun n _ => (le_abs_self _).trans (abs_le_of_isCutoff hΦ _)
-    _ = ⌊κ * x⌋₊ * M 0 := by rw [sum_const, Nat.card_Icc, Nat.add_sub_cancel, nsmul_eq_mul]
+    _ = ⌊κ * x⌋₊ * M 0 := by simp
     _ ≤ κ * x * M 0 := mul_le_mul_of_nonneg_right (Nat.floor_le (by positivity)) hM
     _ = κ * M 0 * x := by ring
 
@@ -77,10 +77,8 @@ lemma sum_Icc_inv_le (R : ℕ) : ∑ r ∈ Icc 1 R, (1 : ℝ) / r ≤ 1 + Real.l
     | zero => simp
     | succ n ih =>
       rw [harmonic_succ, sum_Icc_succ_top (by omega), ← ih]
-      push_cast
-      ring
-  rw [← he R]
-  exact h
+      simp
+  simp_all
 
 /-- A number `r ≤ x` has at most `L` prime factors above `exp(L^{0.11})`, so the band primes
 dividing it have reciprocal mass at most `L exp(-L^{0.11})`. -/
@@ -91,29 +89,29 @@ lemma sum_inv_dvd_le {𝔅 : Finset ℕ} {x : ℝ} (hx : 1 < x) (hL1 : 1 ≤ Rea
       Real.log x * exp (-Real.log x ^ (11 / 100 : ℝ)) := by
   set F := 𝔅.filter (· ∣ r)
   set q := exp (Real.log x ^ (11 / 100 : ℝ))
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hq : 0 < q := exp_pos _
-  have hFp : ∀ p ∈ F, p.Prime := fun p hp => (h𝔅 p (mem_filter.1 hp).1).1
+  have hFp : ∀ p ∈ F, p.Prime := by grind
   -- `q^{#F} ≤ ∏ F ≤ r ≤ x`
   have hdvd : ∏ p ∈ F, p ∣ r := prod_primes_dvd r (fun p hp => (hFp p hp).prime)
-    fun p hp => (mem_filter.1 hp).2
+    (by grind)
   have hle : (∏ p ∈ F, (p : ℝ)) ≤ x := by
     have : ((∏ p ∈ F, p : ℕ) : ℝ) ≤ r := by exact_mod_cast Nat.le_of_dvd hr hdvd
     push_cast at this
     linarith
   have hlo : q ^ #F ≤ ∏ p ∈ F, (p : ℝ) := by
     rw [← prod_const]
-    exact prod_le_prod₀ (fun _ _ => hq.le) fun p hp => (h𝔅 p (mem_filter.1 hp).1).2
+    exact prod_le_prod₀ (by grind) (by grind)
   have hcard : (#F : ℝ) ≤ Real.log x := by
     have h1 : (#F : ℝ) * Real.log x ^ (11 / 100 : ℝ) ≤ Real.log x := by
       have := Real.log_le_log (by positivity) (hlo.trans hle)
       rwa [Real.log_pow, Real.log_exp] at this
     have h2 : 1 ≤ Real.log x ^ (11 / 100 : ℝ) := one_le_rpow hL1 (by norm_num)
-    nlinarith [(Nat.cast_nonneg #F : (0 : ℝ) ≤ #F)]
+    nlinarith
   calc ∑ p ∈ F, (1 : ℝ) / p ≤ ∑ _p ∈ F, 1 / q := sum_le_sum fun p hp => by
         have := (h𝔅 p (mem_filter.1 hp).1).2
         exact one_div_le_one_div_of_le hq this
-    _ = #F * (1 / q) := by rw [sum_const, nsmul_eq_mul]
+    _ = #F * (1 / q) := by simp
     _ ≤ Real.log x * (1 / q) := mul_le_mul_of_nonneg_right hcard (by positivity)
     _ = _ := by rw [exp_neg, one_div]
 
@@ -125,7 +123,7 @@ lemma sum_biUnion_le_sum {ι : Type*} [DecidableEq ι] (s : Finset ι) (t : ι �
   | insert i s hi ih =>
     rw [biUnion_insert, sum_insert hi]
     have h := sum_union_inter (s₁ := t i) (s₂ := s.biUnion t) (f := g)
-    have h0 : 0 ≤ ∑ p ∈ t i ∩ s.biUnion t, g p := sum_nonneg fun p _ => hg p
+    have h0 : 0 ≤ ∑ p ∈ t i ∩ s.biUnion t, g p := sum_nonneg (by grind)
     linarith
 
 /-- For large `x`, the inert band primes lie in `[exp(L^{0.11}), exp(2 L^{1/5})]` and have
@@ -151,29 +149,26 @@ lemma eventually_inertBands_bounds {K : ℕ} (hK : 1 ≤ K) (CN : ℝ) : ∀ᶠ 
     · exact rpow_le_rpow_of_exponent_le hL ha1
     · have := rpow_le_rpow_of_exponent_le hL ha2
       linarith
-  · refine (sum_biUnion_le_sum _ _ _ fun p => by positivity).trans ?_
+  · refine (sum_biUnion_le_sum _ _ _ (by simp)).trans ?_
     calc ∑ ci ∈ range K ×ˢ range (inertPerCluster K CN x),
           ∑ p ∈ band x (inertExponent K x ci.1 ci.2), (1 : ℝ) / p
         ≤ ∑ _ci ∈ range K ×ˢ range (inertPerCluster K CN x), (1 : ℝ) := sum_le_sum fun ci hci => by
           obtain ⟨hc, hi⟩ := mem_product.1 hci
           exact (hV ci.1 (mem_range.1 hc) ci.2 (mem_range.1 hi)).2
       _ = K * inertPerCluster K CN x := by
-          rw [sum_const, card_product, card_range, card_range, nsmul_one]
-          push_cast
-          ring
+          simp
       _ ≤ K * (|CN| / K * logLogLog x + 1) := by
           refine mul_le_mul_of_nonneg_left ?_ hK0.le
           have := Nat.ceil_lt_add_one (show 0 ≤ |CN| * logLogLog x / K by positivity)
           have h1 : (inertPerCluster K CN x : ℝ) ≤ ⌈|CN| * logLogLog x / K⌉₊ := by
             exact_mod_cast Nat.ceil_mono (div_le_div_of_nonneg_right
               (mul_le_mul_of_nonneg_right (le_abs_self CN) hs0) hK0.le)
-          have h2 : |CN| * logLogLog x / K = |CN| / K * logLogLog x := by ring
-          linarith
+          grind
       _ = |CN| * logLogLog x + K := by field_simp
       _ ≤ (|CN| + K) * (logLogLog x + 1) := by
           have := mul_nonneg (abs_nonneg CN) hs0
           have := mul_nonneg hK0.le hs0
-          nlinarith [abs_nonneg CN]
+          grind
       _ ≤ logLog x := hT
 
 /-- The savings of E1 at large `x`, with `ε = c / T²⁰`, `m = exp(2 L^{1/5})`,
@@ -193,7 +188,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
               (4 * (2 * (⌈Real.log x ^ (1 / 10 : ℝ)⌉₊ + h₀)) + 2) * Real.log x ^ (1 / 10 : ℝ)) +
               A * exp (2 * Real.log x ^ (1 / 5 : ℝ)))) ≤
         x / Real.log x ^ 2 := by
-  have hpow : ∀ (y : ℝ) (n : ℕ), y ^ (n : ℝ) = y ^ n := fun y n => rpow_natCast y n
+  have hpow := fun y n => rpow_natCast y n
   filter_upwards [eventually_gt_atTop 1, tendsto_log_atTop.eventually_ge_atTop (A + 4),
     tendsto_log_atTop.eventually_ge_atTop 1, tendsto_logLog.eventually_ge_atTop (max c 1),
     eventually_mul_rpow_le_log_rpow (4 / c) 20 (show (0 : ℝ) < 4 / 5 by norm_num),
@@ -255,7 +250,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
         exp 1 * T) ≤ (L ^ (6 : ℝ))⁻¹ := by
       rw [← hexpT, Real.log_rpow hx0, Real.log_exp]
       refine exp_le_exp.2 ?_
-      have he : exp 1 < 3 := exp_one_lt_three
+      have he := exp_one_lt_three
       have h2 : 0 < L ^ (1 / 5 : ℝ) := by positivity
       have key : c * L ^ (4 / 5 : ℝ) / (8 * T ^ (20 : ℝ)) * (2 * L ^ (1 / 5 : ℝ)) = ε / 4 * L := by
         rw [hεT]
@@ -342,7 +337,7 @@ lemma eventually_progression_savings {c : ℝ} (hc : 0 < c) (h₀ : ℕ) {A : �
       calc (16 * h₀ + 38) * L ^ (3 / 10 : ℝ) * (T ^ (20 : ℝ) * 2) =
             L ^ (3 / 10 : ℝ) * (2 * (16 * h₀ + 38) * T ^ (20 : ℝ)) := by ring
         _ ≤ L ^ (3 / 10 : ℝ) * (L ^ (7 / 10 : ℝ) * c) := mul_le_mul_of_nonneg_left hS3b h3
-        _ = c * L := by rw [← mul_assoc, h1]; ring
+        _ = c * L := by grind
     -- assemble
     have hx' : x ^ (ε / 4) * x ^ (1 - ε) * x ^ (ε / 4) * exp (ε * L / 2) = x := by
       rw [← rpow_add hx0, ← rpow_add hx0, rpow_def_of_pos hx0, ← exp_add]
@@ -571,7 +566,7 @@ theorem eventually_progression_one (h₃ : BlockSieve) {K : ℕ} (hK : 1 ≤ K) 
   refine ⟨C, ?_⟩
   filter_upwards [hC, eventually_ge_atTop 1, tendsto_log_atTop.eventually_ge_atTop 1,
     tendsto_logLog.eventually_ge_atTop (max c 1)] with x hx hx1 hL hT Φ H hΦ hH hHb
-  have hT1 : 1 ≤ logLog x := le_trans (le_max_right _ _) hT
+  have hT1 : 1 ≤ logLog x := by grind
   have hε : c / logLog x ^ 20 ≤ 1 := by
     rw [div_le_one (by positivity)]
     exact (le_max_left _ _).trans (hT.trans (le_self_pow₀ hT1 (by norm_num)))
@@ -650,7 +645,7 @@ lemma sum_powerset_rem_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (objs : F
       |∑ u ∈ objs.filter (fun u => ∀ p ∈ D, p ∣ u + 1), wt u - X * ∏ p ∈ D, 1 / (p : ℝ)| =
       |∑ u ∈ objs.filter ((∏ p ∈ D, p) ∣ · + 1), wt u - X / ((∏ p ∈ D, p : ℕ) : ℝ)| := by
     intro D hD
-    have hDp : ∀ p ∈ D, p.Prime := fun p hp => hP p (mem_powerset.1 (mem_filter.1 hD).1 hp)
+    have hDp := fun p hp => hP p (mem_powerset.1 (mem_filter.1 hD).1 hp)
     have hfilt : objs.filter (fun u => ∀ p ∈ D, p ∣ u + 1) =
         objs.filter ((∏ p ∈ D, p) ∣ · + 1) :=
       filter_congr fun u _ => ⟨fun h => prod_primes_dvd _ (fun p hp => (hDp p hp).prime) h,
@@ -661,9 +656,9 @@ lemma sum_powerset_rem_le {P : Finset ℕ} (hP : ∀ p ∈ P, p.Prime) (objs : F
     rw [hfilt, hX]
   rw [sum_congr rfl hconv]
   refine (sum_powerset_prod_le hP Y
-    (fun r => |∑ u ∈ objs.filter (r ∣ · + 1), wt u - X / r|) fun _ => abs_nonneg _).trans ?_
+    (fun r => |∑ u ∈ objs.filter (r ∣ · + 1), wt u - X / r|) (by simp)).trans ?_
   exact sum_le_sum_of_subset_of_nonneg (Icc_subset_Icc le_rfl (Nat.floor_mono hYY))
-    fun _ _ _ => abs_nonneg _
+    (by simp)
 
 end
 

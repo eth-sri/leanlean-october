@@ -54,16 +54,16 @@ theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
         exact_mod_cast this
       rw [← hw] at this
       linarith
-    · calc b ≤ ps * pl * b := Nat.le_mul_of_pos_left b (Nat.mul_pos hps hpl)
+    · calc b ≤ ps * pl * b := Nat.le_mul_of_pos_left b (by positivity)
         _ = w := hw.symm
         _ ≤ ⌊2 * Y⌋₊ := hw₂
-    · rw [← hw]; exact hw₁
-    · rw [← hw]; exact hw₂
+    · omega
+    omega
   · intro u hu
     simp only [mem_filter] at hu ⊢
-    refine ⟨hu.2, dvd_mul_of_dvd_left (dvd_mul_right ps pl) u, ?_⟩
+    refine ⟨hu.2, dvd_mul_of_dvd_left (by simp) u, ?_⟩
     rw [mul_assoc, Nat.mul_div_cancel_left _ hps]
-    exact dvd_mul_right pl u
+    simp
   · intro w hw
     simp only [mem_filter] at hw
     obtain ⟨-, ⟨a, ha⟩, ⟨b, hb⟩⟩ := hw
@@ -80,7 +80,7 @@ theorem sum_filter_dvd_eq {Y : ℝ} {ps pl : ℕ} (hps : 0 < ps) (hpl : 0 < pl)
       rw [ha, Nat.mul_div_cancel_left _ hps] at hb
       rw [ha, hb]
       ring
-    rw [hb', ← hw]
+    simp_all
 
 /-- **The tuple sum.** For a cutoff `ψ₁` supported in `[1, 2]`, sets `s`, `sp` of positive
 integers with `p_s p_l < Y`:
@@ -105,18 +105,18 @@ theorem twistedSum_eq {Y : ℝ} (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (h
     · rw [mul_sum, sum_filter]
       refine sum_congr rfl fun pl _ => ?_
       by_cases hpl : pl ∣ w / ps
-      · rw [ite_eq_left hpl, ite_eq_left ⟨hps, hpl⟩]
+      · rw [ite_eq_left hpl, ite_eq_left (by omega)]
         have hw : ps * pl * (w / ps / pl) = w := by
           rw [mul_assoc, Nat.mul_div_cancel' hpl, Nat.mul_div_cancel' hps]
-        rw [hw]
-      · rw [ite_eq_right hpl, ite_eq_right fun h => hpl h.2]
-    · exact (sum_eq_zero fun pl _ => ite_eq_right fun h => hps h.1).symm
+        simp_all
+      simp_all
+    · simp_all
   simp_rw [h₁]
   rw [sum_comm]
   refine sum_congr rfl fun ps hps => ?_
   rw [sum_comm]
   refine sum_congr rfl fun pl hpl => ?_
-  rw [sum_filter_dvd_eq (hs ps hps) (hsp pl hpl) (hsmall ps hps pl hpl)
+  rw [sum_filter_dvd_eq (by grind) (by grind) (by grind)
     (fun _ u => ψ₁ ((ps * pl * u : ℕ) / Y) * F (ps * pl * u) * cf u)]
   rw [sum_filter]
   refine sum_congr rfl fun u _ => ?_
@@ -131,7 +131,7 @@ theorem twistedSum_eq {Y : ℝ} (s sp : Finset ℕ) (hs : ∀ p ∈ s, 0 < p) (h
       constructor
       · exact Nat.ceil_le.2 (by rwa [le_div_iff₀ hY, one_mul] at h₁)
       · exact Nat.le_floor (by rwa [div_le_iff₀ hY] at h₂)
-    rw [hψ0, zero_mul, zero_mul]
+    grind
 
 /-! ### Boxes, classes and characters -/
 
@@ -140,12 +140,8 @@ def boxIndex (p : ℕ) : ℕ := Nat.log 2 (p - 1)
 
 /-- `boxIndex p = i` iff `p ∈ (2^i, 2^{i+1}]`, for `p ≥ 2`. -/
 theorem boxIndex_eq_iff {p i : ℕ} (hp : 2 ≤ p) : boxIndex p = i ↔ 2 ^ i < p ∧ p ≤ 2 ^ (i + 1) := by
-  rw [boxIndex, Nat.log_eq_iff (Or.inr ⟨one_lt_two, by omega⟩)]
-  constructor
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨by omega, by omega⟩
-  · rintro ⟨h₁, h₂⟩
-    exact ⟨by omega, by omega⟩
+  rw [boxIndex, Nat.log_eq_iff (by omega)]
+  omega
 
 /-- The boxes below `N₀ ≥ 1` cover `[1, 2^{N₀}]`. -/
 theorem boxIndex_lt {p N₀ : ℕ} (hN₀ : 1 ≤ N₀) (hp : p ≤ 2 ^ N₀) : boxIndex p < N₀ := by
@@ -200,18 +196,16 @@ theorem phase_eq_sum_boxSet {k : ℕ} (hk : 1 ≤ k) (h : ℤ) {N₀ ps pl u : �
     have h₁ : ps % k < k := Nat.mod_lt _ (by omega)
     have h₂ : u % k < k := Nat.mod_lt _ (by omega)
     constructor
-    · rintro ⟨-, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
-      exact ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-    · rintro ⟨⟨⟨rfl, rfl⟩, rfl⟩, rfl, rfl⟩
-      exact ⟨⟨⟨⟨hps, hpl⟩, hu⟩, h₁, h₂⟩, ⟨rfl, rfl⟩, rfl, rfl, rfl⟩
+    · omega
+    · omega
   rw [hfil, singleton_product_singleton, singleton_product_singleton,
     singleton_product_singleton, sum_product, sum_singleton, sum_product, sum_singleton]
   rw [← Erdos821.P5Marked.e_eq_sum_cchi k hk h pl (ps % k * (u % k)) hcop]
   -- periodicity: `p_s u ≡ αβ mod k`
   set a := ps * u
   set b := ps % k * (u % k)
-  have hab : a % k = b % k := Nat.mul_mod ps u k
-  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (show k ≠ 0 by omega)
+  have hab : a % k = b % k := by grind
+  have hk0 : (k : ℝ) ≠ 0 := by exact_mod_cast (by positivity)
   have hdecomp : (h : ℝ) * ((ps * pl * u : ℕ) : ℝ) / k =
       (h : ℝ) * ((pl * b : ℕ) : ℝ) / k +
         ((h * pl * (((a / k : ℕ) : ℤ) - ((b / k : ℕ) : ℤ)) : ℤ) : ℝ) := by
@@ -277,7 +271,7 @@ theorem div_cpow_mul_cpow {n : ℕ} (hn : 0 < n) {Y : ℝ} (hY : 0 < Y) (ξ τ :
       (Y : ℂ) ^ (((-ξ : ℝ) : ℂ) * Complex.I) * (n : ℂ) ^ (((τ + ξ : ℝ) : ℂ) * Complex.I) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have e₁ : (n : ℂ) = ((n : ℝ) : ℂ) := by push_cast; rfl
-  rw [e₁, ofReal_cpow_mul_I (div_pos hn' hY), ofReal_cpow_mul_I hn', ofReal_cpow_mul_I hY,
+  rw [e₁, ofReal_cpow_mul_I (by positivity), ofReal_cpow_mul_I hn', ofReal_cpow_mul_I hY,
     ofReal_cpow_mul_I hn', ← Complex.exp_add, ← Complex.exp_add, Real.log_div hn'.ne' hY.ne']
   congr 1
   push_cast
@@ -317,11 +311,11 @@ theorem integral_tripleSum {A B C : Finset ℕ} {f : ℕ → ℕ → ℕ → ℝ
     (hf : ∀ a ∈ A, ∀ b ∈ B, ∀ c ∈ C, Integrable (f a b c)) :
     ∫ ξ, ∑ a ∈ A, ∑ b ∈ B, ∑ c ∈ C, f a b c ξ = ∑ a ∈ A, ∑ b ∈ B, ∑ c ∈ C, ∫ ξ, f a b c ξ := by
   rw [integral_finsetSum _ fun a ha => integrable_finsetSum _ fun b hb =>
-    integrable_finsetSum _ fun c hc => hf a ha b hb c hc]
+    integrable_finsetSum _ (by grind)]
   refine sum_congr rfl fun a ha => ?_
-  rw [integral_finsetSum _ fun b hb => integrable_finsetSum _ fun c hc => hf a ha b hb c hc]
+  rw [integral_finsetSum _ fun b hb => integrable_finsetSum _ (by grind)]
   refine sum_congr rfl fun b hb => ?_
-  rw [integral_finsetSum _ fun c hc => hf a ha b hb c hc]
+  rw [integral_finsetSum _ (by grind)]
 
 /-- **Separation.** With a Mellin density `a` of `ψ₁`,
 `(YV)⁻¹ ∑ χ(p_l) ψ₁(p_s p_l u/Y) c_u (p_s p_l u)^{i(t + σ)} =
@@ -348,9 +342,9 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
       fun_prop
     have h := ha.bdd_mul (c := 1) hcont.aestronglyMeasurable
       (Filter.Eventually.of_forall fun ξ => by
-        rw [ofReal_cpow_mul_I (div_pos (Nat.cast_pos.2 hn) hY), Complex.norm_exp_ofReal_mul_I])
+        rw [ofReal_cpow_mul_I (by positivity), Complex.norm_exp_ofReal_mul_I])
     simpa only [mul_comm] using h
-  have hn : ∀ ps ∈ sP, ∀ pl ∈ spN, ∀ u ∈ uR, 0 < ps * pl * u := fun ps hps pl hpl u hu =>
+  have hn := fun ps hps pl hpl u hu =>
     Nat.mul_pos (Nat.mul_pos (hsP ps hps) (hspN pl hpl)) (huR u hu)
   -- expand `ψ₁` and exchange the sums with the integral
   have h₁ : (((Y * V)⁻¹ : ℝ) : ℂ) * ∑ ps ∈ sP, ∑ pl ∈ spN, ∑ u ∈ uR,
@@ -367,7 +361,7 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
     refine sum_congr rfl fun pl hpl => ?_
     rw [mul_sum]
     refine sum_congr rfl fun u hu => ?_
-    rw [integral_const_mul, ← hrep _ (div_pos (by exact_mod_cast hn ps hps pl hpl u hu) hY)]
+    rw [integral_const_mul, ← hrep _ (div_pos (by simp_all) hY)]
     ring
   rw [h₁]
   have h₂ : ∀ ps ∈ sP, ∀ pl ∈ spN, ∀ u ∈ uR, Integrable fun ξ : ℝ =>
@@ -375,7 +369,7 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
           ((ps * pl * u : ℕ) : ℂ) ^ (((t + σ : ℝ) : ℂ) * Complex.I)) *
         (a ξ * ((((ps * pl * u : ℕ) : ℝ) / Y : ℝ) : ℂ) ^
           (((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) :=
-    fun ps hps pl hpl u hu => hterm _ _ (hn ps hps pl hpl u hu)
+    fun ps hps pl hpl u hu => hterm _ _ (by grind)
   rw [← integral_tripleSum h₂]
   refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
   simp only
@@ -383,8 +377,6 @@ theorem boxSum_eq_integral {a : ℝ → ℂ} (ha : Integrable a) {ψ₁ : ℝ �
   simp only [Finset.mul_sum]
   refine sum_congr rfl fun ps hps => sum_congr rfl fun pl hpl => sum_congr rfl fun u hu => ?_
   have h₃ := div_cpow_mul_cpow (hn ps hps pl hpl u hu) hY (2 * Real.pi * ξ) (t + σ)
-  push_cast at h₃ ⊢
-  rw [show ((t : ℂ) + σ + 2 * Real.pi * ξ) = (t + σ + 2 * Real.pi * ξ) by ring]
-  linear_combination ((Y : ℂ)⁻¹ * (V : ℂ)⁻¹ * χ pl * c u * a ξ) * h₃
+  grind
 
 end Erdos408.TwoSided.TupleHigh

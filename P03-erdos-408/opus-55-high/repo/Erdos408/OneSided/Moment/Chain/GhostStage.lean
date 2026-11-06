@@ -75,8 +75,7 @@ theorem visitWeight_eq (N t : ℕ) (s : ChainState x d Y d₀ u v r B) (g : Ghos
       ghostOut, dite_eq_left hv, Complex.ofReal_mul, Complex.ofReal_mul, Complex.ofReal_pow,
       Complex.ofReal_pow]
     rfl
-  · rw [visitWeight, ite_eq_right hv, chainGhostCoef, ghostCoef, ite_eq_right hv]
-    simp
+  · simp [visitWeight, ite_eq_right hv, chainGhostCoef, ghostCoef, ite_eq_right hv]
 
 /-- The memory of the chain after an admissible ghost choice. -/
 theorem chainGhostOut_mem {s : ChainState x d Y d₀ u v r B} {g : GhostChoice x d}
@@ -103,7 +102,7 @@ theorem count_batchBirths (n : Particle x d → ℕ) (p : ℕ) :
 theorem mem_batchBirths {n : Particle x d → ℕ} {p : ℕ} :
     p ∈ batchBirths n ↔ ∃ xp : Particle x d, xp.1.1 = p ∧ n xp ≠ 0 := by
   simp only [batchBirths, Multiset.mem_sum, mem_univ, true_and, Multiset.mem_replicate]
-  exact ⟨fun ⟨xp, h₁, h₂⟩ => ⟨xp, h₂.symm, h₁⟩, fun ⟨xp, h₁, h₂⟩ => ⟨xp, h₂, h₁.symm⟩⟩
+  simp
 
 /-- Two particles hitting `z` with the same prime are equal. -/
 theorem eq_of_hitsAt {z : ℤ × ℤ} {xp xp' : Particle x d} (h : HitsAt x d z xp)
@@ -125,16 +124,15 @@ theorem ghostOK_of_valid {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Multi
     have hb : g.2 xp ≤ Multiset.count xp.1.1 (batchBirths g.2) := by
       rw [count_batchBirths]
       exact le_of_eq_of_le (by simp) (single_le_sum (f := fun y : Particle x d =>
-        if y.1.1 = xp.1.1 then g.2 y else 0) (fun _ _ => Nat.zero_le _) (mem_univ xp))
+        if y.1.1 = xp.1.1 then g.2 y else 0) (by omega) (mem_univ xp))
     rw [Multiset.count_add] at hc
     by_cases hB : xp.1.1 ∈ Bn
-    · rw [ite_eq_right fun h => h.2 hB]
+    · rw [ite_eq_right (by grind)]
       have := Multiset.one_le_count_iff_mem.2 hB
       omega
-    · rw [ite_eq_left ⟨hh, hB⟩]
-      omega
+    grind
   · rw [hv.2.1 xp hh]
-    exact Nat.zero_le _
+    omega
 
 variable {J : ℕ} {act : Lists K J}
 
@@ -149,10 +147,8 @@ theorem consistent_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mu
     intro xp hn
     have h := (hok xp).2
     by_cases hc : HitsAt x d z xp ∧ xp.1.1 ∉ Bn
-    · rw [ite_eq_left hc] at h
-      exact ⟨hc.1, hc.2, by omega⟩
-    · rw [ite_eq_right hc] at h
-      omega
+    · grind
+    · simp_all
   have hnew : ∀ xp, ghostMem S g xp ≠ 0 → S xp ≠ 0 ∨ g.2 xp ≠ 0 := by
     intro xp h
     by_contra hc
@@ -165,19 +161,16 @@ theorem consistent_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mu
         if xp.1.1 = p ∧ HitsAt x d z xp ∧ p ∉ Bn then 1 else 0 := by
       intro xp
       by_cases hp : xp.1.1 = p
-      · subst hp
-        have h := (hok xp).2
-        simp only [true_and, ite_true]
-        exact h
-      · simp [hp]
+      · grind
+      · simp_all
     have hcard : (univ.filter fun xp : Particle x d =>
         xp.1.1 = p ∧ HitsAt x d z xp ∧ p ∉ Bn).card ≤ if p ∈ Bn then 0 else 1 := by
       split_ifs with hp
-      · exact (card_eq_zero.2 (filter_eq_empty_iff.2 fun xp _ h => h.2.2 hp)).le
+      · grind
       · exact card_le_one.2 fun xp hxp xp' hxp' => by
           obtain ⟨-, h₁, h₂, -⟩ := mem_filter.1 hxp
           obtain ⟨-, h₁', h₂', -⟩ := mem_filter.1 hxp'
-          exact eq_of_hitsAt h₂ h₂' (h₁.trans h₁'.symm)
+          exact eq_of_hitsAt h₂ h₂' (by omega)
     have hb : Multiset.count p (batchBirths g.2) ≤ if p ∈ Bn then 0 else 1 := by
       rw [count_batchBirths]
       refine le_trans (sum_le_sum fun xp _ => hterm xp) (le_of_eq_of_le ?_ hcard)
@@ -202,15 +195,15 @@ theorem consistent_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mu
       simp [ghostMem, hS0, h1]
   · rcases hnew xp h with h₀ | h₀
     · exact Multiset.mem_add.2 (Or.inl (hS.pend_mem xp h₀))
-    · exact Multiset.mem_add.2 (Or.inr (mem_batchBirths.2 ⟨xp, rfl, h₀⟩))
+    · exact Multiset.mem_add.2 (Or.inr (mem_batchBirths.2 (by grind)))
   · rcases hnew xp h with h₀ | h₀
     · exact hS.pend_inactive xp h₀
     · rintro ⟨i, k, hk⟩
       exact (hcre xp h₀).2.1 (hk ▸ hS.act_mem i k)
   · rcases hnew xp h with h₀ | h₀ <;> rcases hnew xp' h' with h₀' | h₀'
     · exact hS.pend_unique xp xp' h₀ h₀' hp
-    · exact absurd (hp ▸ hS.pend_mem xp h₀) (hcre xp' h₀').2.1
-    · exact absurd (hp.symm ▸ hS.pend_mem xp' h₀') (hcre xp h₀).2.1
+    · exact absurd (hp ▸ hS.pend_mem xp h₀) (by grind)
+    · exact absurd (hp.symm ▸ hS.pend_mem xp' h₀') (by grind)
     · exact eq_of_hitsAt (hcre xp h₀).1 (hcre xp' h₀').1 hp
 
 /-- The per-particle conditions on a consistent state give an admissible ghost choice with
@@ -222,8 +215,7 @@ theorem valid_of_ghostOK {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Multi
   have hc := consistent_ghostMem hS hok
   refine ⟨⟨fun xp => (hok xp).1, fun xp hh => ?_, (memSize_le_card hc).trans hB⟩, hc.nodup⟩
   have := (hok xp).2
-  rw [ite_eq_right fun h => hh h.1] at this
-  omega
+  simp_all
 
 /-! ### Designated particles -/
 
@@ -258,8 +250,7 @@ theorem desLine_le (z : ℤ × ℤ) (S : Particle x d → ℕ) (Bn : Multiset �
   · next ℓ h =>
     obtain ⟨xp, hxp, -⟩ := exists_of_statusOf_eq_pending h
     have := (mem_particles.1 (show (xp.1.1, xp.1.2) ∈ particles x d from xp.2)).2
-    rw [hxp] at this
-    exact this
+    simp_all
   · exact lineOf_le (prime_of_mem_bandPrimes hp).pos z
 
 /-- A particle with nonzero memory is designated. -/
@@ -279,8 +270,7 @@ theorem statusOf_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mult
   -- a particle of a born prime is not created
   have hn₀ : ∀ xp : Particle x d, xp.1.1 ∈ Bn → g.2 xp = 0 := fun xp hB => by
     have := (hok xp).2
-    rw [ite_eq_right fun h => h.2 hB] at this
-    omega
+    simp_all
   -- a particle outside the memory is not deleted
   have hd₀ : ∀ xp : Particle x d, S xp = 0 → g.1 xp = 0 := fun xp h0 => by
     have := (hok xp).1
@@ -298,32 +288,32 @@ theorem statusOf_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mult
       fun f => by
       rw [hℓ, ← hxp, extendParticle_val]
     simp only [localStatus, hext]
-    have hB : p ∈ Bn := hp' ▸ hS.pend_mem xp hS₀
+    have hB := hp' ▸ hS.pend_mem xp hS₀
     by_cases hd : g.1 xp = 0
     · rw [ite_eq_left hd]
       have h1 : ghostMem S g xp ≠ 0 := by simp [ghostMem, hd, hS₀]
       rw [← hp', statusOf_of_pend hc h1, show xp.1.2 = ℓ from congrArg Prod.snd hxp]
     · rw [ite_eq_right hd]
-      rw [statusOf_of_none (fun ha => hS.pend_inactive xp hS₀ (hp' ▸ ha)) fun y hy => ?_,
-        ite_eq_left (Multiset.mem_add.2 (Or.inl hB))]
+      rw [statusOf_of_none (fun ha => hS.pend_inactive xp hS₀ (by grind)) fun y hy => ?_,
+        ite_eq_left (by grind)]
       by_cases hyx : y = xp
       · subst hyx
         have := hS.le_one y
         have := (hok y).1
         simp only [hitPart] at this
-        simp only [ghostMem, hn₀ y (hy ▸ hB)]
-        split_ifs at this <;> omega
+        simp only [ghostMem, hn₀ y (by grind)]
+        omega
       · have hy0 : S y = 0 := by
           by_contra h
           exact hyx (hS.pend_unique y xp h hS₀ (hy.trans hp'.symm))
-        simp [ghostMem, hy0, hd₀ y hy0, hn₀ y (hy ▸ hB)]
+        simp [ghostMem, hy0, hn₀ y (hy ▸ hB)]
   | dead | unborn =>
     -- a prime without a token
     have hna : ¬∃ i h, act i h = p := fun ha => by
       rw [(statusOf_eq_active_iff p).2 ha] at hst
-      cases hst
-    have hnp : ∀ y : Particle x d, y.1.1 = p → S y = 0 := fun y hy =>
-      ((statusOf_ne_pending_iff.1 (fun ℓ h => by rw [hst] at h; cases h)) y hy).resolve_right hna
+      simp_all
+    have hnp := fun y hy =>
+      ((statusOf_ne_pending_iff.1 (fun ℓ h => by rw [hst] at h; simp_all)) y hy).resolve_right hna
     have hsn := statusOf_of_none (Bn := Bn) hna hnp
     rw [hst] at hsn
     first
@@ -333,15 +323,15 @@ theorem statusOf_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mult
         rw [ite_eq_right hB] at hsn
         cases hsn
       rw [localStatus, statusOf_of_none hna fun y hy => ?_,
-        ite_eq_left (Multiset.mem_add.2 (Or.inl hB))]
-      simp [ghostMem, hnp y hy, hd₀ y (hnp y hy), hn₀ y (hy ▸ hB)]
+        ite_eq_left (by grind)]
+      simp [ghostMem, hnp y hy, hn₀ y (hy ▸ hB)]
     | -- the unborn case: only the hitting particle can be created
       have hB : p ∉ Bn := by
         intro hB
         rw [ite_eq_left hB] at hsn
         cases hsn
       have hℓ : desLine z act S Bn p = lineOf p z := by rw [desLine, hst]
-      have hmem : (p, lineOf p z) ∈ particles x d :=
+      have hmem :=
         mem_particles.2 ⟨hp, lineOf_le (prime_of_mem_bandPrimes hp).pos z⟩
       set y₀ : Particle x d := ⟨(p, lineOf p z), hmem⟩
       have hext : ∀ f : Particle x d → ℕ, extendParticle f (p, desLine z act S Bn p) = f y₀ :=
@@ -355,10 +345,7 @@ theorem statusOf_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Mult
       by_cases hn : g.2 y₀ = 0
       · rw [ite_eq_left hn, statusOf_of_none hna fun y hy' => ?_, ite_eq_right ?_]
         · rw [Multiset.mem_add, not_or, mem_batchBirths]
-          refine ⟨hB, fun ⟨y, hy', hny⟩ => hny ?_⟩
-          by_cases hyy : y = y₀
-          · exact hyy ▸ hn
-          · exact hy y hy' hyy
+          grind
         · by_cases hyy : y = y₀
           · subst hyy
             simp [ghostMem, hnp _ hy', hn]
@@ -403,8 +390,7 @@ theorem hitPart_ghostMem {z : ℤ × ℤ} {S : Particle x d → ℕ} {Bn : Multi
   · simp only [hitPart, hh, ite_true, ghostMem]
   · have h₁ := hok.1
     simp only [hitPart, hh, ite_false] at h₁ ⊢
-    rw [ite_eq_right fun h => hh h.1] at h₂
-    omega
+    simp_all
 
 open scoped Classical in
 /-- The summand of the ghost step is the product of the per-particle summands. -/
@@ -440,8 +426,8 @@ theorem ghost_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
         intro xp
         by_cases h : xp.1.2 = desLine s.1.1 s.2.1.1 s.2.2.1 Bn xp.1.1
         · have hx : (xp.1.1, desLine s.1.1 s.2.1.1 s.2.2.1 Bn xp.1.1) = xp.1 := Prod.ext rfl h.symm
-          simp only [ite_eq_left h, F, hx, extendParticle_val]
-        · simp only [ite_eq_right h]
+          simp only [F, hx, extendParticle_val]
+        · simp_all
       rw [prod_congr rfl fun xp _ => hR xp, postProd, prod_particles_ite _
         (fun p hp => desLine_le s.1.1 s.2.2.1 Bn hp)]
       exact prod_congr rfl fun p hp => by rw [statusOf_ghostMem hS hok hp]
@@ -451,7 +437,7 @@ theorem ghost_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
     by_cases hv : GhostValid (HitsAt x d s.1.1) B s.2.2.1 g
     · by_cases hnd : (Bn + batchBirths g.2).Nodup
       · exact absurd (ghostOK_of_valid hv hnd xp) hxp
-      · rw [ite_eq_right hnd, mul_zero, zero_mul]
+      simp_all
     · rw [visitWeight, ite_eq_right hv, zero_mul, zero_mul]
 
 /-! ### The per-particle sums -/
@@ -523,15 +509,15 @@ theorem sum_ghostTerm (hq : 0 < q)
       if xp.1.2 = desLine z act S Bn xp.1.1 then
         primeLife q N π xp.1.1 t (statusOf act S Bn xp.1.1)
       else 1 := by
-  have hp : xp.1.1 ∈ bandPrimes x d :=
+  have hp :=
     (mem_particles.1 (show (xp.1.1, xp.1.2) ∈ particles x d from xp.2)).1
-  have hp₀ : 0 < xp.1.1 := (prime_of_mem_bandPrimes hp).pos
+  have hp₀ := (prime_of_mem_bandPrimes hp).pos
   have hB₁ : 1 ≤ B := (card_pos.2 ⟨xp.1.1, hp⟩).trans_le hB
   have hhle : hitPart (HitsAt x d z) S xp ≤ 1 := by
     unfold hitPart
     split_ifs
     · exact hS.le_one xp
-    · exact Nat.zero_le _
+    · omega
   have hmle : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) ≤ 1 := by split_ifs <;> omega
   -- step: only the choices `d, n ≤ 1` contribute
   have hsub : range 2 ⊆ range (B + 1) := range_subset_range.2 (by omega)
@@ -544,9 +530,9 @@ theorem sum_ghostTerm (hq : 0 < q)
   have hsum : ∑ dd ∈ range (B + 1), ∑ nn ∈ range (B + 1), ghostTerm q N π t z act S Bn xp dd nn =
       ∑ dd ∈ range 2, ∑ nn ∈ range 2, ghostTerm q N π t z act S Bn xp dd nn := by
     rw [← sum_subset hsub fun dd _ hdd => sum_eq_zero fun nn _ => hzero dd nn
-      (Or.inl (by simp at hdd; omega))]
+      (Or.inl (by grind))]
     refine sum_congr rfl fun dd _ => (sum_subset hsub fun nn _ hnn => hzero dd nn
-      (Or.inr (by simp at hnn; omega))).symm
+      (Or.inr (by grind))).symm
   rw [hsum]
   simp only [sum_range_succ, sum_range_zero, zero_add]
   -- the prime's activity at `t` and its mass
@@ -565,7 +551,7 @@ theorem sum_ghostTerm (hq : 0 < q)
         by_contra h
         exact hS.pend_inactive xp h ha
       obtain ⟨i, k, hk⟩ := ha
-      have hBp : xp.1.1 ∈ Bn := hk ▸ hS.act_mem i k
+      have hBp := hk ▸ hS.act_mem i k
       have hh₀ : hitPart (HitsAt x d z) S xp = 0 := by simp [hitPart, hS₀]
       have hm₀ : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) = 0 :=
         ite_eq_right fun h => h.2 hBp
@@ -577,7 +563,7 @@ theorem sum_ghostTerm (hq : 0 < q)
       have hBp := mem_of_statusOf_eq_dead hst
       have hna : t ∉ activeSet xp.1.1 π := fun h => by
         rw [(statusOf_eq_active_iff xp.1.1).2 ((hact xp.1.1).1 h)] at hst
-        cases hst
+        simp_all
       have hh₀ : hitPart (HitsAt x d z) S xp = 0 := by simp [hitPart, hS₀]
       have hm₀ : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) = 0 :=
         ite_eq_right fun h => h.2 hBp
@@ -589,11 +575,11 @@ theorem sum_ghostTerm (hq : 0 < q)
       have hℓ : desLine z act S Bn xp.1.1 = ℓ := by rw [desLine, hst]
       have hxx : xp' = xp := Subtype.ext (hxp'.trans (Prod.ext rfl (hdes.trans hℓ).symm))
       rw [hxx] at hS' hxp'
-      have hS₁ : S xp = 1 := le_antisymm (hS.le_one xp) (Nat.one_le_iff_ne_zero.2 hS')
-      have hBp : xp.1.1 ∈ Bn := hS.pend_mem xp hS'
+      have hS₁ := le_antisymm (hS.le_one xp) (Nat.one_le_iff_ne_zero.2 hS')
+      have hBp := hS.pend_mem xp hS'
       have hna : t ∉ activeSet xp.1.1 π := fun h => by
         rw [(statusOf_eq_active_iff xp.1.1).2 ((hact xp.1.1).1 h)] at hst
-        cases hst
+        grind
       have hm₀ : (if HitsAt x d z xp ∧ xp.1.1 ∉ Bn then 1 else 0) = 0 :=
         ite_eq_right fun h => h.2 hBp
       have hℓ' : xp.1.2 = ℓ := congrArg Prod.snd hxp'
@@ -618,7 +604,7 @@ theorem sum_ghostTerm (hq : 0 < q)
       have hBp := notMem_of_statusOf_eq_unborn hst
       have hna : t ∉ activeSet xp.1.1 π := fun h => by
         rw [(statusOf_eq_active_iff xp.1.1).2 ((hact xp.1.1).1 h)] at hst
-        cases hst
+        simp_all
       have hℓ : desLine z act S Bn xp.1.1 = lineOf xp.1.1 z := by rw [desLine, hst]
       have hhit : HitsAt x d z xp := (hdes.trans hℓ).symm
       have hh₀ : hitPart (HitsAt x d z) S xp = 0 := by simp [hitPart, hS₀]

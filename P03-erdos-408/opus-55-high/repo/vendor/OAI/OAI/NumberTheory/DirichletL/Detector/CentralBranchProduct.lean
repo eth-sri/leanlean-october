@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralExpansion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeCentralBranchProduct
 
 theorem coupled_product_bound {ι : Type*} [Fintype ι]
@@ -20,7 +20,7 @@ theorem coupled_product_bound {ι : Type*} [Fintype ι]
   calc
     _ = (∏j ∈ J,f j)*(L*∏j ∈ Finset.univ\J,g j) := by ring
     _ ≤ (∏j ∈ J,f j)*(R*∏j ∈ Finset.univ\J,y j) :=
-      mul_le_mul_of_nonneg_left (hsub _) (Finset.prod_nonneg (fun j _=>hf j))
+      mul_le_mul_of_nonneg_left (hsub _) (Finset.prod_nonneg (by grind))
     _ = _ := by ring
 
 theorem three_branch_bound {N : ℕ} (L R E : ℝ)
@@ -31,11 +31,11 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
     L*‖∏j : Fin N, (A j+B j+T j)‖≤R*(E+2)^N*(∏j : Fin N, y j)*(∏j : Fin N,p j) := by
   have hnorm : ‖∏j : Fin N, (A j+B j+T j)‖≤∏j : Fin N,((‖A j‖+‖B j‖)+‖T j‖) := by
     rw [norm_prod]
-    apply Finset.prod_le_prod₀ (fun _ _=>norm_nonneg _)
+    apply Finset.prod_le_prod₀ (by simp)
     intro j _
     exact (norm_add_le _ _).trans (add_le_add (norm_add_le _ _) le_rfl)
   have hc := coupled_product_bound L R (fun j=>‖A j‖+‖B j‖) (fun j=>‖T j‖) y
-    (fun j=>add_nonneg (norm_nonneg _) (norm_nonneg _)) hT
+    (fun j=>by positivity) hT
   have hpoint (j : Fin N) : (‖A j‖+‖B j‖)+y j≤y j*((E+2)*p j) := by
     have h := hp j
     have hp0 : 0≤p j := zero_le_one.trans h
@@ -47,7 +47,7 @@ theorem three_branch_bound {N : ℕ} (L R E : ℝ)
     _ ≤ R*(∏j : Fin N,((‖A j‖+‖B j‖)+y j)) := hc
     _ ≤ R*(∏j : Fin N, y j*((E+2)*p j)) := by
       apply mul_le_mul_of_nonneg_left _ hR
-      exact Finset.prod_le_prod₀ (fun j _=>add_nonneg (add_nonneg (norm_nonneg _) (norm_nonneg _)) (hy j)) (fun j _=>hpoint j)
+      exact Finset.prod_le_prod₀ (fun j _=>add_nonneg (by positivity) (hy j)) (by grind)
     _ = _ := by simp only [Finset.prod_mul_distrib,Finset.prod_const,Finset.card_univ,Fintype.card_fin];ring
 end SevenEighths.ProbeCentralBranchProduct
 

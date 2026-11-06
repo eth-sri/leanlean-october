@@ -95,7 +95,7 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
     intro j hj
     obtain ⟨h₁, h₂⟩ := mem_product.1 hj
     exact union_subset_union (hRB _ h₁) (hRP _ h₂)
-  have hwB : ∀ p ∈ QB, w p = q := fun p hp => by simp [hw, hp]
+  have hwB : ∀ p ∈ QB, w p = q := fun p hp => by grind
   have hwP : ∀ p ∈ QP, w p = q₀ := fun p hp => by
     simp [hw, disjoint_right.1 hQd hp]
   have hw1 : ∀ p ∈ Q, ‖w p - 1‖ ≤ 1 := by
@@ -124,8 +124,8 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
   · -- (a) support
     intro d hd
     obtain ⟨j, hj, U, hU, hUh, rfl⟩ := exists_of_truncModel_ne_zero hd
-    have hsub : R j ∪ U ⊆ Q := union_subset (hRQ j hj) (hU.trans sdiff_subset)
-    have hpr : ∀ p ∈ R j ∪ U, p.Prime := fun p hp => hprime p (hsub hp)
+    have hsub := union_subset (hRQ j hj) (hU.trans sdiff_subset)
+    have hpr := fun p hp => hprime p (hsub hp)
     obtain ⟨h₁, h₂⟩ := mem_product.1 hj
     refine ⟨?_, ?_, ?_⟩
     · refine Finset.squarefree_prod_of_pairwise_isCoprime ?_ fun p hp => (hpr p hp).squarefree
@@ -140,8 +140,7 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
             _ = _ := by rw [sum_const, card_univ, smul_eq_mul, mul_comm]
         calc #(R j ∪ U) ≤ #(R j) + #U := card_union_le _ _
           _ ≤ #(univ.image j.1) + #(groupRep S j.2) + #U := by
-              gcongr
-              exact card_union_le _ _
+              grind
           _ ≤ _ := by omega
       have hL46 : 0 ≤ L ^ (0.46 : ℝ) := Real.rpow_nonneg hL0 _
       have hprod : ((∏ p ∈ R j ∪ U, p : ℕ) : ℝ) ≤
@@ -156,8 +155,8 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
       rw [Nat.primeFactors_prod hpr] at hp
       rcases mem_union.1 (hsub hp) with h | h
       · obtain ⟨i, -, hi⟩ := mem_biUnion.1 h
-        exact Or.inr ⟨i, hi⟩
-      · exact Or.inl h
+        grind
+      grind
   · -- (b) mass
     refine (sum_norm_truncModel_div_le J R c hw1 h₀ _).trans ?_
     have hm : ∑ j ∈ J, ‖c j‖ / ∏ p ∈ R j, (p : ℝ) ≤ 1 := by
@@ -227,7 +226,7 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
               (by positivity)
           _ = 2 ^ r * B ^ ((m₀ + 1) * Fintype.card ι) *
               (2 ^ u * 2 ^ (v * (m₀ + 1)) * 2 ^ (2 * (u + v))) := by
-            rw [h4, ← hkey₁ 2]
+            grind
           _ ≤ 2 ^ r * B ^ ((m₀ + 1) * Fintype.card ι) *
               (2 ^ (u * (m₀ + 1)) * 2 ^ (v * (m₀ + 1)) * 2 ^ (2 * (u + v))) := by
             gcongr
@@ -238,7 +237,7 @@ theorem divisorModel_of_facts {x q q₀ vlo vhi : ℝ} (hq : 0 < q) (hq₁ : q <
         _ = Cx ^ 2 / 4 ^ h₀ * ((4 : ℝ) ^ (m₀ + 3)) ^ (u + v) := by
             have hsq : ∀ t : ℝ, (Cx * (t ^ (m₀ + 3)) ^ (u + v) / t ^ h₀) ^ 2 =
                 Cx ^ 2 / (t ^ 2) ^ h₀ * ((t ^ 2) ^ (m₀ + 3)) ^ (u + v) := fun t => by ring
-            rw [hsq 2, ← h4]
+            grind
     have hz : (1 : ℝ) ≤ 4 ^ (m₀ + 3) := one_le_pow₀ (by norm_num)
     have hR2 : 0 ≤ 2 * R₀ := by linarith
     calc ∑ n ∈ Ioc ⌊R₀⌋₊ ⌊2 * R₀⌋₊,
@@ -279,13 +278,13 @@ theorem meanSquare_numeric {L κ₁ κ₂ B C₀ vhi : ℝ} {r m₀ c h₀ N : �
       1 * L ^ (-(N : ℝ)) := by
   set T := Real.log L with hT
   have hB0 : 0 < B := by linarith
-  have hlogB : 0 ≤ Real.log B := Real.log_nonneg hB1
+  have hlogB := Real.log_nonneg hB1
   have hpow : ∀ (y : ℝ) (n : ℕ), 0 < y → y ^ n = Real.exp (n * Real.log y) := fun y n hy => by
     rw [Real.exp_nat_mul, Real.exp_log hy]
   have hCx : 2 ^ r * B ^ ((m₀ + 1) * c) ≤ Real.exp (κ₂ * T) := by
     rw [hpow 2 r two_pos, hpow B _ hB0, ← Real.exp_add]
     refine Real.exp_le_exp.2 ?_
-    have hl2 : 0 ≤ Real.log 2 := Real.log_nonneg (by norm_num)
+    have hl2 : 0 ≤ Real.log 2 := by positivity
     have h₁ : (r : ℝ) * Real.log 2 ≤ T * Real.log 2 := mul_le_mul_of_nonneg_right hrT hl2
     have h₂ : ((m₀ : ℝ) + 1) * c * Real.log B ≤ (2 * (m₀ + 1) * |C₀| * T) * Real.log B := by
       refine mul_le_mul_of_nonneg_right ?_ hlogB

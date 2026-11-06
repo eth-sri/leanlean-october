@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -53,7 +52,7 @@ theorem one_sub_pow_lower {e : ℝ} (he : e ≤ 1) (k : ℕ) :
         push_cast
         nlinarith [mul_nonneg (Nat.cast_nonneg k) (sq_nonneg e)]
       _ ≤ (1 - e) ^ k * (1 - e) := hmul
-      _ = (1 - e) ^ (k + 1) := (pow_succ _ _).symm
+      _ = (1 - e) ^ (k + 1) := by ring
 
 theorem big_label_product_le_two (P : PrimeGroups) (M : ℕ) (e : ℝ)
     (he1 : e ≤ 1 / 2)
@@ -68,24 +67,23 @@ theorem big_label_product_le_two (P : PrimeGroups) (M : ℕ) (e : ℝ)
     calc
       _ ≤ ∏ g : P.BigGroup, ((1 - e)⁻¹) ^ M := by
         apply Finset.prod_le_prod₀
+        · simp_all
         · intro g _
-          exact pow_nonneg (hS g).1 _
-        · intro g _
-          exact pow_le_pow_left₀ (hS g).1 (hS g).2 _
+          exact pow_le_pow_left₀ (by grind) (by grind) _
       _ = _ := by simp [pow_mul]
   let K : ℕ := M * Fintype.card P.BigGroup
   have hKe : (K : ℝ) * e ≤ 1 / 2 := by
     dsimp [K]
     rw [Nat.cast_mul]
-    nlinarith [hbudget]
-  have hbern := one_sub_pow_lower (by linarith [he1] : e ≤ 1) K
-  have hden : 1 / 2 ≤ (1 - e) ^ K := by nlinarith [hbern, hKe]
+    nlinarith
+  have hbern := one_sub_pow_lower (by linarith : e ≤ 1) K
+  have hden : 1 / 2 ≤ (1 - e) ^ K := by nlinarith
   have hdenpos : 0 < (1 - e) ^ K := by linarith
   have hinv : ((1 - e)⁻¹) ^ K ≤ 2 := by
     rw [inv_pow]
     apply (inv_le_iff_one_le_mul₀ hdenpos).2
-    nlinarith [hden]
-  exact hpow.trans (by simpa [K] using hinv)
+    nlinarith
+  linarith
 
 
 end Erdos821.S2Empty

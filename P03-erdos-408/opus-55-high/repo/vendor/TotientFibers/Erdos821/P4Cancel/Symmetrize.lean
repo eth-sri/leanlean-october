@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Order.Chebyshev
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Cancel
@@ -47,7 +46,7 @@ lemma symTest_invariant (f : P.BigLabels M → ℂ) (ρ : P.BigPermutations M)
   unfold symTest
   congr 1
   simp_rw [actBig_actBig]
-  exact Fintype.sum_equiv (Equiv.mulLeft ρ) _ _ (fun π => rfl)
+  exact Fintype.sum_equiv (Equiv.mulLeft ρ) _ _ (by simp)
 
 lemma pair_transport (K : P.BigLabels M → P.BigLabels M → ℂ)
     (f g : P.BigLabels M → ℂ) (π τ : P.BigPermutations M) :
@@ -76,8 +75,6 @@ lemma star_symTest (f : P.BigLabels M → ℂ) (a : P.BigLabels M) :
       ((Fintype.card (P.BigPermutations M) : ℂ))⁻¹ *
         ∑ π : P.BigPermutations M, star (f (P.actBig π a)) := by
   unfold symTest
-  rw [star_mul, star_sum, mul_comm]
-  congr 1
   simp
 
 lemma symmetrized_pair (K : P.BigLabels M → P.BigLabels M → ℂ)
@@ -168,9 +165,7 @@ lemma symTest_sqNorm_le (hV : ∀ g, 0 < P.V g) (f : P.BigLabels M → ℂ) :
     _ = (N : ℝ)⁻¹ * ∑ π : P.BigPermutations M, ∑ a, P.idealMass a * ‖f (P.actBig π a)‖ ^ 2 := by
         simp only [Finset.mul_sum]
         rw [Finset.sum_comm]
-        apply Finset.sum_congr rfl; intro π _
-        apply Finset.sum_congr rfl; intro a _
-        ring
+        grind
     _ = (N : ℝ)⁻¹ * ∑ _π : P.BigPermutations M, ∑ a, P.idealMass a * ‖f a‖ ^ 2 := by
         congr 1
         apply Finset.sum_congr rfl; intro π _

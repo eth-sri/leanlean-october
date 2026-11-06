@@ -11,7 +11,6 @@ prescribed value keeps the factorial divisor and replaces its tilted mass by a p
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
@@ -56,7 +55,7 @@ def gtWeight (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B : ℕ}
 theorem card_le_memorySize {M : ℕ} (t : P.MemoryState M) (g : P.BigGroup) :
     (t.2.2 g).card ≤ P.memorySize t := by
   unfold PrimeGroups.memorySize
-  exact Finset.single_le_sum (f := fun h => (t.2.2 h).card) (fun _ _ => Nat.zero_le _)
+  exact Finset.single_le_sum (f := fun h => (t.2.2 h).card) (by omega)
     (Finset.mem_univ g)
 
 /-- Encode a ghost choice into a bounded target. -/
@@ -90,11 +89,10 @@ theorem ghost_sigma_ext {M B : ℕ} (s : P.MemoryState M) (t1 t2 : BoundedMemory
   obtain ⟨A2, b2, l2⟩ := c2
   simp only at h1 h2 h3
   subst h1
-  have hb : b1 = b2 := funext fun g => Fin.ext (h2 g)
+  have hb := funext fun g => Fin.ext (h2 g)
   subst hb
-  have hl : l1 = l2 := funext fun g => eq_of_heq (h3 g)
-  subst hl
-  rfl
+  have hl := funext fun g => eq_of_heq (h3 g)
+  simp_all
 
 /-- Valid bounded ghost row terms are exactly the valid bounded transitions. -/
 theorem ghost_transfer {M B : ℕ} (s : P.MemoryState M) (H : GT P s B → ℝ) :
@@ -113,14 +111,14 @@ theorem ghost_transfer {M B : ℕ} (s : P.MemoryState M) (H : GT P s B → ℝ) 
     intro x hx
     exact Prod.ext hx.1.1 (Prod.ext hx.1.2 (funext fun g => (hx.2 g).2))
   refine Finset.sum_bij' (fun x _ => gtEnc s x.1.val x.1.property x.2)
-    (fun tr htr => gtDec s tr (Finset.mem_filter.1 htr).2.2) ?hi ?hj ?li ?ri ?hh
+    (fun tr htr => gtDec s tr (by grind)) ?hi ?hj ?li ?ri ?hh
   case hi =>
     intro x hx
     have hx' := (Finset.mem_filter.1 hx).2
     rw [Finset.mem_filter]
     refine ⟨Finset.mem_univ _, fun g => (hx'.2 g).1, ?_⟩
     rw [htarget x hx']
-    exact x.1.property
+    grind
   case hj =>
     intro tr htr
     have htr' := (Finset.mem_filter.1 htr).2
@@ -135,9 +133,7 @@ theorem ghost_transfer {M B : ℕ} (s : P.MemoryState M) (H : GT P s B → ℝ) 
   case ri =>
     intro tr _
     rfl
-  case hh =>
-    intro x _
-    rfl
+  grind
 
 /-- The constraint at batch address `(g, h)`. -/
 def gtValAt {M B : ℕ} {s : P.MemoryState M} (tr : GT P s B) (x : P.BigGroup × Fin B) : ℕ :=
@@ -231,19 +227,10 @@ theorem gtValAt_relabel_ne {M B : ℕ} {s : P.MemoryState M} (g : P.BigGroup) (h
   show valOf (gtRelabel g h p tr g') h' = valOf (tr g') h'
   by_cases hg : g' = g
   · subst hg
-    have hh' : h' ≠ h := fun he => hx (by rw [he])
+    have hh' : h' ≠ h := fun he => hx (by simp_all)
     rw [gtRelabel_apply_self]
     unfold valOf
-    by_cases hb : h'.val < (tr g').2.1.val
-    · simp only [dite_eq_left hb]
-      by_cases hh : h.val < (tr g').2.1.val
-      · simp only [dite_eq_left hh]
-        rw [Function.update_of_ne]
-        intro he
-        apply hh'
-        exact Fin.ext (Fin.mk.inj he)
-      · simp only [dite_eq_right hh]
-    · simp only [dite_eq_right hb]
+    grind
   · rw [gtRelabel_apply_ne g h p tr g' hg]
 
 theorem gtRelabel_relabel {M B : ℕ} {s : P.MemoryState M} (g : P.BigGroup) (h : Fin B)
@@ -253,9 +240,7 @@ theorem gtRelabel_relabel {M B : ℕ} {s : P.MemoryState M} (g : P.BigGroup) (h 
   by_cases hg : g' = g
   · subst hg
     rw [gtRelabel_apply_self, gtRelabel_apply_self, gtRelabel_apply_self]
-    by_cases hh : h.val < (tr g').2.1.val
-    · simp only [dite_eq_left hh, Function.update_idem]
-    · simp only [dite_eq_right hh]
+    simp_all
   · rw [gtRelabel_apply_ne g h p _ g' hg, gtRelabel_apply_ne g h q _ g' hg,
       gtRelabel_apply_ne g h p _ g' hg]
 
@@ -266,7 +251,7 @@ theorem gtRelabel_eq_self {M B : ℕ} {s : P.MemoryState M} (g : P.BigGroup) (h 
   by_cases hg : g' = g
   · subst hg
     rw [gtRelabel_apply_self]
-    simp only [dite_eq_left hh, Function.update_eq_self]
+    simp
   · rw [gtRelabel_apply_ne g h _ tr g' hg]
 
 theorem prod_update_scale {ι : Type*} [Fintype ι] [DecidableEq ι] (f : ι → ℝ) (x : ι)
@@ -274,9 +259,7 @@ theorem prod_update_scale {ι : Type*} [Fintype ι] [DecidableEq ι] (f : ι →
     (∏ y, Function.update f x a y) * c = (∏ y, f y) * d := by
   rw [Finset.prod_update_of_mem (Finset.mem_univ x),
     Finset.prod_eq_mul_prod_sdiff_singleton x f (fun hx => (hx (Finset.mem_univ x)).elim)]
-  calc a * (∏ y ∈ Finset.univ \ {x}, f y) * c = (a * c) * ∏ y ∈ Finset.univ \ {x}, f y := by
-        ring
-    _ = _ := by rw [h]; ring
+  grind
 
 theorem gtWeight_relabel (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B : ℕ}
     {s : P.MemoryState M} (g : P.BigGroup) (h : Fin B) (p : P.Prime g.val) (tr : GT P s B)
@@ -289,8 +272,7 @@ theorem gtWeight_relabel (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1))
         (gtGroupWeight F n rho i s g (gtRelabel g h p tr g)) := by
     funext g'
     by_cases hg : g' = g
-    · subst hg
-      rw [Function.update_self]
+    · grind
     · rw [Function.update_of_ne hg, gtRelabel_apply_ne g h p tr g' hg]
   rw [show (∏ g', gtGroupWeight F n rho i s g' (gtRelabel g h p tr g')) =
     ∏ g', (fun g' => gtGroupWeight F n rho i s g' (gtRelabel g h p tr g')) g' from rfl, hpt]
@@ -303,20 +285,12 @@ theorem gtWeight_relabel (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1))
         (tiltedMu F P n g.val p) := by
     funext h'
     by_cases he : h' = ⟨h.val, hh⟩
-    · subst he
-      rw [Function.update_self, Function.update_self]
-    · rw [Function.update_of_ne he, Function.update_of_ne he]
+    · simp_all
+    · simp_all
   have key := prod_update_scale (fun h' => tiltedMu F P n g.val ((tr g).2.2 h')) ⟨h.val, hh⟩
     (tiltedMu F P n g.val p) (tiltedMu F P n g.val ((tr g).2.2 ⟨h.val, hh⟩))
-    (tiltedMu F P n g.val p) (mul_comm _ _)
-  rw [← hin] at key
-  calc _ = ((-eta F n i / rho) ^ (tr g).1.card *
-        (visitQ F.q n i / rho ^ (2 : ℕ)) ^ ((zeroMemoryIndices (s.2.2 g)).card - (tr g).1.card) *
-        (((tr g).2.1.val.factorial : ℝ))⁻¹ *
-        (-eta F n i * P.V g.val / rho) ^ (tr g).2.1.val) *
-        ((∏ h', tiltedMu F P n g.val (Function.update (tr g).2.2 ⟨h.val, hh⟩ p h')) *
-          tiltedMu F P n g.val ((tr g).2.2 ⟨h.val, hh⟩)) := by ring
-    _ = _ := by rw [key]; ring
+    (tiltedMu F P n g.val p) (by linarith)
+  grind
 
 /-- One absolute ghost transition term with its target weight. -/
 def gtTerm (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B : ℕ} (v : ℝ)
@@ -329,7 +303,7 @@ theorem gtTerm_nonneg (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M
   unfold gtTerm
   split_ifs
   · exact mul_nonneg (abs_nonneg _) (pow_nonneg hv _)
-  · exact le_rfl
+  simp
 
 theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B : ℕ} (v : ℝ)
     (hv : 0 ≤ v)
@@ -345,9 +319,7 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
   have hf0 := gtTerm_nonneg F n rho i v hv s (B := B)
   have hR0 : 0 ≤ ∑ tr : GT P s B, (if Q tr then gtTerm F n rho i v s tr else 0) :=
     Finset.sum_nonneg fun tr _ => by
-      split_ifs
-      · exact hf0 tr
-      · exact le_rfl
+      grind
   have hRHS0 := mul_nonneg (muHat_nonneg F P n hμ g vx) hR0
   by_cases hvx : vx ∈ P.primes g.val
   swap
@@ -357,9 +329,9 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
       rw [← he]
       unfold gtValAt
       rw [dite_eq_left hb]
-      exact ((tr g).2.2 _).property
-    rw [Finset.sum_eq_zero fun tr _ => ite_eq_right (hz tr)]
-    exact hRHS0
+      exact by simp
+    rw [Finset.sum_eq_zero (by grind)]
+    omega
   let α : P.Prime g.val := ⟨vx, hvx⟩
   have hmu : muHat F P n g vx = tiltedMu F P n g.val α := muHat_of_mem F P n g α
   let T := Finset.univ.filter (fun tr : GT P s B => Q tr ∧
@@ -379,27 +351,22 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
     apply Finset.sum_congr rfl
     intro tr _
     by_cases hvb : gtValid tr ∧ P.memorySize (gtTarget s tr) ≤ B
-    · by_cases hc : Q tr ∧ (h.val < (tr g).2.1.val ∧ gtValAt tr (g, h) = vx)
-      · rw [ite_eq_left hc, ite_eq_left ⟨hc.1, hvb, hc.2⟩]
-      · rw [ite_eq_right hc, ite_eq_right (fun h' => hc ⟨h'.1, h'.2.2⟩)]
+    · grind
     · have hz : gtTerm F n rho i v s tr = 0 := by unfold gtTerm; rw [ite_eq_right hvb]
-      rw [hz]
-      split_ifs <;> rfl
+      grind
   have hS : (∑ tr : GT P s B, (if Q tr then gtTerm F n rho i v s tr else 0)) =
       ∑ tr ∈ S, gtTerm F n rho i v s tr := (Finset.sum_filter _ _).symm
   have key := relabel_sum_le (gtTerm F n rho i v s) T S Finset.univ
     (fun tr p => gtRelabel g h p tr) (tiltedMu F P n g.val) (tiltedMu F P n g.val α) 1
-    (fun tr _ => hf0 tr) (fun tr _ => hf0 tr) (hμ _ _).le one_pos (hmass1 g)
+    (by grind) (by grind) (by grind) one_pos (hmass1 g)
     (by
-      intro tr htr p _
-      rw [Finset.mem_filter] at htr ⊢
-      exact ⟨Finset.mem_univ _, (hQ p tr).mpr htr.2.1⟩)
+      grind)
     (by
       intro tr1 htr1 p1 _ tr2 htr2 p2 _ he
       obtain ⟨-, -, -, hb1, hv1⟩ := Finset.mem_filter.1 htr1
       obtain ⟨-, -, -, hb2, hv2⟩ := Finset.mem_filter.1 htr2
       have hp : p1 = p2 := by
-        have h3 : gtValAt (gtRelabel g h p1 tr1) (g, h) = gtValAt (gtRelabel g h p2 tr2) (g, h) :=
+        have h3 :=
           congrArg (fun tr => gtValAt tr (g, h)) he
         rw [gtValAt_relabel_self g h p1 tr1 hb1, gtValAt_relabel_self g h p2 tr2 hb2] at h3
         exact Subtype.ext h3
@@ -407,11 +374,11 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
       have hα1 := hlab tr1 hb1 hv1
       have hα2 := hlab tr2 hb2 hv2
       calc tr1 = gtRelabel g h ((tr1 g).2.2 ⟨h.val, hb1⟩) tr1 := (gtRelabel_eq_self g h tr1 hb1).symm
-        _ = gtRelabel g h α tr1 := by rw [hα1]
+        _ = gtRelabel g h α tr1 := by grind
         _ = gtRelabel g h α (gtRelabel g h p1 tr1) := (gtRelabel_relabel g h α p1 tr1).symm
-        _ = gtRelabel g h α (gtRelabel g h p2 tr2) := by rw [he]
+        _ = gtRelabel g h α (gtRelabel g h p2 tr2) := by grind
         _ = gtRelabel g h α tr2 := gtRelabel_relabel g h α p2 tr2
-        _ = gtRelabel g h ((tr2 g).2.2 ⟨h.val, hb2⟩) tr2 := by rw [hα2]
+        _ = gtRelabel g h ((tr2 g).2.2 ⟨h.val, hb2⟩) tr2 := by grind
         _ = tr2 := gtRelabel_eq_self g h tr2 hb2)
     (by
       intro tr htr p _
@@ -419,7 +386,7 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
       have hα := hlab tr hb hv
       have hvb' : gtValid (gtRelabel g h p tr) ∧
           P.memorySize (gtTarget s (gtRelabel g h p tr)) ≤ B :=
-        ⟨(gtValid_relabel g h p tr).mpr hvb.1, by rw [memorySize_gtTarget_relabel]; exact hvb.2⟩
+        ⟨(gtValid_relabel g h p tr).mpr hvb.1, by rw [memorySize_gtTarget_relabel]; omega⟩
       have hW := gtWeight_relabel F n rho i g h p tr hb
       have hW' := congrArg abs hW
       rw [abs_mul, abs_mul, abs_of_pos (hμ _ _), abs_of_pos (hμ _ _), hα] at hW'
@@ -428,14 +395,8 @@ theorem ghost_single (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M 
         unfold PrimeGroups.memoryWeight
         rw [memorySize_gtTarget_relabel]
       unfold gtTerm
-      rw [ite_eq_left hvb, ite_eq_left hvb', hw]
-      calc |gtWeight F n rho i tr| * P.memoryWeight v (gtTarget s tr) * tiltedMu F P n g.val p
-          = (|gtWeight F n rho i tr| * tiltedMu F P n g.val p) *
-              P.memoryWeight v (gtTarget s tr) := by ring
-        _ = _ := by rw [← hW']; ring)
-  rw [hLHS, hS, hmu]
-  calc _ ≤ tiltedMu F P n g.val α / 1 * ∑ tr ∈ S, gtTerm F n rho i v s tr := key
-    _ = _ := by ring
+      grind)
+  grind
 
 theorem ghost_slots (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B : ℕ} (v : ℝ)
     (hv : 0 ≤ v)
@@ -464,7 +425,7 @@ theorem ghost_slots (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B
           intro x hx
           rcases Finset.mem_insert.1 hx with rfl | hx
           · exact h3
-          · exact h2 x hx
+          grind
       rw [Finset.sum_congr rfl (fun tr _ => hrw tr)]
       have hQ : ∀ (p : P.Prime y.1.val) (tr : GT P s B),
           (∀ x ∈ S, gtSlotCond vals (gtRelabel y.1 y.2 p tr) x) ↔
@@ -488,7 +449,7 @@ theorem ghost_slots (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B
         _ ≤ muHat F P n y.1 (vals y) * ((∏ x ∈ S, muHat F P n x.1 (vals x)) *
               ∑ tr : GT P s B, gtTerm F n rho i v s tr) :=
             mul_le_mul_of_nonneg_left ih hm0
-        _ = _ := by rw [Finset.prod_insert hy]; ring
+        _ = _ := by grind
 
 theorem gtTarget_enc {M B : ℕ} (s t : P.MemoryState M) (ht : P.memorySize t ≤ B)
     (c : GhostChoice s t) (hsd : s.1 = t.1 ∧ s.2.1 = t.2.1) (hc : ghostChoiceValid c) :
@@ -501,7 +462,7 @@ theorem gtTerm_enc (F : FixedData) (n : ℕ) (rho : ℝ) (i : Fin (n + 1)) {M B 
     gtTerm F n rho i v s (gtEnc s t ht c) = |ghostChoiceWeight F n rho i c| * P.memoryWeight v t := by
   have htg := gtTarget_enc s t ht c hsd hc
   unfold gtTerm
-  rw [ite_eq_left ⟨fun g => (hc g).1, by rw [htg]; exact ht⟩, htg]
+  rw [ite_eq_left ⟨fun g => (hc g).1, by simp_all⟩, htg]
   rfl
 
 /-- The conditional weighted ghost row: constrained batch addresses cost a point mass each. -/
@@ -529,21 +490,18 @@ theorem ghost_row_constrained (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (
       apply Finset.sum_congr rfl
       intro c _
       by_cases hc : ghostChoiceValid c
-      · rw [ite_eq_left hc, ite_eq_left ⟨hsd, hc⟩, gtTerm_enc F n rho i v s t.val t.property c hsd hc]
+      · rw [ite_eq_left hc, ite_eq_left (by grind), gtTerm_enc F n rho i v s t.val t.property c hsd hc]
         unfold ghostMult
         by_cases hS : ∀ x ∈ Sl, ghostSlotCond vals c x
         · have hS' : ∀ x ∈ Sl, gtSlotCond vals (gtEnc s t.val t.property c) x := hS
-          simp only [mult, ite_eq_left hS, ite_eq_left hS']
-          ring
+          grind
         · have hS' : ¬ ∀ x ∈ Sl, gtSlotCond vals (gtEnc s t.val t.property c) x := hS
-          simp only [mult, ite_eq_right hS, ite_eq_right hS']
-          ring
-      · rw [ite_eq_right hc, ite_eq_right (fun h => hc h.2), zero_mul]
+          grind
+      grind
     · rw [ite_eq_right hsd, zero_mul]
       symm
       apply Finset.sum_eq_zero
-      intro c _
-      rw [ite_eq_right (fun h => hsd h.1)]
+      grind
   have step6 : ∀ t : BoundedMemoryState P (J + F.ell) B,
       absoluteScaledMemoryGhostKernel F J n rho 1 i s t.val * P.memoryWeight v t.val =
         ∑ c : GhostChoice s t.val,
@@ -556,14 +514,13 @@ theorem ghost_row_constrained (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (
       apply Finset.sum_congr rfl
       intro c _
       by_cases hc : ghostChoiceValid c
-      · rw [ite_eq_left hc, ite_eq_left ⟨hsd, hc⟩, gtTerm_enc F n rho i v s t.val t.property c hsd hc,
+      · rw [ite_eq_left hc, ite_eq_left (by grind), gtTerm_enc F n rho i v s t.val t.property c hsd hc,
           one_pow, mul_one]
-      · rw [ite_eq_right hc, ite_eq_right (fun h => hc h.2), zero_mul]
+      grind
     · rw [ite_eq_right hsd, zero_mul]
       symm
       apply Finset.sum_eq_zero
-      intro c _
-      rw [ite_eq_right (fun h => hsd h.1)]
+      grind
   have hT0 := gtTerm_nonneg F n rho i v hv s (B := B)
   calc ∑ t : BoundedMemoryState P (J + F.ell) B,
         ghostK F J n rho i (ghostMult Sl vals) s t.val * P.memoryWeight v t.val
@@ -576,13 +533,9 @@ theorem ghost_row_constrained (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (
         apply Finset.sum_congr rfl
         intro tr _
         by_cases hvb : gtValid tr ∧ P.memorySize (gtTarget s tr) ≤ B
-        · rw [ite_eq_left hvb]
-          by_cases hS : ∀ x ∈ Sl, gtSlotCond vals tr x
-          · simp only [mult, ite_eq_left hS, mul_one]
-          · simp only [mult, ite_eq_right hS, mul_zero]
+        · grind
         · have hz : gtTerm F n rho i v s tr = 0 := by unfold gtTerm; rw [ite_eq_right hvb]
-          rw [ite_eq_right hvb, hz]
-          split_ifs <;> rfl
+          grind
     _ ≤ (∏ x ∈ Sl, muHat F P n x.1 (vals x)) * ∑ tr : GT P s B, gtTerm F n rho i v s tr :=
         ghost_slots F n rho i v hv hμ hmass1 s vals Sl
     _ = _ := by
@@ -591,8 +544,8 @@ theorem ghost_row_constrained (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (
         apply Finset.sum_congr rfl
         intro tr _
         by_cases hvb : gtValid tr ∧ P.memorySize (gtTarget s tr) ≤ B
-        · rw [ite_eq_left hvb]
+        · grind
         · have hz : gtTerm F n rho i v s tr = 0 := by unfold gtTerm; rw [ite_eq_right hvb]
-          rw [ite_eq_right hvb, hz]
+          grind
 
 end Erdos821.P3High

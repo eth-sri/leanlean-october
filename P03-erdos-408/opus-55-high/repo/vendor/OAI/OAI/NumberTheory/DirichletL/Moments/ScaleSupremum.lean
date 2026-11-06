@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScaleSup
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
-open MeasureTheory Set Complex
+open scoped Classical ContDiff
+open Set
 namespace SevenEighths.CenteredMomentScaleSupremum
-open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorDyadicBridge
 open HeckeInverseAmplification (scaleProfile scaleProfile_continuous scaleProfile_support
   scale_normalization scaleSupport scaleSupport_cover)
 
@@ -29,7 +28,7 @@ lemma scaleTest_support (W : ℝ→ℂ) (a b : ℝ)
     Function.support (scaleTest W j)⊆Icc a b := by
   unfold scaleTest
   split
-  · exact hs
+  · omega
   · exact scaleProfile_support W a b hs
 
 end SevenEighths.CenteredMomentScaleSupremum

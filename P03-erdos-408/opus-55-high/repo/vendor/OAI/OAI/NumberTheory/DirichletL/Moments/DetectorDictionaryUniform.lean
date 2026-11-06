@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicProfiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
@@ -26,16 +26,16 @@ theorem compact_family_seminorm
   intro p hp
   apply SchwartzMap.seminorm_le_bound' ℝ k n _ (by positivity)
   intro x
-  have he : (G p : ℝ→ℂ)=F p := funext (hG p)
+  have he := funext (hG p)
   rw [he]
   by_cases hx : x∈Icc (-L) L
   · have hnorm : ‖iteratedDeriv n (F p) x‖≤|M|+1 := by
       have hb := hM (Set.mem_image_of_mem _ (show (p,x)∈J×ˢIcc (-L) L from ⟨hp,hx⟩))
-      exact hb.trans (by linarith [le_abs_self M])
+      exact hb.trans (by grind)
     have hxp : ‖x‖^k≤L^k := by
       apply pow_le_pow_left₀ (norm_nonneg _)
       simpa only [Real.norm_eq_abs,abs_le,Set.mem_Icc] using hx
-    exact (mul_le_mul hxp hnorm (norm_nonneg _) (pow_nonneg hL k)).trans (by linarith)
+    exact (mul_le_mul hxp hnorm (norm_nonneg _) (by positivity)).trans (by linarith)
   · have hout : iteratedDeriv n (F p) x=0 := by
       by_contra hn
       have hx' := (subset_tsupport (iteratedDeriv n (F p))) hn
@@ -71,7 +71,7 @@ theorem compact_family_frequencyTwist
   obtain ⟨B,hB,hbound⟩ := compact_family_finite_seminorm F hF L hL hs J hJ G hG S'
   let c : ℕ×ℕ→ℝ := fun z=>(2:ℝ)^z.2*(1+2*Real.pi)^z.2*((z.2+1)*B)
   have hc (z : ℕ×ℕ) : 0≤c z := by dsimp [c];positivity
-  have hsum : 0≤∑z∈S,c z := Finset.sum_nonneg (fun z _=>hc z)
+  have hsum : 0≤∑z∈S,c z := by positivity
   refine ⟨S.sup Prod.snd,1+∑z∈S,c z,by linarith,?_⟩
   intro p hp t
   apply Seminorm.finset_sup_apply_le (by positivity)
@@ -82,7 +82,7 @@ theorem compact_family_frequencyTwist
       _≤∑i∈Finset.range (z.2+1),B := by
         apply Finset.sum_le_sum
         intro i hi
-        have hi' : (z.1,i)∈S' := Finset.mem_biUnion.mpr ⟨z,hz,Finset.mem_image.mpr ⟨i,hi,rfl⟩⟩
+        have hi' : (z.1,i)∈S' := by grind
         exact (Seminorm.le_finset_sup_apply hi').trans (hbound p hp)
       _=_ := by simp
   have hzC : c z≤1+∑z∈S,c z := by
@@ -94,7 +94,7 @@ theorem compact_family_frequencyTwist
     dsimp only [c]
     gcongr
   exact hb.trans (mul_le_mul hzC
-    (pow_le_pow_right₀ (by linarith [norm_nonneg t]) (Finset.le_sup hz)) (by positivity) (by linarith))
+    (pow_le_pow_right₀ (by simp) (Finset.le_sup hz)) (by positivity) (by linarith))
 
 end SevenEighths.CenteredMomentDetectorDictionary
 

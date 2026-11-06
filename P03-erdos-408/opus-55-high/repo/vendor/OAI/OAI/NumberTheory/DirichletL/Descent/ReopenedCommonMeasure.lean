@@ -8,16 +8,15 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open scoped Classical SchwartzMap ContDiff
+open MeasureTheory CompletedGauss CanonicalRowCompletion
+open ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels
 open CanonicalCubeSeparation JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
 
 theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
-    (S : Finset (Ideal O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
     (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ))
-    (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ→ℂ)
     (a b : ℝ) (ha : 0<a) (hb : 0≤b) (hs : Function.support W⊆Set.Icc a b)
     (hW : ContDiff ℝ ∞ W) (V : 𝓢(ℝ,ℂ))
     (hV : ∀ u,|u|≤columnWindowRadius a b→V u=1)
@@ -46,7 +45,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     fun i=>by rw [poolPrimary_span F hF i];infer_instance
   let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
   let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
-  have hXp : 0<X := hX ▸ mul_pos (pow_pos hB _) hell
+  have hXp : 0<X := hX ▸ (by positivity)
   have hupper : ∀ t,W t≠0→t≤b := fun t ht=>(hs ht).2
   dsimp only
   rw [←varying_canonical_bin_separation (poolPrimary F) (poolPrimary_ne_zero F hF)

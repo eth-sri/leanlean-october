@@ -12,11 +12,8 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers InverseInitialClippedColumns IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 end SevenEighths.InverseMoment

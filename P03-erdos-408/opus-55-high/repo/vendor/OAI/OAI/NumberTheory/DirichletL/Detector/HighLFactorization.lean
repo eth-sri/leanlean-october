@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.GlobalCorrection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open HeckeFamily CanonicalQuadraticSieve
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
     (hgood : ∀P : PrimeIdeal,P.val∉S → Supported P.val) (htail : CorrectionTail S)
@@ -23,7 +22,7 @@ theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
   have hx1 : 1<x.re := by linarith
   have hw1 : 1<w.re := by linarith
   have hz1 : 1<(6*z).re := by
-    norm_num [Complex.mul_re]
+    norm_num
     linarith
   have hH := globalClosedCorrection_multipliable η S htail x w z (by linarith) (by linarith) (by linarith)
   have he := (((fixedSourcePrincipal_hasProd S hS (6*z) hz1).mul
@@ -35,7 +34,7 @@ theorem principalHigh_L_factorization (S : Finset Id) (hS : ∀P∈S,Prime P)
        (1-CubicEisenstein.fullIdealWeight w P.val.val)⁻¹ *
        ((1-idealCoeff η P.val.val*CubicEisenstein.fullIdealWeight x P.val.val)⁻¹)⁻¹) *
        idealClosedCorrection η P.val x w z = idealHighLocalFactor η P.val.val x w z := by
-    rw [idealHighLocalFactor_rational η P.val (hgood P.val P.property) x w z hx hw hz]
+    rw [idealHighLocalFactor_rational η P.val (by grind) x w z hx hw hz]
     simp only [CubicEisenstein.fullIdealWeight,P.val.property.ne_zero,ite_false,
       Complex.ofReal_natCast,div_eq_mul_inv,mul_inv_rev,inv_inv]
     rw [show -(6*z)=(-6:ℂ)*z by ring]

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Smooth
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentScale
 open CenteredMomentSmooth EisensteinSchwartzPoisson
 
@@ -18,14 +18,14 @@ theorem logarithmic_kernel_argument (K H A B K₀ H₀ A₀ B₀ : ℝ)
       Real.exp (Real.log (K / K₀) + Real.log (H / H₀) -
         Real.log (A / A₀) - Real.log (B / B₀)) = K * H / (A * B) := by
   rw [Real.exp_sub, Real.exp_sub, Real.exp_add,
-    Real.exp_log (div_pos hK hK₀), Real.exp_log (div_pos hH hH₀),
-    Real.exp_log (div_pos hA hA₀), Real.exp_log (div_pos hB hB₀)]
+    Real.exp_log (by positivity), Real.exp_log (by positivity),
+    Real.exp_log (by positivity), Real.exp_log (by positivity)]
   field_simp
 
 theorem rootWindow_log_ratio (V : ℝ → ℂ) (A A₀ : ℝ) (hA : 0 < A) (hA₀ : 0 < A₀) :
     rootWindow V (Real.log (A / A₀)) =
       (Real.sqrt A₀ : ℂ) * V (Real.log (A / A₀)) / (Real.sqrt A : ℂ) := by
-  rw [rootWindow, Real.exp_log (div_pos hA hA₀), Real.sqrt_div hA.le, Complex.ofReal_div]
+  rw [rootWindow, Real.exp_log (by positivity), Real.sqrt_div hA.le, Complex.ofReal_div]
   field_simp
 
 theorem wholeKernel_actual (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)

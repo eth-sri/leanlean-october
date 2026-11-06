@@ -9,33 +9,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,42 +32,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge QuadraticSquarefreeKernel
+open CompletedGauss QuadraticSquarefreeKernel
 
 theorem supported_mul_iff (A B : Ideal O) : Supported (A * B) ↔ Supported A ∧ Supported B := by
   constructor
@@ -89,12 +70,10 @@ theorem supported_mul_iff (A B : Ideal O) : Supported (A * B) ↔ Supported A �
     refine ⟨⟨hA, ?_⟩, ⟨hB, ?_⟩⟩
     · intro P hP
       apply h.2 P
-      rw [UniqueFactorizationMonoid.normalizedFactors_mul hA hB]
-      exact Multiset.mem_add.mpr (Or.inl hP)
+      simp_all
     · intro P hP
       apply h.2 P
-      rw [UniqueFactorizationMonoid.normalizedFactors_mul hA hB]
-      exact Multiset.mem_add.mpr (Or.inr hP)
+      simp_all
   · rintro ⟨hA, hB⟩
     refine ⟨mul_ne_zero hA.1 hB.1, ?_⟩
     intro P hP
@@ -155,7 +134,7 @@ theorem canonical_quadraticRow_primary_squarefree (D : Ideal O) (hD : Admissible
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
+open CompletedGauss
 open EisensteinSchwartzPoisson PrimaryIdealUnitReindex QuadraticSquarefreeKernel
 
 theorem supported_generator_injective :
@@ -195,7 +174,7 @@ def originalPairHigh (I J : Ideal O) (W : ℝ → ℂ) (M K : ℝ) (lengthScale 
 theorem originalPairSource_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     Summable (originalPairSource I J W M) := by
   apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun lengthScale => norm_nonneg _) _ (supported_radial_norm_summable W M hM)
+  apply Summable.of_nonneg_of_le (by simp) _ (supported_radial_norm_summable W M hM)
   intro lengthScale
   by_cases hL : Supported lengthScale
   · simp only [originalPairSource, ite_eq_left hL, norm_mul, norm_star]
@@ -225,15 +204,15 @@ theorem originalPairHigh_eq_source_sub_low (I J : Ideal O) (W : 𝓢(ℝ, ℂ))
       apply tsum_congr
       intro lengthScale
       by_cases hK : (Ideal.absNorm (squarefreePart lengthScale) : ℝ) ≤ K
-      · simp [originalPairHigh, originalPairLow, hK, not_lt.mpr hK]
-      · simp [originalPairHigh, originalPairLow, hK, lt_of_not_ge hK]
+      · simp [originalPairHigh, originalPairLow, hK]
+      · simp [originalPairHigh, originalPairLow, hK]
     _ = _ := (originalPairSource_summable I J W M hM).tsum_sub (originalPairLow_summable I J W M K hM)
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open CompletedGauss
+open EisensteinSchwartzPoisson
 
 theorem canonical_gcd_masked_pair_poisson
     (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -267,15 +246,8 @@ theorem canonical_gcd_masked_pair_poisson
     apply tsum_congr
     intro lengthScale
     rw [gcdMaskPrimes_mask, badPrime_mask_primaryGenerator]
-    by_cases hL : Supported lengthScale <;> simp [hL]
-  rw [he] at hid
-  dsimp only at hlat ⊢
-  rw [hid] at hlat
-  calc
-    _ = (6 : ℂ)⁻¹ * ((M : ℂ) / ‖eisEmbedding (primaryGenerator I * primaryGenerator J)‖ * _) := by
-      rw [← hlat]
-      ring
-    _ = _ := by ring
+    by_cases hL : Supported lengthScale <;> simp
+  grind
 
 theorem canonical_pair_divisor_mask (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
     (hDI : D ∣ I) (hDJ : D ∣ J) (z : O) :
@@ -326,14 +298,14 @@ theorem residual_pair_nontrivial (D I J : Ideal O) (hDI : D ∣ I) (hDJ : D ∣ 
   apply hIJ
   calc
     I = D * idealQuotient D I := (idealQuotient_mul hDI).symm
-    _ = D := by rw [hn.1, mul_one]
-    _ = D * idealQuotient D J := by rw [hn.2, mul_one]
+    _ = D := by simp_all
+    _ = D * idealQuotient D J := by simp_all
     _ = J := idealQuotient_mul hDJ
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss QuadraticSquarefreeKernel
+open CompletedGauss QuadraticSquarefreeKernel
 
 def rayPairCoefficient (N : ℝ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord)
     (a : idealRange N → ℂ) (I J : idealRange N) : ℂ :=
@@ -357,7 +329,7 @@ theorem annularRayGcdBlock_eq_pair_high
     rw [rayPairValue_eq]
     by_cases hs : Supported lengthScale
     · by_cases hk : K < (Ideal.absNorm (squarefreePart lengthScale) : ℝ)
-      · have hsk : Supported lengthScale ∧ K < (Ideal.absNorm (squarefreePart lengthScale) : ℝ) := ⟨hs, hk⟩
+      · have hsk : Supported lengthScale ∧ K < (Ideal.absNorm (squarefreePart lengthScale) : ℝ) := by grind
         rw [ite_eq_left hsk]
         simp only [Finset.mul_sum]
         apply Finset.sum_congr rfl
@@ -370,7 +342,7 @@ theorem annularRayGcdBlock_eq_pair_high
         · rw [ite_eq_left hc, ite_eq_left hc]
           simp only [star_mul]
           ring
-        · rw [ite_eq_right hc, ite_eq_right hc, zero_mul, mul_zero]
+        grind
       · simp [f, originalPairHigh, hk]
     · simp [f, originalPairHigh, originalPairSource, hs]
   rw [annularRayGcdBlock_eq_tsum M N K hM D c a]
@@ -390,8 +362,8 @@ theorem annularRayGcdBlock_eq_pair_high
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open CompletedGauss
+open EisensteinSchwartzPoisson
 
 def originalPairDualKernel (D I J : Ideal O) (W : ℝ → ℂ) (M : ℝ) : ℂ :=
   let I' := idealQuotient D I
@@ -415,17 +387,13 @@ theorem originalPairSource_poisson (D I J : Ideal O) (hI : Admissible I) (hJ : A
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SecondPassIntegration
-open ActualEisensteinCubic FirstPassCubeLabels JointLogSeparation
 
 end SecondPassIntegration
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open JointLogSeparation
 open FirstPassCubeLabels (b0Label)
 
 variable {ι : Type*} [DecidableEq ι]

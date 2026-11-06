@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.DetectorZeros
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily
@@ -28,7 +28,7 @@ lemma detector_nonzero_on_buffered_disk (χ : ι→Character)
     have ht' := abs_add_le (s.im-t) t
     rw [sub_add_cancel] at ht'
     push_cast at ht ⊢
-    nlinarith [hi.trans hn]
+    nlinarith
   exact detector_nonzero_above_maximum χ _ j (hmax.trans_le hre) him hpole
 
 lemma detectorEntire_nonzero_on_buffered_disk (χ : ι→Character)
@@ -61,23 +61,23 @@ lemma exists_detector_buffered_bin (χ : ι→Character)
   obtain ⟨i,hk,k,hone,hlo,hhi,hnext⟩ := Detector.exists_buffered_bin M hn he
     (fun j _=>detectorMaximum_bounds χ _) hwidth
   refine ⟨i+1,k,by omega,by omega,hone,hlo,hhi,?_,?_,?_⟩
-  · exact hnext
+  · omega
   · intro ha
-    obtain ⟨j,s,hz,hpole,ht,hs⟩ := detectorMaximum_attained χ (3*(i+1:ℕ)*T) (lt_of_lt_of_le ha hlo)
-    exact ⟨j,s,hz,hpole,by rw [hs];exact hlo,by rw [hs];exact hhi,ht⟩
+    obtain ⟨j,s,hz,hpole,ht,hs⟩ := detectorMaximum_attained χ (3*(i+1:ℕ)*T) (by linarith)
+    grind
   · intro j t ht s hs
     apply detectorEntire_nonzero_on_buffered_disk χ T (51/100+e*k) e (i+1) hT
-      (by nlinarith [Nat.cast_nonneg (α:=ℝ) k]) he hnext j t ht hs
+      (by simp_all) he hnext j t ht hs
 
 lemma detectorMaximum_eq_nonprincipal (χ : ι→Character) (hχ : ∀i,(χ i).residue≠1) (T : ℝ) :
     detectorMaximum χ T=HeckeDetectorZeros.zeroMaximum χ hχ T := by
-  have hz (i : ι) : detectorZeroFinset (χ i) T=HeckeDetectorZeros.zeroFinset (χ i) (hχ i) T := by
+  have hz (i : ι) : detectorZeroFinset (χ i) T=HeckeDetectorZeros.zeroFinset (χ i) (by grind) T := by
     ext s
     simp [hχ i]
   have hr : detectorRealParts χ T=HeckeDetectorZeros.realParts χ hχ T := by
     simp only [detectorRealParts,HeckeDetectorZeros.realParts,detectorFamilyZeros,HeckeDetectorZeros.familyZeros,hz]
   unfold detectorMaximum HeckeDetectorZeros.zeroMaximum
-  simp only [hr]
+  simp_all
 
 end SevenEighths.ProbeHighRowFamily
 

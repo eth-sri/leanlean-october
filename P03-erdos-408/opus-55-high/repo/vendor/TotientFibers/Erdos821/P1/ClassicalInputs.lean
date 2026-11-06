@@ -15,8 +15,8 @@ namespace Erdos821.P1
 
 theorem classical_inputs_of_harmonic
     (harmonic : Erdos821.Blueprint.HarmonicCharacters) :
-    Erdos821.Blueprint.ClassicalInputs := by
-  exact ⟨prime_progressions_proof, mertens_proof, harmonic,
+    Erdos821.Blueprint.ClassicalInputs :=
+  ⟨prime_progressions_proof, mertens_proof, harmonic,
     Erdos821.Blueprint.DivisorMoments_proof,
     Erdos821.Classical.blueprint_meanSquares,
     multiplicative_large_sieve_proof,

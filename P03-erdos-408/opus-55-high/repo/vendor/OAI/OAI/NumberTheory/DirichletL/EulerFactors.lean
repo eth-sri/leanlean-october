@@ -18,24 +18,23 @@ def factor (N : ℝ) (a s : ℂ) : ℂ := 1 - a * (N : ℂ) ^ (-s)
 
 theorem norm_term_lt_one {N : ℝ} (hN : 1 < N) {a s : ℂ}
     (ha : ‖a‖ ≤ 1) (hs : 0 < s.re) : ‖a * (N : ℂ) ^ (-s)‖ < 1 := by
-  rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by linarith : 0 < N),
+  rw [norm_mul, Complex.norm_cpow_eq_rpow_re_of_pos (by positivity),
     Complex.neg_re]
   calc
     ‖a‖ * N ^ (-s.re) ≤ 1 * N ^ (-s.re) :=
-      mul_le_mul_of_nonneg_right ha (Real.rpow_nonneg (by linarith) _)
+      mul_le_mul_of_nonneg_right ha (by positivity)
     _ < 1 := by simpa using Real.rpow_lt_one_of_one_lt_of_neg hN (neg_neg_of_pos hs)
 
 theorem factor_ne_zero {N : ℝ} (hN : 1 < N) {a s : ℂ}
     (ha : ‖a‖ ≤ 1) (hs : 0 < s.re) : factor N a s ≠ 0 := by
   intro h
-  have heq : a * (N : ℂ) ^ (-s) = 1 := (sub_eq_zero.mp h).symm
+  have heq := (sub_eq_zero.mp h).symm
   have hlt := norm_term_lt_one hN ha hs
-  rw [heq, norm_one] at hlt
-  exact (lt_irrefl _ hlt)
+  simp_all
 
 theorem differentiable_factor {N : ℝ} (hN : 0 < N) (a : ℂ) :
-    Differentiable ℂ (factor N a) := by
-  exact (differentiable_const (1 : ℂ)).sub ((differentiable_const a).mul
+    Differentiable ℂ (factor N a) :=
+  (differentiable_const (1 : ℂ)).sub ((differentiable_const a).mul
     (differentiable_id.neg.const_cpow (Or.inl (Complex.ofReal_ne_zero.mpr hN.ne'))))
 
 def deletedProduct {ι : Type*} (S : Finset ι) (N : ι → ℝ) (a : ι → ℂ)
@@ -46,7 +45,7 @@ theorem deletedProduct_ne_zero {ι : Type*} (S : Finset ι) (N : ι → ℝ)
     {s : ℂ} (hs : 0 < s.re) : deletedProduct S N a s ≠ 0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro p hp
-  exact factor_ne_zero (hN p hp) (ha p hp) hs
+  exact factor_ne_zero (by grind) (by grind) hs
 
 theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → ℝ)
     (a : ι → ℂ) (hN : ∀ p ∈ S, 0 < N p) :
@@ -55,10 +54,10 @@ theorem differentiable_deletedProduct {ι : Type*} (S : Finset ι) (N : ι → �
   induction S using Finset.induction_on with
   | empty =>
     change Differentiable ℂ (fun _ : ℂ => (1 : ℂ))
-    exact differentiable_const _
+    simp
   | @insert p S hp ih =>
     have hpN := hN p (Finset.mem_insert_self p S)
-    have hSN : ∀ q ∈ S, 0 < N q := fun q hq => hN q (Finset.mem_insert_of_mem hq)
+    have hSN := fun q hq => hN q (Finset.mem_insert_of_mem hq)
     have heq : deletedProduct (insert p S) N a =
         fun s => factor (N p) (a p) s * deletedProduct S N a s := by
       funext s

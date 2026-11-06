@@ -7,18 +7,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.TupleFactor
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
-theorem tupleOutside {K : ℕ} (S : Finset (Ideal O)) (P : Fin K→PrimeIdeal)
+theorem tupleOutside {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (P : Fin K→PrimeIdeal)
     (hPS : ∀i,(P i).val∉S) : ∀Q∈Finset.univ.image P,Q.val∉S := by
-  intro Q hQ
-  obtain ⟨i,_,rfl⟩ := Finset.mem_image.mp hQ
-  exact hPS i
+  simp_all
 
-def calibratedTupleValue {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def calibratedTupleValue {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) : ℂ :=
@@ -26,7 +23,7 @@ def calibratedTupleValue {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions
   (∏i,W i (((P i).val.absNorm:ℝ)/Y i)*((P i).val.absNorm:ℂ)^(z-1))*
   physicalCompensatedRow S hS (Finset.univ.image P) (tupleOutside S P hPS) η u x w z
 
-theorem calibratedTupleValue_factor {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+theorem calibratedTupleValue_factor {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (u : FreeRow)
     (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
     (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (x w z : ℂ) :

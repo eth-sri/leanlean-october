@@ -8,7 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeDetectorFourier
 open MeasureTheory
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical FourierTransform
 noncomputable section
 
 def phasePolynomial {α : Type*} (S : Finset α) (a : α → ℂ) (x : α → ℝ) (t : ℝ) : ℂ :=
@@ -34,8 +34,8 @@ lemma separated_pair_integrable {α β : Type*} (S : Finset α) (T : Finset β)
     (phasePolynomial_continuous T b y)).aestronglyMeasurable
   have hh := (𝓕 g).integrable.mul_bdd hmeas (Filter.Eventually.of_forall (fun t =>
     (norm_mul _ _).le.trans (mul_le_mul (phasePolynomial_norm S a x t)
-      (phasePolynomial_norm T b y t) (norm_nonneg _) (Finset.sum_nonneg (fun i hi => norm_nonneg _)))))
-  simpa only [mul_assoc] using hh
+      (phasePolynomial_norm T b y t) (norm_nonneg _) (by positivity))))
+  grind
 
 lemma schwartz_product_inversion (g : SchwartzMap ℝ ℂ) (x y : ℝ) :
     g (x+y) = ∫ t : ℝ,
@@ -49,8 +49,7 @@ lemma schwartz_product_inversion (g : SchwartzMap ℝ ℂ) (x y : ℝ) :
     simp only [FourierBridge.logPhase, RCLike.inner_apply, conj_trivial]
     congr 2
     ring_nf
-  rw [hp]
-  ring
+  grind
 
 theorem finite_pair_separation {α β : Type*} (S : Finset α) (T : Finset β)
     (a : α → ℂ) (b : β → ℂ) (x : α → ℝ) (y : β → ℝ) (g : SchwartzMap ℝ ℂ) :
@@ -73,8 +72,6 @@ theorem finite_pair_separation {α β : Type*} (S : Finset α) (T : Finset β)
   apply Finset.sum_congr rfl
   intro j hj
   rw [schwartz_product_inversion g (x i) (y j), ← integral_const_mul]
-  apply integral_congr_ae
-  filter_upwards [] with t
   ring
 
 end

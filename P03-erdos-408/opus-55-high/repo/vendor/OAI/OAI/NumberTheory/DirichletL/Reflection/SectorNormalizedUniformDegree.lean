@@ -8,12 +8,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.UniformNormalizedUniformDeg
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
+open scoped Classical ContDiff
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 universe u v
 
 theorem sector_normalized_physical_energy_uniform_degree
@@ -23,28 +20,28 @@ theorem sector_normalized_physical_energy_uniform_degree
     (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
     (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W)
     (kK kP kn kb η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hkn : 0<kn) (hkb : 0<kb) (hη : 0<η) :
-    ∃ (degree : ℕ), ∀ {N a c : Eis} {mode : Bool}
+    ∃ (degree : ℕ), ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
     ∃ (C₀ C Z₀ : ℝ), 0≤C₀ ∧ 0<C ∧ 1<Z₀ ∧
     ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ Z : ℝ, Z₀≤Z →
     ∀ (X Y B L : ℝ), 1≤X → 1≤Y → 1≤B → 1≤L →
     ∀ (F : PrimeFamily φ) (jF : φ→ℕ),
-      (9:Eis)*c ∣ N → (if mode then λ₀^2∣a-1 else λ₀^2∣c-1) → IsCoprime a c →
+      (9:ActualEisensteinCubic.O)*c ∣ N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) → IsCoprime a c →
       Pairwise (Function.onFun IsCoprime F.ideal) →
       (∀ f, IsCoprime (Ideal.span {N}) (F.ideal f)) →
-      (∀ f, ringChar (Eis⧸F.ideal f)≠2) → (∀ f, jF f<6) →
-    ∀ (u : Eisˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
+      (∀ f, ringChar (ActualEisensteinCubic.O⧸F.ideal f)≠2) → (∀ f, jF f<6) →
+    ∀ (u : ActualEisensteinCubic.Oˣ) (m : ℕ) (T θ QK QP Qn Qb : ℝ),
       0<T → 0<QK → 0<QP → 0<Qn → 0<Qb →
       X=kK*QK → Y=kn*Qn → B=kb*Qb → L=kP*QP →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
+    ∀ (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ)
       (hrows : ∀ K ∈ rows, Admissible K ∧ (Ideal.absNorm K:ℝ)≤X)
       (E : SectorArithmetic (N:=N) F rows Pset S (fun K hK => (hrows K hK).1) s hc)
-      (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+      (r₀ aw₀ : Ideal ActualEisensteinCubic.O→ℂ) (w₀ : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
       (∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K) →
       (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) →
       (∀ P ∈ Pset, Pairwise (Function.onFun IsCoprime (F.sum (S P)).ideal)) →
       (∀ P ∈ Pset, ∀ i, IsCoprime (Ideal.span {N}) ((F.sum (S P)).ideal i)) →
-      (∀ P ∈ Pset, ∀ i, ringChar (Eis⧸(F.sum (S P)).ideal i)≠2) →
+      (∀ P ∈ Pset, ∀ i, ringChar (ActualEisensteinCubic.O⧸(F.sum (S P)).ideal i)≠2) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n:ℝ)≤Y) →
       (∀ b ∈ bset, primaryGenerator b≠0 ∧ (Ideal.absNorm b:ℝ)≤B) →
       (∀ P ∈ Pset, CubicSieve.Admissible P ∧ L≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤2*L) →

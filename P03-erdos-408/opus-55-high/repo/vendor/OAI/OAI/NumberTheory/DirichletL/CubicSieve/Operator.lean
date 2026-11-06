@@ -8,7 +8,6 @@ public import Mathlib.Tactic.Ring
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators
 noncomputable section
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -40,10 +39,7 @@ theorem operator_conjugate_apply (A : Matrix m n ℂ) (x : EuclideanSpace ℂ n)
     operator (fun i j => star (A i j)) x = conjugateVector (operator A (conjugateVector x)) := by
   ext i
   change (∑ j, star (A i j) * x j) = star (∑ j, A i j * star (x j))
-  simp only [star_sum, star_mul, star_star]
-  apply Finset.sum_congr rfl
-  intro j _
-  exact mul_comm _ _
+  simp
 
 omit [DecidableEq m] in
 theorem operator_conjugate_norm_le (A : Matrix m n ℂ) :
@@ -51,13 +47,13 @@ theorem operator_conjugate_norm_le (A : Matrix m n ℂ) :
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
   intro x
   rw [operator_conjugate_apply, norm_conjugateVector]
-  simpa only [norm_conjugateVector] using (operator A).le_opNorm (conjugateVector x)
+  simpa using (operator A).le_opNorm (conjugateVector x)
 
 omit [DecidableEq m] in
 theorem operator_conjugate_norm (A : Matrix m n ℂ) :
     ‖operator (fun i j => star (A i j))‖ = ‖operator A‖ := by
   apply le_antisymm (operator_conjugate_norm_le A)
-  simpa only [star_star] using operator_conjugate_norm_le (fun i j => star (A i j))
+  simpa using operator_conjugate_norm_le (fun i j => star (A i j))
 
 theorem operator_conjTranspose_norm (A : Matrix m n ℂ) :
     ‖operator A.conjTranspose‖ = ‖operator A‖ := by
@@ -73,7 +69,7 @@ theorem squaredNorm_transpose (A : Matrix m n ℂ) :
   have h := operator_conjugate_norm A.transpose
   change ‖operator A.conjTranspose‖ = ‖operator A.transpose‖ at h
   rw [operator_conjTranspose_norm] at h
-  exact congrArg (fun x : ℝ => x ^ 2) h.symm
+  simp_all
 
 theorem squaredNorm_reciprocity (A : Matrix m n ℂ) (B : Matrix n m ℂ)
     (hrecip : ∀ i j, A i j = B j i) : squaredNorm A = squaredNorm B := by

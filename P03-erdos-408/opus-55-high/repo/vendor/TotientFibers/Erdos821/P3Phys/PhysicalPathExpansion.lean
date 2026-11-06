@@ -8,7 +8,6 @@ public import Erdos821.S2Phys.PhysicalPathExpansion
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Phys
@@ -49,7 +48,7 @@ theorem offset_succ_eq_step_sub_tail {A : Model F P J m} {n : ℕ}
     simp only [Fin.val_succ, Nat.add_lt_add_iff_right]
     split_ifs <;> simp
   rw [Finset.sum_congr rfl (fun e _ => h e), Finset.sum_neg_distrib]
-  simp [sub_eq_add_neg]
+  grind
 
 theorem pathEdgeDelta_head {A : Model F P J m} {n : ℕ} (Q : ResiduePath A (n + 1))
     (f : Bool) (x : ℤ) :
@@ -149,7 +148,7 @@ theorem physical_act_iff (M : ℕ) (x : ℤ) (π : P.Permutations M) (a : P.Labe
     refine ⟨(Equiv.injective_comp (π g) (a g)).mp (h g).1, fun i => ?_⟩
     simpa using (h g).2 ((π g).symm i)
   · intro h g
-    exact ⟨(h g).1.comp (π g).injective, fun i => (h g).2 (π g i)⟩
+    exact ⟨(h g).1.comp (π g).injective, by grind⟩
 
 theorem pathEdgeTerm_vtx (A : Model F P J m) {n : ℕ} (Q : ResiduePath A n) (z : ℤ)
     (i : Fin n) :
@@ -177,7 +176,7 @@ theorem pathEdgeTerm_vtx (A : Model F P J m) {n : ℕ} (Q : ResiduePath A n) (z 
     by_cases hf : edgeForward i <;>
       simp [hf, pathEdgeSource, pathEdgeTarget, edgeOf, vtx, ResiduePath.source,
         ResiduePath.target] <;> ring
-  · rw [ite_eq_right (mt hvalid.mp h), ite_eq_right h]
+  simp_all
 
 theorem prod_pathEdgeTerm_vtx (A : Model F P J m) {n : ℕ} (Q : ResiduePath A n) (z : ℤ) :
     ∏ i : Fin n, pathEdgeTerm A (orient true i) (vtx true z Q i.castSucc)
@@ -205,10 +204,10 @@ theorem active_card_eq {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n) (j : 
         (Finset.univ.image (fun h => (Q.labels j g h).val)).card = J + F.ell := by
       intro g
       have hi : Function.Injective (fun h => (Q.labels j g h).val) :=
-        fun a b hab => hinj g (Subtype.ext hab)
+        fun a b hab => by grind
       rw [Finset.card_image_of_injective _ hi]
       simp
-    simp [hc, PrimeGroups.Group, Nat.mul_comm]
+    simp [hc, Nat.mul_comm]
   · intro g _ h _ hgh
     simp only [Function.onFun]
     rw [Finset.disjoint_left]
@@ -222,7 +221,7 @@ theorem omega_eq_card (x : ℤ) :
   unfold PrimeGroups.omega PrimeGroups.omegaGroup PrimeGroups.allPrimes
   rw [Finset.filter_biUnion, Finset.card_biUnion]
   intro g _ h _ hgh
-  exact Disjoint.mono (Finset.filter_subset _ _) (Finset.filter_subset _ _) (P.disjoint g h hgh)
+  exact Disjoint.mono (by simp) (by simp) (P.disjoint g h hgh)
 
 theorem active_dvd {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n) (z : ℤ)
     (j : Fin (n + 1)) (hV : vertexPhysical Q z j) {p : ℕ} (hp : p ∈ Q.active j) :
@@ -252,8 +251,7 @@ theorem damping_eq_sqrt_pow (A : Model F P J m) {n : ℕ} (Q : ResiduePath A n) 
       ext p
       simp only [Finset.mem_filter]
       constructor
-      · intro h
-        exact h.2
+      · simp
       · intro hp
         exact ⟨⟨Q.active_subset j hp, active_dvd Q z j hV hp⟩, hp⟩
     rw [hact, active_card_eq Q j (fun g => (hV g).1)] at hsplit
@@ -274,8 +272,8 @@ theorem vertexFactor_eq {A : Model F P J m} {n : ℕ} (Q : ResiduePath A n) (z :
   apply Finset.prod_congr rfl
   intro p _
   by_cases ha : p ∈ Q.active j
-  · simp [ha, active_dvd Q z j hV ha]
-  · by_cases hd : (p : ℤ) ∣ z + Q.offset j <;> simp [ha, hd]
+  · simp [active_dvd Q z j hV ha]
+  simp_all
 
 theorem damping_prod_eq_pathFactor (A : Model F P J m) {n : ℕ} (Q : ResiduePath A (n + 1))
     (z : ℤ) (hV : ∀ j, vertexPhysical Q z j) :
@@ -285,7 +283,7 @@ theorem damping_prod_eq_pathFactor (A : Model F P J m) {n : ℕ} (Q : ResiduePat
   have h1 : ∏ i : Fin (n + 1), a i.castSucc =
       ∏ j : Fin (n + 2), a j ^ (if j = Fin.last (n + 1) then 0 else 1) := by
     rw [Fin.prod_univ_castSucc (fun j => a j ^ (if j = Fin.last (n + 1) then 0 else 1))]
-    simp [Fin.castSucc_lt_last, ne_of_lt]
+    simp
   have h2 : ∏ i : Fin (n + 1), a i.succ =
       ∏ j : Fin (n + 2), a j ^ (if j = 0 then 0 else 1) := by
     rw [Fin.prod_univ_succ (fun j => a j ^ (if j = 0 then 0 else 1))]
@@ -302,19 +300,13 @@ theorem damping_prod_eq_pathFactor (A : Model F P J m) {n : ℕ} (Q : ResiduePat
   rw [damping_eq_sqrt_pow A Q z j (hV j)]
   unfold visitQ
   by_cases h0 : j = 0
-  · subst h0
-    have hl : (0 : Fin (n + 2)) ≠ Fin.last (n + 1) := by
-      intro h
-      have := congrArg Fin.val h
-      simp at this
-    simp [hl]
+  · simp_all
   · by_cases hl : j = Fin.last (n + 1)
-    · subst hl
-      simp [h0]
+    · simp_all
     · have hv : ¬ (j.val = 0 ∨ j.val = n + 1) := by
         rintro (h | h)
-        · exact h0 (Fin.ext h)
-        · exact hl (Fin.ext h)
+        · simp_all
+        · grind
       rw [ite_eq_right hv, ite_eq_right h0, ite_eq_right hl]
       simp only [pow_one]
       rw [← mul_pow, Real.mul_self_sqrt F.q_pos.le]
@@ -335,15 +327,15 @@ theorem term_eq_succ (A : Model F P J m) {n : ℕ} (Q : ResiduePath A (n + 1)) (
   rw [prod_pathEdgeTerm_vtx]
   by_cases ho : Q.offset (Fin.last (n + 1)) = 0
   swap
-  · rw [ite_eq_right (mt hend.mp ho), ite_eq_right (fun h => ho h.2), mul_zero]
+  · simp_all
   rw [ite_eq_left (hend.mpr ho)]
   have hcover : (∀ i : Fin (n + 1), vertexPhysical Q z i.castSucc ∧
       vertexPhysical Q z i.succ) → ∀ j, vertexPhysical Q z j := by
     intro h j
     rcases Fin.eq_castSucc_or_eq_last j with ⟨i, rfl⟩ | rfl
-    · exact (h i).1
+    · simp_all
     · rw [← Fin.succ_last]
-      exact (h (Fin.last n)).2
+      grind
   by_cases hV : ∀ j, vertexPhysical Q z j
   · have hmass : A.stateMass (z, Q.labels 0) = P.markMass (J + F.ell) := by
       unfold Model.stateMass
@@ -356,14 +348,13 @@ theorem term_eq_succ (A : Model F P J m) {n : ℕ} (Q : ResiduePath A (n + 1)) (
       · intro h
         exact ⟨fun j g => (hV j g).1, h⟩
     by_cases hE : ∀ i, edgeAdmissible Q i
-    · rw [ite_eq_left (fun i => ⟨hV _, hV _, hE i⟩), ite_eq_left ⟨hvalid.mpr hE, ho⟩, hmass,
+    · rw [ite_eq_left (by grind), ite_eq_left (by grind), hmass,
         damping_prod_eq_pathFactor A Q z hV]
       ring
-    · rw [ite_eq_right (fun h => hE (fun i => (h i).2.2)), ite_eq_right (fun h => hE (hvalid.mp h.1)),
-        mul_zero]
-  · rw [ite_eq_right (fun h => hV (hcover (fun i => ⟨(h i).1, (h i).2.1⟩))), mul_zero]
+    simp_all
+  · rw [ite_eq_right (by grind), mul_zero]
     by_cases hQ : Q.Valid
-    · rw [ite_eq_left ⟨hQ, ho⟩]
+    · rw [ite_eq_left (by grind)]
       obtain ⟨j, hj⟩ := not_forall.mp hV
       have hex : ∃ g h, ¬ ((Q.labels j g h).val : ℤ) ∣ z + Q.offset j := by
         by_contra hc
@@ -373,15 +364,13 @@ theorem term_eq_succ (A : Model F P J m) {n : ℕ} (Q : ResiduePath A (n + 1)) (
       have hzero : P.pathFactor (n + 1) (visitQ F.q (n + 1)) Q.offset Q.active z = 0 := by
         unfold PrimeGroups.pathFactor
         apply Finset.prod_eq_zero (i := (Q.labels j g h).val)
-        · exact Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ _, (Q.labels j g h).property⟩
+        · exact Finset.mem_biUnion.mpr (by grind)
         · apply Finset.prod_eq_zero (i := j) (Finset.mem_univ _)
           have hmem : (Q.labels j g h).val ∈ Q.active j :=
-            Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ _,
-              Finset.mem_image.mpr ⟨h, Finset.mem_univ _, rfl⟩⟩
-          rw [ite_eq_left hmem, ite_eq_right hnd]
-      rw [hzero]
-      simp
-    · rw [ite_eq_right (fun h => hQ h.1)]
+            Finset.mem_biUnion.mpr (by simp)
+          simp_all
+      simp_all
+    simp_all
 
 theorem term_eq (A : Model F P J m) {n : ℕ} (hn : 0 < n) (Q : ResiduePath A n) (z : ℤ) :
     (A.stateMass (z, pathDataHead A n (residuePathToPathData A n Q)) : ℂ) *

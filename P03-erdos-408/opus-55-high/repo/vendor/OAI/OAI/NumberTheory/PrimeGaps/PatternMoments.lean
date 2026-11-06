@@ -10,23 +10,16 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 def permutedLabels {n : ℕ} (e : Equiv.Perm (Fin n)) : Fin (n+n) → Fin n := Fin.append id e
 
@@ -49,17 +42,13 @@ noncomputable def weightedBlock {n : ℕ} (X h a : ℕ)
     (b : Fin n → α) (c : Fin p → α) :
     Setoid.comap (Fin.castAdd p) (Setoid.ker (Fin.append b c))=Setoid.ker b := by
   apply Setoid.ext
-  intro i j
-  change Fin.append b c (i.castAdd p)=Fin.append b c (j.castAdd p) ↔ b i=b j
-  simp only [Fin.append_left]
+  simp
 
 @[simp] theorem append_ker_right {n p : ℕ} {α : Type*}
     (b : Fin n → α) (c : Fin p → α) :
     Setoid.comap (Fin.natAdd n) (Setoid.ker (Fin.append b c))=Setoid.ker c := by
   apply Setoid.ext
-  intro i j
-  change Fin.append b c (i.natAdd n)=Fin.append b c (j.natAdd n) ↔ c i=c j
-  simp only [Fin.append_right]
+  simp
 
 end LargePrimeGaps
 

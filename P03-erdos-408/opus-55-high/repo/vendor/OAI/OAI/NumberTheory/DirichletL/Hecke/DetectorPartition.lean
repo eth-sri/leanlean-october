@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessArithmetic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.HeckeDetectorPartition
 open DyadicTransfer
 
@@ -18,8 +18,7 @@ theorem partition (V : ℝ → ℂ)
     (∑ j ∈ Finset.range (J+1), annularCutoff V ((n : ℝ)/(2 : ℝ)^j)) = 1 := by
   rw [partial_partition]
   rw [hsmall _ (by positivity) ((div_le_one (by positivity)).mpr hJ)]
-  rw [hlarge _ (by exact_mod_cast (show 2 ≤ 2*n by omega))]
-  ring
+  simp_all
 
 theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
     (n m : A → ℕ) (V : ℝ → ℂ)
@@ -49,9 +48,9 @@ theorem finite_pair_reassembly {A : Type*} (S : Finset A) (a : A → ℂ)
       apply Finset.sum_congr rfl
       intro p hp
       simp_rw [← Finset.mul_sum]
-      rw [partition V hsmall hlarge (m p) K (hm p hp).1 (hm p hp).2]
+      rw [partition V hsmall hlarge (m p) K (by grind) (by grind)]
       simp only [mul_one]
-      rw [← Finset.mul_sum, partition V hsmall hlarge (n p) J (hn p hp).1 (hn p hp).2,
+      rw [← Finset.mul_sum, partition V hsmall hlarge (n p) J (by grind) (by grind),
         mul_one]
 
 theorem annular_support (V : ℝ → ℂ)
@@ -80,7 +79,7 @@ theorem annular_support (V : ℝ → ℂ)
 def length (X : ℝ) : ℕ := ⌈Real.logb 2 X⌉₊
 
 theorem norm_le_last_scale (X : ℝ) (hX : 0 < X) : X ≤ (2 : ℝ)^(length X) := by
-  have h := (Real.logb_le_iff_le_rpow (by norm_num : (1 : ℝ) < 2) hX).mp
+  have h := (Real.logb_le_iff_le_rpow (by simp) hX).mp
     (Nat.le_ceil (Real.logb 2 X))
   simpa only [Real.rpow_natCast, length] using h
 
@@ -124,16 +123,14 @@ theorem pair_scale_bounds (V T : ℝ → ℂ)
     apply hterm
     exact (le_div_iff₀ hU).mpr (le_of_not_gt h)
   have hlo : (2 : ℝ)^j*(2 : ℝ)^k/4 < x*y := by
-    have h1 := mul_lt_mul_of_pos_right hjlo (show 0 < y by linarith)
+    have h1 := mul_lt_mul_of_pos_right hjlo (by linarith)
     have h2 := mul_lt_mul_of_pos_left hklo (show 0 < (2 : ℝ)^j/2 by positivity)
     nlinarith
   have hhi : x*y < 4*((2 : ℝ)^j*(2 : ℝ)^k) := by
-    have h1 := mul_lt_mul_of_pos_right hjhi (show 0 < y by linarith)
+    have h1 := mul_lt_mul_of_pos_right hjhi (by linarith)
     have h2 := mul_lt_mul_of_pos_left hkhi (show 0 < 2*(2 : ℝ)^j by positivity)
     nlinarith
-  constructor
-  · linarith
-  constructor <;> linarith
+  grind
 
 def pairCoefficient (χ : HeckeFamily.Character) (V T : ℝ → ℂ)
     (D Y U : ℝ) (s : ℂ) (p : Ideal HeckeFamily.O × Ideal HeckeFamily.O) : ℂ :=
@@ -167,15 +164,15 @@ theorem exists_large_pair (J K : ℕ) (F : ℕ → ℕ → ℂ) :
       ‖∑ j ∈ Finset.range (J+1), ∑ k ∈ Finset.range (K+1), F j k‖ ≤
         ((J+1 : ℕ) : ℝ)*((K+1 : ℕ) : ℝ)*‖F j k‖ := by
   let S := (Finset.range (J+1)) ×ˢ (Finset.range (K+1))
-  have hS : S.Nonempty := ⟨(0,0), by simp [S]⟩
+  have hS : S.Nonempty := ⟨(0,0), by grind⟩
   obtain ⟨p,hp,hmax⟩ := S.exists_max_image (fun p => ‖F p.1 p.2‖) hS
   obtain ⟨hj,hk⟩ := Finset.mem_product.mp hp
   refine ⟨p.1,hj,p.2,hk,?_⟩
   calc
     _ = ‖∑ q ∈ S, F q.1 q.2‖ := by rw [Finset.sum_product]
     _ ≤ ∑ q ∈ S, ‖F q.1 q.2‖ := norm_sum_le _ _
-    _ ≤ ∑ q ∈ S, ‖F p.1 p.2‖ := Finset.sum_le_sum (fun q hq => hmax q hq)
-    _ = _ := by simp [S, Finset.card_product, mul_assoc]
+    _ ≤ ∑ q ∈ S, ‖F p.1 p.2‖ := Finset.sum_le_sum (by omega)
+    _ = _ := by simp [S]
 
 end SevenEighths.HeckeDetectorPartition
 

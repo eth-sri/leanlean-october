@@ -8,7 +8,6 @@ public import Mathlib.Analysis.Normed.Order.Lattice
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Tail
 
@@ -20,22 +19,19 @@ theorem fiber_step {α β : Type*} [DecidableEq α] (w K : α → ℝ) (C M ws :
     (hfib : ∀ t, ∑ x ∈ S.filter (fun x => h x = t), R x ≤ M * w t) :
     ∑ x ∈ S, K (h x) * R x ≤ M * (C * ws) := by
   rw [← Finset.sum_fiberwise_of_maps_to (g := h) (t := S.image h)
-    (fun x hx => Finset.mem_image_of_mem h hx)]
+    (by grind)]
   calc ∑ t ∈ S.image h, ∑ x ∈ S.filter (fun x => h x = t), K (h x) * R x
       = ∑ t ∈ S.image h, K t * ∑ x ∈ S.filter (fun x => h x = t), R x := by
         apply Finset.sum_congr rfl
         intro t _
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
-        intro x hx
-        rw [(Finset.mem_filter.1 hx).2]
+        simp_all
     _ ≤ ∑ t ∈ S.image h, K t * (M * w t) :=
         Finset.sum_le_sum fun t _ => mul_le_mul_of_nonneg_left (hfib t) (hK t)
     _ = M * ∑ t ∈ S.image h, K t * w t := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro t _
-        ring
+        grind
     _ ≤ M * ∑' t, K t * w t :=
         mul_le_mul_of_nonneg_left
           (hsum.sum_le_tsum _ (fun t _ => mul_nonneg (hK t) (hw t))) hM
@@ -54,7 +50,7 @@ theorem pathWeight_succ {α : Type*} (w : α → ℝ) (n : ℕ) (G : Fin (n + 2)
       G 0 (z 0).1 (z 0).2 * (E 0 (z 0).2 (z 1).1 *
         pathWeight w n (fun i => G i.succ) (fun i => E i.succ) (Fin.tail z)) := by
   unfold pathWeight
-  have hc : ∀ i : Fin n, (i.succ.castSucc : Fin (n + 2)) = i.castSucc.succ := fun i => Fin.ext rfl
+  have hc : ∀ i : Fin n, (i.succ.castSucc : Fin (n + 2)) = i.castSucc.succ := by simp
   rw [Fin.prod_univ_succ (f := fun i : Fin (n + 2) => G i (z i).1 (z i).2),
     Fin.prod_univ_succ (f := fun i : Fin (n + 1) => E i (z i.castSucc).2 (z i.succ).1)]
   simp only [Fin.tail, Fin.succ_last, Fin.castSucc_zero, Fin.succ_zero_eq_one, hc]
@@ -77,9 +73,9 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
           ∑ z ∈ S, G 0 s ((fun z : Fin 1 → α × α => (z 0).2) z) * w (z 0).2 := by
         apply Finset.sum_congr rfl
         intro z hz
-        simp [pathWeight, hS z hz, Fin.last]
+        simp [pathWeight, hS z hz]
       rw [hrw]
-      have := fiber_step w (G 0 s) CG 1 (w s) (hG 0 s) hw zero_le_one (hGr 0 s).1 (hGr 0 s).2
+      have := fiber_step w (G 0 s) CG 1 (w s) (by grind) hw zero_le_one (hGr 0 s).1 (hGr 0 s).2
         S (fun z : Fin 1 → α × α => (z 0).2) (fun z => w (z 0).2) (by
           intro t
           have hc : (S.filter (fun z : Fin 1 → α × α => (z 0).2 = t)).card ≤ 1 := by
@@ -89,21 +85,20 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
             funext i
             have hi : i = 0 := Subsingleton.elim _ _
             subst hi
-            exact Prod.ext ((hS a ha.1).trans (hS b hb.1).symm) (ha.2.trans hb.2.symm)
+            exact by grind
           calc ∑ z ∈ S.filter (fun z : Fin 1 → α × α => (z 0).2 = t), w (z 0).2
               = ∑ z ∈ S.filter (fun z : Fin 1 → α × α => (z 0).2 = t), w t := by
                 apply Finset.sum_congr rfl
-                intro z hz
-                rw [(Finset.mem_filter.1 hz).2]
+                simp_all
             _ = (S.filter (fun z : Fin 1 → α × α => (z 0).2 = t)).card * w t := by
-                rw [Finset.sum_const, nsmul_eq_mul]
-            _ ≤ 1 * w t := mul_le_mul_of_nonneg_right (by exact_mod_cast hc) (hw t))
-      simpa using this
+                simp
+            _ ≤ 1 * w t := mul_le_mul_of_nonneg_right (by simp_all) (hw t))
+      simp_all
   | succ n ih =>
       intro G E hG hE hGr hEr S s hS
       let G' : Fin (n + 1) → α → α → ℝ := fun i => G i.succ
       let E' : Fin n → α → α → ℝ := fun i => E i.succ
-      have IH := ih G' E' (fun i => hG i.succ) (fun i => hE i.succ)
+      have IH := ih G' E' (by grind) (by grind)
         (fun i => hGr i.succ) (fun i => hEr i.succ)
       have hK : 0 ≤ CG ^ (n + 1) * CE ^ n := by positivity
       have hrw : ∑ z ∈ S, pathWeight w (n + 1) G E z =
@@ -113,8 +108,8 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
         intro z hz
         rw [pathWeight_succ, hS z hz]
       rw [hrw]
-      have hstep := fiber_step w (G 0 s) CG (CG ^ (n + 1) * CE ^ n * CE) (w s) (hG 0 s) hw
-        (mul_nonneg hK hCE) (hGr 0 s).1 (hGr 0 s).2 S
+      have hstep := fiber_step w (G 0 s) CG (CG ^ (n + 1) * CE ^ n * CE) (w s) (by grind) hw
+        (by positivity) (hGr 0 s).1 (hGr 0 s).2 S
         (fun z : Fin (n + 2) → α × α => (z 0).2)
         (fun z => E 0 (z 0).2 (z 1).1 * pathWeight w n G' E' (Fin.tail z)) (by
           intro t
@@ -127,7 +122,7 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
             rw [(Finset.mem_filter.1 hz).2]
           change ∑ z ∈ St, _ ≤ _
           rw [hrw2]
-          have h2 := fiber_step w (E 0 t) CE (CG ^ (n + 1) * CE ^ n) (w t) (hE 0 t) hw hK
+          have h2 := fiber_step w (E 0 t) CE (CG ^ (n + 1) * CE ^ n) (w t) (by grind) hw hK
             (hEr 0 t).1 (hEr 0 t).2 St (fun z : Fin (n + 2) → α × α => (z 1).1)
             (fun z => pathWeight w n G' E' (Fin.tail z)) (by
               intro u
@@ -136,7 +131,7 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
                 intro a ha b hb hab
                 rw [Finset.mem_coe, Finset.mem_filter, Finset.mem_filter] at ha hb
                 have h0 : a 0 = b 0 :=
-                  Prod.ext ((hS a ha.1.1).trans (hS b hb.1.1).symm) (ha.1.2.trans hb.1.2.symm)
+                  by grind
                 rw [← Fin.cons_self_tail a, ← Fin.cons_self_tail b]
                 simp only at hab
                 rw [h0, hab]
@@ -146,8 +141,7 @@ theorem path_bound {α : Type*} (w : α → ℝ) (hw : ∀ t, 0 ≤ w t) (CG CE 
               intro y hy
               obtain ⟨z, hz, rfl⟩ := Finset.mem_image.1 hy
               exact (Finset.mem_filter.1 hz).2)
-          calc _ ≤ CG ^ (n + 1) * CE ^ n * (CE * w t) := h2
-            _ = CG ^ (n + 1) * CE ^ n * CE * w t := by ring)
+          linarith)
       calc _ ≤ CG ^ (n + 1) * CE ^ n * CE * (CG * w s) := hstep
         _ = CG ^ (n + 1 + 1) * CE ^ (n + 1) * w s := by ring
 

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GramResidue
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical EisensteinSchwartzPoisson
 

@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeRayPhaseBins
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily
 open HeckePrimeAmplitudeBins ProbeRaySlots
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem actual_phase_bins (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S)
     (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A) (hAB : A≤B)
     (hWs : Function.support W⊆Ioo A B) (hW : ContDiff ℝ ∞ W)
@@ -30,7 +29,7 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     ∀ᶠZ : ℝ in atTop,∀d : ℝ,dmin≤d → d≤dmax → 2≤Z^d → 2<Z^τ →
     ∀(η : Character) (u : FreeRow),Z^δ≤rowNorm u →
       CanonicalQuadraticSieve.Supported (Ideal.span {u.val}) →
-      (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^d →
+      (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤Z^d →
     ∀(a : ℝ) (i : ℕ),51/100≤a → a≤1 →
       detectorMaximum (sourceDetectorFamily S hS η u
         (HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse)) (3*(i+1:ℕ)*Z^τ)<a+2*e →
@@ -48,13 +47,13 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (hWs.trans Ioo_subset_Icc_self) hW R dmin dmax rmin τ ε e κ cost mesh σmin σmax
     hR hdmin hdmax hrmin hτ hε he he' hκ hcost hmesh hbudget hgap
   have hn := large_supported_twists_eventually M δ hδ
-  have ht := ProbeRaySlots.power_fixed_exclusions S A (dmin*rmin) hA (mul_pos hdmin hrmin)
+  have ht := ProbeRaySlots.power_fixed_exclusions S A (dmin*rmin) hA (by positivity)
     (fun p : {p : ℝ×ℝ // dmin≤p.1 ∧ rmin≤p.2}=>p.val.1*p.val.2)
-    (fun p=>mul_le_mul p.property.1 p.property.2 hrmin.le (hdmin.trans_le p.property.1).le)
+    (fun p=>mul_le_mul p.property.1 p.property.2 hrmin.le (by grind))
   filter_upwards [hb,hn,ht,eventually_ge_atTop (1:ℝ)] with Z hb hn ht hZ
   intro d hd hd' hU hT η u hu hs hcond a i ha ha' hbin r z hr hr' hσ hσ' hf hh
   have hZp : 0<Z := zero_lt_one.trans_le hZ
-  have hD : 0<(Z^d)^r := Real.rpow_pos_of_pos (Real.rpow_pos_of_pos hZp _) _
+  have hD : 0<(Z^d)^r := by positivity
   have hsmall : ∀P∈S,(P.absNorm:ℝ)≤A*(Z^d)^r := by
     intro P hP
     rw [←Real.rpow_mul hZp.le]
@@ -65,7 +64,7 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hq (θ : RayQuotient.Characters M H) :
       ((HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).modulus.absNorm:ℝ)≤Z^d :=
     (show ((HeckePrimeRay.twistedFamily M H hH (rawRow u).inverse θ).modulus.absNorm:ℝ)≤
-      (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm:ℝ) by
+      (conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ) by
         exact_mod_cast raw_twisted_conductor M H hH u θ).trans hcond
   have heq := canonical_amplitude_raw M H S hS hbad u W A B ((Z^d)^r) hD hWs hsmall z
   have hbins := hb d hd hd' hU hT (rawRow u).inverse hnp a i ha ha' hzmax
@@ -75,8 +74,8 @@ theorem actual_phase_bins (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   rw [central_phase_norm M H S u.val W A B ((Z^d)^r) hA hAB hD hWs hsmall z]
   calc
     _ ≤ ((Z^d)^r)^(z.re-1/2)*((Z^d)^r)^(_+mesh) :=
-      mul_le_mul_of_nonneg_left hbins.2.2.2.1 (Real.rpow_nonneg hD.le _)
-    _ = _ := by rw [←Real.rpow_add hD];congr 1;ring
+      mul_le_mul_of_nonneg_left hbins.2.2.2.1 (by positivity)
+    _ = _ := by rw [←Real.rpow_add hD];ring
 end SevenEighths.ProbeRayPhaseBins
 
 end

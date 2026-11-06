@@ -9,33 +9,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,41 +32,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace JointLogSeparation
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical SchwartzMap
 open FourierBridge
 
 lemma logPhase_temperate (t : ℝ) : (logPhase t).HasTemperateGrowth := by
@@ -90,8 +70,8 @@ def frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.smulLeftCLM ℂ (logPhase t) g
 
 @[simp] lemma frequencyTwist_apply (g : 𝓢(ℝ, ℂ)) (t x : ℝ) :
-    frequencyTwist g t x = logPhase t x * g x := by
-  exact SchwartzMap.smulLeftCLM_apply_apply (logPhase_temperate t) g x
+    frequencyTwist g t x = logPhase t x * g x :=
+  SchwartzMap.smulLeftCLM_apply_apply (logPhase_temperate t) g x
 
 lemma logPhase_add_frequency (t s x : ℝ) :
     logPhase (t + s) x = logPhase t x * logPhase s x := by
@@ -127,19 +107,18 @@ lemma logPhase_hasDerivAt (t x : ℝ) :
 lemma logPhase_iteratedDeriv (t : ℝ) (n : ℕ) :
     iteratedDeriv n (logPhase t) = fun x => phaseDerivative t ^ n * logPhase t x := by
   induction n with
-  | zero => funext x; simp
+  | zero => simp
   | succ n ih =>
     rw [iteratedDeriv_succ, ih]
     funext x
     rw [show deriv (fun y => phaseDerivative t ^ n * logPhase t y) x =
         phaseDerivative t ^ n * (phaseDerivative t * logPhase t x) from
       ((logPhase_hasDerivAt t x).const_mul _).deriv]
-    simp only [pow_succ]
     ring
 
 lemma phaseDerivative_norm (t : ℝ) : ‖phaseDerivative t‖ = 2 * Real.pi * ‖t‖ := by
   simp only [phaseDerivative, norm_mul, Complex.norm_real, Complex.norm_I, mul_one]
-  rw [Real.norm_of_nonneg (by norm_num : (0 : ℝ) ≤ 2), Real.norm_of_nonneg Real.pi_pos.le]
+  simp
 
 lemma logPhase_iteratedFDeriv_norm (t x : ℝ) (n : ℕ) :
     ‖iteratedFDeriv ℝ n (logPhase t) x‖ = (2 * Real.pi * ‖t‖) ^ n := by
@@ -156,19 +135,19 @@ lemma seminorm_le_derivativeSeminormSum (g : 𝓢(ℝ, ℂ)) (k n i : ℕ) (hi :
     (SchwartzMap.seminorm ℝ k i) g ≤ derivativeSeminormSum g k n := by
   apply Finset.single_le_sum (s := Finset.range (n + 1))
     (f := fun j => (SchwartzMap.seminorm ℝ k j) g) (a := i)
-  · intro j hj; positivity
-  · exact Finset.mem_range.mpr (by omega)
+  · simp
+  simp_all
 
 theorem frequencyTwist_seminorm_bound (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ) :
     (SchwartzMap.seminorm ℝ k n) (frequencyTwist g t) ≤
       (2 : ℝ)^n * (1 + 2 * Real.pi * ‖t‖)^n * derivativeSeminormSum g k n := by
   apply SchwartzMap.seminorm_le_bound ℝ k n _
-    (mul_nonneg (mul_nonneg (by positivity) (by positivity)) (derivativeSeminormSum_nonneg _ _ _))
+    (mul_nonneg (by positivity) (derivativeSeminormSum_nonneg _ _ _))
   intro x
   have hh := norm_iteratedFDeriv_mul_le (logPhase_temperate t).1 (g.smooth ⊤) x
-    (n := n) (by exact_mod_cast le_top)
+    (n := n) (by simp)
   have hfun : (frequencyTwist g t : ℝ → ℂ) = fun x => logPhase t x * g x := by
-    funext x; exact frequencyTwist_apply g t x
+    funext x; exact by simp
   rw [hfun]
   calc
     _ ≤ ‖x‖^k * ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) *
@@ -184,7 +163,7 @@ theorem frequencyTwist_seminorm_bound (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ)
         (1 + 2 * Real.pi * ‖t‖)^n * derivativeSeminormSum g k n := by
       apply Finset.sum_le_sum
       intro i hi
-      have hin : i ≤ n := Finset.mem_range_succ_iff.mp hi
+      have hin := Finset.mem_range_succ_iff.mp hi
       have hp : (2 * Real.pi * ‖t‖)^i ≤ (1 + 2 * Real.pi * ‖t‖)^n := by
         calc
           _ ≤ (1 + 2 * Real.pi * ‖t‖)^i := by gcongr; linarith
@@ -192,12 +171,11 @@ theorem frequencyTwist_seminorm_bound (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ)
             have hc : 0 ≤ 2 * Real.pi * ‖t‖ := by positivity
             linarith) hin
       have hs := (SchwartzMap.le_seminorm ℝ k (n-i) g x).trans
-        (seminorm_le_derivativeSeminormSum g k n (n-i) (Nat.sub_le n i))
+        (seminorm_le_derivativeSeminormSum g k n (n-i) (by omega))
       exact mul_le_mul (mul_le_mul_of_nonneg_left hp (by positivity)) hs (by positivity)
         (by positivity)
     _ = _ := by
-      rw [← Finset.sum_mul, ← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
-      norm_cast
+      simp [← Finset.sum_mul, ← Finset.sum_mul, ← Nat.cast_sum, Nat.sum_range_choose]
 
 theorem frequencyTwist_seminorm_polynomial (g : 𝓢(ℝ, ℂ)) (t : ℝ) (k n : ℕ) :
     (SchwartzMap.seminorm ℝ k n) (frequencyTwist g t) ≤
@@ -220,7 +198,7 @@ def twistSourceBound (g : 𝓢(ℝ, ℂ)) (K : ℕ) : ℝ :=
 lemma twistSourceBound_nonneg (g : 𝓢(ℝ, ℂ)) (K : ℕ) : 0 ≤ twistSourceBound g K := by
   apply Finset.sum_nonneg
   intro i hi
-  exact mul_nonneg (mul_nonneg (by positivity) (by positivity))
+  exact mul_nonneg (by positivity)
     (add_nonneg (derivativeSeminormSum_nonneg _ _ _) (derivativeSeminormSum_nonneg _ _ _))
 
 theorem profileSourceBound_frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ) (K : ℕ) :
@@ -229,32 +207,30 @@ theorem profileSourceBound_frequencyTwist (g : 𝓢(ℝ, ℂ)) (t : ℝ) (K : �
   rw [Finset.sum_mul]
   apply Finset.sum_le_sum
   intro i hi
-  have hin : i ≤ K := Finset.mem_range_succ_iff.mp hi
+  have hin := Finset.mem_range_succ_iff.mp hi
   have hb := add_le_add (frequencyTwist_seminorm_polynomial g t 0 i)
     (frequencyTwist_seminorm_polynomial g t (volume : Measure ℝ).integrablePower i)
   have hn : 0 ≤ (2 : ℝ)^i * (1 + 2 * Real.pi)^i *
       (derivativeSeminormSum g 0 i + derivativeSeminormSum g (volume : Measure ℝ).integrablePower i) :=
-    mul_nonneg (mul_nonneg (by positivity) (by positivity))
+    mul_nonneg (by positivity)
       (add_nonneg (derivativeSeminormSum_nonneg _ _ _) (derivativeSeminormSum_nonneg _ _ _))
   calc
     _ ≤ ((2 : ℝ)^i * (1 + 2 * Real.pi)^i *
         (derivativeSeminormSum g 0 i + derivativeSeminormSum g (volume : Measure ℝ).integrablePower i)) *
-          (1 + ‖t‖)^i := by convert hb using 1 ; ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by linarith [norm_nonneg t]) hin) hn
+          (1 + ‖t‖)^i := by linarith
+    _ ≤ _ := mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by simp) hin) hn
 
 end JointLogSeparation
 
 section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open MeasureTheory
+open scoped Classical SchwartzMap
 namespace JointLogSeparation
 open FourierBridge
 
 end JointLogSeparation
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog)
 open JointLogSeparation (outerWindow fixedColumnTest)
 open FourierBridge (logPhase)
@@ -271,11 +247,10 @@ def fixedSecondTest (V : ℝ → ℂ) (X t s : ℝ) (negative : Bool) (N : Finse
 end SecondPassArithmetic
 end
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open ConcretePrimeRowBridge (idealGenerator span_idealGenerator)
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
@@ -287,7 +262,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 open RayFourExpansion (RayCharacter gCoeff crossCoeff)
 

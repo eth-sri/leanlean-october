@@ -5,7 +5,6 @@ public import Erdos821.P4Bridge.ConditionalTests
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe
@@ -17,13 +16,7 @@ lemma bigAverage_congr_outside (M : ℕ) (S : P.BigGroup → Finset (Fin M))
     (hab : ∀ g i, i ∉ S g → a g i = b g i) :
     bigCoordinateAverage P M S f a = bigCoordinateAverage P M S f b := by
   unfold bigCoordinateAverage
-  apply Finset.sum_congr rfl
-  intro y _
-  congr 2
-  funext g i
-  by_cases hi : i ∈ S g
-  · simp [hi]
-  · simp [hi, hab g i hi]
+  grind
 
 @[simp] lemma labelJoin_slot (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
@@ -61,11 +54,10 @@ lemma bigAverage_join_false (ν : Pattern P J ell m) (block : P.BigGroup → Boo
       · have hmem : ν.slot j ∈ patternSideCoordinates ν block false g := by
           simp only [patternSideCoordinates, hb, ite_true]
           exact Finset.mem_image.mpr ⟨j, hi, rfl⟩
-        exact False.elim (hnot hmem)
+        simp_all
       · simp [rowJoin, hi, hb]
     · simp only [rowJoin, hi, dite_false]
-  · intro _
-    simp only [labelJoin_tail]
+  simp
 
 lemma bigAverage_join_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (f : P.BigLabels (J + ell) → ℂ) (s : SharedRows ν)
@@ -88,10 +80,9 @@ lemma bigAverage_join_true (ν : Pattern P J ell m) (block : P.BigGroup → Bool
         have hmem : ν.slot j ∈ patternSideCoordinates ν block true g := by
           simp only [patternSideCoordinates, htrue, ite_true]
           exact Finset.mem_image.mpr ⟨j, hi, rfl⟩
-        exact False.elim (hnot hmem)
+        simp_all
     · simp only [rowJoin, hi, dite_false]
-  · intro _
-    simp only [labelJoin_tail]
+  simp
 
 end
 end Erdos821.P4Bridge

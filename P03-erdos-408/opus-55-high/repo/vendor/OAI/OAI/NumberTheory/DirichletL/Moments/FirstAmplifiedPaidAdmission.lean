@@ -11,22 +11,21 @@ public import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidAdmission
 open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
 open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
+open CenteredMomentFirstAmplifiedCapacityRadius
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
 open CenteredMomentCommonProfile CenteredMomentCommonRawScale
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
 open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst
+open CenteredMomentSecondPhysicalBlock
+open CenteredMomentSecondRadicalBudget
 open CenteredMomentAmplifiedRetainedRadius
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
@@ -36,7 +35,7 @@ open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
 open CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedChildCapacity
 
 def sourceReserve {α:Type*}[Fintype α] (s:Input ι)(childInput:Input α)
-    (C D:Ideal O)(Z delta reserve cost a:ℝ):ℝ :=
+    (C D:Ideal HeckeFamily.O)(Z delta reserve cost a:ℝ):ℝ :=
   max (delta+reserve-(Fintype.card ι:ℝ)*Real.logb Z (min 1 s.lower)-
     min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ))-
     Real.logb Z fixedPresentationCost-Real.logb Z cost+
@@ -44,34 +43,33 @@ def sourceReserve {α:Type*}[Fintype α] (s:Input ι)(childInput:Input α)
     (Fintype.card α:ℝ)*Real.logb Z (max 1 childInput.upper)) 0
 
 lemma sourceReserve_nonneg {α:Type*}[Fintype α] (s:Input ι)(childInput:Input α)
-    (C D:Ideal O)(Z delta reserve cost a:ℝ):0≤sourceReserve s childInput C D Z delta reserve cost a :=
+    (C D:Ideal HeckeFamily.O)(Z delta reserve cost a:ℝ):0≤sourceReserve s childInput C D Z delta reserve cost a :=
   le_max_right _ _
 
-lemma common_affine (s:Input ι)(C:Ideal O)(B:actualAllocations s.pools C)
+lemma common_affine (s:Input ι)(C:Ideal HeckeFamily.O)(B:actualAllocations s.pools C)
     (Z κ A M:ℝ)(hZ:1<Z)(hκ:1/6≤κ)(hP:∀i,1≤s.P i)
     (hp:A+(6*κ-1)*(∑i,Real.logb Z (s.P i))≤M):
     A+(6*κ-1)*(∑i:liveIndices B.val,Real.logb Z (s.P i.val))≤M := by
   have hs:=common_slot_logs_le s C B Z hZ hP
-  have hm:=mul_le_mul_of_nonneg_left hs (by linarith:0≤6*κ-1)
-  linarith
+  nlinarith
 
-theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
+theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal HeckeFamily.O)
     (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
     (E:Finset (CommonIndex C D))(B:actualAllocations s.pools C)(t:ℝ)
     (hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
     (K Z sigma delta reserve cost a:ℝ)(hK:0<K)(hZ:1<Z)(hcost:0<cost)(ha:0<a)
-    (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C₂ D₂:Ideal O)
+    (S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)(C₂ D₂:Ideal HeckeFamily.O)
     (hC₂:Supported C₂)(hD₂:Supported D₂)(hCD₂:primeSupport C₂=primeSupport D₂)
-    (U:Finset (CommonIndex C₂ D₂))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(n:Fin 4→ℤ)
-    (hlower:∀I:Ideal O,β I≠0→a*volume (child s C R0 B τ t)≤(I.absNorm:ℝ))
+    (U:Finset (CommonIndex C₂ D₂))(R:ℝ)(rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))(n:Fin 4→ℤ)
+    (hlower:∀I:Ideal HeckeFamily.O,β I≠0→a*volume (child s C R0 B τ t)≤(I.absNorm:ℝ))
     (hne:physicalBlock υ t S β C₂ D₂ hC₂ hD₂ U R rows W
       (mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
         (Real.logb Z (firstNominalScale C D
           (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume s)))
         (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve) n≠0)
-    (Cpick Rpick:Ideal O)(hside:Cpick=C₂ ∨ Cpick=D₂)
+    (Cpick Rpick:Ideal HeckeFamily.O)(hside:Cpick=C₂ ∨ Cpick=D₂)
     (B₂:actualAllocations (child s C R0 B τ t).pools Cpick)
     (hB₂:frozenCoefficient B₂.val Cpick Rpick (child s C R0 B τ t).ν (child s C R0 B τ t).W (child s C R0 B τ t).P≠0)
     (κ Mdecl:ℝ)(hκ:1/6≤κ)(hP:∀i,1≤s.P i)
@@ -130,27 +128,27 @@ theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
   unfold sourceReserve
   linarith
 
-theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
+theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal HeckeFamily.O)
     (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
     (E:Finset (CommonIndex C D))(B:actualAllocations s.pools C)(t:ℝ)
     (hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
     (K Z sigma delta reserve cost a:ℝ)(hK:0<K)(hZ:1<Z)(hcost:0<cost)(ha:0<a)
-    (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)(hs:0≤sigma)
+    (p:HeckeFamily.O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)(hs:0≤sigma)
     (hl:sigma/6≤Real.logb Z (normValue p))
     (hslot:∀i,∀I∈(activeInput (child s C R0 B τ t)).slots i,IsCoprime (Ideal.span {p}) I)
     (Bp:actualAllocations (activeInput (child s C R0 B τ t)).pools ((Ideal.span {p})^k))(v:ℝ)
-    (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+    (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C₂ D₂:Ideal O)
+    (S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)(C₂ D₂:Ideal HeckeFamily.O)
     (hC₂:Supported C₂)(hD₂:Supported D₂)(hCD₂:primeSupport C₂=primeSupport D₂)
-    (U:Finset (CommonIndex C₂ D₂))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))(n:Fin 4→ℤ)
-    (hlower:∀I:Ideal O,β I≠0→a*volume (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v)≤(I.absNorm:ℝ))
+    (U:Finset (CommonIndex C₂ D₂))(R:ℝ)(rows:Finset HeckeFamily.O)(W:𝓢(ℝ,ℂ))(n:Fin 4→ℤ)
+    (hlower:∀I:Ideal HeckeFamily.O,β I≠0→a*volume (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v)≤(I.absNorm:ℝ))
     (hne:physicalBlock υ v S β C₂ D₂ hC₂ hD₂ U R rows W
       (errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
         (Real.logb Z (firstNominalScale C D
           (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K (volume s)))
         (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p k) n≠0)
-    (Cpick Rpick:Ideal O)(hside:Cpick=C₂ ∨ Cpick=D₂)
+    (Cpick Rpick:Ideal HeckeFamily.O)(hside:Cpick=C₂ ∨ Cpick=D₂)
     (B₂:actualAllocations (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v).pools Cpick)
     (hB₂:frozenCoefficient B₂.val Cpick Rpick (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v).ν (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v).W (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v).P≠0)
     (κ Mdecl:ℝ)(hκ:1/6≤κ)(hP:∀i,1≤s.P i)
@@ -197,7 +195,7 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
     · subst Cpick
       exact common_raw_reference_shift_right (errorInput s C R0 B τ t (Ideal.span {p}) k Bp υ v) υ v S β C₂ D₂ Rpick hC₂ hD₂ hCD₂
         B₂ hB₂ U R rows W _ a Z (cost*(τ.modulus.absNorm:ℝ)*Z^(errorMoving p Z k)) n hqref hrad ha hZ hlower hne
-  have hQ:(Ideal.span {p})≠(0:Ideal O):=Ideal.span_singleton_eq_bot.not.mpr hp
+  have hQ:(Ideal.span {p})≠(0:Ideal HeckeFamily.O):=Ideal.span_singleton_eq_bot.not.mpr hp
   have hv:=active_error_volume s C R0 B τ t (Ideal.span {p}) hQ k hslot Bp υ v
   have hn:(Ideal.absNorm (Ideal.span {p}):ℝ)=normValue p:=by simp only [normValue]
   rw [hn] at hv
@@ -214,7 +212,7 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
   unfold sourceReserve
   linarith
 
-lemma common_preVolume_height (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C)
+lemma common_preVolume_height (s:Input ι)(C R:Ideal HeckeFamily.O)(B:actualAllocations s.pools C)
     (τ υ:Character)(v t:ℝ):
     preVolume (commonData (withHeight s τ v) C R B)=
       preVolume (commonData (withHeight s υ t) C R B) := rfl

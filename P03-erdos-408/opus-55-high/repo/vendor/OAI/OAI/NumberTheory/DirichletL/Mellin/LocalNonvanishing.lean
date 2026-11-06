@@ -8,25 +8,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 
 open Filter Asymptotics
 
@@ -36,22 +26,21 @@ end TargetLocalReduction
 
 namespace ActualEisensteinCubic
 
-open AddChar MulChar
 
 end ActualEisensteinCubic
 
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
 
 namespace ShortDraftHeckeBridge
 
 abbrev O := ActualEisensteinSieve.O
 
-noncomputable def normFiberCoeff (weight : Ideal O → ℂ) (n : ℕ) : ℂ := by
+def normFiberCoeff (weight : Ideal O → ℂ) (n : ℕ) : ℂ := by
   classical
   exact ∑ I ∈ (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset, weight I
 
-noncomputable def pairInverseCoeff
+def pairInverseCoeff
     {q r : ℕ} (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r) : ℕ → ℂ :=
   (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) ⍟
     (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ))
@@ -61,19 +50,19 @@ theorem normFiber_LSeries_eq_pair_inverse
     (weight : Ideal O → ℂ)
     (hcoeff : ∀ n : ℕ, n ≠ 0 → normFiberCoeff weight n = pairInverseCoeff χ ψ n)
     (s : ℂ) :
-    LSeries (normFiberCoeff weight) s = LSeries (pairInverseCoeff χ ψ) s := by
-  exact LSeries_congr (fun {n} hn => hcoeff n hn) s
+    LSeries (normFiberCoeff weight) s = LSeries (pairInverseCoeff χ ψ) s :=
+  LSeries_congr (by omega) s
 
 theorem pair_inverse_euler_identity
     {q r : ℕ} [NeZero q] [NeZero r]
     (χ : DirichletCharacter ℂ q) (ψ : DirichletCharacter ℂ r)
     (s : ℂ) (hs : 1 < s.re) :
     χ.LFunction s * ψ.LFunction s * LSeries (pairInverseCoeff χ ψ) s = 1 := by
-  have hχsum : LSeriesSummable (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s := by
-    exact DirichletCharacter.LSeriesSummable_mul χ
+  have hχsum : LSeriesSummable (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s :=
+    DirichletCharacter.LSeriesSummable_mul χ
       (ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs)
-  have hψsum : LSeriesSummable (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s := by
-    exact DirichletCharacter.LSeriesSummable_mul ψ
+  have hψsum : LSeriesSummable (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s :=
+    DirichletCharacter.LSeriesSummable_mul ψ
       (ArithmeticFunction.LSeriesSummable_moebius_iff.mpr hs)
   rw [pairInverseCoeff, LSeries_convolution' hχsum hψsum,
     χ.LFunction_eq_LSeries hs, ψ.LFunction_eq_LSeries hs]
@@ -81,13 +70,7 @@ theorem pair_inverse_euler_identity
   have hψ := DirichletCharacter.LSeries.mul_mu_eq_one ψ hs
   change LSeries (χ ·) s * LSeries (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s = 1 at hχ
   change LSeries (ψ ·) s * LSeries (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s = 1 at hψ
-  calc
-    LSeries (χ ·) s * LSeries (ψ ·) s *
-      (LSeries (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s *
-        LSeries (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s) =
-      (LSeries (χ ·) s * LSeries (fun n : ℕ => χ n * (ArithmeticFunction.moebius n : ℂ)) s) *
-      (LSeries (ψ ·) s * LSeries (fun n : ℕ => ψ n * (ArithmeticFunction.moebius n : ℂ)) s) := by ring
-    _ = 1 := by rw [hχ, hψ]; ring
+  grind
 
 end ShortDraftHeckeBridge
 private theorem pairing_algebra
@@ -102,21 +85,21 @@ private theorem pairing_algebra
     (-star gm) * star G * t⁻¹ = star eps * (alpha * star g2) * t⁻¹ := by
   have h2 : g2 = -(star g1) * alpha * G := by
     calc
-      g2 = (g1 * star g1) * g2 := by rw [hg1]; ring
+      g2 = (g1 * star g1) * g2 := by simp_all
       _ = star g1 * (g1 * g2) := by ring
-      _ = star g1 * (-alpha * G) := by rw [hprod]
+      _ = star g1 * (-alpha * G) := by simp_all
       _ = _ := by ring
   have hA : star alpha * g2 = (-star g1) * G := by
     rw [h2]
     calc
       star alpha * (-(star g1) * alpha * G) =
           (alpha * star alpha) * ((-star g1) * G) := by ring
-      _ = (-star g1) * G := by rw [halpha]; ring
+      _ = (-star g1) * G := by simp_all
   have hm : gm = eps * star g1 := by
     calc
-      gm = (g1 * star g1) * gm := by rw [hg1]; ring
+      gm = (g1 * star g1) * gm := by simp_all
       _ = star g1 * (g1 * gm) := by ring
-      _ = eps * star g1 := by rw [hpair]; ring
+      _ = eps * star g1 := by grind
   have hB : (-gm) * G = eps * (star alpha * g2) := by
     rw [hm, hA]
     ring
@@ -130,11 +113,10 @@ private theorem pairing_algebra
   have hD : (-star gm) * star G = star eps * (alpha * star g2) := by
     have h := congrArg (fun z : ℂ => star z) hB
     simpa only [star_mul, star_neg, star_star, mul_comm, mul_left_comm, mul_assoc] using h
-  exact ⟨by rw [hA], by rw [hB], by rw [hC], by rw [hD]⟩
+  simp_all
 
 namespace ActualEisensteinCubic
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
-open scoped ComplexConjugate
+open PrimitiveTrace
 
 private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
@@ -159,23 +141,22 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
   have hs : (s : ℂ) ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℂ) := by
     simpa only [s, ← starRingEnd_apply, Complex.mul_conj',
       Nat.card_eq_fintype_card] using hnormC
-  have hsreal : s ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℝ) := by
-    exact Complex.ofReal_injective (by exact_mod_cast hs)
+  have hsreal : s ^ 2 = (Fintype.card (O ⧸ Ideal.span {p}) : ℝ) :=
+    Complex.ofReal_injective (by simp_all)
   have hcard : 0 < (Fintype.card (O ⧸ Ideal.span {p}) : ℝ) := by positivity
   have hsroot : s = Real.sqrt (Fintype.card (O ⧸ Ideal.span {p})) := by
     nlinarith [Real.sq_sqrt hcard.le, Real.sqrt_nonneg
       (Fintype.card (O ⧸ Ideal.span {p})), norm_nonneg (eisEmbedding p)]
   have hs0 : s ≠ 0 := by
     dsimp [s]
-    exact (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp))
+    exact by grind
   have hnorm : ‖breveGamma1 (Ideal.span {p}) hgood p rfl hp‖ = 1 := by
     change ‖gaussSum χ ψ / (s : ℂ)‖ = 1
     rw [norm_div, ShortDraftGauss.norm_gaussSum_eq_sqrt_card χ ψ hχ1 hψ]
-    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (norm_nonneg (eisEmbedding p))]
+    rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     rw [← hsroot]
     exact div_self hs0
-  rw [← starRingEnd_apply, Complex.mul_conj', hnorm]
-  norm_num
+  simp [← starRingEnd_apply, Complex.mul_conj', hnorm]
 
 theorem first_poisson_prime_sign_pairing
     (P : Ideal O) [P.IsMaximal]
@@ -193,12 +174,12 @@ theorem first_poisson_prime_sign_pairing
     (-gm) * G * t = eps * (star alpha * g2) * t ∧
     (-g1) * star G * t⁻¹ = (alpha * star g2) * t⁻¹ ∧
     (-star gm) * star G * t⁻¹ = star eps * (alpha * star g2) * t⁻¹ := by
-  have hz : eisEmbedding p ≠ 0 := eisEmbedding_ne_zero hp
+  have hz := eisEmbedding_ne_zero hp
   have hs : (‖eisEmbedding p‖ : ℂ) ≠ 0 := by
     exact_mod_cast (norm_ne_zero_iff.mpr hz)
   have hanorm : ‖eisEmbedding p / (‖eisEmbedding p‖ : ℂ)‖ = 1 := by
     rw [norm_div, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (norm_nonneg (eisEmbedding p))]
+      abs_of_nonneg (by positivity)]
     exact div_self (norm_ne_zero_iff.mpr hz)
   have ha : (eisEmbedding p / (‖eisEmbedding p‖ : ℂ)) *
       star (eisEmbedding p / (‖eisEmbedding p‖ : ℂ)) = 1 := by
@@ -227,7 +208,6 @@ theorem first_poisson_prime_sign_pairing
 
 end ActualEisensteinCubic
 
-open MulChar AddChar
 
 namespace ShortDraftLocal
 

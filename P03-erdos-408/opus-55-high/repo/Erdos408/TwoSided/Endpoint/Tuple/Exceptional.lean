@@ -54,7 +54,7 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
       positivity)]
     rw [Complex.norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_of_nonneg hP0.le]
     calc ‖coeff p‖ * p ≤ 1 * (2 * P) :=
-          mul_le_mul (hcoeff p hp) (hs p hp).2.2 (Nat.cast_nonneg _) zero_le_one
+          mul_le_mul (by grind) (by grind) (Nat.cast_nonneg _) zero_le_one
       _ = 2 * P := one_mul _
   obtain ⟨hfin, hcard⟩ := hx Y P Tmax s coeff' hY₁ hY₂ hT₀ hTY hP₁ hP₂ hs hc'
   rw [show (1 : ℝ) - 0.27 = 0.73 by norm_num] at hcard
@@ -70,7 +70,7 @@ theorem exists_card_exceptional_le (A : ℝ) (hA : 0 < A) :
     rw [Erdos821.Blueprint.Analytic.primePolynomial, Erdos821.Blueprint.Analytic.dp,
       Finset.mul_sum, Finset.sum_div]
     refine Finset.sum_congr rfl fun p hp => ?_
-    have hp0 : (0 : ℝ) < p := lt_of_lt_of_le hP0 (hs p hp).2.1
+    have hp0 : (0 : ℝ) < p := by grind
     rw [mellin_eq_cpow hp0, Complex.ofReal_natCast, hcoeff']
     have : (p : ℂ) ≠ 0 := by exact_mod_cast hp0.ne'
     have : (P : ℂ) ≠ 0 := by exact_mod_cast hP0.ne'

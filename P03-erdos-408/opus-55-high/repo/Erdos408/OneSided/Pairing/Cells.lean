@@ -38,7 +38,7 @@ noncomputable def sqNorm (v : ι → ℂ) : ℝ := ∑ i, ‖v i‖ ^ 2
 
 /-- `‖v‖² ≥ 0`. -/
 theorem sqNorm_nonneg (v : ι → ℂ) : 0 ≤ sqNorm v :=
-  sum_nonneg fun _ _ => sq_nonneg _
+  sum_nonneg (by simp)
 
 /-- `⟨v, v⟩ = ‖v‖²`. -/
 theorem star_dotProduct_self (v : ι → ℂ) : star v ⬝ᵥ v = (sqNorm v : ℂ) := by
@@ -86,10 +86,8 @@ theorem halfPow_add_two (A : Matrix ι ι ℂ) (k : ℕ) :
   rw [halfPow]
   congr 1
   by_cases hk : Even k
-  · rw [ite_eq_right_iff.2 fun h => absurd h (Nat.even_add_one.not.2 (not_not.2 hk)),
-      ite_eq_left_iff.2 fun h => absurd hk h, Matrix.conjTranspose_conjTranspose]
-  · rw [ite_eq_left_iff.2 fun h => absurd (Nat.even_add_one.2 hk) h,
-      ite_eq_right_iff.2 fun h => absurd h hk]
+  · simp_all
+  simp_all
 
 /-- `halfPow A (2r) = B^r` and `halfPow A (2r + 1) = A^* B^r`. -/
 theorem halfPow_two_mul (A : Matrix ι ι ℂ) (r : ℕ) :
@@ -99,10 +97,10 @@ theorem halfPow_two_mul (A : Matrix ι ι ℂ) (r : ℕ) :
   | succ r ih =>
     have h₁ : halfPow A (2 * (r + 1)) = (A * Aᴴ) ^ (r + 1) := by
       rw [show 2 * (r + 1) = 2 * r + 1 + 1 by ring, halfPow, ih.2,
-        ite_eq_right_iff.2 fun h => absurd h (by simp [parity_simps]),
+        ite_eq_right_iff.2 fun h => absurd h (by simp),
         pow_succ', Matrix.mul_assoc]
     refine ⟨h₁, ?_⟩
-    rw [halfPow, h₁, ite_eq_left_iff.2 fun h => absurd (by simp [parity_simps]) h]
+    rw [halfPow, h₁, ite_eq_left_iff.2 fun h => absurd (by simp) h]
 
 /-- `(halfPow A R)^* halfPow A R = B^R`. -/
 theorem conjTranspose_halfPow_mul_halfPow (A : Matrix ι ι ℂ) (R : ℕ) :
@@ -126,7 +124,7 @@ theorem pow_le_of_logConvex {m : ℕ → ℝ} (hm : ∀ k, 0 ≤ m k)
   have hratio : ∀ k, m 1 * m (k + 1) ≤ m 0 * m (k + 2) := by
     intro k
     induction k with
-    | zero => simpa [sq] using hlog 0
+    | zero => grind
     | succ k ih =>
       rcases (hm (k + 2)).eq_or_lt with h | h
       · rw [← h, mul_zero]
@@ -170,7 +168,7 @@ theorem sum_sqNorm_pow_le {κ : Type*} (A : Matrix ι ι ℂ) (T : Finset κ) (v
       have := norm_star_dotProduct_sq_le (halfPow A k *ᵥ v c) (halfPow A (k + 2) *ᵥ v c)
       rwa [heq, Complex.norm_real, Real.norm_of_nonneg (sqNorm_nonneg _)] at this
     have hsum : m (k + 1) ≤ √(m k) * √(m (k + 2)) :=
-      (sum_le_sum fun c _ => hterm c).trans
+      (sum_le_sum (by grind)).trans
         (Real.sum_sqrt_mul_sqrt_le T (fun c => sqNorm_nonneg _) fun c => sqNorm_nonneg _)
     calc m (k + 1) ^ 2 ≤ (√(m k) * √(m (k + 2))) ^ 2 :=
           pow_le_pow_left₀ (hm0 _) hsum 2
@@ -179,7 +177,7 @@ theorem sum_sqNorm_pow_le {κ : Type*} (A : Matrix ι ι ℂ) (T : Finset κ) (v
   have h := pow_le_of_logConvex hm0 hlog R
   have h0 : m 0 = ∑ c ∈ T, sqNorm (v c) := by simp [hm, halfPow]
   have h1 : m 1 = ∑ c ∈ T, sqNorm (Aᴴ *ᵥ v c) := by simp [hm, halfPow]
-  rwa [h0, h1] at h
+  simp_all
 
 /-! ### Cells -/
 
@@ -211,9 +209,7 @@ theorem sum_ite_conjTranspose_mul (W : Matrix ι ι ℂ) (π : ι → β) :
   rw [sum_comm]
   refine sum_congr rfl fun s' _ => ?_
   rw [sum_ite_eq, ite_eq_left (mem_image_of_mem π (mem_univ s))]
-  by_cases h : π s = π s'
-  · rw [ite_eq_left h.symm, ite_eq_left h]
-  · rw [ite_eq_right fun h' => h h'.symm, ite_eq_right h]
+  grind
 
 /-- PD §3.3 for an abstract matrix. The indices carry positions `π`, the positions carry
 cells, `A` joins only cells at distance at most `w`, at most `N` positions lie in a cell, and
@@ -242,12 +238,8 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
       simp only [Matrix.mulVec, dotProduct]
       refine sum_congr rfl fun s' _ => ?_
       by_cases h : A s s' = 0
-      · rw [h, zero_mul, zero_mul]
-      · have h' : |cell (π s') - cell (π s)| ≤ w := by
-          rw [abs_sub_comm]
-          exact hA s s' h
-        simp only [hgj]
-        rw [ite_eq_left h']
+      · simp_all
+      · grind
     simp only [dotProduct]
     rw [sum_comm]
     refine sum_congr rfl fun s _ => ?_
@@ -285,7 +277,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
       constructor <;> linarith
     have hcard := card_le_card hsub
     rw [Int.card_Icc, show cell (π s) + w + 1 - (cell (π s) - w) = ((2 * w + 1 : ℕ) : ℤ) by
-      push_cast; ring, Int.toNat_natCast] at hcard
+      omega, Int.toNat_natCast] at hcard
     exact_mod_cast hcard
   -- the cells partition `f`
   have hpart : ∑ j ∈ Js, sqNorm (fj j) = sqNorm f := by
@@ -313,10 +305,8 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
         mul_zero]
       rw [sum_ite_eq]
       by_cases h : cell (π s) = j
-      · rw [ite_eq_left h, ite_eq_left (mem_filter.2 ⟨mem_image_of_mem _ (mem_univ _), h⟩),
-          hFπ]
-      · rw [ite_eq_right h, ite_eq_right
-          (show π s ∉ Ps.filter (fun P => cell P = j) from fun hm => h (mem_filter.1 hm).2)]
+      · grind
+      · grind
     rw [hfj', Matrix.mulVec_sum]
     simp_rw [Matrix.mulVec_smul]
     refine (sqNorm_sum_smul_le _ _ _).trans
@@ -347,7 +337,7 @@ theorem norm_pow_le_of_cells (A : Matrix ι ι ℂ) (π : ι → β) (cell : β 
     exact sum_le_sum fun j _ => hcomp j
   have hNσ : 0 ≤ (N : ℝ) * σ := mul_nonneg (Nat.cast_nonneg _) hσ
   calc ‖star f ⬝ᵥ (A *ᵥ f)‖ ^ (2 * (R + 1))
-      = (‖star f ⬝ᵥ (A *ᵥ f)‖ ^ 2) ^ (R + 1) := by rw [pow_mul]
+      = (‖star f ⬝ᵥ (A *ᵥ f)‖ ^ 2) ^ (R + 1) := by ring
     _ ≤ ((∑ j ∈ Js, sqNorm (Aᴴ *ᵥ fj j)) * ∑ j ∈ Js, sqNorm (gj j)) ^ (R + 1) :=
         pow_le_pow_left₀ (sq_nonneg _) hcs _
     _ = (∑ j ∈ Js, sqNorm (Aᴴ *ᵥ fj j)) ^ (R + 1) * (∑ j ∈ Js, sqNorm (gj j)) ^ (R + 1) :=

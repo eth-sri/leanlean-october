@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.FreshDensityFactor
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -22,32 +21,32 @@ theorem bigFreshMass_bounds {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J 
   have hlo (g : P.BigGroup) (i : Fin (J + ell)) :
       1 ≤ (if ν.shared g.val i then (1 : ℝ) else mu g (a g i)) := by
     split_ifs
-    · exact le_rfl
-    · exact (hmu g _).1
+    · simp
+    · simp_all
   have hhi (g : P.BigGroup) (i : Fin (J + ell)) :
       (if ν.shared g.val i then (1 : ℝ) else mu g (a g i)) ≤ 1 + eps := by
     split_ifs
     · linarith
-    · exact (hmu g _).2
+    · grind
   have hlg (g : P.BigGroup) : 1 ≤
       ∏ i : Fin (J + ell), if ν.shared g.val i then (1 : ℝ) else mu g (a g i) := by
     simpa only [Finset.prod_const_one] using
       (Finset.prod_le_prod₀ (s := Finset.univ) (f := fun _ : Fin (J + ell) => (1 : ℝ))
-        (fun _ _ => zero_le_one) (fun i _ => hlo g i))
+        (by simp) (by grind))
   refine ⟨?_, ?_⟩
   · simpa only [Finset.prod_const_one, bigFreshMass] using
       (Finset.prod_le_prod₀ (s := Finset.univ) (f := fun _ : P.BigGroup => (1 : ℝ))
-        (fun _ _ => zero_le_one) (fun g _ => hlg g))
+        (by simp) (fun g _ => hlg g))
   have hg (g : P.BigGroup) :
       (∏ i : Fin (J + ell), if ν.shared g.val i then (1 : ℝ) else mu g (a g i)) ≤
         (1 + eps) ^ (J + ell) := by
     calc
       _ ≤ ∏ _ : Fin (J + ell), (1 + eps) := Finset.prod_le_prod₀
-        (fun i _ => zero_le_one.trans (hlo g i)) (fun i _ => hhi g i)
+        (by grind) (by grind)
       _ = _ := by simp
   calc
     _ ≤ ∏ _ : P.BigGroup, (1 + eps) ^ (J + ell) := Finset.prod_le_prod₀
-      (fun g _ => Finset.prod_nonneg (fun i _ => zero_le_one.trans (hlo g i))) (fun g _ => hg g)
+      (fun g _ => Finset.prod_nonneg (by grind)) (fun g _ => hg g)
     _ = _ := by simp only [Finset.prod_const, Finset.card_univ, ← pow_mul]
 
 theorem freshDensity_bounds (F : FixedData) (P : PrimeGroups) (n : ℕ) {J m : ℕ}
@@ -79,7 +78,7 @@ theorem freshSqrtFactor_bounds (F : FixedData) (P : PrimeGroups) (n : ℕ) {J m 
         Real.sqrt ((1 + eps) ^ ((J + F.ell) * Fintype.card P.BigGroup)) :=
       mul_le_mul (Real.sqrt_le_sqrt ha1) (Real.sqrt_le_sqrt hb1)
         (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
-    _ = _ := Real.mul_self_sqrt (pow_nonneg (by linarith) _)
+    _ = _ := by grind
 
 
 end Erdos821.P3Clean

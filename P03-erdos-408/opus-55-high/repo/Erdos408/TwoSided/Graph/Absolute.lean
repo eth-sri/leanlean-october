@@ -42,7 +42,7 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
   obtain ⟨c, hc1, hc⟩ := GraphBounds.exists_pow_mul_sqrt_pow_le hq₀ hq₀₁ (J + 1)
   set K₁ := (max 1 vlo⁻¹) ^ (2 * (J + 1)) * c ^ 2
   have hK₁ : 1 ≤ K₁ :=
-    one_le_mul_of_one_le_of_one_le (one_le_pow₀ (le_max_left _ _)) (one_le_pow₀ hc1)
+    one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by simp)) (one_le_pow₀ hc1)
   refine ⟨B₀ + 1 + 2 * C₀ * Real.log K₁, ?_⟩
   filter_upwards [Real.tendsto_log_atTop.eventually_ge_atTop 2, eventually_gt_atTop 1]
     with x hL2 hx1 ι _ _ P big hP C K κK hK G hG m _ ζ f hf
@@ -77,15 +77,13 @@ theorem exists_norm_patternPairing_le (q₀ c₀ C₀ vlo vhi B₀ : ℝ) (hq₀
           Real.rpow_le_rpow_of_exponent_le hK₁ hs
       _ = L ^ (2 * C₀ * Real.log K₁) := by
           rw [Real.rpow_def_of_pos (by linarith), Real.rpow_def_of_pos hL0]
-          congr 1
-          ring
+          grind
   refine h.trans ?_
   have hLB : 0 ≤ L ^ B₀ := Real.rpow_nonneg hL0.le _
   calc (Finset.card (dyadSource X) : ℝ) * κK * L ^ B₀ * K₁ ^ Fintype.card ι
       ≤ (L * X) * κK * L ^ B₀ * L ^ (2 * C₀ * Real.log K₁) := by
         refine mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hS hκ) hLB)
-          hKs (pow_nonneg (by linarith) _) ?_
-        have : 0 ≤ L * X := by positivity
+          hKs (by positivity) ?_
         positivity
     _ = κK * X * L ^ (B₀ + 1 + 2 * C₀ * Real.log K₁) := by
         rw [Real.rpow_add hL0, Real.rpow_add hL0, Real.rpow_one]

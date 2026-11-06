@@ -73,7 +73,7 @@ lemma eventually_band_lt_and_le_slot {c : ℝ} (hc : 0 < c) :
     have hT : T ≤ 50 * L ^ (0.02 : ℝ) := by
       have := Real.log_le_rpow_div hL0.le (by norm_num : (0 : ℝ) < 0.02)
       calc T ≤ L ^ (0.02 : ℝ) / 0.02 := this
-        _ = 50 * L ^ (0.02 : ℝ) := by norm_num [div_eq_mul_inv, mul_comm]
+        _ = 50 * L ^ (0.02 : ℝ) := by ring
     have hT20 : T ^ 20 ≤ 50 ^ 20 * L ^ (0.4 : ℝ) := by
       calc T ^ 20 ≤ (50 * L ^ (0.02 : ℝ)) ^ 20 := pow_le_pow_left₀ hT0'.le hT 20
         _ = 50 ^ 20 * L ^ (0.4 : ℝ) := by
@@ -114,10 +114,10 @@ theorem eventually_centeredCore_mul_prime (q c₀ C₀ vlo vhi alo ahi : ℝ) (K
     unfold band at hpb
     obtain ⟨hpb, -⟩ := mem_filter.1 hpb
     have h₂ : (p : ℝ) ≤ Real.exp (2 * Real.log x ^ a i) :=
-      (Nat.le_floor_iff (Real.exp_pos _).le).1 (mem_Icc.1 hpb).2
+      (Nat.le_floor_iff (by positivity)).1 (by grind)
     have hai : Real.log x ^ a i ≤ Real.log x ^ (1 / 5 : ℝ) :=
       Real.rpow_le_rpow_of_exponent_le hL (by linarith [(ha.2.1 i).2])
-    have : Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ Real.exp (2 * Real.log x ^ a i) := hp₁.trans h₂
+    have : Real.exp (Real.log x ^ (0.27 : ℝ)) ≤ Real.exp (2 * Real.log x ^ a i) := by linarith
     rw [Real.exp_le_exp] at this
     linarith
   -- `p` lies below every slot
@@ -133,7 +133,7 @@ lemma coreAdmissible_mul_prime {B₀ x : ℝ} {ι : Type} [Fintype ι] {P : ι �
     ∀ p ∈ Finset.univ.biUnion P, ∀ n, G (p * n) = G n := by
   intro p hp n
   rcases Nat.eq_zero_or_pos n with rfl | hn
-  · rw [mul_zero]
+  · simp
   obtain ⟨g, -, hpg⟩ := mem_biUnion.1 hp
   have hpr := hprime g p hpg
   rw [hG.1 (p * n), hG.1 n]
@@ -143,9 +143,9 @@ lemma coreAdmissible_mul_prime {B₀ x : ℝ} {ι : Type} [Fintype ι] {P : ι �
   rw [factorization_stripPrimes, factorization_stripPrimes, Finsupp.filter_apply,
     Finsupp.filter_apply, Nat.factorization_mul hpr.ne_zero hn.ne']
   by_cases hr : r ∈ Finset.univ.biUnion P
-  · simp [hr]
-  · have hrp : r ≠ p := fun h => hr (h ▸ hp)
-    simp [hr, Nat.Prime.factorization hpr, hrp.symm]
+  · simp_all
+  · have hrp : r ≠ p := by grind
+    simp_all
 
 end Restore
 

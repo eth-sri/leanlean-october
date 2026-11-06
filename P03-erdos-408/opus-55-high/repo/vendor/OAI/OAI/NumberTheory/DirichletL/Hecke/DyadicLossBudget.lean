@@ -18,24 +18,22 @@ theorem central_squared_exponents (R a e κ η ε r m : ℝ)
   have hEr : e*r≤e*R := mul_le_mul_of_nonneg_left hr he
   have hEm : 0≤e*m := mul_nonneg he hm
   have hER : 0≤e*R := mul_nonneg he hR
-  constructor <;> nlinarith
+  grind
 
 theorem indexed_height_bound (i I : ℕ) (hi : i≤I) (T : ℝ) (hT : 0≤T) :
     (3+(3*i+2 : ℕ)*T)^4≤(3*(I : ℝ)+5)^4*(1+T)^4 := by
   have hi' : (i : ℝ)≤I := by exact_mod_cast hi
   have hlin : 3+(3*i+2 : ℕ)*T≤(3*(I : ℝ)+5)*(1+T) := by
     push_cast
-    nlinarith [mul_le_mul_of_nonneg_right hi' hT,Nat.cast_nonneg (α:=ℝ) I]
+    nlinarith
   calc
     _ ≤ ((3*(I : ℝ)+5)*(1+T))^4 := pow_le_pow_left₀ (by positivity) hlin 4
-    _ = _ := mul_pow _ _ _
+    _ = _ := by linarith
 
 theorem min_plain_bound (X C U δ m ε : ℝ)
     (h₁ : X≤C*U^(δ*m+ε)) (h₂ : X≤C*U^(δ*(1-m)+ε)) :
     X≤C*U^(δ*min m (1-m)+ε) := by
-  rcases le_total m (1-m) with h | h
-  · simpa only [min_eq_left h] using h₁
-  · simpa only [min_eq_right h] using h₂
+  grind
 
 theorem squared_bound_of_central_and_error (z : ℂ) (U C E p b ε : ℝ)
     (hU : 1≤U) (hC : 0≤C) (hE : 0≤E) (hε : 0≤ε)
@@ -61,7 +59,7 @@ theorem squared_bound_of_central_and_error (z : ℂ) (U C E p b ε : ℝ)
         congr 1
         norm_num
         ring
-      rw [mul_pow,hp]
+      grind
 
 end SevenEighths.HeckeDyadic
 

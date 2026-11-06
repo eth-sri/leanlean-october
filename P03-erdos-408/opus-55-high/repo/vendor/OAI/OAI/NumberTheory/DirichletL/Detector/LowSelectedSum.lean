@@ -8,15 +8,14 @@ namespace OAI
 
 noncomputable section
 open scoped Classical ContDiff
-open MeasureTheory CompletedGauss
+open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open RayFourExpansion
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma lowSeparatedIntegrand_finite_sum {α : Type*} (F : Finset α) (c : α→ℂ)
     (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ) (hW1 : HasCompactSupport W1) (hΩ : HasCompactSupport Ω)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : α→RayRing→O→ℂ) (v : ℝ) :
+    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : α→RayRing→ActualEisensteinCubic.O→ℂ) (v : ℝ) :
     (∑k∈F,c k*lowSeparatedIntegrand C W0 W1 Ω X Y (B k) v)=
       lowSeparatedIntegrand C W0 W1 Ω X Y (fun σ m=>∑k∈F,c k*B k σ m) v := by
   simp_rw [←lowSeparatedIntegrand_eq C W0 W1 Ω hW1 hΩ X Y hX hY]
@@ -27,16 +26,14 @@ lemma lowSeparatedIntegrand_finite_sum {α : Type*} (F : Finset α) (c : α→�
   apply tsum_congr
   intro r
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  grind
 
 lemma lowSeparatedIntegral_finite_sum {α : Type*} (F : Finset α) (c : α→ℂ)
     (C : CalibrationData) (W0 W1 Ω : ℝ→ℂ)
     (a0 b0 : ℝ) (ha0 : 0<a0) (hW0 : Function.support W0⊆Set.Icc a0 b0)
     (hWs : ContDiff ℝ ∞ W0) (hW1 : HasCompactSupport W1)
     (hΩ : HasCompactSupport Ω) (hΩ0 : Ω 0=0)
-    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : α→RayRing→O→ℂ) :
+    (X Y : ℝ) (hX : 0<X) (hY : 0<Y) (B : α→RayRing→ActualEisensteinCubic.O→ℂ) :
     (∑k∈F,c k*∫v : ℝ,lowSeparatedIntegrand C W0 W1 Ω X Y (B k) v)=
       ∫v : ℝ,lowSeparatedIntegrand C W0 W1 Ω X Y (fun σ m=>∑k∈F,c k*B k σ m) v := by
   simp_rw [←integral_const_mul]
@@ -47,12 +44,12 @@ lemma lowSeparatedIntegral_finite_sum {α : Type*} (F : Finset α) (c : α→ℂ
 
 def lowSelectedInverseRow {α : Type*} (F : Finset α) (c : α→ℂ)
     (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    (D : α→Id) (T t : ℝ) (σ : RayRing) (m : O) : ℂ :=
+    (D : α→Id) (T t : ℝ) (σ : RayRing) (m : ActualEisensteinCubic.O) : ℂ :=
   ∑k∈F,c k*lowMarkedInverseRow η S hS (D k) T t σ m
 
 lemma lowSelectedInverseRow_correction {α : Type*} (F : Finset α) (c : α→ℂ)
     (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
-    (D : α→Id) (T t : ℝ) (σ : RayRing) (m : O) :
+    (D : α→Id) (T t : ℝ) (σ : RayRing) (m : ActualEisensteinCubic.O) :
     lowSelectedInverseRow F c η S hS D T t σ m=
       ∑χ : RayCharacter,ProbeCompleted.correctionCoeff χ*
         ∑k∈F,c k*InverseMoment.markedCompletedT
@@ -63,11 +60,7 @@ lemma lowSelectedInverseRow_correction {α : Type*} (F : Finset α) (c : α→�
   unfold lowSelectedInverseRow lowMarkedInverseRow
   simp only [Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro χ hχ
-  apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  grind
 
 end SevenEighths.ProbePhysical
 end

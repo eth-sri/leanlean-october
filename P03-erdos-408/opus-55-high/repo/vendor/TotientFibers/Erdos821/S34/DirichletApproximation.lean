@@ -16,24 +16,23 @@ theorem scaled_dirichlet_approximation (α Z S : ℝ)
       α = (u : ℝ) / r + β ∧ |β| ≤ (r : ℝ) ^ (-2 : ℤ) ∧ |β| * Z ≤ 2 * S / r := by
   let N := ⌊Z / S⌋₊
   have hN : 0 < N := by
-    have hn : 1 ≤ N := Nat.le_floor (by simpa using hZS)
+    have hn : 1 ≤ N := Nat.le_floor (by linarith)
     omega
   obtain ⟨q, hq, hqr⟩ := Real.exists_rat_abs_sub_le_and_den_le α hN
   have hr : 0 < (q.den : ℝ) := by exact_mod_cast Rat.pos q
   have hNle : (q.den : ℝ) ≤ (N : ℝ) := by exact_mod_cast hqr
   have hNfloor : (N : ℝ) ≤ Z / S := Nat.floor_le (by positivity)
   have hNnext : Z / S < (N : ℝ) + 1 := Nat.lt_floor_add_one _
-  have hcast : (q : ℝ) = (q.num : ℝ) / q.den := by exact Rat.cast_def q
+  have hcast : (q : ℝ) = (q.num : ℝ) / q.den := Rat.cast_def q
   refine ⟨q.num, q.den, α - q, by exact_mod_cast Rat.pos q,
     q.reduced, hNle.trans hNfloor, ?_, ?_, ?_⟩
-  · rw [← hcast]
-    ring
+  · linarith
   · calc
       _ ≤ 1 / (((N : ℝ) + 1) * q.den) := hq
       _ ≤ 1 / (q.den : ℝ) ^ 2 := by
         apply one_div_le_one_div_of_le (sq_pos_of_pos hr)
         nlinarith
-      _ = _ := by simp [zpow_neg, one_div]
+      _ = _ := by simp
   · have hmul : Z ≤ ((N : ℝ) + 1) * S := ((div_lt_iff₀ hS).mp hNnext).le
     have hden : 0 < ((N : ℝ) + 1) * q.den := by positivity
     calc

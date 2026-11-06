@@ -63,9 +63,7 @@ theorem capEmbed_injective (hB : B ≤ B') :
       (r := r) hB) := by
   rintro ⟨z, l, S⟩ ⟨z', l', S'⟩ h
   simp only [capEmbed, Prod.mk.injEq] at h
-  obtain ⟨rfl, rfl, h⟩ := h
-  have hS : S = S' := Subtype.ext (Subtype.mk.inj h)
-  rw [hS]
+  simp_all
 
 /-- A state with memory size at most `B` is embedded. -/
 theorem mem_range_capEmbed (hB : B ≤ B') {s : ChainState x d Y d₀ u v r B'}
@@ -89,7 +87,7 @@ theorem GhostValid.mono {X : Type*} [Fintype X] [DecidableEq X] {hit : X → Pro
 theorem GhostValid.memSize_le {X : Type*} [Fintype X] [DecidableEq X] {hit : X → Prop}
     [DecidablePred hit] {S : X → ℕ} {c : (X → ℕ) × (X → ℕ)} (h : GhostValid hit B S c) :
     memSize c.2 ≤ B :=
-  le_trans (sum_le_sum fun x _ => by omega) h.2.2
+  le_trans (sum_le_sum (by omega)) h.2.2
 
 /-- The memory of a valid ghost output. -/
 theorem ghostOut_val_of_valid {X : Type*} [Fintype X] [DecidableEq X] {hit : X → Prop}
@@ -126,7 +124,7 @@ private theorem chainGhostOut_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x 
       ghostOut_val_of_valid (S := t.2.2) (hiff.1 hv)]
     rfl
   · rw [ghostOut_val_of_not (S := (capEmbed hB t).2.2) hv,
-      ghostOut_val_of_not (S := t.2.2) (fun h => hv (hiff.2 h))]
+      ghostOut_val_of_not (S := t.2.2) (by grind)]
     rfl
 
 /-- For a ghost choice valid for the cap `B'` exactly when it is valid for the cap `B`, the two
@@ -144,7 +142,7 @@ private theorem chainGhostCoef_capEmbed_of_iff (hB : B ≤ B') (t : ChainState x
     rfl
   · rw [chainGhostCoef, chainGhostCoef, ghostCoef, ghostCoef,
       ite_eq_right (show ¬ GhostValid (HitsAt x d (capEmbed hB t).1.1) B'
-        (capEmbed hB t).2.2.1 c from hv), ite_eq_right (fun h => hv (hiff.2 h))]
+        (capEmbed hB t).2.2.1 c from hv), ite_eq_right (by grind)]
 
 /-- If the cap-`B'` ghost output of the embedded state has memory size at most `B`, the
 choice is valid for the cap `B'` exactly when it is valid for the cap `B`. -/
@@ -183,7 +181,7 @@ theorem memSize_chainGhostOut_capEmbed_le (hB : B ≤ B') {N j : ℕ}
     (hc : chainGhostCoef q x d Y d₀ u v r B N j t c ≠ 0) :
     memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB t) c).2.2.1 ≤ B := by
   have hv := ghostValid_of_chainGhostCoef_ne_zero hc
-  rw [chainGhostOut_capEmbed_of_iff hB t c ⟨fun _ => hv, fun h => h.mono hB⟩]
+  rw [chainGhostOut_capEmbed_of_iff hB t c ⟨by grind, fun h => h.mono hB⟩]
   exact memSize_capEmbed_le hB _
 
 /-! ### One edge step -/
@@ -285,7 +283,7 @@ theorem chainVisit_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
   | zero => rfl
   | succ j ih =>
     have hg := chainGhostOut_capEmbed hB (chainVisit s h j.castSucc) (h.1 j.castSucc)
-      (by have := (hs j.castSucc).2; rwa [ih] at this)
+      (by have := (hs j.castSucc).2; simp_all)
     have he := chainEdgeOut_capEmbed hB
       (chainGhostOut x d Y d₀ u v r B (chainVisit s h j.castSucc) (h.1 j.castSucc)) (h.2 j)
       (by have := (hs j.succ).1; rwa [chainVisit_succ, ih, hg] at this)
@@ -299,8 +297,7 @@ theorem chainWeight_capEmbed_of_staysBelow (hB : B ≤ B') {N : ℕ}
     chainWeight q A₀ (capEmbed hB s) h = chainWeight q A₀ s h ∧
       chainEnd (capEmbed hB s) h = capEmbed hB (chainEnd s h) := by
   have hv := chainVisit_capEmbed_of_staysBelow hB hs
-  have hc : ∀ j, memSize (chainGhostOut x d Y d₀ u v r B' (capEmbed hB (chainVisit s h j))
-      (h.1 j)).2.2.1 ≤ B := fun j => by have := (hs j).2; rwa [hv j] at this
+  have hc := fun j => by have := (hs j).2; rwa [hv j] at this
   have hg : ∀ j, chainGhostOut x d Y d₀ u v r B' (chainVisit (capEmbed hB s) h j) (h.1 j) =
       capEmbed hB (chainGhostOut x d Y d₀ u v r B (chainVisit s h j) (h.1 j)) := fun j => by
     rw [hv j]
@@ -328,7 +325,7 @@ theorem coef_ne_zero_of_chainWeight_ne_zero {N : ℕ} {s : ChainState x d Y d₀
           (h.2 j) ≠ 0 := by
   unfold chainWeight at hw
   rw [mul_ne_zero_iff, prod_ne_zero_iff, prod_ne_zero_iff] at hw
-  exact ⟨fun j => hw.1 j (mem_univ j), fun j => hw.2 j (mem_univ j)⟩
+  simp_all
 
 /-- A history of nonzero weight in the cap-`B` chain stays below `B` in the cap-`B'` chain: by
 induction it visits the embedded states there. -/
@@ -381,13 +378,9 @@ theorem birthsDistinct_comp_iff {α β : Type*} {φ : α → β} (hφ : Function
   constructor
   · intro h a a' p ha ha'
     obtain ⟨c, rfl⟩ : a ∈ Set.range φ := by
-      by_contra hc
-      rw [hb a hc] at ha
-      exact absurd ha (by simp)
+      grind
     obtain ⟨c', rfl⟩ : a' ∈ Set.range φ := by
-      by_contra hc
-      rw [hb a' hc] at ha'
-      exact absurd ha' (by simp)
+      grind
     rw [h c c' p ha ha']
   · intro h c c' p hc hc'
     exact hφ (h _ _ p hc hc')
@@ -395,7 +388,7 @@ theorem birthsDistinct_comp_iff {α β : Type*} {φ : α → β} (hφ : Function
 /-- A ghost batch has as many primes as particles. -/
 theorem batchPrimes_length_eq_memSize (n : Particle x d → ℕ) :
     (batchPrimes x d n).length = memSize n := by
-  simp [batchPrimes, memSize, Multiset.card_sum]
+  simp [batchPrimes, memSize]
 
 /-- When every ghost batch has at most `B` particles, the births of a history are distinct in
 the cap-`B` chain if and only if they are distinct in the cap-`B'` chain: the extra batch
@@ -445,8 +438,8 @@ theorem sum_histories_capEmbed (hB : B ≤ B') (N : ℕ) (s : ChainState x d Y d
   have hsub : histories x d Y d₀ u v r B N ⊆ histories x d Y d₀ u v r B' N := by
     intro h hh
     simp only [histories, mem_product, Fintype.mem_piFinset, multBox, mem_range] at hh ⊢
-    exact ⟨fun j => ⟨fun xp => by have := (hh.1 j).1 xp; omega,
-      fun xp => by have := (hh.1 j).2 xp; omega⟩, hh.2⟩
+    exact ⟨fun j => ⟨fun xp => by grind,
+      fun xp => by grind⟩, hh.2⟩
   rw [filter_filter, sum_filter, sum_filter]
   -- on the cap-`B` histories the two summands agree
   have hcongr : ∀ h ∈ histories x d Y d₀ u v r B N,
@@ -458,12 +451,12 @@ theorem sum_histories_capEmbed (hB : B ≤ B') (N : ℕ) (s : ChainState x d Y d
       dsimp only
       split_ifs with h₁ h₂ h₂
       · rw [(chainWeight_capEmbed_of_staysBelow hB h₂.2).1, hw, zero_mul, zero_mul]
-      · rw [hw, zero_mul]
+      · simp_all
       · rw [(chainWeight_capEmbed_of_staysBelow hB h₂.2).1, hw, zero_mul]
-      · rfl
+      simp
     · have hs := staysBelow_capEmbed_of_ne_zero hB hw
       obtain ⟨hw', he'⟩ := chainWeight_capEmbed_of_staysBelow (q := q) (A₀ := A₀) hB hs
-      have hbatch : ∀ j, memSize (h.1 j).2 ≤ B := fun j =>
+      have hbatch := fun j =>
         (ghostValid_of_chainGhostCoef_ne_zero
           ((coef_ne_zero_of_chainWeight_ne_zero hw).1 j)).memSize_le
       rw [hF]
@@ -480,7 +473,7 @@ theorem sum_histories_capEmbed (hB : B ≤ B') (N : ℕ) (s : ChainState x d Y d
     rw [(chainWeight_capEmbed_of_staysBelow hB h₁.2).1] at hw
     refine hh' (mem_histories_of_ne_zero hw fun j => ?_)
     exact (Fintype.mem_piFinset.1 (mem_product.1 hh).2) j
-  · rfl
+  simp
 
 open scoped Classical in
 /-- **The cap comparison**: for caps `B ≤ B'`, `distinctSum(B') - distinctSum(B)` is the sum
@@ -505,7 +498,7 @@ theorem distinctSum_sub_eq (hB : B ≤ B') (N : ℕ) :
         refine ite_eq_right fun h => absurd (mem_range_capEmbed hB ?_) hs
         rw [h.2]
         exact Nat.zero_le _
-      rw [h0, mul_zero, zero_mul]
+      grind
     · rw [sum_histories_capEmbed hB N s]
       rfl
   rw [hB']
@@ -527,9 +520,9 @@ theorem memSize_chainGhostOut_le_add (t : ChainState x d Y d₀ u v r B) (c : Gh
   · simp only [chainGhostOut, ghostOut, hv, dite_true]
     unfold memSize
     rw [← sum_add_distrib]
-    exact sum_le_sum fun xp _ => by omega
+    exact sum_le_sum (by omega)
   · simp only [chainGhostOut, ghostOut, hv, dite_false]
-    exact Nat.le_add_right _ _
+    omega
 
 /-- The stored particles of an edge number at most `K`. -/
 theorem sum_card_stored_le (t : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r) :
@@ -542,11 +535,11 @@ theorem sum_card_stored_le (t : ChainState x d Y d₀ u v r B) (c : EdgeChoice x
         refine sum_le_sum fun i _ => ?_
         rw [← card_filter]
         refine card_le_one.2 fun a ha b hb => Subtype.ext ?_
-        rw [← (mem_filter.1 ha).2, ← (mem_filter.1 hb).2]
-    _ = c.2.1.card := by rw [card_eq_sum_ones]
+        simp_all
+    _ = c.2.1.card := by simp
     _ ≤ K := by
         have := card_le_univ c.2.1
-        rwa [Fintype.card_fin] at this
+        simp_all
 
 /-- An edge adds at most `K` particles to the memory. -/
 theorem memSize_chainEdgeOut_le_add (t : ChainState x d Y d₀ u v r B)
@@ -561,7 +554,7 @@ theorem memSize_chainEdgeOut_le_add (t : ChainState x d Y d₀ u v r B)
           rw [sum_add_distrib]
           exact Nat.add_le_add_left (sum_card_stored_le t c) _
   · simp only [chainEdgeOut, hv, dite_false]
-    exact Nat.le_add_right _ _
+    omega
 
 /-- The memory size at visit `j` is at most the initial size, `K` per edge so far, and the
 batches so far. -/
@@ -581,8 +574,7 @@ theorem memSize_chainVisit_le {N : ℕ} (s : ChainState x d Y d₀ u v r B)
             if i = j.castSucc then memSize (h.1 i).2 else 0 := by
         intro i
         by_cases hi : i = j.castSucc
-        · subst hi
-          simp
+        · simp_all
         · have : i.1 ≠ j.1 := fun h' => hi (Fin.ext h')
           simp only [Fin.val_succ, Fin.val_castSucc, hi, ite_false, add_zero]
           by_cases h₁ : i.1 < j.1
@@ -618,17 +610,11 @@ theorem lt_of_not_staysBelow {N : ℕ} {s : ChainState x d Y d₀ u v r B'}
       _ ≤ ∑ i, memSize (h.1 i).2 := by
           refine sum_le_sum fun i _ => ?_
           by_cases h₁ : i = j
-          · subst h₁
-            simp
+          · simp_all
           · simp only [h₁, ite_false, add_zero]
             split_ifs <;> omega
-  have hjN : K * j.1 ≤ K * N := Nat.mul_le_mul_left K (Nat.lt_succ_iff.1 j.2)
-  by_cases h₁ : B < memSize (chainVisit s h j).2.2.1
-  · rw [hs] at hv
-    linarith
-  · have h₂ := hj (by omega)
-    rw [hs] at hv
-    linarith
+  have hjN := Nat.mul_le_mul_left K (Nat.lt_succ_iff.1 j.2)
+  omega
 
 end Cap
 

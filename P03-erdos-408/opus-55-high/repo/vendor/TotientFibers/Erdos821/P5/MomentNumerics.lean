@@ -5,7 +5,6 @@ public import Erdos821.P5.ExceptionalAsymptotics
 @[expose] public section
 
 noncomputable section
-open Filter
 
 namespace Erdos821.P5Core
 
@@ -98,7 +97,7 @@ theorem moment_numerical_bound (L Y P a b A C : ℝ)
       (show 0 ≤ |Real.log C| + 1 by positivity)
   have hfinal : Real.log R ≤ (|Real.log C| + 30 + 4 * A) *
       (L ^ b + L ^ (1 - a) * Real.log L) := by
-    have hpowb : 0 ≤ L ^ b := Real.rpow_nonneg hLpos.le b
+    have hpowb := Real.rpow_nonneg hLpos.le b
     have hpowlog : 0 ≤ L ^ (1 - a) * Real.log L := by positivity
     have hsecond : 12 * Real.log L + (5 + 2 * A) * (m : ℝ) * Real.log L ≤
         (22 + 4 * A) * (L ^ (1 - a) * Real.log L) := by
@@ -109,11 +108,11 @@ theorem moment_numerical_bound (L Y P a b A C : ℝ)
     have hcoefb := mul_le_mul_of_nonneg_right
       (show |Real.log C| + 2 ≤ |Real.log C| + 30 + 4 * A by linarith) hpowb
     have hcoeflog := mul_le_mul_of_nonneg_right
-      (show 22 + 4 * A ≤ |Real.log C| + 30 + 4 * A by linarith [abs_nonneg (Real.log C)])
+      (show 22 + 4 * A ≤ |Real.log C| + 30 + 4 * A by grind)
       hpowlog
     nlinarith only [hcomb, hcoefb, hcoeflog]
   have h := Real.exp_le_exp.mpr hfinal
   rw [Real.exp_log hRpos] at h
-  exact h
+  omega
 
 end Erdos821.P5Core

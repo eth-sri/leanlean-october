@@ -46,7 +46,7 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
   have hκ0 : 0 < κ := by linarith
   obtain ⟨Cf, KΨ, hCf, -, hmel⟩ := Erdos821.P5Mellin.mellinCutoffTask_proof
     Erdos821.Classical.blueprint_lem_fourier_separation 1 κ⁻¹ κ (fun j => max (M j) 0)
-    one_pos (inv_pos.2 hκ0) ((inv_lt_one_of_one_lt₀ hκ).trans hκ) (fun j => le_max_right _ _)
+    one_pos (by positivity) ((inv_lt_one_of_one_lt₀ hκ).trans hκ) (by simp)
   refine ⟨Cf, KΨ, hCf, fun At hAt => ?_⟩
   obtain ⟨KA, hKA, hx⟩ := hmel At hAt
   refine ⟨KA, hKA, ?_⟩
@@ -57,10 +57,10 @@ theorem exists_mellinCutoff (κ CΨ : ℝ) (M : ℕ → ℝ) (hκ : 1 < κ) :
     Complex.ofRealCLM.contDiff.comp hsm,
     fun y hy => by
       obtain ⟨h₁, h₂⟩ := hsupp y (by simpa using Function.mem_support.1 hy)
-      exact ⟨h₁, h₂⟩,
+      grind,
     fun k y => by
       rw [InsertionMellin.norm_iteratedDeriv_ofReal hsm]
-      exact hder Ψ k y (hbd k y)⟩
+      exact hder Ψ k y (by grind)⟩
   -- transport along `t ↦ (fun _ => t)`
   set e := (MeasurableEquiv.funUnique (Fin 1) ℝ).symm
   have hmp : MeasurePreserving e volume volume := (volume_preserving_funUnique (Fin 1) ℝ).symm
@@ -217,9 +217,9 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
   -- `2π L^{C_f} ≤ L^{C_f + 3}` and `2 ≤ L^{2 C₃}`
   have hL3 : 2 * Real.pi ≤ L ^ (3 : ℝ) := by
     rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-    nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hL 3]
+    nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by positivity) hL 3]
   have hL2C : 2 ≤ L ^ (2 * C₃) := by
-    calc (2 : ℝ) ≤ L ^ (1 : ℝ) := by rw [Real.rpow_one]; exact hL
+    calc (2 : ℝ) ≤ L ^ (1 : ℝ) := by rw [Real.rpow_one]; omega
       _ ≤ L ^ (2 * C₃) := Real.rpow_le_rpow_of_exponent_le hL1 (by
           have := le_max_right B₀ 0; linarith)
   -- the bound at one dyad
@@ -277,7 +277,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
           2 * L ^ |C₁| * 2 ^ m * L ^ |Cabs| := by
       intro ξ
       have hf := (hend ξ).1
-      have h₀ := habs P big hadm (fun _ => ∅) (fun _ _ _ => 1) 1 (fun _ _ _ => by simp) G hco
+      have h₀ := habs P big hadm (fun _ => ∅) (fun _ _ _ => 1) 1 (by simp) G hco
         m hm (-(2 * Real.pi * ξ)) _ hf
       have hν := fun ν => habs P big hadm (fun h => Aν ν h ∪ Bν ν h)
         (comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) ‖β ν‖ (hK ν) G hco m
@@ -290,12 +290,10 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
             add_le_add h₀ ((norm_sum_le _ _).trans (Finset.sum_le_sum fun ν _ => hν ν))
         _ = (1 + ∑ ν, ‖β ν‖) * (2 ^ m * L ^ Cabs) := by
             rw [add_mul, Finset.sum_mul]
-            congr 1
-            · ring
-            · exact Finset.sum_congr rfl fun ν _ => by ring
+            ring
         _ ≤ (L ^ |C₁| + L ^ |C₁|) * (2 ^ m * L ^ |Cabs|) := by
             gcongr
-            exact hβ.trans hC₁
+            linarith
         _ = 2 * L ^ |C₁| * 2 ^ m * L ^ |Cabs| := by ring
     have hsplit := norm_integral_mul_le_of_split hαi (by positivity) hin₁ hin₂
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_of_nonneg hX.le]
@@ -311,7 +309,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
           field_simp
       _ = b₀ := by
           rw [← Real.rpow_add hL0, ← Real.rpow_add hL0, ← Real.rpow_add hL0, hb₀]
-          congr 3 <;> ring
+          ring
   rw [hG2 P big hadm N (fun ν h => Aν ν h ∪ Bν ν h)
     (fun ν => comparisonKernel (Aν ν) (Bν ν) (β ν) (φ ν) (φ' ν) (ψ ν) (ψ' ν)) F G Ψ α
     hcu.2.1 hαi hαrep]
@@ -335,7 +333,7 @@ theorem eventually_norm_cutoffPairing_family_le (hG : GraphTransference)
     _ = L * (dyads x).card * b₀ := by rw [Finset.sum_const, nsmul_eq_mul]; ring
     _ ≤ L * (4 * L) * b₀ := by gcongr
     _ = 4 * |Cgr| * (L * L * L ^ (-A - 2)) + 8 * KA * (L * L * L ^ (-|A| - 4)) := by
-        rw [hb₀]; ring
+        linarith
     _ ≤ (4 * |Cgr| + 8 * KA) * L ^ (-A) := by
         rw [e₁, e₂]
         nlinarith [abs_nonneg Cgr]

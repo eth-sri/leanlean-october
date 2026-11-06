@@ -40,12 +40,12 @@ omit [DecidableEq ι] in
 /-- `T ≥ 0`. -/
 lemma targetMass_nonneg {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
     (C : ι → Finset (Fin J)) : 0 ≤ targetMass P C :=
-  prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (hV g).le) _
+  prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2 (by grind)) _
 
 /-- `Λ ≥ 0`. -/
 lemma listWeight_nonneg (P : ι → Finset ℕ) {q₀ : ℝ} (hq₀ : 0 < q₀) (C : ι → Finset (Fin J))
     (n : ℕ) : 0 ≤ listWeight P q₀ C n :=
-  mul_nonneg (zpow_nonneg hq₀.le _) (Nat.cast_nonneg _)
+  mul_nonneg (by positivity) (Nat.cast_nonneg _)
 
 /-- The ℕ-subtracted damping is at most the integer one. -/
 private lemma pow_sub_le_zpow {q₀ : ℝ} (hq₀ : 0 < q₀) (hq₀₁ : q₀ ≤ 1) (k M : ℕ) :
@@ -73,15 +73,15 @@ lemma listDamping_le (P : ι → Finset ℕ) {q₀ : ℝ} (hq₀ : 0 < q₀) (hq
     push_cast at h' ⊢
     linarith
   · unfold harmonicMass
-    exact sum_nonneg fun p _ => by positivity
+    positivity
 
 omit [DecidableEq ι] in
 /-- The stripped damping is nonnegative. -/
 lemma listDamping_nonneg (P : ι → Finset ℕ) {q₀ : ℝ} (hq₀ : 0 < q₀)
     (hV : ∀ g, 0 < harmonicMass (P g)) (C : ι → Finset (Fin J)) (n : ℕ) :
     0 ≤ listDamping P q₀ C n :=
-  mul_nonneg (zpow_nonneg hq₀.le _) (prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2
-    (hV g).le) _)
+  mul_nonneg (by positivity) (prod_nonneg fun g _ => pow_nonneg (inv_nonneg.2
+    (by grind)) _)
 
 /-- **The physical summand, absolutely.** -/
 lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Prime)
@@ -125,8 +125,8 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
           M₀ * LF * LG / w *
           q₀ ^ ((groupPrimeCount P (DR * w) : ℤ) - ((J + 1) * Fintype.card ι : ℕ)) *
           q₀ ^ ((groupPrimeCount P (DR * (w + DC)) : ℤ) - ((J + 1) * Fintype.card ι : ℕ))) :=
-    fun c d _ _ => mul_nonneg (mul_nonneg (by split_ifs <;> norm_num)
-      (by split_ifs <;> norm_num)) hR
+    fun c d _ _ => mul_nonneg (mul_nonneg (by positivity)
+      (by positivity)) hR
   by_cases hN : DR * w ≤ ⌊x ^ 2⌋₊
   · rw [ite_eq_left hN]
     unfold physTerm
@@ -134,14 +134,14 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
     · rw [ite_eq_left hc]
       obtain ⟨h₁, h₂, -⟩ := hc
       have hE : edgeProduct C (merge C s l) a = DR * DC := edgeProduct_merge C s l a
-      have hl : ∀ g, ∀ j ∈ unsharedSlots C g, l g j ∣ DR * w := fun g j hj => by
+      have hl := fun g j hj => by
         have := (h₁ g).2 j
         rwa [merge_of_mem hj] at this
-      have hl' : ∀ g, ∀ j ∈ unsharedSlots C g, l' g j ∣ DR * (w + DC) := fun g j hj => by
+      have hl' := fun g j hj => by
         have := (h₂ g).2 j
         rwa [merge_of_mem hj, hE, ← mul_add] at this
       rw [ite_eq_left hl, ite_eq_left hl', one_mul, one_mul]
-      have hLF : |F (DR * w)| ≤ LF :=
+      have hLF :=
         hF _ (Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero hDR.ne' (by omega))) hN
       unfold physValue
       rw [hE, physWeight_eq hprime hs a, show DR * w + DR * DC = DR * (w + DC) by ring]
@@ -152,7 +152,7 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
       unfold targetMass at hW0 ⊢
       rw [abs_of_nonneg hW0]
       have hDRw : (0 : ℝ) < ((DR * w : ℕ) : ℝ) := by
-        have : 0 < DR * w := Nat.mul_pos hDR hw
+        have  := Nat.mul_pos hDR hw
         exact_mod_cast this
       have hq₁ := pow_sub_le_zpow hq₀ hq₀₁ (groupPrimeCount P (DR * w))
         ((J + 1) * Fintype.card ι)
@@ -167,16 +167,15 @@ lemma norm_physTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀ g, �
               q₀ ^ ((groupPrimeCount P (DR * (w + DC)) : ℤ) -
                 ((J + 1) * Fintype.card ι : ℕ))) := by
             gcongr
-            · exact hK _ _ _
-            · exact hΨ _
-            · exact hG _
+            · grind
+            · grind
+            grind
         _ = _ := by
-            push_cast
-            field_simp
+            grind
     · rw [ite_eq_right hc, norm_zero]
-      exact hR' _ _
+      positivity
   · rw [ite_eq_right hN, norm_zero]
-    exact hR' _ _
+    positivity
 
 /-- **The stripped summand, absolutely.** -/
 lemma norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 0 < harmonicMass (P g))
@@ -220,14 +219,13 @@ lemma norm_stripTerm_le {x q₀ : ℝ} {P : ι → Finset ℕ} (hV : ∀ g, 0 < 
               (targetMass P C * q₀ ^ ((groupPrimeCount P (w + slotProduct C a) : ℤ) -
                 ((J + 1) * Fintype.card ι : ℕ))))) * κK := by
           gcongr
-          · exact hΨ _
-          · exact hF w hw₁ hwN
-          · exact hG _
-          · exact hK _ _ _
+          · simp_all
+          · simp_all
+          · simp_all
+          simp_all
       _ = _ := by ring
   · rw [ite_eq_right hl, norm_zero, mul_zero]
-    refine mul_nonneg (mul_nonneg ?_ ?_) (mul_nonneg (mul_nonneg (by positivity)
-      (zpow_nonneg hq₀.le _)) (zpow_nonneg hq₀.le _)) <;> split_ifs <;> norm_num
+    positivity
 
 end Restore
 

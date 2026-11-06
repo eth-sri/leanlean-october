@@ -8,7 +8,6 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedTruncation
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentReflectionRetainedLength
 open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation
@@ -19,7 +18,7 @@ lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y) (n : ℤ)
   obtain ⟨hr,q,hq,hne⟩ := (retainedAnnuli_mem R Y hY n).mp hn
   have hs := (dyadicWeight_support n hne).2.le
   have hh := mul_le_mul_of_nonneg_right (hq.trans hs) hY.le
-  simpa only [inv_mul_cancel₀ hY.ne'] using hh
+  grind
 
 theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     (hbox : 1≤box) (hxi : 0<xi) :
@@ -42,7 +41,7 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     calc
       _≤4*Z^(xi/4) := retained_scale_le _ n ((retainedAnnuli_mem _ _ hY n).mp hn).1
       _≤Z^(xi/4)*Z^(xi/4) := mul_le_mul_of_nonneg_right h4 (by positivity)
-      _=Z^(xi/2) := by rw [←Real.rpow_add hz];congr 1;ring
+      _=Z^(xi/2) := by rw [←Real.rpow_add hz];ring
   have hlo := retained_scale_lower _ _ hY n hn
   have hraw := reflected_scale_bound Z M a xi C Q R d h (dyadicScale n)
     hZ hC.le hQ.le hd.le (dyadicScale_pos n).le hcap hdR hh hs
@@ -56,7 +55,7 @@ theorem eventually_actual_retained_length (C box xi : ℝ) (hC : 0<C)
     _≤box*(C*Z^(M-a+xi/2)) := mul_le_mul_of_nonneg_left hraw (by linarith)
     _=(box*C)*Z^(M-a+xi/2) :=by ring
     _≤Z^(xi/2)*Z^(M-a+xi/2) :=mul_le_mul_of_nonneg_right hconst (by positivity)
-    _=Z^(M-a+xi) :=by rw [←Real.rpow_add hz];congr 1;ring
+    _=Z^(M-a+xi) :=by rw [←Real.rpow_add hz];ring
 
 end SevenEighths.CenteredMomentReflectionRetainedLength
 

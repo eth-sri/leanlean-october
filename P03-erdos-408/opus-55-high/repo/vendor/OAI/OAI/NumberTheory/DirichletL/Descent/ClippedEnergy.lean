@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeWindowEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge
+open scoped Classical FourierTransform ContDiff
+open MeasureTheory
 
 namespace SevenEighths.InverseMoment
 open InverseInitialClippedColumns InverseInitialOverlapFourier CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem normalized_energy_vector
-    (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (labels:Finset (Ideal O))(rows:Finset O)(D:Ideal O→ℝ)(hD:∀f∈labels,0≤D f)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)(D:Ideal ActualEisensteinCubic.O→ℝ)(hD:∀f∈labels,0≤D f)
     (W:ℝ→ℂ)(X Z F:ℝ):
     (∑v:labels×rows,‖(Real.sqrt (D v.1):ℂ)*((Z^(-F/2):ℝ):ℂ)*
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m (primaryGenerator v.1) v.2 slots lists a W X‖^2)=
@@ -38,8 +37,8 @@ theorem normalized_energy_vector
 
 theorem canonical_clipped_energy
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
-    (labels:Finset (Ideal O))(rows:Finset O)(D:Ideal O→ℝ)(hD:∀f∈labels,0≤D f)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O)(D:Ideal ActualEisensteinCubic.O→ℝ)(hD:∀f∈labels,0≤D f)
     (W:ℝ→ℂ)(lo hi:ℝ)(hlo:0<lo)(hs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
     (wFresh:ℝ→ℂ)(c θ X Z F E:ℝ)(J:ℕ)(hc:0<c)(hX:0<X)(hE:0≤E)
     (hw:∀y,0<y→wFresh y*W (c*y)=W (c*y))

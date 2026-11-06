@@ -10,27 +10,24 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSecondHeightFamily
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyZeroGrowthPhysicalReindex CenteredMomentSourceInputReindex
+open HeckeFamily CenteredMomentSecondHeightFamily
+open CenteredMomentEnergyBands
+open CenteredMomentAmplificationChildInput
+open CenteredMomentEnergyZeroGrowthPhysicalReindex
 open CenteredMomentEnergyZeroBalancedAdmission CenteredMomentEnergyZeroBalancedDictionary
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
 open CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission
 open CenteredMomentEnergyCanonicalHighPhysical CenteredMomentEnergyZeroGrowthSource
 open CenteredMomentEnergyStageMargins CenteredMomentNaturalFixedRaySource
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
 open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceReduction
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_growth_physical
     (Wslot:ℝ→ℂ)(aslot bslot Lslot lo hi κ a b bΦ Bmask Lgoal Lchild Mparent Mchild
@@ -90,7 +87,7 @@ theorem actual_growth_physical
   intro Z hZZ k εchild C₀ C₁ rho hchild hC₀ hC₁ hzero hpos
   have hZbaseLe:Zbase≤Z:=(le_max_left _ _).trans hZZ
   have hn:=hZnum Z ((le_max_right _ _).trans hZZ)
-  have hZ:1<Z:=hn.1.1
+  have hZ:=hn.1.1
   intro s hQ hsLower hs p t X₁ X₂ hX₁ hX₂ hc₁ hc₂ hlarge
   dsimp only
   intro hfour
@@ -125,8 +122,7 @@ theorem actual_growth_physical
     (columnLoss Mschedule Bschedule ε k) hr.le hdecl
     (by
       change length Z X₁+length Z X₂+6*κ*(∑i:(∅:Finset α),(0:ℝ))≤_
-      simpa only [Finset.sum_const_zero,mul_zero,add_zero] using
-        le_max_right s.width (length Z X₁+length Z X₂))
+      simp)
     (hgate.2.1.trans (le_max_left _ _)) hgate.2.1 (by linarith)
     hn.2.2 (by simp [lowerFactor]) (le_max_left _ _)
     hfour.1 hfour.2.1 hfour.2.2.1 hfour.2.2.2 (hn.1.2 k εchild hchild)

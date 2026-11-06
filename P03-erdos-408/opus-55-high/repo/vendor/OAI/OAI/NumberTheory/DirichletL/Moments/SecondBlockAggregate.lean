@@ -11,10 +11,10 @@ public import OAI.NumberTheory.DirichletL.Moments.ActiveSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondBlockAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentCanonicalFirst
 open CenteredMomentSecondLocalization CenteredMomentSecondSectorFrequency
 open CenteredMomentSecondSectorRetained CenteredMomentSecondSectorColumns
@@ -24,32 +24,30 @@ open CenteredMomentSectorLocalization CenteredMomentActiveSource
 open CenteredMomentSecondRetainedAggregate CenteredMomentSecondRetainedRows
 open CenteredMomentSecondActiveDyadic CenteredMomentSecondDyadicPartition
 open CenteredMomentSecondPhysicalWindow CenteredMomentSecondPhysicalBlock CenteredMomentSecondWholeKernel
-local notation "O" => ActualEisensteinCubic.O
 
-abbrev ActiveLabel (S : Finset (Ideal O)) (β : Ideal O→ℂ) :=
+abbrev ActiveLabel (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) :=
   ↥(commonLabels (supportedColumns (activeSource S β)) (supportedColumns (activeSource S β)))
 
-abbrev SourceBlocks (C D : Ideal O) (U : Finset (CommonIndex C D)) (K R H : ℝ) :=
+abbrev SourceBlocks (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) (K R H : ℝ) :=
   Blocks (sourceLower C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K)
     (sourceUpper C D (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) K R H)
 
-lemma retainedRows_ne_zero (R : ℝ) (A z : O) (hz : z∈retainedRows R A) : z≠0 := by
+lemma retainedRows_ne_zero (R : ℝ) (A z : ActualEisensteinCubic.O) (hz : z∈retainedRows R A) : z≠0 := by
   have hp := (mem_rowNormDisk.mp hz).1
-  intro h
-  simp [h] at hp
+  simp_all
 
 theorem active_kernel_windows (η : Character)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (H : ℝ)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
-    (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+    (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (I : sectorPool C hC.1 (activeSource S β)) (J : sectorPool D hD.1 (activeSource S β))
-    (A h : O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
+    (A h : ActualEisensteinCubic.O) (hA : A≠0) (hh : h≠0) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
     physicalKernel C D W K R (A*h) I J=
       ∑ n : Blocks (sourceLower C D A K) (sourceUpper C D A K R H),
         physicalKernel C D W K R (A*h) I J*
           ((dyadicWeight (n 0) (secondEffectiveScale C D A K)*dyadicWeight (n 1) (normValue h)*
-            dyadicWeight (n 2) (Ideal.absNorm (I:Ideal O):ℝ)*
-            dyadicWeight (n 3) (Ideal.absNorm (J:Ideal O):ℝ):ℝ):ℂ) := by
+            dyadicWeight (n 2) (Ideal.absNorm (I:Ideal ActualEisensteinCubic.O):ℝ)*
+            dyadicWeight (n 3) (Ideal.absNorm (J:Ideal ActualEisensteinCubic.O):ℝ):ℝ):ℂ) := by
   refine (active_physical_kernel_partition η S β H hH C D hC hD I J A h hA W K R hK).trans ?_
   apply Finset.sum_congr rfl
   intro n hn
@@ -58,9 +56,9 @@ theorem active_kernel_windows (η : Character)
     A h hA hh W K R hK (fun i=>n i)).symm
 
 theorem sector_finite_blocks (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (H : ℝ)
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (H : ℝ)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
-    (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+    (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (U : Finset (CommonIndex C D)) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (hK : 0<K) :
     let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
     (∑h∈retainedRows R A,if canonicalPartition C D U (nonunitFrequencyGenerator C D U*h) then
@@ -69,7 +67,7 @@ theorem sector_finite_blocks (η : Character) (t : ℝ)
         physicalBlock η t (activeSource S β) β C D hC hD U R (retainedRows R A) W K
           (fun i=>(n i:ℤ)) := by
   dsimp only
-  have hA : commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U≠0 :=
+  have hA :=
     mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
       (nonunitFrequencyGenerator_ne_zero C D hC U)
   unfold physicalBlock
@@ -90,7 +88,7 @@ theorem sector_finite_blocks (η : Character) (t : ℝ)
   · simp only [hp,ite_false,Finset.sum_const_zero]
 
 theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (W : 𝓢(ℝ,ℂ))
+    (S : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→ℂ) (W : 𝓢(ℝ,ℂ))
     (K Tsec Z ξ H : ℝ) (hK : 0<K)
     (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H) :
     secondRetainedEnergy η t S β W K Tsec Z ξ=
@@ -114,13 +112,13 @@ theorem original_secondRetainedEnergy_blocks (η : Character) (t : ℝ)
   rw [actual_GV_finite_rows]
   exact sector_finite_blocks η t S β H hH _ _ _ _ U W K _ hK
 
-lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal O)
+lemma common_height_norm_le_one (η : Character) (t : ℝ) (C D : Ideal ActualEisensteinCubic.O)
     (hC : C≠0) (hD : D≠0) :
     ‖heightCoeff η t C*star (heightCoeff η t D)‖≤1 := by
   rw [norm_mul,norm_star]
   have hc := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t C hC
   have hd := CenteredMomentSourceSecondZeroEnergy.heightCoeff_norm_le_one η t D hD
-  nlinarith [norm_nonneg (heightCoeff η t C),norm_nonneg (heightCoeff η t D)]
+  nlinarith [norm_nonneg (heightCoeff η t D)]
 
 end SevenEighths.CenteredMomentSecondBlockAggregate
 

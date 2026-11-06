@@ -8,19 +8,17 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open scoped Classical
+open SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
+local instance : Fintype ActualEisensteinCubic.Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def SecondPairCanonicalAt {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ) : Prop :=
-∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+def SecondPairCanonicalAt {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : ActualEisensteinCubic.Oˣ) : Prop :=
+∀ (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
       (A₁ A₂ : Finset ι), A₁ ⊆ x.cube.support∪x.firstCommon → A₂ ⊆ x.cube.support∪x.firstCommon →
       ∀ (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
       (ω₁ ω₂ : ℝ → ℂ) (G₀ E₀ V₀ K₀ X₀ : ℝ) (t : JointLogSeparation.Frequency × (Fin 6 → ℝ)),
@@ -42,7 +40,7 @@ theorem exists_second_uniform_sectors
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source) :
-    ∃ sector : MarkedSecondSource ι Jo 0 → Eisˣ × Eisˣ,
+    ∃ sector : MarkedSecondSource ι Jo 0 → ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ,
       ∀ x ∈ source, SecondPairCanonicalAt (σ:=σ) p hp hcop hg x (sector x).1 (sector x).2 := by
   have he (x : {x // x ∈ source}) :=
     actual_second_separated_pair_canonical p hp hcop hg hpr (σ:=σ) x.val
@@ -55,20 +53,20 @@ theorem exists_second_uniform_sectors
   simpa only [sector,dite_eq_left hx,SecondPairCanonicalAt] using hu ⟨x,hx⟩
 
 def secondSourceSector {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
-    (sector : MarkedSecondSource ι Jo Jn → Eisˣ × Eisˣ) (uv : Eisˣ × Eisˣ) :
+    (sector : MarkedSecondSource ι Jo Jn → ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ) (uv : ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ) :
     Finset (MarkedSecondSource ι Jo Jn) := source.filter (fun x => sector x = uv)
 
 omit [DecidableEq ι] in
 theorem secondSourceSector_partition {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn))
-    (sector : MarkedSecondSource ι Jo Jn → Eisˣ × Eisˣ) (H : MarkedSecondSource ι Jo Jn → ℂ) :
-    ∑ x ∈ source,H x = ∑ uv : Eisˣ × Eisˣ,∑ x ∈ secondSourceSector source sector uv,H x :=
+    (sector : MarkedSecondSource ι Jo Jn → ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ) (H : MarkedSecondSource ι Jo Jn → ℂ) :
+    ∑ x ∈ source,H x = ∑ uv : ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ,∑ x ∈ secondSourceSector source sector uv,H x :=
   (Finset.sum_fiberwise source sector H).symm
 
-theorem second_unit_sector_card : Fintype.card (Eisˣ × Eisˣ) = 36 := by
-  have hc : Fintype.card Eisˣ = 6 := by
+theorem second_unit_sector_card : Fintype.card (ActualEisensteinCubic.Oˣ × ActualEisensteinCubic.Oˣ) = 36 := by
+  have hc : Fintype.card ActualEisensteinCubic.Oˣ = 6 := by
     simpa only [Nat.card_eq_fintype_card] using PrimaryIdealUnitReindex.card_units_eq_six
-  rw [Fintype.card_prod,hc]
+  simp_all
 
 end
 end SevenEighths.InverseMoment

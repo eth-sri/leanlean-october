@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.RawAssembly
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -30,14 +29,7 @@ lemma idealFullPair_sum_source {P : PrimeGroups} {M : ℕ} {ι : Type*}
       exact Finset.sum_comm
     _ = ∑ i ∈ V, ∑ a, ∑ b, term a b i := Finset.sum_comm
     _ = _ := by
-      apply Finset.sum_congr rfl
-      intro i _
-      apply Finset.sum_congr rfl
-      intro a _
-      apply Finset.sum_congr rfl
-      intro b _
-      dsimp [term]
-      ring
+      grind
 
 lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
     (K : P.BigLabels M → P.BigLabels M → ℂ) (V : Finset ι)
@@ -56,14 +48,7 @@ lemma idealFullPair_sum_target {P : PrimeGroups} {M : ℕ} {ι : Type*}
       exact Finset.sum_comm
     _ = ∑ i ∈ V, ∑ a, ∑ b, term a b i := Finset.sum_comm
     _ = _ := by
-      apply Finset.sum_congr rfl
-      intro i _
-      apply Finset.sum_congr rfl
-      intro a _
-      apply Finset.sum_congr rfl
-      intro b _
-      dsimp [term]
-      ring
+      grind
 
 lemma idealFullPair_sub_source {P : PrimeGroups} {M : ℕ}
     (K : P.BigLabels M → P.BigLabels M → ℂ) (f h g : P.BigLabels M → ℂ) :
@@ -80,8 +65,6 @@ lemma idealFullPair_sum_both {P : PrimeGroups} {M : ℕ} {ι κ : Type*}
   apply Finset.sum_congr rfl
   intro i _
   rw [idealFullPair_sum_target, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro j _
   ring
 
 lemma idealFullPair_sub_target {P : PrimeGroups} {M : ℕ}

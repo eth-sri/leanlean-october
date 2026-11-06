@@ -10,7 +10,6 @@ its total tilted mass by a point mass. -/
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
@@ -65,7 +64,7 @@ theorem tilted_prod_relabel_all (F : FixedData) (n : ℕ) {M : ℕ} (a : P.Label
   have key := prod_update_mul f (g, h) (tiltedMu F P n g.val p)
   rw [← hpt] at key
   rw [Fintype.prod_prod_type, Fintype.prod_prod_type] at key
-  exact key
+  omega
 
 theorem memoryMass_relabel (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell))
     (g : P.BigGroup) (h : Fin (J + F.ell)) (p : P.Prime g.val) :
@@ -77,20 +76,10 @@ theorem memoryMass_relabel (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F
   split_ifs with h1 h2 h2
   · simp only [relabelState]
     have key := tilted_prod_relabel_all F n z.2.1 g h p
-    calc (Fintype.card P.SmallResidues : ℝ)⁻¹ *
-          (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-          (∏ g' : P.BigGroup, ∏ i, tiltedMu F P n g'.val (relabelLabels z.2.1 g h p g'.val i)) *
-          (∏ g : P.BigGroup, P.groupMemoryMass F n g.val (z.2.2 g)) *
-          tiltedMu F P n g.val (z.2.1 g.val h)
-        = ((∏ g' : P.BigGroup, ∏ i, tiltedMu F P n g'.val (relabelLabels z.2.1 g h p g'.val i)) *
-            tiltedMu F P n g.val (z.2.1 g.val h)) *
-          ((Fintype.card P.SmallResidues : ℝ)⁻¹ *
-            (∏ g : P.SmallGroup, (P.V g.val) ^ (-(J + F.ell : ℕ) : ℤ)) *
-            (∏ g : P.BigGroup, P.groupMemoryMass F n g.val (z.2.2 g))) := by ring
-      _ = _ := by rw [key]; ring
-  · exact absurd (hiff.mp h1) h2
-  · exact absurd (hiff.mpr h2) h1
-  · rw [zero_mul, zero_mul]
+    grind
+  · simp_all
+  · simp_all
+  simp
 
 /-- Initial boundary term: empty memory and absolute mass. -/
 def initTerm (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell)) : ℝ :=
@@ -99,9 +88,7 @@ def initTerm (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell)) : ℝ :
 theorem initTerm_nonneg (F : FixedData) (J n : ℕ) (z : P.MemoryState (J + F.ell)) :
     0 ≤ initTerm F J n z := by
   unfold initTerm
-  split_ifs
-  · exact abs_nonneg _
-  · exact le_rfl
+  positivity
 
 theorem init_single (F : FixedData) (J n B : ℕ)
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
@@ -119,18 +106,16 @@ theorem init_single (F : FixedData) (J n B : ℕ)
   have hR0 : 0 ≤ ∑ z : BoundedMemoryState P (J + F.ell) B,
       (if Q z.val then initTerm F J n z.val else 0) :=
     Finset.sum_nonneg fun z _ => by
-      split_ifs
-      · exact hf0 z
-      · exact le_rfl
+      grind
   have hRHS0 := mul_nonneg (muHat_nonneg F P n hμ g vx) hR0
   by_cases hvx : vx ∈ P.primes g.val
   swap
   · have hz : ∀ z : BoundedMemoryState P (J + F.ell) B,
         ¬ (Q z.val ∧ (z.val.2.1 g.val h).val = vx) := by
       rintro z ⟨-, he⟩
-      exact hvx (he ▸ (z.val.2.1 g.val h).property)
-    rw [Finset.sum_eq_zero fun z _ => ite_eq_right (hz z)]
-    exact hRHS0
+      exact by grind
+    rw [Finset.sum_eq_zero (by grind)]
+    omega
   let α : P.Prime g.val := ⟨vx, hvx⟩
   have hmu : muHat F P n g vx = tiltedMu F P n g.val α := muHat_of_mem F P n g α
   let T := Finset.univ.filter (fun z : BoundedMemoryState P (J + F.ell) B =>
@@ -143,15 +128,15 @@ theorem init_single (F : FixedData) (J n B : ℕ)
     apply Finset.sum_congr rfl
     intro z _
     by_cases hc : Q z.val ∧ z.val.2.1 g.val h = α
-    · rw [ite_eq_left ⟨hc.1, congrArg Subtype.val hc.2⟩, ite_eq_left hc]
-    · rw [ite_eq_right (fun h' => hc ⟨h'.1, Subtype.ext h'.2⟩), ite_eq_right hc]
+    · grind
+    · grind
   have hS : (∑ z : BoundedMemoryState P (J + F.ell) B,
       (if Q z.val then initTerm F J n z.val else 0)) = ∑ z ∈ S, initTerm F J n z.val :=
     (Finset.sum_filter _ _).symm
   have key := relabel_sum_le (fun z : BoundedMemoryState P (J + F.ell) B => initTerm F J n z.val)
     T S Finset.univ (fun z p => relabelB g h p z) (tiltedMu F P n g.val)
     (tiltedMu F P n g.val α) 1
-    (fun z _ => hf0 z) (fun z _ => hf0 z) (hμ _ _).le one_pos (hmass1 g)
+    (fun z _ => hf0 z) (fun z _ => hf0 z) (by grind) one_pos (hmass1 g)
     (by
       intro z hz p _
       rw [Finset.mem_filter] at hz ⊢
@@ -167,15 +152,15 @@ theorem init_single (F : FixedData) (J n B : ℕ)
         rwa [relabelLabels_self, relabelLabels_self] at h3
       refine ⟨?_, hp⟩
       apply Subtype.ext
-      have h1 : z1.val.2.1 g.val h = α := (Finset.mem_filter.1 hz1).2.2
-      have h2 : z2.val.2.1 g.val h = α := (Finset.mem_filter.1 hz2).2.2
+      have h1 := (Finset.mem_filter.1 hz1).2.2
+      have h2 := (Finset.mem_filter.1 hz2).2.2
       calc z1.val = relabelState g h α (relabelState g h p1 z1.val) := by
             rw [relabelState_relabel, ← h1, relabelState_eq_self]
-        _ = relabelState g h α (relabelState g h p2 z2.val) := by rw [he']
+        _ = relabelState g h α (relabelState g h p2 z2.val) := by grind
         _ = z2.val := by rw [relabelState_relabel, ← h2, relabelState_eq_self])
     (by
       intro z hz p _
-      have hlab : z.val.2.1 g.val h = α := (Finset.mem_filter.1 hz).2.2
+      have hlab := (Finset.mem_filter.1 hz).2.2
       change initTerm F J n z.val * tiltedMu F P n g.val p =
         initTerm F J n (relabelState g h p z.val) * tiltedMu F P n g.val α
       unfold initTerm
@@ -184,12 +169,10 @@ theorem init_single (F : FixedData) (J n B : ℕ)
         rw [ite_eq_left hem, ite_eq_left hem']
         have hM := congrArg abs (memoryMass_relabel F J n z.val g h p)
         rw [abs_mul, abs_mul, abs_of_pos (hμ _ _), abs_of_pos (hμ _ _), hlab] at hM
-        exact hM.symm
+        linarith
       · have hem' : ¬ ∀ g', (relabelState g h p z.val).2.2 g' = 0 := hem
-        rw [ite_eq_right hem, ite_eq_right hem', zero_mul, zero_mul])
-  rw [hLHS, hS, hmu]
-  calc _ ≤ tiltedMu F P n g.val α / 1 * ∑ z ∈ S, initTerm F J n z.val := key
-    _ = _ := by ring
+        grind)
+  grind
 
 theorem init_slots (F : FixedData) (J n B : ℕ)
     (hμ : ∀ (g : P.BigGroup) (p : P.Prime g.val), 0 < tiltedMu F P n g.val p)
@@ -212,15 +195,8 @@ theorem init_slots (F : FixedData) (J n B : ℕ)
             then initTerm F J n z.val else 0) := by
         intro z
         by_cases h1 : ∀ x ∈ insert y S, (z.val.2.1 x.1.val x.2).val = vals x
-        · rw [ite_eq_left h1, ite_eq_left ⟨fun x hx => h1 x (Finset.mem_insert_of_mem hx),
-            h1 y (Finset.mem_insert_self y S)⟩]
-        · rw [ite_eq_right h1, ite_eq_right]
-          rintro ⟨h2, h3⟩
-          apply h1
-          intro x hx
-          rcases Finset.mem_insert.1 hx with rfl | hx
-          · exact h3
-          · exact h2 x hx
+        · grind
+        · grind
       rw [Finset.sum_congr rfl (fun z _ => hrw z)]
       have hQ : ∀ (p : P.Prime y.1.val) (z : P.MemoryState (J + F.ell)),
           (∀ x ∈ S, ((relabelState y.1 y.2 p z).2.1 x.1.val x.2).val = vals x) ↔
@@ -235,18 +211,18 @@ theorem init_slots (F : FixedData) (J n B : ℕ)
             exact hy hxS
           change (relabelLabels z.2.1 y.1 y.2 p x.1.val x.2).val = vals x ↔ _
           rw [relabelLabels_of_ne _ y.1 y.2 p x.1 x.2 hne]
-        exact ⟨fun h x hxS => (hx x hxS).mp (h x hxS), fun h x hxS => (hx x hxS).mpr (h x hxS)⟩
+        exact by grind
       have hstep := init_single F J n B hμ hmass1
         (fun z => ∀ x ∈ S, (z.2.1 x.1.val x.2).val = vals x) y hQ (vals y)
       have hm0 : 0 ≤ muHat F P n y.1 (vals y) := muHat_nonneg F P n hμ _ _
       calc _ ≤ muHat F P n y.1 (vals y) * ∑ z : BoundedMemoryState P (J + F.ell) B,
               (if ∀ x ∈ S, (z.val.2.1 x.1.val x.2).val = vals x
                 then initTerm F J n z.val else 0) := by
-            convert hstep
+            grind
         _ ≤ muHat F P n y.1 (vals y) * ((∏ x ∈ S, muHat F P n x.1 (vals x)) *
               ∑ z : BoundedMemoryState P (J + F.ell) B, initTerm F J n z.val) :=
             mul_le_mul_of_nonneg_left ih hm0
-        _ = _ := by rw [Finset.prod_insert hy]; ring
+        _ = _ := by grind
 
 theorem initTerm_sum_le {J m : ℕ} (A : Model F P J m) (n B : ℕ) :
     ∑ z : BoundedMemoryState P (J + F.ell) B, initTerm F J n z.val ≤
@@ -266,6 +242,6 @@ theorem initTerm_sum_le {J m : ℕ} (A : Model F P J m) (n B : ℕ) :
         simp only [T, Finset.mem_map, Finset.mem_filter, Finset.mem_univ, true_and,
           Function.Embedding.coe_subtype] at hx
         obtain ⟨s, hs, rfl⟩ := hx
-        exact hs
+        omega
 
 end Erdos821.P3High

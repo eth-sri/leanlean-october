@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowth
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthChild
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyProfiles CenteredMomentLattice
+open HeckeDyadic QuadraticInitialBound
+open CenteredMomentEnergyProfiles
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyZeroGrowth CenteredMomentEnergyZeroReferenceChild
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceLowChild
+open CenteredMomentEnergyReferenceLowChild
 open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceChild
-open CenteredMomentEnergyReferenceChildProfiles CenteredMomentInductionEnergy
+open CenteredMomentEnergyReferenceChildProfiles
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-open CenteredMomentSectorLocalization CenteredMomentRetainedProfile
-local notation "O"=>HeckeFamily.O
+open CenteredMomentScaleSupremum
+open CenteredMomentSectorLocalization
 
 theorem independent_from_growth
-    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
+    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal HeckeFamily.O)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hlow:ZeroGrowthAt Q a b bΦ Bmask L Mcap ε Z degree S C)
     (hB:0≤Bmask)(ha:0<a)(s:NaturalState Z Bmask bΦ)(hQ:s.fixedModulus=Q)
@@ -45,7 +44,7 @@ theorem independent_from_growth
     norm_zero,add_zero,one_pow,mul_one,effectiveState,effectiveRadial] using hh
 
 theorem reflected_from_growth
-    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal O)
+    (a b bΦ Bmask L Mcap ε Z:ℝ)(Q:Ideal HeckeFamily.O)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(C:ℝ)
     (hlow:ZeroGrowthAt Q a b bΦ Bmask L Mcap ε Z degree S C)
     (hB:0≤Bmask)(ha:0<a)(hlo:a≤1/4)(hhi:1≤b)

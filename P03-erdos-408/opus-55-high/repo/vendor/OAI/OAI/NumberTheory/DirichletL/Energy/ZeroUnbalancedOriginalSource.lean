@@ -8,18 +8,16 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDeletionEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroUnbalancedOriginalSource
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open HeckeFamily HeckeDyadic QuadraticInitialBound
+open CenteredMomentEnergyState
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyZeroUnbalancedOriginalDeleted
 open CenteredMomentEnergyReferenceDeletionEnergy CenteredMomentNaturalRowSource
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional
 
 theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
     (a b bΦ epsilon xi saving Mcap Bmask L:ℝ)
@@ -28,7 +26,7 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D Cweight:ℝ,0<C ∧ 0<D ∧ 0<Cweight ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ∀(ε:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q →s.width≤Mcap →xi≤s.width/6 →
       ∀(p:Profiles a b)(t X₁ X₂:ℝ),0<X₁ →0<X₂ →Real.logb Z X₁≤s.width/4 →1≤X₂ →
@@ -46,7 +44,7 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
           ((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) (p.profile 0))^2*
             diagonalControl s.radial.profile*max 1 s.radial.scale*Z^(s.width/4))):=by
   obtain ⟨Cweight,hCweight,hweight⟩:=original_energy_weighted_deletion (α:=Fin 0)
-    (fun _=>0) (fun _=>0) (fun _=>le_refl 0) epsilonDelete hepsilonDelete
+    (fun _=>0) (fun _=>0) (by simp) epsilonDelete hepsilonDelete
   obtain ⟨n,T,Dchild,hDc,nlong,Slong,C,D,hC,hD,href⟩:=deleted_from_low
     a b bΦ epsilon xi saving Mcap Bmask L ha hlo hhi hbΦ hepsilon hxi hBmask hL B hB S
   refine ⟨n,T,Dchild,hDc,nlong,Slong,C,D,Cweight,hC,hD,hCweight,?_⟩
@@ -61,10 +59,10 @@ theorem original_from_low (epsilonDelete:ℝ)(hepsilonDelete:0<epsilonDelete)
   · simp
   · simp
   · simp
-  · exact hX₁
-  · exact hX₂
+  · omega
+  · omega
   · have hdiag:0≤diagonalControl s.radial.profile:=by unfold diagonalControl;positivity
-    have hLpos:0≤L:=by linarith [s.width_nonneg]
+    have hLpos:0≤L:=by linarith
     have hlog:0≤Real.log Z:=(Real.log_pos hZ.1).le
     positivity
   · norm_num

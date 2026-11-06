@@ -8,7 +8,6 @@ public import Erdos821.S2.PhysicalCompatibility
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Phys
@@ -34,20 +33,13 @@ theorem offset_step {A : Model F P J m} {n : ℕ}
       have hc : i.castSucc.val = i.val := by simp
       rw [hs, hc]
       by_cases heq : e = i
-      · subst e
-        simp
-      · by_cases hlt : e.val < i.val
-        · have hlt' : e.val < i.val + 1 := by omega
-          simp [hlt, hlt', heq]
-        · have hnot : ¬ e.val < i.val + 1 := by omega
-          simp [hlt, heq, hnot]
+      · omega
+      · omega
     calc
       _ = ∑ e : Fin n,
           ((if e.val < i.castSucc.val then Q.step e else 0) +
             (if e = i then Q.step e else 0)) := by
-            apply Finset.sum_congr rfl
-            intro e he
-            exact hsplit e
+            simp_all
       _ = (∑ e : Fin n, if e.val < i.castSucc.val then Q.step e else 0) +
           ∑ e : Fin n, if e = i then Q.step e else 0 := Finset.sum_add_distrib
       _ = _ := by simp
@@ -56,9 +48,7 @@ theorem offset_step {A : Model F P J m} {n : ℕ}
 theorem edgeForward_succ_flip {n : ℕ} (i : Fin n) :
     edgeForward i.succ = !(edgeForward i.castSucc) := by
   unfold edgeForward
-  simp only [Fin.val_succ, Fin.val_castSucc]
-  have hmod : i.val % 2 = 0 ∨ i.val % 2 = 1 := by omega
-  rcases hmod with h | h <;> simp [h, Nat.add_mod]
+  grind
 
 def oneStepDisplacements (A : Model F P J m) : Finset ℤ :=
   Finset.univ.image fun c : Fin A.patternCount × (A.Labels × P.Aux J) =>
@@ -96,14 +86,14 @@ theorem physicalKernel_false_zero_of_not_oneStepDisplacement
           refine ⟨(v, (P.act π s.2, u)), Finset.mem_univ _, ?_⟩
           rw [hcond.2.2]
           ring
-        exact False.elim (h hmem)
-      · simp [hcond]
-    · simp [hphys]
+        grind
+      grind
+    · grind
   simp [Model.physicalKernel, hraw]
 
 theorem stepRadius_mem (A : Model F P J m) {d : ℤ}
-    (hd : d ∈ oneStepDisplacements A) : Int.natAbs d ≤ stepRadius A := by
-  exact Finset.le_sup (s := oneStepDisplacements A) (f := Int.natAbs) (b := d) hd
+    (hd : d ∈ oneStepDisplacements A) : Int.natAbs d ≤ stepRadius A :=
+  Finset.le_sup (s := oneStepDisplacements A) (f := Int.natAbs) (b := d) hd
 
 theorem physicalKernel_false_zero_of_stepRadius_lt
     (A : Model F P J m) (s t : A.State)
@@ -119,7 +109,7 @@ theorem physicalKernel_false_time_bound (A : Model F P J m) (s t : A.State)
     Int.natAbs (t.1 - s.1) ≤ stepRadius A := by
   by_contra hbound
   have hz := physicalKernel_false_zero_of_stepRadius_lt A s t (by omega)
-  exact h hz
+  simp_all
 
 def pairedKernel (A : Model F P J m) : A.State → A.State → ℂ :=
   kernelComp (A.physicalKernel false) A.adjointKernel
@@ -139,7 +129,7 @@ theorem pairedKernel_zero_of_pairRadius_lt (A : Model F P J m)
     funext z
     change A.physicalKernel false s z * A.adjointKernel z t = 0
     by_cases hs : A.physicalKernel false s z = 0
-    · simp [hs]
+    · simp_all
     · by_cases ht : A.physicalKernel false t z = 0
       · simp [Model.adjointKernel, ht]
       · have hsNat := physicalKernel_false_time_bound A s z hs
@@ -156,15 +146,11 @@ theorem pairedKernel_zero_of_pairRadius_lt (A : Model F P J m)
           simpa only [abs_sub_comm] using htAbs
         have htriangle : |t.1 - s.1| ≤ (pairRadius A : ℤ) := by
           calc
-            |t.1 - s.1| = |(t.1 - z.1) + (z.1 - s.1)| := by congr 1; ring
+            |t.1 - s.1| = |(t.1 - z.1) + (z.1 - s.1)| := by simp
             _ ≤ |t.1 - z.1| + |z.1 - s.1| := abs_add_le _ _
             _ ≤ (stepRadius A : ℤ) + (stepRadius A : ℤ) := add_le_add htAbs' hsAbs
-            _ = (pairRadius A : ℤ) := by simp [pairRadius, Nat.cast_mul]; ring
-        have hnat : Int.natAbs (t.1 - s.1) ≤ pairRadius A := by
-          have hcast : (Int.natAbs (t.1 - s.1) : ℤ) ≤ (pairRadius A : ℤ) := by
-            simpa only [Int.natCast_natAbs] using htriangle
-          exact_mod_cast hcast
-        omega
+            _ = (pairRadius A : ℤ) := by simp [pairRadius]; ring
+        linarith
   rw [hzero]
   exact tsum_zero
 
@@ -178,9 +164,8 @@ theorem pairedKernel_zero_of_not_pairNeighbor (A : Model F P J m)
       (s.1 + (pairRadius A : ℤ))).product Finset.univ
     apply Finset.mem_product.mpr
     constructor
-    · simp only [Finset.mem_Icc]
-      constructor <;> omega
-    · exact Finset.mem_univ _
+    · grind
+    · grind
   have hcast : ¬ (Int.natAbs (t.1 - s.1) : ℤ) ≤ (pairRadius A : ℤ) := by
     simpa only [Int.natCast_natAbs] using hnot
   have hgt : pairRadius A < Int.natAbs (t.1 - s.1) := by omega
@@ -201,7 +186,7 @@ structure PathEdge (A : Model F P J m) where
   pattern : Fin A.patternCount
   free : P.Aux J
 
-noncomputable instance pathEdgeFintype (A : Model F P J m) : Fintype (PathEdge A) := by
+instance pathEdgeFintype (A : Model F P J m) : Fintype (PathEdge A) := by
   classical
   exact Fintype.ofEquiv
     (P.Permutations (J + F.ell) × P.Permutations (J + F.ell) ×
@@ -307,8 +292,7 @@ theorem pathEdgeValid_swap (A : Model F P J m) (s t : A.State) (e : PathEdge A) 
     have hD := compatible_D_eq ν b a e.free hcomp
     refine ⟨h.2.1, h.1, hcomp, hban, ?_⟩
     change s.1 = t.1 + A.k * (ν.D b e.free : ℤ)
-    rw [hD]
-    omega
+    simp_all
 
 theorem pathEdgeTerm_swap (A : Model F P J m) (s t : A.State) (e : PathEdge A) :
     star (pathEdgeTerm A true t s ((pathEdgeSwapEquiv A) e)) =
@@ -319,20 +303,18 @@ theorem pathEdgeTerm_swap (A : Model F P J m) (s t : A.State) (e : PathEdge A) :
   let b := pathEdgeTarget A t e
   have hvalid := pathEdgeValid_swap A s t e
   by_cases hv : pathEdgeValid A false s t e
-  · have hcomp : ν.compatible a b := by exact hv.2.2.1
+  · have hcomp : ν.compatible a b := hv.2.2.1
     have hD := compatible_D_eq ν a b e.free hcomp
     have hD' :
         (A.pattern e.pattern).D (P.act e.sourcePerm s.2) e.free =
           (A.pattern e.pattern).D (P.act e.targetPerm t.2) e.free := by
       simpa [ν, a, b, pathEdgeSource, pathEdgeTarget] using hD
     simp only [pathEdgeTerm, ite_eq_left (hvalid.mpr hv), ite_eq_left hv]
-    simp [pathEdgeSource, pathEdgeTarget, pathEdgeSwapEquiv,
-      star_mul, Complex.conj_ofReal]
-    rw [hD']
-    ring
+    simp [pathEdgeSource, pathEdgeTarget, pathEdgeSwapEquiv, star_mul]
+    grind
   · have hneg : ¬ pathEdgeValid A true t s ((pathEdgeSwapEquiv A) e) := by
       intro hh
-      exact hv (hvalid.mp hh)
+      exact by grind
     simp [pathEdgeTerm, hv, hneg]
 
 theorem edgeSymmetryFactor_complex (M : ℕ) :
@@ -340,10 +322,10 @@ theorem edgeSymmetryFactor_complex (M : ℕ) :
       (edgeSymmetryFactor P M : ℂ) := by
   classical
   have hcard : (Fintype.card (P.Permutations M) : ℝ) ≠ 0 := by
-    have hp : Fintype.card (P.Permutations M) ≠ 0 :=
+    have hp :=
       Nat.ne_of_gt (Fintype.card_pos : 0 < Fintype.card (P.Permutations M))
     exact_mod_cast hp
-  simp [edgeSymmetryFactor, Complex.ofReal_inv, Complex.ofReal_pow]
+  simp [edgeSymmetryFactor]
 
 theorem physicalKernel_false_eq_pathEdge_sum (A : Model F P J m)
     (s t : A.State) :
@@ -371,11 +353,9 @@ theorem physicalKernel_false_eq_pathEdge_sum (A : Model F P J m)
           rw [← hcond.2.2]
           exact hphys.2
         rw [hcond.2.2]
-        simp [pathEdgeTerm, pathEdgeValid, pathEdgeSource, pathEdgeTarget,
-          pathEdgeDelta, edgeDelta, hphys.1, htarget, hcond, Complex.ofReal_mul]
+        simp [pathEdgeTerm, pathEdgeValid, pathEdgeSource, pathEdgeTarget, pathEdgeDelta, edgeDelta, hphys.1, htarget, hcond]
         ring
-      · simp [pathEdgeTerm, pathEdgeValid, pathEdgeSource, pathEdgeTarget,
-          pathEdgeDelta, edgeDelta, hphys, hcond]
+      · simp [pathEdgeTerm, pathEdgeValid, pathEdgeSource, pathEdgeTarget, pathEdgeDelta, edgeDelta, hcond]
     · have hvalid (v : Fin A.patternCount) (u : P.Aux J) :
           ¬ pathEdgeValid A true s t ⟨π, τ, v, u⟩ := by
         intro hv
@@ -392,11 +372,7 @@ theorem physicalKernel_false_eq_pathEdge_sum (A : Model F P J m)
     _ = ∑ π : P.Permutations (J + F.ell), ∑ τ : P.Permutations (J + F.ell),
           ∑ v : Fin A.patternCount, ∑ u : P.Aux J,
             pathEdgeTerm A true s t ⟨π, τ, v, u⟩ := by
-          apply Finset.sum_congr rfl
-          intro π hπ
-          apply Finset.sum_congr rfl
-          intro τ hτ
-          exact hraw π τ
+          grind
     _ = ∑ e : PathEdge A, pathEdgeTerm A true s t e := by
           symm
           exact pathEdge_sum_eq_product A (pathEdgeTerm A true s t)
@@ -408,8 +384,8 @@ theorem adjointKernel_eq_pathEdge_sum (A : Model F P J m) (s t : A.State) :
   calc
     (∑ e : PathEdge A, star (pathEdgeTerm A true t s e)) =
         ∑ e : PathEdge A,
-          star (pathEdgeTerm A true t s ((pathEdgeSwapEquiv A) e)) := by
-      exact (Equiv.sum_comp (pathEdgeSwapEquiv A)
+          star (pathEdgeTerm A true t s ((pathEdgeSwapEquiv A) e)) :=
+      (Equiv.sum_comp (pathEdgeSwapEquiv A)
         (fun e => star (pathEdgeTerm A true t s e))).symm
     _ = ∑ e : PathEdge A, pathEdgeTerm A false s t e := by
       apply Finset.sum_congr rfl
@@ -433,9 +409,8 @@ theorem physicalAdjointComp_eq_sum_pairNeighbors (A : Model F P J m)
       (s.1 + (pairRadius A : ℤ))).product Finset.univ
     apply Finset.mem_product.mpr
     constructor
-    · simp only [Finset.mem_Icc]
-      constructor <;> omega
-    · exact Finset.mem_univ _
+    · grind
+    · grind
   have hcast : ¬ (Int.natAbs (z.1 - s.1) : ℤ) ≤ (pairRadius A : ℤ) := by
     simpa only [Int.natCast_natAbs] using hnot
   have hgt : pairRadius A < Int.natAbs (z.1 - s.1) := by omega
@@ -448,7 +423,7 @@ theorem pathEdgeDelta_forward_bound (A : Model F P J m) (s : A.State)
     (e : PathEdge A) : Int.natAbs (pathEdgeDelta A true s e) ≤ stepRadius A := by
   have h := stepRadius_mem A
     (displacement_mem_oneStepDisplacements A e.pattern (pathEdgeSource A s e) e.free)
-  simpa [pathEdgeDelta, pathEdgeSource, edgeDelta] using h
+  simpa
 
 theorem pathEdgeDelta_bound (A : Model F P J m) (forward : Bool)
     (s : A.State) (e : PathEdge A) :
@@ -471,13 +446,7 @@ theorem pathEdgeNextPosition_mem_pairNeighbors (A : Model F P J m)
       rw [heq]
       exact_mod_cast hstep.trans hle
     exact_mod_cast hcast
-  have habs : |(s.1 + pathEdgeDelta A true s e) - s.1| ≤ (pairRadius A : ℤ) := by
-    have hc : (Int.natAbs ((s.1 + pathEdgeDelta A true s e) - s.1) : ℤ) ≤
-        (pairRadius A : ℤ) := by exact_mod_cast hbound
-    simpa only [Int.natCast_natAbs] using hc
-  have habs' := abs_le.mp habs
-  simp only [Finset.mem_Icc]
-  constructor <;> omega
+  grind
 
 theorem pathEdgeTerm_forward_zero_of_pos_ne (A : Model F P J m) (s z : A.State)
     (e : PathEdge A)
@@ -520,13 +489,9 @@ theorem pathEdgePairNextPosition_mem_pairNeighbors (A : Model F P J m)
     rw [hpos]
     calc
       |δ₀ + δ₁| ≤ |δ₀| + |δ₁| := abs_add_le _ _
-      _ ≤ (stepRadius A : ℤ) + (stepRadius A : ℤ) := add_le_add h₀ h₁
-      _ = (pairRadius A : ℤ) := by simp [pairRadius, Nat.cast_mul]; ring
-  have hbounds := abs_le.mp hbound
-  change s.1 + δ₀ + δ₁ ∈
-    Finset.Icc (s.1 - (pairRadius A : ℤ)) (s.1 + (pairRadius A : ℤ))
-  simp only [Finset.mem_Icc]
-  constructor <;> omega
+      _ ≤ (stepRadius A : ℤ) + (stepRadius A : ℤ) := by omega
+      _ = (pairRadius A : ℤ) := by simp [pairRadius]; ring
+  grind
 
 theorem pairNeighbors_sum_at_position (A : Model F P J m) (s : A.State)
     (p : ℤ) (hp : p ∈ Finset.Icc (s.1 - (pairRadius A : ℤ))
@@ -572,8 +537,8 @@ theorem pairedKernel_eq_twoEdgeSum (A : Model F P J m) (s t : A.State) :
           intro e₀ he₀
           let p : ℤ := s.1 + pathEdgeDelta A true s e₀
           have hp : p ∈ Finset.Icc (s.1 - (pairRadius A : ℤ))
-              (s.1 + (pairRadius A : ℤ)) := by
-            exact pathEdgeNextPosition_mem_pairNeighbors A s e₀
+              (s.1 + (pairRadius A : ℤ)) :=
+            pathEdgeNextPosition_mem_pairNeighbors A s e₀
           have hcollapse :
               (∑ z ∈ pairNeighbors A s,
                 ∑ e₁ : PathEdge A,
@@ -586,11 +551,11 @@ theorem pairedKernel_eq_twoEdgeSum (A : Model F P J m) (s t : A.State) :
             apply Finset.sum_congr rfl
             intro z hz
             by_cases hzp : z.1 = p
-            · simp [hzp]
+            · simp_all
             · have hzero : pathEdgeTerm A true s z e₀ = 0 := by
                 apply pathEdgeTerm_forward_zero_of_pos_ne
                 simpa [p] using hzp
-              simp [hzp, hzero]
+              simp_all
           calc
             _ = ∑ z ∈ pairNeighbors A s,
                   if z.1 = p then
@@ -608,7 +573,7 @@ def PathData (A : Model F P J m) : ℕ → Type
   | 0 => A.Labels
   | n + 1 => A.Labels × (PathEdge A × PathData A n)
 
-noncomputable instance pathDataFintype (A : Model F P J m) (n : ℕ) : Fintype (PathData A n) := by
+instance pathDataFintype (A : Model F P J m) (n : ℕ) : Fintype (PathData A n) := by
   classical
   haveI (g : P.Group) : Fintype (P.Prime g) :=
     Fintype.ofFinset (P.primes g) (by intro p; rfl)
@@ -637,8 +602,7 @@ theorem residuePath_step_succ_eq_neg_tail {A : Model F P J m} {n : ℕ}
     Q.step i.succ = -(residuePathTail Q).step i := by
   simp [ResiduePath.step, ResiduePath.source, residuePathTail,
     edgeForward, edgeDelta]
-  have hmod : i.val % 2 = 0 ∨ i.val % 2 = 1 := by omega
-  rcases hmod with h | h <;> simp [h, Nat.add_mod]
+  omega
 
 def residuePathToPathData (A : Model F P J m) :
     (n : ℕ) → ResiduePath A n → PathData A n
@@ -655,7 +619,6 @@ theorem residuePath_ext {A : Model F P J m} {n : ℕ}
     (htarget : Q.targetPerm = R.targetPerm)
     (hpattern : Q.pattern = R.pattern) (hfree : Q.free = R.free) : Q = R := by
   cases Q
-  cases R
   simp_all
 
 theorem residuePathTail_pathDataToResiduePath (A : Model F P J m) (n : ℕ)
@@ -807,18 +770,15 @@ theorem pathDataKernelTerm_eq_endpoint_indicator (A : Model F P J m)
         · simp [pathDataKernelTerm, pathDataHead, pathDataEndState,
             pathDataKernelProduct, hst, hhead]
           rfl
-        · simp [pathDataKernelTerm, pathDataHead, pathDataEndState,
-            pathDataKernelProduct, hst, and_comm]
+        · simp [pathDataKernelTerm, pathDataHead, pathDataEndState, pathDataKernelProduct, hst]
           rfl
-      · simp [pathDataKernelTerm, pathDataHead, pathDataEndState,
-          hst, and_comm]
+      · simp [pathDataKernelTerm, pathDataEndState, hst]
   | succ n ih =>
       rcases d with ⟨a, ⟨e, tail⟩⟩
       by_cases h : a = s.2
       · simp [pathDataKernelTerm, pathDataHead, pathDataEndState,
           pathDataKernelProduct, h, ih]
-      · simp [pathDataKernelTerm, pathDataHead, pathDataEndState,
-          h]
+      · simp [pathDataKernelTerm, pathDataHead, h]
 
 theorem pathDataKernelTerm_sum_over_terminal_label (A : Model F P J m)
     (forward : Bool) (n : ℕ) (d : PathData A n) (s : A.State) (z : ℤ) :
@@ -836,12 +796,8 @@ theorem pathDataKernelTerm_sum_over_terminal_label (A : Model F P J m)
           (fun b => if e.2 = b then K else 0) := by
         funext b
         by_cases hEq : e = (z, b)
-        · have hlabel := congrArg Prod.snd hEq
-          simp [hEq]
-        · have hlabel : e.2 ≠ b := by
-            intro h
-            exact hEq (Prod.ext hp h)
-          simp [hEq, hlabel]
+        · simp_all
+        · grind
       have hsum : (∑ b : A.Labels, if e = (z, b) then K else 0) = K := by
         rw [show (∑ b : A.Labels, if e = (z, b) then K else 0) =
             ∑ b : A.Labels, (fun b : A.Labels => if e = (z, b) then K else 0) b by rfl]
@@ -853,9 +809,9 @@ theorem pathDataKernelTerm_sum_over_terminal_label (A : Model F P J m)
         intro b hb
         have hEq : e ≠ (z, b) := by
           intro h
-          exact hp (congrArg Prod.fst h)
+          exact by grind
         simp [hEq]
-      simpa [hh, hp, e, K] using hsum
+      grind
   · simp [hh]
 
 theorem pathDataKernelTerm_sum_over_both_labels (A : Model F P J m)
@@ -869,7 +825,7 @@ theorem pathDataKernelTerm_sum_over_both_labels (A : Model F P J m)
   classical
   simp_rw [pathDataKernelTerm_sum_over_terminal_label]
   rw [Fintype.sum_eq_single (pathDataHead A n d)
-    (fun a ha => by simp [Ne.symm ha])]
+    (fun a ha => by grind)]
   simp
 
 theorem pairNeighbors_sum_at_state (A : Model F P J m) (s : A.State)
@@ -882,16 +838,7 @@ theorem pairNeighbors_sum_at_state (A : Model F P J m) (s : A.State)
     (∑ z ∈ pairNeighbors A s, if z = (p, a) then f z else 0) =
         ∑ z ∈ pairNeighbors A s,
           if z.1 = p then (if z.2 = a then f z else 0) else 0 := by
-          apply Finset.sum_congr rfl
-          intro z hz
-          by_cases hpz : z.1 = p
-          · have hz' : z = (p, z.2) := by ext <;> simp [hpz]
-            rw [hz']
-            simp
-          · have hneq : z ≠ (p, a) := by
-              intro heq
-              exact hpz (congrArg Prod.fst heq)
-            simp [hpz, hneq]
+          grind
     _ = ∑ b : A.Labels, if b = a then f (p, b) else 0 :=
           pairNeighbors_sum_at_position A s p hp
             (fun z => if z.2 = a then f z else 0)
@@ -980,26 +927,24 @@ theorem secondEdge_pathData_sum_over_state (A : Model F P J m)
   have hcollapse : ∀ u : A.State, f u = if u = u₀ then f u else 0 := by
     intro u
     by_cases heq : u = u₀
-    · simp [heq]
+    · simp_all
     · have hnot : ¬ (u.1 = q ∧ u.2 = pathDataHead A n d) := by
         intro hpair
-        exact heq (Prod.ext hpair.1 hpair.2)
+        exact by grind
       rcases not_and_or.mp hnot with hpos | hlabel
       · have hzero : pathEdgeTerm A false mid u e₁ = 0 := by
           apply pathEdgeTerm_zero_of_pos_ne
           simpa [q, mid] using hpos
-        simp [f, hzero]
-      · have hzero : pathDataKernelTerm A true n d u t = 0 :=
+        grind
+      · have hzero :=
           pathDataKernelTerm_zero_of_head_ne A true n d u t (Ne.symm hlabel)
-        simp [f, hzero]
+        grind
   calc
     _ = ∑ u ∈ pairNeighbors A s, if u = u₀ then f u else 0 := by
-          apply Finset.sum_congr rfl
-          intro u hu
-          exact hcollapse u
+          grind
     _ = f u₀ := pairNeighbors_sum_at_state A s q
           (pathDataHead A n d) hq f
-    _ = _ := by simp [f, u₀, q, mid]
+    _ = _ := by ring
 
 theorem pathData_pairTerm_sum (A : Model F P J m) (n : ℕ)
     (s t : A.State) :
@@ -1097,14 +1042,12 @@ theorem pairedKernelPower_eq_pathData (A : Model F P J m) (r : ℕ) :
               pairedKernel A s u *
                 ∑ tail : PathData A (2 * r),
                   pathDataKernelTerm A true (2 * r) tail u t := by
-              apply Finset.sum_congr rfl
-              intro u hu
-              rw [ih u t]
+              grind
         _ = ∑ d : PathData A (2 * r + 2),
               pathDataKernelTerm A true (2 * r + 2) d s t :=
               pairedKernel_pathData_sum_step A (2 * r) s t
         _ = ∑ d : PathData A (2 * (r + 1)),
               pathDataKernelTerm A true (2 * (r + 1)) d s t := by
-              simp [Nat.mul_succ]
+              grind
 
 end Erdos821.S2Phys

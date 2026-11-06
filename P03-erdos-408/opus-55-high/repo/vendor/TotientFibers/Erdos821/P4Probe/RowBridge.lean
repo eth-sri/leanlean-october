@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.ProjectionTasks
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -31,8 +30,8 @@ def flatWeight (w : ∀ g, α g → ℝ) : ∀ z : RowSite s M, FlatAlphabet α 
 
 omit [(g : Fin s) → Fintype (α g)] in
 lemma flatWeight_eq (w : ∀ g, α g → ℝ) (x : ProbeSample α M) :
-    productWeight (flatWeight w) (flattenRows x) = sampleWeight w x := by
-  exact Fintype.prod_prod_type (fun z : RowSite s M => w z.1 (x z.1 z.2))
+    productWeight (flatWeight w) (flattenRows x) = sampleWeight w x :=
+  Fintype.prod_prod_type (fun z : RowSite s M => w z.1 (x z.1 z.2))
 
 lemma flatSqNorm_eq (w : ∀ g, α g → ℝ) (f : ProbeSample α M → ℂ) :
     productSqNorm (flatWeight w) (fun x => f (flattenRows.symm x)) = sampleSqNorm w f := by
@@ -41,13 +40,13 @@ lemma flatSqNorm_eq (w : ∀ g, α g → ℝ) (f : ProbeSample α M → ℂ) :
   apply Fintype.sum_equiv flattenRows
   intro x
   rw [flatWeight_eq]
-  simp [flattenRows]
+  simp
 
 omit [(g : Fin s) → Fintype (α g)] in
 lemma flat_replace (I : Finset (RowSite s M)) (x y : ProbeSample α M) :
     flattenRows.symm (mixCoords I (flattenRows x) (flattenRows y)) = replaceCoords I x y := by
   funext g i
-  by_cases hi : (g, i) ∈ I <;> simp [flattenRows, mixCoords, replaceCoords, hi]
+  by_cases hi : (g, i) ∈ I <;> simp [flattenRows, mixCoords, replaceCoords]
 
 lemma flat_average (w : ∀ g, α g → ℝ) (I : Finset (RowSite s M))
     (f : ProbeSample α M → ℂ) (x : ProbeSample α M) :

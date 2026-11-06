@@ -9,20 +9,19 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceEnergy
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentLiveDomain
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors CenteredMomentCommonSectors IdealMobiusDivisorSum
+open HeckeFamily
+open CenteredMomentLiveDomain
+open CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 
-def secondSourceKernel (I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
-  ∑' h : O,(primaryGaussRow I h*star (primaryGaussRow J h))*
+def secondSourceKernel (I J : Ideal ActualEisensteinCubic.O) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
+  ∑' h : ActualEisensteinCubic.O,(primaryGaussRow I h*star (primaryGaussRow J h))*
     W (‖ConcreteTraceCRT.eisEmbedding h‖^2/K)
 
-theorem heightCoeff_mul (τ : Character) (t : ℝ) (I J : Ideal O) :
+theorem heightCoeff_mul (τ : Character) (t : ℝ) (I J : Ideal ActualEisensteinCubic.O) :
     heightCoeff τ t (I*J)=heightCoeff τ t I*heightCoeff τ t J := by
   have hpow : ((Ideal.absNorm I:ℂ)*(Ideal.absNorm J:ℂ))^(Complex.I*t)=
       (Ideal.absNorm I:ℂ)^(Complex.I*t)*(Ideal.absNorm J:ℂ)^(Complex.I*t) := by

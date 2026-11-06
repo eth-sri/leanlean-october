@@ -8,33 +8,32 @@ public import OAI.NumberTheory.DirichletL.Moments.Forcing
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondLedger
 open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
 open CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
 
-theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
+theorem nonzero_unequal_min_six (p : ActualEisensteinCubic.O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (hcd : c ≠ d) (k : O)
+    (hchar : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
+    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (hcd : c ≠ d) (k : ActualEisensteinCubic.O)
     (hne : actualCorrelation (p^c) (p^d) (supported_power p hp c) (supported_power p hp d)
       (p^min c d*k) ≠ 0) : 6 ∣ min c d := by
   by_contra h6
   rcases lt_or_gt_of_ne hcd with hlt | hgt
   · have hz := unequal_prime_power_zero_of_not_six p hp hg hchar hc
-      (show 1 ≤ d-c by omega) (by simpa only [min_eq_left hlt.le] using h6) (-k)
-    have he : c+(d-c)=d := Nat.add_sub_of_le hlt.le
+      (show 1 ≤ d-c by omega) (by omega) (-k)
+    have he := Nat.add_sub_of_le hlt.le
     have hn := norm_ne_zero_iff.mpr hne
     rw [actualCorrelation_norm_swap] at hn
     have hz' : actualCorrelation (p^d) (p^c) (supported_power p hp d) (supported_power p hp c)
         (-(p^min c d*k)) = 0 := by
       simpa only [← pow_add,he,min_eq_left hlt.le,mul_neg] using hz
-    exact hn (by rw [hz',norm_zero])
+    simp_all
   · have hz := unequal_prime_power_zero_of_not_six p hp hg hchar hd
-      (show 1 ≤ c-d by omega) (by simpa only [min_eq_right hgt.le] using h6) k
-    have he : d+(c-d)=c := Nat.add_sub_of_le hgt.le
+      (show 1 ≤ c-d by omega) (by omega) k
+    have he := Nat.add_sub_of_le hgt.le
     exact hne (by simpa only [← pow_add,he,min_eq_right hgt.le] using hz)
 
 def localSaving (c d : ℕ) (nonunit : Prop) : ℝ :=
@@ -49,7 +48,7 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
   by_cases hcd : c=d
   · subst d
     by_cases h6 : 6∣c
-    · have hc6 : 6 ≤ c := Nat.le_of_dvd (by omega) h6
+    · have hc6 := Nat.le_of_dvd (by omega) h6
       have hn1 : c ≠ 1 := by omega
       simp only [localSaving,min_self,h6,not_true_eq_false,false_and,and_false,
         ite_false,hn1,add_zero]
@@ -66,7 +65,6 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
           linarith
       · simp only [localSaving,min_self,h6,not_false_eq_true,hu,and_false,
           and_true,ite_false,ite_true,add_zero]
-        have hcr : (1:ℝ) ≤ c := by exact_mod_cast hc
         linarith
   · have hmin : 6 ≤ min c d := Nat.le_of_dvd (lt_of_lt_of_le Nat.zero_lt_one (le_min hc hd)) (huneq hcd)
     have hmr : (6:ℝ) ≤ min c d := by exact_mod_cast hmin
@@ -76,10 +74,10 @@ theorem localSaving_lower (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d)
     simp only [localSaving,hcd,false_and,ite_false,add_zero]
     linarith
 
-theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
+theorem actual_localSaving_lower (p : ActualEisensteinCubic.O) [(Ideal.span {p}).IsMaximal]
     (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (k : O)
+    (hchar : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
+    (c d : ℕ) (hc : 1 ≤ c) (hd : 1 ≤ d) (k : ActualEisensteinCubic.O)
     (hne : actualCorrelation (p^c) (p^d) (supported_power p hp c) (supported_power p hp d)
       (p^min c d*k) ≠ 0) :
     ((c:ℝ)+d)/3 ≤ localSaving c d (p ∣ k) :=
@@ -88,9 +86,9 @@ theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
 section Global
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem local_nonzero_of_global (p : ι → ActualEisensteinCubic.O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, Supported (Ideal.span {p i}))
-    (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ) (w : O)
+    (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ) (w : ActualEisensteinCubic.O)
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)
       (supported_product _ (fun i => supported_power (p i) (hp i) (c i)))
       (supported_product _ (fun i => supported_power (p i) (hp i) (d i)))
@@ -117,10 +115,10 @@ theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaxi
     (supported_product _ (fun i => supported_power (p i) (hp i) (d i))) hca hcb hcab] at hn
   have hi := (Finset.prod_ne_zero_iff.mp hn) i (Finset.mem_univ i)
   rw [commonFrequency_factor p c d w i] at hi
-  exact norm_ne_zero_iff.mp hi
+  simp_all
 
 omit [DecidableEq ι] in
-theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+theorem log_norm_power_product (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, Supported (Ideal.span {p i}))
     (c : ι → ℕ) (Z : ℝ) :
     Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) =
       ∑ i, (c i : ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
@@ -129,18 +127,18 @@ theorem log_norm_power_product (p : ι → O) (hp : ∀ i, Supported (Ideal.span
     (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1)))]
   simp only [Real.logb_pow]
 
-def secondSaving (p : ι → O) (c d : ι → ℕ) (w : O) (Z : ℝ) : ℝ :=
+def secondSaving (p : ι → ActualEisensteinCubic.O) (c d : ι → ℕ) (w : ActualEisensteinCubic.O) (Z : ℝ) : ℝ :=
   ∑ i, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) *
     localSaving (c i) (d i) (p i ∣ dividedFrequency p c d w i)
 
-def actualUnitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
+def actualUnitSet (p : ι → ActualEisensteinCubic.O) (c d : ι → ℕ) (w : ActualEisensteinCubic.O) : Finset ι :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ ¬p i∣dividedFrequency p c d w i)
 
-def actualNonunitSet (p : ι → O) (c d : ι → ℕ) (w : O) : Finset ι :=
+def actualNonunitSet (p : ι → ActualEisensteinCubic.O) (c d : ι → ℕ) (w : ActualEisensteinCubic.O) : Finset ι :=
   Finset.univ.filter (fun i => c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i)
 
 omit [Fintype ι] [DecidableEq ι] in
-theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}))
+theorem log_norm_radical (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, Supported (Ideal.span {p i}))
     (S : Finset ι) (Z : ℝ) :
     Real.logb Z (Ideal.absNorm (∏ i ∈ S, Ideal.span {p i}) : ℝ) =
       ∑ i ∈ S, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ) := by
@@ -148,8 +146,8 @@ theorem log_norm_radical (p : ι → O) (hp : ∀ i, Supported (Ideal.span {p i}
   exact Real.logb_prod _ _ (fun i _ => Nat.cast_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (hp i).1))
 
-theorem secondSaving_eq_norm_ledger (p : ι → O)
-    (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ) (w : O) (Z : ℝ) :
+theorem secondSaving_eq_norm_ledger (p : ι → ActualEisensteinCubic.O)
+    (hp : ∀ i, Supported (Ideal.span {p i})) (c d : ι → ℕ) (w : ActualEisensteinCubic.O) (Z : ℝ) :
     secondSaving p c d w Z =
       Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^c i) : ℝ) +
       Real.logb Z (Ideal.absNorm (∏ i, Ideal.span {p i}^d i) : ℝ) -
@@ -175,10 +173,8 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
     have he : ((c i=d i ∧ ¬6∣c i ∧ p i∣dividedFrequency p c d w i) ∧ c i=1 ∧ d i=1) ↔
         (c i=d i ∧ c i=1 ∧ p i∣dividedFrequency p c d w i) := by
       constructor
-      · rintro ⟨⟨hcd,h6,hn⟩,hc,hd⟩
-        exact ⟨hcd,hc,hn⟩
-      · rintro ⟨hcd,hc,hn⟩
-        exact ⟨⟨hcd,by omega,hn⟩,hc,by omega⟩
+      · simp_all
+      · simp_all
     simp only [he]
   simp_rw [hf]
   rw [show (∑ i, (c i:ℝ)*Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ)) +
@@ -191,13 +187,13 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
   apply Finset.sum_congr rfl
   intro i hi
   simp only [localSaving,Nat.cast_min]
-  split_ifs <;> ring
+  grind
 
-theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem actual_secondSaving_lower (p : ι → ActualEisensteinCubic.O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hp : ∀ i, Supported (Ideal.span {p i})) (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (hchar : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
     (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ)
-    (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (w : O) (Z : ℝ) (hZ : 1 < Z)
+    (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (w : ActualEisensteinCubic.O) (Z : ℝ) (hZ : 1 < Z)
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)
       (supported_product _ (fun i => supported_power (p i) (hp i) (c i)))
       (supported_product _ (fun i => supported_power (p i) (hp i) (d i)))
@@ -208,9 +204,7 @@ theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMa
     _ = ∑ i, Real.logb Z (Ideal.absNorm (Ideal.span {p i}) : ℝ)*(((c i:ℝ)+d i)/3) := by
       rw [log_norm_power_product p hp c,log_norm_power_product p hp d,
         ← Finset.sum_add_distrib,Finset.sum_div]
-      apply Finset.sum_congr rfl
-      intro i hi
-      ring
+      grind
     _ ≤ _ := by
       apply Finset.sum_le_sum
       intro i hi

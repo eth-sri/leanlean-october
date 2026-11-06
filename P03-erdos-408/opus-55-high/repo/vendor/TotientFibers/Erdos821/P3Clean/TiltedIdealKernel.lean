@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.BigRefresh
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -41,7 +40,6 @@ theorem phase_add (s t : ℝ) : phase (s + t) = phase s * phase t := by
 
 theorem phase_combine (s t a : ℝ) : phase (s * a) * phase (t * a) = phase ((s + t) * a) := by
   rw [← phase_add]
-  congr 1
   ring
 
 theorem bigStep_real (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : Bool)
@@ -50,8 +48,7 @@ theorem bigStep_real (A : Model F P J m) (ν : Pattern P J F.ell m) (forward : B
       (((if forward then A.k else -A.k) * (prefixPrimeProduct J d : ℤ) : ℤ) : ℝ) *
         (ν.DBig a u : ℝ) := by
   unfold bigStep
-  push_cast
-  ring
+  simp
 
 theorem DBig_eq_of_matches (ν : Pattern P J F.ell m) (a b : P.BigLabels (J + F.ell))
     (u : P.BigAux J) (h : ν.matchesBig a b) : ν.DBig a u = ν.DBig b u := by
@@ -61,8 +58,8 @@ theorem DBig_eq_of_matches (ν : Pattern P J F.ell m) (a b : P.BigLabels (J + F.
   apply Finset.prod_congr rfl
   intro i _
   by_cases hi : i ∈ ν.changed g.val
-  · simp only [ite_eq_left hi]
-  · simp only [ite_eq_right hi, h g (ν.slot i) ⟨i, rfl, hi⟩]
+  · simp_all
+  · simp only [h g (ν.slot i) ⟨i, rfl, hi⟩]
 
 theorem regularCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
     [Fintype (CutPendingState P B)] (theta : ℝ) (forward : Bool) (d : SmallLabels P J)
@@ -87,14 +84,8 @@ theorem regularCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
         phase ((theta * base + t) * ((A.pattern v).DBig a u : ℝ)) := by
       rw [← mul_assoc]
       exact phase_combine _ _ _
-    calc
-      _ = smallSignedCoefficient A forward d *
-          (((A.pattern v).bigAuxMass u * tiltedFreshMass F n (A.pattern v) b : ℝ) *
-            bigSignedCoefficient A (A.pattern v) forward a b u *
-            (phase (theta * (base * ((A.pattern v).DBig a u : ℝ))) *
-              phase (t * ((A.pattern v).DBig a u : ℝ)))) := by ring
-      _ = _ := by rw [hp]
-  · simp only [ite_eq_right h, mul_zero]
+    grind
+  grind
 
 
 end Erdos821.P3Clean

@@ -8,29 +8,28 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondPuncture
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers SecondPassArithmetic
+open scoped Classical
+open SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 theorem actual_second_supported_varying_lists_energy
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    {Jo : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo 0))
+    (hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
+    {Jo : ℕ} (u v : ActualEisensteinCubic.Oˣ) (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m : MarkedSecondSource ι Jo 0 → Eis) (z : SecondRayIndex)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m : MarkedSecondSource ι Jo 0 → ActualEisensteinCubic.O) (z : SecondRayIndex)
     (J₁ J₂ : Finset σ) (base₁ base₂ : σ → Finset ι)
     (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
     (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
     (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i) (a₁ a₂ : σ → ι → ℂ)
     (ha₁ : ∀ i ∈ J₁, ∀ q ∈ base₁ i, ‖a₁ i q‖ ≤ 1)
     (ha₂ : ∀ i ∈ J₂, ∀ q ∈ base₂ i, ‖a₂ i q‖ ≤ 1)
-    (labels : Finset (Ideal Eis)) (rows : Finset Eis)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O)
     (hchild : ∀ x ∈ source, (actualSecondChild p u v x).2.1 ∈ labels ∧
       (actualSecondChild p u v x).2.2 ∈ rows)
     (K : ℕ) (ho : Jo ≤ 2*K) (hJ₁ : J₁.card ≤ K) (hJ₂ : J₂.card ≤ K)
@@ -61,25 +60,25 @@ theorem actual_second_supported_varying_lists_energy
     intro x hx hnx
     have hz : actualSecondSignedWeight p hp hcop hg Ψ (m x) z x = 0 := by
       by_contra hh
-      exact hnx (Finset.mem_filter.mpr ⟨hx,hh⟩)
+      exact by grind
     simp only [hz,zero_mul]
   rw [he]
   have hb := actual_second_varying_lists_weighted_count p hp hpr hcop hinj u v S
     (hs.mono p hsub) J₁ J₂ base₁ base₂ L₁ L₂
-    (fun x hx=>hL₁ x (hsub hx)) (fun x hx=>hL₂ x (hsub hx)) a₁ a₂ ha₁ ha₂ (labels.filter Squarefree) rows
+    (by grind) (by grind) a₁ a₂ ha₁ ha₂ (labels.filter Squarefree) rows
     (by
       intro x hx
       have hx0 := hsub hx
-      refine ⟨Finset.mem_filter.mpr ⟨(hchild x hx0).1,?_⟩,(hchild x hx0).2⟩
+      refine ⟨Finset.mem_filter.mpr ⟨by grind,?_⟩,by grind⟩
       exact actual_second_nonzero_weight_squarefree p hp hcop hg Ψ (m x) z x
-        (hs.common_disjoint x hx0) (hs.second_divisor x hx0) (Finset.mem_filter.mp hx).2 u v)
+        (hs.common_disjoint x hx0) (hs.second_divisor x hx0) (by grind) u v)
     K ho hJ₁ hJ₂ (fun x => actualSecondSignedWeight p hp hcop hg Ψ (m x) z x*phase x)
     (by
       intro x hx
       rw [norm_mul]
       exact (mul_le_of_le_one_left (norm_nonneg _)
         (actualSecondSignedWeight_norm_le_one p hp hcop hg hinj hc Ψ hΨ (m x) z x)).trans
-          (hphase x (hsub hx))) F G
+          (by grind)) F G
   apply hb.trans
   have hΓ := actualSecondTriples_mono p u v (varyingAssignedSource_mono hsub J₁ J₂ base₁ base₂ L₁ L₂)
   have hsum (P : SecondChild → ℂ) :

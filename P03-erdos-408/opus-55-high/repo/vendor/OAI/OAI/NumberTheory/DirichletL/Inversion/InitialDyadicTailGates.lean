@@ -10,20 +10,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseInitialDyadicTailBound
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialDyadicAssembly InverseInitialProfile
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialEnergyCallerSource
+open InverseInitialDyadicAssembly
 variable {ι : Type*} [DecidableEq ι]
 
 theorem pointSource_erase_mem (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (x : Point ι) (hx : x∈pointSource pool S) : erasePoint x∈S := by
   obtain ⟨y,hy,hx⟩ := Finset.mem_biUnion.mp hx
   obtain ⟨⟨N,M⟩,hNM,rfl⟩ := Finset.mem_image.mp hx
-  simpa only [erase_sourcePoint] using hy
+  simp_all
 
 theorem pointSource_supports (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (hC : ∀x∈S,x.common⊆pool) (hV : ∀x∈S,x.overlap⊆pool)
@@ -35,7 +34,7 @@ theorem pointSource_supports (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
   intro i
   fin_cases i
   · exact hC y hy
-  · exact (hdiv y hy).trans (hC y hy)
+  · exact (hdiv y hy).trans (by grind)
   · exact hV y hy
   · exact (Finset.mem_powerset.mp (Finset.mem_product.mp hNM).1).trans Finset.sdiff_subset
   · exact (Finset.mem_powerset.mp (Finset.mem_product.mp hNM).2).trans Finset.sdiff_subset
@@ -43,7 +42,7 @@ theorem pointSource_supports (pool : Finset ι) (S : Finset (Source (ι:=ι) 0))
 def idealIndex : Fin 5→Fin 6 := ![0,1,2,4,5]
 
 omit [DecidableEq ι] in
-theorem sourceKey_norm_coordinate (p : ι→O) (x : Point ι) (i : Fin 5) :
+theorem sourceKey_norm_coordinate (p : ι→ActualEisensteinCubic.O) (x : Point ι) (i : Fin 5) :
     primeProductNorm p (InverseInitialHighFrequencyTail.sourceKey x i)=coordinates p x (idealIndex i) := by
   have hn (A : Finset ι) : ((sourceIdeal p A).absNorm:ℝ)=primeProductNorm p A := by
     rw [sourceIdeal,←eisEmbedding_norm_sq_eq_absNorm_span]
@@ -51,7 +50,7 @@ theorem sourceKey_norm_coordinate (p : ι→O) (x : Point ι) (i : Fin 5) :
   fin_cases i <;> simp [InverseInitialHighFrequencyTail.sourceKey,coordinates,physicalCoordinates,idealIndex,hn]
 
 omit [DecidableEq ι] in
-theorem sourceNorms_erase (p : ι→O) (x : Point ι) (i : Fin 4) :
+theorem sourceNorms_erase (p : ι→ActualEisensteinCubic.O) (x : Point ι) (i : Fin 4) :
     sourceNorms p (erasePoint x) i=coordinates p x (InverseSecondChildWindows.outerIndex i) := by
   have he : InverseInitialEnergyCallerModes.sourcePoint (erasePoint x) x.left x.right=x := by
     cases x
@@ -60,7 +59,7 @@ theorem sourceNorms_erase (p : ι→O) (x : Point ι) (i : Fin 4) :
 
 omit [DecidableEq ι] in
 theorem live_mass_radial_gate
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (a b : Fin 4→ℝ) (Z D m η τ bW : ℝ) (hZ : 1<Z) (hη : 0≤η)
     (hbW : 0<bW) (hfixed : 64*bW^2≤Z^η)
     (x : Point ι) (hx : Valid x)

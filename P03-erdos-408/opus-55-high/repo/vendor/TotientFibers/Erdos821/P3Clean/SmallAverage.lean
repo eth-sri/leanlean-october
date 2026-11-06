@@ -9,7 +9,6 @@ public import Erdos821.P3Clean.NormTransport
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -85,8 +84,7 @@ theorem normBound_averageSmallCoordinateKernel (F : FixedData) (J n B : ℕ)
     simp only [w, T, Fintype.card_prod, Nat.cast_mul, Complex.ofReal_inv,
       Complex.ofReal_mul, Complex.ofReal_natCast, Fintype.sum_prod_type,
       averageSmallCoordinateKernel, smallSymmetryFactor, pow_two, Finset.mul_sum]
-  rw [he] at h
-  exact h
+  simp_all
 
 theorem averageSmallCoordinateKernel_clean (A : Model F P J m) (n : ℕ) (theta : ℝ) (i : Fin n)
     {B : ℕ} (a b : CoordinateState P (J + F.ell) B) :
@@ -111,12 +109,6 @@ theorem averageSmallCoordinateKernel_clean (A : Model F P J m) (n : ℕ) (theta 
   apply Finset.sum_congr rfl
   intro p _
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro q _
-  apply Finset.sum_congr rfl
-  intro r _
-  apply Finset.sum_congr rfl
-  intro s _
   ring
 
 end Erdos821.P3Clean

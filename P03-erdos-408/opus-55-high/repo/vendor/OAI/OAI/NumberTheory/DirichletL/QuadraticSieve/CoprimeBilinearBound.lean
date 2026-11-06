@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,37 +31,30 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CoprimeBilinearSieve
 open FiniteSieveOperator CoprimeSieveOperator CoprimeMobiusExtension
 
@@ -92,12 +73,10 @@ theorem disjoint_bilinear_expansion {ι n p : Type*} [DecidableEq ι]
         (if D ⊆ left j ∧ D ⊆ right k then star (z j) * v k else 0) := by
     calc
       _ = (if Disjoint (left j) (right k) then (1 : ℂ) else 0) *
-          (star (z j) * v k) := by split_ifs <;> simp
+          (star (z j) * v k) := by simp
       _ = _ := by
         rw [disjoint_indicator_expansion B _ _ (hl j) (hr k), Finset.sum_mul]
-        apply Finset.sum_congr rfl
-        intro D _
-        split_ifs <;> simp
+        simp
   simp_rw [hp]
   calc
     _ = ∑ j, ∑ D ∈ B.powerset, ∑ k, (-1 : ℂ) ^ D.card *
@@ -114,11 +93,7 @@ theorem disjoint_bilinear_expansion {ι n p : Type*} [DecidableEq ι]
       simp_rw [← Finset.mul_sum]
       congr 1
       simp only [star_sum, Finset.sum_mul_sum]
-      apply Finset.sum_congr rfl
-      intro j _
-      apply Finset.sum_congr rfl
-      intro k _
-      by_cases hj : D ⊆ left j <;> by_cases hk : D ⊆ right k <;> simp [hj, hk]
+      grind
 
 theorem coprime_bilinear_operator_bound {ι m n p : Type*} [DecidableEq ι]
     [Fintype m] [Fintype n] [Fintype p]
@@ -174,7 +149,7 @@ theorem coprime_bilinear_operator_bound {ι m n p : Type*} [DecidableEq ι]
         intro D _
         exact energy_bound C _
       _ = _ := by rw [← Finset.mul_sum, masked_coefficient_energy B right hr b]
-  exact (pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _ => norm_nonneg _)) hnorm 2).trans
+  exact (pow_le_pow_left₀ (by positivity) hnorm 2).trans
     (hCS.trans (mul_le_mul hX hY (by positivity) (by positivity)))
 
 end CoprimeBilinearSieve
@@ -215,19 +190,19 @@ theorem ideal_coprime_bilinear_operator_bound {m n p : Type*}
       (Finset.univ.biUnion (fun k => primeSupport (right k)))
   have hl (j : n) : primeSupport (left j) ⊆ B := by
     intro P hP
-    exact Finset.mem_union.mpr (Or.inl (Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ j, hP⟩))
+    exact by grind
   have hr (k : p) : primeSupport (right k) ⊆ B := by
     intro P hP
-    exact Finset.mem_union.mpr (Or.inr (Finset.mem_biUnion.mpr ⟨k, Finset.mem_univ k, hP⟩))
+    exact by grind
   have h := CoprimeBilinearSieve.coprime_bilinear_operator_bound B
     (fun j => primeSupport (left j)) (fun k => primeSupport (right k)) hl hr A C a b
   simp_rw [primeSupport_disjoint_iff (hl0 _) (hr0 _)] at h
   apply h.trans
   apply mul_le_mul
   · simpa only [mul_assoc] using mul_le_mul_of_nonneg_left
-      (support_weighted_energy_bound ε hε left hl0 N₁ hlN a) (sq_nonneg ‖operator A‖)
+      (support_weighted_energy_bound ε hε left hl0 N₁ hlN a) (by positivity)
   · simpa only [mul_assoc] using mul_le_mul_of_nonneg_left
-      (support_weighted_energy_bound ε hε right hr0 N₂ hrN b) (sq_nonneg ‖operator C‖)
+      (support_weighted_energy_bound ε hε right hr0 N₂ hrN b) (by positivity)
   · positivity
   · have hpos := (supportConstant_pos ε hε).le
     positivity
@@ -248,7 +223,7 @@ theorem divisor_mask_energy {n : Type*} [Fintype n]
   intro j _
   have hsub : S.filter (fun D => D ∣ column j) ⊆ idealDivisors (column j) := by
     intro D hD
-    exact (mem_idealDivisors (hcol j)).mpr (Finset.mem_filter.mp hD).2
+    exact (mem_idealDivisors (hcol j)).mpr (by grind)
   have hite (D : Ideal O) : ‖if D ∣ column j then a j else 0‖ ^ 2 =
       if D ∣ column j then ‖a j‖ ^ 2 else 0 := by split_ifs <;> simp
   simp_rw [hite]
@@ -275,7 +250,7 @@ theorem divisor_mask_energy_small_power {n : Type*} [Fintype n]
   apply ((IdealDivisorBound.ideal_divisor_small_power ε hε).choose_spec.2
     (column j) (hcol j)).trans
   exact mul_le_mul_of_nonneg_left
-    (Real.rpow_le_rpow (Nat.cast_nonneg _) (hnorm j) hε.le) (divisorConstant_pos ε hε).le
+    (Real.rpow_le_rpow (Nat.cast_nonneg _) (hnorm j) hε.le) (by grind)
 
 theorem rectangular_cauchy {α β : Type*} (S : Finset α) (T : Finset β)
     (H : α → β → ℝ) (E : α → ℝ) (F : β → ℝ) (C : ℝ)
@@ -293,7 +268,7 @@ theorem rectangular_cauchy {α β : Type*} (S : Finset α) (T : Finset β)
       _ ≤ ∑ d ∈ S, ∑ e ∈ T, C * E d * F e := by
         apply Finset.sum_le_sum
         intro d hd
-        exact Finset.sum_le_sum (fun e he => hH d hd e he)
+        exact Finset.sum_le_sum (by grind)
       _ = _ := by simp only [← Finset.mul_sum, ← Finset.sum_mul]
   apply hCS.trans
   simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hsum
@@ -318,7 +293,7 @@ theorem blockValue_nonneg {m n p : Type*} [Fintype m] [Fintype n] [Fintype p]
     (A : Ideal O → Matrix m n ℂ) (B : Ideal O → Matrix m p ℂ)
     (a : n → ℂ) (b : p → ℂ) (D E : Ideal O) :
     0 ≤ blockValue left right A B a b D E :=
-  Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  Finset.sum_nonneg (by simp)
 
 theorem divisor_block_bound {m n p : Type*}
     [Fintype m] [Fintype n] [Fintype p]
@@ -362,9 +337,9 @@ theorem divisor_block_bound {m n p : Type*}
       _ ≤ (UA * (supportConstant ε hε * N₁ ^ ε) * EL D) *
           (UB * (supportConstant ε hε * N₂ ^ ε) * ER E) := by
         gcongr
-        · exact hA D hD
-        · exact hB E hE
-      _ = _ := by dsimp [C]; ring
+        · simp_all
+        simp_all
+      _ = _ := by linarith
   have hc := rectangular_cauchy S T (blockValue left right A B a b) EL ER C hC hp
   have he1 := divisor_mask_energy_small_power ε hε S left hl0 N₁ hlN a
   have he2 := divisor_mask_energy_small_power ε hε T right hr0 N₂ hrN b
@@ -393,14 +368,13 @@ theorem extendByZero_apply_image (S : Finset n) (f : n → p) (u : n → ℂ)
   · simp
   · intro k hk hkj
     simp only [ite_eq_right (fun h => hkj (hf hk hj h))]
-  · exact fun h => (h hj).elim
+  simp_all
 
 omit [Fintype n] [Fintype p] [DecidableEq n] in
 theorem extendByZero_zero (S : Finset n) (f : n → p) (u : n → ℂ)
     (k : p) (hk : k ∉ S.image f) : extendByZero S f u k = 0 := by
   apply Finset.sum_eq_zero
-  intro j hj
-  exact ite_eq_right (fun h => hk (Finset.mem_image.mpr ⟨j, hj, h⟩))
+  simp_all
 
 omit [Fintype n] [DecidableEq n] in
 theorem extendByZero_energy (S : Finset n) (f : n → p) (u : n → ℂ)
@@ -413,8 +387,7 @@ theorem extendByZero_energy (S : Finset n) (f : n → p) (u : n → ℂ)
       intro k _ hk
       simp [extendByZero_zero S f u k hk]
     _ = ∑ j ∈ S, ‖extendByZero S f u (f j)‖ ^ 2 := by
-      rw [Finset.sum_image]
-      exact fun j hj k hk h => hf hj hk h
+      simp_all
     _ = _ := Finset.sum_congr rfl (fun j hj => by rw [extendByZero_apply_image S f u hf j hj])
 
 omit [Fintype n] [DecidableEq n] in
@@ -423,13 +396,7 @@ theorem extendByZero_matrix {m : Type*} (S : Finset n) (f : n → p)
     (∑ k, A i k * extendByZero S f u k) = ∑ j ∈ S, A i (f j) * u j := by
   simp only [extendByZero, Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro j _
-  rw [Finset.sum_eq_single (f j)]
-  · simp
-  · intro k _ hkj
-    simp [Ne.symm hkj]
-  · simp
+  simp
 
 theorem masked_column_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m]
     (S : Finset n) (f : n → p) (hf : Set.InjOn f S) (A : Matrix m p ℂ) :
@@ -442,7 +409,7 @@ theorem masked_column_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m
     rw [EuclideanSpace.norm_sq_eq, EuclideanSpace.norm_sq_eq]
     change (∑ k, ‖extendByZero S f u k‖ ^ 2) ≤ ∑ j, ‖u j‖ ^ 2
     rw [extendByZero_energy S f u hf]
-    exact Finset.sum_le_univ_sum_of_nonneg (fun j => sq_nonneg ‖u j‖)
+    exact Finset.sum_le_univ_sum_of_nonneg (by simp)
   have heq : operator (fun i j => if j ∈ S then A i (f j) else 0) u = operator A v := by
     ext i
     change (∑ j, (if j ∈ S then A i (f j) else 0) * u j) =
@@ -466,7 +433,7 @@ theorem row_restriction_norm_le {m : Type*} [Fintype m] [DecidableEq m]
   have h := column_restriction_norm_le f hf A.conjTranspose
   change ‖operator B.conjTranspose‖ ≤ ‖operator A.conjTranspose‖ at h
   rw [operator_conjTranspose_norm B, operator_conjTranspose_norm A] at h
-  exact h
+  omega
 
 theorem submatrix_norm_le {m q : Type*} [Fintype m] [Fintype q]
     [DecidableEq m] [DecidableEq q]
@@ -478,7 +445,6 @@ theorem submatrix_norm_le {m q : Type*} [Fintype m] [Fintype q]
 
 end FiniteSieveRestriction
 
-open scoped BigOperators
 namespace FiniteSieveOperator
 
 theorem squared_norm_le_of_energy {m n : Type*} [Fintype m] [Fintype n]
@@ -489,16 +455,16 @@ theorem squared_norm_le_of_energy {m n : Type*} [Fintype m] [Fintype n]
   have hop : ‖operator A‖ ≤ Real.sqrt C := by
     apply ContinuousLinearMap.opNorm_le_bound _ (Real.sqrt_nonneg C)
     intro a
-    apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg C) (norm_nonneg a))).mp
+    apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
     simpa only [mul_pow, Real.sq_sqrt hC, EuclideanSpace.norm_sq_eq, operator_apply] using h a
   simpa only [Real.sq_sqrt hC] using pow_le_pow_left₀ (norm_nonneg _) hop 2
 
 end FiniteSieveOperator
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalQuadraticSieve
 abbrev O := ActualEisensteinCubic.O
-open ConcretePrimeRowBridge ActualEisensteinCubic CompletedGauss
+open ConcretePrimeRowBridge CompletedGauss
 
 theorem idealSexticRow_ambient
     (F G : Finset (Ideal O)) (hFp : ∀ I ∈ F, I ≠ ⊥) (hGp : ∀ I ∈ G, I ≠ ⊥)
@@ -512,16 +478,14 @@ theorem idealSexticRow_ambient
   apply Finset.prod_bij idx
   · intro i hi
     exact (mem_idealSupport_iff G I (idx i hi)).mpr ((mem_idealSupport_iff F I i).mp hi)
-  · intro i hi j hj hij
-    exact Subtype.ext (congrArg (fun k : primePool G => k.val) hij)
+  · grind
   · intro j hj
     let i : primePool F := ⟨j.val, mem_primePool_iff.mpr
       ⟨I, hIF, (mem_idealSupport_iff G I j).mp hj⟩⟩
-    have hi : i ∈ idealSupport F I :=
+    have hi :=
       (mem_idealSupport_iff F I i).mpr ((mem_idealSupport_iff G I j).mp hj)
-    exact ⟨i, hi, Subtype.ext rfl⟩
-  · intro i hi
-    rfl
+    grind
+  grind
 
 def Admissible (I : Ideal O) : Prop :=
   I ≠ 0 ∧ Squarefree I ∧ ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I,
@@ -549,10 +513,10 @@ theorem quadraticRow_eq (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     quadraticRow I z =
       (idealSexticRow F (fun J hJ => (hF J hJ).1)
         (fun J hJ P hP => (hF J hJ).2.2 P hP |>.1) I z) ^ 3 := by
-  rw [quadraticRow, dite_eq_left (hF I hI)]
+  rw [quadraticRow, dite_eq_left (by grind)]
   congr 1
-  exact idealSexticRow_ambient {I} F (singletonPositive I (hF I hI))
-    (fun J hJ => (hF J hJ).1) (singletonGood I (hF I hI))
+  exact idealSexticRow_ambient {I} F (singletonPositive I (by grind))
+    (fun J hJ => (hF J hJ).1) (singletonGood I (by grind))
     (fun J hJ P hP => (hF J hJ).2.2 P hP |>.1) I (Finset.mem_singleton_self I) hI z
 
 def idealRange (X : ℝ) : Finset (Ideal O) := (idealsUpTo ⌊X⌋₊).filter Admissible
@@ -575,7 +539,7 @@ theorem mem_idealRange {X : ℝ} {I : Ideal O} :
 theorem idealRange_mono {X Y : ℝ} (h : X ≤ Y) : idealRange X ⊆ idealRange Y := by
   intro I hI
   rcases mem_idealRange.mp hI with ⟨ha, hN⟩
-  exact mem_idealRange.mpr ⟨ha, hN.trans h⟩
+  exact mem_idealRange.mpr (by grind)
 
 def matrix (M N : ℝ) : Matrix (idealRange M) (idealRange N) ℂ :=
   fun I J => quadraticRow J.val (primaryGenerator I.val)
@@ -611,8 +575,8 @@ theorem family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
       sieveNorm M N := by
   let r : m → idealRange M := fun i => ⟨rows i, mem_idealRange.mpr (hrows i)⟩
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
-  have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
-  have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
+  have hri : Function.Injective r := fun i j h => by grind
+  have hci : Function.Injective c := fun i j h => by grind
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (matrix M N)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 

@@ -8,31 +8,24 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -52,33 +45,29 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
 def reflectedLocalPiece (P : Ideal O) [P.IsMaximal] (hg : lambda∉P)
     (j : ℕ) (e : Fin 3) (n b : O) : ℂ :=
@@ -127,7 +116,7 @@ theorem reflectedLocalPiece_norm_le (P : Ideal O) [P.IsMaximal] (hg : lambda∉P
       · rw [ite_eq_right hj0]
         exact norm_bracket_nonexceptional_le_one _ j hj4 hj0 _
     · simp only [reflectedLocalPiece,ite_eq_right hj4,ite_eq_right he,norm_zero,reflectedLocalSize]
-      split_ifs <;> positivity
+      positivity
 
 theorem sqrt_norm_reflectionExtractedDivisor {ι : Type*} [Fintype ι]
     (P : ι→Ideal O) [∀i,(P i).IsMaximal] (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
@@ -139,9 +128,8 @@ theorem sqrt_norm_reflectionExtractedDivisor {ι : Type*} [Fintype ι]
     unfold reflectionExtractedPrime
     split_ifs
     · rw [rootCard_eq_sqrt_absNorm]
-    · simp
-  · intro i _
-    exact Nat.cast_nonneg _
+    simp
+  simp
 
 theorem reflectedBranch_norm_bound {ι : Type*} [Fintype ι]
     (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
@@ -152,7 +140,7 @@ theorem reflectedBranch_norm_bound {ι : Type*} [Fintype ι]
       Real.sqrt (Ideal.absNorm (reflectionExtractedDivisor P j e 0):ℝ) := by
   have hb : ‖reflectedBranch P hg j e n b‖≤∏i,reflectedLocalSize (P i) (j i) (e i) := by
     rw [reflectedBranch,norm_prod]
-    exact Finset.prod_le_prod₀ (fun i _ => norm_nonneg _)
+    exact Finset.prod_le_prod₀ (by simp)
       (fun i _ => reflectedLocalPiece_norm_le (P i) (hg i) (j i) (e i) n b)
   apply hb.trans_eq
   rw [sqrt_norm_reflectionExtractedDivisor,sqrt_norm_reflectionExtractedDivisor,
@@ -175,8 +163,8 @@ theorem reflectionExtractedDivisor_ne_zero {ι : Type*} [Fintype ι]
   intro i _
   unfold reflectionExtractedPrime
   split_ifs
-  · exact hP i
-  · exact one_ne_zero
+  · simp_all
+  simp
 
 theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
     (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
@@ -189,10 +177,10 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
     (Finset.prod_ne_zero_iff.mp hne) i (Finset.mem_univ i)
   have hmemn i (hj : j i=4) (he : e i=1) : n∈P i := by
     by_contra hz
-    exact hn i (by simp [reflectedLocalPiece,exceptionalPiece,hj,he,hz])
+    exact hn i (by simp [reflectedLocalPiece, exceptionalPiece, he, hz])
   have hmemb i (hj : j i=4) (he : e i=2) : n∉P i ∧ b∈P i := by
     by_contra hz
-    exact hn i (by simp [reflectedLocalPiece,exceptionalPiece,hj,he,hz])
+    exact hn i (by simp [reflectedLocalPiece, exceptionalPiece, he, hz])
   have hprod (v : Fin 3) (z : O)
       (hz : ∀i,(j i=4 ∧ e i=v) ∨ (j i=0 ∧ v=0) → z∈P i) :
       reflectionExtractedDivisor P j e v∣Ideal.span {z} := by
@@ -212,22 +200,13 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
         exact isCoprime_one_left
     · intro i
       split_ifs with hi
-      · rw [Ideal.dvd_iff_le,Ideal.span_le,Set.singleton_subset_iff,SetLike.mem_coe]
-        exact hz i hi
-      · exact one_dvd _
-  refine ⟨hprod 1 n ?_,hprod 2 b ?_,fun i hj he => (hmemb i hj he).1⟩
-  · intro i hi
-    rcases hi with ⟨hj,he⟩|⟨hj,he⟩
-    · exact hmemn i hj he
-    · norm_num at he
-  · intro i hi
-    rcases hi with ⟨hj,he⟩|⟨hj,he⟩
-    · exact (hmemb i hj he).2
-    · norm_num at he
+      · simp_all
+      simp
+  simp_all
 
 end
 
-open scoped BigOperators Classical SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff Topology
 open MeasureTheory Filter
 
 theorem Vstar_contDiff (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -267,13 +246,12 @@ def vstarSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
 end CompletedGauss
 
 namespace InitialMeanSquare
-open SecondPassArithmetic
 
 end InitialMeanSquare
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups Matrix InnerProductSpace
+open scoped Classical Topology ContDiff Manifold ENNReal MatrixGroups Matrix
 
 def hyperbolicEuclideanCoordinates (w : HyperbolicSpace) : EuclideanSpatial :=
   WithLp.toLp 2 (hyperbolicSpatialCoordinates w)
@@ -327,17 +305,17 @@ lemma euclideanAction_diagonal (b : ℂ) (hb : b≠0) (p : EuclideanSpatial) (hp
   apply (WithLp.equiv 2 (Fin 3→ℝ)).injective
   funext j
   fin_cases j
-  · simpa [Complex.mul_re] using h0.symm
+  · simp_all
   · simpa [Complex.mul_im,add_comm] using h1.symm
-  · exact h2.symm
+  simp_all
 
 lemma euclideanAction_weyl (p : EuclideanSpatial) (hp : 0<p 2) :
     euclideanAction complexWeyl p=euclideanWeylAction p := by
   have hn : ‖p‖≠0 := norm_ne_zero_iff.mpr (euclideanUpperHalf_ne_zero p hp)
-  have hnc : (‖p‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hn
+  have hnc := Complex.ofReal_ne_zero.mpr hn
   have hq : 0<euclideanWeylAction p 2 := by
     rw [(euclideanWeylAction_apply p).2.2]
-    exact mul_pos (sq_pos_of_ne_zero (one_div_ne_zero hn)) hp
+    exact by positivity
   have h := congrArg hyperbolicEuclideanCoordinates
     (show euclideanToHyperbolic (euclideanWeylAction p)=
       complexWeyl•euclideanToHyperbolic p from by
@@ -347,8 +325,7 @@ lemma euclideanAction_weyl (p : EuclideanSpatial) (hp : 0<p 2) :
       · rw [h0,h1,euclidean_complex_norm_sq]
         simp only [Complex.ofReal_neg,Complex.ofReal_mul,Complex.ofReal_pow,Complex.ofReal_div,
           Complex.ofReal_one,Complex.star_def,map_add,map_mul,Complex.conj_ofReal,Complex.conj_I]
-        field_simp
-        ; ring
+        ring
       · rw [h2,euclidean_complex_norm_sq]
         field_simp)
   simpa only [hyperbolicEuclideanCoordinates_toHyperbolic _ hq,euclideanAction] using h.symm
@@ -367,15 +344,13 @@ lemma euclideanComplexDilation_norm (b : ℂ) (u : EuclideanSpatial) :
   rw [mul_pow,EuclideanSpace.real_norm_sq_eq,EuclideanSpace.real_norm_sq_eq]
   obtain ⟨h0,h1,h2⟩ := euclideanComplexDilation_apply b u
   simp only [Fin.sum_univ_three,h0,h1,h2]
-  calc
-    _ = ((b^2).re^2+(b^2).im^2)*((u 0)^2+(u 1)^2)+(Complex.normSq b)^2*(u 2)^2 := by ring
-    _ = _ := by rw [h]; ring
+  grind
 
 lemma euclideanInversionDeriv_norm (p u : EuclideanSpatial) :
     ‖euclideanInversionDeriv p u‖=(1/‖p‖)^2*‖u‖ := by
   unfold euclideanInversionDeriv
   rw [_root_.smul_apply,norm_smul,Real.norm_of_nonneg (sq_nonneg _)]
-  simp only [LinearIsometryEquiv.coe_coe'',LinearIsometryEquiv.norm_map]
+  simp
 
 def HyperbolicDifferentialIsometry (g : SL(2,ℂ)) : Prop :=
   ∀p : EuclideanSpatial,0<p 2 → ∃A : EuclideanSpatial→L[ℝ]EuclideanSpatial,
@@ -395,11 +370,7 @@ lemma hyperbolicDifferentialIsometry_mul (g h : SL(2,ℂ))
     rw [euclideanAction_mul]
     change ‖A (B u)‖*p 2=‖u‖*euclideanAction g (euclideanAction h p) 2
     apply (mul_right_inj' (euclideanAction_positive h p).ne').mp
-    calc
-      _ = (‖A (B u)‖*euclideanAction h p 2)*p 2 := by ring
-      _ = (‖B u‖*euclideanAction g (euclideanAction h p) 2)*p 2 := by rw [hAn]
-      _ = (‖B u‖*p 2)*euclideanAction g (euclideanAction h p) 2 := by ring
-      _ = _ := by rw [hBn]; ring
+    grind
 
 lemma hyperbolicDifferentialIsometry_translation (b : ℂ) :
     HyperbolicDifferentialIsometry (complexTranslation b) := by
@@ -458,7 +429,7 @@ theorem hyperbolicDifferentialIsometry (g : SL(2,ℂ)) : HyperbolicDifferentialI
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
+open scoped Classical Topology ContDiff Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 
@@ -490,7 +461,7 @@ lemma hyperbolic_cotangent_energy_comp (g : SL(2,ℂ)) (F : EuclideanSpatial→�
   have hn : ∀u,‖A u‖=(euclideanAction g p 2/p 2)*‖u‖ := by
     intro u
     calc
-      ‖A u‖=(‖u‖*euclideanAction g p 2)/p 2 := (eq_div_iff hp.ne').2 (hAn u)
+      ‖A u‖=(‖u‖*euclideanAction g p 2)/p 2 := by grind
       _ = _ := by ring
   rw [norm_comp_scaled_isometry A _ (div_pos (euclideanAction_positive g p) hp) hn]
   field_simp
@@ -509,7 +480,7 @@ lemma euclideanScalarDirichletDensity_invariant (g : SL(2,ℂ)) (F : EuclideanSp
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ContDiff Manifold ENNReal MatrixGroups
+open scoped Classical Topology ContDiff Manifold ENNReal MatrixGroups
 
 namespace CubicEisenstein
 
@@ -614,7 +585,7 @@ lemma kernelQuotientEnergyDensity_support (f : kernelSmoothTests) :
     Function.support (kernelQuotientEnergyDensity f)⊆tsupport f.1 := by
   intro q hq
   by_contra hn
-  have hz : f.1=ᶠ[𝓝 q]0 := notMem_tsupport_iff_eventuallyEq.mp hn
+  have hz := notMem_tsupport_iff_eventuallyEq.mp hn
   induction q using Quotient.inductionOn with
   | _ w =>
     have hp : 0<hyperbolicEuclideanCoordinates w 2 := hyperbolicHeight_pos w

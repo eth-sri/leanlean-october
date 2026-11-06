@@ -84,8 +84,7 @@ private theorem partStep_eq_one {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ}
 /-- `y_{m+1} = y_m + a/4`. -/
 private theorem partPoint_succ (a : ℝ) (m : ℕ) : partPoint a (m + 1) = partPoint a m + a / 4 := by
   unfold partPoint
-  push_cast
-  ring
+  grind
 
 /-- `η_m` lives in `(y_m, y_m + a/2)`. -/
 private theorem lt_of_partBump_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ}
@@ -103,8 +102,7 @@ private theorem lt_of_partBump_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {z : ℝ
 /-- `y_m ≥ a/2`. -/
 private theorem half_le_partPoint {a : ℝ} (ha : 0 < a) (m : ℕ) : a / 2 ≤ partPoint a m := by
   unfold partPoint
-  have : 0 ≤ (m : ℝ) * (a / 4) := by positivity
-  linarith
+  simp_all
 
 /-- `ψ_{1,m}` lives in `[1, 2]`. -/
 private theorem le_of_partPiece_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {w : ℝ}
@@ -117,12 +115,8 @@ private theorem le_of_partPiece_ne_zero {a : ℝ} (ha : 0 < a) {m : ℕ} {w : �
     simp [partPiece, h]
   obtain ⟨h₁, h₂⟩ := lt_of_partBump_ne_zero ha hb
   constructor
-  · by_contra h
-    have : partPoint a m * w < partPoint a m * 1 := mul_lt_mul_of_pos_left (not_le.1 h) hy0
-    linarith
-  · by_contra h
-    have : partPoint a m * 2 < partPoint a m * w := mul_lt_mul_of_pos_left (not_le.1 h) hy0
-    linarith
+  · nlinarith
+  nlinarith
 
 /-- The steps are smooth. -/
 private theorem contDiff_partStep {a : ℝ} (m : ℕ) :
@@ -148,22 +142,22 @@ private theorem contDiff_partPiece {a : ℝ} (ha : 0 < a) (m : ℕ) :
       exact h
     exact absurd (le_of_partPiece_ne_zero ha h').1 (not_le.2 hw')
   · refine hbump.contDiffAt.mul ((contDiff_const.mul contDiff_id).contDiffAt.inv ?_)
-    exact (mul_pos hy0 (show (0 : ℝ) < w by linarith)).ne'
+    positivity
 
 /-- A smooth function supported in `[1, 2]` has bounded derivatives of every order. -/
 private theorem exists_norm_iteratedDeriv_le {f : ℝ → ℂ} (hf : ContDiff ℝ ((⊤ : ℕ∞) : WithTop ℕ∞) f)
     (hs : ∀ z, f z ≠ 0 → 1 ≤ z ∧ z ≤ 2) (j : ℕ) :
     ∃ C, ∀ z, ‖iteratedDeriv j f z‖ ≤ C := by
-  have hc : HasCompactSupport f := HasCompactSupport.intro isCompact_Icc fun z hz => by
+  have hc := HasCompactSupport.intro isCompact_Icc fun z hz => by
     by_contra h
     exact hz (Set.mem_Icc.2 (hs z h))
   have hcj : HasCompactSupport (iteratedDeriv j f) := by
     rw [iteratedDeriv_eq_iterate]
     clear hs
     induction j with
-    | zero => exact hc
+    | zero => simp_all
     | succ j ih => rw [Function.iterate_succ_apply']; exact ih.deriv
-  exact (hf.continuous_iteratedDeriv j (by exact_mod_cast le_top)).bounded_above_of_compact_support
+  exact (hf.continuous_iteratedDeriv j (by simp)).bounded_above_of_compact_support
     hcj
 
 end Separation
@@ -186,10 +180,10 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
   set a := κ⁻¹ with ha_def
   set b := κ * Real.exp 2 with hb_def
   have hκ0 : 0 < κ := by linarith
-  have ha : 0 < a := inv_pos.2 hκ0
+  have ha : 0 < a := by positivity
   have hab : a < b := by
     have : a < 1 := inv_lt_one_of_one_lt₀ hκ
-    have : 1 < b := one_lt_mul_of_lt_of_le hκ (Real.one_le_exp (by norm_num))
+    have : 1 < b := one_lt_mul_of_lt_of_le hκ (by simp)
     linarith
   set n := ⌈4 * b / a⌉₊ with hn
   have hsm := fun m : Fin n => contDiff_partPiece ha m
@@ -201,9 +195,7 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
     exact (norm_nonneg _).trans (hC m' j 0)
   · refine le_trans ?_ (half_le_partPoint ha m)
     rw [ha_def, mul_inv]
-    have : (4 : ℝ)⁻¹ ≤ 2⁻¹ := by norm_num
-    calc 4⁻¹ * κ⁻¹ ≤ 2⁻¹ * κ⁻¹ := by gcongr
-      _ = κ⁻¹ / 2 := by ring
+    linarith
   · -- `m < 4b/a`, so `y_m < a/2 + b ≤ 2b`
     have hm : (m : ℝ) + 1 ≤ n := by exact_mod_cast m.2
     have hn' : (n : ℝ) < 4 * b / a + 1 := Nat.ceil_lt_add_one (by positivity)
@@ -213,8 +205,7 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
       linarith
     show partPoint a m ≤ 2 * κ * Real.exp 2
     unfold partPoint
-    have : a / 2 ≤ b := by linarith
-    nlinarith
+    linarith
   · intro z hz₁ hz₂
     have hterm : ∀ m : Fin n, partPiece a m (z / partPoint a m) =
         ((partBump a m z * z⁻¹ : ℝ) : ℂ) := by
@@ -234,7 +225,6 @@ theorem exists_partition (κ : ℝ) (hκ : 1 < κ) :
       rw [div_le_iff₀ ha] at this
       linarith
     · unfold partPoint
-      push_cast
       linarith
 
 /-! ### The separation identity -/
@@ -252,7 +242,7 @@ private theorem eventually_log_add_mul_le (κ K : ℝ) (hK : 0 ≤ K) :
   set L := Real.log x
   have hL1 : 1 ≤ L := by linarith [abs_nonneg (Real.log κ)]
   have hL0 : 0 < L := by linarith
-  have hlogL : 0 ≤ Real.log L := Real.log_nonneg hL1
+  have hlogL := Real.log_nonneg hL1
   rw [Real.norm_of_nonneg hlogL, Real.norm_of_nonneg (by positivity)] at hx
   have hsplit : L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ) = L := by
     rw [← Real.rpow_add hL0]
@@ -262,12 +252,12 @@ private theorem eventually_log_add_mul_le (κ K : ℝ) (hK : 0 ≤ K) :
     calc K * Real.log L * L ^ (0.46 : ℝ)
         ≤ K * (1 / (2 * (K + 1)) * L ^ (0.54 : ℝ)) * L ^ (0.46 : ℝ) := by gcongr
       _ = K * (1 / (2 * (K + 1))) * (L ^ (0.54 : ℝ) * L ^ (0.46 : ℝ)) := by ring
-      _ = K * (1 / (2 * (K + 1))) * L := by rw [hsplit]
+      _ = K * (1 / (2 * (K + 1))) * L := by simp_all
   have h₂ : K * (1 / (2 * (K + 1))) ≤ 1 / 2 := by
     rw [mul_one_div, div_le_iff₀ (by positivity)]
     linarith
   have h₃ : K * (1 / (2 * (K + 1))) * L ≤ 1 / 2 * L := mul_le_mul_of_nonneg_right h₂ hL0.le
-  linarith [le_abs_self (Real.log κ)]
+  grind
 
 /-- **U10 for the free labels.** Eventually, for groups as in (6.1) and free slots `C` with at
 most `m₀` slots in each big group and none in the small ones, `κ D_C ≤ x` for every
@@ -297,7 +287,7 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
             exact (mem_primesIcc.1 (hadm.2.2.2.2.2.2.2.1 g hg h)).2.2
         _ = E ^ (C g).card := Finset.prod_const _
         _ ≤ E ^ m₀ := pow_le_pow_right₀ hE1 (hC g)
-    · rw [hCb g hg, Finset.prod_empty]
+    · simp_all
   have hprod : (slotProduct C l : ℝ) ≤ (E ^ m₀) ^ big.card := by
     unfold slotProduct
     push_cast
@@ -305,7 +295,7 @@ theorem eventually_mul_slotProduct_le (c₀ C₀ vlo vhi κ : ℝ) (hκ : 0 < κ
           Finset.prod_le_prod₀ (fun g _ => Finset.prod_nonneg fun i _ => by positivity)
             fun g _ => hgi g
       _ = (E ^ m₀) ^ big.card := by
-          rw [Finset.prod_ite_mem, Finset.univ_inter, Finset.prod_const]
+          simp
   -- `E^{m₀ |big|} ≤ exp(m₀ |C₀| T L^{0.46}) ≤ x/κ`
   have hT : (big.card : ℝ) ≤ |C₀| * Real.log (Real.log x) := by
     have h := hadm.2.2.2.2.1
@@ -682,8 +672,8 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
       unfold comparisonBilinear
       refine Finset.sum_eq_zero fun l hl => ?_
       by_cases h : φ (slotProduct A l) = 0
-      · simp [h]
-      · simp [hex l hl h]
+      · grind
+      · grind
     rw [h0, mul_zero, norm_zero]
     positivity
   obtain ⟨l₀, hl₀, hφ, hφ'⟩ := hex
@@ -714,8 +704,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
     calc (1 : ℝ) ≤ x / (4 * κ * Real.exp 2) * ((Real.exp 1 * U) * (Real.exp 1 * U')) :=
           one_le_mul_of_one_le_of_one_le h₁ h₂
       _ = (4 * κ)⁻¹ * (x * U * U') := by
-          rw [he2]
-          field_simp
+          grind
       _ ≤ Y := by
           rw [hYdef]
           gcongr
@@ -731,7 +720,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
         ring
       rw [← this]
       exact_mod_cast hD
-    calc 2 * Y = 2 * y₀ * x * (U * U') := by rw [hYdef]; ring
+    calc 2 * Y = 2 * y₀ * x * (U * U') := by linarith
       _ ≤ 2 * (2 * κ * Real.exp 2) * x * ((slotProduct A l₀ : ℝ) * slotProduct B l₀) := by
           gcongr
       _ = x * (4 * κ * Real.exp 2 * ((slotProduct A l₀ : ℝ) * slotProduct B l₀)) := by ring
@@ -749,11 +738,11 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
     fun p => (hpat.2.2.2.1 _).2.2.1
   have hcpow : ∀ (n : ℕ) (t : ℝ), 0 < n → ‖(n : ℂ) ^ ((t : ℂ) * Complex.I)‖ = 1 := by
     intro n t hn
-    rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos (by exact_mod_cast hn)]
+    rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
     simp
   have hcpow' : ∀ (n : ℕ) (t : ℝ), 0 < n → ‖(n : ℂ) ^ (-((t : ℂ) * Complex.I))‖ = 1 := by
     intro n t hn
-    rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos (by exact_mod_cast hn)]
+    rw [← Complex.ofReal_natCast, Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
     simp
   set Bw : ℝ := |M₀| * L * L ^ CW * (L ^ B₀ * L ^ CW) with hBw
   have hBw0 : 0 ≤ Bw := by positivity
@@ -777,12 +766,12 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
       Complex.norm_real, Real.norm_eq_abs, Real.norm_eq_abs,
       abs_of_nonneg (hco.2 _).1]
     have hx1 : 1 ≤ x :=
-      (one_le_mul_of_one_le_of_one_le (by linarith) (Real.one_le_exp (by norm_num))).trans hx4
+      (one_le_mul_of_one_le_of_one_le (by linarith) (by simp)).trans hx4
     have h₁ := hFx r a u v Bc hin hsl hBc w hw0 (hwx.trans (pow_le_pow_right₀ hx1 (by norm_num)))
     have h₂ := hWx P big hadm (J + 1) _ _ hcard hb₁ w
     have h₃ := hWx P big hadm (J + 1) _ _ hcard hb₂ (w + slotProduct (fun g => A g ∪ B g) l)
     have h₄ := (hco.2 (w + slotProduct (fun g => A g ∪ B g) l)).2
-    have h₅ : ‖ψ₁ (w / Y)‖ ≤ |M₀| := (hψb _).trans (le_abs_self _)
+    have h₅ : ‖ψ₁ (w / Y)‖ ≤ |M₀| := by grind
     rw [mul_one, hBw]
     gcongr
     exact mul_nonneg (hco.2 _).1 (norm_nonneg _)
@@ -802,7 +791,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
     intro l hl
     have hmass : 0 ≤ ∏ g, ∏ i ∈ A g ∪ B g, (harmonicMass (P g) * (l g i : ℝ))⁻¹ :=
       Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun i _ =>
-        inv_nonneg.2 (mul_nonneg (hV g).le (Nat.cast_nonneg _))
+        inv_nonneg.2 (mul_nonneg (by grind) (Nat.cast_nonneg _))
     rw [norm_mul, norm_mul, norm_mul, norm_mul, norm_mul, Complex.norm_real,
       Real.norm_of_nonneg hmass, hcpow' _ σ (slotProduct_pos hadm hl A),
       hcpow' _ σ (slotProduct_pos hadm hl B), mul_one, mul_one]
@@ -820,7 +809,7 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
     refine ((norm_sum_le _ _).trans (Finset.sum_le_sum hlabel)).trans_eq ?_
     have hμ : ∑ l ∈ auxLabels P (fun g => A g ∪ B g),
         ∏ g, ∏ i ∈ A g ∪ B g, (harmonicMass (P g) * l g i)⁻¹ = 1 :=
-      sum_labelMass (fun g => (hV g).ne') _
+      sum_labelMass (by grind) _
     rw [← Finset.sum_mul, hμ, one_mul]
   -- `#[Y, 2Y] ≤ Y + 1 ≤ 2Y`
   have hcardI : ((Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card : ℝ) ≤ 2 * Y := by
@@ -829,16 +818,14 @@ theorem exists_norm_comparisonBilinear_le (q q₀ c₀ C₀ vlo vhi alo ahi : �
     have hc : Y ≤ (⌈Y⌉₊ : ℝ) := Nat.le_ceil Y
     rcases le_total ⌈Y⌉₊ (⌊2 * Y⌋₊ + 1) with h | h
     · rw [Nat.cast_sub h]
-      push_cast
-      linarith
+      grind
     · rw [Nat.sub_eq_zero_of_le h]
-      push_cast
-      linarith
+      grind
   -- `2 Bw ≤ L^{C₅}`
   have hBw : 2 * Bw ≤ L ^ (2 + 2 * |CW| + |B₀|) := by
     have e : L * (L * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) = L ^ (2 + 2 * |CW| + |B₀|) := by
       rw [show L * (L * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) =
-          L ^ (1 : ℝ) * (L ^ (1 : ℝ) * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) by rw [Real.rpow_one]]
+          L ^ (1 : ℝ) * (L ^ (1 : ℝ) * L ^ |CW| * (L ^ |B₀| * L ^ |CW|)) by simp]
       simp only [← Real.rpow_add hL0]
       congr 1
       ring

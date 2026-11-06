@@ -5,7 +5,6 @@ public import Erdos821.P4Bridge.Structure
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe
@@ -76,9 +75,7 @@ lemma prod_sharedRows {R : Type*} [CommMonoid R] (ν : Pattern P J ell m)
     ext i
     simp [sharedRows]
   rw [hs, Finset.prod_filter]
-  apply Finset.prod_congr rfl
-  intro i _
-  by_cases hi : i ∈ ν.changed g.val <;> simp [hi]
+  simp
 
 lemma sharedPrefixProduct_rows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (a : P.BigLabels (J + ell)) :
@@ -137,7 +134,7 @@ lemma freshMass_join (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   rw [freshMass_eq_div_shared ν hV (fun _ _ _ => rfl), idealMass_labelJoin,
     sharedLabelMass_rows ν block, labelSplit_join]
   have hn := (rowWeight_pos hV (sharedRows ν) s).ne'
-  field_simp [hn]
+  grind
 
 lemma selectedEndpoint_join_false (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s : SharedRows ν) (a : SideTuple ν block false) (b : SideTuple ν block true)
@@ -175,7 +172,7 @@ lemma splitBigLabels_labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → 
       ((prefixSplit ν block).symm (s, a, b), t) := by
   change splitBigLabels P J ell ((splitBigLabels P J ell).symm
     ((prefixSplit ν block).symm (s, a, b), t)) = _
-  exact (splitBigLabels P J ell).apply_symm_apply _
+  simp
 
 lemma multiplier_factor (C D E : ℕ) (hC : 0 < C) (hD : 0 < D) (hE : 0 < E)
     (θ ζ : ℝ) :
@@ -183,7 +180,7 @@ lemma multiplier_factor (C D E : ℕ) (hC : 0 < C) (hD : 0 < D) (hE : 0 < E)
       Blueprint.Analytic.mellin C ζ *
         (Blueprint.Analytic.mellin ((D : ℝ) * E) ζ *
           Blueprint.Analytic.e ((θ * C) * D * E)) := by
-  rw [Nat.mul_assoc, imaginaryPower_mul C (D * E) hC (Nat.mul_pos hD hE)]
+  rw [Nat.mul_assoc, imaginaryPower_mul C (D * E) hC (by positivity)]
   simp only [imaginaryPower_eq_mellin, Nat.cast_mul, phase_mul_shift, mul_assoc]
 
 end

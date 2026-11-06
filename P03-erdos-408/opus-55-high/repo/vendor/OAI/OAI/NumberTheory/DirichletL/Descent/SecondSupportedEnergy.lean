@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSquarefree
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers SecondPassArithmetic
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -34,9 +32,9 @@ theorem assignedSecondSource_mono {Jo : ℕ}
     assignedSecondSource S J₁ J₂ L₁ L₂ ⊆ assignedSecondSource T J₁ J₂ L₁ L₂ := by
   intro x hx
   obtain ⟨y,hy,q₁,hq₁,q₂,hq₂,he⟩ := (mem_assignedSecondSource S J₁ J₂ L₁ L₂ x).mp hx
-  exact (mem_assignedSecondSource T J₁ J₂ L₁ L₂ x).mpr ⟨y,hST hy,q₁,hq₁,q₂,hq₂,he⟩
+  exact (mem_assignedSecondSource T J₁ J₂ L₁ L₂ x).mpr (by grind)
 
-theorem actualSecondTriples_mono {Jo Jn : ℕ} (u v : Eisˣ)
+theorem actualSecondTriples_mono {Jo Jn : ℕ} (u v : ActualEisensteinCubic.Oˣ)
     {S T : Finset (MarkedSecondSource ι Jo Jn)} (hST : S ⊆ T) :
     actualSecondTriples p u v S ⊆ actualSecondTriples p u v T :=
   Finset.image_subset_image hST

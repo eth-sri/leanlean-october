@@ -8,7 +8,6 @@ public import Erdos821.S2.RankCount
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.Blueprint.Graph
@@ -29,6 +28,6 @@ theorem distinct_birth_expansion_proof : Erdos821.Blueprint.Graph.distinct_birth
       have he : Erdos821.S2.birthEvent performed value π ↔ birthEvent performed value π := Iff.rfl
       by_cases hp : birthEvent performed value π
       · simp only [ite_eq_left hp, ite_eq_left (he.mpr hp), birthMobius, Erdos821.S2.birthMobius]
-      · simp only [ite_eq_right hp, ite_eq_right (fun hs => hp (he.mp hs))]
+      simp_all
 
 end Erdos821.Blueprint.Graph

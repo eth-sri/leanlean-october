@@ -11,19 +11,9 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonRawScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentActiveCanonicalSource
-open CenteredMomentActiveAllocation
-open CanonicalQuadraticSieve CenteredMomentFirstSectors
-open HeckeFamily ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentDivisorRetained
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRaw
-open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum
-open CenteredMomentAmplificationLiveMask CenteredMomentCommonProfile CenteredMomentAddedZeroUniform
-open CenteredMomentCommonRawScale CenteredMomentRestrictedSourceNormalization
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 

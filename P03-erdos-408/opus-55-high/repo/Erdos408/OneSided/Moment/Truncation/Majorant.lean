@@ -75,7 +75,7 @@ theorem norm_dblGhostCoef (N j : ℕ) (s : ChainState x d Y d₀ u v r B) (c : G
       rw [memSize, ← prod_pow_eq_pow_sum, ← prod_mul_distrib]
       refine prod_congr rfl fun xp _ => ?_
       simp only [ghostFactor, mul_pow]
-      ring, abs_mul, abs_of_nonneg (pow_nonneg zero_le_two _)]
+      ring, abs_mul, abs_of_nonneg (by positivity)]
   · rw [dblGhostCoef, chainGhostCoef, ghostCoef, ghostCoef, ite_eq_right hv, ite_eq_right hv,
       norm_zero, mul_zero]
 
@@ -96,9 +96,7 @@ theorem norm_chainWeight_mul_two_pow {A₀ : ℝ} {N : ℕ} (s : ChainState x d 
 /-- A particle's prime is a band prime. -/
 private theorem fst_mem_bandPrimes' (xp : Particle x d) : xp.1.1 ∈ bandPrimes x d := by
   obtain ⟨p, hp, hxp⟩ := mem_biUnion.1 xp.2
-  obtain ⟨ℓ, -, hℓ⟩ := mem_image.1 hxp
-  rw [← hℓ]
-  exact hp
+  grind
 
 /-- The hitting particles have one line per band prime, so a sum over them of a nonnegative
 function of the prime is at most the sum over the band primes. -/
@@ -106,13 +104,11 @@ private theorem sum_hits_le_sum_bandPrimes' (z : ℤ × ℤ) {f : ℕ → ℝ} (
     ∑ xp with HitsAt x d z xp, f xp.1.1 ≤ ∑ p ∈ bandPrimes x d, f p := by
   rw [← sum_image (f := f) (g := fun xp : Particle x d => xp.1.1)]
   · exact sum_le_sum_of_subset_of_nonneg
-      (image_subset_iff.2 fun xp _ => fst_mem_bandPrimes' xp) fun p _ _ => hf p
+      (image_subset_iff.2 fun xp _ => fst_mem_bandPrimes' xp) (by grind)
   · intro xp hxp yp hyp h
     have hxp' : lineOf xp.1.1 z = xp.1.2 := (mem_filter.1 (mem_coe.1 hxp)).2
     have hyp' : lineOf yp.1.1 z = yp.1.2 := (mem_filter.1 (mem_coe.1 hyp)).2
-    refine Subtype.ext (Prod.ext h ?_)
-    rw [← hxp', ← hyp']
-    exact congrArg (lineOf · z) h
+    grind
 
 /-- With band masses at most `1`, `∑_{p band prime} 1/p ≤ ∑_i V_i ≤ K`. -/
 private theorem sum_one_div_bandPrimes_le' (hV : ∀ i, harmonicMass (band x (d.a i)) ≤ 1) :
@@ -122,25 +118,25 @@ private theorem sum_one_div_bandPrimes_le' (hV : ∀ i, harmonicMass (band x (d.
         refine sum_le_sum fun p hp => ?_
         obtain ⟨i, -, hpi⟩ := mem_biUnion.1 hp
         calc (1 : ℝ) / p = if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 :=
-              (ite_eq_left hpi).symm
+              by grind
           _ ≤ ∑ i, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 :=
               single_le_sum (f := fun i => if p ∈ band x (d.a i) then (1 : ℝ) / p else 0)
-                (fun j _ => by split_ifs <;> positivity) (mem_univ i)
+                (fun j _ => by positivity) (mem_univ i)
     _ = ∑ i, ∑ p ∈ bandPrimes x d, if p ∈ band x (d.a i) then (1 : ℝ) / p else 0 := sum_comm
     _ = ∑ i, harmonicMass (band x (d.a i)) := by
         refine sum_congr rfl fun i _ => ?_
         rw [sum_ite_mem, inter_eq_right.2
-          (show band x (d.a i) ⊆ bandPrimes x d from fun p hp => mem_biUnion.2 ⟨i, mem_univ i, hp⟩)]
+          (show band x (d.a i) ⊆ bandPrimes x d from fun p hp => mem_biUnion.2 (by grind))]
         rfl
-    _ ≤ ∑ _i : Fin K, (1 : ℝ) := sum_le_sum fun i _ => hV i
+    _ ≤ ∑ _i : Fin K, (1 : ℝ) := sum_le_sum (by grind)
     _ = K := by simp
 
 /-- The harmonic mass `V(p)` of the bands containing `p` is nonnegative. -/
 private theorem primeMass_nonneg'' (p : ℕ) : 0 ≤ primeMass x d p :=
   sum_nonneg fun i _ => by
     split_ifs
-    · exact sum_nonneg fun p _ => by positivity
-    · exact le_rfl
+    · exact sum_nonneg (by simp)
+    simp
 
 /-- `ρ⁴ = √q`. -/
 private theorem pendingWeight_pow_four' (hq : 0 < q) : pendingWeight q ^ 4 = Real.sqrt q := by
@@ -151,7 +147,7 @@ private theorem pendingWeight_pow_four' (hq : 0 < q) : pendingWeight q ^ 4 = Rea
 /-- The damping defects are in `[0, 1]`. -/
 private theorem dampDefect_mem_Icc' (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  have hs := Real.sqrt_le_one.2 hq₁.le
   unfold dampDefect
   split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
 
@@ -160,12 +156,12 @@ theorem one_le_truncV (hq : 0 < q) (hq₁ : q < 1) : 1 ≤ truncV q := by
   have hρ0 : 0 < pendingWeight q := Real.rpow_pos_of_pos hq _
   have hρ1 : pendingWeight q < 1 := Real.rpow_lt_one hq.le hq₁ (by norm_num)
   have hρ2 : pendingWeight q ^ 2 < 1 := pow_lt_one₀ hρ0.le hρ1 (by norm_num)
-  have hw : pendingWeight q * (1 - pendingWeight q ^ 2) ≤ 1 :=
+  have hw :=
     calc pendingWeight q * (1 - pendingWeight q ^ 2) ≤ 1 * 1 :=
           mul_le_mul hρ1.le (by nlinarith) (by linarith) zero_le_one
       _ = 1 := one_mul 1
-  rw [truncV, le_div_iff₀ (mul_pos hρ0 (by linarith)), one_mul]
-  exact hw
+  rw [truncV, le_div_iff₀ (by positivity), one_mul]
+  omega
 
 /-! ### The row bounds -/
 
@@ -186,11 +182,11 @@ theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
   have hv₀ : 0 < truncV q := lt_of_lt_of_le zero_lt_one (one_le_truncV hq hq₁)
   obtain ⟨hη0, hη1⟩ := dampDefect_mem_Icc' hq hq₁ N j
   -- `0 ≤ surv ≤ ρ²`, since `q_j ≤ √q = ρ⁴`
-  have hsurv0 : 0 ≤ (1 - dampDefect q N j) / ρ ^ 2 := div_nonneg (by linarith) (by positivity)
+  have hsurv0 : 0 ≤ (1 - dampDefect q N j) / ρ ^ 2 := by positivity
   have hsurv1 : (1 - dampDefect q N j) / ρ ^ 2 ≤ ρ ^ 2 := by
     have hqs : q ≤ Real.sqrt q := by
       have h₁ := Real.mul_self_sqrt hq.le
-      have h₂ : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+      have h₂ := Real.sqrt_le_one.2 hq₁.le
       calc q = Real.sqrt q * Real.sqrt q := h₁.symm
         _ ≤ Real.sqrt q * 1 := mul_le_mul_of_nonneg_left h₂ (Real.sqrt_nonneg q)
         _ = Real.sqrt q := mul_one _
@@ -212,7 +208,7 @@ theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
     calc (1 - dampDefect q N j) / ρ ^ 2 + |-dampDefect q N j / ρ| / truncV q
         ≤ ρ ^ 2 + 1 / ρ / truncV q :=
           add_le_add hsurv1 (div_le_div_of_nonneg_right h₁ hv₀.le)
-      _ = 1 := by rw [h₂]; ring
+      _ = 1 := by linarith
   -- the creation mass of the hitting particles
   have hcre : ∑ xp with HitsAt x d t.1.1 xp,
       |2 * (-dampDefect q N j * primeMass x d xp.1.1 / ρ)| * primeWeight q x d N xp.1.1 ≤
@@ -229,7 +225,7 @@ theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
                   (primeMass x d xp.1.1 * primeWeight q x d N xp.1.1) := by ring
             _ ≤ 2 * 1 / ρ * (2 * (1 / (xp.1.1 : ℝ))) :=
                 mul_le_mul (div_le_div_of_nonneg_right (by linarith) hρ0.le) h
-                  (mul_nonneg (primeMass_nonneg'' _) (hν _)) (by positivity)
+                  (mul_nonneg (primeMass_nonneg'' _) (by grind)) (by positivity)
             _ = 4 / ρ * (1 / (xp.1.1 : ℝ)) := by ring
       _ ≤ ∑ p ∈ bandPrimes x d, 4 / ρ * (1 / (p : ℝ)) :=
           sum_hits_le_sum_bandPrimes' t.1.1 (f := fun p => 4 / ρ * (1 / (p : ℝ)))
@@ -242,10 +238,10 @@ theorem sum_dblGhostCoef_le (hq : 0 < q) (hq₁ : q < 1) {N : ℕ}
       ≤ Real.exp (truncV q * ∑ xp with HitsAt x d t.1.1 xp,
           |2 * (-dampDefect q N j * primeMass x d xp.1.1 / ρ)| * primeWeight q x d N xp.1.1) *
           truncV q ^ memSize t.2.2.1 :=
-        ghost_row (fun xp => hν _) hsurv0 hv₀ hdel t.2.2
+        ghost_row (by grind) hsurv0 hv₀ hdel t.2.2
     _ ≤ Real.exp (truncV q * (4 * K / ρ)) * truncV q ^ memSize t.2.2.1 :=
         mul_le_mul_of_nonneg_right
-          (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hcre hv₀.le)) (pow_nonneg hv₀.le _)
+          (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hcre hv₀.le)) (by positivity)
 
 /-- **The weighted edge row bound**: an edge stores at most `K` particles, so for `v₀ ≥ 1` a
 bound `R` on its absolute row sums gives the bound `v₀^K R` against `v₀^{size}`. -/
@@ -303,7 +299,7 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
       (fun t => one_le_pow₀ hv₀) N
       (fun j t c => ‖dblGhostCoef q x d Y d₀ u v r B' N j t c‖)
       (fun _ t e => ‖chainEdgeCoef q A₀ x d Y d₀ u v r B' N t e‖) (fun _ => RG) (fun _ => RE)
-      (fun _ _ _ => norm_nonneg _) (fun _ _ _ => norm_nonneg _) (fun _ => hRG) (fun _ => hRE)
+      (by simp) (by simp) (by grind) (by grind)
       (fun j t => hG j t) (fun _ t => hE t) s
     simpa only [prod_const, card_univ, Fintype.card_fin] using this
   -- one state
@@ -318,7 +314,7 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
     · simp [h0]
     have hs : memSize s.2.2.1 = 0 := by
       by_contra hs
-      exact h0 (by rw [chainInit]; exact ite_eq_right fun h => hs h.2)
+      exact h0 (by rw [chainInit]; exact ite_eq_right (by omega))
     set H := ((histories x d Y d₀ u v r B' N).filter
       (fun h => BirthsDistinct (births s h))).filter (fun h => ¬ StaysBelow B s h) with hH
     set P : History x d Y d₀ u v r N → ℝ := fun h =>
@@ -327,7 +323,7 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
           (chainGhostOut x d Y d₀ u v r B' (chainVisit s h j.castSucc) (h.1 j.castSucc))
             (h.2 j)‖ with hP
     have hP0 : ∀ h, 0 ≤ P h := fun h =>
-      mul_nonneg (prod_nonneg fun _ _ => norm_nonneg _) (prod_nonneg fun _ _ => norm_nonneg _)
+      mul_nonneg (prod_nonneg (by simp)) (by positivity)
     -- each history leaving the low memories gains `2^{-(B + 1 - KN)}`
     have hh : ∀ h ∈ H, ‖chainWeight q A₀ s h * chainInit x d Y d₀ u v r B' (chainEnd s h)‖ *
         2 ^ (B + 1) ≤ 2 ^ (K * N) * P h := by
@@ -358,11 +354,11 @@ theorem norm_distinctSum_sub_mul_le {A₀ v₀ RG RE : ℝ} {B' N : ℕ} (hB : B
             exact sum_le_sum hh
         _ ≤ ∑ h ∈ histories x d Y d₀ u v r B' N, 2 ^ (K * N) * P h :=
             sum_le_sum_of_subset_of_nonneg
-              ((filter_subset _ _).trans (filter_subset _ _))
+              ((filter_subset _ _).trans (by simp))
               fun h _ _ => mul_nonneg (by positivity) (hP0 h)
         _ = 2 ^ (K * N) * ∑ h ∈ histories x d Y d₀ u v r B' N, P h * 1 := by
             rw [mul_sum]
-            simp only [mul_one]
+            simp
         _ ≤ 2 ^ (K * N) * (RG ^ (N + 1) * RE ^ N * v₀ ^ memSize s.2.2.1) :=
             mul_le_mul_of_nonneg_left (hrow s) (by positivity)
         _ = C := by rw [hs, pow_zero, mul_one, hC]; ring

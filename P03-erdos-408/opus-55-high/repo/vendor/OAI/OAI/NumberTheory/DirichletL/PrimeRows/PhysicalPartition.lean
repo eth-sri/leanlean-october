@@ -8,19 +8,18 @@ public import OAI.NumberTheory.DirichletL.Detector.CanonicalPhysicalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical CompletedGauss CanonicalQuadraticSieve
-local notation "O" => HeckeFamily.O
 
-def physicalRowValue {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+def physicalRowValue {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (u : FreeRow) : ℂ :=
   ∑P : (∀i,T i),(∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -30,7 +29,7 @@ theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P�
   have hs (P : ∀i,T i) : Summable (fun u : FreeRow=>
       (∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
         rowIntegral η S (calibrationForSet S hmax) (fun i=>primaryGenerator (P i).val.val) W0 W1 X Y Z u) :=
-    (rowIntegral_summable η S _ _ (fun i=>supported_primaryGenerator_ne_zero _ (hT i _ (P i).property))
+    (rowIntegral_summable η S _ _ (fun i=>supported_primaryGenerator_ne_zero _ (by grind))
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ).mul_left _
   have hh (F : Finset (∀i,T i)) : Summable (fun u : FreeRow=>∑P∈F,
       (∏i,W i ((Ideal.absNorm (P i).val.val:ℝ)/Yp i))*
@@ -41,7 +40,7 @@ theorem physicalRowValue_summable {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P�
   exact hh Finset.univ
 
 theorem canonical_physical_probe_partition {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -70,7 +69,7 @@ theorem canonical_physical_probe_partition {K : ℕ}
     simp only [hu]
   rw [heq,nonprincipal_rows_partition L U hL hLU f hf]
   congr 1
-  · dsimp [f,physicalRowValue]
+  · dsimp [physicalRowValue]
     simp only [rowIntegral_principal]
 
 end SevenEighths.ProbeHighRowFamily

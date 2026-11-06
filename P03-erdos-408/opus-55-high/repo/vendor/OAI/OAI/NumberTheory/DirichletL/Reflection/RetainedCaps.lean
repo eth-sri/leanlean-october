@@ -7,8 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.RetainedWidth
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open scoped Classical
 noncomputable section
 
 lemma retained_shell_le_ratio (scale T : ℝ) (hs : 0<scale)
@@ -16,11 +15,11 @@ lemma retained_shell_le_ratio (scale T : ℝ) (hs : 0<scale)
     (2:ℝ)^i.2.2≤16*T/scale ∧ (2:ℝ)^i.2.1≤16*T/scale := by
   have hh := (mem_retainedDyads _ _ hs i).mp hi
   have hl := rawDyadicCenter_pow_lower scale hs.le i
-  have hp : (2:ℝ)^(i.1+i.2.2+3*i.2.1)≤16*T/scale := by
-    exact (le_div_iff₀ hs).mpr (by nlinarith)
+  have hp : (2:ℝ)^(i.1+i.2.2+3*i.2.1)≤16*T/scale :=
+    (le_div_iff₀ hs).mpr (by nlinarith)
   constructor
-  · exact (pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (show i.2.2 ≤ i.1 + i.2.2 + 3 * i.2.1 by omega)).trans hp
-  · exact (pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (show i.2.1 ≤ i.1 + i.2.2 + 3 * i.2.1 by omega)).trans hp
+  · exact (pow_le_pow_right₀ (by simp) (by omega)).trans hp
+  · exact (pow_le_pow_right₀ (by simp) (by omega)).trans hp
 
 lemma retained_shell_log_cap (scale Z δ Lcap η : ℝ) (hs : 0<scale) (hZ : 1<Z)
     (hscale : scale⁻¹≤Z^Lcap) (hconst : Real.logb Z 16≤η)
@@ -34,18 +33,18 @@ lemma retained_shell_log_cap (scale Z δ Lcap η : ℝ) (hs : 0<scale) (hZ : 1<Z
   have hshell := retained_shell_le_ratio scale (Z^δ) hs i hi
   have hlog (n : ℕ) (hn : (2:ℝ)^n≤16*Z^(δ+Lcap)) :
       Real.logb Z ((2:ℝ)^n)≤δ+Lcap+η := by
-    have hh := Real.logb_le_logb_of_le hZ (by positivity : (0:ℝ)<2^n) hn
-    rw [Real.logb_mul (by norm_num : (16:ℝ)≠0) (Real.rpow_pos_of_pos hz _).ne',
+    have hh := Real.logb_le_logb_of_le hZ (by positivity) hn
+    rw [Real.logb_mul (by positivity) (by positivity),
       Real.logb_rpow hz (ne_of_gt hZ)] at hh
     linarith
-  exact ⟨hlog _ (hshell.1.trans hb),hlog _ (hshell.2.trans hb)⟩
+  grind
 
 lemma extracted_log_le_shell (Z Q : ℝ) (hZ : 1<Z) (hQ : 0<Q)
     (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) :
     Real.logb Z (Q/Ideal.absNorm I)≤Real.logb Z Q := by
   have hn : (1:ℝ)≤Ideal.absNorm I := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
-  apply Real.logb_le_logb_of_le hZ (div_pos hQ (lt_of_lt_of_le zero_lt_one hn))
+  apply Real.logb_le_logb_of_le hZ (by positivity)
   exact div_le_self hQ.le hn
 
 lemma retained_extracted_log_budget (scale Z δ Lscale Lrow Lslot η X L : ℝ)

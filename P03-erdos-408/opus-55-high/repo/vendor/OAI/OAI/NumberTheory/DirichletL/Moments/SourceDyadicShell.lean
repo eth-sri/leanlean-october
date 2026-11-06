@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondActiveDyadic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSourceDyadicShell
-open CenteredMomentSectorLocalization CenteredMomentSourceLowerSupport
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentSectorLocalization
 
-lemma residual_window_bounds (C I:Ideal O) (hC:C≠0) (L U:ℝ) (n:ℤ)
+lemma residual_window_bounds (C I:Ideal ActualEisensteinCubic.O) (hC:C≠0) (L U:ℝ) (n:ℤ)
     (hL:L≤(Ideal.absNorm (C*I):ℝ)) (hU:(Ideal.absNorm (C*I):ℝ)≤U)
     (hw:dyadicWeight n (Ideal.absNorm I:ℝ)≠0) :
     L/(Ideal.absNorm C:ℝ)≤dyadicScale n ∧
@@ -29,7 +28,7 @@ lemma residual_window_bounds (C I:Ideal O) (hC:C≠0) (L U:ℝ) (n:ℤ)
   · apply (le_div_iff₀ hc).mpr
     nlinarith [hs.1]
 
-lemma raw_window_lower (C I:Ideal O) (hC:C≠0) (a H:ℝ) (ha:0<a) (n:ℤ)
+lemma raw_window_lower (C I:Ideal ActualEisensteinCubic.O) (hC:C≠0) (a H:ℝ) (ha:0<a) (n:ℤ)
     (hL:a*H≤(Ideal.absNorm (C*I):ℝ))
     (hw:dyadicWeight n (Ideal.absNorm I:ℝ)≠0) :
     H/(Ideal.absNorm C:ℝ)≤dyadicScale n/a := by

@@ -22,8 +22,7 @@ theorem principalScalar_ne_zero {ι : Type*} (slots : Finset ι)
     (hS : ∀ i ∈ slots, 0 < S i) : principalScalar slots Z ℓ S ≠ 0 := by
   unfold principalScalar
   apply mul_ne_zero
-  · exact mul_ne_zero (pow_ne_zero _ (by norm_num))
-      (ne_of_gt (Real.rpow_pos_of_pos hZ _))
+  · positivity
   · exact ne_of_gt (Finset.prod_pos hS)
 
 end

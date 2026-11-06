@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorPrimeFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorRelativePrime
-open HeckeFamily HeckeDetectorPrimeFamily
+open HeckeFamily
 
 theorem idealCoeff_ne_zero_of_coprime (ν : Character) (J : Ideal O)
     (hJ : J≠0) (hc : IsCoprime J ν.modulus) : idealCoeff ν J≠0 := by
@@ -22,8 +22,7 @@ theorem idealCoeff_ne_zero_of_coprime (ν : Character) (J : Ideal O)
 theorem idealCoeff_inverse (ν : Character) (J : Ideal O) :
     idealCoeff ν.inverse J=(idealCoeff ν J)⁻¹ := by
   by_cases hJ : J=0
-  · subst J
-    simp only [map_zero,inv_zero]
+  · grind
   have hg := ConcretePrimeRowBridge.idealGenerator_ne_zero J hJ
   rw [←ConcretePrimeRowBridge.span_idealGenerator J,idealCoeff_span ν.inverse hg,
     idealCoeff_span ν hg,HeckeFamily.elementCoeff_inverse]

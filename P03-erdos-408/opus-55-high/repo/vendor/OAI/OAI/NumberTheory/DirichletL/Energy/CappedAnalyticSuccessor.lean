@@ -12,12 +12,10 @@ public import OAI.NumberTheory.DirichletL.Energy.CappedBandTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedAnalyticSuccessor
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighBound
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
 open CenteredMomentEnergyCappedWidthInduction
@@ -25,11 +23,10 @@ open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
 open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCappedRequests
 open CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_successor
     (W:ℝ→ℂ)(aslot bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
@@ -56,7 +53,7 @@ theorem actual_successor
   have hr1:r/4≤1:=by
     have hh:=bounds Mcap Bs κ ε hMcap.le hBs hκ0 hε
     have hrs:r≤amplification ε/100:=min_le_left _ _
-    linarith [hh.2.1]
+    linarith
   have hMp:0≤Mp:=bandWidth_nonneg Mcap Bs ε hMcap.le hBs hε _
   have hMc:0<Mc:=band_positive Mcap Bs ε hMcap hBs hε k
   have hMpM:Mp≤Mcap:=bandWidth_le _ _ _ _
@@ -71,7 +68,7 @@ theorem actual_successor
     request_le_final Mcap Bmask L ε hMcap.le hmask k hk
   have hRange:=range_nonneg Mcap Bmask L hMcap.le hmask (count Mcap ε)
   have hA:0≤A:=by dsimp [A];positivity
-  have hMA:Mp≤A:=by dsimp [A];linarith [range_nonneg Mcap Bmask L hMcap.le hmask (count Mcap ε)]
+  have hMA:Mp≤A:=by dsimp [A];linarith
   have hready:readyBudget A Bmask≤Bs:=
     readyBudget_le_schedule Mcap Bmask L ε A Bmask hMcap.le hmask le_rfl le_rfl
   have hdrop:Mp-amplification ε/2≤Mc:=parent_drop Mcap Bs ε hε k
@@ -81,13 +78,13 @@ theorem actual_successor
   have hrequest:2*max Lreq Mp+r/4≤Lp:=previous_admits Mcap Bmask L ε Mp (r/4)
     hMcap.le hmask hMpM hr1 k hk
   have hhighL:max Lc Mp≤Lp:=by
-    have hh:max Lc Mp≤Lreq:=max_le hreq.2.1 (hMpM.trans hreq.2.2)
-    have hg:0≤max Lreq Mp:=hreq.1.trans (le_max_left _ _)
+    have hh:max Lc Mp≤Lreq:=by grind
+    have hg:0≤max Lreq Mp:=by positivity
     have hx:=le_max_left Lreq Mp
     linarith
   have href:Mp+Bmask+Mc/100≤Lreq:=by
     have hh:=actual_contours Mcap Bmask Lc Mp Mc 0 hMcap.le hmask hMpM hMcM (by norm_num)
-    exact (le_max_right _ _).trans hh
+    exact by grind
   obtain ⟨Jold,Sold,hprev⟩:=hold
   obtain ⟨Slow,Jlow,hlow⟩:=CenteredMomentEnergyCappedLowStage.actual_capped_low (α:=α) M H hH
     W aslot bslot a b radial Bmask L lo hi Mcap κ ε hW haslot hWs hbslot ha hb hrad
@@ -113,8 +110,8 @@ theorem actual_successor
   have hzeroReady:readyBudget (max Mp (2*Lgrow)) Bmask≤Bs:=by
     have hc:max Mp (2*Lgrow)≤A:=by
       apply max_le
-      · exact hMA
-      · dsimp [A];linarith
+      · omega
+      · linarith
     apply le_trans _ hready
     unfold readyBudget
     linarith

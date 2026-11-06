@@ -7,7 +7,7 @@ public import Erdos821.S34.IntegerLargeSieve
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 open OAI.LargePrimeGaps
 
 namespace Erdos821.S34.Proofs
@@ -36,36 +36,34 @@ theorem shortBlock_span (start i j : ℤ) (r : ℕ) (hr : 1 ≤ r)
     exact_mod_cast (show j - i ≤ (shortBlockStep r : ℤ) - 1 by omega)
   have hu : 2 * shortBlockStep r ≤ r + 1 := by unfold shortBlockStep; omega
   have hu' : 2 * (shortBlockStep r : ℝ) ≤ (r : ℝ) + 1 := by exact_mod_cast hu
-  push_cast
-  apply abs_le.mpr
-  constructor <;> linarith
+  grind
 
 theorem shortBlock_count (s : Finset ℤ) (start : ℤ) (r : ℕ) (hr : 1 ≤ r)
     (A : ℝ) (hA : 0 ≤ A)
     (hs : ∀ t ∈ s, start ≤ t ∧ (t : ℝ) - start ≤ A) :
     ((s.image (shortBlock start r)).card : ℝ) ≤ 2 * A / r + 1 := by
-  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (show 0 < r by omega)
+  have hrpos : 0 < (r : ℝ) := by exact_mod_cast (by positivity)
   have hlow : r ≤ 2 * shortBlockStep r := by unfold shortBlockStep; omega
   have hlow' : (r : ℝ) ≤ 2 * (shortBlockStep r : ℝ) := by exact_mod_cast hlow
   have hindex (t : ℤ) (ht : t ∈ s) : (shortBlock start r t : ℝ) ≤ 2 * A / r := by
     obtain ⟨hstart, hbound⟩ := hs t ht
     have hoff : ((t - start).toNat : ℝ) = (t : ℝ) - start := by
-      exact_mod_cast (show ((t - start).toNat : ℤ) = t - start by omega)
+      exact_mod_cast (by omega)
     have hquot : (shortBlock start r t : ℝ) * (shortBlockStep r : ℝ) ≤ A := by
       have h : (shortBlock start r t : ℝ) * (shortBlockStep r : ℝ) ≤
           ((t - start).toNat : ℝ) := by
         exact_mod_cast Nat.div_mul_le_self (t - start).toNat (shortBlockStep r)
-      exact h.trans (hoff ▸ hbound)
-    have hmul := mul_le_mul_of_nonneg_left hlow' (Nat.cast_nonneg (shortBlock start r t))
+      exact by linarith
+    have hmul := mul_le_mul_of_nonneg_left hlow' (by positivity)
     apply (le_div_iff₀ hrpos).mpr
     nlinarith
   have hsub : s.image (shortBlock start r) ⊆ Finset.range (⌊2 * A / r⌋₊ + 1) := by
     intro b hb
     obtain ⟨t, ht, rfl⟩ := Finset.mem_image.mp hb
     have h := Nat.le_floor (hindex t ht)
-    exact Finset.mem_range.mpr (by omega)
+    exact by grind
   have hcard : ((s.image (shortBlock start r)).card : ℝ) ≤ (⌊2 * A / r⌋₊ : ℝ) + 1 := by
-    exact_mod_cast (by simpa only [Finset.card_range] using Finset.card_le_card hsub)
+    exact_mod_cast (by simpa using Finset.card_le_card hsub)
   have hfloor := Nat.floor_le (show 0 ≤ 2 * A / (r : ℝ) by positivity)
   linarith
 
@@ -78,7 +76,7 @@ theorem sum_filter_partition {ι κ E : Type*} [DecidableEq κ] [AddCommMonoid E
       apply Finset.sum_congr rfl
       intro i hi
       have hb := Finset.mem_image_of_mem index hi
-      simp [hb]
+      simp_all
     _ = _ := by simp only [Finset.sum_filter]
 
 theorem norm_sum_mul_sq {ι : Type*} (s : Finset ι) (a b : ι → ℂ) :
@@ -105,10 +103,9 @@ theorem rational_block_large_sieve (α β : ℝ) (u : ℤ) (r : ℕ)
   have hH : 0 ≤ (harmonic (2 * r) : ℝ) := by
     rw [harmonic_eq_sum_Icc, Rat.cast_sum]
     exact Finset.sum_nonneg (fun _ _ => by
-      simp only [Rat.cast_inv, Rat.cast_natCast]
-      positivity)
+      simp)
   have hK : 0 ≤ K := by dsimp [K]; positivity
-  have hE : 0 ≤ E := Finset.sum_nonneg fun _ _ => sq_nonneg _
+  have hE : 0 ≤ E := by positivity
   have hblock (b : ℕ) :
       (∑ v ∈ t.filter (fun v => shortBlock start r v = b),
         ‖∑ n ∈ s, a n * bvExp (α * n * v)‖ ^ 2) ≤ K * E := by
@@ -118,7 +115,7 @@ theorem rational_block_large_sieve (α β : ℝ) (u : ℤ) (r : ℕ)
       intro i hi j hj hij q
       obtain ⟨hi, hbi⟩ := Finset.mem_filter.mp hi
       obtain ⟨hj, hbj⟩ := Finset.mem_filter.mp hj
-      have hspan := shortBlock_span start i j r hr (ht i hi).1 (ht j hj).1
+      have hspan := shortBlock_span start i j r hr (by grind) (by grind)
         (hbi.trans hbj.symm)
       have h := rational_frequency_separation α β u (i - j) q r hr hu hα hβ
         (sub_ne_zero.mpr hij) hspan
@@ -127,14 +124,8 @@ theorem rational_block_large_sieve (α β : ℝ) (u : ℤ) (r : ℕ)
       (t.filter (fun v => shortBlock start r v = b)) (fun v => α * (v : ℝ))
       (2 * r) (by omega) hsep s lo N a hs
     convert h using 1
-    · apply Finset.sum_congr rfl
-      intro v _
-      congr 2
-      apply Finset.sum_congr rfl
-      intro n _
-      congr 2
-      ring
-    · simp only [K, E, Nat.cast_mul, Nat.cast_ofNat]
+    · ring
+    · grind
   calc
     _ = ∑ b ∈ t.image (shortBlock start r),
         ∑ v ∈ t.filter (fun v => shortBlock start r v = b),
@@ -144,7 +135,7 @@ theorem rational_block_large_sieve (α β : ℝ) (u : ℤ) (r : ℕ)
       Finset.sum_le_sum fun b _ => hblock b
     _ = ((t.image (shortBlock start r)).card : ℝ) * (K * E) := by simp
     _ ≤ (2 * A / r + 1) * (K * E) :=
-      mul_le_mul_of_nonneg_right (shortBlock_count t start r hr A hA ht) (mul_nonneg hK hE)
-    _ = _ := by dsimp [K, E]; ring
+      mul_le_mul_of_nonneg_right (shortBlock_count t start r hr A hA ht) (by positivity)
+    _ = _ := by linarith
 
 end Erdos821.S34.Proofs

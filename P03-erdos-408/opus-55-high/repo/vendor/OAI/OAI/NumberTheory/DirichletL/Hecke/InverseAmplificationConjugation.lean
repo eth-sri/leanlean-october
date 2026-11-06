@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationScale
 namespace OAI
 
 noncomputable section
-open scoped Classical ComplexConjugate ContDiff
+open scoped ComplexConjugate ContDiff
 open Complex
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -21,8 +21,8 @@ theorem coefficient_inverse_conj (χ : Character) (inv : Bool) (J : Ideal O) :
 theorem conj_positive_cpow (x : ℝ) (hx : 0<x) (z : ℂ) :
     conj ((x : ℂ)^z)=(x : ℂ)^(conj z) := by
   have hh := Complex.cpow_conj (x : ℂ) z
-    (by rw [Complex.arg_ofReal_of_nonneg hx.le]; exact Real.pi_ne_zero.symm)
-  simpa only [conj_ofReal] using hh.symm
+    (by rw [Complex.arg_ofReal_of_nonneg hx.le]; positivity)
+  simp_all
 
 theorem conj_shift (σ freq : ℝ) : conj (shift σ freq)=shift σ (-freq) := by
   simp only [HeckeDyadic.shift,map_sub,map_mul,conj_ofReal,conj_I,ofReal_neg]
@@ -55,8 +55,8 @@ theorem conjugate_profile_support (W : ℝ→ℂ) :
   simp
 
 theorem conjugate_profile_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
-    ContDiff ℝ ∞ (fun x => conj (W x)) := by
-  exact Complex.conjCLE.contDiff.comp hW
+    ContDiff ℝ ∞ (fun x => conj (W x)) :=
+  Complex.conjCLE.contDiff.comp hW
 
 end SevenEighths.HeckeInverseAmplification
 

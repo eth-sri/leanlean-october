@@ -5,7 +5,6 @@ public import Erdos821.P5.MomentNumerics
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter
 
 namespace Erdos821.P5Core
@@ -24,7 +23,7 @@ theorem eventual_moment_scales (a b : ℝ) (ha : 0 < a) (hb : b < 1) :
   have hL4 : 4 ≤ L x := (le_max_left _ _).trans hL
   have hLexp : Real.exp 1 ≤ L x := (le_max_right _ _).trans hL
   have hLpos : 0 < L x := by linarith
-  have hpowpos : 0 < L x ^ b := Real.rpow_pos_of_pos hLpos b
+  have hpowpos := Real.rpow_pos_of_pos hLpos b
   have hratio : L x ^ (1 - b) = L x / L x ^ b := by
     rw [Real.rpow_sub hLpos, Real.rpow_one]
   change 4 ≤ L x ^ (1 - b) at hgap
@@ -33,7 +32,7 @@ theorem eventual_moment_scales (a b : ℝ) (ha : 0 < a) (hb : b < 1) :
   have hpow : 4 * L x ^ b ≤ L x := (le_div_iff₀ hpowpos).mp hgap
   have hlog2 : Real.log 2 ≤ 1 := by
     linarith [Real.log_le_sub_one_of_pos (show (0 : ℝ) < 2 by norm_num)]
-  exact ⟨hx, hLexp, hLa, by linarith⟩
+  grind
 
 end Erdos821.P5Core
 
@@ -57,12 +56,12 @@ theorem exceptional_times (a b A : ℝ) (ha : 0 < a) (hab : a < b) (hb : b < 1)
   refine ⟨|Real.log C| + 30 + 4 * A, by positivity, ?_⟩
   filter_upwards [eventual_moment_scales a b ha hb] with x hx
   intro Y P Tmax s coeff hYlo hYhi hT hTY hPlo hPhi hs hcoeff
-  have hxpos : 0 < x := by linarith [hx.1]
-  have hx1 : 1 ≤ x := by linarith [hx.1]
+  have hxpos : 0 < x := by linarith
+  have hx1 : 1 ≤ x := by linarith
   have hYpos : 0 < Y := (Real.rpow_pos_of_pos hxpos (1 / 2 : ℝ)).trans_le hYlo
-  have hY1 : 1 ≤ Y := (Real.one_le_rpow hx1 (by norm_num : (0 : ℝ) ≤ 1 / 2)).trans hYlo
+  have hY1 : 1 ≤ Y := (Real.one_le_rpow hx1 (by positivity)).trans hYlo
   have hYloglo : L x / 2 ≤ Real.log Y := by
-    have h := Real.log_le_log (Real.rpow_pos_of_pos hxpos (1 / 2 : ℝ)) hYlo
+    have h := Real.log_le_log (by positivity) hYlo
     rw [Real.log_rpow hxpos] at h
     change Real.log x / 2 ≤ Real.log Y
     linarith
@@ -71,7 +70,7 @@ theorem exceptional_times (a b A : ℝ) (ha : 0 < a) (hab : a < b) (hb : b < 1)
     rw [Real.log_pow] at h
     exact h
   have hP1 : 1 ≤ P := by
-    have h := (Real.log_le_iff_le_exp (show (0 : ℝ) < 2 by norm_num)).mp hx.2.2.1
+    have h := (Real.log_le_iff_le_exp (by positivity)).mp hx.2.2.1
     linarith
   have hPpos : 0 < P := by linarith
   have hL1 : 1 ≤ L x := by
@@ -84,13 +83,13 @@ theorem exceptional_times (a b A : ℝ) (ha : 0 < a) (hab : a < b) (hb : b < 1)
     hPpos hPlo hPhi hx.2.2.2
   have hsup : ((s.sup id : ℕ) : ℝ) ≤ 2 * P := by
     have hsup' : s.sup id ≤ ⌊2 * P⌋₊ :=
-      Finset.sup_le (fun p hp => Nat.le_floor (hs p hp).2.2)
+      Finset.sup_le (fun p hp => Nat.le_floor (by grind))
     have hsup'' : ((s.sup id : ℕ) : ℝ) ≤ (⌊2 * P⌋₊ : ℝ) := by exact_mod_cast hsup'
     exact hsup''.trans (Nat.floor_le (by positivity))
   have hlength : (((s.sup id) ^ m : ℕ) : ℝ) ≤ Y := by
     rw [Nat.cast_pow]
     exact (pow_le_pow_left₀ (Nat.cast_nonneg _) hsup m).trans hchoice.2.1
-  have hδ : 0 < L x ^ (-A) := Real.rpow_pos_of_pos hLpos (-A)
+  have hδ := Real.rpow_pos_of_pos hLpos (-A)
   refine ⟨occupied_finite _ _ _ _, ?_⟩
   exact (hcount s coeff m P (L x ^ (-A)) Tmax Y hP1 hδ hT hTY hY1 hlength hs hcoeff).trans
     (moment_numerical_bound (L x) Y P a b A C hx.2.1 ha hab hb hA hC hYpos

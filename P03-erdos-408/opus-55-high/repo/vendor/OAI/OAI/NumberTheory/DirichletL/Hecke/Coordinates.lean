@@ -13,7 +13,7 @@ open HeckeFamily
 
 private instance : IsCyclotomicExtension {3} ℚ K :=
   CyclotomicField.isCyclotomicExtension 3 ℚ
-private theorem hζ : IsPrimitiveRoot (IsCyclotomicExtension.zeta 3 ℚ K) 3 := IsCyclotomicExtension.zeta_spec 3 ℚ K
+private theorem hζ : IsPrimitiveRoot (IsCyclotomicExtension.zeta 3 ℚ K) 3 := by simp
 private def pb : PowerBasis ℤ O := hζ.integralPowerBasis
 
 private theorem pb_dim : pb.dim = 2 := by
@@ -24,8 +24,8 @@ private theorem pb_gen : pb.gen = HeckeFamily.omega := hζ.integralPowerBasis_ge
 theorem coordinateElement_surjective :
     Function.Surjective (fun n : ℤ × ℤ => coordinateElement n.1 n.2) := by
   intro x
-  let i0 : Fin pb.dim := ⟨0, by rw [pb_dim]; decide⟩
-  let i1 : Fin pb.dim := ⟨1, by rw [pb_dim]; decide⟩
+  let i0 : Fin pb.dim := ⟨0, by simp [pb_dim]⟩
+  let i1 : Fin pb.dim := ⟨1, by simp [pb_dim]⟩
   let a : ℤ := (pb.basis.repr x) i0
   let b : ℤ := (pb.basis.repr x) i1
   refine ⟨(a,b), ?_⟩
@@ -36,8 +36,8 @@ theorem coordinateElement_surjective :
     have hv : i.val = 0 ∨ i.val = 1 := by omega
     simp only [Finset.mem_univ, Finset.mem_insert, Finset.mem_singleton, true_iff]
     rcases hv with h | h
-    · left; exact Fin.ext h
-    · right; exact Fin.ext h
+    · grind
+    · grind
   rw [huniv] at hsum
   have hne : i0 ≠ i1 := by decide
   have hnot : i0 ∉ ({i1} : Finset (Fin pb.dim)) := by
@@ -60,7 +60,7 @@ def zmodQuotientHom (χ : Character) : ZMod χ.period →+ (O ⧸ χ.modulus) :=
 
 @[simp] theorem zmodQuotientHom_natCast (χ : Character) (a : ℕ) :
     zmodQuotientHom χ (a : ZMod χ.period) = Ideal.Quotient.mk χ.modulus (a : O) := by
-  simpa only [Int.cast_natCast] using zmodQuotientHom_intCast χ (a : ℤ)
+  simpa using zmodQuotientHom_intCast χ (a : ℤ)
 
 def coordinateQuotientHom (χ : Character) :
     (ZMod χ.period × ZMod χ.period) →+ (O ⧸ χ.modulus) where
@@ -81,7 +81,7 @@ theorem coordinateQuotientHom_surjective (χ : Character) :
   obtain ⟨z, rfl⟩ := Ideal.Quotient.mk_surjective x
   obtain ⟨⟨a,b⟩, hab⟩ := coordinateElement_surjective z
   change coordinateElement a b = z at hab
-  exact ⟨(a,b), by rw [coordinateQuotientHom_intCast, hab]⟩
+  exact ⟨(a,b), by simp_all⟩
 
 theorem coefficients_eq_quotient_character (χ : Character)
     (a : Fin χ.period × Fin χ.period) :

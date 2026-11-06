@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.FiniteSchur
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -24,7 +23,7 @@ lemma rawTransition_nonneg (P : PrimeGroups) (J ell : ℕ) (hV : ∀ g, 0 < P.V 
   unfold rawTransition
   split_ifs
   · exact (idealMass_pos P ell hV _).le
-  · exact le_rfl
+  simp
 
 lemma rawTransition_row (P : PrimeGroups) (J ell : ℕ) (hV : ∀ g, 0 < P.V g)
     (a : P.BigLabels (J + ell)) : ∑ b, rawTransition P J ell a b = 1 := by
@@ -57,11 +56,10 @@ lemma rawTransition_column (P : PrimeGroups) (J ell : ℕ) (hV : ∀ g, 0 < P.V 
 lemma imaginaryPower_norm (n : ℕ) (ζ : ℝ) : ‖imaginaryPower n ζ‖ = 1 := by
   unfold imaginaryPower
   rw [Complex.norm_exp]
-  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-    Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, zero_add, mul_one, Real.exp_zero]
+  simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_im, Complex.I_re, mul_zero, zero_mul, sub_zero, zero_add, Real.exp_zero]
 
 lemma phase_norm (t : ℝ) : ‖phase t‖ = 1 := by
-  simp [phase, Complex.norm_exp, Complex.mul_re]
+  simp [phase, Complex.norm_exp]
 
 def rawPrefixKernel (P : PrimeGroups) (J ell : ℕ) (θ ζ : ℝ)
     (a b : P.BigLabels (J + ell)) : ℂ :=

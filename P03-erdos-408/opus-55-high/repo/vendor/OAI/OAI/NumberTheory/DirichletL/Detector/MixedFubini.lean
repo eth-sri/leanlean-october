@@ -26,8 +26,7 @@ lemma count_equiv_preserving {A B : Type*} [Countable A] [Countable B]
   intro b
   rw [Measure.map_apply e.measurable (measurableSet_singleton b)]
   have he : e ⁻¹' {b}={e.symm b} := by ext a;simp [e.eq_symm_apply]
-  rw [he]
-  simp
+  simp_all
 
 def quadShuffle {A B C D : Type*} [MeasurableSpace A] [MeasurableSpace B]
     [MeasurableSpace C] [MeasurableSpace D] : (A×B)×(C×D) ≃ᵐ (A×C)×(B×D) where

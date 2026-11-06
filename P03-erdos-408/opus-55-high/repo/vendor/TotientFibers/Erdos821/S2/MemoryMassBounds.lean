@@ -8,7 +8,6 @@ public import Erdos821.S2.GhostTasks
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -21,7 +20,7 @@ theorem tiltedMu_big_pos (F : FixedData) (n : ℕ) (hV : ∀ g, 0 < P.V g)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
     (g : P.BigGroup) (p : P.Prime g.val) : 0 < tiltedMu F P n g.val p := by
   have hp : 0 < (p.val : ℝ) := by exact_mod_cast (P.prime g.val p.val p.property).pos
-  exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (hb g p))
+  exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) (by grind))
 
 theorem groupMemoryMass_nonneg (F : FixedData) (n : ℕ) (g : P.BigGroup)
     (hmu : ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P n g.val p) (z : P.Memory g.val) :
@@ -31,10 +30,8 @@ theorem groupMemoryMass_nonneg (F : FixedData) (n : ℕ) (g : P.BigGroup)
   · apply Multiset.prod_nonneg
     intro x hx
     obtain ⟨u, _, rfl⟩ := Multiset.mem_map.mp hx
-    exact hmu u.1
-  · apply Finset.prod_nonneg
-    intro u _
-    positivity
+    grind
+  positivity
 
 theorem memoryMass_nonneg (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
@@ -52,7 +49,7 @@ theorem memoryMass_nonneg (F : FixedData) (J n : ℕ) (hV : ∀ g, 0 < P.V g)
     · apply Finset.prod_nonneg
       intro g _
       exact groupMemoryMass_nonneg F n g (fun p => (tiltedMu_big_pos F n hV hb g p).le) _
-  · exact le_refl 0
+  simp
 
 /-- Once the independent row and factorial-adjoint tasks are proved, all local
 modulus-one multipliers retain the same ghost L² bound. -/
@@ -95,10 +92,7 @@ theorem scaled_ghost_domination_of_tasks (hAdj : GhostAdjointTask) (hRows : Ghos
       _ = P.memoryMass F J n t * ∑ s ∈ S,
           ghostReversalFactor d t s * absoluteScaledMemoryGhostKernel F J n r.rho d i t s * P.memoryWeight r.v s := by
         rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro s _
-        rw [hc s t]
-        ring
+        grind
       _ ≤ P.memoryMass F J n t * ∑' s,
           ghostReversalFactor d t s * absoluteScaledMemoryGhostKernel F J n r.rho d i t s * P.memoryWeight r.v s := by
         apply mul_le_mul_of_nonneg_left _ (hm t)
@@ -111,7 +105,7 @@ theorem scaled_ghost_domination_of_tasks (hAdj : GhostAdjointTask) (hRows : Ghos
         exact mul_nonneg (mul_nonneg hfac ((norm_nonneg _).trans (hbound t s))) (hw s).le
       _ ≤ _ := by
         have he := mul_le_mul_of_nonneg_left (hr t).2.2.2 (hm t)
-        simpa only [C, mul_assoc, mul_left_comm, mul_comm] using he
+        linarith
   simpa only [Real.sqrt_mul_self hC] using
     finite_support_schur (P.memoryMass F J n) (P.memoryWeight r.v)
       K C C hm hw hC hC hrow hcol

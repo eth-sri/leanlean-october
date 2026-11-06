@@ -10,17 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentExceptionalAsymmetricCanonical
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentEligibleEnergy CenteredMomentAllocatedDetectorAmplitude
-open CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalSourceShell
-open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAsymmetricSource CenteredMomentSecondExceptionalCount
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentForcing CenteredMomentChildRows UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]

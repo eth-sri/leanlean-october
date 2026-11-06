@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Structure
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -94,7 +93,7 @@ theorem compatible_split {J ell m : ℕ} (ν : Pattern P J ell m)
     · exact hb ⟨g, hg⟩ i hi
     · have hsmall : P.big g = false := by cases h : P.big g <;> simp_all
       obtain ⟨j, rfl, _⟩ := hi
-      exact hs ⟨g, hsmall⟩ j
+      simp_all
 
 theorem ban_split {J ell m : ℕ} (ν : Pattern P J ell m)
     (a b : P.Labels (J + ell)) (u : P.Aux J) :
@@ -105,9 +104,9 @@ theorem ban_split {J ell m : ℕ} (ν : Pattern P J ell m)
     exact h g.val i hi j
   · intro h g i hi j
     by_cases hg : P.big g = true
-    · exact h ⟨g, hg⟩ i hi j
+    · simp_all
     · have hsmall : P.big g = false := by cases hh : P.big g <;> simp_all
       rw [ν.small g hsmall] at hi
-      exact False.elim (Finset.notMem_empty i hi)
+      simp_all
 
 end Erdos821.P3Clean

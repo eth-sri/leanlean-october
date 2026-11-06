@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.Profiles
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentEnergyAllocatedProfiles
 open CenteredMomentFiniteProfileExceptional
 

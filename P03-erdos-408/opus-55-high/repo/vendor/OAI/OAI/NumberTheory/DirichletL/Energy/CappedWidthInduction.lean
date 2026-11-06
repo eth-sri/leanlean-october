@@ -10,16 +10,15 @@ public import OAI.NumberTheory.DirichletL.Energy.BandMonotonicity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedWidthInduction
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyBandMonotonicity
-open CenteredMomentEnergyWidthFloor CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyWidthFloor
 open CenteredMomentNaturalFixedRaySource
-local notation "O"=>HeckeFamily.O
 
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
 
@@ -28,13 +27,13 @@ lemma bandWidth_le (M B ε:ℝ)(k:ℕ):bandWidth M B ε k≤M:=min_le_left _ _
 lemma bandWidth_le_schedule (M B ε:ℝ)(k:ℕ):bandWidth M B ε k≤width M B ε k:=min_le_right _ _
 lemma bandWidth_nonneg (M B ε:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε)(k:ℕ):
     0≤bandWidth M B ε k:=by
-  have hr:0<reserve M B ε:=(bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.1
-  have hs:0<amplification ε:=(bounds M B 0 ε hM hB (by norm_num) hε).1
+  have hr:=(bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.1
+  have hs:=(bounds M B 0 ε hM hB (by norm_num) hε).1
   unfold bandWidth width
   positivity
 lemma bandWidth_terminal (M B ε:ℝ)(hM:0≤M)(hB:0≤B)(hε:0<ε):
     bandWidth M B ε (count M ε)=M:=by
-  have hh: M<width M B ε (count M ε):=
+  have hh:=
     (bounds M B 0 ε hM hB (by norm_num) hε).2.2.2.2.2.2.2.2.1
   exact min_eq_left hh.le
 lemma actual_child_band (M B ε parent child:ℝ)(hε:0<ε)(k:ℕ)
@@ -46,13 +45,13 @@ lemma actual_child_band (M B ε parent child:ℝ)(hε:0<ε)(k:ℕ)
   · exact child_band M B ε parent child k (hp.trans (bandWidth_le_schedule M B ε (k+1))) hc
 
 variable {α:Type*}[Fintype α][DecidableEq α]
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 def CertifiedBand (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)(k:ℕ):Prop:=
-  ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-    internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+  ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M→
+    internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)}→
     ∃Czero Cpositive:ℝ,0<Czero ∧ 0<Cpositive ∧
     ∀ᶠZ:ℝ in atTop,1<Z ∧
       ZeroAt (internalQ Q η₀) (lowerAt a b Mcap ε k) b radial Bmask
@@ -98,8 +97,8 @@ omit [Fintype α] [DecidableEq α] in
 theorem certified_terminal (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ ε:ℝ)
     (hmask:0≤Bmask)(hMcap:0≤Mcap)(hκ0:0≤κ)(hε:0<ε)
     (h:CertifiedBand (α:=α) M H hH W bslot a b radial Bmask L lo hi Mcap κ ε (count Mcap ε)):
-    ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal O,Q≤M→
-      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:O)}→
+    ∃degree:ℕ,∃S:Finset (ℕ×ℕ),∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M→
+      internalQ Q η₀≠0→internalQ Q η₀≠⊤→internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)}→
       ∃Czero Cpositive:ℝ,0<Czero ∧ 0<Cpositive ∧
       ∀ᶠZ:ℝ in atTop,1<Z ∧
         ZeroAt (internalQ Q η₀) a b radial Bmask L Mcap ε Z degree S Czero ∧
@@ -126,10 +125,10 @@ theorem certified_terminal (W:ℝ→ℂ)(bslot a b radial Bmask L lo hi Mcap κ 
   refine ⟨hZ.1,?_,?_⟩
   · exact zeroAt_transport (internalQ Q η₀) _ _ _ _ _ _ _ Z _ _ _ _ _ _ _
       degree degree S S Czero Czero hZ.1.le le_rfl le_rfl le_rfl le_rfl
-      (le_max_right _ _) le_rfl he le_rfl (Finset.Subset.refl _) hCzero.le le_rfl hz
+      (by simp) le_rfl he le_rfl (Finset.Subset.refl _) hCzero.le le_rfl hz
   · exact positiveAt_transport (α:=α) M H hH W bslot _ _ _ _ _ _ _ _ _ _ κ Z
       _ _ _ _ _ _ _ η₀ Q degree degree S S Cpositive Cpositive hZ.1.le
-      le_rfl le_rfl le_rfl le_rfl (le_max_right _ _) le_rfl he le_rfl (Finset.Subset.refl _)
+      le_rfl le_rfl le_rfl le_rfl (by simp) le_rfl he le_rfl (Finset.Subset.refl _)
       hCpositive.le le_rfl hp
 
 end SevenEighths.CenteredMomentEnergyCappedWidthInduction

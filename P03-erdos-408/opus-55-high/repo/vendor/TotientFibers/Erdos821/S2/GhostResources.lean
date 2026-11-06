@@ -8,7 +8,6 @@ public import Erdos821.S2.HistoryBirths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -20,7 +19,7 @@ variable {P : PrimeGroups}
 theorem memory_indices_partition {g : P.Group} (z : P.Memory g) (B : Finset (Fin z.card)) :
     deleteMemoryIndices z B + B.val.map (memoryEntry z) = z := by
   have hb : B.val ≤ (Finset.univ : Finset (Fin z.card)).val :=
-    (Multiset.le_iff_subset B.nodup).mpr (fun i _ => Finset.mem_univ i)
+    by simp
   have he : (Finset.univ \ B).val + B.val = (Finset.univ : Finset (Fin z.card)).val :=
     Multiset.sub_add_cancel hb
   rw [deleteMemoryIndices_eq_map, ← Multiset.map_add, he, memoryEntry_enumeration]
@@ -38,7 +37,7 @@ theorem pendingPrimes_birthBatch {g : P.Group} {b : ℕ} (p : Fin b → P.Prime 
     _ = (List.ofFn p : Multiset (P.Prime g)) := by
       simp only [pendingPrimes, zeroBirthBatch, Multiset.map_coe, List.map_ofFn, Function.comp_def]
     _ = (Finset.univ : Finset (Fin b)).val.map p := by
-      rw [Finset.val_univ_fin, Multiset.map_coe, List.ofFn_eq_map]
+      simp
     _ = _ := (sum_singletons_eq_map Finset.univ p).symm
 
 theorem ghost_live_conservation {M : ℕ} {s t : P.MemoryState M}
@@ -54,7 +53,7 @@ theorem ghost_live_conservation {M : ℕ} {s t : P.MemoryState M}
       ∑ h : Fin (c.2.1 g).val, ({c.2.2 g h} : Multiset (P.Prime g.val)) := by
     have he := congrArg pendingPrimes (hc g).2
     simpa only [pendingPrimes_add_ghost, pendingPrimes_birthBatch] using he.symm
-  rw [ht, add_right_comm, hs]
+  grind
 
 
 end Erdos821.S2Core

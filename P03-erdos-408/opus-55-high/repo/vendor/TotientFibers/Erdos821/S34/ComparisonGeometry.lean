@@ -5,7 +5,7 @@ public import Erdos821.S34.ProductDyads
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 open Filter
 
 namespace Erdos821.S34Core
@@ -19,13 +19,13 @@ theorem atomExponent_nonneg (P : Geometry) (m : ℕ) : 0 ≤ atomExponent P m :=
   have hfac : (1 : ℝ) ≤ Nat.factorial m := by exact_mod_cast Nat.factorial_pos m
   have hf := Real.log_nonneg hfac
   have hm := Real.log_nonneg (le_max_left (1 : ℝ) P.vmin⁻¹)
-  exact mul_nonneg P.positive.2.1.le (add_nonneg hf (mul_nonneg (Nat.cast_nonneg m) hm))
+  exact mul_nonneg P.positive.2.1.le (by positivity)
 
 theorem eventually_cell_width (hexp : ℝ) (hh : 0 < hexp) :
     ∀ᶠ x in atTop, 0 < L x ^ (-hexp) ∧ L x ^ (-hexp) ≤ Real.log 2 := by
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   have ht := (tendsto_rpow_neg_atTop hh).comp hL
-  have hlog2 : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlog2 : 0 < Real.log 2 := by positivity
   filter_upwards [ht.eventually (eventually_lt_nhds hlog2), hL.eventually_gt_atTop 0] with x hx hLx
   exact ⟨Real.rpow_pos_of_pos hLx _, hx.le⟩
 
@@ -35,11 +35,11 @@ theorem eventually_big_prime_power (P : Geometry) (q : ℝ) :
   have hc : 0 < P.c := by rcases P.ordered with ⟨ha, hab, hbc, hcd, hd⟩; linarith
   filter_upwards [eventually_power_le_label_scale q P.c (1 / 2) hc (by norm_num)] with x hx
   intro G hG g hg p hp
-  have hs : g ∉ G.small := (Finset.mem_sdiff.mp hg).2
+  have hs := (Finset.mem_sdiff.mp hg).2
   have hbound := hG.2.2.2.1 g p hp
   rw [ite_eq_right hs] at hbound
   have he := Real.exp_pos (L x ^ P.c)
-  linarith [hbound.1]
+  linarith
 
 theorem eventually_dyad_denominator_log (P : Geometry) (m : ℕ) :
     ∀ᶠ x in atTop, ∀ G : PrimeGroups, Admissible P x G →
@@ -47,13 +47,13 @@ theorem eventually_dyad_denominator_log (P : Geometry) (m : ℕ) :
       ∀ (X : Tuple G a) (Y : Tuple G b) (r : ℝ), 1 ≤ r →
         r ≤ dyadScale (dyadIndex (product G a X)) * dyadScale (dyadIndex (product G b Y)) →
         Real.log (2 * r) ≤ L x ^ (P.d + 1) := by
-  have hC₀ : 0 < P.C₀ := P.positive.2.1
+  have hC₀ := P.positive.2.1
   have hd : 0 < P.d := by rcases P.ordered with ⟨ha, hab, hbc, hcd, hd⟩; linarith
   have hL : Tendsto L atTop atTop := Real.tendsto_log_atTop
   filter_upwards [eventually_log_count_bound (2 * (m : ℝ) * P.C₀) (by positivity),
     hL.eventually_ge_atTop 1] with x hc hL1
   have hLp : 0 < L x := by linarith
-  have hpow : 1 ≤ L x ^ P.d := Real.one_le_rpow hL1 hd.le
+  have hpow := Real.one_le_rpow hL1 hd.le
   intro G hG a b ha hb X Y r hr hrUV
   let U := dyadScale (dyadIndex (product G a X))
   let V := dyadScale (dyadIndex (product G b Y))
@@ -78,9 +78,9 @@ theorem eventually_dyad_denominator_log (P : Geometry) (m : ℕ) :
     _ ≤ L x * L x ^ P.d := mul_le_mul_of_nonneg_right hc (Real.rpow_nonneg hLp.le _)
     _ = _ := by
       calc
-        _ = L x ^ (1 : ℝ) * L x ^ P.d := by rw [Real.rpow_one]
+        _ = L x ^ (1 : ℝ) * L x ^ P.d := by simp
         _ = L x ^ (1 + P.d) := (Real.rpow_add hLp _ _).symm
-        _ = _ := by congr 1; ring
+        _ = _ := by ring
 
 end
 end Erdos821.S34Core

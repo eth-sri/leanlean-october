@@ -7,18 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondRadicalFamily
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondRadicalColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
 open CenteredMomentSecondCanonicalLedger CenteredMomentSecondMovingSupport CenteredMomentSecondSixthReduction
-open CenteredMomentSecondSixthSource CenteredMomentSecondRadicalFamily CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
+open CenteredMomentSecondSixthSource
 open CenteredMomentCanonicalFirst
-local notation "O" => ActualEisensteinCubic.O
 
-theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem sixthFactor_span_dvd_right (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D)) :
     Ideal.span {sixthFactor C D U}∣D := by
   conv_rhs => rw [←right_ideal_product C D hC hD hCD]
@@ -29,11 +27,11 @@ theorem sixthFactor_span_dvd_right (C D : Ideal O) (hC : Supported C) (hD : Supp
   have hd := rightExponent_pos C D P
   have hm : min (leftExponent C D P) (rightExponent C D P)≤rightExponent C D P := min_le_right _ _
   unfold fixedExponent
-  split_ifs <;> omega
+  grind
 
-theorem residual_sixth_coefficient_right (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem residual_sixth_coefficient_right (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (hCD : primeSupport C=primeSupport D) (U : Finset (CommonIndex C D))
-    (I : Ideal O) (hI : Supported I) (hcop : IsCoprime D I) :
+    (I : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hcop : IsCoprime D I) :
     idealRowHom (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) I=
       idealRowHom (reducedNumerator C D U) I := by
   rw [fixed_sixth_coefficient C D U I hI,ite_eq_left

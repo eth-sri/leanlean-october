@@ -8,27 +8,26 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDiagonal
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentRankinRadical
 open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentDivisorAllocation
-local notation "O" => ActualEisensteinCubic.O
 
-def commonRadical (I J : Ideal O) : Ideal O :=
+def commonRadical (I J : Ideal ActualEisensteinCubic.O) : Ideal ActualEisensteinCubic.O :=
   ∏ P ∈ primeSupport I ∩ primeSupport J,P
 
-theorem commonRadical_ne_zero (I J : Ideal O) : commonRadical I J ≠ 0 :=
+theorem commonRadical_ne_zero (I J : Ideal ActualEisensteinCubic.O) : commonRadical I J ≠ 0 :=
   support_product_ne_zero Finset.inter_subset_left
 
-theorem commonRadical_squarefree (I J : Ideal O) : Squarefree (commonRadical I J) :=
+theorem commonRadical_squarefree (I J : Ideal ActualEisensteinCubic.O) : Squarefree (commonRadical I J) :=
   squarefree_support_product Finset.inter_subset_left
 
-theorem commonRadical_support (I J : Ideal O) :
+theorem commonRadical_support (I J : Ideal ActualEisensteinCubic.O) :
     primeSupport (commonRadical I J)=primeSupport I∩primeSupport J := by
   unfold primeSupport commonRadical
   rw [factors_support_product Finset.inter_subset_left]
   simp [primeSupport]
 
-theorem old_mask_dvd_commonRadical (s I J : Ideal O) (hs : Squarefree s)
+theorem old_mask_dvd_commonRadical (s I J : Ideal ActualEisensteinCubic.O) (hs : Squarefree s)
     (hI : I ≠ 0) (hJ : J ≠ 0) (hsI : s ∣ I) (hsJ : s ∣ J) :
     s ∣ commonRadical I J := by
   apply (squarefree_dvd_iff s _ hs).mpr
@@ -41,10 +40,10 @@ theorem old_mask_dvd_commonRadical (s I J : Ideal O) (hs : Squarefree s)
   have hj : P ∈ primeSupport J := by
     simpa only [primeSupport,Multiset.mem_toFinset,mem_normalizedFactors_iff hJ,hp,true_and]
       using hd.trans hsJ
-  exact Finset.dvd_prod_of_mem id (Finset.mem_inter.mpr ⟨hi,hj⟩)
+  exact Finset.dvd_prod_of_mem id (by grind)
 
-theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal O)
-    (s : Ideal O) (hs : Squarefree s) (hs0 : s ≠ 0)
+theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal ActualEisensteinCubic.O)
+    (s : Ideal ActualEisensteinCubic.O) (hs : Squarefree s) (hs0 : s ≠ 0)
     (hI : ∀ a ∈ S,I a ≠ 0) (hJ : ∀ a ∈ S,J a ≠ 0)
     (hsi : ∀ a ∈ S,s ∣ I a) (hsj : ∀ a ∈ S,s ∣ J a)
     (Y : ℝ) (hY : 0 ≤ Y)
@@ -57,10 +56,8 @@ theorem old_mask_radical_count {α : Type*} (S : Finset α) (I J : α → Ideal 
     exact commonRadical_ne_zero _ _
   · intro R hR
     obtain ⟨a,ha,rfl⟩ := Finset.mem_image.mp hR
-    exact old_mask_dvd_commonRadical s _ _ hs (hI a ha) (hJ a ha) (hsi a ha) (hsj a ha)
-  · intro R hR
-    obtain ⟨a,ha,rfl⟩ := Finset.mem_image.mp hR
-    exact hN a ha
+    exact old_mask_dvd_commonRadical s _ _ hs (by grind) (by grind) (by grind) (by grind)
+  simp_all
 
 end SevenEighths.CenteredMomentRankinRadical
 

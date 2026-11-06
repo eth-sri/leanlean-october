@@ -10,16 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentActiveSmoothedSource
-open CenteredMomentActiveAllocation HeckeFamily ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceRectangle CenteredMomentSourceRectangleEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceRow
-open CenteredMomentHeckeColumnWindow CenteredMomentRowNorm CenteredMomentDivisorRetained
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRaw
-open CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy CenteredMomentPositiveSummability
-open CenteredMomentActiveSourceRetained
 local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 

@@ -8,17 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.SlotNormalization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckePrimeAnnular ConcretePrimeRowBridge
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentRetainedEnergy
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot CenteredMomentSlotNormalization
 local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

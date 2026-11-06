@@ -191,7 +191,7 @@ theorem symOp_mul_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
   · obtain ⟨hpos, σ, hσ⟩ := h
     have hw : lineWeight q ℓ s' = lineWeight q ℓ s := by
       simp only [lineWeight, rootValid_iff_of_perm ℓ hpos σ hσ, ← hpos]
-    rw [hw, mul_comm]
+    grind
   · simp only [PosModel.symOp, h, ite_false, zero_mul, mul_zero]
 
 /-- The line weights commute with `𝒢`. -/
@@ -208,7 +208,7 @@ theorem validInd_mul_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
   congr 1
   funext s
   simp only [validInd, lineWeight]
-  split_ifs <;> simp
+  simp_all
 
 /-- The validity indicator is one on the support of the line weights, on the right. -/
 theorem lineWeight_mul_validInd (q : ℝ) (ℓ : ℕ → ℕ) :
@@ -218,7 +218,7 @@ theorem lineWeight_mul_validInd (q : ℝ) (ℓ : ℕ → ℕ) :
   congr 1
   funext s
   simp only [validInd, lineWeight]
-  split_ifs <;> simp
+  simp_all
 
 /-- `𝒜_ℓ(s, s') = d_ℓ(z) A⁰(s, s') d_ℓ(z')` on the root states, with `A⁰` the line-free `𝒜`
 at `q = 1`. -/
@@ -317,11 +317,7 @@ theorem prod_visit_eq (ℓ : ℕ → ℕ) (s : (freeRootModel d Y d₀ u v r).St
       else 1 - η * if ℓ p = L p then 1 else 0) =
       if ∃ i h, s.1.2 i h = p then (if ℓ p = lineOf p s.1.1.1 then 1 else 0)
       else if ℓ p = lineOf p s.1.1.1 then Q else 1 := fun p => by
-    rw [hL, hη]
-    by_cases hp : A p
-    · rw [ite_eq_left hp, ite_eq_left ((hA p).1 hp)]
-    · rw [ite_eq_right hp, ite_eq_right (mt (hA p).2 hp)]
-      split_ifs <;> ring
+    grind
   unfold inactiveHits
   simp only [hvisit]
   rw [prod_ite, prod_boole, prod_ite, prod_const, prod_const_one, mul_one, boole_mul]
@@ -374,9 +370,9 @@ theorem prod_lineWeight_eq {q : ℝ} (hq : 0 < q)
     rw [prod_mul_distrib, prod_mul_distrib]
     congr 1
     · rw [Fin.prod_univ_castSucc]
-      simp [(Fin.castSucc_lt_last _).ne]
+      simp
     · rw [Fin.prod_univ_succ]
-      simp [Fin.succ_ne_zero]
+      simp
   rw [hends]
   simp only [lineFactor_eq_prod]
   rw [prod_comm, prod_range, Complex.ofReal_prod]
@@ -387,24 +383,22 @@ theorem prod_lineWeight_eq {q : ℝ} (hq : 0 < q)
     split_ifs <;> ring
   rw [prod_visit_eq ℓ (path j) (fun p => mem_activeSet p path j) (fun p => pathLines_val p path j)
     hη]
-  have hlast : Fin.last N ≠ 0 := Fin.ext_iff.not.2 (by simp; omega)
+  have hlast : Fin.last N ≠ 0 := Fin.ext_iff.not.2 (by positivity)
   by_cases hs : RootValid ℓ (path j)
   · rw [lineWeight_of_valid hq hdisj ℓ hs, ite_eq_left hs]
     by_cases h0 : j = 0
-    · simp [h0, hlast.symm]
+    · simp_all
     by_cases hl : j = Fin.last N
-    · simp [hl, hlast]
+    · simp_all
     -- step: an interior visit carries `√q^h √q^h = q^h`
     have hint : ¬((j : ℕ) = 0 ∨ (j : ℕ) = N) := by
       rintro (h | h)
-      · exact h0 (Fin.ext h)
-      · exact hl (Fin.ext h)
+      · simp_all
+      · grind
     rw [ite_eq_left hl, ite_eq_left h0, ite_eq_right hint, ← Complex.ofReal_mul, ← mul_pow,
       Real.mul_self_sqrt hq.le]
   · rw [lineWeight, ite_eq_right hs, ite_eq_right hs]
-    by_cases hj : j = 0
-    · simp [hj, hlast.symm]
-    · simp [hj]
+    simp_all
 
 /-- The line weights are real. -/
 theorem star_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
@@ -413,8 +407,8 @@ theorem star_lineWeight (q : ℝ) (ℓ : ℕ → ℕ) :
   funext s
   rw [Pi.star_apply, lineWeight]
   split_ifs
-  · exact Complex.conj_ofReal _
-  · exact star_zero _
+  · simp
+  simp
 
 /-- With disjoint bands, `d_ℓ A⁰ d_ℓ` is Hermitian. -/
 theorem conjTranspose_lineEdge (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
@@ -528,13 +522,12 @@ theorem lineAverage_rootMoment_eq {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y 
       rw [lineAverage_prod x d fun p l => (lineFactor q p path l : ℂ)]
       refine prod_congr rfl fun p _ => ?_
       rw [primeFactor_eq_sum_lineFactor]
-      push_cast
-      rfl
+      simp
   -- step: average the path expansion at fixed lines
   rw [funext (rootMoment_eq_sum_lineFactor (A₀ := A₀) (d := d) (Y := Y) (d₀ := d₀) (u := u)
     (v := v) (r := r) hq hR hdisj)]
   simp only [hprime, lineAverage, mul_sum]
   rw [sum_comm]
-  exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
+  ring
 
 end Erdos408.OneSided

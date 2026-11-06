@@ -7,14 +7,12 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.DualCoefficients
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic ConcretePrimeRowBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma cubicDualRow_zero {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
+    (cols : n → Ideal ActualEisensteinCubic.O) (hc : ∀ j, Admissible (cols j))
     (hunit : ∀ j, cols j ≠ 1) (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) :
     cubicDualRow cols hc a W M 0 = 0 := by
   unfold cubicDualRow
@@ -22,14 +20,13 @@ lemma cubicDualRow_zero {n : Type*} [Fintype n]
   intro j hj
   apply Finset.sum_eq_zero
   intro k hk
-  rw [cubicRow_zero_of_ne_one _ (hc j) (hunit j)]
-  simp
+  simp [cubicRow_zero_of_ne_one _ (hc j) (hunit j)]
 
 theorem cubic_dual_shell_bound (W : 𝓢(ℝ, ℂ)) (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M K N : ℝ) (_hM : 0 < M) (_hK : 0 < K) (_hN : 0 < N)
-        (rows : m → O) (cols : n → Ideal O)
+        (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, K / 2 ≤ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ∧
           (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ K)

@@ -9,23 +9,22 @@ public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRapidTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
-local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct : ℝ),0<Ct ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (F : Finset ι) (Ψ : O→*ℂ), (∀u,‖Ψ u‖≤1) →
-      ∀ (m c d : O),d≠0 → ∀ (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (F : Finset ι) (Ψ : ActualEisensteinCubic.O→*ℂ), (∀u,‖Ψ u‖≤1) →
+      ∀ (m c d : ActualEisensteinCubic.O),d≠0 → ∀ (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) →
       ∀ (om W : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
       (hs : Function.support om⊆Set.Icc lo hi) (negative : Bool) (height X M Y Z : ℝ)
@@ -44,7 +43,7 @@ theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<t
   intro ι σ _ _ p hp _ hcop hg hinj hc F Ψ hΨ m c d hd slots lists a hslots ha
     om W lo hi hlo hs negative height X M Y Z R hX hhi hZ hY hL hy hyi hl hR
   let L:=X*Real.exp M
-  have hLpos : 0<L := mul_pos hX (Real.exp_pos _)
+  have hLpos : 0<L := by positivity
   have hz : 0<Z := zero_lt_one.trans_le hZ
   have hv := principalWindow_upper om lo hi hlo hs M hhi negative height
   have hm := hmark p hp hcop slots lists a hslots ha ∅
@@ -59,16 +58,16 @@ theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<t
   have habsorb : L*Z^(-(saving+Lcap))≤Z^(-saving) := by
     calc
       _≤Z^Lcap*Z^(-(saving+Lcap)) := mul_le_mul_of_nonneg_right hl (by positivity)
-      _=Z^(-saving) := by rw [←Real.rpow_add hz];congr 1;ring
+      _=Z^(-saving) := by rw [←Real.rpow_add hz];simp
   apply ht.trans
   calc
     _=(Ct*Cm^2*(s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)*(SchwartzMap.seminorm ℝ 0 0 om)^2)*
         (L*Z^(-(saving+Lcap))) := by rw [mul_pow,mul_pow,hp];ring
-    _≤_ := by
-      exact mul_le_mul_of_nonneg_left habsorb (by positivity)
+    _≤_ :=
+      mul_le_mul_of_nonneg_left habsorb (by positivity)
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 end SevenEighths.InverseWholePriorityRapidTail

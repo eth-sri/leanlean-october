@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseTerminalWidths
-open ActualEisensteinCubic CompletedGauss UniqueFactorizationMonoid
-open InverseMoment CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss
+open InverseMoment
 
-lemma norm_one_le (I : Ideal O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
+lemma norm_one_le (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) : (1 : ℝ) ≤ Ideal.absNorm I := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
 
-theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
+theorem physical_residual_width (I Q : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0)
     (Z M O₀ H Ck CO CH : ℝ) (hZ : 1 < Z) (hCk : 0 < Ck) (hCO : 0 < CO) (hCH : 0 < CH)
     (hk : (Ideal.absNorm I : ℝ) ≤ Ck * Z ^ M)
     (hpow : Z ^ O₀ / CO ≤ (Ideal.absNorm (rowPowerfulPart I) : ℝ))
@@ -31,14 +30,14 @@ theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
       _ = Z ^ H * Z ^ O₀ := Real.rpow_add hz0 _ _
       _ ≤ ((Ideal.absNorm (rowResidualPart I Q) : ℝ) * CH) *
           ((Ideal.absNorm (rowPowerfulPart I) : ℝ) * CO) :=
-        mul_le_mul hr hp (Real.rpow_nonneg hz0.le _) (by positivity)
+        mul_le_mul hr hp (by positivity) (by positivity)
       _ = (CH * CO) * ((Ideal.absNorm (rowPowerfulPart I) : ℝ) *
           (Ideal.absNorm (rowResidualPart I Q) : ℝ)) := by ring
       _ ≤ (CH * CO) * (Ideal.absNorm I : ℝ) :=
         mul_le_mul_of_nonneg_left (by simpa only [mul_comm] using actual_residual_norm_width I Q hI) (by positivity)
       _ ≤ (CH * CO) * (Ck * Z ^ M) := mul_le_mul_of_nonneg_left hk (by positivity)
       _ = _ := by ring
-  have hl := Real.logb_le_logb_of_le hZ (Real.rpow_pos_of_pos hz0 _) hs
+  have hl := Real.logb_le_logb_of_le hZ (by positivity) hs
   rw [Real.logb_rpow hz0 (ne_of_gt hZ), Real.logb_mul (by positivity) (by positivity),
     Real.logb_rpow hz0 (ne_of_gt hZ)] at hl
   unfold Real.logb at hl
@@ -46,10 +45,10 @@ theorem physical_residual_width (I Q : Ideal O) (hI : I ≠ 0)
 
 theorem constant_log_error (C η : ℝ) (_hC : 0 < C) (hη : 0 < η) :
     ∃ Z₀ : ℝ, 1 < Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z → Real.log C / Real.log Z ≤ η := by
-  refine ⟨max 2 (Real.exp (Real.log C / η)), lt_of_lt_of_le (by norm_num) (le_max_left _ _), ?_⟩
+  refine ⟨max 2 (Real.exp (Real.log C / η)), by simp, ?_⟩
   intro Z hZ
-  have hz : 1 < Z := lt_of_lt_of_le (by norm_num) ((le_max_left _ _).trans hZ)
-  have he : Real.exp (Real.log C / η) ≤ Z := (le_max_right _ _).trans hZ
+  have hz : 1 < Z := by grind
+  have he : Real.exp (Real.log C / η) ≤ Z := by grind
   have hl := Real.log_le_log (Real.exp_pos _) he
   rw [Real.log_exp] at hl
   apply (div_le_iff₀ (Real.log_pos hz)).mpr
@@ -59,18 +58,18 @@ theorem constant_log_error (C η : ℝ) (_hC : 0 < C) (hη : 0 < η) :
 def activeCharge (j : ℕ) (e : Fin 3) : ℤ :=
   if j = 4 then (if e = 2 then -2 else 1) else if j = 0 then 1 else 2
 
-def normWidth (Z : ℝ) (I : Ideal O) : ℝ := Real.logb Z (Ideal.absNorm I : ℝ)
+def normWidth (Z : ℝ) (I : Ideal ActualEisensteinCubic.O) : ℝ := Real.logb Z (Ideal.absNorm I : ℝ)
 
 def reflectionWidth {ι : Type*} [Fintype ι] (Z : ℝ)
-    (P : ι → Ideal O) (j : ι → ℕ) (e : ι → Fin 3) : ℝ :=
+    (P : ι → Ideal ActualEisensteinCubic.O) (j : ι → ℕ) (e : ι → Fin 3) : ℝ :=
   2 * normWidth Z (∏ i, P i) - normWidth Z (reflectionExtractedDivisor P j e 1) -
     normWidth Z (reflectionExtractedDivisor P j e 0) -
       4 * normWidth Z (reflectionExtractedDivisor P j e 2)
 
 theorem reflectionConductorCost_pos {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
+    (P : ι → Ideal ActualEisensteinCubic.O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
     0 < reflectionConductorCost P j e := by
-  have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hP i))
+  have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (by grind))
   have hd (v : Fin 3) := actual_ideal_norm_pos (reflectionExtractedDivisor P j e v)
     (reflectionExtractedDivisor_ne_zero P hP j e v)
   have h₀ := hd 0
@@ -80,9 +79,9 @@ theorem reflectionConductorCost_pos {ι : Type*} [Fintype ι]
   positivity
 
 theorem logb_reflectionConductorCost {ι : Type*} [Fintype ι]
-    (Z : ℝ) (P : ι → Ideal O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
+    (Z : ℝ) (P : ι → Ideal ActualEisensteinCubic.O) (hP : ∀ i, P i ≠ 0) (j : ι → ℕ) (e : ι → Fin 3) :
     Real.logb Z (reflectionConductorCost P j e) = reflectionWidth Z P j e := by
-  have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hP i))
+  have hp := actual_ideal_norm_pos (∏ i, P i) (Finset.prod_ne_zero_iff.mpr (by grind))
   have hd (v : Fin 3) := actual_ideal_norm_pos (reflectionExtractedDivisor P j e v)
     (reflectionExtractedDivisor_ne_zero P hP j e v)
   have h₀ := hd 0
@@ -91,13 +90,12 @@ theorem logb_reflectionConductorCost {ι : Type*} [Fintype ι]
   unfold reflectionConductorCost reflectionWidth normWidth
   rw [Real.logb_div (by positivity) (by positivity),
     Real.logb_mul (by positivity) (by positivity),
-    Real.logb_mul (hd 1).ne' (hd 0).ne', Real.logb_pow, Real.logb_pow]
-  norm_num
+    Real.logb_mul (by positivity) (by positivity), Real.logb_pow, Real.logb_pow]
   ring
 
 theorem reflection_charge_width {ι : Type*} [Fintype ι]
-    (I F B R : Ideal O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (I F B R : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i, P i ∣ I * (B * F * R))
     (hres : ∀ i, ¬ P i ∣ rowResidualPart I (B * F * R)) (e : ι → Fin 3)
@@ -115,7 +113,7 @@ theorem reflection_charge_width {ι : Type*} [Fintype ι]
     (squarefreeResidualPart_ne_zero (rowSimplePart I) (B * F * R))
   have hc := reflectionConductorCost_pos P (fun i => NeZero.ne (P i))
     (fun i => completedLocalExponent I F (P i)) e
-  have hh := Real.logb_le_logb_of_le hZ (mul_pos (sq_pos_of_pos hx) hc)
+  have hh := Real.logb_le_logb_of_le hZ (by positivity)
     (actual_common_width_charge_label_puncture I F R B hI hF hR hB P hcop hpool hres e)
   rw [Real.logb_mul (by positivity) hc.ne', Real.logb_pow,
     logb_reflectionConductorCost Z P (fun i => NeZero.ne (P i)),
@@ -123,10 +121,9 @@ theorem reflection_charge_width {ι : Type*} [Fintype ι]
     Real.logb_mul hb.ne' (by positivity), Real.logb_div (by positivity) hp.ne',
     Real.logb_pow] at hh
   unfold normWidth
-  norm_num at hh ⊢
-  linarith
+  grind
 
-theorem normWidth_upper (I : Ideal O) (hI : I ≠ 0) (Z C E : ℝ)
+theorem normWidth_upper (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (Z C E : ℝ)
     (hZ : 1 < Z) (hC : 0 < C) (h : (Ideal.absNorm I : ℝ) ≤ C * Z ^ E) :
     normWidth Z I ≤ E + Real.logb Z C := by
   have hz0 : 0 < Z := by linarith
@@ -135,23 +132,23 @@ theorem normWidth_upper (I : Ideal O) (hI : I ≠ 0) (Z C E : ℝ)
   unfold normWidth
   linarith
 
-theorem normWidth_lower (I : Ideal O) (Z C E : ℝ)
+theorem normWidth_lower (I : Ideal ActualEisensteinCubic.O) (Z C E : ℝ)
     (hZ : 1 < Z) (hC : 0 < C) (h : Z ^ E / C ≤ (Ideal.absNorm I : ℝ)) :
     E - Real.logb Z C ≤ normWidth Z I := by
   have hz0 : 0 < Z := by linarith
-  have hh := Real.logb_le_logb_of_le hZ (div_pos (Real.rpow_pos_of_pos hz0 E) hC) h
+  have hh := Real.logb_le_logb_of_le hZ (by positivity) h
   rwa [Real.logb_div (by positivity) hC.ne', Real.logb_rpow hz0 (ne_of_gt hZ)] at hh
 
 def terminalDualWidth {ι : Type*} [Fintype ι] (Z H za Nstar : ℝ)
-    (P : ι → Ideal O) (j : ι → ℕ) (e : ι → Fin 3) : ℝ :=
+    (P : ι → Ideal ActualEisensteinCubic.O) (j : ι → ℕ) (e : ι → Fin 3) : ℝ :=
   2 * H + 2 * normWidth Z (∏ i, P i) + 2 * za - Nstar -
     normWidth Z (reflectionExtractedDivisor P j e 1) -
       3 * normWidth Z (reflectionExtractedDivisor P j e 2)
 
-def widthConstant (B : Ideal O) (Ck CO CH Cf : ℝ) : ℝ :=
+def widthConstant (B : Ideal ActualEisensteinCubic.O) (Ck CO CH Cf : ℝ) : ℝ :=
   CH ^ 2 * (Ideal.absNorm B : ℝ) * Ck ^ 2 * CO * Cf
 
-theorem logb_widthConstant (Z : ℝ) (B : Ideal O) (hB : B ≠ 0)
+theorem logb_widthConstant (Z : ℝ) (B : Ideal ActualEisensteinCubic.O) (hB : B ≠ 0)
     (Ck CO CH Cf : ℝ) (hk : 0 < Ck) (ho : 0 < CO) (hh : 0 < CH) (hf : 0 < Cf) :
     Real.logb Z (widthConstant B Ck CO CH Cf) =
       2 * Real.logb Z CH + normWidth Z B + 2 * Real.logb Z Ck +
@@ -164,8 +161,8 @@ theorem logb_widthConstant (Z : ℝ) (B : Ideal O) (hB : B ≠ 0)
   norm_num
 
 theorem terminal_common_width {ι : Type*} [Fintype ι]
-    (I F B R : Ideal O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (I F B R : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i, P i ∣ I * (B * F * R))
     (hres : ∀ i, ¬ P i ∣ rowResidualPart I (B * F * R)) (e : ι → Fin 3)
@@ -191,10 +188,10 @@ theorem terminal_common_width {ι : Type*} [Fintype ι]
   unfold terminalDualWidth reflectionWidth at *
   linarith
 
-theorem normWidth_nonneg (Z : ℝ) (hZ : 1 < Z) (I : Ideal O) (hI : I ≠ 0) :
+theorem normWidth_nonneg (Z : ℝ) (hZ : 1 < Z) (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) :
     0 ≤ normWidth Z I := Real.logb_nonneg hZ (norm_one_le I hI)
 
-theorem width_error_threshold (B : Ideal O) (hB : B ≠ 0)
+theorem width_error_threshold (B : Ideal ActualEisensteinCubic.O) (hB : B ≠ 0)
     (Ck CO CH Cf η : ℝ) (hk : 0 < Ck) (ho : 0 < CO) (hh : 0 < CH)
     (hf : 0 < Cf) (hη : 0 < η) :
     ∃ Z₀ : ℝ, 1 < Z₀ ∧ ∀ Z : ℝ, Z₀ ≤ Z →
@@ -204,8 +201,7 @@ theorem width_error_threshold (B : Ideal O) (hB : B ≠ 0)
   obtain ⟨a, ha, h₁⟩ := constant_log_error (CH * Ck * CO) η (by positivity) hη
   obtain ⟨b, hb', h₂⟩ := constant_log_error (widthConstant B Ck CO CH Cf) η
     (by unfold widthConstant; positivity) hη
-  exact ⟨max a b, ha.trans_le (le_max_left _ _), fun Z hZ =>
-    ⟨h₁ Z ((le_max_left _ _).trans hZ), h₂ Z ((le_max_right _ _).trans hZ)⟩⟩
+  grind
 
 def hybridSaving (v za : ℝ) : ℝ := min v (min za ((v + za) / 3))
 
@@ -219,14 +215,7 @@ theorem hybridSaving_nonneg {v za : ℝ} (hv : 0 ≤ v) (hz : 0 ≤ za) :
 theorem hybridSaving_half {v za : ℝ} (hv : 0 ≤ v)
     (hu : hybridSaving v za ≠ za) : v / 2 ≤ hybridSaving v za := by
   unfold hybridSaving at *
-  rcases le_total v (min za ((v + za) / 3)) with h | h
-  · rw [min_eq_left h]
-    linarith
-  · rw [min_eq_right h] at *
-    rcases le_total za ((v + za) / 3) with hz | hz
-    · exact (hu (min_eq_left hz)).elim
-    · rw [min_eq_right hz]
-      linarith
+  grind
 
 theorem terminal_width_from_invariant
     {F₀ N V M Q z₀ c O₀ za Nstar hhat d η Td S₀ B₀ : ℝ}
@@ -245,8 +234,7 @@ theorem reflected_row_bound {O₀ H S₀ B₀ za v ell el Td M η : ℝ}
   have hu := hybridSaving_nonneg hv hz
   have hm := le_max_left 0 (Td - v - 3 * ell - el)
   unfold reflectedExponent
-  rw [max_eq_left hrow]
-  linarith
+  grind
 
 theorem reflected_column_full_bound {O₀ H S₀ B₀ za v ell el Td η τ : ℝ}
     (hl : 0 ≤ ell) (he : -η ≤ el) (hcol : H ≤ v + ell)
@@ -255,8 +243,7 @@ theorem reflected_column_full_bound {O₀ H S₀ B₀ za v ell el Td η τ : ℝ
       O₀ / 2 + (Td - S₀ - B₀) + 5 * η / 3 + τ := by
   have hm := le_max_left 0 (Td - v - 3 * ell - el)
   unfold reflectedExponent
-  rw [max_eq_right hcol, hu]
-  linarith
+  grind
 
 theorem reflected_column_partial_bound {O₀ H S₀ B₀ za v ell el Td η τ : ℝ}
     (hS : 0 ≤ S₀) (hB : 0 ≤ B₀) (hv : 0 ≤ v) (hl : 0 ≤ ell)
@@ -267,8 +254,7 @@ theorem reflected_column_partial_bound {O₀ H S₀ B₀ za v ell el Td η τ : 
   have hu' := hybridSaving_half hv hu
   have hm := le_max_left 0 (Td - v - 3 * ell - el)
   unfold reflectedExponent
-  rw [max_eq_right hcol]
-  linarith
+  grind
 
 theorem reflected_terminal_cases
     {F₀ M Q z₀ c O₀ H S₀ B₀ za v ell el Td d η τ : ℝ}
@@ -308,14 +294,7 @@ theorem reflected_terminal_saving
     (hη : η ≤ cstar / 1000) (hτ : τ ≤ cstar / 1000) (hπ : π ≤ cstar / 1000) :
     reflectedExponent O₀ H S₀ B₀ za v ell el Td + π ≤ F₀ - cstar / 4 := by
   obtain ⟨hr, hf, hp⟩ := reflected_terminal_cases hinv hQ hO hS hB hz hzcap hv hl he hret hH hT
-  rcases le_total (v + ell) H with h | h
-  · have := hr h
-    linarith
-  · by_cases hu : hybridSaving v za = za
-    · have := hf h hu
-      linarith
-    · have := hp h hu
-      linarith
+  grind
 
 def ramifiedWidth (Z : ℝ) (m : ℕ) : ℝ := ((m : ℝ) - 4) * Real.logb Z 3
 
@@ -335,8 +314,8 @@ theorem ramified_width_threshold (η : ℝ) (hη : 0 < η) :
   nlinarith
 
 theorem actual_terminal_saving {ι : Type*} [Fintype ι]
-    (I F B R : Ideal O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (I F B R : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) (hF : F ≠ 0) (hB : B ≠ 0) (hR : R ≠ 0)
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hcop : Pairwise (fun i j => IsCoprime (P i) (P j)))
     (hpool : ∀ i, P i ∣ I * (B * F * R))
     (hres : ∀ i, ¬ P i ∣ rowResidualPart I (B * F * R)) (e : ι → Fin 3)
@@ -368,7 +347,7 @@ theorem actual_terminal_saving {ι : Type*} [Fintype ι]
     (Td := terminalDualWidth Z H za Nstar P (fun i => completedLocalExponent I F (P i)) e)
     (S₀ := normWidth Z (reflectionExtractedDivisor P (fun i => completedLocalExponent I F (P i)) e 0))
     (B₀ := normWidth Z (reflectionExtractedDivisor P (fun i => completedLocalExponent I F (P i)) e 2))
-    hinv hF₀ hscale hV hh (hT.trans (by linarith))
+    hinv hF₀ hscale hV hh (by linarith)
   exact reflected_terminal_saving hinv (normWidth_nonneg Z hZ R hR) hM hO
     (normWidth_nonneg Z hZ _ (reflectionExtractedDivisor_ne_zero P (fun i => NeZero.ne (P i)) _ e 0))
     (normWidth_nonneg Z hZ _ (reflectionExtractedDivisor_ne_zero P (fun i => NeZero.ne (P i)) _ e 2))

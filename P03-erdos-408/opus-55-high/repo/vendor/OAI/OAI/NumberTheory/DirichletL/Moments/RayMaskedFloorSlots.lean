@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonMaskEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.CenteredMomentRayMaskedFloor
 open HeckeFamily HeckeZeroSupremum CenteredMomentNaturalFixedRaySource
@@ -16,10 +16,9 @@ open CenteredMomentNaturalRowSource CenteredMomentCommonMaskExpansion
 open CenteredMomentCommonMaskEnergy CenteredMomentWholeSlotDeletion
 open CenteredMomentHeckeSlots CenteredMomentPrimeSlot CenteredExceptionalProfile
 open CenteredMomentSecondHeightFamily
-local notation "O" => HeckeFamily.O
 
-lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
-    (pool : Finset (Ideal O)) (β : Ideal O→ℂ) (P t : ℝ) :
+lemma natural_slot_eq {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z)
+    (pool : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (P t : ℝ) :
     naturalSlot F.character pool (heightCoefficient β t) P=
       normalizedSlot η fixedBadMask 1 z pool β t P := by
   unfold naturalSlot normalizedSlot rowSlot
@@ -30,9 +29,9 @@ lemma natural_slot_eq {η : Character} {z : O} (F : NaturalRow η z)
   simp only [heightCoefficient,one_mul]
   ring
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 theorem natural_slot_product {α : Type*} [DecidableEq α]
     (F : Finset α) (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -78,9 +77,9 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
     calc
       _ ≤ (C₀*(1+|t|+T)^J)*Z^el*Z^(w i*κ) := by
         gcongr
-        · exact le_max_right 1 C
-        · exact hv i (hAF hi)
-      _ = _ := by rw [mul_assoc,←Real.rpow_add hZ0]; congr 2 ; ring
+        · grind
+        grind
+      _ = _ := by rw [mul_assoc,←Real.rpow_add hZ0]; ring
   rw [norm_prod,←Finset.prod_pow]
   apply (Finset.prod_le_prod₀ (fun i _=>sq_nonneg _) hslot).trans
   rw [Finset.prod_mul_distrib,Finset.prod_const,←Real.rpow_sum_of_pos hZ0]
@@ -96,7 +95,7 @@ theorem natural_slot_product {α : Type*} [DecidableEq α]
   have hp : 1≤C₀*(1+|t|+T)^J := one_le_mul_of_one_le_of_one_le hC₀ (one_le_pow₀ hh)
   apply (mul_le_mul (pow_le_pow_right₀ hp (Finset.card_le_card hAF))
     (Real.rpow_le_rpow_of_exponent_le hZ.le hexp) (by positivity) (by positivity)).trans_eq
-  rw [mul_pow,←pow_mul]
+  ring
 
 end SevenEighths.CenteredMomentRayMaskedFloor
 

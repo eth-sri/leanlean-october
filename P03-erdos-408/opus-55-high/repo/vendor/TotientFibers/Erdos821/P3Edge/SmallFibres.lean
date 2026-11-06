@@ -7,7 +7,6 @@ public import Erdos821.P3Edge.TransferBounds
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -31,20 +30,17 @@ theorem smallPrefixFibre_nonempty (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.
   obtain ⟨hinj, hzero, hprefix⟩ := (Finset.mem_filter.mp ha).2
   refine ⟨?_, ?_, ?_⟩
   · intro i j hij
-    apply Fin.ext
-    have hh := congrArg Fin.val (hinj ((hprefix i).trans (hij.trans (hprefix j).symm)))
-    exact hh
+    grind
   · intro j
     rw [← hprefix j]
-    exact hzero _
+    simp_all
   · have hcard : (Finset.univ.image a).card = J + ell := by
       rw [Finset.card_image_of_injective _ hinj]
       simp
     rw [← hcard]
     apply Finset.card_le_card
     intro p hp
-    obtain ⟨i, _, rfl⟩ := Finset.mem_image.mp hp
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hzero _⟩
+    grind
 
 theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
     (d : Fin J → P.Prime g) (hd : Function.Injective d) (hy : ∀ j, y (d j) = 0) :
@@ -57,7 +53,7 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
   have hDZ : D ⊆ Z := by
     intro p hp
     obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hp
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hy j⟩
+    exact by grind
   have hD : D.card = J := by
     rw [Finset.card_image_of_injective _ hd]
     simp
@@ -68,10 +64,10 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
       toFun := fun i => ⟨a.val (Fin.natAdd J i), by
         obtain ⟨ha, hzero, hprefix⟩ := (Finset.mem_filter.mp a.property).2
         apply Finset.mem_sdiff.mpr
-        refine ⟨Finset.mem_filter.mpr ⟨Finset.mem_univ _, hzero _⟩, ?_⟩
+        refine ⟨by grind, ?_⟩
         intro hp
         obtain ⟨j, _, hj⟩ := Finset.mem_image.mp hp
-        have heq : Fin.castAdd ell j = Fin.natAdd J i := ha ((hprefix j).trans hj)
+        have heq := ha ((hprefix j).trans hj)
         have hv := congrArg Fin.val heq
         simp only [Fin.val_castAdd, Fin.val_natAdd] at hv
         omega⟩
@@ -79,10 +75,7 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
         intro i j hij
         obtain ⟨ha, _, _⟩ := (Finset.mem_filter.mp a.property).2
         have hh := ha (congrArg Subtype.val hij)
-        apply Fin.ext
-        have hv := congrArg Fin.val hh
-        simp only [Fin.val_natAdd] at hv
-        omega
+        simp_all
     }
   have hinj : Function.Injective suffix := by
     intro a b hab
@@ -91,7 +84,7 @@ theorem smallPrefixFibre_card (J ell : ℕ) (y : (p : P.Prime g) → ZMod p.val)
     refine Fin.addCases (fun j => ?_) (fun j => ?_) i
     · have ha := ((Finset.mem_filter.mp a.property).2).2.2 j
       have hb := ((Finset.mem_filter.mp b.property).2).2.2 j
-      exact ha.trans hb.symm
+      simp_all
     · exact congrArg Subtype.val (congrArg (fun f : Fin ell ↪ {p // p ∈ B} => f j) hab)
   have hc := Fintype.card_le_of_injective suffix hinj
   simpa only [Fintype.card_coe, Fintype.card_embedding_eq, Fintype.card_fin, hB] using hc
@@ -107,7 +100,7 @@ lemma smallGroupWeight_nonneg (F : FixedData) (J : ℕ) (g : P.SmallGroup)
     (hV : 0 < P.V g.val) (y : (p : P.Prime g.val) → ZMod p.val) :
     0 ≤ smallGroupWeight F J g y := by
   unfold smallGroupWeight
-  exact mul_nonneg (zpow_nonneg hV.le _) (Real.rpow_nonneg F.q_pos.le _)
+  exact mul_nonneg (by positivity) (Real.rpow_nonneg F.q_pos.le _)
 
 /-- The product of `smallGroupWeight` over all small groups equals
 `smallTargetFactor F * smallDamping F J y`. -/
@@ -137,7 +130,7 @@ lemma smallPrefixFibre_sum_le (F : FixedData) (J m : ℕ) (Csmall0 : ℝ)
   rw [hsum]
   rcases Finset.eq_empty_or_nonempty (smallPrefixFibre J F.ell y d) with hemp | hne
   · rw [hemp, Finset.card_empty, Nat.cast_zero, zero_mul]
-    exact le_trans zero_le_one (le_max_left _ _)
+    simp
   · obtain ⟨hd, hy, hZ⟩ := smallPrefixFibre_nonempty J F.ell y d hne
     set Z := (Finset.univ.filter (fun p : P.Prime g.val => y p = 0)).card
     have hcard_R : ((smallPrefixFibre J F.ell y d).card : ℝ) ≤ ((Z - J : ℕ) : ℝ) ^ F.ell :=
@@ -146,7 +139,7 @@ lemma smallPrefixFibre_sum_le (F : FixedData) (J m : ℕ) (Csmall0 : ℝ)
     have hY : F.ell ≤ Z - J := by omega
     have hexp_eq : ((Z : ℝ) - ((J : ℝ) + (F.ell : ℝ))) / 2 =
         ((((Z - J) - F.ell : ℕ) : ℝ) / 2) := by
-      have h1 : (Z - J) - F.ell = Z - (J + F.ell) := Nat.sub_sub Z J F.ell
+      have h1 := Nat.sub_sub Z J F.ell
       rw [h1, Nat.cast_sub hZ, Nat.cast_add]
     have hVpos : 0 < P.V g.val := lt_of_lt_of_le F.vMin_pos hVlo
     have hVinv : (P.V g.val) ^ (-(F.ell : ℤ)) ≤ max 1 ((F.vMin⁻¹) ^ (F.ell + m)) :=
@@ -155,7 +148,7 @@ lemma smallPrefixFibre_sum_le (F : FixedData) (J m : ℕ) (Csmall0 : ℝ)
         F.q ^ ((((Z : ℝ) - ((J : ℝ) + (F.ell : ℝ))) / 2)) ≤ Csmall0 := by
       rw [hexp_eq]
       exact hCsmall0 (Z - J) hY
-    have hwg_nn : 0 ≤ smallGroupWeight F J g y := smallGroupWeight_nonneg F J g hVpos y
+    have hwg_nn := smallGroupWeight_nonneg F J g hVpos y
     calc ((smallPrefixFibre J F.ell y d).card : ℝ) * smallGroupWeight F J g y
         ≤ ((Z - J : ℕ) : ℝ) ^ F.ell * smallGroupWeight F J g y :=
           mul_le_mul_of_nonneg_right hcard_R hwg_nn
@@ -167,7 +160,7 @@ lemma smallPrefixFibre_sum_le (F : FixedData) (J m : ℕ) (Csmall0 : ℝ)
       _ ≤ max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0 := by
           apply mul_le_mul hVinv hdamp
           · exact mul_nonneg (pow_nonneg (Nat.cast_nonneg _) _) (Real.rpow_nonneg F.q_pos.le _)
-          · exact le_trans zero_le_one (le_max_left _ _)
+          simp
       _ ≤ max 1 (max 1 ((F.vMin⁻¹) ^ (F.ell + m)) * Csmall0) := le_max_right _ _
 
 end Erdos821.P3Edge

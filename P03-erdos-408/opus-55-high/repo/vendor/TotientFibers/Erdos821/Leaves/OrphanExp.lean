@@ -5,7 +5,6 @@ public import Erdos821.Blueprint.Analytic
 
 @[expose] public section
 
-open scoped BigOperators
 
 attribute [local instance] Classical.propDecidable
 
@@ -21,25 +20,16 @@ theorem fin_tail_filter (n : ℕ) (j : Fin n) :
   constructor
   · intro hi
     by_cases hlast : i = Fin.last n
-    · left; exact hlast
+    · omega
     · right
-      have hex : ∃ j0 : Fin n, j0.castSucc = i :=
+      have hex :=
         Fin.exists_castSucc_eq.mpr hlast
-      obtain ⟨i0, hi0⟩ := hex
-      refine ⟨i0, ?_, hi0⟩
-      have hlt : j.castSucc < i0.castSucc := hi0 ▸ hi
-      exact Fin.castSucc_lt_castSucc_iff.mp hlt
-  · intro hi
-    rcases hi with rfl | ⟨i0, hi0, heq⟩
-    · exact Fin.castSucc_lt_last j
-    · rw [← heq]
-      exact Fin.castSucc_lt_castSucc_iff.mpr hi0
+      grind
+  grind
 
 theorem fin_last_tail_empty (n : ℕ) :
     (Finset.univ.filter (fun i : Fin (n+1) => Fin.last n < i)) = ∅ := by
-  rw [Finset.filter_eq_empty_iff]
-  intro i _
-  exact not_lt_of_ge (Fin.le_last i)
+  grind
 
 theorem fin_prefix {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
     (∏ i, (1 - f i)) =
@@ -62,12 +52,12 @@ theorem fin_prefix {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
         obtain ⟨i0, _, hi0⟩ := Finset.mem_image.mp hcon
         have hne : i0.castSucc ≠ Fin.last n := by
           intro hcontra
-          have hex : ∃ k : Fin n, k.castSucc = Fin.last n := ⟨i0, hcontra⟩
+          have hex : ∃ k : Fin n, k.castSucc = Fin.last n := by grind
           have := (Fin.exists_castSucc_eq.mp hex)
           exact this rfl
         exact hne hi0
       rw [Finset.prod_insert hlast_not,
-        Finset.prod_image (Fin.castSucc_injective n).injOn]
+        Finset.prod_image (by simp)]
       ring
     have hempty : (∏ i ∈ Finset.univ.filter (fun i : Fin (n+1) => Fin.last n < i),
         (1 - f i)) = 1 := by
@@ -84,8 +74,7 @@ theorem fin_prefix {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
       intro j _
       rw [htail j, mul_assoc]
     have ih' := ih (fun i : Fin n => f i.castSucc)
-    rw [hprod, hsum, ih']
-    ring
+    grind
 
 theorem fin_interval_stable (n : ℕ) (j i : Fin n) :
     (Finset.univ.filter (fun t : Fin (n+1) => j.castSucc < t ∧ t < i.castSucc))
@@ -95,18 +84,10 @@ theorem fin_interval_stable (n : ℕ) (j i : Fin n) :
   constructor
   · intro ht
     obtain ⟨hlt, htu⟩ := ht
-    have hne : t ≠ Fin.last n := ne_of_lt (lt_of_lt_of_le htu (Fin.le_last _))
-    have hex : ∃ t0 : Fin n, t0.castSucc = t := Fin.exists_castSucc_eq.mpr hne
-    obtain ⟨t0, ht0⟩ := hex
-    refine ⟨t0, ⟨?_, ?_⟩, ht0⟩
-    · have h : j.castSucc < t0.castSucc := ht0 ▸ hlt
-      exact Fin.castSucc_lt_castSucc_iff.mp h
-    · have h : t0.castSucc < i.castSucc := ht0 ▸ htu
-      exact Fin.castSucc_lt_castSucc_iff.mp h
-  · intro ht
-    obtain ⟨t0, ⟨hj, hi⟩, ht0⟩ := ht
-    rw [← ht0]
-    exact ⟨Fin.castSucc_lt_castSucc_iff.mpr hj, Fin.castSucc_lt_castSucc_iff.mpr hi⟩
+    have hne := ne_of_lt (lt_of_lt_of_le htu (Fin.le_last _))
+    have hex := Fin.exists_castSucc_eq.mpr hne
+    grind
+  grind
 
 theorem fin_tail_interval (n : ℕ) (j : Fin n) :
     (Finset.univ.filter (fun t : Fin (n+1) => j.castSucc < t ∧ t < Fin.last n))
@@ -116,16 +97,10 @@ theorem fin_tail_interval (n : ℕ) (j : Fin n) :
   constructor
   · intro ht
     obtain ⟨hlt, htu⟩ := ht
-    have hne : t ≠ Fin.last n := ne_of_lt htu
-    have hex : ∃ t0 : Fin n, t0.castSucc = t := Fin.exists_castSucc_eq.mpr hne
-    obtain ⟨t0, ht0⟩ := hex
-    refine ⟨t0, ?_, ht0⟩
-    have h : j.castSucc < t0.castSucc := ht0 ▸ hlt
-    exact Fin.castSucc_lt_castSucc_iff.mp h
-  · intro ht
-    obtain ⟨t0, hj, ht0⟩ := ht
-    rw [← ht0]
-    exact ⟨Fin.castSucc_lt_castSucc_iff.mpr hj, Fin.castSucc_lt_last _⟩
+    have hne := ne_of_lt htu
+    have hex := Fin.exists_castSucc_eq.mpr hne
+    grind
+  grind
 
 theorem fin_orphan {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
     (∏ i, (1 - f i)) =
@@ -155,24 +130,24 @@ theorem fin_orphan {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
         obtain ⟨i0, _, hi0⟩ := Finset.mem_image.mp hcon
         have hne : i0.castSucc ≠ Fin.last n := by
           intro hcontra
-          have hex : ∃ k : Fin n, k.castSucc = Fin.last n := ⟨i0, hcontra⟩
+          have hex : ∃ k : Fin n, k.castSucc = Fin.last n := by grind
           have := (Fin.exists_castSucc_eq.mp hex)
           exact this rfl
         exact hne hi0
       rw [Finset.sum_insert hlast_not, add_comm]
       congr 1
-      · rw [Finset.sum_image (Fin.castSucc_injective n).injOn]
+      · rw [Finset.sum_image (by simp)]
         apply Finset.sum_congr rfl
         intro i hi
         simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hi
         rw [fin_interval_stable n j i,
-          Finset.prod_image (Fin.castSucc_injective n).injOn]
+          Finset.prod_image (by simp)]
       · have hlast_prod : (∏ t ∈ Finset.univ.filter
             (fun t : Fin (n+1) => j.castSucc < t ∧ t < Fin.last n), (1 - f t))
             = ∏ t ∈ Finset.univ.filter (fun t : Fin n => j < t), (1 - f t.castSucc) := by
           rw [fin_tail_interval n j,
-            Finset.prod_image (Fin.castSucc_injective n).injOn]
-        rw [hlast_prod]
+            Finset.prod_image (by simp)]
+        simp_all
     have hempty_inner : (∑ i ∈ Finset.univ.filter (fun i : Fin (n+1) => Fin.last n < i),
         f (Fin.last n) * f i * ∏ t ∈ Finset.univ.filter (fun t : Fin (n+1) => Fin.last n < t ∧ t < i), (1 - f t)) = 0 := by
       rw [fin_last_tail_empty]
@@ -188,13 +163,7 @@ theorem fin_orphan {R : Type*} [CommRing R] (n : ℕ) (f : Fin n → R) :
       rw [hinner j]
       ring
     have hpref := fin_prefix n (fun i : Fin n => f i.castSucc)
-    have htailsum : (∑ j : Fin n, f j.castSucc * ∏ i ∈ Finset.univ.filter (fun i => j < i), (1 - f i.castSucc))
-        = 1 - ∏ i : Fin n, (1 - f i.castSucc) := by
-      rw [hpref]
-      ring
-    have ih' := ih (fun i : Fin n => f i.castSucc)
-    rw [hprod, hS, hD, htailsum, ih']
-    ring
+    grind
 
 variable {p n : ℕ} [NeZero p]
 
@@ -208,22 +177,12 @@ theorem single_avg_swap (h : Fin n → ZMod p) (η : Fin n → ℝ) :
   have h1 : (∑ r : ZMod p, (if r + h i = 0 then (1:ℝ) else 0)) = 1 := by
     rw [Finset.sum_eq_single (-h i)]
     · simp
-    · intro r _ hr
-      have hne : ¬ (r + h i = 0) := by
-        intro hcon
-        have : r = -h i := add_eq_zero_iff_eq_neg.mp hcon
-        exact hr this
-      simp [hne]
+    · grind
     · simp
-  rw [h1, mul_one]
+  simp_all
 
 theorem avg_one2 : ((p : ℝ)⁻¹ * ∑ _r : ZMod p, (1 : ℝ)) = 1 := by
-  have hcard : (∑ _r : ZMod p, (1 : ℝ)) = (p : ℝ) := by
-    rw [Finset.sum_const, Finset.card_univ, ZMod.card p]
-    simp
-  rw [hcard]
-  have hp : (p : ℝ) ≠ 0 := Nat.cast_ne_zero.mpr (NeZero.ne p)
-  field_simp
+  simp
 
 theorem double_residue_sum2 (h : Fin n → ZMod p) (η : Fin n → ℝ)
     (j : Fin n) (i : Fin n) :
@@ -240,40 +199,17 @@ theorem double_residue_sum2 (h : Fin n → ZMod p) (η : Fin n → ℝ)
         = (if r + h i = 0 then (1:ℝ) else 0) := by
       intro r
       by_cases hr : r + h i = 0
-      · have hrj : r + h j = 0 := heq ▸ hr
-        simp [hr, hrj]
-      · have hrj : ¬ (r + h j = 0) := fun hcon => hr (heq ▸ hcon)
-        simp [hr, hrj]
+      · simp_all
+      · simp_all
     simp only [hprod]
     rw [ite_eq_left heq, one_mul]
     rw [Finset.sum_eq_single (-h i)]
-    · have hr0 : (-h i) + h i = 0 := neg_add_cancel (h i)
-      rw [ite_eq_left hr0, one_mul]
-      apply Finset.prod_congr rfl
-      intro t _
-      have hiff : ((-h i + h t = 0) ↔ (h t = h j)) := by
-        rw [neg_add_eq_zero, ← heq]
-        exact ⟨Eq.symm, Eq.symm⟩
-      simp only [hiff]
-    · intro r _ hrne
-      have hrne' : ¬ (r + h i = 0) := by
-        intro hcon
-        have : r = -h i := add_eq_zero_iff_eq_neg.mp hcon
-        exact hrne this
-      simp [hrne']
-    · simp
+    · grind
+    · grind
+    simp
   · rw [ite_eq_right heq, zero_mul]
     apply Finset.sum_eq_zero
-    intro r _
-    by_cases hrj : r + h j = 0
-    · have hri : ¬ (r + h i = 0) := by
-        intro hcon
-        have ej : r = -h j := add_eq_zero_iff_eq_neg.mp hrj
-        have ei : r = -h i := add_eq_zero_iff_eq_neg.mp hcon
-        have h1 : -h j = -h i := by rw [← ej, ← ei]
-        exact heq (neg_inj.mp h1)
-      simp [hrj, hri]
-    · simp [hrj]
+    grind
 
 theorem double_avg_swap2 (h : Fin n → ZMod p) (η : Fin n → ℝ) :
     (∑ r : ZMod p, ∑ j : Fin n, ∑ i ∈ Finset.univ.filter (fun i => j < i),
@@ -373,7 +309,7 @@ theorem orphan_expansion (p n : ℕ) [NeZero p] (η : Fin n → ℝ) (h : Fin n 
           (η i * (if r + h i = 0 then (1:ℝ) else 0)) *
           ∏ t ∈ Finset.univ.filter (fun t => j < t ∧ t < i),
             (1 - η t * (if r + h t = 0 then (1:ℝ) else 0)))) := by
-        rw [hsum]
+        grind
     _ = ((p:ℝ)⁻¹ * ∑ _r : ZMod p, (1:ℝ)) - (p:ℝ)⁻¹ * (∑ r : ZMod p, ∑ i, η i * (if r + h i = 0 then (1:ℝ) else 0)) +
         (p:ℝ)⁻¹ * (∑ r : ZMod p, ∑ j, ∑ i ∈ Finset.univ.filter (fun i => j < i),
           (η j * (if r + h j = 0 then (1:ℝ) else 0)) *

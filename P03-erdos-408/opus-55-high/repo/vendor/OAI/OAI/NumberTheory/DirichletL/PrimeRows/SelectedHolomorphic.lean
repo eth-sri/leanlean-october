@@ -9,10 +9,7 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.ProbeHighRowFamily

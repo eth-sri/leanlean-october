@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionReciprocal
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.HeckeLogarithmicActual
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic
@@ -64,7 +64,7 @@ theorem disk_control (e ε : ℝ) (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
   refine ⟨D,B,hD,hB,?_⟩
   intro η hp a t ha ha' hzero
   obtain ⟨hE,hEL,hEb⟩ := actual_inner_log η t
-  exact hb η hp a t (eulerLog η) ha ha' hzero hE hEL hEb
+  grind
 
 theorem primitive_reciprocal_subpower (e ε : ℝ)
     (he : 0<e) (he' : e<1/1000) (hε : 0<ε) :
@@ -72,11 +72,11 @@ theorem primitive_reciprocal_subpower (e ε : ℝ)
       ∀ s : ℂ, HeckeZeroSupremum.beta+8*e ≤ s.re →
         ‖HeckeReciprocal.reciprocal η s‖ ≤ D*(complexity η s.im)^ε := by
   obtain ⟨D,B,hD,_,hb⟩ := disk_control e ε he he' hε
-  have hEuler : 0 ≤ HeckeReciprocalBound.bound 2 := tsum_nonneg (fun _ => norm_nonneg _)
+  have hEuler : 0 ≤ HeckeReciprocalBound.bound 2 := tsum_nonneg (by simp)
   refine ⟨D+HeckeReciprocalBound.bound 2, by linarith, ?_⟩
   intro η hp s hs
-  have hcomp : 1 ≤ (complexity η s.im)^ε := Real.one_le_rpow
-    ((Real.one_le_exp (by norm_num : (0 : ℝ)≤1)).trans (complexity_ge_exp η s.im)) hε.le
+  have hcomp := Real.one_le_rpow
+    ((Real.one_le_exp (by positivity)).trans (complexity_ge_exp η s.im)) hε.le
   by_cases hs2 : s.re ≤ 2
   · have hbound := (hb η hp HeckeZeroSupremum.beta s.im HeckeZeroSupremum.half_le_beta
       HeckeZeroSupremum.beta_le_one (fun z hz => regular_ne_zero_on_disk η HeckeZeroSupremum.beta e s.im le_rfl he hz)).1
@@ -86,14 +86,12 @@ theorem primitive_reciprocal_subpower (e ε : ℝ)
       rw [Complex.re_add_im] at h
       exact closedBall_subset_closedBall (by linarith) h
     have hz := hbound s hmem
-    have hr := reciprocal_norm_le_regular_inverse η (by linarith : HeckeZeroSupremum.beta<s.re)
+    have hr := reciprocal_norm_le_regular_inverse η (by linarith)
     have hcp : 0 ≤ (complexity η s.im)^ε := by linarith
     nlinarith [norm_nonneg (regular η s)]
-  · have hr := HeckeReciprocalBound.reciprocal_norm_le η (by norm_num : (1 : ℝ)<2)
+  · have hr := HeckeReciprocalBound.reciprocal_norm_le η (by simp)
       (le_of_not_ge hs2)
-    have hp0 : 0 ≤ D+HeckeReciprocalBound.bound 2 := by linarith
-    exact hr.trans ((by linarith : HeckeReciprocalBound.bound 2 ≤ D+HeckeReciprocalBound.bound 2).trans
-      (le_mul_of_one_le_right hp0 hcomp))
+    nlinarith
 
 end SevenEighths.HeckeLogarithmicActual
 

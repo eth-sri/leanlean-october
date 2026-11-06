@@ -14,33 +14,26 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondDivisorSupport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter MeasureTheory
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
-open CenteredMomentCommonSectorWindow CenteredMomentSecondSectorColumns
-open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentCommonRadialData CenteredMomentReflectedSource
+open CenteredMomentHeckeColumnWindow
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
-open CenteredMomentLogDyadic RayFourExpansion CenteredMomentSmooth
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonExceptionalCost
-open CenteredMomentExceptionalSourceShell CenteredMomentSecondHeightFamily
-open CenteredMomentSecondExceptionalPairBound
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalCommon
+open RayFourExpansion
+open CenteredMomentSecondHeightFamily
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency
-open CenteredMomentSecondCanonicalNonunit CenteredMomentForcing CenteredMomentChildRows
+open CenteredMomentSecondCanonical
+open CenteredMomentCanonicalFirst
+open CenteredMomentSecondCanonicalNonunit CenteredMomentChildRows
 open CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSecondDyadicRowSupport
 
-open CenteredMomentSecondExceptionalPhysicalSaving CenteredMomentRankinRadical
+open CenteredMomentRankinRadical
 open CenteredMomentSecondExceptionalCommonSaving
-open ConcretePrimeRowBridge CenteredMomentMobiusRegroup CenteredMomentSupportedCorrelation
-open CenteredMomentSupport CenteredMomentSecondCanonicalScalar CenteredMomentSecondDivisorSupport
+open ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 universe u
@@ -48,11 +41,11 @@ variable {ι:Type u}[Fintype ι][DecidableEq ι]
 
 theorem actual_uniform_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(W:𝓢(ℝ,ℂ))
     (ε δ θ B Lbound:ℝ)(hε:0<ε)(hδ:0<δ)(hθ:0<θ)(hB:0≤B)(hL:0≤Lbound):
-    ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∃Ck:ℝ,0≤Ck ∧ ∀Q:Ideal O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:O)} →
+    ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∃Ck:ℝ,0≤Ck ∧ ∀Q:Ideal HeckeFamily.O,Q≠0 → Q≠⊤ → Q≤Ideal.span {(72:HeckeFamily.O)} →
       ∃K:ℝ,0<K ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(s:Input ι)(p:Profiles wlo whi),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
       (∀i,1≤s.P i) → s.W₁=p.profile 0 → s.W₂=p.profile 1 →
-      ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D)(R0 seed:Ideal O),R0≠0 → seed∣C → seed∣D →
+      ∀(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D)(R0 seed:Ideal HeckeFamily.O),R0≠0 → seed∣C → seed∣D →
       (C.absNorm:ℝ)≤Z^B → (D.absNorm:ℝ)≤Z^B → primeSupport C=primeSupport D → ∀U:Finset (CommonIndex C D),
       let A:=commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
       let S:=finiteColumns (Fintype.piFinset s.pools)
@@ -60,20 +53,20 @@ theorem actual_uniform_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
         (profileCoefficient R0 s.ν s.W s.P s.W₁ s.W₂ s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed)
       ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
       ∀τ:RayCharacter→Character,
-      (∀χ:RayCharacter,∀I:Ideal O,Supported I → (IsCoprime C I ∨ IsCoprime D I) → ∀v:ℝ,
+      (∀χ:RayCharacter,∀I:Ideal HeckeFamily.O,Supported I → (IsCoprime C I ∨ IsCoprime D I) → ∀v:ℝ,
         heightCoeff (τ χ) v I=heightCoeff s.η v I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) →
-      ∀(rows:Finset O),(∀z∈rows,z≠0) →
+      ∀(rows:Finset HeckeFamily.O),(∀z∈rows,z≠0) →
       (∀χ:RayCharacter,∀z∈rows,CenteredExceptionalProfile.FixedInducingRow (τ χ) Q fixedBadMask 1 z) →
       (∀χ:RayCharacter,∀z∈rows,CenteredExceptionalProfile.FixedInducingRow (τ χ) Q fixedBadMask 1 (-z)) →
-      (∀χ:RayCharacter,∀z∈rows,((τ χ).modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R0.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
-      (∀χ:RayCharacter,∀z∈rows,((reflected (τ χ)).modulus.absNorm*(Ideal.span {(fixedBadMask:O)}).absNorm*
-        (Ideal.span {(72:O)}).absNorm*(R0.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+      (∀χ:RayCharacter,∀z∈rows,((τ χ).modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+        (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R0.absNorm*C.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
+      (∀χ:RayCharacter,∀z∈rows,((reflected (τ χ)).modulus.absNorm*(Ideal.span {(fixedBadMask:HeckeFamily.O)}).absNorm*
+        (Ideal.span {(72:HeckeFamily.O)}).absNorm*(R0.absNorm*D.absNorm)*(Ideal.span {z}).absNorm:ℝ)≤Z^B) →
       ∀χ₀:RayCharacter,idealCoeff s.η C≠0 →
-      ∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
+      ∀m:HeckeFamily.O,m≠0 → goodLambda∣m → (2:HeckeFamily.O)∣m →
       (∀z∈rows,CenteredExceptionalProfile.FixedInducingRow (childCharacter s.η χ₀) Q m A z) →
-      ∀H:ℝ,(∀I:Ideal O,β I≠0 → (I.absNorm:ℝ)≤H) → H/(D.absNorm:ℝ)≤Z^Lbound →
-      ∀a:ℝ,0<a → (∀I:Ideal O,β I≠0→a*volume s.toData≤(I.absNorm:ℝ)) →
+      ∀H:ℝ,(∀I:Ideal HeckeFamily.O,β I≠0 → (I.absNorm:ℝ)≤H) → H/(D.absNorm:ℝ)≤Z^Lbound →
+      ∀a:ℝ,0<a → (∀I:Ideal HeckeFamily.O,β I≠0→a*volume s.toData≤(I.absNorm:ℝ)) →
       ∀(R Kphys:ℝ),0<Kphys → ∀n:Fin 4→ℤ,
       ‖physicalBlock s.η s.t S β C D hC hD U R rows W Kphys n‖/volume s.toData≤
         Ck*(profileFactor Sprofile s p J Q K*
@@ -109,9 +102,9 @@ theorem actual_uniform_exceptional_block (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
   calc
     _=F*(Z^(2*ε+δ-max (r-min (Real.logb Z (C.absNorm:ℝ)) (Real.logb Z (D.absNorm:ℝ))) 0)*
       ((C.absNorm:ℝ)*D.absNorm)^θ*Z^(-(Real.logb Z (C.absNorm:ℝ)+Real.logb Z (D.absNorm:ℝ))/3)):=by
-      dsimp only [F];ring
+      ring
     _≤F*Z^(2*ε+δ+2*B*θ-2*max r 0/3):=mul_le_mul_of_nonneg_left hb hF
-    _=_:=by dsimp only [F];ring
+    _=_:=by ring
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalFixedQ
 

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.StripActual
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily
@@ -23,11 +23,11 @@ theorem twisted_coefficient_summable (χ : Character) (inverse : Bool) (c σ fre
     (hc : 1 < c+σ) :
     Summable (fun I : NonzeroIdeal => ‖twistedCoefficient χ inverse σ freq I‖*(norm I)^(-c)) := by
   have hf := (CubicEisenstein.fullIdealWeight_summable_norm ((c+σ : ℝ) : ℂ)
-    (by simpa using hc)).comp_injective (Subtype.val_injective : Function.Injective
+    (by omega)).comp_injective (Subtype.val_injective : Function.Injective
       (fun I : NonzeroIdeal => I.val))
   apply hf.of_nonneg_of_le (fun I => mul_nonneg (norm_nonneg _) (Real.rpow_nonneg (norm_pos I).le _))
   intro I
-  have hI : I.val ≠ 0 := I.property
+  have hI := I.property
   change ‖twistedCoefficient χ inverse σ freq I‖*(norm I)^(-c) ≤
     ‖CubicEisenstein.fullIdealWeight ((c+σ : ℝ) : ℂ) I.val‖
   rw [CubicEisenstein.fullIdealWeight, ite_eq_right hI]
@@ -40,8 +40,7 @@ theorem twisted_coefficient_summable (χ : Character) (inverse : Bool) (c σ fre
   calc
     _ = ‖coefficient χ inverse I.val‖ * (norm I)^(-(c+σ)) := by
       rw [mul_assoc, ← Real.rpow_add (norm_pos I)]
-      congr 2
-      ring
+      simp
     _ ≤ _ := mul_le_of_le_one_left (Real.rpow_nonneg (norm_pos I).le _)
       (coefficient_norm_le χ inverse I.val)
 
@@ -54,8 +53,7 @@ theorem twisted_series_eq (χ : Character) (inverse : Bool) (σ freq : ℝ)
   intro I
   unfold twistedCoefficient
   rw [mul_assoc, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr (norm_pos I).ne')]
-  congr 2
-  ring
+  simp
 
 theorem polynomial_eq_weighted (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     (D σ freq : ℝ) (hD : 0 < D) :
@@ -70,8 +68,7 @@ theorem polynomial_eq_weighted (χ : Character) (inverse : Bool) (W : ℝ → �
   unfold polynomial
   simp_rw [he]
   rw [tsum_mul_left, ← mul_assoc, ← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
-  congr 2
-  ring
+  grind
 
 theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
     (a b : ℝ) (ha : 0 < a) (hWs : Function.support W ⊆ Icc a b)
@@ -88,17 +85,13 @@ theorem polynomial_mellin (χ : Character) (inverse : Bool) (W : ℝ → ℂ)
   congr 1
   apply integral_congr_ae
   filter_upwards [] with t
-  rw [twisted_series_eq χ inverse σ freq (by simpa using hc)]
+  rw [twisted_series_eq χ inverse σ freq (by simp_all)]
   have he : (D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I) =
       (D : ℂ)^(((c : ℂ)+t*Complex.I)+shift σ freq-(1/2 : ℂ)) := by
     rw [← Complex.cpow_add _ _ (Complex.ofReal_ne_zero.mpr hD.ne')]
     congr 1
     ring
-  calc
-    _ = mellin W ((c : ℂ)+t*Complex.I) *
-        ((D : ℂ)^(shift σ freq-(1/2 : ℂ))*(D : ℂ)^((c : ℂ)+t*Complex.I)) *
-          series χ inverse (((c : ℂ)+t*Complex.I)+shift σ freq) := by ring
-    _ = _ := by rw [he]
+  grind
 
 end SevenEighths.HeckeDyadic
 

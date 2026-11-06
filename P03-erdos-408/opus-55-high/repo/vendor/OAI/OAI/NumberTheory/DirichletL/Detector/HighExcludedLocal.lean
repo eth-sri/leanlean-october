@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEulerLocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma highExclusion_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdeal) :
     highExclusion S hS P.val=if P.val∈S then 0 else 1 := by
@@ -23,9 +22,9 @@ lemma highExclusion_prime (S : Finset Id) (hS : ∀P∈S,Prime P) (P : PrimeIdea
       intro Q hQ hd
       have hn : (⟨Q,hS Q hQ⟩ : PrimeIdeal)≠P := by
         intro hh
-        exact hP ((congrArg Subtype.val hh) ▸ hQ)
+        exact by grind
       exact (hS Q hQ).not_isUnit ((primeIdeal_coprime ⟨Q,hS Q hQ⟩ P hn).isUnit_of_dvd hd)
-    rw [ite_eq_left houtside,ite_eq_right hP]
+    simp_all
 
 lemma highIdealMask_prime_outside (S : Finset Id) (hS : ∀P∈S,Prime P)
     (P : PrimeIdeal) (hP : P.val∉S) (b : HighValuation) :
@@ -40,7 +39,7 @@ lemma highIdealMask_prime_inside (S : Finset Id) (hS : ∀P∈S,Prime P)
   rcases b with ⟨⟨e,l⟩,k,m⟩
   simp only [highIdealMask_unmarked S hS,map_pow,highExclusion_prime S hS P,ite_eq_left hP]
   by_cases he : e=0 <;> by_cases hl : l=0 <;> by_cases hk : k=0 <;> by_cases hm : m=0 <;>
-    simp [he,hl,hk,hm,Prod.mk_eq_zero]
+    simp [he, hl, hk, hm]
 
 theorem excludedHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
     (η : HeckeFamily.Character) (x w z : ℂ)
@@ -56,7 +55,7 @@ theorem excludedHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
       by_cases hb : b=0
       · subst b
         simp only [Prod.fst_zero,Prod.snd_zero,pow_zero,bareIdealHighSummand_one,mul_one]
-      · simp only [ite_eq_right hb,zero_mul]
+      · simp_all
     simp only [he,tsum_ite_eq]
   · rw [ite_eq_right hP]
     simp only [markedIdealHighSummand,highIdealMask_prime_outside S hS P hP,one_mul]
@@ -75,7 +74,7 @@ theorem excludedIdealHighSeries_hasProd_outside (S : Finset Id) (hS : ∀P∈S,P
   convert h using 1
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
-  split_ifs <;> simp_all
+  simp
 
 end SevenEighths.ProbePhysical
 end

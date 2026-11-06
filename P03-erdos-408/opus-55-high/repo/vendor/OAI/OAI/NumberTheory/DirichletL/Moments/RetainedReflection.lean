@@ -9,24 +9,22 @@ public import OAI.NumberTheory.DirichletL.Moments.TwistedReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentRetainedReflection
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
+open CenteredMomentSectorLocalization
+open CenteredMomentNaturalPrimitive CenteredMomentNaturalReflection
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 lemma masked_decayTwo (F : ℝ→ℂ) (hF : DecayTwo F) (w : ℝ→ℝ)
     (hw : ∀x,0≤w x ∧ w x≤1) : DecayTwo (fun x=>(w x:ℂ)*F x) := by
   obtain ⟨D,hD,hb⟩ := hF
   refine ⟨D,hD,?_⟩
   intro x hx
-  rw [norm_mul,Complex.norm_real,Real.norm_of_nonneg (hw x).1]
+  rw [norm_mul,Complex.norm_real,Real.norm_of_nonneg (by grind)]
   apply (mul_le_mul_of_nonneg_left
-    (mul_le_of_le_one_left (norm_nonneg _) (hw x).2) (sq_nonneg x)).trans (hb x hx)
+    (mul_le_of_le_one_left (norm_nonneg _) (by grind)) (sq_nonneg x)).trans (by grind)
 
 lemma column_retained_discarded (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
     (R Y : ℝ) (hY : 0<Y) :
@@ -54,12 +52,12 @@ lemma bounded_columns (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F) :
   intro Y U hY hYU
   apply (hb η F D Y hD hY hF).trans
   rw [normalized_power_eq Y hY 2]
-  norm_num only [Nat.cast_ofNat,show (2:ℝ)-1/2=3/2 by norm_num]
+  norm_num only
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hY.le hYU (by norm_num)) (by positivity)
 
-lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+lemma reflected_column_summable (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (η ηi χ : Character) (F : ℝ→ℂ) (hF : DecayTwo F) (Q X : ℝ)
-    (hQ : 0<Q) (hX : 0<X) (D : Finset (Ideal O)) (hD : D∈S.powerset) :
+    (hQ : 0<Q) (hX : 0<X) (D : Finset (Ideal HeckeFamily.O)) (hD : D∈S.powerset) :
     Summable (fun H : SmoothIdeal S=>coefficient η ηi S D H*
       HeckeDyadic.polynomial χ false F
         (Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)) 0 0) := by
@@ -72,9 +70,8 @@ lemma reflected_column_summable (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
     (C*U^(3/2:ℝ)) (by positivity) (by
       intro E hE H
       have hscale := dual_scale_bounds S E hS (Finset.mem_powerset.mp hE) H Q X U hQ hX (by
-        dsimp [U]
-        rw [div_mul_cancel₀ _ hX.ne'])
-      exact hb _ U hscale.1 hscale.2)).1 D hD
+        grind)
+      grind)).1 D hD
 
 theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
     ∃(ψ : Character)(G : ℂ),FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧ ψ.residue≠1 ∧ ‖G‖=1 ∧
@@ -82,7 +79,7 @@ theorem original_retained_reflection (χ : Character) (hn : χ.residue≠1) :
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm ∧
       ∀(W : 𝓢(ℝ,ℂ))(X R : ℝ)(_hX : 0<X),
         let Q := (ψ.modulus.absNorm:ℝ)
-        let Y := fun (D : Finset (Ideal O))(H : SmoothIdeal S)=>Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)
+        let Y := fun (D : Finset (Ideal HeckeFamily.O))(H : SmoothIdeal S)=>Q*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)
         HeckeDyadic.polynomial χ false W X 0 0=
           G*((∑D∈S.powerset,∑'H : SmoothIdeal S,coefficient ψ ψ.inverse S D H*
             HeckeDyadic.polynomial χ.inverse false

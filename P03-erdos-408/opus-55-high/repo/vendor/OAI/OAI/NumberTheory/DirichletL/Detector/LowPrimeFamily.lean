@@ -11,11 +11,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 end SevenEighths.ProbePhysical
 end

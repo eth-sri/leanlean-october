@@ -8,26 +8,25 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
 open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [NeZero M] in
-theorem transportPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
+theorem transportPoolOutside (S : Finset (Ideal HeckeFamily.O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
     ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
+  by simp
 
 lemma normalized_central_transport (A P C F N : ℂ) (a b v : ℝ)
     (ha : ‖A-P-C‖≤a) (hb : ‖P/N-F‖≤b) (hv : ‖N⁻¹‖≤v) (ha0 : 0≤a) :
     ‖A/N-F-C/N‖≤a*v+b := by
   calc
-    _ = ‖(A-P-C)*N⁻¹+(P/N-F)‖ := by congr 1;simp only [div_eq_mul_inv];ring
+    _ = ‖(A-P-C)*N⁻¹+(P/N-F)‖ := by ring
     _ ≤ ‖(A-P-C)*N⁻¹‖+‖P/N-F‖ := norm_add_le _ _
     _ ≤ a*v+b := by rw [norm_mul];gcongr
 
@@ -35,7 +34,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)
     (ha : 0<a) (hab : a≤b) (hB : 0≤B) (hmin : 0<ellMin) (hnu : 0<nu)
     (hβ : (7/8:ℝ)≤HeckeZeroSupremum.beta)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (ell : Fin K→ℝ) (hell : ∀j,ellMin≤ell j) (hellinj : Function.Injective ell) (hellsum : ∑j,ell j=1/6)
     (W : Fin K→ℝ→ℝ) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hcompact : ∀j,HasCompactSupport (W j))
@@ -67,7 +66,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
         (calibrationForSet S hmax).residueMonoid u.val≠0 →
         (∀θ,(rayCubeFamily M H hH u θ).residue≠1) ∧
         (∀θ,(rayCubeFamily M H hH u θ).modulus.absNorm≤
-          conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal O).absNorm) ∧
+          conductorConstant*M.absNorm*(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm) ∧
         ∀hnp : ∀θ,(rayCubeFamily M H hH u θ).residue≠1,
         HeckeDetectorZeros.zeroMaximum (rayCubeFamily M H hH u) hnp
           (3*(idx u+1:ℕ)*Z^τ)<(51/100:ℝ)+e*grid u+2*e) ∧
@@ -110,12 +109,12 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
     intro y hy
     apply Ioo_subset_Icc_self (hsupp j _)
     intro hh
-    exact hy (by dsimp [WC];rw [hh];simp)
+    exact hy (by dsimp [WC];simp [hh])
   have hWCB (j : Fin K) (y : ℝ) : ‖WC j y‖≤B := by
     simpa only [WC,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hWB j y).1] using (hWB j y).2
   have hpool (j : Fin K) (P : PrimeIdeal) (hP : P∈T j) : (P.val.absNorm:ℝ)≤b*Z^(ell j) := by
     have hh := (pool_norm_bounds (RayQuotient.identityClass M H) S ha.le hab
-      (Real.rpow_pos_of_pos hZ (ell j)) P hP).2
+      (by positivity) P hP).2
     simpa only [mul_comm] using hh
   obtain ⟨idx,grid,hlabels,hbins,hray,herror⟩ := hcan η T hT hdis ell (fun j=>(hmin.trans_le (hell j)).le)
     hellsum hpool WC hWS hWCB

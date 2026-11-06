@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Inversion.PrioritySecondSource
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityPhysical
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
+open ActualEisensteinCubic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 open InverseMomentWholePriorityParents InversePrioritySecondSource
 open InversePrincipalEnergy InverseSecondPrincipalCaller RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
-variable {Jo : ℕ} (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (V : 𝓢(ℝ,ℂ)) (X Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (R : Finset ι→Finset ι→ℝ) (label : Finset ι→SecondExpansionData ι→κ)
@@ -43,10 +42,10 @@ def fullPhysical (hinj : Function.Injective (fun i=>Ideal.span {p i}))
 
 theorem whole_parent_full
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
     (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
@@ -61,11 +60,11 @@ theorem whole_parent_full
 
 theorem whole_signed_source_full
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (source : Finset (Source ι Jo)) (w : Source ι Jo→ℂ)
-    (negative : Bool) (Ψ : O→*ℂ) (m : O)
+    (negative : Bool) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo) (hs : Function.support om⊆Set.Icc lo hi)
     (X t Y : ℝ) (hX : 0<X) (hY : 0<Y) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)

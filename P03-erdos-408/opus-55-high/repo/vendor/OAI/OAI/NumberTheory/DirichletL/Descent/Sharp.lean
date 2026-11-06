@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Sharp
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open CanonicalQuadraticSieve CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
@@ -48,7 +47,7 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
         exact mul_le_mul (Real.rpow_le_rpow (by positivity) hKNB (by positivity))
           (Real.rpow_le_rpow (by positivity) hNL (by positivity))
           (Real.rpow_nonneg (by positivity) _) (Real.rpow_nonneg hQ0.le _)
-      _ = _ := by rw [← Real.rpow_add hQ0]; congr 1; ring
+      _ = _ := by rw [← Real.rpow_add hQ0]; simp
   have hh := hb N (2 * L) hN (by linarith)
   calc
     _ ≤ (K * N * B) ^ (ε / 2) *
@@ -59,14 +58,13 @@ theorem hybrid_sharp_cubic_factor (ε : ℝ) (hε : 0 < ε) :
       gcongr
     _ = (2 * C * (2 : ℝ) ^ (ε / 2)) *
         ((K * N * B) ^ (ε / 2) * (N * L) ^ (ε / 2)) * (N + L + (N * L) ^ (2 / 3 : ℝ)) := by
-      rw [hdouble]
-      ring
+      grind
     _ ≤ _ := by gcongr
 
 theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ K N B L : ℝ, 1 ≤ K → 1 ≤ N → 1 ≤ B → 1 ≤ L →
-    ∀ (rows nset bset Pset : Finset (Ideal Eis))
-      (a : Ideal Eis → ℂ) (beta : Ideal Eis → Ideal Eis → ℂ),
+    ∀ (rows nset bset Pset : Finset (Ideal ActualEisensteinCubic.O))
+      (a : Ideal ActualEisensteinCubic.O → ℂ) (beta : Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
       (∀ k ∈ rows, Admissible k ∧ (Ideal.absNorm k : ℝ) ≤ K) →
       (∀ n ∈ nset, CubicSieve.Admissible n ∧ (Ideal.absNorm n : ℝ) ≤ N) →
       (∀ b ∈ bset, primaryGenerator b ≠ 0 ∧ (Ideal.absNorm b : ℝ) ≤ B) →
@@ -82,7 +80,7 @@ theorem hybridRow_energy (ε : ℝ) (hε : 0 < ε) :
   apply (he K N B L hK hN hB rows nset bset Pset a beta hrows hn hb hP ha hbeta).trans
   have hh := mul_le_mul_of_nonneg_left (hc K N B L hK hN hB hL)
     (show 0 ≤ C0 * (K + N * B) * B by positivity)
-  convert hh using 1 <;> ring
+  linarith
 
 end
 end SevenEighths.InverseMoment

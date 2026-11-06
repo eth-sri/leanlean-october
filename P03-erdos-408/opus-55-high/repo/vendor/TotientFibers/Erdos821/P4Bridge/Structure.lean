@@ -6,7 +6,6 @@ public import Erdos821.P4Bridge.Support
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 namespace Erdos821.P4Bridge
 open Blueprint.Graph P4Probe
@@ -24,7 +23,7 @@ lemma mem_sideRows (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (side : Bool) (g : P.BigGroup) (i : Fin J) :
     i ∈ patternAuxCoordinates ν block side g ↔ block g = side ∧ i ∈ ν.changed g.val := by
   unfold patternAuxCoordinates
-  by_cases hb : block g = side <;> simp [hb]
+  grind
 
 def rowJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
     (s : SharedRows ν) (a : SideRows ν block false) (b : SideRows ν block true) :
@@ -109,7 +108,7 @@ lemma rowProduct_pos (S : P.BigGroup → Finset (Fin J)) (x : BigRowPartial S) :
   intro g _
   apply Finset.prod_pos
   intro i _
-  exact (P.prime g.val _ (x g i).property).pos
+  exact (P.prime g.val _ (by simp)).pos
 
 lemma row_split_product {R : Type*} [CommMonoid R] (ν : Pattern P J ell m)
     (block : P.BigGroup → Bool) (v : P.BigGroup → Fin J → R) :
@@ -184,11 +183,7 @@ lemma idealMass_labelJoin (ν : Pattern P J ell m) (block : P.BigGroup → Bool)
   have he := (labelSplit ν block).apply_symm_apply ((s, a, b), t)
   change ((prefixSplit ν block) ((splitBigLabels P J ell (labelJoin ν block s a b t)).1),
     (splitBigLabels P J ell (labelJoin ν block s a b t)).2) = ((s, a, b), t) at he
-  have hp : (prefixSplit ν block) ((splitBigLabels P J ell
-      (labelJoin ν block s a b t)).1) = (s, a, b) := congrArg Prod.fst he
-  have ht : (splitBigLabels P J ell (labelJoin ν block s a b t)).2 = t :=
-    congrArg Prod.snd he
-  rw [hp, ht]
+  simp_all
 
 end
 end Erdos821.P4Bridge

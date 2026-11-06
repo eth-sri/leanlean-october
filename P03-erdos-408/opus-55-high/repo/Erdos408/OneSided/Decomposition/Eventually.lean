@@ -19,7 +19,7 @@ With `L = log x`, eventually in `x`:
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 /-- Eventually `L^c ≥ M`, for `c > 0`. -/
 theorem eventually_le_rpow_log {c : ℝ} (hc : 0 < c) (M : ℝ) :
@@ -36,7 +36,7 @@ theorem eventually_two_le_rpow :
     rw [← Real.rpow_neg_one]
     exact Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
   have h₂ : 1 ≤ Real.log x * Real.log x ^ (-(1 / 100 : ℝ)) := by
-    calc (1 : ℝ) = Real.log x * (Real.log x)⁻¹ := (mul_inv_cancel₀ (by linarith)).symm
+    calc (1 : ℝ) = Real.log x * (Real.log x)⁻¹ := by grind
       _ ≤ _ := by gcongr
   calc (2 : ℝ) ≤ Real.log x * Real.log x ^ (-(1 / 100 : ℝ)) + 1 := by linarith
     _ ≤ Real.exp (Real.log x * Real.log x ^ (-(1 / 100 : ℝ))) := Real.add_one_le_exp _
@@ -142,11 +142,10 @@ theorem eventually_exp_lt_two_pow (K : ℕ) :
   have hle : 2 * K * padCount x * L ^ (1 / 5 : ℝ) ≤ L / 2 := by
     calc 2 * K * padCount x * L ^ (1 / 5 : ℝ) ≤ 2 * K * L ^ (1 / 100 : ℝ) * L ^ (1 / 5 : ℝ) := by
           gcongr
-      _ = 2 * K * L ^ (21 / 100 : ℝ) := by rw [mul_assoc, h21]
+      _ = 2 * K * L ^ (21 / 100 : ℝ) := by grind
       _ ≤ L ^ (21 / 100 : ℝ) * L ^ (79 / 100 : ℝ) / 2 := by
-          have h := mul_le_mul_of_nonneg_left hx (zero_le_one.trans h21')
           nlinarith
-      _ = L / 2 := by rw [← hsplit]
+      _ = L / 2 := by linarith
   have hlog2 : 1 / 2 < Real.log 2 := by
     have := Real.log_two_gt_d9
     linarith
@@ -185,6 +184,6 @@ theorem eventually_mul_rpow_mul_exp_le {a : ℝ} (ha : 0 < a) (c E D' : ℝ) :
       _ ≤ L ^ (-D') * Real.exp (L ^ a) := by
           gcongr
   rw [Real.exp_neg, ← div_eq_mul_inv, div_le_iff₀ (Real.exp_pos _)]
-  exact key
+  omega
 
 end Erdos408.OneSided

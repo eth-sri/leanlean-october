@@ -7,21 +7,20 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourcePrimeBoun
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeRowClosure HeckePrimeRay HeckeZeroSupremum
+open HeckeFamily HeckePrimeRay HeckeZeroSupremum
 open CenteredMomentDetectorDictionary CenteredMomentNaturalRowSource
 open CenteredExceptionalProfile CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
 open CenteredMomentFixedRayInducingTransport CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-lemma natural_relative_twists {η : Character} {z : O} (F : NaturalRow η z) (hz : z≠0)
-    (η₀ : Character) (Q : Ideal O) (hQM : Q≤M)
+lemma natural_relative_twists {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z) (hz : z≠0)
+    (η₀ : Character) (Q : Ideal HeckeFamily.O) (hQM : Q≤M)
     (hex : ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z) :
     ∀θ : RayQuotient.Characters M H,
       (twistedFamily M H hH (F.character.product η₀.inverse) θ).residue≠1 := by
@@ -32,7 +31,7 @@ lemma natural_relative_twists {η : Character} {z : O} (F : NaturalRow η z) (hz
     (η.product η₀.inverse) (F.character.product η₀.inverse) (internalQ Q η₀)
     fixedBadMask 1 z ?_ (inf_le_left.trans hQM) hn
   exact product_row_presentation η F.character η₀.inverse fixedBadMask 1 z
-    (by simpa only [one_mul] using F.element)
+    (by simpa using F.element)
 
 include hH
 
@@ -41,9 +40,9 @@ theorem natural_relative_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀η₀ : Character,∀ᶠZ : ℝ in atTop,
-      ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : O,z≠0 →
+      ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : HeckeFamily.O,z≠0 →
       ∀F : NaturalRow η z,(F.character.modulus.absNorm:ℝ)≤Z^Lmod →
-      ∀Q : Ideal O,Q≤M → ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z →
+      ∀Q : Ideal HeckeFamily.O,Q≤M → ¬FixedInducingRow η (internalQ Q η₀) fixedBadMask 1 z →
       ∀σ t v : ℝ,lo≤σ → σ≤hi →
       ‖normalizedSlot η fixedBadMask 1 z (primePool M H b P)
         (fun I=>idealCoeff η₀.inverse I*HeckePrimeAnnular.annularWeight W P σ v I) t P‖^2≤
@@ -61,27 +60,27 @@ theorem natural_relative_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
       exact_mod_cast HeckePrimeScale.product_modulus_bound F.character η₀.inverse
     apply hb.trans
     calc
-      _≤Z^Lmod*Z := mul_le_mul hcond hη₀ (Nat.cast_nonneg _) (Real.rpow_nonneg hZ.le _)
+      _≤Z^Lmod*Z := mul_le_mul hcond hη₀ (Nat.cast_nonneg _) (by positivity)
       _=Z^(Lmod+1) := by rw [Real.rpow_add hZ,Real.rpow_one]
   have hb:=hbound Z P hZ0 hP hPcap (F.character.product η₀.inverse) hc
     (natural_relative_twists M H hH F hz η₀ Q hQM hex) σ (t+v) hσ hσhi
   rw [relative_normalizedSlot_eq_ray M H η F.character η₀.inverse fixedBadMask 1 z
-    (by simpa only [one_mul] using F.element) W b P σ t v (zero_lt_one.trans_le hP),norm_mul,
+    (by simpa using F.element) W b P σ t v (zero_lt_one.trans_le hP),norm_mul,
     CenteredMomentTwist.norm_real_imaginary_power P t (zero_lt_one.trans_le hP),one_mul]
   apply hb.trans
-  apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (zero_le_one.trans hP) _)
-  apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hZ.le _)
+  apply mul_le_mul_of_nonneg_right _ (by positivity)
+  apply mul_le_mul_of_nonneg_right _ (by positivity)
   apply mul_le_mul_of_nonneg_left _ hC.le
-  exact pow_le_pow_left₀ (by positivity) (by linarith [abs_add_le t v]) degree
+  exact pow_le_pow_left₀ (by positivity) (by grind) degree
 
 theorem natural_character_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W)
     (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃C : ℝ,0<C ∧ ∀ν : Character,∀ᶠZ : ℝ in atTop,
-      ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : O,z≠0 →
+      ∀P : ℝ,1≤P → P≤Z^Lslot → ∀η : Character,∀z : HeckeFamily.O,z≠0 →
       ∀F : NaturalRow η z,(F.character.modulus.absNorm:ℝ)≤Z^Lmod →
-      ∀Q : Ideal O,Q≤M → Q≤ν.modulus → ¬FixedInducingRow η Q fixedBadMask 1 z →
+      ∀Q : Ideal HeckeFamily.O,Q≤M → Q≤ν.modulus → ¬FixedInducingRow η Q fixedBadMask 1 z →
       ∀σ t v : ℝ,lo≤σ → σ≤hi →
       ‖normalizedSlot η fixedBadMask 1 z (primePool M H b P)
         (fun I=>idealCoeff ν I*HeckePrimeAnnular.annularWeight W P σ v I) t P‖^2≤
@@ -93,7 +92,7 @@ theorem natural_character_slot_bound (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   filter_upwards [hbound ν.inverse] with Z hz
   intro P hP hPcap η z hz0 F hcond Q hQM hQν hex σ t v hσ hσhi
   have hQeq : internalQ Q ν.inverse=Q := inf_eq_left.mpr hQν
-  have he:=hz P hP hPcap η z hz0 F hcond Q hQM (by simpa only [hQeq] using hex) σ t v hσ hσhi
+  have he:=hz P hP hPcap η z hz0 F hcond Q hQM (by grind) σ t v hσ hσhi
   simpa only [idealCoeff_inverse_conj,starRingEnd_self_apply] using he
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

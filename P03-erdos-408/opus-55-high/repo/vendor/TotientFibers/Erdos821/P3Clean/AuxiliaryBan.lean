@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.IdealMultiplier
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -26,11 +25,7 @@ theorem productMass_coordinate_sum {I : Type*} [Fintype I] [DecidableEq I]
     symm
     calc
       _ = (if h : i = i then f (h ▸ a i) else 1) := by
-        apply Finset.prod_eq_single i
-        · intro j _ hji
-          simp only [dite_eq_right hji]
-        · intro hi
-          exact False.elim (hi (Finset.mem_univ i))
+        simp
       _ = _ := by simp
   simp only [hp]
   rw [← Fintype.prod_sum w]
@@ -39,9 +34,8 @@ theorem productMass_coordinate_sum {I : Type*} [Fintype I] [DecidableEq I]
       apply Finset.prod_eq_single i
       · intro j _ hji
         simp only [w, dite_eq_right hji, mul_one, hmu]
-      · intro hi
-        exact False.elim (hi (Finset.mem_univ i))
-    _ = _ := by simp [w]
+      simp
+    _ = _ := by grind
 
 theorem bigAuxMass_marginal {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J ell m)
     (hV : ∀ g : P.BigGroup, P.V g.val ≠ 0) (g : P.BigGroup) (i : Fin J)
@@ -69,8 +63,7 @@ theorem bigBan_indicator_le {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J 
     positivity
   by_cases h : bigBan ν a b u
   · simp only [ite_eq_left h]
-    exact Finset.sum_nonneg (fun g _ => Finset.sum_nonneg (fun i _ =>
-      Finset.sum_nonneg (fun j _ => hn g i j)))
+    positivity
   · simp only [ite_eq_right h]
     unfold bigBan at h
     push Not at h
@@ -78,10 +71,8 @@ theorem bigBan_indicator_le {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J 
     have hs : 1 ≤ (if u g i = a g j then (1 : ℝ) else 0) +
         (if u g i = b g j then 1 else 0) := by
       by_cases ha : u g i = a g j
-      · simp only [ite_eq_left ha]
-        have hz : 0 ≤ (if u g i = b g j then (1 : ℝ) else 0) := by positivity
-        linarith
-      · simp only [ite_eq_right ha, ite_eq_left (hbad ha)]; norm_num
+      · grind
+      · simp_all
     exact hs.trans ((Finset.single_le_sum (fun z _ => hn g i z) (Finset.mem_univ j)).trans
       ((Finset.single_le_sum (fun z _ => Finset.sum_nonneg (fun t _ => hn g z t))
         (Finset.mem_univ i)).trans
@@ -94,8 +85,8 @@ theorem bigAuxMass_ban_probability {P : PrimeGroups} {J ell m : ℕ} (ν : Patte
     (a b : P.BigLabels (J + ell)) :
     (∑ u : P.BigAux J, ν.bigAuxMass u * (if bigBan ν a b u then 0 else 1)) ≤
       (Fintype.card P.BigGroup : ℝ) * J * (J + ell) * (2 * atom) := by
-  have hn (u : P.BigAux J) : 0 ≤ ν.bigAuxMass u := by
-    exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ => (mu_pos g.val (u g i)).le))
+  have hn (u : P.BigAux J) : 0 ≤ ν.bigAuxMass u :=
+    Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ => (mu_pos g.val (u g i)).le))
   calc
     _ ≤ ∑ u : P.BigAux J, ν.bigAuxMass u *
         ∑ g : P.BigGroup, ∑ i : Fin J, ∑ j : Fin (J + ell),
@@ -122,10 +113,7 @@ theorem bigAuxMass_ban_probability {P : PrimeGroups} {J ell m : ℕ} (ν : Patte
       apply Finset.sum_le_sum
       intro i _
       apply Finset.sum_le_sum
-      intro j _
-      have ha := hatom g (a g j)
-      have hb := hatom g (b g j)
-      linarith
+      grind
     _ = _ := by simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul, Nat.cast_add]; ring
 
 

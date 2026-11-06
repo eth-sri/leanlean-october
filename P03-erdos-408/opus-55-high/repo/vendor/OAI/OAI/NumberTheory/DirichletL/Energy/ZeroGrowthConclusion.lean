@@ -11,13 +11,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthConclusion
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyZeroGrowth CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentEnergyZeroGrowthConclusion

@@ -10,9 +10,8 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
 
 noncomputable def l2Mass {j : ℕ} (f : (Fin j → ℝ) → ℝ) : ℝ := ∫ t, f t^2
 

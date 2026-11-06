@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
+open FirstPassCubeLabels SecondPassArithmetic EisensteinSchwartzPoisson
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+      (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
       (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-      (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
+      (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+      (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
       (Z M r ell V eta Γ G:ℝ),1<Z→0≤ell+eta→0≤V+eta→0≤Γ→0≤G→
       (∀u,‖Ψ u‖≤1)→
@@ -45,11 +44,11 @@ theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
   have hz:0<Z:=zero_lt_one.trans hZ
   have hb:=he p hp hcop hg hinj hc pool Q labels β Ψ m slots lists a W Φ Γ G
     (Z^(r+eta)) (Z^M) (Z^(ell+eta)) (Z^(V+eta)) hΓ hG
-    (Real.rpow_pos_of_pos hz _) (Real.one_le_rpow hZ.le hell) (Real.one_le_rpow hZ.le hV)
+    (by positivity) (Real.one_le_rpow hZ.le hell) (Real.one_le_rpow hZ.le hV)
     hΨ hQ hn hlabels hβ hslots ha hW hs
-  apply (mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hz.le _)).trans
+  apply (mul_le_mul_of_nonneg_left hb (by positivity)).trans
   apply le_of_eq
-  rw [abs_of_pos (Real.rpow_pos_of_pos hz M)]
+  rw [abs_of_pos (by positivity)]
   have hp2 (x:ℝ):(Z^x)^2=Z^(2*x):=by rw [←Real.rpow_natCast,←Real.rpow_mul hz.le];congr 1;ring
   rw [hp2,←Real.rpow_add hz,←Real.rpow_mul hz.le,←Real.rpow_mul hz.le,hp2]
   calc
@@ -58,7 +57,6 @@ theorem original_first_zero_physical (ε:ℝ)(hε:0<ε):
         Z^(2*((2*(ell+eta)+(r+eta))*ε))*Z^M):=by ring
     _=_:=by
       rw [←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz,←Real.rpow_add hz]
-      congr 2
       ring
 
 end SevenEighths.InverseMoment

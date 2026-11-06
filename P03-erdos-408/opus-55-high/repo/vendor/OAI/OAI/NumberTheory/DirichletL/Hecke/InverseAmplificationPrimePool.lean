@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.PrimePool
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
@@ -66,7 +66,7 @@ theorem eventually_fixed_ray_amplification
   intro data rows W wa wb D U E hwa hwb hWs hW hD hrows hraw0 hraw1
   have hx0 : 0<x := zero_lt_one.trans hx
   have hxblog : 1≤x*b := (div_le_iff₀ hb).mp hxB
-  have hlog : 0<Real.log x := Real.log_pos hx
+  have hlog := Real.log_pos hx
   have hc' : c*x/Real.log x≤((typedPrimePool M H S a b x).card : ℝ) := by
     rw [typedPrimePool_card]
     exact hcard
@@ -75,9 +75,9 @@ theorem eventually_fixed_ray_amplification
     (fun P hP => typedPrimePool_norm M H S a b x ha.le hab hx0 P hP) hraw0 hraw1
   have hsum : 0≤∑ u∈rows,
       ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2 :=
-    Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+    by positivity
   have hh := (mul_le_mul_of_nonneg_right hc' hsum).trans havg
-  apply (le_div_iff₀ (mul_pos hc hx0)).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   calc
     _ = (c*x/Real.log x*(∑ u∈rows,
       ‖polynomial (data.character ⟨u.val,u.property.1⟩) true W D 0 0‖^2))*Real.log x := by

@@ -34,9 +34,9 @@ theorem quotient_inf_card_le_mul (I J : Ideal R) [Finite (R ⧸ I)] [Finite (R �
     apply Ideal.Quotient.eq_zero_iff_mem.mpr
     exact ⟨Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.fst hx),
       Ideal.Quotient.eq_zero_iff_mem.mp (congrArg Prod.snd hx)⟩
-  simpa only [Nat.card_prod] using Nat.card_le_card_of_injective f hf
+  simpa using Nat.card_le_card_of_injective f hf
 
-noncomputable def quotientComapEquiv (M : Ideal R) (I : Ideal (R ⧸ M)) :
+def quotientComapEquiv (M : Ideal R) (I : Ideal (R ⧸ M)) :
     R ⧸ I.comap (Ideal.Quotient.mk M) ≃+* (R ⧸ M) ⧸ I :=
   RingEquiv.ofBijective (Ideal.quotientMap I (Ideal.Quotient.mk M) le_rfl)
     ⟨Ideal.quotientMap_injective,
@@ -74,7 +74,7 @@ theorem primitive_of_maximal_descent (χ : MulChar R ℂ) (I : Ideal R)
     change Ideal.Quotient.mk I x ∈ J
     rw [Ideal.Quotient.eq_zero_iff_mem.mpr hx]
     exact J.zero_mem
-  have hKI : K ≤ I := hI.2 hK hIK
+  have hKI := hI.2 hK hIK
   apply hJ
   apply le_antisymm _ bot_le
   intro x hx

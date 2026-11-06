@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionDerivative
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric Complex
 namespace SevenEighths.HeckePrimeDyadicControl
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
-open HeckeDeletionBounds HeckeReciprocalGrowth
+open HeckeDeletionBounds
 
 theorem logDeriv_eq_of_mask (χ ψ : Character)
     (hmask : ∀ I : Ideal O, idealCoeff χ I =
@@ -41,7 +41,7 @@ theorem original_disk_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
   intro χ hχ a t ha ha' hzero z hz
   obtain ⟨ψ,_,hp,hn,hmask⟩ := exists_primitive_character χ
   have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
-  have hregular : regular ψ = LFunction ψ := regular_eq_nonprincipal ψ hψ
+  have hregular := regular_eq_nonprincipal ψ hψ
   have hzeroψ : ∀ w ∈ ball ((2 : ℂ)+t*Complex.I) (2-a-2*e), regular ψ w ≠ 0 := by
     intro w hw
     rw [hregular]
@@ -82,7 +82,7 @@ theorem buffered_original_control (e : ℝ) (he : 0<e) (he' : e<1/1000) :
   obtain ⟨B,hB,hbound⟩ := original_disk_control e he he'
   refine ⟨B,hB,?_⟩
   intro ι _ χ hχ T a i hT ha ha' hmax j t ht z hz
-  exact hbound (χ j) (hχ j) a t (by linarith) ha'
+  exact hbound (χ j) (by grind) a t (by linarith) ha'
     (fun w hw => HeckeDetectorZeros.nonzero_on_buffered_disk χ hχ T a e i hT ha he
       hmax j t ht (ball_subset_closedBall hw)) z hz
 
@@ -105,7 +105,7 @@ theorem buffered_rectangle_control (e : ℝ)
     rw [mem_closedBall,dist_eq_norm]
     have heq : z-((2 : ℂ)+z.im*I)=((z.re-2 : ℝ) : ℂ) := by
       apply Complex.ext <;> simp
-    rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith : z.re-2≤0)]
+    rw [heq,Complex.norm_real,Real.norm_eq_abs,abs_of_nonpos (by linarith)]
     linarith
   have hz2 : z ∈ closedBall ((2 : ℂ)+z.im*I) (2-a-2*e) :=
     closedBall_subset_closedBall (by linarith) hz6
@@ -116,7 +116,7 @@ theorem buffered_rectangle_control (e : ℝ)
   apply mul_le_mul_of_nonneg_left _ hB
   apply Real.log_le_log ((Real.exp_pos 1).trans_le (complexity_ge_exp _ _))
   unfold complexity
-  have hH : 0 ≤ (3*i+2 : ℕ)*T := (abs_nonneg z.im).trans hzi
+  have hH : 0 ≤ (3*i+2 : ℕ)*T := by positivity
   rw [abs_of_nonneg hH]
   gcongr
 

@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 open Set Filter
 namespace SevenEighths.HeckeDetectorFixedAmplitudeCount
 open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows
@@ -26,7 +26,7 @@ lemma fiber_mean_eq (B : Batch M H Label Slot U a ε tstar T allowance i) (q : �
     (hne : (B.fiberRows bin j J K).Nonempty) : (B.fiber bin j J K hne).q=q := by
   let u := hne.choose
   have hu : u ∈ B.fiberRows bin j J K := hne.choose_spec
-  have huR : u∈B.rows := (Finset.mem_filter.mp hu).1
+  have huR := (Finset.mem_filter.mp hu).1
   rw [←hq u huR]
   unfold Fiber.q rowMean weightedMean
   congr 1

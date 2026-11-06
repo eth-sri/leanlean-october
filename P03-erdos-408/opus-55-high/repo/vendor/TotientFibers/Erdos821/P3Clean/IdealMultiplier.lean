@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.ProbabilitySchur
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -28,9 +27,7 @@ def idealMultiplierRaw (A : Model F P J m) (theta : ℝ)
 
 theorem phase_norm (theta : ℝ) : ‖phase theta‖ = 1 := by
   have h2 : Complex.im (2 : ℂ) = 0 := rfl
-  simp only [phase, Complex.norm_exp, Complex.mul_re, Complex.mul_im,
-    Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im,
-    h2, mul_zero, zero_mul, mul_one, add_zero, sub_zero, Real.exp_zero]
+  simp only [phase, Complex.norm_exp, Complex.mul_re, Complex.mul_im, Complex.ofReal_im, Complex.I_re, h2, mul_zero, zero_mul, add_zero, sub_zero, Real.exp_zero]
 
 theorem freshMass_nonneg (ν : Pattern P J F.ell m) (b : P.BigLabels (J + F.ell)) :
     0 ≤ ν.freshMass b := by
@@ -39,7 +36,7 @@ theorem freshMass_nonneg (ν : Pattern P J F.ell m) (b : P.BigLabels (J + F.ell)
   apply Finset.prod_nonneg
   intro i _
   split_ifs
-  · exact zero_le_one
+  · simp
   · exact (mu_pos g.val _).le
 
 theorem bigAuxMass_nonneg (ν : Pattern P J F.ell m) (u : P.BigAux J) :
@@ -56,12 +53,6 @@ theorem idealMultiplierRaw_sub_one (A : Model F P J m) (theta : ℝ)
     idealMultiplierRaw A theta w a b - A.idealRaw theta a b =
       idealMultiplierRaw A theta (fun v a b u => w v a b u - 1) a b := by
   simp only [idealMultiplierRaw, Model.idealRaw, ← Finset.sum_sub_distrib]
-  apply Finset.sum_congr rfl
-  intro v _
-  apply Finset.sum_congr rfl
-  intro u _
-  by_cases h : (A.pattern v).matchesBig a b
-  · simp only [ite_eq_left h, mul_sub, mul_one]
-  · simp only [ite_eq_right h, sub_self]
+  grind
 
 end Erdos821.P3Clean

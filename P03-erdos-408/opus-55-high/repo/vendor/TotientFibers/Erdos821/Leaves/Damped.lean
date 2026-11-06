@@ -5,7 +5,6 @@ public import Erdos821.Blueprint.Analytic
 
 @[expose] public section
 
-open scoped BigOperators
 open Filter Topology
 
 attribute [local instance] Classical.propDecidable
@@ -26,7 +25,7 @@ theorem bounded_pow_mul_geometric (k : ℕ) (r : ℝ) (hr0 : 0 ≤ r) (hr1 : r <
     rw [Real.norm_eq_abs, abs_of_nonneg hr0]
     exact hr1
   have htend := tendsto_pow_mul_geometric k r hr_norm
-  have hbdd : Bornology.IsBounded (Set.range (fun n : ℕ => ((n : ℝ) ^ k * r ^ n))) :=
+  have hbdd :=
     Metric.isBounded_range_of_tendsto _ htend
   rw [Metric.isBounded_range_iff] at hbdd
   obtain ⟨C, hC⟩ := hbdd
@@ -45,7 +44,6 @@ theorem sqrt_pow_eq (q : ℝ) (hq : 0 < q) (z : ℕ) :
     q ^ (((z : ℕ) : ℝ) / 2) = (Real.sqrt q) ^ z := by
   have hq0 : 0 ≤ q := le_of_lt hq
   rw [Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_mul hq0]
-  congr 1
   ring
 
 theorem vinv_bound (v V : ℝ) (hv : 0 < v) (hV : v ≤ V) (t tMax : ℕ) (ht : t ≤ tMax) :
@@ -68,14 +66,12 @@ theorem vinv_bound (v V : ℝ) (hv : 0 < v) (hV : v ≤ V) (t tMax : ℕ) (ht : 
     by_cases hge : 1 ≤ v⁻¹
     · have hmono : (v⁻¹) ^ t ≤ (v⁻¹) ^ tMax :=
         pow_le_pow_right₀ hge ht
-      calc (v⁻¹) ^ t ≤ (v⁻¹) ^ tMax := hmono
-        _ ≤ max 1 ((v⁻¹) ^ tMax) := le_max_right _ _
+      grind
     · have hlt : v⁻¹ < 1 := lt_of_not_ge hge
-      have hv0 : 0 ≤ v⁻¹ := le_of_lt (inv_pos.mpr hv)
+      have hv0 : 0 ≤ v⁻¹ := by positivity
       have hle1 : (v⁻¹) ^ t ≤ 1 := pow_le_one₀ hv0 (le_of_lt hlt)
-      calc (v⁻¹) ^ t ≤ 1 := hle1
-        _ ≤ max 1 ((v⁻¹) ^ tMax) := le_max_left _ _
-  exact le_trans hvinv hmax
+      grind
+  linarith
 
 theorem desc_le (z t tMax : ℕ) (ht : t ≤ tMax) :
     (z + t).descFactorial t ≤ (z + tMax) ^ tMax := by
@@ -87,14 +83,8 @@ theorem desc_le (z t tMax : ℕ) (ht : t ≤ tMax) :
   have h3 : (z + tMax) ^ t ≤ (z + tMax) ^ tMax := by
     by_cases hb : 1 ≤ z + tMax
     · exact Nat.pow_le_pow_right hb ht
-    · have h0 : z + tMax = 0 := Nat.lt_one_iff.mp (lt_of_not_ge hb)
-      have hz : z = 0 := by omega
-      have htM : tMax = 0 := by omega
-      subst hz; subst htM
-      have ht0 : t = 0 := Nat.le_zero.mp ht
-      subst ht0
-      simp
-  exact le_trans (le_trans h1 h2) h3
+    · simp_all
+  omega
 
 theorem bounded_shifted (tMax : ℕ) (r : ℝ) (hr0 : 0 ≤ r) (hr1 : r < 1) :
     ∃ C, ∀ z : ℕ, ((((z + tMax : ℕ) : ℝ) ^ tMax) * r ^ z) ≤ C := by
@@ -112,11 +102,7 @@ theorem bounded_shifted (tMax : ℕ) (r : ℝ) (hr0 : 0 ≤ r) (hr1 : r < 1) :
   have hbound := hC m z
   have hnonneg : 0 ≤ (tMax : ℝ) ^ (tMax - m) * (tMax.choose m : ℝ) := by
     positivity
-  calc ((z : ℝ) ^ m * (tMax : ℝ) ^ (tMax - m) * (tMax.choose m : ℝ)) * r ^ z
-      = ((z : ℝ) ^ m * r ^ z) * ((tMax : ℝ) ^ (tMax - m) * (tMax.choose m : ℝ)) := by ring
-    _ ≤ C m * ((tMax : ℝ) ^ (tMax - m) * (tMax.choose m : ℝ)) :=
-        mul_le_mul_of_nonneg_right hbound hnonneg
-    _ = (tMax : ℝ) ^ (tMax - m) * (tMax.choose m : ℝ) * C m := by ring
+  nlinarith
 
 end Erdos821.GraphLemmas
 
@@ -129,7 +115,7 @@ theorem damped_factorial_bound (q v : ℝ) (hq : 0 < q) (hq' : q < 1) (hv : 0 < 
   set r : ℝ := Real.sqrt q with hr_def
   have hr0 : 0 ≤ r := Real.sqrt_nonneg q
   have hr1 : r < 1 := by
-    have hlt : Real.sqrt q < Real.sqrt 1 :=
+    have hlt :=
       Real.sqrt_lt_sqrt (le_of_lt hq) hq'
     rwa [Real.sqrt_one] at hlt
   have hr_pow : ∀ z : ℕ, q ^ (((z : ℕ) : ℝ) / 2) = r ^ z :=
@@ -137,7 +123,7 @@ theorem damped_factorial_bound (q v : ℝ) (hq : 0 < q) (hq' : q < 1) (hv : 0 < 
   obtain ⟨C0, hC0⟩ := Erdos821.GraphLemmas.bounded_shifted tMax r hr0 hr1
   -- C_v for V part
   set Cv : ℝ := max 1 ((v⁻¹) ^ tMax) with hCv_def
-  have hCv_pos : 0 < Cv := lt_max_iff.mpr (Or.inl one_pos)
+  have hCv_pos : 0 < Cv := by positivity
   have hCv_ge : ∀ t : ℕ, t ≤ tMax → ∀ V : ℝ, v ≤ V → V ^ (-(t : ℤ)) ≤ Cv := by
     intro t ht V hV
     have hle := Erdos821.GraphLemmas.vinv_bound v V hv hV t tMax ht
@@ -152,10 +138,10 @@ theorem damped_factorial_bound (q v : ℝ) (hq : 0 < q) (hq' : q < 1) (hv : 0 < 
     have hterm_nonneg : 0 ≤ ((((0 + tMax : ℕ) : ℝ) ^ tMax) * r ^ (0 : ℕ)) := by
       positivity
     linarith
-  refine ⟨max 1 (Cv * C0), lt_max_iff.mpr (Or.inl one_pos), ?_⟩
+  refine ⟨max 1 (Cv * C0), by positivity, ?_⟩
   intro t z V ht hV
   have hVle := hCv_ge t ht V hV
-  have hdesc_nat : (z + t).descFactorial t ≤ (z + tMax) ^ tMax :=
+  have hdesc_nat :=
     Erdos821.GraphLemmas.desc_le z t tMax ht
   have hdescR : (((z + t).descFactorial t : ℕ) : ℝ) ≤ ((((z + tMax : ℕ)) : ℝ) ^ tMax) := by
     exact_mod_cast hdesc_nat
@@ -165,9 +151,9 @@ theorem damped_factorial_bound (q v : ℝ) (hq : 0 < q) (hq' : q < 1) (hv : 0 < 
   have hVpos : 0 < V := lt_of_lt_of_le hv hV
   have hVpow_pos : 0 < V ^ (-(t : ℤ)) := by
     rw [zpow_neg, zpow_natCast]
-    exact inv_pos.mpr (pow_pos hVpos t)
+    exact by positivity
   have hdesc_nonneg : 0 ≤ (((z + t).descFactorial t : ℕ) : ℝ) := Nat.cast_nonneg _
-  have hq_nonneg : 0 ≤ q ^ (((z : ℕ) : ℝ) / 2) := le_of_lt (Real.rpow_pos_of_pos hq _)
+  have hq_nonneg : 0 ≤ q ^ (((z : ℕ) : ℝ) / 2) := by positivity
   have hr_pow_nonneg : 0 ≤ r ^ z := pow_nonneg hr0 z
   -- rewrite q^... to r^z
   rw [hr_eq]
@@ -180,7 +166,7 @@ theorem damped_factorial_bound (q v : ℝ) (hq : 0 < q) (hq' : q < 1) (hv : 0 < 
     mul_nonneg hdesc_nonneg hr_pow_nonneg
   calc V ^ (-(t : ℤ)) * (((z + t).descFactorial t : ℕ) : ℝ) * r ^ z
       = V ^ (-(t : ℤ)) * ((((z + t).descFactorial t : ℕ) : ℝ) * r ^ z) := by ring
-    _ ≤ Cv * C0 := mul_le_mul hVle hdesc_r_bound hprod_nonneg (le_trans (by positivity : (0:ℝ) ≤ 1) (le_max_left _ _))
+    _ ≤ Cv * C0 := mul_le_mul hVle hdesc_r_bound hprod_nonneg (by positivity)
     _ ≤ max 1 (Cv * C0) := le_max_right _ _
 
 end Erdos821.Blueprint.Graph

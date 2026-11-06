@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Baseline
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -29,7 +28,7 @@ theorem groupMemoryMass_nonneg (F : FixedData) (P : PrimeGroups) (n : ℕ)
     intro r hr
     obtain ⟨p, _, rfl⟩ := Multiset.mem_map.mp hr
     exact (tiltedMu_pos F P n g p.1 (hb p.1)).le
-  · positivity
+  positivity
 
 theorem betweenMass_nonneg (F : FixedData) (P : PrimeGroups) (n : ℕ)
     (hb : ∀ g : P.BigGroup, ∀ p : P.Prime g.val, 0 < baselinePrime F n p.val)
@@ -39,7 +38,7 @@ theorem betweenMass_nonneg (F : FixedData) (P : PrimeGroups) (n : ℕ)
     intro g _
     apply Finset.prod_nonneg
     intro i _
-    exact (tiltedMu_pos F P n g.val (a.1 g i) (hb g _)).le
+    exact (tiltedMu_pos F P n g.val (a.1 g i) (by grind)).le
   · unfold pendingMass
     apply mul_nonneg
     · positivity

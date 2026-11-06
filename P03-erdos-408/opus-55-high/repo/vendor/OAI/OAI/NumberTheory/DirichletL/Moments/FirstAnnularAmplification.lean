@@ -8,34 +8,32 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationRadicalChoice
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentFirstAnnularAmplification
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve ConcreteTraceCRT
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve
+open ConcretePrimeRowBridge
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplificationRadicalFamily
 open CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationActiveFactor
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal
-open CenteredMomentSectorLocalization CenteredMomentOriginalChildEnergy
+open CenteredMomentPrimePool CenteredMomentPrimeElements
+open CenteredMomentGaussEnergy
+open CenteredMomentSourceRow
+open CenteredMomentSectorLocalization
 open CenteredMomentFirstScale
-open CenteredMomentChildRows CenteredMomentHeckeExpansion
-local notation "O"=>ActualEisensteinCubic.O
+open CenteredMomentChildRows
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
 theorem eventually_annular_amplification_common {ι : Type*} [Fintype ι]
-    (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
+    (M : Ideal ActualEisensteinCubic.O) [NeZero M] (H : Subgroup (ActualEisensteinCubic.O ⧸ M)ˣ)
     (hH : RayOrthogonality.globalUnits M≤H)
-    (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
+    (Sbad : Finset (Ideal ActualEisensteinCubic.O)) (hbad : fixedBadPrimes⊆Sbad)
     (sigma loss BR Bs Mmax b eta Csec xi reserve : ℝ)
     (hsigma : 0<sigma) (hloss : 0<loss) (hM : 0≤Mmax) (hb : 0≤b) (hgap : eta<sigma/6)
     (hC : 1≤Csec) (hxi : 0≤xi) (hreserve : 0<reserve) :
     ∀ᶠ Z : ℝ in atTop, 1<Z ∧
       let P := primePool M H Sbad (1/2) 1 (Z^(sigma/3))
       P.Nonempty ∧ Z^(sigma/3-loss)≤(P.card:ℝ) ∧
-      ∀ (η : Character) (m : O),m≠0 → ConcretePrimeRowBridge.goodLambda∣m → (2:O)∣m →
+      ∀ (η : Character) (m : ActualEisensteinCubic.O),m≠0 → ConcretePrimeRowBridge.goodLambda∣m → (2:ActualEisensteinCubic.O)∣m →
       ∃ τ : (elementPool P) → Fin 3 → RayFourExpansion.RayCharacter → Character,
         (∀ (p : elementPool P) i χ,(τ p i χ).modulus.absNorm≤
           radicalBound (childCharacter η χ) m p.val (errorMovingExponent (errorIndex i))) ∧
@@ -45,7 +43,7 @@ theorem eventually_annular_amplification_common {ι : Type*} [Fintype ι]
           ∀ (z : ι→ℝ),(∀i,z i≤eta) → (∀i,D.lengths i=Z^(z i)) →
           D.R≠0 → D.s≠0 → (Ideal.absNorm D.R:ℝ)≤Z^BR → (Ideal.absNorm D.s:ℝ)≤Z^Bs →
           ∀ (t T d cLog : ℝ),0<T →
-          ∀ (I J E : Ideal O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
+          ∀ (I J E : Ideal ActualEisensteinCubic.O),E≠0 → ∀ (K X Tsec : ℝ),0<K → 0<X →
           Tsec≤Csec*firstNominalScale I J E K X →
           ∀ (H0 : ℝ),0<H0 → H0≤4*frequencyRadius Tsec Z xi →
           8*H0≤Z^Mmax →

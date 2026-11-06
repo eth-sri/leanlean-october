@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Reflection.SlotMass
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ φ : Type*} [Fintype σ] [DecidableEq σ]
 
-def inactiveRowSet (rows : Finset (Ideal Eis)) (L : σ→Finset (Ideal Eis)) (T : Finset σ)
-    (F : φ→Ideal Eis) (b : ∀ i : {i // i∉T},L i.val) : Finset (Ideal Eis) :=
+def inactiveRowSet (rows : Finset (Ideal ActualEisensteinCubic.O)) (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ)
+    (F : φ→Ideal ActualEisensteinCubic.O) (b : ∀ i : {i // i∉T},L i.val) : Finset (Ideal ActualEisensteinCubic.O) :=
   rows.filter fun K => IsCoprime K (∏ i : {i // i∉T},(b i).val) ∧ ∀ j i,(b i).val≠F j
 
 lemma subtype_zero_extension_energy {κ : Type*} [DecidableEq κ]
@@ -28,13 +27,11 @@ lemma subtype_zero_extension_energy {κ : Type*} [DecidableEq κ]
     intro k hk hks
     simp only [dite_eq_right hks,norm_zero,zero_pow (by decide : (2:ℕ)≠0)]
   rw [he,←Finset.sum_coe_sort small]
-  apply Finset.sum_congr rfl
-  intro k hk
-  rw [dite_eq_left k.property]
+  simp
 
 theorem original_inactive_restricted_energy
-    (rows : Finset (Ideal Eis)) (L : σ→Finset (Ideal Eis)) (T : Finset σ)
-    (F : φ→Ideal Eis) (H : σ→ℝ)
+    (rows : Finset (Ideal ActualEisensteinCubic.O)) (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ)
+    (F : φ→Ideal ActualEisensteinCubic.O) (H : σ→ℝ)
     (hzero : ∀ i,∀ P∈L i,P≠0) (hH : ∀ i,∀ P∈L i,(Ideal.absNorm P:ℝ)≤H i)
     (w : ∀ i,L i→ℂ) (hw : ∀ i P,‖w i P‖≤1)
     (f : ∀ b : ∀ i : {i // i∉T},L i.val,inactiveRowSet rows L T F b→ℂ)
@@ -57,10 +54,10 @@ theorem original_inactive_restricted_energy
     change ‖_*_‖≤_
     rw [norm_mul]
     apply mul_le_of_le_one_right (norm_nonneg _)
-    exact slot_coefficient_norm (fun i : {i // i∉T} => L i.val) (fun i => w i.val) (fun i => hw i.val) b
+    exact slot_coefficient_norm (fun i : {i // i∉T} => L i.val) (fun i => w i.val) (by grind) b
   apply (weighted_finite_row_energy_uniform Finset.univ rows wt g E (fun b hb => hg b)).trans
   exact mul_le_mul_of_nonneg_right
-    (pow_le_pow_left₀ (Finset.sum_nonneg (fun b _ => norm_nonneg _)) hm 2) hE
+    (pow_le_pow_left₀ (by positivity) hm 2) hE
 end
 end SevenEighths.InverseReflectedPhase
 

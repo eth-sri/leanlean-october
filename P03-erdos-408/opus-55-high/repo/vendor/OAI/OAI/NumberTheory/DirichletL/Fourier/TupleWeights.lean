@@ -9,33 +9,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,39 +32,30 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
+open scoped Classical
 namespace JointLogSeparation
 
 end JointLogSeparation
@@ -84,7 +63,7 @@ end JointLogSeparation
 namespace SecondPassIntegration
 
 section
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open JointLogSeparation
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 open FourierBridge (logPhase)
 
@@ -100,7 +79,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic SecondPassArithmetic JointLogSeparation
+open JointLogSeparation
 open SecondPassFiber (OldTuple newLabel newRow Valid)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -112,28 +91,25 @@ end SecondPassIntegration
 
 section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical
 namespace JointLogSeparation
 
 lemma sqrt_exp_half (s : ℝ) : Real.sqrt (Real.exp s) = Real.exp (s / 2) := by
-  apply (Real.sqrt_eq_iff_mul_self_eq (Real.exp_pos s).le (Real.exp_pos (s / 2)).le).mpr
+  apply (Real.sqrt_eq_iff_mul_self_eq (by positivity) (by positivity)).mpr
   rw [← Real.exp_add]
-  congr 1
-  ring
+  simp
 
 end JointLogSeparation
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic JointLogSeparation FirstPassCubeLabels
+open JointLogSeparation
 
 end SecondPassIntegration
 end
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic
 
 lemma lambdaIdeal_maximal : (Ideal.span {lambda} : Ideal O).IsMaximal :=
   PrincipalIdealRing.isMaximal_of_irreducible PrimaryIdealUnitReindex.lambda_prime_actual.irreducible
@@ -156,7 +132,7 @@ theorem supported_span_iff (z : O) :
         apply (Ideal.mem_normalizedFactors_iff h.1).mpr
         exact ⟨lambdaIdeal_maximal.isPrime,
           (Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hz)⟩
-      exact (h.2 _ hm).1 (Ideal.subset_span (by simp))
+      exact (h.2 _ hm).1 (by simp)
     · intro hz
       have hm : (Ideal.span {(2 : O)} : Ideal O) ∈
           UniqueFactorizationMonoid.normalizedFactors (Ideal.span {z}) := by
@@ -171,7 +147,7 @@ theorem supported_span_iff (z : O) :
     have hp := UniqueFactorizationMonoid.prime_of_normalized_factor P hP
     let : P.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
     have hzP : z ∈ P := ((Ideal.mem_normalizedFactors_iff
-      (Ideal.span_singleton_eq_bot.not.mpr hz)).mp hP).2 (Ideal.subset_span (by simp))
+      (Ideal.span_singleton_eq_bot.not.mpr hz)).mp hP).2 (by simp)
     constructor
     · intro hlambdaP
       have heq := maximal_ideal_eq_span_of_mem P inferInstance lambda lambdaIdeal_maximal hlambdaP
@@ -180,7 +156,7 @@ theorem supported_span_iff (z : O) :
     · intro hchar
       have htwoP : (2 : O) ∈ P := by
         apply Ideal.Quotient.eq_zero_iff_mem.mp
-        have hzero : (2 : O ⧸ P) = 0 := (ringChar.spec (O ⧸ P) 2).mpr (by rw [hchar])
+        have hzero : (2 : O ⧸ P) = 0 := (ringChar.spec (O ⧸ P) 2).mpr (by simp_all)
         simpa only [map_ofNat] using hzero
       have heq := maximal_ideal_eq_span_of_mem P inferInstance (2 : O) twoIdeal_maximal htwoP
       rw [heq] at hzP
@@ -198,18 +174,18 @@ theorem badPrime_mask (z : O) :
   rw [supported_span_iff]
   simp only [rowCoprimeMask, Finset.mem_univ, true_and, Bool.exists_bool, badPrime,
     Bool.false_eq_true, ite_false, ite_true, Ideal.mem_span_singleton]
-  by_cases hLam : lambda ∣ z <;> by_cases htwo : (2 : O) ∣ z <;> simp [hLam, htwo]
+  grind
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator
+open CompletedGauss FiniteSieveOperator
 
 theorem highKernelNorm_mono {M N K M' N' K' : ℝ}
     (hM : M ≤ M') (hN : N ≤ N') (hK : K' ≤ K) :
     highKernelNorm M N K ≤ highKernelNorm M' N' K' := by
   let r : highKernelRange M K → highKernelRange M' K' := fun I => ⟨I.val, by
     obtain ⟨hs, hn, hk⟩ := mem_highKernelRange.mp I.property
-    exact mem_highKernelRange.mpr ⟨hs, hn.trans hM, hK.trans_lt hk⟩⟩
+    exact mem_highKernelRange.mpr (by grind)⟩
   have hr : Function.Injective r := fun I J h =>
-    Subtype.ext (congrArg (fun I : highKernelRange M' K' => I.val) h)
+    by grind
   have h := FiniteSieveRestriction.submatrix_norm_le r hr
     (rangeInclusion hN) (rangeInclusion_injective hN) (highKernelMatrix M' N' K')
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
@@ -224,8 +200,8 @@ theorem highKernel_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
       highKernelNorm M N K := by
   let r : m → highKernelRange M K := fun i => ⟨rows i, hrows i⟩
   let c : n → idealRange N := fun j => ⟨cols j, mem_idealRange.mpr (hcols j)⟩
-  have hri : Function.Injective r := fun i j h => hr (congrArg Subtype.val h)
-  have hci : Function.Injective c := fun i j h => hc (congrArg Subtype.val h)
+  have hri : Function.Injective r := fun i j h => by grind
+  have hci : Function.Injective c := fun i j h => by grind
   have h := FiniteSieveRestriction.submatrix_norm_le r hri c hci (highKernelMatrix M N K)
   exact pow_le_pow_left₀ (norm_nonneg _) h 2
 theorem highKernel_quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
@@ -241,10 +217,10 @@ theorem highKernel_quotient_family_squared_norm_le {m n : Type*} [Fintype m] [Fi
   apply highKernel_family_squared_norm_le rows (fun j => idealQuotient D (cols j)) hr
   · intro j k heq
     exact hc (idealQuotient_injective_on D (hdiv j) (hdiv k) heq)
-  · exact hrows
+  · omega
   · intro j
-    exact ⟨admissible_idealQuotient (hcols j).1 (hdiv j),
-      idealQuotient_norm_le hD (hdiv j) N (hcols j).2⟩
+    exact ⟨admissible_idealQuotient (by grind) (hdiv j),
+      idealQuotient_norm_le hD (hdiv j) N (by grind)⟩
 
 theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
@@ -261,11 +237,9 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
       highKernelNorm M (N / (Ideal.absNorm D : ℝ)) K := by
     apply highKernel_quotient_family_squared_norm_le D hD rows (fun j : S => cols j.val) hr
       (hc.comp Subtype.val_injective)
-    · intro j
-      exact (Finset.mem_filter.mp j.property).2
-    · exact hrows
-    · intro j
-      exact hcols j.val
+    · grind
+    · omega
+    · simp_all
   apply FiniteSieveOperator.squared_norm_le_of_energy _ _ (highKernelNorm_nonneg _ _ _)
   intro a
   have hinner (i : m) : (∑ j, quotientMatrix D rows cols i j * a j) =
@@ -285,9 +259,8 @@ theorem highKernel_quotientMatrix_squared_norm_le {m n : Type*} [Fintype m] [Fin
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ (highKernelNorm_nonneg _ _ _)
       rw [Finset.sum_coe_sort S (fun j : n => ‖a j‖ ^ 2)]
-      exact Finset.sum_le_univ_sum_of_nonneg (fun j => sq_nonneg ‖a j‖)
+      exact Finset.sum_le_univ_sum_of_nonneg (by simp)
 
-open ActualEisensteinCubic CompletedGauss FiniteSieveOperator IdealCoprimeSieveOperator
 
 def totalQuotient (D I : Ideal O) : Ideal O := if D ∣ I then idealQuotient D I else 1
 
@@ -313,13 +286,9 @@ theorem gcd_eq_iff_quotient_coprime (D I J : Ideal O) (hD : D ≠ 0)
     calc
       gcd I J = gcd (D * idealQuotient D I) (D * idealQuotient D J) := by
         rw [idealQuotient_mul hDI, idealQuotient_mul hDJ]
-      _ = _ := by rw [_root_.gcd_mul_left, normalize_eq]
+      _ = _ := by simp
   rw [he, Ideal.isCoprime_iff_gcd]
-  constructor
-  · intro h
-    exact mul_left_cancel₀ hD (h.trans (mul_one D).symm)
-  · intro h
-    rw [h, mul_one]
+  simp_all
 
 def gcdTerm {m n : Type*} (D : Ideal O) (rows : m → Ideal O) (cols : n → Ideal O)
     (a : n → ℂ) (i : m) (j k : n) : ℂ :=
@@ -348,17 +317,17 @@ theorem gcdTerm_eq_quotient {m n : Type*}
           quadraticRow_divisor_factor _ D (hcols k) hk]
         simp only [star_mul]
         ring
-      · simp only [ite_eq_right hg, mul_zero]
+      simp_all
     · have hg : gcd (cols j) (cols k) ≠ D := by
         intro he
         exact hk (he ▸ gcd_dvd_right (cols j) (cols k))
       simp only [gcdTerm, ite_eq_right hg]
-      simp [quotientMatrix, hk]
+      simp_all
   · have hg : gcd (cols j) (cols k) ≠ D := by
       intro he
       exact hj (he ▸ gcd_dvd_left (cols j) (cols k))
     simp only [gcdTerm, ite_eq_right hg]
-    simp [quotientMatrix, hj]
+    simp_all
 
 end CanonicalQuadraticSieve
 

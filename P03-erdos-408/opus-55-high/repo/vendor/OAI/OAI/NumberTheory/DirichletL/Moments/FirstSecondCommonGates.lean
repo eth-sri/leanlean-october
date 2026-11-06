@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstSecondInputGates
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondInputGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentCommonRadialData
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 open CenteredMomentCommonAllocationSum CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentSectorLocalization
+open CenteredMomentSourceLiveColumn
 local notation "O"=>HeckeFamily.O
 local instance {α:Type*}:DecidableEq α:=Classical.decEq _
 
@@ -26,7 +25,7 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
     (hb:1≤b)(hb₁:1≤b₁)(hb₂:1≤b₂)(hε:0<ε):
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
     Fintype.card ι≤N → Endpoints b b₁ b₂ s →
-    ∀(C R:Ideal O)(B:actualAllocations s.pools C)(τ:Character)(t:ℝ),
+    ∀(C R:Ideal HeckeFamily.O)(B:actualAllocations s.pools C)(τ:Character)(t:ℝ),
     R≠0 → frozenCoefficient B.val C R s.ν s.W s.P≠0 →
     ∀K A D P Ccap q ξ:ℝ,0<K → 0≤ξ → volume s≤Z^A → K⁻¹≤Z^D →
     (R.absNorm:ℝ)≤Z^P → (C.absNorm:ℝ)≤Z^Ccap → (τ.modulus.absNorm:ℝ)≤Z^q →
@@ -38,10 +37,10 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
   have hC:=allocation_ne s C B
   have hNc:=norm_ge_one C hC
   have hv:=volume_pos s
-  have hbN:0≤b^N:=pow_nonneg (zero_le_one.trans hb) _
+  have hbN:0≤b^N:=by positivity
   have hcv:volume (child s C R B τ t)≤b^N*volume s:=
     (common_volume_le N b hb s hs he.1 C R B τ t hB).trans
-      (div_le_self (mul_nonneg hbN hv.le) hNc)
+      (div_le_self (by positivity) hNc)
   have hr:=radius_bound N b b₁ b₂ hb hb₁ hb₂ (child s C R B τ t)
     ((live_card_le B.val).trans hs) (endpoints_child b b₁ b₂ s he C R B τ t)
   have hVg:volume (child s C R B τ t)≤geometry N b b₁ b₂*volume s:=by
@@ -49,11 +48,11 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
     apply mul_le_mul_of_nonneg_right _ hv.le
     apply (pow_le_pow_right₀ hb (show N≤2*N by omega)).trans
     unfold geometry
-    exact (le_mul_of_one_le_right (pow_nonneg (zero_le_one.trans hb) _) hb₁).trans
+    exact (le_mul_of_one_le_right (by positivity) hb₁).trans
       (le_mul_of_one_le_right (by positivity) hb₂)
   have hHg:sourceRadius (child s C R B τ t)≤geometry N b b₁ b₂*volume s:=by
     apply hr.2.trans
-    apply (mul_le_mul_of_nonneg_left hcv (show 0≤b^N*b₁*b₂ by positivity)).trans_eq
+    apply (mul_le_mul_of_nonneg_left hcv (by positivity)).trans_eq
     unfold geometry
     rw [show 2*N=N+N by omega,pow_add]
     ring
@@ -71,11 +70,11 @@ theorem eventually_common_ready (N:ℕ)(b b₁ b₂ ε:ℝ)
   have hpow {x y:ℝ}(h:x≤y):Z^x≤Z^y:=Real.rpow_le_rpow_of_exponent_le hZ.1.le h
   have hRC:((R*C).absNorm:ℝ)≤Z^(P+Ccap):=by
     rw [map_mul,Nat.cast_mul,Real.rpow_add (zero_lt_one.trans hZ.1)]
-    exact mul_le_mul hRN hCN (Nat.cast_nonneg _) (Real.rpow_nonneg (zero_le_one.trans hZ.1.le) P)
-  refine ⟨mul_ne_zero hR hC,hK,hc.1.trans (hpow h₁),hr.1,hc.2.1.trans (hpow h₁),
-    hτ.trans (hpow h₄),hRC.trans (hpow h₃),nominal_pos _ K hK,
-    hc.2.2.1.trans (hpow ((by linarith : 2*A+D+ε≤2*A+D+ε+ξ/2).trans h₂)),
-    hc.2.2.2.1,hc.2.2.2.2.trans (hpow h₂)⟩
+    exact mul_le_mul hRN hCN (Nat.cast_nonneg _) (by linarith)
+  refine ⟨mul_ne_zero hR hC,hK,by grind,hr.1,by grind,
+    hτ.trans (by grind),by grind,nominal_pos _ K hK,
+    hc.2.2.1.trans (by grind),
+    hc.2.2.2.1,hc.2.2.2.2.trans (by grind)⟩
 
 end SevenEighths.CenteredMomentFirstSecondInputGates
 

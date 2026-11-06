@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicControl
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Set Metric
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeLogarithmicInput HeckeLogarithmic HeckeFiniteDeletion
@@ -49,7 +49,7 @@ lemma regular_nonzero_of_detector (χ : Character) {s : ℂ} (hs : 0<s.re)
     have hr := congrArg Complex.re h
     simp only [Complex.add_re,Complex.one_re,Complex.zero_re] at hr
     linarith
-  · exact hz
+  omega
 
 lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
     (hs : 0<s.re) (hz : regular χ s≠0) :
@@ -59,7 +59,7 @@ lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
   · by_cases h1 : s=1
     · subst s
       rw [HeckeReciprocal.reciprocal_principal_one χ hχ,norm_zero]
-      exact norm_nonneg _
+      simp
     have hp : s+1≠0 := by
       intro h
       have hr := congrArg Complex.re h
@@ -68,7 +68,7 @@ lemma reciprocal_norm_le_regular_inverse_on_positive (χ : Character) {s : ℂ}
     have hL : LFunction χ s≠0 := by
       intro h
       apply hz
-      simp [regular,hχ,HeckePrincipalStrip.sourceNormalized,HeckeOrigin.poleRemoved_eq χ h0 h1,h]
+      simp [regular, HeckePrincipalStrip.sourceNormalized, HeckeOrigin.poleRemoved_eq χ h0 h1, h]
     have heq : HeckeReciprocal.reciprocal χ s=((s-1)/(s+1))*(regular χ s)⁻¹ := by
       rw [HeckeReciprocal.reciprocal_eq_inv χ h0 h1]
       simp only [regular,ite_eq_left hχ,HeckePrincipalStrip.sourceNormalized,HeckeOrigin.poleRemoved_eq χ h0 h1]
@@ -108,10 +108,9 @@ theorem original_regular_disk_control (e ε : ℝ)
     linarith
   have hzpos : 0 < z.re := by linarith
   have hdel := hdelete χ.modulus ψ z hzre
-  have hL : regular χ z = regular ψ z*factors χ.modulus ψ z :=
+  have hL :=
     regular_eq_of_mask χ ψ hmask hzpos
-  have hR : HeckeReciprocal.reciprocal χ z =
-      HeckeReciprocal.reciprocal ψ z*(factors χ.modulus ψ z)⁻¹ :=
+  have hR :=
     HeckeDeletionReciprocal.reciprocal_eq_of_mask χ ψ hmask hzpos
   have hrec := reciprocal_norm_le_regular_inverse_on_positive ψ hzpos (hzeroψ z hz2)
   have hdel1 : ‖factors χ.modulus ψ z‖ ≤ Cd*((radical χ.modulus).absNorm : ℝ)^ε := by
@@ -176,13 +175,13 @@ theorem buffered_rectangle_reciprocal_bound (e ε : ℝ)
   have hb := hbound χ T a i hT ha ha1 hmax j z.im (hzi.trans hHT) z hz
   have hc : presentationComplexity (χ j) z.im≤presentationComplexity (χ j) H := by
     unfold presentationComplexity complexity
-    have hH : 0≤H := (abs_nonneg _).trans hzi
+    have hH : 0≤H := by grind
     rw [abs_of_nonneg hH]
     gcongr
   have hnonneg : 0≤presentationComplexity (χ j) z.im := by
     unfold presentationComplexity complexity
     positivity
-  apply (le_trans (le_add_of_nonneg_left (norm_nonneg _)) hb).trans
+  apply (le_trans (by simp) hb).trans
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hnonneg hc hε.le) hC.le
 
 end SevenEighths.ProbeHighRowFamily

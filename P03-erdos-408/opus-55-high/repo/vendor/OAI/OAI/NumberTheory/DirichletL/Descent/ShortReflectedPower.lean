@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.ShortReflectedEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open InverseTerminalWidths InverseReflectedPhase CompletedHeight
+open CanonicalQuadraticSieve
 local notation "Eis"=>ActualEisensteinCubic.O
 universe v
 
@@ -26,12 +25,12 @@ theorem short_harmonic_small_power (L e:ℝ) (hL:0≤L) (he:0<e):
   refine ⟨B^2,pow_pos hB _,?_⟩
   intro Z h hZ hh hhL
   have hz:0<Z:=zero_lt_one.trans_le hZ
-  have hZh:1≤Z^h:=Real.one_le_rpow hZ hh
+  have hZh:=Real.one_le_rpow hZ hh
   have hb:=mul_le_mul_of_nonneg_left (columnDyadicLength_small_power a ha (Z^h) hZh)
     (by norm_num:(0:ℝ)≤256)
   have hs:(256*(columnDyadicLength (Z^h)+1:ℝ))^2≤B^2*Z^(h*a*2):=by
     calc
-      _≤(B*(Z^h)^a)^2:=pow_le_pow_left₀ (by positivity) (by simpa [B,mul_assoc] using hb) 2
+      _≤(B*(Z^h)^a)^2:=pow_le_pow_left₀ (by positivity) (by linarith) 2
       _=B^2*Z^(h*a*2):=by rw [mul_pow,←Real.rpow_mul hz.le,←Real.rpow_mul_natCast hz.le (h*a) 2]; norm_num
   apply hs.trans
   apply mul_le_mul_of_nonneg_left _ (sq_nonneg B)

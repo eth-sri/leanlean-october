@@ -8,7 +8,6 @@ public import Erdos821.S2.ResiduePaths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -29,7 +28,7 @@ theorem smallPhysical_act_iff {M : ℕ} (y : P.SmallResidues) (π : P.Permutatio
     · intro i
       have he : (P.act π a) g.val ((π g.val).symm i) = a g.val i := by
         simp [PrimeGroups.act]
-      exact Eq.mp (congrArg (fun p : P.Prime g.val => y g p = 0) he)
+      exact Eq.mp (by grind)
         ((hs g).2 ((π g.val).symm i))
   · intro hs g
     exact ⟨(hs g).1.comp (π g.val).injective, fun i => (hs g).2 (π g.val i)⟩
@@ -65,10 +64,10 @@ theorem smallPhysical_before (hn : 0 < n) (hH : H.Valid) (i : Fin (n + 1)) :
   refine Fin.cases ?_ (fun j => ?_) i
   · let e : Fin n := ⟨0, hn⟩
     have hs := (hH.2.2.2 e).1.1
-    have hp : P.smallPhysical (H.after 0).1 (H.after 0).2.1 :=
+    have hp :=
       (smallPhysical_act_iff (H.after 0).1 (H.edge e).1 (H.after 0).2.1).mp hs
     rw [(hH.2.2.1 0).1, (hH.2.2.1 0).2.1]
-    exact hp
+    omega
   · have hs := (hH.2.2.2 j).1.2.1
     exact (smallPhysical_act_iff (H.before j.succ).1 (H.edge j).2.1 (H.before j.succ).2.1).mp hs
 
@@ -104,7 +103,7 @@ theorem small_residue_translation (hH : H.Valid) (i : Fin (n + 1)) :
         _ = translateSmallResidues (H.toResiduePath.step i) (H.before i.castSucc).1 := H.small_residue_step hH i
         _ = translateSmallResidues (H.toResiduePath.step i)
             (translateSmallResidues (H.toResiduePath.offset i.castSucc) (H.before 0).1) :=
-          congrArg (translateSmallResidues (H.toResiduePath.step i)) ih
+          by grind
         _ = translateSmallResidues (H.toResiduePath.offset i.castSucc + H.toResiduePath.step i) (H.before 0).1 :=
           (translateSmallResidues_add _ _ _).symm
         _ = _ := by rw [residuePath_offset_succ]

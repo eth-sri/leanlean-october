@@ -6,7 +6,6 @@ public import Erdos821.P3.PhysicalSchur
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Packet
@@ -44,7 +43,7 @@ lemma physicalRaw_true_eq_ofReal_absolutePhysicalRawReal
     by_cases hcond : (A.pattern v).compatible z.2 z'.2 ∧
         (A.pattern v).ban z.2 z'.2 u ∧
         z'.1 = z.1 + A.k * ((A.pattern v).D z.2 u : ℤ)
-    · simp [hcond, Complex.ofReal_mul]
+    · simp [hcond]
     · simp [hcond]
   · simp [absolutePhysicalRawReal, Model.physicalRaw, hphys]
 
@@ -60,17 +59,17 @@ lemma absolutePhysicalRawReal_nonneg
     apply Finset.sum_nonneg
     intro u hu
     split_ifs with hcond
-    · have haux : 0 < (A.pattern v).auxMass u :=
+    · have haux :=
         Erdos821.P3Core.auxMass_pos_of_admissible (A.pattern v) u hP
-      have hV : ∀ g : P.Group, 0 < P.V g :=
+      have hV :=
         fun g => Erdos821.P3Core.V_pos_of_admissible hP g
-      have htarget : 0 < (A.pattern v).physicalTargetMass :=
+      have htarget :=
         Erdos821.P3Core.physicalTargetMass_pos_of_admissible (A.pattern v) hV
-      have hd₁ : 0 < A.damping z.1 := Erdos821.P3Core.damping_pos A z.1
-      have hd₂ : 0 < A.damping z'.1 := Erdos821.P3Core.damping_pos A z'.1
+      have hd₁ := Erdos821.P3Core.damping_pos A z.1
+      have hd₂ := Erdos821.P3Core.damping_pos A z'.1
       positivity
-    · exact le_of_eq rfl
-  · exact le_of_eq rfl
+    simp
+  simp
 
 def absolutePhysicalKernelReal {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) (z z' : A.State) : ℝ :=
@@ -83,9 +82,7 @@ lemma physicalKernel_true_eq_ofReal_absolutePhysicalKernelReal
     (A : Model F P J m) (z z' : A.State) :
     A.physicalKernel true z z' = (absolutePhysicalKernelReal A z z' : ℂ) := by
   classical
-  simp [absolutePhysicalKernelReal, Model.physicalKernel,
-    physicalRaw_true_eq_ofReal_absolutePhysicalRawReal,
-    Complex.ofReal_sum, Complex.ofReal_mul]
+  simp [absolutePhysicalKernelReal, Model.physicalKernel, physicalRaw_true_eq_ofReal_absolutePhysicalRawReal]
 
 lemma absolutePhysicalKernelReal_nonneg
     {F : FixedData} {P : PrimeGroups} {J m : ℕ} {x : ℝ}
@@ -94,7 +91,7 @@ lemma absolutePhysicalKernelReal_nonneg
   classical
   unfold absolutePhysicalKernelReal
   apply mul_nonneg
-  · exact inv_nonneg.mpr (sq_nonneg _)
+  · simp
   · apply Finset.sum_nonneg
     intro π hπ
     apply Finset.sum_nonneg
@@ -118,10 +115,10 @@ lemma pattern_D_le_sup_pow {P : PrimeGroups} {J ell m : ℕ}
     split_ifs with hi
     · change (u g i).val ≤ P.allPrimes.sup id
       exact Finset.le_sup (s := P.allPrimes) (f := id) (b := (u g i).val)
-        (Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, (u g i).property⟩)
+        (Finset.mem_biUnion.mpr (by grind))
     · change (a g (ν.slot i)).val ≤ P.allPrimes.sup id
       exact Finset.le_sup (s := P.allPrimes) (f := id) (b := (a g (ν.slot i)).val)
-        (Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, (a g (ν.slot i)).property⟩)
+        (Finset.mem_biUnion.mpr (by grind))
   calc
     ν.D a u = ∏ z ∈ (Finset.univ : Finset P.Group).product (Finset.univ : Finset (Fin J)),
         (if z.2 ∈ ν.changed z.1 then (u z.1 z.2).val else (a z.1 (ν.slot z.2)).val) := by
@@ -130,9 +127,8 @@ lemma pattern_D_le_sup_pow {P : PrimeGroups} {J ell m : ℕ}
           (fun g i => if i ∈ ν.changed g then (u g i).val else (a g (ν.slot i)).val)).symm
     _ ≤ S ^ ((Finset.univ : Finset P.Group).product (Finset.univ : Finset (Fin J))).card :=
       Finset.prod_le_pow_card _ _ S (by
-        intro z hz
-        exact hval z.1 z.2)
-    _ = S ^ (J * P.count) := by simp [S, mul_comm]
+        simp_all)
+    _ = S ^ (J * P.count) := by simp [mul_comm]
 
 lemma possiblePhysicalTargets_subset_neighbors {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (n : ℤ) :
@@ -181,8 +177,8 @@ lemma physicalKernel_true_row_neighbor_norm_eq_tsum_re
   let S := Erdos821.P3Core.possiblePhysicalTargets A z.1
   have hsubset : S ⊆ A.neighbors z.1 := possiblePhysicalTargets_subset_neighbors A z.1
   have hsum : (∑ z' ∈ A.neighbors z.1, ‖A.physicalKernel true z z'‖) =
-      ∑ z' ∈ S, ‖A.physicalKernel true z z'‖ := by
-    exact (Finset.sum_subset hsubset (by
+      ∑ z' ∈ S, ‖A.physicalKernel true z z'‖ :=
+    (Finset.sum_subset hsubset (by
       intro z' hz' hzS
       simp [Erdos821.P3Core.physicalKernel_zero_outside_targets A z.1 z.2 z' hzS])).symm
   have htsum : (∑' z', (A.physicalKernel true z z').re) =
@@ -207,14 +203,14 @@ lemma physicalKernel_true_column_neighbor_norm_eq_tsum_re
   classical
   let R := Erdos821.P3Core.reversePhysicalModel A
   let S := Erdos821.P3Core.possiblePhysicalTargets R z.1
-  have hsubset : S ⊆ A.neighbors z.1 := by
-    exact possiblePhysicalTargets_reverse_subset_neighbors A z.1
+  have hsubset : S ⊆ A.neighbors z.1 :=
+    possiblePhysicalTargets_reverse_subset_neighbors A z.1
   have hzero (z' : A.State) (hz' : z' ∉ S) : A.physicalKernel true z' z = 0 := by
     rw [Erdos821.P3Core.physicalKernel_reverse_eq A z.1 z'.1 z.2 z'.2]
     exact Erdos821.P3Core.physicalKernel_zero_outside_targets R z.1 z.2 z' hz'
   have hsum : (∑ z' ∈ A.neighbors z.1, ‖A.physicalKernel true z' z‖) =
-      ∑ z' ∈ S, ‖A.physicalKernel true z' z‖ := by
-    exact (Finset.sum_subset hsubset (by
+      ∑ z' ∈ S, ‖A.physicalKernel true z' z‖ :=
+    (Finset.sum_subset hsubset (by
       intro z' hz' hzS
       simp [hzero z' hzS])).symm
   have htsum : (∑' z', (A.physicalKernel true z' z).re) =

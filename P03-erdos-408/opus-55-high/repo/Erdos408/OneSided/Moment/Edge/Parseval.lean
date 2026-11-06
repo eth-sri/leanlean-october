@@ -65,14 +65,14 @@ theorem integral_norm_sq_sum_ephase {κ : Type*} (X : Finset κ) {β : κ → �
     refine intervalIntegral.integral_congr fun θ _ => ?_
     simp only [star_mul', star_ephase]
     rw [show ephase (θ * ((β x - β x' : ℤ) : ℝ)) = ephase (θ * β x) * ephase (-(θ * β x')) by
-      rw [← ephase_add]; congr 1; push_cast; ring]
+      rw [← ephase_add]; congr 1; grind]
     ring
   simp_rw [e2]
   push_cast
   refine sum_congr rfl fun x hx => ?_
   rw [sum_eq_single_of_mem x hx fun x' hx' hne => by
     have : β x - β x' ≠ 0 := fun h => hne (hβ hx' hx (by linarith))
-    simp only [this, ↓reduceIte, mul_zero]]
+    simp_all]
   simp only [sub_self, ↓reduceIte, mul_one]
   rw [← Complex.mul_conj', Complex.star_def]
 
@@ -108,8 +108,8 @@ private theorem le_sqrt_mul_sqrt_of_amgm {m A B : ℝ} (hA : 0 ≤ A) (hB : 0 �
     have h1 := h (Real.sqrt B / Real.sqrt A) (by positivity)
     have e : (Real.sqrt B / Real.sqrt A * A + B / (Real.sqrt B / Real.sqrt A)) / 2 =
         Real.sqrt A * Real.sqrt B := by
-      have hA' : A = Real.sqrt A ^ 2 := (Real.sq_sqrt hA).symm
-      have hB' : B = Real.sqrt B ^ 2 := (Real.sq_sqrt hB).symm
+      have hA' := (Real.sq_sqrt hA).symm
+      have hB' := (Real.sq_sqrt hB).symm
       rw [hA', hB']
       field_simp
       rw [Real.sqrt_sq hsA.le, Real.sqrt_sq hsB.le]
@@ -150,8 +150,7 @@ theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ 
         Real.norm_eq_abs]
       have := hw θ
       have h0 : 0 ≤ ‖g q‖ * ‖G q.1 q'.1‖ * ‖f q'‖ := by positivity
-      nlinarith [norm_nonneg (g q), norm_nonneg (G q.1 q'.1), norm_nonneg (f q'), abs_nonneg (w θ),
-        mul_nonneg (mul_nonneg (norm_nonneg (g q)) (norm_nonneg (G q.1 q'.1))) (norm_nonneg (f q'))]
+      nlinarith
   -- the bilinear form is `∫ w Φ`
   have hsum : ∀ θ, ∑ q ∈ P ×ˢ X, ∑ q' ∈ P ×ˢ X, I q q' θ = (w θ : ℂ) * Φ θ := by
     intro θ
@@ -197,7 +196,7 @@ theorem kerLe_parseval {γ κ : Type*} (P : Finset γ) (X : Finset κ) {β : κ 
     intro θ hθ
     by_cases hw0 : w θ = 0
     · rw [hw0, Complex.ofReal_zero, zero_mul, norm_zero]
-      exact mul_nonneg hε (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+      positivity
     · have h := (hfib θ hθ hw0).bilinear hε (fT θ) (gT θ)
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
       have h1 : ‖Φ θ‖ ≤ ε * a θ * b θ := h
@@ -286,17 +285,14 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
   have hterm : ∀ p p', star (g p) * (H p p' * ((plateau (T p p' / Y) : ℂ) * ephase (θ * T p p')) *
       f p') = ∫ ξ, ψh ξ * (star (g p) * (H p p' * ephase ((θ + ξ / Y) * T p p') * f p')) := by
     intro p p'
-    have h1 : (plateau (T p p' / Y) : ℂ) = ∫ ξ, E (T p p') ξ * ψh ξ := (hinv _).symm
+    have h1 : (plateau (T p p' / Y) : ℂ) = ∫ ξ, E (T p p') ξ * ψh ξ := by grind
     calc star (g p) * (H p p' * ((plateau (T p p' / Y) : ℂ) * ephase (θ * T p p')) * f p')
         = (∫ ξ, E (T p p') ξ * ψh ξ) * (star (g p) * H p p' * ephase (θ * T p p') * f p') := by
-          rw [h1]
-          ring
+          grind
       _ = ∫ ξ, E (T p p') ξ * ψh ξ * (star (g p) * H p p' * ephase (θ * T p p') * f p') :=
           (integral_mul_const _ _).symm
       _ = _ := integral_congr_ae (ae_of_all _ fun ξ => by
-          simp only
-          rw [hphase]
-          ring)
+          grind)
   have hcontξ : ∀ t : ℤ, Continuous fun ξ : ℝ => ephase ((θ + ξ / Y) * t) := fun t => by
     unfold ephase
     fun_prop
@@ -306,7 +302,7 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
     refine hint (hcont.mul (continuous_const.mul ((continuous_const.mul (hcontξ _)).mul
       continuous_const))) (C * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) fun ξ => ?_
     have h0 : 0 ≤ ‖g p‖ * ‖H p p'‖ * ‖f p'‖ := by positivity
-    refine le_trans (b := C * fourierDecay ξ * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) ?_ (le_of_eq (by ring))
+    refine le_trans (b := C * fourierDecay ξ * (‖g p‖ * ‖H p p'‖ * ‖f p'‖)) ?_ (by linarith)
     rw [norm_mul]
     refine mul_le_mul (hdec ξ) (le_of_eq ?_) (norm_nonneg _)
       (mul_nonneg hC0 (by unfold fourierDecay; positivity))
@@ -327,7 +323,7 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
   have hpt : ∀ ξ, ‖ψh ξ * Bf ξ‖ ≤ C * (nmin + ntriv / U) * NG * NF * fourierDecay ξ := by
     intro ξ
     rw [norm_mul]
-    have hN : 0 ≤ NG * NF := mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    have hN : 0 ≤ NG * NF := by positivity
     by_cases hξ : |ξ| ≤ U
     · have hB : ‖Bf ξ‖ ≤ nmin * NG * NF := (hmin ξ hξ).bilinear hmin0 f g
       calc ‖ψh ξ‖ * ‖Bf ξ‖ ≤ (C * fourierDecay ξ) * (nmin * NG * NF) :=
@@ -340,13 +336,12 @@ theorem exists_kerLe_cutoff : ∃ C : ℝ, 0 ≤ C ∧ ∀ {γ : Type*} (P : Fin
     · push Not at hξ
       have hB : ‖Bf ξ‖ ≤ ntriv * NG * NF := (htriv ξ).bilinear htriv0 f g
       calc ‖ψh ξ‖ * ‖Bf ξ‖ ≤ (C / U * fourierDecay ξ) * (ntriv * NG * NF) :=
-            mul_le_mul (htail U ξ hU hξ) hB (norm_nonneg _)
-              (mul_nonneg (div_nonneg hC0 hU0.le) (hdec0 ξ))
+            mul_le_mul (by grind) hB (norm_nonneg _)
+              (mul_nonneg (by positivity) (hdec0 ξ))
         _ = (C * fourierDecay ξ) * ((ntriv / U) * NG * NF) := by ring
         _ ≤ (C * fourierDecay ξ) * ((nmin + ntriv / U) * NG * NF) := by
             refine mul_le_mul_of_nonneg_left ?_ (mul_nonneg hC0 (hdec0 ξ))
-            rw [mul_assoc, mul_assoc]
-            exact mul_le_mul_of_nonneg_right (le_add_of_nonneg_left hmin0) hN
+            nlinarith
         _ = _ := by ring
   refine (norm_integral_le_of_norm_le (hdecI.1.const_mul _) (ae_of_all _ hpt)).trans
     (le_of_eq ?_)

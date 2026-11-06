@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.KernelSourceUniform
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff SchwartzMap
+open scoped Classical ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform
 noncomputable section
 
@@ -26,7 +26,7 @@ lemma kernelDualWeight_norm_le_one (windows : Fin 4→ℝ→ℂ)
     (hw : ∀ i y, ‖windows i y‖≤1) (Qn Qb t n b : ℝ) :
     ‖kernelDualWeight windows Qn Qb t n b‖≤1 := by
   rw [kernelDualWeight,norm_mul,kernelCoordinateWeight_norm,kernelCoordinateWeight_norm]
-  exact (mul_le_of_le_one_left (norm_nonneg _) (hw _ _)).trans (hw _ _)
+  exact (mul_le_of_le_one_left (norm_nonneg _) (by grind)).trans (by grind)
 
 lemma kernelCoordinateWeight_continuous (w : ℝ→ℂ) (slope Q q : ℝ) :
     Continuous (fun t => kernelCoordinateWeight w slope Q t q) :=
@@ -39,9 +39,7 @@ lemma kernel_mode_separation (windows : Fin 4→ℝ→ℂ) (QK QP Qn Qb k p n b 
       kernelCoordinateWeight (windows 1) (-2) QP t p * kernelDualWeight windows Qn Qb t n b := by
   simp only [kernelCoordinateWeight,kernelDualWeight,kernelSlope,kernelLogCoordinates,
     Fin.prod_univ_succ,Matrix.cons_val_zero,Matrix.cons_val_succ,Fin.prod_univ_zero,mul_one]
-  simp only [Fin.succ,Fin.val_mk]
-  norm_num
-  ring
+  grind
 
 theorem reflected_kernel_uniform_separation (a b : ℝ) (ha : 0<a)
     (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hM : ∀ i, 0≤M i)

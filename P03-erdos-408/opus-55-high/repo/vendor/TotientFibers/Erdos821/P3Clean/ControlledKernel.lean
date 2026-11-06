@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.ActionLifting
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -27,7 +26,7 @@ theorem controlledKernel_row {α G V : Type*} [Fintype α] [Fintype G] [Fintype 
   apply Finset.sum_congr rfl
   intro b _
   rw [Finset.sum_comm]
-  simp [ite_mul]
+  simp
 
 theorem controlledKernel_form {α G V : Type*} [Fintype α] [Fintype G] [Fintype V]
     (mass : α → ℝ) (weight : V → ℝ) (H : α → α → G → ℂ) (act : G → V ≃ V)

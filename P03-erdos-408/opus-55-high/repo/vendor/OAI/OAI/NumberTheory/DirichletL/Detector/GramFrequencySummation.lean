@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramExceptional
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.ProbeGramFrequencySummation
-local notation "O" => ActualEisensteinCubic.O
 
-def frequencyNorm (k : O) : ℝ := Ideal.absNorm (Ideal.span {k})
+def frequencyNorm (k : ActualEisensteinCubic.O) : ℝ := Ideal.absNorm (Ideal.span {k})
 
-lemma frequencyNorm_nonneg (k : O) : 0 ≤ frequencyNorm k := Nat.cast_nonneg _
+lemma frequencyNorm_nonneg (k : ActualEisensteinCubic.O) : 0 ≤ frequencyNorm k := Nat.cast_nonneg _
 
-lemma frequencyNorm_one_le (k : O) (hk : k ≠ 0) : 1 ≤ frequencyNorm k := by
+lemma frequencyNorm_one_le (k : ActualEisensteinCubic.O) (hk : k ≠ 0) : 1 ≤ frequencyNorm k := by
   unfold frequencyNorm
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
     (Ideal.span_singleton_eq_bot.not.mpr hk))
@@ -56,13 +55,13 @@ theorem finite_weighted_of_count {α : Type*} (E : Finset α) (q : α → ℝ)
     calc
       _ ≤ (F.card:ℝ)*(1/4:ℝ)^n := by
         apply (Finset.sum_le_sum hweight).trans_eq
-        simp only [Finset.sum_const, nsmul_eq_mul]
+        simp
       _ ≤ (C*((2:ℝ)^(n+1)*H)^d)*(1/4:ℝ)^n :=
         mul_le_mul_of_nonneg_right hcard (by positivity)
       _ ≤ (C*((2:ℝ)^(n+1)*H^d))*(1/4:ℝ)^n := by
         rw [Real.mul_rpow (by positivity) hH.le]
         gcongr
-      _ = (2*C*H^d)*((2:ℝ)^n*(1/4:ℝ)^n) := by rw [pow_succ]; ring
+      _ = (2*C*H^d)*((2:ℝ)^n*(1/4:ℝ)^n) := by ring
       _ = _ := by rw [←mul_pow]; norm_num
   have hsum : (∑ x∈E,(1+q x/H)^(-2:ℝ)) =
       ∑ n∈E.image bin, ∑ x∈E.filter (fun x=>bin x=n), (1+q x/H)^(-2:ℝ) := by
@@ -77,7 +76,7 @@ theorem finite_weighted_of_count {α : Type*} (E : Finset α) (q : α → ℝ)
     (by norm_num : (1/2:ℝ)<1)]
   ring
 
-theorem nonzero_frequency_count (E : Finset O) (R : ℝ) (hR : 0 < R)
+theorem nonzero_frequency_count (E : Finset ActualEisensteinCubic.O) (R : ℝ) (hR : 0 < R)
     (hE : ∀ k∈E, k≠0) (hN : ∀ k∈E, frequencyNorm k≤R) :
     (E.card:ℝ) ≤ 128*R := by
   by_cases hr : 1≤R
@@ -85,16 +84,15 @@ theorem nonzero_frequency_count (E : Finset O) (R : ℝ) (hR : 0 < R)
     intro k hk
     simpa only [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span,frequencyNorm]
       using hN k hk
-  · have he : E=∅ := Finset.eq_empty_iff_forall_notMem.mpr (by
+  · have he := Finset.eq_empty_iff_forall_notMem.mpr (by
       intro k hk
       have hh := frequencyNorm_one_le k (hE k hk)
-      have hb := hN k hk
-      linarith)
+      grind)
     rw [he,Finset.card_empty,Nat.cast_zero]
     positivity
 
 theorem frequency_weighted_sum :
-    ∃ K : ℝ, 0<K ∧ ∀ (E : Finset O) (H : ℝ), 0<H →
+    ∃ K : ℝ, 0<K ∧ ∀ (E : Finset ActualEisensteinCubic.O) (H : ℝ), 0<H →
       (∀ k∈E,k≠0) →
       ∑ k∈E,(1+frequencyNorm k/H)^(-2:ℝ) ≤ K*H := by
   refine ⟨512,by norm_num,?_⟩
@@ -105,10 +103,10 @@ theorem frequency_weighted_sum :
       simpa only [Real.rpow_one] using
         nonzero_frequency_count F R hR (fun k hk=>hE k (hFE hk)) hN)
   norm_num only [Real.rpow_one,show (4:ℝ)*128=512 by norm_num] at hh
-  exact hh
+  omega
 
 theorem exceptional_frequency_weighted_sum (ε : ℝ) (hε : 0<ε) :
-    ∃ K : ℝ, 0<K ∧ ∀ G : Ideal O, G≠0 → ∀ (E : Finset O) (H : ℝ), 0<H →
+    ∃ K : ℝ, 0<K ∧ ∀ G : Ideal ActualEisensteinCubic.O, G≠0 → ∀ (E : Finset ActualEisensteinCubic.O) (H : ℝ), 0<H →
       (∀ k∈E,k≠0) →
       (∀ k∈E,∀ P∉IdealMobiusDivisorSum.primeSupport G,
         CenteredExceptionalCount.valuation (Ideal.span {k}) P % 6=0) →
@@ -122,8 +120,7 @@ theorem exceptional_frequency_weighted_sum (ε : ℝ) (hε : 0<ε) :
       intro F hFE R hR hN
       exact hcount G hG F R hR.le (fun k hk=>hE k (hFE hk))
         (fun k hk=>hres k (hFE hk)) hN)
-  convert hh using 1
-  ring
+  linarith
 
 end SevenEighths.ProbeGramFrequencySummation
 

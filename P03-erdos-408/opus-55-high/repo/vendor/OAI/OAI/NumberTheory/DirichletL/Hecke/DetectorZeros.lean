@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open Set Filter
-open scoped Classical Topology
+open scoped Classical
 namespace SevenEighths.HeckeDetectorZeros
 open HeckeFamily
 
@@ -33,9 +33,9 @@ theorem zeros_finite (χ : Character) (hχ : χ.residue ≠ 1) (T : ℝ) :
     Complex.analyticOnNhd_univ_iff_differentiable.mpr (LFunction_entire_nonprincipal χ hχ)
   have hcod := ha.preimage_zero_mem_codiscreteWithin
     (LFunction_ne_zero_of_one_lt_re χ (by norm_num : 1 < (2 : ℂ).re))
-    (Set.mem_univ (2 : ℂ)) isConnected_univ
+    (by simp) isConnected_univ
   have hfin := (rectangle_compact T).finite_sdiff_of_mem_codiscreteWithin
-    (codiscreteWithin_mono (Set.subset_univ (rectangle T)) hcod)
+    (codiscreteWithin_mono (by simp) hcod)
   convert hfin using 1
   ext s
   simp [zeros]
@@ -81,17 +81,17 @@ theorem zero_re_le_maximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue 
     exact LFunction_ne_zero_of_one_lt_re (χ i) (lt_of_not_ge hn) hz
   apply Finset.le_max'
   exact Finset.mem_insert_of_mem (Finset.mem_image.mpr
-    ⟨(i,s), (mem_familyZeros χ hχ T i s).mpr ⟨hs, hle, ht, hz⟩, rfl⟩)
+    ⟨(i,s), (mem_familyZeros χ hχ T i s).mpr (by grind), rfl⟩)
 
 theorem maximum_attained (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ)
     (hmax : (51/100 : ℝ) < zeroMaximum χ hχ T) :
     ∃ i s, LFunction (χ i) s = 0 ∧ |s.im| ≤ T ∧ s.re = zeroMaximum χ hχ T := by
   have hm := zeroMaximum_mem χ hχ T
   rcases Finset.mem_insert.mp hm with hm | hm
-  · exact False.elim ((ne_of_gt hmax) hm)
+  · linarith
   · obtain ⟨⟨i,s⟩, hs, heq⟩ := Finset.mem_image.mp hm
     have hz := (mem_familyZeros χ hχ T i s).mp hs
-    exact ⟨i,s,hz.2.2.2,hz.2.2.1,heq⟩
+    grind
 
 theorem nonzero_on_buffered_disk (χ : ι → Character) (hχ : ∀ j, (χ j).residue ≠ 1)
     (T a e : ℝ) (i : ℕ) (hT : 2 < T) (ha : (51/100 : ℝ) ≤ a) (he : 0 < e)
@@ -109,7 +109,7 @@ theorem nonzero_on_buffered_disk (χ : ι → Character) (hχ : ∀ j, (χ j).re
     have ht' := abs_add_le (s.im-t) t
     rw [sub_add_cancel] at ht'
     push_cast at ht ⊢
-    nlinarith [hi.trans hn]
+    nlinarith
   intro hz
   have hle := zero_re_le_maximum χ hχ (3*(i+1 : ℕ)*T) j (by linarith) him hz
   linarith

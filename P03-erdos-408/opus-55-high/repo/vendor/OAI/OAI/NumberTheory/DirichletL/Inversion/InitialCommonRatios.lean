@@ -8,24 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve
+open scoped Classical
 namespace SevenEighths.InverseInitialCommonRatios
 open InverseInitialOverlap InverseInitialKernelBridge
-local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 
-def survivingProduct (I:Finset σ)(q:∀i∈I,Ideal Eis) : Ideal Eis :=
+def survivingProduct (I:Finset σ)(q:∀i∈I,Ideal ActualEisensteinCubic.O) : Ideal ActualEisensteinCubic.O :=
   ∏i∈I.attach,q i.val i.property
 
 omit [DecidableEq σ] in
-theorem actual_residual_product (I:Finset σ)(q:∀i∈I,Ideal Eis)
-    (j:Ideal Eis)(hj:j≠0) : residual (j*survivingProduct I q) j=survivingProduct I q :=
+theorem actual_residual_product (I:Finset σ)(q:∀i∈I,Ideal ActualEisensteinCubic.O)
+    (j:Ideal ActualEisensteinCubic.O)(hj:j≠0) : residual (j*survivingProduct I q) j=survivingProduct I q :=
   quotient_mul_cancel hj
 
 omit [DecidableEq σ] in
-theorem residual_ratio_product (I:Finset σ)(q:∀i∈I,Ideal Eis)
-    (j:Ideal Eis)(hj:j≠0)(ell:σ→ℝ)(Z z G:ℝ)(hZ:0<Z)
+theorem residual_ratio_product (I:Finset σ)(q:∀i∈I,Ideal ActualEisensteinCubic.O)
+    (j:Ideal ActualEisensteinCubic.O)(hj:j≠0)(ell:σ→ℝ)(Z z G:ℝ)(hZ:0<Z)
     (hell:∑i∈I,ell i=z-G) :
     ((residual (j*survivingProduct I q) j).absNorm:ℝ)/Z^(z-G)=
       ∏i∈I.attach,((q i.val i.property).absNorm:ℝ)/Z^(ell i.val) := by
@@ -38,9 +36,9 @@ theorem residual_ratio_product (I:Finset σ)(q:∀i∈I,Ideal Eis)
   simp only [survivingProduct,map_prod,Nat.cast_prod]
 
 omit [DecidableEq σ] in
-theorem original_residual_window (I:Finset σ)(q:∀i∈I,Ideal Eis)
-    (j:Ideal Eis)(hj:j≠0)(ell:σ→ℝ)(W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)
-    (hell:∑i∈I,ell i=z-G)(c:Ideal Eis) :
+theorem original_residual_window (I:Finset σ)(q:∀i∈I,Ideal ActualEisensteinCubic.O)
+    (j:Ideal ActualEisensteinCubic.O)(hj:j≠0)(ell:σ→ℝ)(W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)
+    (hell:∑i∈I,ell i=z-G)(c:Ideal ActualEisensteinCubic.O) :
     residualOverlapWindow (j*survivingProduct I q) j W Z z G
       ((c.absNorm:ℝ)/Z^(r+z-2*G))=
       W (((j.absNorm:ℝ)/Z^G)*((c.absNorm:ℝ)/Z^(r+z-2*G))/

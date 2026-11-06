@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.BigAverage
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -57,10 +56,6 @@ theorem symmetricCycleKernel_ideal_frequency (A : Model F P J m) (n B : ℕ)
   intro a b
   rw [symmetricCycleKernel_fibre]
   simp only [ht, tiltedBannedKernel, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro p _
-  apply Finset.sum_congr rfl
-  intro q _
   ring
 
 

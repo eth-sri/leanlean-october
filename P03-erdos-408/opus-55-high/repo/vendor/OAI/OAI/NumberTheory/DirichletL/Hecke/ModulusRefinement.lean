@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.FiniteDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeFamily
 local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 
@@ -52,9 +52,9 @@ theorem idealCoeff_excludePrimes (η : Character) (S : Finset (Ideal O))
   rw [Character.excludePrimes, idealCoeff_refineModulus, IsCoprime.mul_right_iff,
     IsCoprime.prod_right_iff]
   by_cases hη : IsCoprime I η.modulus
-  · simp only [hη, true_and]
+  · simp_all
   · have hz : idealCoeff η I = 0 := by simpa only [hη, ite_false] using idealCoeff_source_mask η I
-    simp [hη, hz]
+    simp_all
 
 theorem excludePrimes_mask (η : Character) (S : Finset (Ideal O))
     (hS : ∀ P ∈ S, Prime P) (I : Ideal O) :

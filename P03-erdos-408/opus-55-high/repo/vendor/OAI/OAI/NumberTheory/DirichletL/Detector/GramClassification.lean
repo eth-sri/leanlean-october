@@ -8,13 +8,10 @@ public import OAI.NumberTheory.DirichletL.CenteredExceptionalProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
+open UniqueFactorizationMonoid
 open CenteredExceptionalCount
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def exceptionalModulus (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal) : Id :=
   jointFixedModulus S hS*C.val
@@ -61,9 +58,9 @@ lemma outside_exceptional_not_dvd (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C
 
 lemma outside_exceptional_good (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (C : SupportedIdeal)
     (p : Id) (hp : Prime p) (hout : p∉IdealMobiusDivisorSum.primeSupport (exceptionalModulus S hS C)) :
-    λ₀∉p ∧ ringChar (O⧸p)≠2 := by
+    ConcretePrimeRowBridge.goodLambda∉p ∧ ringChar (ActualEisensteinCubic.O⧸p)≠2 := by
   let : p.IsMaximal := (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
-  have hle : exceptionalModulus S hS C≤Ideal.span {(72:O)} :=
+  have hle : exceptionalModulus S hS C≤Ideal.span {(72:ActualEisensteinCubic.O)} :=
     le_trans Ideal.mul_le_left Ideal.mul_le_right
   have hh := CenteredExceptionalProfile.outside_fixed_support _ (exceptionalModulus_nonzero S hS C) hle p hp hout
   exact ⟨hh.1,ActualEisensteinCubic.quotient_char_ne_two_of_two_not_mem p hh.2.1⟩

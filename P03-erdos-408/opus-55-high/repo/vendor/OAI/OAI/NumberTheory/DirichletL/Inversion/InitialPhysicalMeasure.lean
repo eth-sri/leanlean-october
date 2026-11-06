@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialRayAttachment
-open InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns
-open MeasureTheory FourierBridge JointLogSeparation
-local notation "O" => ActualEisensteinCubic.O
+open InverseInitialKernelBridge InverseInitialProfile
+open MeasureTheory JointLogSeparation
 
 @[ext] structure Point (ι : Type*) where
   common : Finset ι
@@ -24,16 +23,16 @@ local notation "O" => ActualEisensteinCubic.O
   overlap : Finset ι
   left : Finset ι
   right : Finset ι
-  frequency : O
+  frequency : ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀ i,goodLambda∉Ideal.span {p i})
 
-def divisor (x : Point ι) : O := primeSubsetGenerator (fun i=>Ideal.span {p i}) x.divisor
+def divisor (x : Point ι) : ActualEisensteinCubic.O := primeSubsetGenerator (fun i=>Ideal.span {p i}) x.divisor
 
-def quotient (x : Point ι) : O := primaryGenerator (sourceIdeal p (x.common\x.divisor))
+def quotient (x : Point ι) : ActualEisensteinCubic.O := primaryGenerator (sourceIdeal p (x.common\x.divisor))
 
 def coordinates (x : Point ι) : Fin 6 → ℝ :=
   physicalCoordinates (sourceIdeal p x.common) (sourceIdeal p x.divisor)
@@ -68,47 +67,47 @@ omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem common_span (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) (hx : Valid x) :
     Ideal.span {divisor p x*quotient p x}=sourceIdeal p x.common := by
   rw [←Ideal.span_singleton_mul_span_singleton,divisor_span p,quotient_span p hp hpr,
-    ←sourceIdeal_union p _ _ (Finset.disjoint_left.mpr (fun i hi hj => (Finset.mem_sdiff.mp hj).2 hi)),
+    ←sourceIdeal_union p _ _ (Finset.disjoint_left.mpr (by grind)),
     Finset.union_sdiff_of_subset hx.divisor_subset]
 
 include hp in
-def unitSector (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) : Oˣ :=
+def unitSector (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) : ActualEisensteinCubic.Oˣ :=
   Classical.choose (generator_eq_unit_primary (sourceIdeal p x.divisor) (divisor p x)
     (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)))
 
 include hp in
 omit [∀ i,(Ideal.span {p i}).IsMaximal] in
 theorem unitSector_spec (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) :
-    divisor p x=(unitSector p hp hpr x:O)*primaryGenerator (sourceIdeal p x.divisor) :=
+    divisor p x=(unitSector p hp hpr x:ActualEisensteinCubic.O)*primaryGenerator (sourceIdeal p x.divisor) :=
   Classical.choose_spec (generator_eq_unit_primary (sourceIdeal p x.divisor) (divisor p x)
-    (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)))
+    (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (by grind)))
 
 theorem child_normalized (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
-    (Ψ : O →* ℂ) (j h : O) (H : Finset ι→ℂ) (N : Finset ι) :
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (j h : ActualEisensteinCubic.O) (H : Finset ι→ℂ) (N : Finset ι) :
     secondChildColumn p hp hcop hg Ψ (j*quotient p x)
       (divisor p x*∏ i∈x.overlap,p i) (divisor p x*h) H N =
     secondChildColumn p hp hcop hg Ψ (j*quotient p x)
       (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
-      (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:O)^5*h)) H N := by
+      (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h)) H N := by
   obtain ⟨u,hu,he⟩ := initial_poisson_child_normalized p hp hcop hg hpr
     x.common x.divisor x.overlap Ψ j (divisor p x) (quotient p x) h
     (divisor_span p x) (quotient_span p hp hpr x)
   have hgen : primaryGenerator (sourceIdeal p x.divisor)≠0 := by
-    rw [sourceIdeal_gen p hp hpr];exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)
+    rw [sourceIdeal_gen p hp hpr];exact Finset.prod_ne_zero_iff.mpr (by grind)
   have hu' : u=unitSector p hp hpr x := Units.val_injective
     (mul_right_cancel₀ hgen (hu.symm.trans (unitSector_spec p hp hpr x)))
   simpa only [hu',quotient] using he H N
 
 include hp hcop hg in
 theorem column_extraction (hpr : ∀ i,goodLambda^2∣p i-1)
-    (x : Point ι) (hx : Valid x) (Ψ : O →* ℂ) (j h : O)
+    (x : Point ι) (hx : Valid x) (Ψ : ActualEisensteinCubic.O →* ℂ) (j h : ActualEisensteinCubic.O)
     (σ : Finset ι→ℂ) (N : Finset ι) (hN : Disjoint x.overlap N) :
     initialColumn p hp hcop hg Ψ j (∏ i∈x.common,p i) (divisor p x) h
       (fun A=>σ (x.common∪A)) (x.overlap∪N) =
       initialColumn p hp hcop hg Ψ j (∏ i∈x.common,p i) (divisor p x) h (fun _=>1) x.overlap *
       secondChildColumn p hp hcop hg Ψ (j*quotient p x)
         (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
-        (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:O)^5*h))
+        (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h))
         (fun A=>σ (x.common∪(x.overlap∪A))) N := by
   have hm (A : Finset ι) :
       rowCoprimeMask (fun i=>Ideal.span {p i}) A (j*∏ i∈x.common,p i)=
@@ -121,7 +120,7 @@ theorem column_extraction (hpr : ∀ i,goodLambda^2∣p i-1)
   rw [hc,initial_common_extraction p hp hcop hg hpr Ψ j (quotient p x) (divisor p x) h _ _ _ hN,
     ←hc,child_normalized p hp hcop hg hpr]
 
-def outerCoefficient (Ψ : O →* ℂ) (j : O) (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
+def outerCoefficient (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
   initialBeta p Ψ j x.common * (UniqueFactorizationMonoid.moebius (sourceIdeal p x.divisor):ℂ) *
     supportMobius (fun i=>Ideal.span {p i}) x.overlap * secondRayCoefficient ρ *
     star (initialColumn p hp hcop hg (secondRayMinus Ψ ρ) j (∏ i∈x.common,p i)
@@ -130,14 +129,14 @@ def outerCoefficient (Ψ : O →* ℂ) (j : O) (x : Point ι) (ρ : SecondRayInd
       (divisor p x) (-x.frequency) (fun _=>1) x.overlap
 
 def canonicalColumn (hpr : ∀ i,goodLambda^2∣p i-1)
-    (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ) (x : Point ι) (h : O)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ) (x : Point ι) (h : ActualEisensteinCubic.O)
     (H : Finset ι→ℂ) (N : Finset ι) : ℂ :=
   secondChildColumn p hp hcop hg Ψ (j*quotient p x)
     (primaryGenerator (sourceIdeal p x.divisor*sourceIdeal p x.overlap))
-    (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:O)^5*h))
+    (primaryGenerator (sourceIdeal p x.divisor)*((unitSector p hp hpr x:ActualEisensteinCubic.O)^5*h))
     (fun A=>σ (x.common∪(x.overlap∪A))*H A) N
 
-def physicalTerm (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
+def physicalTerm (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ)
     (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
   (initialBeta p Ψ j x.common * (UniqueFactorizationMonoid.moebius (sourceIdeal p x.divisor):ℂ) *
@@ -152,7 +151,7 @@ def physicalTerm (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
 
 include hp hcop hg in
 theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
-    (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ)
     (x : Point ι) (hx : Valid x) (ρ : SecondRayIndex) :
     physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ =
@@ -168,7 +167,7 @@ theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
   simp only [canonicalColumn,mul_one,star_mul,outerCoefficient,coordinates]
   ring
 
-def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (σ : Finset ι→ℂ) (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
   outerCoefficient p hp hcop hg Ψ j x ρ *
     star (canonicalColumn p hp hcop hg hpr (secondRayMinus Ψ ρ) j σ x x.frequency (fun _=>1) x.left) *
@@ -191,7 +190,7 @@ theorem columnRatio_actual (N : Finset ι) (Z D B v : ℝ) :
   unfold columnRatio sourceIdeal primeProductNorm
   rw [←eisEmbedding_norm_sq_eq_absNorm_span]
 
-def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ)) : ℂ :=
   let height :=  profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
@@ -202,7 +201,7 @@ def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : 
     canonicalColumn p hp hcop hg hpr (secondRayPlus Ψ ρ) j σ x (-x.frequency)
       (fun A=>childLogTest ω₂ (height 5) (columnRatio p A Z D B v)) x.right
 
-theorem canonical_pair_mode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+theorem canonical_pair_mode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ)) :
     barePair p hp hcop hg hpr Ψ j σ x ρ *
@@ -231,16 +230,16 @@ theorem family_density_finite_sum {κ : Type*} (s : Finset κ)
     _ = (Real.exp (-3*L):ℂ)*∑ k∈s,c k*∫ z : Frequency × (Fin 6→ℝ),
         fullProfileDensity g (𝓕 (clippedTwist g₁ c₁ θ₁)) (𝓕 (clippedTwist g₂ c₂ θ₂)) b₃ z *
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope (y k) z.1 z.2 := by
-      rw [Finset.mul_sum];apply Finset.sum_congr rfl;intro k hk;ring
-    _ = _ := by rw [he]
+      rw [Finset.mul_sum];grind
+    _ = _ := by simp_all
 
 def physicalBlock (source : Finset (Point ι)) (w : Point ι→ℂ)
-    (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) : ℂ :=
   ∑ x∈source,∑ ρ : SecondRayIndex,w x*physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ
 
 def canonicalBlock (hpr : ∀ i,goodLambda^2∣p i-1)
-    (source : Finset (Point ι)) (w : Point ι→ℂ) (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
+    (source : Finset (Point ι)) (w : Point ι→ℂ) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ) (z : Frequency × (Fin 6→ℝ)) : ℂ :=
   ∑ x∈source,∑ ρ : SecondRayIndex,w x*canonicalPairMode p hp hcop hg hpr Ψ j σ ω₁ ω₂ Z D B v θ H x ρ z
 
@@ -251,7 +250,7 @@ theorem physicalBlock_integral
     (Z D B v m θ H η c₁ c₂ θ₁ θ₂ : ℝ)
     (hid : PhysicalIdentityAt W₁ W₂ Φ V g g₁ g₂ b₃ Z D B v m θ H η c₁ c₂ θ₁ θ₂)
     (source : Finset (Point ι)) (hs : ∀ x∈source,Valid x)
-    (w : Point ι→ℂ) (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ)
+    (w : Point ι→ℂ) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ)
     (hω₁ : ∀ x∈source,clippedSource W₁ c₁ θ₁
       (relativeNorm (coordinates p x) Z D B v θ H 0 * relativeNorm (coordinates p x) Z D B v θ H 2 *
         relativeNorm (coordinates p x) Z D B v θ H 4)≠0 → star (ω₁ (columnRatio p x.left Z D B v))=1)
@@ -274,8 +273,8 @@ theorem physicalBlock_integral
       (Z^(prefactorCenter m D B θ+3*η):ℝ)*c (x,ρ)*
         ∫ z : Frequency × (Fin 6→ℝ),familyDensity g g₁ g₂ b₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) z *
           pureProfileMode secondLeftSlope secondRightSlope secondKernelSlope (y (x,ρ)) z.1 z.2 := by
-    rw [physicalTerm_extracted p hp hcop hg hpr Ψ j σ _ _ Φ Z D m x (hs x hx) ρ]
-    rw [hid (fun r=>star (ω₁ r)) ω₂ (coordinates p x) (coordinates_pos p hp x (hs x hx))
+    rw [physicalTerm_extracted p hp hcop hg hpr Ψ j σ _ _ Φ Z D m x (by grind) ρ]
+    rw [hid (fun r=>star (ω₁ r)) ω₂ (coordinates p x) (coordinates_pos p hp x (by grind))
       (hω₁ x hx) (hω₂ x hx) (hcut x hx)]
     dsimp only [c,y,barePair]
     rw [relative_column_left,relative_column_right]
@@ -307,7 +306,7 @@ theorem physicalBlock_integral
 
 theorem original_ray_common_insertion
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (F G E : Finset ι) (h : O) (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
+    (F G E : Finset ι) (h : ActualEisensteinCubic.O) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O) (σ : Finset ι→ℂ)
     (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) :
     (∑ U∈F.powerset,∑ T∈F.powerset,if Disjoint U T then
       initialPhysicalMode p hp hcop hg Ψ j σ W Φ Z D m G U T E h else 0) =
@@ -340,7 +339,6 @@ def BlockSupport (source : Finset (Point ι)) (W₁ W₂ ω₁ ω₂ : ℝ→ℂ
   (∀ x∈source,star (ω₁ (columnRatio p x.left Z D B v))≠0 →
     ω₂ (columnRatio p x.right Z D B v)≠0 → ∀ i,V i (relativeLog (coordinates p x) Z D B v θ H i)=1)
 
-open InverseInitialOverlap InverseInitialPoissonBridge CanonicalQuadraticSieve
 
 end SevenEighths.InverseInitialPhysicalMeasure
 

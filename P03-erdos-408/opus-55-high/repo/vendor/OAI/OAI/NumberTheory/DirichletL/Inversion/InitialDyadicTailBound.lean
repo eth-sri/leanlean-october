@@ -8,24 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialDyadicTailBound
 open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
 open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
 open InverseInitialEnergyCallerSource InverseInitialDyadicAssembly InverseInitialProfile
 open InverseInitialRetainedSupport InverseInitialHighFrequencyTail
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (_hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (Ψ : O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : O)
+      (Ψ : ActualEisensteinCubic.O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : ActualEisensteinCubic.O)
       (slots : Finset σ) (lists : σ→Finset ι) (weights : σ→ι→ℂ),
     (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖weights i k‖≤1) →
     ∀ (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m η bW Γ B₁ B₂ : ℝ),
@@ -95,7 +94,7 @@ theorem actual_high_mass_tail (Lcap saving τ : ℝ) (hτ : 0<τ) :
       ext x
       simp only [Finset.mem_filter,F]
     rw [hset]
-    exact hbound
+    omega
   refine hr ?_ ?_ ?_ ?_ ?_ ?_
   · intro x hx
     exact (mass_weight_bound p a b _ ha w (erasePoint x) (hrange _ (hold x hx))).trans (hw _ (hold x hx))

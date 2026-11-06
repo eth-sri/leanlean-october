@@ -10,10 +10,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalContours
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal
 open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
 open PrincipalMellinGrowth ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
@@ -71,32 +71,32 @@ def zBoxAmplitude (M : Id) (Bz : ℝ) : ℝ :=
 
 lemma zBoxAmplitude_nonneg (M : Id) [NeZero M] (Bz : ℝ) : 0≤zBoxAmplitude M Bz := by
   unfold zBoxAmplitude
-  exact mul_nonneg (mul_nonneg (by norm_num) (le_trans (by norm_num) (le_max_left _ _)))
+  exact mul_nonneg (by positivity)
     (principalConstant_pos M).le
 
 lemma fixed_principal_z_box_growth (M : Id) [NeZero M] (Bz ξ t : ℝ)
     (hξ : ξ∈Icc (33/200 : ℝ) Bz) :
     ‖HeckeOrigin.poleRemoved (fixedPrincipal M) (6*((ξ:ℂ)+t*I))‖≤zBoxAmplitude M Bz*height t^3 := by
   have hb := principal_poleRemoved_growth (fixedPrincipal M) rfl
-    (show (19/20 : ℝ)≤(6*((ξ:ℂ)+t*I) : ℂ).re by simp; linarith [hξ.1])
+    (show (19/20 : ℝ)≤(6*((ξ:ℂ)+t*I) : ℂ).re by simp; grind)
   have hn : ‖6*((ξ:ℂ)+t*I)+1‖≤max 6 (6*Bz+1)*height t := by
     apply (Complex.norm_le_abs_re_add_abs_im _).trans
     have hm : (6:ℝ)≤max 6 (6*Bz+1) := le_max_left _ _
-    have hm' : 6*ξ+1≤max 6 (6*Bz+1) := (by linarith [hξ.2] : 6*ξ+1≤6*Bz+1).trans (le_max_right _ _)
+    have hm' : 6*ξ+1≤max 6 (6*Bz+1) := (by simp_all : 6*ξ+1≤6*Bz+1).trans (le_max_right _ _)
     simp only [add_re,add_im,ofReal_re,ofReal_im,mul_re,mul_im,I_re,I_im,
       mul_zero,sub_zero,add_zero,zero_add,mul_one,one_re,one_im]
     norm_num only [show (6:ℂ).re=6 by norm_num,show (6:ℂ).im=0 by norm_num,zero_mul,sub_zero,add_zero]
-    rw [abs_of_pos (by linarith [hξ.1] : 0<6*ξ+1),abs_mul]
+    rw [abs_of_pos (by grind : 0<6*ξ+1),abs_mul]
     norm_num
     unfold height
     nlinarith [mul_le_mul_of_nonneg_right hm (abs_nonneg t)]
-  have hi : |(6*((ξ:ℂ)+t*I) : ℂ).im|=6*|t| := by simp [abs_mul]
+  have hi : |(6*((ξ:ℂ)+t*I) : ℂ).im|=6*|t| := by simp
   have ht : (3+6*|t|)^2≤36*height t^2 := by
     have hh : 3+6*|t|≤6*height t := by unfold height; linarith
-    have hp := pow_le_pow_left₀ (by positivity : 0≤3+6*|t|) hh 2
+    have hp := pow_le_pow_left₀ (by positivity) hh 2
     simpa only [mul_pow,show (6:ℝ)^2=36 by norm_num] using hp
   have hC := (principalConstant_pos M).le
-  have hmax : 0≤max (6:ℝ) (6*Bz+1) := le_trans (by norm_num) (le_max_left _ _)
+  have hmax : 0≤max (6:ℝ) (6*Bz+1) := by positivity
   have hh := (height_pos t).le
   rw [hi] at hb
   calc
@@ -108,7 +108,7 @@ lemma fixed_principal_z_box_growth (M : Id) [NeZero M] (Bz ξ t : ℝ)
 lemma LFunction_eq_pole_quotient (χ : Character) {s : ℂ} (h0 : s≠0) (h1 : s≠1) :
     LFunction χ s=HeckeOrigin.poleRemoved χ s/(s-1) := by
   rw [HeckeOrigin.poleRemoved_eq χ h0 h1]
-  exact (mul_div_cancel_left₀ _ (sub_ne_zero.mpr h1)).symm
+  grind
 
 lemma LFunction_vertical_continuous (χ : Character) (a : ℝ) (ha0 : a≠0) (ha1 : a≠1) :
     Continuous (fun t : ℝ => LFunction χ ((a:ℂ)+t*I)) := by
@@ -116,14 +116,14 @@ lemma LFunction_vertical_continuous (χ : Character) (a : ℝ) (ha0 : a≠0) (ha
   have h1 (t : ℝ) : (a:ℂ)+t*I≠1 := by intro h; exact ha1 (by simpa using congrArg Complex.re h)
   have hc := ((HeckeOrigin.poleRemoved_entire χ).continuous.comp
     (by fun_prop : Continuous (fun t : ℝ => (a:ℂ)+t*I))).div
-    (by fun_prop : Continuous (fun t : ℝ => (a:ℂ)+t*I-1)) (fun t => sub_ne_zero.mpr (h1 t))
+    (by fun_prop : Continuous (fun t : ℝ => (a:ℂ)+t*I-1)) (by grind)
   exact hc.congr (fun t => (LFunction_eq_pole_quotient χ (h0 t) (h1 t)).symm)
 
 lemma reciprocal_vertical_continuous (χ : Character) (a : ℝ) (ha : HeckeZeroSupremum.beta<a) :
     Continuous (fun t : ℝ => HeckeReciprocal.reciprocal χ ((a:ℂ)+t*I)) := by
   apply continuous_iff_continuousAt.mpr
   intro t
-  exact (HeckeReciprocal.reciprocal_differentiableAt χ (by simpa using ha)).continuousAt.comp
+  exact (HeckeReciprocal.reciprocal_differentiableAt χ (by simp_all)).continuousAt.comp
     (by fun_prop : Continuous (fun t : ℝ => (a:ℂ)+t*I)).continuousAt
 
 lemma LFunction_norm_le_of_poleRemoved (χ : Character) (s : ℂ) (h0 : s≠0) (h1 : s≠1)
@@ -142,11 +142,10 @@ lemma fixed_principal_w_bound (M : Id) [NeZero M] {cw υ : ℝ} (hcw : 1<cw)
   have h0 : (υ:ℂ)+t*I≠0 := by
     intro h; have he := congrArg Complex.re h; simp at he; linarith [hυ.1]
   have h1 : (υ:ℂ)+t*I≠1 := by intro h; exact hυ1 (by simpa using congrArg Complex.re h)
-  have hδ : 0 < |υ-1| := abs_pos.mpr (sub_ne_zero.mpr hυ1)
+  have hδ : 0 < |υ-1| := by positivity
   have h := LFunction_norm_le_of_poleRemoved (fixedPrincipal M) _ h0 h1 _ _ hδ
     (pole_distance_vertical 1 υ t) (fixed_principal_w_growth M hcw hυ t)
-  convert h using 1
-  ring
+  grind
 
 lemma fixed_principal_z_bound (M : Id) [NeZero M] (Bz ξ t : ℝ)
     (hξ : ξ∈Icc (33/200 : ℝ) Bz) (hξ1 : 6*ξ≠1) :
@@ -157,11 +156,10 @@ lemma fixed_principal_z_bound (M : Id) [NeZero M] (Bz ξ t : ℝ)
   have h1 : (6*((ξ:ℂ)+t*I) : ℂ)≠1 := by intro h; exact hξ1 (by simpa using congrArg Complex.re h)
   have hd : |6*ξ-1|≤‖6*((ξ:ℂ)+t*I)-1‖ := by
     simpa using Complex.abs_re_le_norm (6*((ξ:ℂ)+t*I)-1)
-  have hδ : 0 < |6*ξ-1| := abs_pos.mpr (sub_ne_zero.mpr hξ1)
+  have hδ : 0 < |6*ξ-1| := by positivity
   have h := LFunction_norm_le_of_poleRemoved (fixedPrincipal M) _ h0 h1 _ _ hδ hd
     (fixed_principal_z_box_growth M Bz ξ t hξ)
-  convert h using 1
-  ring
+  grind
 
 def arithmeticMultiplier {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀P∈S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -197,7 +195,7 @@ lemma arithmetic_onLines_measurable {ι : Type*} (η : Character) (S : Finset Id
   have hW := (LFunction_vertical_continuous (fixedSourcePrincipal S hS) υ hυ0 hυ1).measurable.comp
     (by fun_prop : Measurable (fun p : HeightSpace => p.2))
   have hZL := (LFunction_vertical_continuous (fixedSourcePrincipal S hS) (6*ξ)
-    (mul_ne_zero (by norm_num) hξ0) hξ1).measurable.comp
+    (by positivity) hξ1).measurable.comp
       (by fun_prop : Measurable (fun p : HeightSpace => 6*p.1.2))
   have hZL' : Measurable (fun p : HeightSpace => LFunction (fixedSourcePrincipal S hS)
       (6*((ξ:ℂ)+p.1.2*I))) := by
@@ -224,11 +222,11 @@ def arithmeticAmplitude {ι : Type*} (S : Finset Id) (J : Finset ι)
     (zBoxAmplitude (∏P∈S,P) Bz/δz) * (wAmplitude (∏P∈S,P) cw/δw)
 
 lemma height_le_joint_s (t v u : ℝ) : height t≤jointHeight t v u := by
-  unfold height jointHeight; linarith [abs_nonneg v,abs_nonneg u]
+  unfold height jointHeight; grind
 lemma height_le_joint_z (t v u : ℝ) : height v≤jointHeight t v u := by
-  unfold height jointHeight; linarith [abs_nonneg t,abs_nonneg u]
+  unfold height jointHeight; grind
 lemma height_le_joint_w (t v u : ℝ) : height u≤jointHeight t v u := by
-  unfold height jointHeight; linarith [abs_nonneg t,abs_nonneg v]
+  unfold height jointHeight; grind
 
 lemma arithmetic_onLines_bound_of_gaps {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -248,22 +246,22 @@ lemma arithmetic_onLines_bound_of_gaps {ι : Type*} (η : Character) (S : Finset
     (show (1/2-((ξ:ℂ)+p.1.2*I) : ℂ).re∈Icc (1/2-Bz) (1/2-33/200) by
       simp only [sub_re,add_re,ofReal_re,mul_re,ofReal_im,I_re,I_im,mul_zero,zero_mul,sub_self,add_zero]
       norm_num only [show (1/2:ℂ).re=1/2 by norm_num]
-      constructor <;> linarith [hξ.1,hξ.2])
+      grind)
   have hz := cpow_le_scaleBound hZ (((σ:ℂ)+p.1.1*I)+((ξ:ℂ)+p.1.2*I)-1)
     (show ((((σ:ℂ)+p.1.1*I)+((ξ:ℂ)+p.1.2*I)-1) : ℂ).re∈Icc (a+33/200-1) (Bs+Bz-1) by
-      simp only [sub_re,add_re,ofReal_re,mul_re,ofReal_im,I_re,I_im,mul_zero,zero_mul,sub_self,add_zero,one_re]; constructor <;> linarith [hσ.1,hσ.2,hξ.1,hξ.2])
+      simp only [sub_re,add_re,ofReal_re,mul_re,ofReal_im,I_re,I_im,mul_zero,zero_mul,sub_self,add_zero,one_re]; grind)
   have hy := cpow_le_scaleBound hY (((υ:ℂ)+p.2*I)-1)
     (show (((υ:ℂ)+p.2*I)-1 : ℂ).re∈Icc (19/20-1) (cw-1) by
-      simp only [sub_re,add_re,ofReal_re,mul_re,ofReal_im,I_re,I_im,mul_zero,zero_mul,sub_self,add_zero,one_re]; constructor <;> linarith [hυ.1,hυ.2])
+      simp_all)
   have hr : ‖HeckeReciprocal.reciprocal (η.excludePrimes S hS.prime) ((σ:ℂ)+p.1.1*I)‖≤C*height p.1.1^2 := by
-    apply (hR _ (by simpa using hσ.1)).trans
+    apply (hR _ (by simp_all)).trans
     simp only [add_im,ofReal_im,mul_im,ofReal_re,I_im,I_re,mul_one,mul_zero,add_zero,zero_add]
     apply mul_le_mul_of_nonneg_left _ hC
     unfold height
     nlinarith [abs_nonneg p.1.1]
   have hh := combined_slot_bound η S hS.tail J T b hT ((σ:ℂ)+p.1.1*I)
     ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I) Bs Bz
-    (by simpa using And.intro (ha.trans hσ.1) hσ.2) (by simpa using hυ.1) (by simpa using hξ)
+    (by simpa using And.intro (ha.trans hσ.1) hσ.2) (by simp_all) (by simp_all)
   have hw0 : (υ:ℂ)+p.2*I≠0 := by
     intro h; have hh := congrArg Complex.re h; simp at hh; linarith [hυ.1]
   have hw1 : (υ:ℂ)+p.2*I≠1 := by
@@ -325,8 +323,8 @@ lemma arithmetic_onLines_bound {ι : Type*} (η : Character) (S : Finset Id)
       arithmeticAmplitude S J T b X Y Z a Bs Bz cw C |υ-1| |6*ξ-1| *
         jointHeight p.1.1 p.1.2 p.2^8 := by
   apply arithmetic_onLines_bound_of_gaps η S hS J T b hT X Y Z a Bs Bz cw σ ξ υ C hX hY hZ
-    ha hσ hξ hcw hυ |υ-1| |6*ξ-1| (abs_pos.mpr (sub_ne_zero.mpr hυ1))
-    (abs_pos.mpr (sub_ne_zero.mpr hξ1)) hC hR p
+    ha hσ hξ hcw hυ |υ-1| |6*ξ-1| (by positivity)
+    (by positivity) hC hR p
   · exact pole_distance_vertical 1 υ p.2
   · simpa using Complex.abs_re_le_norm (6*((ξ:ℂ)+p.1.2*I)-1)
 
@@ -348,10 +346,10 @@ theorem continued_source_joint_integrable {ι : Type*} (η : Character) (S : Fin
     (by linarith) (fun p : HeightSpace => arithmeticMultiplier η S hS.prime J T b X Y Z
       ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I))
     (arithmetic_onLines_measurable η S hS.prime J T b X Y Z a ξ υ hX hY hZ hβ
-      (by linarith) hξ1 (by linarith [hυ.1]) hυ1).aestronglyMeasurable
+      (by linarith) hξ1 (by grind) hυ1).aestronglyMeasurable
     (arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1|) 8
     (arithmetic_onLines_bound η S hS J T b hT X Y Z a a ξ cw a ξ υ C hX hY hZ ha
-      ⟨le_rfl,le_rfl⟩ ⟨hξ,le_rfl⟩ hcw hυ hξ1 hυ1 hC hR)
+      (by simp) (by grind) hcw hυ hξ1 hυ1 hC hR)
   apply hi.congr
   exact Eventually.of_forall (fun p => arithmetic_profile_eq_source η S hS.prime J T b W0 W1 X Y Z _ _ _)
 
@@ -390,7 +388,7 @@ theorem source_joint_integrable {ι : Type*} (η : Character) (S : Finset Id)
   apply (continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a ξ υ cw hX hY hZ ha hβ hξ hcw hυ hξ1 hυ1).congr
   filter_upwards [continued_joint_ae_raw η S hS.prime J T b W0 W1 X Y Z a ξ υ] with p hp
-  rw [hp]
+  simp_all
 
 theorem source_joint_fubini {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -456,14 +454,14 @@ theorem continued_source_slices {ι : Type*} (η : Character) (S : Finset Id)
   let G : HeightSpace → ℂ := fun p => arithmeticMultiplier η S hS.prime J T b X Y Z
     ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)
   have hm := arithmetic_onLines_measurable η S hS.prime J T b X Y Z a ξ υ hX hY hZ hβ
-    (by linarith) hξ1 (by linarith [hυ.1]) hυ1
+    (by linarith) hξ1 (by grind) hυ1
   have hbound := arithmetic_onLines_bound η S hS J T b hT X Y Z a a ξ cw a ξ υ C hX hY hZ ha
-    ⟨le_rfl,le_rfl⟩ ⟨hξ,le_rfl⟩ hcw hυ hξ1 hυ1 hC hR
-  have hh := hk a ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ υ ⟨le_rfl,le_rfl⟩ axis R
+    (by simp) (by grind) hcw hυ hξ1 hυ1 hC hR
+  have hh := hk a (by simp) ξ (by simp) υ (by simp) axis R
     (arithmeticAmplitude S J T b X Y Z a a ξ cw C |υ-1| |6*ξ-1|)
     (arithmeticAmplitude_nonneg S hS.prime J T b X Y Z a a ξ cw C _ _ hcw hC (abs_nonneg _) (abs_nonneg _))
     (fun q => G (sliceMap axis R q)) ((hm.comp (sliceMap_continuous axis R).measurable).aestronglyMeasurable)
-    (fun q => hbound (sliceMap axis R q))
+    (by grind)
   simpa only [G,onLines,arithmetic_profile_eq_source] using hh
 
 theorem source_w_leftover_outer_integrable {ι : Type*} (η : Character) (S : Finset Id)
@@ -513,10 +511,10 @@ theorem source_z_boundary_any {ι : Type*} (η : Character) (S : Finset Id)
     he (mul_nonneg (by norm_num) (slotBound_nonneg J T b _ _))
     (zBoxAmplitude_nonneg _ _) 0 3
   · exact (combined_slot_analytic_z η S hS.tail J T b hT s 1 hs (by norm_num)).continuousOn.mono
-      (by intro z hz; change (4/25:ℝ)<z.re; linarith [hz.1])
+      (by grind)
   · intro x hx t _
     simpa only [pow_zero,mul_one] using combined_slot_bound η S hS.tail J T b hT s
-      1 ((x:ℂ)+t*I) s.re (1/6+e) ⟨hs,le_rfl⟩ (by norm_num) (by simpa using hx)
+      1 ((x:ℂ)+t*I) s.re (1/6+e) ⟨hs,le_rfl⟩ (by norm_num) (by simp_all)
   · intro x hx t _
     exact fixed_principal_z_box_growth (∏P∈S,P) (1/6+e) x t hx
 
@@ -542,29 +540,25 @@ theorem source_ordered_at_height {ι : Type*} (η : Character) (S : Finset Id)
   let : NeZero (∏P∈S,P) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
   have hs : (7/8 : ℝ)≤(((a:ℂ)+t*I) : ℂ).re := by simpa using ha
   have hη := HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt (η.excludePrimes S hS.prime)
-    (show HeckeZeroSupremum.beta<(((a:ℂ)+t*I) : ℂ).re by simpa using hβ) (Or.inl hs1)
+    (show HeckeZeroSupremum.beta<(((a:ℂ)+t*I) : ℂ).re by simp_all) (Or.inl hs1)
   have hzb := source_z_boundary_any η S hS J T b hT W0 W1 a0 b0 ha0 hW0 X Y Z hX hZ
     ((a:ℂ)+t*I) hs hη he
   apply source_ordered_double_shift (fixedSourcePrincipal S hS.prime) _ hcw he
   · intro z hz
     apply (source_multiplier_differentiable_w η S hS J T b hT W0 W1 a1 b1 ha1 hW1
-      X Y Z hY ((a:ℂ)+t*I) z hs (by rw [hz]; linarith)).mono
-    intro w hw
-    change (9/10 : ℝ)<w.re
-    linarith [hw.1]
+      X Y Z hY ((a:ℂ)+t*I) z hs (by linarith)).mono
+    grind
   · intro z hz
     have hh := ProbeFiniteProductBounds.source_w_boundary η S hS J T b hT W0 W1 a1 b1 ha1 hW1
-      (∏P∈S,P) X Y Z hY ((a:ℂ)+t*I) z hs (by rw [hz]; linarith) hη hcw
+      (∏P∈S,P) X Y Z hY ((a:ℂ)+t*I) z hs (by linarith) hη hcw
     convert boundary_mul_const _ _ _ hh (LFunction (fixedSourcePrincipal S hS.prime) (6*z)) using 1
     funext w
     dsimp only [fixedSourcePrincipal,fixedPrincipal]
     ring
   · apply (source_multiplier_differentiable_z η S hS J T b hT W0 W1 X Y Z hX hZ
       ((a:ℂ)+t*I) 1 hs (by norm_num)).mono
-    intro z hz
-    change (4/25 : ℝ)<z.re
-    linarith [hz.1]
-  · exact hzb
+    grind
+  · omega
   · exact source_w_leftover_outer_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
       X Y Z a e t hX hY hZ ha hβ he hs1
 
@@ -621,7 +615,7 @@ lemma residue_arithmetic_measurable {ι : Type*} (η : Character) (S : Finset Id
   have hR := (reciprocal_vertical_continuous (η.excludePrimes S hS) a hβ).measurable.comp
     (by fun_prop : Measurable (fun q : ℝ×ℝ => q.1))
   have hL := (LFunction_vertical_continuous (fixedSourcePrincipal S hS) (6*ξ)
-    (mul_ne_zero (by norm_num) hξ0) hξ1).measurable.comp
+    (by positivity) hξ1).measurable.comp
       (by fun_prop : Measurable (fun q : ℝ×ℝ => 6*q.2))
   have hL' : Measurable (fun q : ℝ×ℝ => LFunction (fixedSourcePrincipal S hS)
       (6*((ξ:ℂ)+q.2*I))) := by
@@ -654,7 +648,7 @@ lemma residue_arithmetic_bound {ι : Type*} (η : Character) (S : Finset Id)
     unfold height
     nlinarith [abs_nonneg q.1]
   have hh := combined_slot_bound η S hS.tail J T b hT ((a:ℂ)+q.1*I) 1 ((ξ:ℂ)+q.2*I) a ξ
-    (by simpa using ha) (by norm_num) (by simpa using hξ)
+    (by simp_all) (by norm_num) (by simp_all)
   have hL := fixed_principal_z_bound (∏P∈S,P) ξ ξ q.2 ⟨hξ,le_rfl⟩ hξ1
   have hX0 := (Real.rpow_pos_of_pos hX (1/2-ξ)).le
   have hZ0 := (Real.rpow_pos_of_pos hZ (a+ξ-1)).le
@@ -705,7 +699,7 @@ theorem continued_residue_pair_integrable {ι : Type*} (η : Character) (S : Fin
     a a ξ ξ 1 1 (by linarith) 5 0
   have hm := residue_arithmetic_measurable η S hS.prime J T b X Z a ξ hX hZ hβ (by linarith) hξ1
   have hb := residue_arithmetic_bound η S hS J T b hT X Z a ξ C hX hZ ha hξ hξ1 hC hR
-  have hh := (hk a ⟨le_rfl,le_rfl⟩ ξ ⟨le_rfl,le_rfl⟩ 1 ⟨le_rfl,le_rfl⟩ .w 0
+  have hh := (hk a (by simp) ξ (by simp) 1 (by simp) .w 0
     (residueAmplitude S J T b X Z a ξ C)
     (residueAmplitude_nonneg S hS.prime J T b X Z a ξ C hX.le hZ.le hC)
     (fun q : ℝ×ℝ => residueArithmetic η S hS.prime J T b X Z ((a:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I))
@@ -796,11 +790,11 @@ theorem source_ordered_outer {ι : Type*} (η : Character) (S : Finset Id)
   let E := fun s => R^2/6*K s 1 (1/6)
   have hA : Integrable (fun t : ℝ => A ((a:ℂ)+t*I)) :=
     source_iterated_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-      X Y Z a (1/6+e) cw cw hX hY hZ ha hβ (by linarith) hcw ⟨by linarith,le_rfl⟩
+      X Y Z a (1/6+e) cw cw hX hY hZ ha hβ (by linarith) hcw (by grind)
       (by linarith) (ne_of_gt hcw)
   have hB : Integrable (fun t : ℝ => B ((a:ℂ)+t*I)) :=
     source_iterated_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-      X Y Z a (1/6+e) (19/20) cw hX hY hZ ha hβ (by linarith) hcw ⟨le_rfl,by linarith⟩
+      X Y Z a (1/6+e) (19/20) cw hX hY hZ ha hβ (by linarith) hcw (by grind)
       (by linarith) (by norm_num)
   have hD : Integrable (fun t : ℝ => D ((a:ℂ)+t*I)) :=
     (residue_iterated_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1

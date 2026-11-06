@@ -59,15 +59,11 @@ private theorem mem_blockSystemsIn {S : Finset α} {𝒞 : Finset (Finset α)} :
     𝒞 ∈ blockSystemsIn S ↔
       (𝒞 : Set (Finset α)).PairwiseDisjoint id ∧ ∀ C ∈ 𝒞, 2 ≤ #C ∧ C ⊆ S := by
   simp only [blockSystemsIn, blockSystems, mem_filter, mem_univ, true_and, and_assoc]
-  constructor
-  · rintro ⟨hd, h2, hS⟩
-    exact ⟨hd, fun C hC => ⟨h2 C hC, hS C hC⟩⟩
-  · rintro ⟨hd, h⟩
-    exact ⟨hd, fun C hC => (h C hC).1, fun C hC => (h C hC).2⟩
+  grind
 
 /-- Every block system lies in `univ`. -/
 private theorem blockSystemsIn_univ : blockSystemsIn (univ : Finset α) = blockSystems α :=
-  filter_true_of_mem fun _ _ C _ => subset_univ C
+  filter_true_of_mem (by simp)
 
 /-- The only block system inside `∅` is the empty one. -/
 private theorem blockSystemsIn_empty : blockSystemsIn (∅ : Finset α) = {∅} := by
@@ -79,14 +75,13 @@ private theorem blockSystemsIn_empty : blockSystemsIn (∅ : Finset α) = {∅} 
     have h2 := (h C hC).1
     rw [subset_empty.1 (h C hC).2, card_empty] at h2
     omega
-  · rintro rfl
-    simp
+  simp_all
 
 /-- A block system inside `T \ B` has no block through an address outside `T`. -/
 private theorem insert_notMem_of_mem_blockSystemsIn {a : α} {T B B' : Finset α}
     {𝒞 : Finset (Finset α)} (ha : a ∉ T) (h𝒞 : 𝒞 ∈ blockSystemsIn (T \ B)) :
     insert a B' ∉ 𝒞 := fun h =>
-  ha (mem_sdiff.1 (((mem_blockSystemsIn.1 h𝒞).2 _ h).2 (mem_insert_self a B'))).1
+  ha (mem_sdiff.1 (((mem_blockSystemsIn.1 h𝒞).2 _ h).2 (by simp))).1
 
 /-- Splitting the block systems inside `insert a T` by the block through `a`: either no block
 contains `a`, or that block is `insert a B` for a nonempty `B ⊆ T` and the other blocks form a
@@ -99,24 +94,18 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
           ∑ 𝒞 ∈ blockSystemsIn (T \ B), Φ (insert (insert a B) 𝒞) := by
   rw [← sum_filter_not_add_sum_filter _ fun 𝒞 => ∃ C ∈ 𝒞, a ∈ C]
   congr 1
-  · refine sum_congr ?_ fun _ _ => rfl
+  · refine sum_congr ?_ (by simp)
     ext 𝒞
     simp only [mem_filter, mem_blockSystemsIn, not_exists, not_and]
-    constructor
-    · rintro ⟨⟨hd, h⟩, haC⟩
-      exact ⟨hd, fun C hC =>
-        ⟨(h C hC).1, (subset_insert_iff_of_notMem (haC C hC)).1 (h C hC).2⟩⟩
-    · rintro ⟨hd, h⟩
-      exact ⟨⟨hd, fun C hC => ⟨(h C hC).1, (h C hC).2.trans (subset_insert a T)⟩⟩,
-        fun C hC haC => ha ((h C hC).2 haC)⟩
+    grind
   · rw [sum_sigma']
     symm
-    refine sum_bij (fun x _ => insert (insert a x.1) x.2) ?_ ?_ ?_ fun _ _ => rfl
+    refine sum_bij (fun x _ => insert (insert a x.1) x.2) ?_ ?_ ?_ (by simp)
     · rintro ⟨B, 𝒞⟩ hx
       simp only [mem_sigma, mem_filter, mem_powerset] at hx
       obtain ⟨⟨hBT, hB⟩, h𝒞⟩ := hx
       obtain ⟨hd, h⟩ := mem_blockSystemsIn.1 h𝒞
-      have haB : a ∉ B := fun h => ha (hBT h)
+      have haB : a ∉ B := by grind
       refine mem_filter.2 ⟨mem_blockSystemsIn.2 ⟨?_, ?_⟩,
         insert a B, mem_insert_self _ _, mem_insert_self _ _⟩
       · rw [coe_insert]
@@ -124,12 +113,8 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
         have hCT := (h C hC).2
         show Disjoint (insert a B) C
         exact disjoint_insert_left.2
-          ⟨fun h => ha (mem_sdiff.1 (hCT h)).1, disjoint_sdiff.mono_right hCT⟩
-      · refine (forall_mem_insert _ _ _).2 ⟨⟨?_, insert_subset_insert a hBT⟩, fun C hC =>
-          ⟨(h C hC).1, (h C hC).2.trans (sdiff_subset.trans (subset_insert a T))⟩⟩
-        rw [card_insert_of_notMem haB]
-        have := hB.card_pos
-        omega
+          ⟨by grind, disjoint_sdiff.mono_right hCT⟩
+      grind
     · rintro ⟨B₁, 𝒞₁⟩ hx₁ ⟨B₂, 𝒞₂⟩ hx₂ h
       dsimp only at h
       simp only [mem_sigma, mem_filter, mem_powerset] at hx₁ hx₂
@@ -140,30 +125,28 @@ private theorem sum_blockSystemsIn_insert {M : Type*} [AddCommMonoid M] {a : α}
         rw [h, mem_insert] at h₁
         exact h₁.resolve_right (insert_notMem_of_mem_blockSystemsIn ha hx₂.2)
       obtain rfl : B₁ = B₂ :=
-        calc B₁ = (insert a B₁).erase a := (erase_insert fun h => ha (hx₁.1.1 h)).symm
-          _ = (insert a B₂).erase a := by rw [hB]
-          _ = B₂ := erase_insert fun h => ha (hx₂.1.1 h)
+        calc B₁ = (insert a B₁).erase a := by grind
+          _ = (insert a B₂).erase a := by simp_all
+          _ = B₂ := by grind
       obtain rfl : 𝒞₁ = 𝒞₂ :=
-        calc 𝒞₁ = (insert (insert a B₁) 𝒞₁).erase (insert a B₁) := (erase_insert h𝒞₁).symm
-          _ = (insert (insert a B₁) 𝒞₂).erase (insert a B₁) := by rw [h]
-          _ = 𝒞₂ := erase_insert h𝒞₂
+        calc 𝒞₁ = (insert (insert a B₁) 𝒞₁).erase (insert a B₁) := by grind
+          _ = (insert (insert a B₁) 𝒞₂).erase (insert a B₁) := by simp_all
+          _ = 𝒞₂ := by grind
       rfl
     · intro 𝒞 h𝒞
       obtain ⟨h𝒞S, C, hC, haC⟩ := mem_filter.1 h𝒞
       obtain ⟨hd, h⟩ := mem_blockSystemsIn.1 h𝒞S
       refine ⟨⟨C.erase a, 𝒞.erase C⟩, ?_, ?_⟩
       · simp only [mem_sigma, mem_filter, mem_powerset]
-        refine ⟨⟨subset_insert_iff.1 (h C hC).2, ?_⟩, mem_blockSystemsIn.2
-          ⟨hd.subset (coe_subset.2 (erase_subset C 𝒞)), fun C' hC' => ?_⟩⟩
+        refine ⟨⟨by grind, ?_⟩, mem_blockSystemsIn.2
+          ⟨hd.subset (by simp), fun C' hC' => ?_⟩⟩
         · rw [← card_pos, card_erase_of_mem haC]
-          have := (h C hC).1
-          omega
+          grind
         · obtain ⟨hne, hC'⟩ := mem_erase.1 hC'
           have hdisj : Disjoint C' C := hd hC' hC hne
-          refine ⟨(h C' hC').1, subset_sdiff.2 ⟨?_, hdisj.mono_right (erase_subset a C)⟩⟩
-          exact (subset_insert_iff_of_notMem (disjoint_right.1 hdisj haC)).1 (h C' hC').2
-      · dsimp only
-        rw [insert_erase haC, insert_erase hC]
+          refine ⟨by grind, subset_sdiff.2 ⟨?_, hdisj.mono_right (by grind)⟩⟩
+          exact (subset_insert_iff_of_notMem (disjoint_right.1 hdisj haC)).1 (by grind)
+      simp_all
 
 /-! ### Distinctness on a set of addresses -/
 
@@ -186,19 +169,19 @@ private theorem distinctOn_sdiff_iff {β : α → Option ℕ} {T P B : Finset α
   subst hP
   constructor
   · intro h
-    refine ⟨h.mono (sdiff_subset_sdiff subset_rfl hB), card_le_one.2 fun x hx x' hx' => ?_⟩
+    refine ⟨h.mono (by grind), card_le_one.2 fun x hx x' hx' => ?_⟩
     simp only [mem_sdiff, mem_filter] at hx hx'
-    exact h x (mem_sdiff.2 ⟨hx.1.1, hx.2⟩) x' (mem_sdiff.2 ⟨hx'.1.1, hx'.2⟩) p hx.1.2 hx'.1.2
+    exact h x (by grind) x' (by grind) p hx.1.2 hx'.1.2
   · rintro ⟨hd, hc⟩ x hx x' hx' q hq hq'
     simp only [mem_sdiff] at hx hx'
     by_cases hxp : β x = some p
-    · have hqp : q = p := Option.some_inj.1 (hq.symm.trans hxp)
+    · have hqp := Option.some_inj.1 (hq.symm.trans hxp)
       rw [hqp] at hq hq'
-      exact card_le_one.1 hc x (mem_sdiff.2 ⟨mem_filter.2 ⟨hx.1, hq⟩, hx.2⟩)
-        x' (mem_sdiff.2 ⟨mem_filter.2 ⟨hx'.1, hq'⟩, hx'.2⟩)
-    · have hx'p : β x' ≠ some p := fun h => hxp (hq.trans (hq'.symm.trans h))
-      exact hd x (mem_sdiff.2 ⟨hx.1, fun h => hxp (mem_filter.1 h).2⟩)
-        x' (mem_sdiff.2 ⟨hx'.1, fun h => hx'p (mem_filter.1 h).2⟩) q hq hq'
+      exact card_le_one.1 hc x (by grind)
+        x' (by grind)
+    · have hx'p : β x' ≠ some p := by grind
+      exact hd x (by grind)
+        x' (by grind) q hq hq'
 
 omit [Fintype α] in
 /-- Adding an address `a` performed with the prime `p`: distinctness on `insert a T` is
@@ -209,17 +192,17 @@ private theorem distinctOn_insert_iff {β : α → Option ℕ} {a : α} {T P : F
   subst hP
   constructor
   · intro h
-    refine ⟨h.mono (sdiff_subset.trans (subset_insert a T)), card_eq_zero.2 ?_⟩
+    refine ⟨h.mono (by grind), card_eq_zero.2 ?_⟩
     refine filter_eq_empty_iff.2 fun x hx hxp => ?_
-    exact ha (h x (mem_insert_of_mem hx) a (mem_insert_self a T) p hxp hβ ▸ hx)
+    exact ha (h x (mem_insert_of_mem hx) a (by simp) p hxp hβ ▸ hx)
   · rintro ⟨hd, hc⟩
     have hT : ∀ x ∈ T, β x ≠ some p := fun x hx => filter_eq_empty_iff.1 (card_eq_zero.1 hc) hx
     rw [card_eq_zero.1 hc, sdiff_empty] at hd
     intro x hx x' hx' q hq hq'
     rcases mem_insert.1 hx with rfl | hxT <;> rcases mem_insert.1 hx' with rfl | hxT'
     · rfl
-    · exact absurd (hq'.trans (hq.symm.trans hβ)) (hT x' hxT')
-    · exact absurd (hq.trans (hq'.symm.trans hβ)) (hT x hxT)
+    · simp_all
+    · simp_all
     · exact hd x hxT x' hxT' q hq hq'
 
 omit [Fintype α] [DecidableEq α] in
@@ -245,13 +228,8 @@ private theorem indicator_card_eq_zero (P : Finset α) :
       have h₃ : ((j + 2).factorial : ℤ) = (j + 2) * (j + 1).factorial := by
         push_cast [Nat.factorial_succ]
         ring
-      simp only [h₁, h₂, h₃, Nat.choose_self, Nat.sub_self, nsmul_eq_mul]
-      simp
-      ring
-    · have : ¬j + 2 - k ≤ 1 := by
-        have := mem_range.1 hk
-        omega
-      simp [this]
+      grind
+    grind
 
 open scoped Classical in
 /-- The signed weight `(-1)^{|C| - 1} (|C| - 1)! [C realized]` of a block. -/
@@ -272,45 +250,37 @@ private theorem distinctOn_insert_indicator (β : α → Option ℕ) {a : α} {T
   | none =>
     have hw : ∀ B, blockWeight β (insert a B) = 0 := fun B => by
       have : ¬BlockRealized β (insert a B) := fun ⟨p, hp⟩ => by
-        have := hp a (mem_insert_self a B)
-        rw [hβ] at this
-        cases this
+        simp_all
       simp only [blockWeight, this, ↓reduceIte, mul_zero]
     have hD : DistinctOn β (insert a T) ↔ DistinctOn β T := by
-      refine ⟨fun h => h.mono (subset_insert a T), fun h x hx x' hx' p hp hp' => ?_⟩
+      refine ⟨fun h => h.mono (by simp), fun h x hx x' hx' p hp hp' => ?_⟩
       rcases mem_insert.1 hx with rfl | hxT
-      · rw [hβ] at hp
-        cases hp
+      · simp_all
       rcases mem_insert.1 hx' with rfl | hxT'
-      · rw [hβ] at hp'
-        cases hp'
+      · simp_all
       exact h x hxT x' hxT' p hp hp'
-    simp only [hD, hw, zero_mul, sum_const_zero, add_zero]
+    simp_all
   | some p =>
-    obtain ⟨P, hP⟩ : ∃ P, P = T.filter (β · = some p) := ⟨_, rfl⟩
-    have hPT : P ⊆ T := hP ▸ filter_subset _ _
+    obtain ⟨P, hP⟩ : ∃ P, P = T.filter (β · = some p) := by simp
+    have hPT := hP ▸ filter_subset _ _
     have hw : ∀ B ⊆ T, blockWeight β (insert a B) =
         (-1) ^ #B * ((#B).factorial : ℤ) * if B ⊆ P then 1 else 0 := fun B hB => by
       have hR : BlockRealized β (insert a B) ↔ B ⊆ P := by
         subst hP
         constructor
         · rintro ⟨q, hq⟩ x hx
-          have hqp : q = p := by
-            have := hq a (mem_insert_self a B)
-            rw [hβ] at this
-            exact (Option.some_inj.1 this).symm
-          exact mem_filter.2 ⟨hB hx, hqp ▸ hq x (mem_insert_of_mem hx)⟩
+          grind
         · intro h
-          exact ⟨p, (forall_mem_insert _ _ _).2 ⟨hβ, fun x hx => (mem_filter.1 (h hx)).2⟩⟩
-      rw [blockWeight, card_insert_of_notMem fun h => ha (hB h), Nat.add_sub_cancel]
-      by_cases h : B ⊆ P <;> simp [h, hR]
+          exact ⟨p, by grind⟩
+      rw [blockWeight, card_insert_of_notMem (by grind), Nat.add_sub_cancel]
+      simp_all
     have hsub : P.powerset.filter (·.Nonempty) ⊆ T.powerset.filter (·.Nonempty) :=
-      filter_subset_filter _ (powerset_mono.2 hPT)
+      by grind
     have hzero : ∀ B ∈ T.powerset.filter (·.Nonempty), B ∉ P.powerset.filter (·.Nonempty) →
         blockWeight β (insert a B) * (if DistinctOn β (T \ B) then 1 else 0) = 0 := by
       intro B hB hB'
       simp only [mem_filter, mem_powerset] at hB hB'
-      have : ¬B ⊆ P := fun h => hB' ⟨h, hB.2⟩
+      have : ¬B ⊆ P := by grind
       rw [hw B hB.1]
       simp [this]
     rw [← sum_subset hsub hzero]
@@ -321,7 +291,7 @@ private theorem distinctOn_insert_indicator (β : α → Option ℕ) {a : α} {T
           blockWeight β (insert a B) * (if DistinctOn β (T \ B) then 1 else 0) =
             (-1) ^ #B * ((#B).factorial : ℤ) * if #P - #B ≤ 1 then 1 else 0 := by
         intro B hB
-        have hBP : B ⊆ P := mem_powerset.1 (mem_filter.1 hB).1
+        have hBP := mem_powerset.1 (mem_filter.1 hB).1
         rw [hw B (hBP.trans hPT), distinctOn_sdiff_iff hP hBP, card_sdiff_of_subset hBP]
         simp [hBP, hd]
       rw [distinctOn_insert_iff hβ ha hP, hT, sum_congr rfl hB]
@@ -330,10 +300,10 @@ private theorem distinctOn_insert_indicator (β : α → Option ℕ) {a : α} {T
     · have hB : ∀ B ∈ P.powerset.filter (·.Nonempty),
           blockWeight β (insert a B) * (if DistinctOn β (T \ B) then 1 else 0) = 0 := by
         intro B hB
-        rw [distinctOn_sdiff_iff hP (mem_powerset.1 (mem_filter.1 hB).1)]
+        rw [distinctOn_sdiff_iff hP (by grind)]
         simp [hd]
       rw [distinctOn_insert_iff hβ ha hP, hT, sum_congr rfl hB]
-      simp [hd]
+      simp_all
 
 open scoped Classical in
 /-- The partition identity on a set `S` of addresses. -/
@@ -350,7 +320,7 @@ private theorem distinctOn_indicator_eq (β : α → Option ℕ) (S : Finset α)
     rw [sum_blockSystemsIn_insert ha, distinctOn_insert_indicator β ha, ih T (ssubset_insert ha)]
     congr 1
     refine sum_congr rfl fun B _ => ?_
-    rw [ih _ (sdiff_subset.trans_ssubset (ssubset_insert ha)), mul_sum]
+    rw [ih _ (by grind), mul_sum]
     refine sum_congr rfl fun 𝒞 h𝒞 => ?_
     rw [prod_insert (insert_notMem_of_mem_blockSystemsIn ha h𝒞)]
 
@@ -378,33 +348,29 @@ private theorem rank_step_le (n r : ℕ) :
                 Nat.mul_le_mul_right _ (Nat.descFactorial_le_pow n k)
             _ = n ^ (2 * r - k) := by
                 rw [← pow_add]
-                congr 1
-                omega
-        · simp
+                grind
+        simp
     _ ≤ n ^ (2 * r) + ∑ k ∈ range (r + 1), if 0 < k ∧ k ≤ r then n ^ (2 * r - k) else 0 := by
         refine Nat.add_le_add_left ?_ _
         rw [← sum_filter_of_ne (p := (· ≤ r)) fun k _ hk => ?_]
         · exact sum_le_sum_of_subset fun k hk => mem_range.2 (by
-            have := (mem_filter.1 hk).2
-            omega)
-        · by_contra h
-          simp_all
+            simp_all)
+        simp_all
     _ = ∑ k ∈ range (r + 1), n ^ (2 * r - k) := by
         rw [sum_range_succ' _ r, sum_range_succ' _ r]
         simp only [lt_self_iff_false, false_and, ↓reduceIte, add_zero, Nat.sub_zero]
         rw [add_comm]
         congr 1
         refine sum_congr rfl fun k hk => ?_
-        have : 0 < k + 1 ∧ k + 1 ≤ r := ⟨k.succ_pos, mem_range.1 hk⟩
-        simp only [this, and_self, ↓reduceIte]
+        simp_all
     _ ≤ ∑ k ∈ range (r + 1), n ^ (2 * r - k) * (2 * r).choose k :=
         sum_le_sum fun k hk =>
-          Nat.le_mul_of_pos_right _ (Nat.choose_pos (by have := mem_range.1 hk; omega))
+          Nat.le_mul_of_pos_right _ (Nat.choose_pos (by grind))
     _ ≤ ∑ k ∈ range (2 * r + 1), n ^ (2 * r - k) * (2 * r).choose k :=
         sum_le_sum_of_subset (range_subset_range.2 (by omega))
     _ = (n + 1) ^ (2 * r) := by
         rw [add_comm n 1, add_pow]
-        simp only [one_pow, one_mul, Nat.cast_id]
+        simp
 
 /-- The rank bound on a set `S` of addresses. -/
 private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2 * r) := by
@@ -421,7 +387,7 @@ private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2
           if 0 < #B ∧ #B ≤ r then (#B).factorial * #T ^ (2 * (r - #B)) else 0 := by
       intro B hB
       obtain ⟨hBT, hBne⟩ := mem_filter.1 hB
-      have haB : a ∉ B := fun h => ha (mem_powerset.1 hBT h)
+      have haB : a ∉ B := by grind
       have hcard : #(insert a B) - 1 = #B := by
         rw [card_insert_of_notMem haB, Nat.add_sub_cancel]
       have h𝒞 : ∀ 𝒞 ∈ blockSystemsIn (T \ B),
@@ -432,13 +398,13 @@ private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2
         intro 𝒞 h𝒞
         have hX := insert_notMem_of_mem_blockSystemsIn (B' := B) ha h𝒞
         rw [blockRank, blockRank, sum_insert hX, prod_insert hX, hcard, mul_ite, mul_zero]
-        split_ifs <;> first | rfl | (exfalso; omega)
+        split_ifs <;> first | rfl | omega
       rw [sum_congr rfl h𝒞, ← mul_sum]
       by_cases hr : #B ≤ r
-      · have h0 : 0 < #B ∧ #B ≤ r := ⟨hBne.card_pos, hr⟩
-        simp only [hr, and_true, h0, and_self, ↓reduceIte]
+      · have h0 : 0 < #B ∧ #B ≤ r := by grind
+        simp only [and_true, h0, ↓reduceIte]
         gcongr
-        exact (ih _ (sdiff_subset.trans_ssubset (ssubset_insert ha)) (r - #B)).trans
+        exact (ih _ (by grind) (r - #B)).trans
           (Nat.pow_le_pow_left (card_le_card sdiff_subset) _)
       · simp [hr]
     rw [rankMass, sum_blockSystemsIn_insert ha, card_insert_of_notMem ha]
@@ -448,7 +414,7 @@ private theorem rankMass_le (r : ℕ) (S : Finset α) : rankMass r S ≤ #S ^ (2
       _ ≤ #T ^ (2 * r) + ∑ B ∈ T.powerset,
             (if 0 < #B ∧ #B ≤ r then (#B).factorial * #T ^ (2 * (r - #B)) else 0) := by
           gcongr
-          exact filter_subset _ _
+          simp
       _ = #T ^ (2 * r) + ∑ k ∈ range (#T + 1), (#T).choose k •
             (if 0 < k ∧ k ≤ r then k.factorial * #T ^ (2 * (r - k)) else 0) := by
           rw [sum_powerset_apply_card
@@ -483,8 +449,7 @@ theorem sum_abs_blockCoef_le (r : ℕ) :
         push_cast
         refine sum_congr rfl fun 𝒞 _ => ?_
         rw [blockCoef, abs_prod]
-        refine prod_congr rfl fun C _ => ?_
-        rw [abs_mul, abs_pow, abs_neg, abs_one, one_pow, one_mul, Nat.abs_cast]
-    _ ≤ (Fintype.card α : ℤ) ^ (2 * r) := by exact_mod_cast h
+        simp
+    _ ≤ (Fintype.card α : ℤ) ^ (2 * r) := by grind
 
 end Erdos408.OneSided

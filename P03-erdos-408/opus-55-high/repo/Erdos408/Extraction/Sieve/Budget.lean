@@ -34,7 +34,7 @@ lemma le_inv_pow_of_le {T C A : ℝ} {a b : ℕ} (hT : 1 ≤ T) (hC : |C| ≤ T)
   have hT0 : 0 < T := by linarith
   have h1 : C * T ^ a * A ≤ T * T ^ a * (T ^ b)⁻¹ := by
     have : C * T ^ a ≤ T * T ^ a :=
-      mul_le_mul_of_nonneg_right ((le_abs_self C).trans hC) (by positivity)
+      mul_le_mul_of_nonneg_right (by grind) (by positivity)
     calc C * T ^ a * A ≤ T * T ^ a * A := mul_le_mul_of_nonneg_right this hA0
       _ ≤ T * T ^ a * (T ^ b)⁻¹ := mul_le_mul_of_nonneg_left hA (by positivity)
   refine h1.trans ?_
@@ -71,7 +71,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
   have hs0 : 0 ≤ logLogLog x := by
     rw [logLogLog]
     exact log_nonneg hT
-  have hpow : ∀ n : ℕ, T ^ (n : ℝ) = T ^ n := fun n => rpow_natCast T n
+  have hpow := fun n => rpow_natCast T n
   rw [one_mul, rpow_one, show (400 : ℝ) = ((400 : ℕ) : ℝ) by norm_num, hpow] at hL400
   rw [one_mul, show (400 : ℝ) = ((400 : ℕ) : ℝ) by norm_num, hpow] at hLc
   rw [rpow_one, show (23 : ℝ) = ((23 : ℕ) : ℝ) by norm_num, hpow] at hL23
@@ -89,7 +89,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
       rw [h'] at this
       rw [h']
       exact this
-    have he : exp 1 < 3 := exp_one_lt_three
+    have he := exp_one_lt_three
     have h1 : 600 * logLogLog x ≤ inertPerCluster K (30000 * K) x / (12 * exp 1) := by
       rw [le_div_iff₀ (by positivity)]
       nlinarith
@@ -115,7 +115,7 @@ lemma eventually_savings {K : ℕ} (hK : 1 ≤ K) {c c' : ℝ} (hc : 0 < c) (hc'
       _ ≤ (T ^ 400)⁻¹ * (Real.log x * Real.log x) :=
           mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_right hL400 hL.le) (by positivity)
       _ ≤ (T ^ 400)⁻¹ * x ^ presieveExponent c 200 x :=
-          mul_le_mul_of_nonneg_left (by rw [← sq]; exact hz) (by positivity)
+          mul_le_mul_of_nonneg_left (by linarith) (by positivity)
   · rw [rpow_neg hL.le]
     exact inv_anti₀ (by positivity) hLc
   · have := Nat.ceil_lt_add_one (show 0 ≤ 1001 * logLogLog x by positivity)
@@ -141,14 +141,7 @@ lemma final_budget {T eh iL Lz j2 e1 Lc J C₂ C₃ C₁₂ C₁₀ : ℝ} (hT :
   have h7 := le_inv_pow_of_le (a := 62) hT hC₁₀ hiL0 hiL (by norm_num)
   have h5' : J * (C₁₂ * Lc) ≤ C₁₂ * T ^ 1 * Lc := by
     rw [pow_one, mul_comm C₁₂ T, mul_assoc]
-    exact mul_le_mul_of_nonneg_right hJ (mul_nonneg hC₁₂0 hLc0)
-  have e1' : C₂ * (T ^ 4 * T ^ 22 * eh + T ^ 4 * iL) = C₂ * T ^ 26 * eh + C₂ * T ^ 4 * iL := by
-    ring
-  have e2' : C₃ * (T ^ 62 * Lz + T ^ 62 * T ^ 44 * j2) =
-      C₃ * T ^ 62 * Lz + C₃ * T ^ 106 * j2 := by ring
-  have e3' : T ^ 62 * (C₁₀ * (T ^ 22 * e1 + iL)) = C₁₀ * T ^ 84 * e1 + C₁₀ * T ^ 62 * iL := by
-    ring
-  rw [e1', e2', e3']
+    exact mul_le_mul_of_nonneg_right hJ (by positivity)
   linarith
 
 end

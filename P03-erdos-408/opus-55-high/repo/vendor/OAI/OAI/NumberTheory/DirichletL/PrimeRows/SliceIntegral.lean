@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedIntegral
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open ProbePhysical ProbeMellinBoundary
@@ -45,7 +45,7 @@ theorem source_profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1
       (sliceMap axis T q).1.1 (sliceMap axis T q).1.2 (sliceMap axis T q).2^J := by
     rw [norm_mul,hSn]
     exact (mul_le_mul_of_nonneg_left (hGb q) hE).trans_eq (by ring)
-  obtain ⟨hi,hb⟩ := hbound σ hσ ξ hξ υ hυ axis T (E*A) (mul_nonneg hE hA)
+  obtain ⟨hi,hb⟩ := hbound σ hσ ξ hξ υ hυ axis T (E*A) (by positivity)
     (fun q=>S q*G q) (hS.aestronglyMeasurable.mul hG) hb
   have heq : (fun q : ℝ×ℝ=>sourceMellinWeight W0 W1 X Y Z
         ((σ:ℂ)+(sliceMap axis T q).1.1*I) ((υ:ℂ)+(sliceMap axis T q).2*I)
@@ -58,10 +58,7 @@ theorem source_profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1
   dsimp only
   refine ⟨heq.symm ▸ hi,?_⟩
   have hnorm := congrArg (fun f : ℝ×ℝ→ℂ => ∫q : ℝ×ℝ,‖f q‖ ∂volume.prod volume) heq
-  rw [hnorm]
-  calc
-    _ ≤ (E*A)*K/height T^N := hb
-    _ = _ := by dsimp [E];ring
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

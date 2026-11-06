@@ -9,8 +9,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ComplexConjugate
-open Complex Set
+open scoped Classical ComplexConjugate
+open Complex
 namespace SevenEighths.HeckeDyadicReflection
 open HeckeFamily HeckePresentation HeckeFiniteDeletion
 
@@ -25,7 +25,7 @@ theorem family_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ η : Character,
   have h := hbound (generator η) (principalResidue η) (principalResidue_unit η)
     (principalResidue_primitive η hp) (principalResidue_ne_one η hη) s hl hr
   have hi : HeckePrimitive.character (generator η) (principalResidue η)⁻¹
-      (HeckePrimitive.inverse_unit_trivial (generator η) (principalResidue η) (principalResidue_unit η)) =
+      (by grind) =
       (principalCharacter η).inverse := rfl
   rw [hi,LFunction_inverse_conj (principalCharacter η) (principalResidue_ne_one η hη),
     norm_conj,map_sub,map_one] at h
@@ -44,9 +44,9 @@ theorem LFunction_eq_of_mask_entire (χ ψ : Character) (hχ : χ.residue≠1)
   have he : LFunction χ=(fun z => LFunction ψ z*factors χ.modulus ψ z) := by
     apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
       (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
-    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ)<(2 : ℂ).re)] with z hz
+    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by simp)] with z hz
     exact LFunction_eq_of_mask_right χ ψ hmask hz
-  exact congr_fun he s
+  simp_all
 
 theorem original_reflected_bound : ∃ C : ℝ, 0<C ∧ ∀ χ ψ : Character,
     FiniteFourier.IsPrimitiveOnIdeals ψ.residue → χ.residue≠1 →
@@ -98,7 +98,7 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
     calc
       _ ≤ (Cl*((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+ε))*
           (Cr*((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^ε) :=
-        mul_le_mul hd₁ hd₂ (norm_nonneg _) (mul_nonneg hCl.le (Real.rpow_nonneg hR.le _))
+        mul_le_mul hd₁ hd₂ (norm_nonneg _) (by positivity)
       _ = _ := by
         have he : ((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+ε)*
             ((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^ε =
@@ -106,10 +106,7 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
           rw [←Real.rpow_add hR]
           congr 1
           ring
-        calc
-          _ = (Cl*Cr)*(((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+ε)*
-              ((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^ε) := by ring
-          _ = _ := by rw [he]
+        grind
   have hQ' : (ψ.modulus.absNorm : ℝ)^(1/2-s.re)≤(χ.modulus.absNorm : ℝ)^(1/2-s.re) :=
     Real.rpow_le_rpow (by positivity) (by exact_mod_cast hQ) (by linarith)
   calc
@@ -120,7 +117,7 @@ theorem original_reflected_subpower (ε : ℝ) (hε : 0<ε) :
     _ ≤ Cg*(χ.modulus.absNorm : ℝ)^(1/2-s.re)*(3+|s.im|)^2*
         ‖LFunction χ (1-conj s)‖*
         ((Cl*Cr)*((HeckeDeletionBounds.radical χ.modulus).absNorm : ℝ)^(max (-s.re) 0+2*ε)) := by
-      apply mul_le_mul _ hd (mul_nonneg (norm_nonneg _) (norm_nonneg _)) (by positivity)
+      apply mul_le_mul _ hd (by positivity) (by positivity)
       gcongr
     _ = _ := by ring
 

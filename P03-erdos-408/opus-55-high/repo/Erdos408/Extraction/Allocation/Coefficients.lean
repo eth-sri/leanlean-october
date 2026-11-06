@@ -54,7 +54,7 @@ lemma candidateOmega_eq_cardFactors (x : ℝ) (n : ℕ) :
   rw [ArithmeticFunction.cardFactors_eq_sum_factorization, factorization_keepPrimes,
     Finsupp.sum, Finsupp.support_filter, Nat.support_factorization, candidateOmega]
   refine sum_congr rfl fun p hp => ?_
-  rw [Finsupp.filter_apply_pos _ _ (mem_filter.1 hp).2]
+  simp_all
 
 /-- `Ω_P(n) = Ω_P(n_P)`. -/
 lemma candidateOmega_keepPrimes (x : ℝ) (n : ℕ) :
@@ -65,7 +65,7 @@ lemma candidateOmega_keepPrimes (x : ℝ) (n : ℕ) :
     fun p => ?_
   rw [factorization_keepPrimes, factorization_keepPrimes]
   simp only [Finsupp.filter_apply]
-  split_ifs <;> rfl
+  simp_all
 
 /-- The stripped proxy splits as `a_j(m) = b(m̄) j^{-Ω_P(m_P)}`. -/
 lemma strippedProxy_eq (x γ : ℝ) (j m : ℕ) :
@@ -73,7 +73,7 @@ lemma strippedProxy_eq (x γ : ℝ) (j m : ℕ) :
       ((j : ℝ)⁻¹) ^ candidateOmega x (keepPrimes (candidatePrimes x) m) := by
   rw [candidateOmega_keepPrimes]
   unfold strippedProxy coreFactor dampedWeight
-  split_ifs with h₁ h₂ h₃ h₃ <;> first | (exfalso; tauto) | ring
+  grind
 
 /-- `Ω` is additive over products of nonzero factors. -/
 lemma cardFactors_prod {ι : Type*} (s : Finset ι) {f : ι → ℕ} (hf : ∀ i ∈ s, f i ≠ 0) :
@@ -84,8 +84,8 @@ lemma cardFactors_prod {ι : Type*} (s : Finset ι) {f : ι → ℕ} (hf : ∀ i
   | empty => simp
   | insert a s ha ih =>
     rw [prod_insert ha, sum_insert ha, ArithmeticFunction.cardFactors_mul
-      (hf a (mem_insert_self a s)) (prod_ne_zero_iff.2 fun i hi => hf i (mem_insert_of_mem hi)),
-      ih fun i hi => hf i (mem_insert_of_mem hi)]
+      (by grind) (prod_ne_zero_iff.2 (by grind)),
+      ih (by grind)]
 
 /-- The allocation identity `A_j(v) = G_j(v) ρ_j(v)`. -/
 theorem proxyCoeff_eq (x γ : ℝ) (j : ℕ) {v : ℕ} (hv : v ≠ 0) :
@@ -125,8 +125,7 @@ lemma allocationFactor_eq_one (x : ℝ) {j : ℕ} (hj : 1 ≤ j) {v : ℕ}
   rw [allocationFactor, Nat.card_finMulAntidiag_of_squarefree hv,
     (ArithmeticFunction.cardDistinctFactors_eq_cardFactors_iff_squarefree
       (keepPrimes_ne_zero _ _)).2 hv, ← candidateOmega_eq_cardFactors]
-  push_cast
-  rw [← mul_pow, mul_inv_cancel₀ hj0, one_pow]
+  simp_all
 
 /-- If the candidate part of `v ≠ 0` is not squarefree, then `p² ∣ v` for a
 candidate prime `p`. -/
@@ -152,7 +151,7 @@ lemma prime_of_mem_candidatePrimes {x : ℝ} {p : ℕ} (hp : p ∈ candidatePrim
 
 /-- The damped density is positive for `j ≥ 1`. -/
 lemma dampedDensity_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < dampedDensity x j := by
-  have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
+  have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by simp_all)
   refine mul_pos (prod_pos fun p hp => ?_) (prod_pos fun p hp => inv_pos.2 ?_)
   · have hp2 : (2 : ℝ) ≤ p := by
       have := (mem_filter.1 hp).1
@@ -170,9 +169,8 @@ lemma coreFactor_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ 
   unfold coreFactor
   split_ifs with h
   · have := dampedDensity_pos x hj
-    have : 0 < Real.log e := Real.log_pos (by linarith [h.1])
     positivity
-  · exact le_rfl
+  simp
 
 /-- The core is nonnegative when `x^γ ≥ 1`. -/
 lemma proxyCore_nonneg {x γ : ℝ} {j : ℕ} (hj : 1 ≤ j) (hxγ : 1 ≤ x ^ γ) (v : ℕ) :

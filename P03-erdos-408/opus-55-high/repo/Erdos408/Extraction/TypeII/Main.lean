@@ -12,7 +12,7 @@ The pointwise facts at one large scale, and the assembly of `|Comp_j - Prox_j|`.
 
 namespace Erdos408.TypeII
 
-open Finset Real Filter
+open Finset Filter
 
 /-- The scale facts at a large `x`. -/
 theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃)
@@ -53,8 +53,7 @@ theorem scaleFacts_of {c Ch κ c₃ : ℝ} {x : ℝ} {j : ℕ} (hc₃ : 0 < c₃
     rw [Real.exp_lt_exp]
     have h1 : L ^ (45 / 100 : ℝ) < L ^ (1 / 2 : ℝ) :=
       Real.rpow_lt_rpow_of_exponent_lt (by linarith) (by norm_num)
-    have h2 : L ^ (1 / 2 : ℝ) ≤ L / T ^ 25 := hYL
-    exact lt_of_lt_of_le h1 h2
+    linarith
   · -- `Y ≤ x^γ`
     have hγT : 1 ≤ γ * T ^ (25 : ℕ) := by
       have h1 := mul_le_mul_of_nonneg_right hγ (show 0 ≤ T ^ (25 : ℕ) by positivity)
@@ -117,7 +116,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
   have hL0 : 0 < L := by linarith
   have hT0 : 0 < T := by linarith
   have hx0 : 0 < x := by linarith
-  have hγ0 : 0 < γ := hsf.gamma_pos
+  have hγ0 := hsf.gamma_pos
   have hxγN : x ^ γ ≤ N := by
     have h1 : x ^ γ ≤ x := by
       calc x ^ γ ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le (by linarith) hγ1
@@ -129,7 +128,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
   have hlogN : Real.log N ≤ 2 * L := by
     have hN0 : (0 : ℝ) < N := by linarith [Real.rpow_pos_of_pos hx0 γ]
     calc Real.log N ≤ Real.log (x ^ 2) := Real.log_le_log hN0 hN2
-      _ = 2 * L := by rw [Real.log_pow]; push_cast; ring
+      _ = 2 * L := by rw [Real.log_pow]; ring
   -- `∑_{x^γ < p ≤ M} 1/p ≤ log 2 + 21 s + 1`
   have hrec : recipSum x γ N ≤ Real.log 2 + 21 * s + 1 := by
     refine (recipSum_le hEM2 hγ2 hxγN hEγ).trans ?_
@@ -168,7 +167,7 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
       field_simp
       linarith
     have hq0 : 0 < Real.log N / Real.log (proxyCutoff x) := by
-      have h1 : 0 < Real.log N := Real.log_pos hN1
+      have h1 := Real.log_pos hN1
       positivity
     have := Real.log_le_log hq0 hq
     rw [Real.log_mul (by norm_num) (by positivity), Real.log_pow] at this
@@ -199,11 +198,11 @@ theorem factor_sums_le {EM2 c Ch κ b : ℝ} {x : ℝ} (hb : 0 ≤ b)
     have : recipSum x γ N ≤ R * recipSum x γ N := le_mul_of_one_le_left hrec0 hR1'
     linarith
   · refine (factor_pow_le hs hR0 hb hR (by positivity) hhP0 ?_ (R - 1)
-      (by push_cast [Nat.cast_sub hR1]; linarith)).trans hexp
+      (by simp)).trans hexp
     linarith
   · have := (factor_pow_le hs hR0 hb hR (by positivity) hhP0 (by linarith) 1
-      (by push_cast; linarith)).trans hexp
-    rwa [pow_one] at this
+      (by simp_all)).trans hexp
+    linarith
 
 /-- E4 at a large `x`: `|Comp_j - Prox_j^0| ≤ C₄ x L^{-3} u⁴`. -/
 theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ x E₂ : ℝ}
@@ -247,16 +246,16 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
   have hδinv : δ = (L ^ (3 : ℕ))⁻¹ := by rw [hδ, Real.rpow_neg hL0.le, hL3']
   have hδ1 : δ ≤ 1 := by
     rw [hδinv]; exact inv_le_one_of_one_le₀ (one_le_pow₀ hL)
-  have hxγ : 1 ≤ x ^ γ := Real.one_le_rpow hsf.one_lt.le hsf.gamma_pos.le
+  have hxγ := Real.one_le_rpow hsf.one_lt.le hsf.gamma_pos.le
   set A := ⌈2 * Real.log (N + 1) / δ⌉₊ with hAdef
   have hA := gridPt_ge hxγ hδ0 hδ1 N
   have hAle : (A : ℝ) ≤ 5 * L ^ 4 := by
     have h1 : (A : ℝ) < 2 * Real.log (N + 1) / δ + 1 := Nat.ceil_lt_add_one
       (div_nonneg (mul_nonneg (by norm_num) (Real.log_nonneg (by
-        have := Nat.cast_nonneg (α := ℝ) N; linarith))) hδ0.le)
+        simp))) hδ0.le)
     have h2 : Real.log ((N : ℝ) + 1) ≤ 2 * L := by
       calc Real.log ((N : ℝ) + 1) ≤ Real.log (x ^ 2) := Real.log_le_log (by positivity) hN2
-        _ = 2 * L := by rw [Real.log_pow]; push_cast; ring
+        _ = 2 * L := by rw [Real.log_pow]; ring
     have h3 : 2 * Real.log (N + 1) / δ ≤ 4 * L ^ 4 := by
       rw [hδinv, div_inv_eq_mul]
       calc 2 * Real.log ((N : ℝ) + 1) * L ^ 3 ≤ 2 * (2 * L) * L ^ 3 := by gcongr
@@ -299,18 +298,14 @@ theorem final_E4 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch Cj κ CΦ C₂ 
       have := recipSum_nonneg x γ N
       have : 0 ≤ highProd x N (r + 1 : ℕ) := highProd_nonneg (by
         have := hsf.j_lt_cutoff
-        push_cast at this ⊢
-        linarith)
+        grind)
       positivity) hF5 (by
       have := recipSum_nonneg x γ N
       have : 0 ≤ highProd x N 1 := highProd_nonneg (by
         have := hsf.j_lt_cutoff
-        push_cast at this
-        linarith)
+        grind)
       positivity) hF6 hN hAle hτ hκx
-  refine hE4.trans (le_of_eq_of_le ?_ hb4)
-  push_cast
-  ring
+  grind
 
 /-- E5 at a large `x`: `|Prox_j^0 - Prox_j| ≤ C₅ x L^{-1} L^{-1/10} u⁶`. -/
 theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ : ℝ}
@@ -405,14 +400,12 @@ theorem final_E5 {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c Ch κ CΦ x E₂ :
     linarith
   have hP0 : 0 ≤ highProd x N 1 := highProd_nonneg (by
     have := hsf.j_lt_cutoff
-    push_cast at this
-    linarith)
+    grind)
   have hSP2 : L ^ (45 / 100 : ℝ) + EM1 ≤ 2 * L ^ (45 / 100 : ℝ) := by linarith
   have hb5 := bound5_le (q := q) (K := K) (CN := CN) (c := c) (E₂ := E₂) (κ := κ) (M := M)
     (x := x) (γ := γ) (cW := CW / (γ * L)) (SP := L ^ (45 / 100 : ℝ) + EM1) (c₃ := c₃)
     (CW := CW) (K' := K') (r := r) hsf.one_lt hκ hL hu hM0 hc₃ hCW hγ0 hSE0 hF1 hF3 hcW0 hcW hN
     hP0 hPr hP1 hK'le (by positivity) hSP2 hlogY0.le hlogYL hγ2
-  refine hE5.trans (le_of_eq_of_le ?_ hb5)
-  ring
+  linarith
 
 end Erdos408.TypeII

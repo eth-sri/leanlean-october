@@ -9,9 +9,9 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsLocal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
+open CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceRowTerm (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
@@ -34,8 +34,8 @@ theorem sourceRowTerm_pos (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMax
 
 end SevenEighths.ProbeEuler
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein ProbePhase ProbeEuler ProbePrimePower ProbeRow
+open CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
+open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
 
 theorem bareSourceCoefficient_unit_frequency (η : HeckeFamily.Character)
@@ -68,8 +68,7 @@ theorem bareSourceCoefficient_row_prime_formula (η : HeckeFamily.Character) (p 
     (hb.pow_right.mul_right hb.pow_right),
     bareSourceCoefficient_prime_formula η p hp hg hchar hprimary hs e l k j he hI,
     idealRowHom_prime_power_value p b hg,idealRowHom_prime_power_value p b hg]
-  simp only [div_eq_mul_inv]
-  ac_rfl
+  ring
 
 theorem bareSourceCoefficient_row_weighted_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
@@ -90,12 +89,7 @@ theorem bareSourceCoefficient_row_weighted_prime (η : HeckeFamily.Character) (p
   simp only [localCubePhase] at hpdiag
   have ha : actualACube η p=
       star (FiniteGaussPhase.angularFactor p)^3*(targetMonoid η p)^3 := rfl
-  rw [ha] at hpdiag ⊢
-  linear_combination -((actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^k /
-      (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b))^(e+3*l)) *
-    ((-1:ℂ)^e*((localGamma p hp.ne_zero hg 1)⁻¹)^e*(targetMonoid η p)^e) *
-    sourceScalar p hp hg (e+3*l) k (j+6*m) *
-    (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(x+1/2)*(e:ℂ)-(1+3*x)*(l:ℂ)-w*(k:ℂ)-6*z*(m:ℂ)) * hpdiag
+  grind
 
 theorem bareIdealHighCoefficient_row_at_prime (η : HeckeFamily.Character) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal] (hprimary : goodLambda^2∣p-1)
@@ -127,7 +121,7 @@ theorem bareIdealHighSummand_row_at_prime (η : HeckeFamily.Character) (p : O) (
         (actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)) x w z j e l k m := by
   unfold bareIdealHighSummand
   rw [bareIdealHighCoefficient_row_at_prime η p hp hprimary hs (b*p^j) e l k m he]
-  rw [show b*p^j*p^(6*m)=b*p^(j+6*m) by rw [pow_add]; ring]
+  rw [show b*p^j*p^(6*m)=b*p^(j+6*m) by ring]
   have hw := prime_spectral_weights p hp.ne_zero e l k m x w z
   simp only [mul_assoc] at hw ⊢
   rw [hw]

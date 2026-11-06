@@ -8,7 +8,6 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorWitnessRows
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.HeckeDetectorSupportedWitness
 open HeckeFamily HeckeDetectorWitnessRows
 
@@ -37,7 +36,7 @@ theorem actual_supported_witness_family (dmin dmax τ ε e κ η : ℝ) (I : ℕ
   have hw (u : Row) : Nonempty (SupportedWitness (χ u) (Z^d) a ε tstar (Z^τ)
       ((Z^d)^(τ/(2*dmax))) i) := by
     obtain ⟨j,ρ,hzero,hρ,hheight,J,hJ,K,hK,nu,r,m,hnu,hleft,hright,hr,hr',hm,hm',hprod,hM,hS⟩ :=
-      hZ₀ Z hZ d hd hd' (χ u) (hχ u) a i hi ha ha' (hnext u) (hcurrent u) (hQ u) tstar ht ht'
+      hZ₀ Z hZ d hd hd' (χ u) (by grind) a i hi ha ha' (hnext u) (hcurrent u) (hQ u) tstar ht ht'
     exact ⟨⟨⟨j,ρ,hzero,hρ,hheight,⟨J,Finset.mem_range.mp hJ⟩,⟨K,Finset.mem_range.mp hK⟩,
       nu,r,m,hnu,hleft,hright,hr,hr',hm,hm',hM,hS⟩,hprod⟩⟩
   exact ⟨fun u => Classical.choice (hw u)⟩

@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPoisson
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-local notation "O" => ActualEisensteinCubic.O
+open scoped Classical
 namespace SevenEighths.CenteredMomentActive
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 open CanonicalRowCompletion CenteredMomentCanonical
 
 def netExponent (c d : ℕ) : ℕ := (c + 5 * d) % 6
 
-theorem local_pair_reduction (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (c d : ℕ) (x : O ⧸ P) :
+theorem local_pair_reduction (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : goodLambda ∉ P) (hchar : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2)
+    (c d : ℕ) (x : ActualEisensteinCubic.O ⧸ P) :
     (actualSextic P hg ^ c) x * star ((actualSextic P hg ^ d) x) =
       (actualSextic P hg ^ netExponent c d) x := by
   have h6 : actualSextic P hg ^ 6 = 1 := by
@@ -46,8 +45,8 @@ theorem netExponent_ne_zero {ι : Type*} (B : Finset ι) (c d : ι → ℕ)
 theorem netExponent_lt_six (c d : ℕ) : netExponent c d < 6 := Nat.mod_lt _ (by decide)
 
 theorem principal_product_eq_mask {ι : Type*}
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (B : Finset ι) (z : O) :
-    (∏ i ∈ B, (1 : MulChar (O ⧸ P i) ℂ) (Ideal.Quotient.mk (P i) z)) =
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal] (B : Finset ι) (z : ActualEisensteinCubic.O) :
+    (∏ i ∈ B, (1 : MulChar (ActualEisensteinCubic.O ⧸ P i) ℂ) (Ideal.Quotient.mk (P i) z)) =
       rowCoprimeMask P B z := by
   by_cases h : ∃ i ∈ B, z ∈ P i
   · rw [rowCoprimeMask, ite_eq_left h]
@@ -58,16 +57,16 @@ theorem principal_product_eq_mask {ι : Type*}
     apply Finset.prod_eq_one
     intro i hi
     apply MulChar.one_apply
-    let : Field (O ⧸ P i) := Ideal.Quotient.field (P i)
+    let : Field (ActualEisensteinCubic.O ⧸ P i) := Ideal.Quotient.field (P i)
     apply isUnit_iff_ne_zero.mpr
     exact fun hz => h ⟨i, hi, Ideal.Quotient.eq_zero_iff_mem.mp hz⟩
 
 variable {ι : Type*}
 
-theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
+theorem common_ideal_pair_active (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
+    (hg : ∀ i, goodLambda ∉ P i) (hchar : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ P i) ≠ 2)
     (B : Finset ι) (c d : ι → ℕ)
-    (hc : ∀ i ∈ B, c i ≠ 0) (hd : ∀ i ∈ B, d i ≠ 0) (z : O) :
+    (hc : ∀ i ∈ B, c i ≠ 0) (hd : ∀ i ∈ B, d i ≠ 0) (z : ActualEisensteinCubic.O) :
     idealRowHom z (∏ i ∈ B, P i ^ c i) *
       star (idealRowHom z (∏ i ∈ B, P i ^ d i)) =
       rowCoprimeMask P (principalSupport B c d) z *
@@ -95,12 +94,12 @@ theorem common_ideal_pair_active (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
   congr 1
   exact (Finset.prod_coe_sort (s := activeSupport B c d) (f := f)).symm
 
-theorem activePrimes_pairwise_coprime (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+theorem activePrimes_pairwise_coprime (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hinj : Function.Injective P) (B : Finset ι) (c d : ι → ℕ) :
     Pairwise (Function.onFun IsCoprime (fun i : activeSupport B c d => P i.val)) := by
   intro i j hij
   apply Ideal.isCoprime_of_isMaximal
-  exact fun he => hij (Subtype.ext (hinj he))
+  grind
 
 open ConcreteTraceCRT EisensteinSchwartzPoisson
 

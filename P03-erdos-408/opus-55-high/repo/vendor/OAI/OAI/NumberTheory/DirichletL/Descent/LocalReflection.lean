@@ -10,7 +10,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 
-open scoped BigOperators Classical
+open scoped Classical
 
 noncomputable section
 
@@ -46,8 +46,7 @@ theorem marked_active_eq_neg_trivial (χ : MulChar F ℂ)
   congr 1
   apply Finset.sum_congr rfl
   intro h hh
-  rw [localFourier_zeroMark, localFourier_trivial_nonzero ψ hψ h (Units.ne_zero h)]
-  ring
+  simp [localFourier_zeroMark, localFourier_trivial_nonzero ψ hψ h (Units.ne_zero h)]
 
 end
 

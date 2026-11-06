@@ -9,7 +9,6 @@ public import Mathlib.Tactic.FieldSimp
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 open MeasureTheory
 namespace SevenEighths.EisensteinTheta
 open ThetaProduct
@@ -33,8 +32,7 @@ theorem normForm_parity (a b L : ℝ) (hL : L ≠ 0) (e : Fin 2) (i j : ℤ) :
       L ^ 2 * (i + xShift a b L e) ^ 2 +
         (3 * L ^ 2) * (j + yShift b L e) ^ 2 := by
   unfold normForm xShift yShift
-  field_simp
-  ring
+  grind
 
 def parityPair (a b L : ℝ) (hL : 0 < L) (e : Fin 2) : WeakFEPair ℂ :=
   rectangularPair (xShift a b L e) (yShift b L e) (L ^ 2) (3 * L ^ 2)
@@ -50,11 +48,11 @@ theorem cosetTheta_hasSum (a b L : ℝ) (hL : 0 < L) {t : ℝ} (ht : 0 < t) :
   have hsum (e : Fin 2) : HasSum (fun n : ℤ × ℤ => (F (e, n) : ℂ))
       ((parityPair a b L hL e).f t) :=
     rectangularPair_hasSum (xShift a b L e) (yShift b L e) (L ^ 2) (3 * L ^ 2) (sq_pos_of_pos hL)
-      (mul_pos (by norm_num) (sq_pos_of_pos hL)) ht
+      (by positivity) ht
   have hreal (e : Fin 2) : Summable (fun n : ℤ × ℤ => F (e, n)) :=
     Complex.summable_ofReal.mp (hsum e).summable
   have hF : Summable F :=
-    (summable_prod_of_nonneg (fun _ => (Real.exp_pos _).le)).2
+    (summable_prod_of_nonneg (fun _ => by positivity)).2
       ⟨hreal, (hasSum_fintype _).summable⟩
   have hFC : Summable (fun p => (F p : ℂ)) := Complex.summable_ofReal.mpr hF
   have hid (p : Fin 2 × (ℤ × ℤ)) :
@@ -98,7 +96,7 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
       linarith
   have hy1pos : 0 < yShift b L 1 := by
     simp only [yShift, Fin.val_one, Nat.cast_one, mul_one]
-    exact div_pos (by linarith) htwo
+    exact by positivity
   have hy1ne : (yShift b L 1 : UnitAddCircle) ≠ 0 := by
     intro h
     have := (AddCircle.coe_eq_zero_iff_of_mem_Ico hy1).mp h
@@ -111,7 +109,7 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
       linarith
   have hy0iff : (yShift b L 0 : UnitAddCircle) = 0 ↔ b = 0 := by
     rw [AddCircle.coe_eq_zero_iff_of_mem_Ico hy0]
-    simp [yShift, div_eq_zero_iff, hL.ne']
+    simp [yShift, hL.ne']
   rw [cosetConstant, Fin.sum_univ_two, parityPair_f₀, parityPair_f₀,
     ite_eq_right hy1ne, mul_zero, add_zero]
   by_cases hb : b = 0
@@ -121,12 +119,12 @@ theorem cosetConstant_eq (a b L : ℝ) (hL : 0 < L)
       simp only [xShift, sub_zero, Fin.val_zero, Nat.cast_zero, mul_zero]
       field_simp
     have hxmem : a / L ∈ Set.Ico (0 : ℝ) 1 :=
-      ⟨div_nonneg ha₀ hL.le, (div_lt_one hL).2 haL⟩
+      ⟨by positivity, (div_lt_one hL).2 haL⟩
     have hxiff : (xShift a 0 L 0 : UnitAddCircle) = 0 ↔ a = 0 := by
       rw [hx, AddCircle.coe_eq_zero_iff_of_mem_Ico hxmem]
-      simp [div_eq_zero_iff, hL.ne']
-    simp only [hxiff, and_true]
-  · rw [ite_eq_right (fun h => hb (hy0iff.mp h)), mul_zero, ite_eq_right (fun h => hb h.2)]
+      simp [hL.ne']
+    simp_all
+  simp_all
 
 end SevenEighths.EisensteinTheta
 

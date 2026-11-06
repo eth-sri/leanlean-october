@@ -7,53 +7,49 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.CompactDescent
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical SchwartzMap
+open CompletedGauss
 open CanonicalQuadraticSieve
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_sum_restrict {n A : Type*} [Fintype n] [AddCommMonoid A]
     (p : n → Prop) (f : n → A) (hf : ∀ j, ¬p j → f j = 0) :
     (∑ j, f j) = ∑ j : {j // p j}, f j.val := by
   have h := Fintype.sum_subtype_add_sum_subtype p f
   have hz : (∑ j : {j // ¬p j}, f j.val) = 0 :=
-    Finset.sum_eq_zero (fun j hj => hf j.val j.property)
-  rw [hz, add_zero] at h
-  exact h.symm
+    Finset.sum_eq_zero (by grind)
+  simp_all
 
 lemma cubicSmoothedCoprime_restrict {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (a : n → ℂ) (p : n → Prop)
+    (cols : n → Ideal ActualEisensteinCubic.O) (a : n → ℂ) (p : n → Prop)
     (ha : ∀ j, ¬p j → a j = 0) (W : 𝓢(ℝ, ℂ)) (M : ℝ) :
     cubicSmoothedCoprime cols a W M =
       cubicSmoothedCoprime (fun j : {j // p j} => cols j.val) (fun j => a j.val) W M := by
   unfold cubicSmoothedCoprime
   rw [finite_sum_restrict p _ (by
-    intro j hj
-    simp [ha j hj])]
+    simp_all)]
   apply Finset.sum_congr rfl
   intro j hj
   exact finite_sum_restrict p _ (by
-    intro k hk
-    simp [ha k hk])
+    simp_all)
 
-def quotientColumn {n : Type*} (D : Ideal O) (cols : n → Ideal O)
-    (j : {j // D ∣ cols j}) : Ideal O := idealQuotient D (cols j.val)
+def quotientColumn {n : Type*} (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
+    (j : {j // D ∣ cols j}) : Ideal ActualEisensteinCubic.O := idealQuotient D (cols j.val)
 
-def quotientCoefficient {n : Type*} (D : Ideal O) (cols : n → Ideal O)
-    (a : n → ℂ) (d : O) (j : {j // D ∣ cols j}) : ℂ :=
+def quotientCoefficient {n : Type*} (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
+    (a : n → ℂ) (d : ActualEisensteinCubic.O) (j : {j // D ∣ cols j}) : ℂ :=
   cubicRow (quotientColumn D cols j) d * a j.val
 
-lemma quotientColumn_injective {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+lemma quotientColumn_injective {n : Type*} (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
     (hc : Function.Injective cols) : Function.Injective (quotientColumn D cols) := by
   intro j k he
   exact Subtype.ext (hc (idealQuotient_injective_on D j.property k.property he))
 
-lemma quotientColumn_admissible {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+lemma quotientColumn_admissible {n : Type*} (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
     (hc : ∀ j, Admissible (cols j)) (j : {j // D ∣ cols j}) :
     Admissible (quotientColumn D cols j) := cubic_admissible_quotient (hc j.val) j.property
 
-lemma cubic_quotient_in_shell {n : Type*} (D : Ideal O) (cols : n → Ideal O)
+lemma cubic_quotient_in_shell {n : Type*} (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
     (hc : ∀ j, Admissible (cols j)) (N : ℝ)
     (hcols : ∀ j, N/2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
     (j : {j // D ∣ cols j}) :
@@ -65,15 +61,15 @@ lemma cubic_quotient_in_shell {n : Type*} (D : Ideal O) (cols : n → Ideal O)
   have he : (Ideal.absNorm (quotientColumn D cols j) : ℝ) * (Ideal.absNorm D : ℝ) =
       (Ideal.absNorm (cols j.val) : ℝ) := by
     rw [mul_comm, ← Nat.cast_mul, ← map_mul, quotientColumn, idealQuotient_mul j.property]
-  refine ⟨?_, idealQuotient_norm_le hD0 j.property N (hcols j.val).2⟩
+  refine ⟨?_, idealQuotient_norm_le hD0 j.property N (by grind)⟩
   have hh : (N/2) / (Ideal.absNorm D : ℝ) ≤ (Ideal.absNorm (quotientColumn D cols j) : ℝ) := by
     apply (div_le_iff₀ hDN).mpr
     rw [he]
-    exact (hcols j.val).1
-  convert hh using 1; ring
+    exact by grind
+  grind
 
 lemma compact_descendant_restrict {n : Type*} [Fintype n]
-    (D : Ideal O) (cols : n → Ideal O) (a : n → ℂ) (d : O)
+    (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O) (a : n → ℂ) (d : ActualEisensteinCubic.O)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) :
     cubicSmoothedCoprime (fun j => totalQuotient D (cols j))
       (descendedCoefficient D cols a d) W M =
@@ -88,10 +84,10 @@ lemma compact_descendant_restrict {n : Type*} [Fintype n]
       quotientCoefficient D cols a d := by
     funext j
     simp only [descendedCoefficient, totalQuotient, ite_eq_left j.property, quotientCoefficient, quotientColumn]
-  rw [hc, ha]
+  simp_all
 
 lemma quotientCoefficient_energy {n : Type*} [Fintype n]
-    (D : Ideal O) (cols : n → Ideal O) (a : n → ℂ) (d : O) :
+    (D : Ideal ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O) (a : n → ℂ) (d : ActualEisensteinCubic.O) :
     (∑ j : {j // D ∣ cols j}, ‖quotientCoefficient D cols a d j‖^2) =
       ∑ j, ‖descendedCoefficient D cols a d j‖^2 := by
   rw [finite_sum_restrict (fun j => D ∣ cols j) _ (by

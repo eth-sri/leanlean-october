@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.ZeroSupremum
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped ContDiff
 open Set
 namespace SevenEighths.CenteredMomentPrimeGlobal
 open HeckeFamily HeckePrimeRay HeckeZeroSupremum
@@ -20,10 +20,10 @@ lemma zeroMaximum_le_beta {ι : Type*} [Fintype ι]
   apply Finset.max'_le
   intro x hx
   rcases Finset.mem_insert.mp hx with rfl|hx
-  · exact hbeta
+  · omega
   · obtain ⟨⟨i,s⟩,hs,rfl⟩ := Finset.mem_image.mp hx
     have hz := (HeckeDetectorZeros.mem_familyZeros χ hχ T i s).mp hs
-    exact zero_re_le_beta (χ i) (by linarith [hz.1]) (Or.inr (hχ i)) hz.2.2.2
+    exact zero_re_le_beta (χ i) (by linarith) (by grind) hz.2.2.2
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
@@ -62,9 +62,9 @@ theorem ray_prime_global_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     ring
   calc
     _≤(C*(Z^d)^((beta-1/2)*r+ε))^2 := pow_le_pow_left₀ (norm_nonneg _) hb 2
-    _=C^2*(Z^d)^(2*((beta-1/2)*r+ε)) := by rw [mul_pow,hp]
+    _=C^2*(Z^d)^(2*((beta-1/2)*r+ε)) := by grind
     _≤C^2*(Z^d)^(κ*r+2*ε) := mul_le_mul_of_nonneg_left
-      (Real.rpow_le_rpow_of_exponent_le (by linarith : 1≤Z^d)
+      (Real.rpow_le_rpow_of_exponent_le (by linarith)
         (by nlinarith [mul_le_mul_of_nonneg_right hκ hr])) (sq_nonneg _)
 
 end SevenEighths.CenteredMomentPrimeGlobal

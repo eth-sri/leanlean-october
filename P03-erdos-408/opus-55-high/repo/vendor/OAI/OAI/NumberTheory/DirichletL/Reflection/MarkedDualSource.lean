@@ -9,10 +9,8 @@ set_option linter.privateModule false
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 namespace PrimeFamily
 variable {ι : Type*} [Fintype ι] (P : PrimeFamily ι)
 

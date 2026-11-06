@@ -44,7 +44,7 @@ theorem fullCorrelation_bezout [Fintype R] (n₁ n₂ a b k : R) (hab : a*n₁+b
       rw [hh]
       rfl)).symm
   rw [he,Fintype.sum_prod_type]
-  simp only [Finset.sum_ite_eq',Finset.mem_univ,ite_true]
+  simp
 
 theorem fullCorrelation_bezout_norm [Fintype R] (n₁ n₂ a b k : R) (hab : a*n₁+b*n₂=1)
     (f g : R→ℂ) (hf : ∀x,‖f x‖≤1) (hg : ∀x,‖g x‖≤1) :

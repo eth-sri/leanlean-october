@@ -101,7 +101,7 @@ lemma stripSum_eq_sum (x q₀ : ℝ) {P : ι → Finset ℕ} (hV : ∀ g, harmon
         ∑ l ∈ slotLists P (unsharedSlots C) w,
           ∑ l' ∈ slotLists P (unsharedSlots C) (w + slotProduct C a), K l l' a := by
         rw [mul_sum]
-        exact sum_congr rfl fun w _ => by ring
+        grind
     _ = ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊, ∑ l ∈ unsharedLists P C, ∑ l' ∈ unsharedLists P C,
         (labelMass P C a : ℂ) * ((X w : ℝ) : ℂ) *
           if l ∈ slotLists P (unsharedSlots C) w ∧
@@ -111,9 +111,7 @@ lemma stripSum_eq_sum (x q₀ : ℝ) {P : ι → Finset ℕ} (hV : ∀ g, harmon
         congr 1
         symm
         simp_rw [ite_and, sum_ite_irrel, sum_const_zero]
-        rw [sum_ite_mem, inter_eq_right.2 (slotLists_subset P C _)]
-        refine sum_congr rfl fun l _ => ?_
-        rw [sum_ite_mem, inter_eq_right.2 (slotLists_subset P C _)]
+        simp [sum_ite_mem, inter_eq_right.2 (slotLists_subset P C _)]
     _ = ∑ l ∈ unsharedLists P C, ∑ l' ∈ unsharedLists P C, ∑ w ∈ Icc 1 ⌊x ^ 2⌋₊,
         (labelMass P C a : ℂ) * ((X w : ℝ) : ℂ) *
           if l ∈ slotLists P (unsharedSlots C) w ∧
@@ -142,14 +140,14 @@ lemma dvd_sharedProduct_iff {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P
   · intro h
     obtain ⟨g', -, hg'⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 h
     obtain ⟨i, hi, hi'⟩ := (Prime.dvd_finsetProd_iff hpp.prime _).1 hg'
-    have hsi : s g' i ∈ P g' :=
+    have hsi :=
       mem_of_mem_sharedLabels hs (by simpa [sharedSlots] using hi)
-    have heq : p = s g' i :=
-      (Nat.prime_dvd_prime_iff_eq hpp (hprime g' _ hsi)).1 hi'
+    have heq :=
+      (Nat.prime_dvd_prime_iff_eq hpp (by grind)).1 hi'
     obtain rfl : g = g' := by
       by_contra hne
       exact disjoint_left.1 (hdisj g g' hne) hp (heq ▸ hsi)
-    exact ⟨i, hi, heq.symm⟩
+    grind
   · rintro ⟨i, hi, rfl⟩
     exact (dvd_prod_of_mem _ hi).trans (dvd_prod_of_mem (fun g => ∏ i ∈ sharedSlots C g, s g i)
       (mem_univ g))
@@ -169,19 +167,17 @@ lemma primeCount_sharedProduct_mul {P : ι → Finset ℕ} (hprime : ∀ g, ∀ 
     simp only [mem_filter, mem_union, mem_image]
     constructor
     · rintro ⟨hp, hdvd⟩
-      rcases (Nat.Prime.dvd_mul (hprime g p hp)).1 hdvd with h | h
+      rcases (Nat.Prime.dvd_mul (by grind)).1 hdvd with h | h
       · exact Or.inl ((dvd_sharedProduct_iff hprime hdisj hs hp).1 h)
-      · exact Or.inr ⟨hp, h⟩
+      simp_all
     · rintro (⟨i, hi, rfl⟩ | ⟨hp, h⟩)
-      · have hsi : s g i ∈ P g :=
+      · have hsi :=
           mem_of_mem_sharedLabels hs (by simpa [sharedSlots] using hi)
-        exact ⟨hsi, ((dvd_sharedProduct_iff hprime hdisj hs hsi).2 ⟨i, hi, rfl⟩).mul_right m⟩
-      · exact ⟨hp, h.mul_left _⟩
+        exact ⟨hsi, ((dvd_sharedProduct_iff hprime hdisj hs hsi).2 (by grind)).mul_right m⟩
+      grind
   rw [hsplit, card_union_of_disjoint, card_image_of_injOn (hinj g)]
   rw [disjoint_left]
-  rintro p hp hp'
-  obtain ⟨i, hi, rfl⟩ := mem_image.1 hp
-  exact hm g i hi (mem_filter.1 hp').2
+  simp_all
 
 /-- `ω(D_R m) = ∑_g |Sh_g| + ω(m)`, when the shared labels are distinct and do not divide
 `m`. -/
@@ -218,17 +214,15 @@ lemma edgeProduct_merge (C : ι → Finset (Fin J)) (s : ι → Fin J → ℕ)
   have h : ∀ i, (if i ∈ C g then a g i else merge C s l g i.castSucc) =
       if i ∈ C g then a g i else s g i := fun i => by
     by_cases hi : i ∈ C g
-    · rw [ite_eq_left hi, ite_eq_left hi]
+    · simp_all
     · rw [ite_eq_right hi, ite_eq_right hi, merge_castSucc_of_notMem hi]
   simp_rw [h]
   rw [prod_ite, mul_comm]
   congr 1
-  · refine prod_congr ?_ fun _ _ => rfl
+  · refine prod_congr ?_ (by omega)
     ext i
     simp [sharedSlots]
-  · refine prod_congr ?_ fun _ _ => rfl
-    ext i
-    simp
+  simp
 
 /-! ### The physical conditions on merged lists -/
 
@@ -244,13 +238,13 @@ lemma unshared_of_physical {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P 
   · have hlj := mem_of_mem_unsharedLists hl hj
     have hdvd := (h g).2 j
     rw [merge_of_mem hj] at hdvd
-    rcases (Nat.Prime.dvd_mul (hprime g _ hlj)).1 hdvd with h' | h'
+    rcases (Nat.Prime.dvd_mul (by grind)).1 hdvd with h' | h'
     · obtain ⟨i, hi, hsi⟩ := (dvd_sharedProduct_iff hprime hdisj hs hlj).1 h'
       have hi' : i ∉ C g := by simpa [sharedSlots] using hi
       have := (h g).1 (a₁ := i.castSucc) (a₂ := j)
         (by rw [merge_castSucc_of_notMem hi', merge_of_mem hj, hsi])
-      exact absurd (this ▸ hj) fun h'' => hi' (castSucc_mem_unsharedSlots.1 h'')
-    · exact h'
+      exact absurd (by grind) fun h'' => hi' (castSucc_mem_unsharedSlots.1 h'')
+    omega
 
 omit [DecidableEq ι] in
 /-- A merged list whose unshared part is represented at `m`, with distinct shared labels not
@@ -269,18 +263,18 @@ lemma physical_of_unshared {C : ι → Finset (Fin J)}
       exact (hl g).1 hj₁ hj₂ he
     · obtain ⟨i, hi, rfl⟩ := exists_castSucc_of_notMem hj₂
       rw [merge_of_mem hj₁, merge_castSucc_of_notMem hi] at he
-      exact absurd (he ▸ (hl g).2 j₁ hj₁) (hm g i (hsh hi))
+      grind
     · obtain ⟨i, hi, rfl⟩ := exists_castSucc_of_notMem hj₁
       rw [merge_of_mem hj₂, merge_castSucc_of_notMem hi] at he
-      exact absurd (he ▸ (hl g).2 j₂ hj₂) (hm g i (hsh hi))
+      grind
     · obtain ⟨i₁, hi₁, rfl⟩ := exists_castSucc_of_notMem hj₁
       obtain ⟨i₂, hi₂, rfl⟩ := exists_castSucc_of_notMem hj₂
       rw [merge_castSucc_of_notMem hi₁, merge_castSucc_of_notMem hi₂] at he
-      rw [hinj g (hsh hi₁) (hsh hi₂) he]
+      rw [hinj g (by grind) (by grind) he]
   · intro j
     by_cases hj : j ∈ unsharedSlots C g
     · rw [merge_of_mem hj]
-      exact ((hl g).2 j hj).mul_left _
+      grind
     · obtain ⟨i, hi, rfl⟩ := exists_castSucc_of_notMem hj
       rw [merge_castSucc_of_notMem hi]
       exact ((dvd_prod_of_mem _ (hsh hi)).trans
@@ -314,22 +308,22 @@ lemma physCond_merge_iff {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g,
     exact ⟨⟨hl, unshared_of_physical hprime hdisj hs hl h₁⟩,
       ⟨hl', unshared_of_physical hprime hdisj hs hl' h₂⟩⟩
   · rintro ⟨⟨-, h₁⟩, ⟨-, h₂⟩⟩
-    refine ⟨physical_of_unshared hinj (fun g i hi => (hsw g i hi).1) h₁,
-      physical_of_unshared hinj (fun g i hi => (hsw g i hi).2) h₂, fun g => ⟨fun i hi => ?_,
+    refine ⟨physical_of_unshared hinj (by grind) h₁,
+      physical_of_unshared hinj (by grind) h₂, fun g => ⟨fun i hi => ?_,
       fun i hi j => ?_⟩⟩
     · rw [merge_castSucc_of_notMem hi, merge_castSucc_of_notMem hi]
     · have hsh : ∀ {i}, i ∉ C g → i ∈ sharedSlots C g := fun hi => by
         simpa [sharedSlots] using hi
       by_cases hj : j ∈ unsharedSlots C g
       · rw [merge_of_mem hj, merge_of_mem hj]
-        refine ⟨fun he => haw g i hi (he ▸ (h₁ g).2 j hj), fun he => haw g i hi ?_⟩
+        refine ⟨by grind, fun he => haw g i hi ?_⟩
         have hD : a g i ∣ slotProduct C a :=
           (dvd_prod_of_mem _ hi).trans (dvd_prod_of_mem (fun g => ∏ i ∈ C g, a g i)
             (mem_univ g))
-        exact (Nat.dvd_add_right hD).1 (by rw [add_comm]; exact he ▸ (h₂ g).2 j hj)
+        exact (Nat.dvd_add_right hD).1 (by grind)
       · obtain ⟨i', hi', rfl⟩ := exists_castSucc_of_notMem hj
         rw [merge_castSucc_of_notMem hi', merge_castSucc_of_notMem hi']
-        exact ⟨has g i hi i' (hsh hi'), has g i hi i' (hsh hi')⟩
+        simp_all
 
 /-! ### The clean summands agree -/
 
@@ -339,8 +333,8 @@ lemma sum_card_le_groupPrimeCount {P : ι → Finset ℕ} {C : ι → Finset (Fi
     ∑ g, (unsharedSlots C g).card ≤ groupPrimeCount P m := by
   rw [slotLists_eq_filter, mem_filter] at hl
   refine sum_le_sum fun g _ => ?_
-  refine card_le_card_of_injOn (l g) (fun j hj => ?_) (hl.2 g).1
-  exact mem_filter.2 ⟨mem_of_mem_unsharedLists hl.1 hj, (hl.2 g).2 j hj⟩
+  refine card_le_card_of_injOn (l g) (fun j hj => ?_) (by grind)
+  exact mem_filter.2 ⟨mem_of_mem_unsharedLists hl.1 hj, by grind⟩
 
 /-- The damping at `D_R m` is the stripped damping at `m`, (6.14). -/
 lemma pow_groupPrimeCount_sharedProduct_mul {P : ι → Finset ℕ}
@@ -391,8 +385,7 @@ lemma physWeight_eq {P : ι → Finset ℕ} (hprime : ∀ g, ∀ p ∈ P g, p.Pr
     rw [card_unsharedSlots] at h ⊢
     rw [show J + 1 = (sharedSlots C g).card + ((C g).card + 1) from h.symm, pow_add]
     ring
-  rw [hstep, ← hμ]
-  ring
+  grind
 
 /-- **The clean summands agree** (PD (6.14)). At a clean `(a, s, w)`, the summand of the
 cutoff pairing after G4 is the summand of the stripped correlation, given the invariance of
@@ -417,7 +410,7 @@ lemma physTerm_eq_stripTerm {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀
     congr 1
     push_cast
     rw [show x * (DR * DC) = DR * (x * DC) by ring]
-    exact mul_div_mul_left _ _ hDR
+    exact by grind
   by_cases hψ : Ψ (w / (x * DC)) = 0
   · have h₁ : stripTerm x q₀ P C K F G Ψ a s l l' w = 0 := by
       unfold stripTerm
@@ -427,30 +420,27 @@ lemma physTerm_eq_stripTerm {x q₀ : ℝ} {P : ι → Finset ℕ} (hprime : ∀
     split_ifs with h
     · unfold physTerm physValue
       split_ifs
-      · rw [hE, hΨ, hψ]
-        simp
-      · rfl
-    · rfl
-  rw [ite_eq_left (hN hψ)]
+      · simp_all
+      simp
+    simp
+  rw [ite_eq_left (by grind)]
   unfold physTerm stripTerm
   have hiff := physCond_merge_iff hprime hdisj hs hl hl' hc
   by_cases hcond : PhysCond C (DR * w) (merge C s l) (merge C s l') a
   · obtain ⟨hSL, hSL'⟩ := hiff.1 hcond
     obtain ⟨hinj, hsw, -, -⟩ := hc
-    rw [ite_eq_left hcond, ite_eq_left ⟨hSL, hSL'⟩]
+    rw [ite_eq_left hcond, ite_eq_left (by grind)]
     unfold physValue
     rw [hE, hK, show DR * w + DR * DC = DR * (w + DC) by ring, hG, hΨ, hF,
-      pow_groupPrimeCount_sharedProduct_mul hprime hdisj hs hinj (fun g i hi => (hsw g i hi).1)
+      pow_groupPrimeCount_sharedProduct_mul hprime hdisj hs hinj (by grind)
         (sum_card_le_groupPrimeCount hSL),
-      pow_groupPrimeCount_sharedProduct_mul hprime hdisj hs hinj (fun g i hi => (hsw g i hi).2)
+      pow_groupPrimeCount_sharedProduct_mul hprime hdisj hs hinj (by grind)
         (sum_card_le_groupPrimeCount hSL'), physWeight_eq hprime hs a]
     rw [mul_right_comm, ← Complex.ofReal_mul]
     congr 2
     unfold listDamping
-    push_cast
-    field_simp
-    ring
-  · rw [ite_eq_right hcond, ite_eq_right fun h => hcond (hiff.2 h), mul_zero]
+    grind
+  grind
 
 end Restore
 

@@ -9,33 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,40 +33,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
+open ConcretePrimeRowBridge IdealMobiusDivisorSum
 
 theorem unrestrictedPrincipalDensity_twisted_squarefree {n : Type} [Fintype n] [DecidableEq n]
     (cols : n → Ideal O) (a : n → ℂ) (q : Ideal O) (M K : ℝ) (hM : 0 ≤ M)
@@ -97,7 +79,7 @@ theorem unrestrictedPrincipalDensity_twisted_squarefree {n : Type} [Fintype n] [
   · simp only [hc,ite_true,star_mul,canonical_quadraticRow_star _ (hcols j),
       normalizedIdealPair,unrestrictedPairCharacter,Complex.ofReal_div]
     ring
-  · simp only [hc,ite_false,mul_zero]
+  simp_all
 
 theorem densityPairSum_weighted_sum {n : Type} [Fintype n]
     (cols : n → Ideal O) (a : n → ℂ) {ι : Type*} (S : Finset ι) (c : ι → ℂ)
@@ -112,11 +94,8 @@ theorem densityPairSum_weighted_sum {n : Type} [Fintype n]
   apply Finset.sum_congr rfl
   intro k _
   by_cases hc : IsCoprime (cols j) (cols k)
-  · simp only [hc,ite_true]
-    apply Finset.sum_congr rfl
-    intro q hq
-    ring
-  · simp only [hc,ite_false,mul_zero,Finset.sum_const_zero]
+  · grind
+  simp_all
 
 theorem summed_dual_density {n : Type} [Fintype n] [DecidableEq n]
     (cols : n → Ideal O) (a : n → ℂ) (G : Ideal O) (M K : ℝ) (hM : 0 ≤ M)
@@ -132,9 +111,7 @@ theorem summed_dual_density {n : Type} [Fintype n] [DecidableEq n]
     _ = (Real.sqrt M : ℂ)*∑ q ∈ idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*
         densityPairSum cols a (fun I J => normalizedPairPartial I J K*normalizedIdealPair I J q) := by
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro q hq
-      ring
+      grind
     _ = _ := by
       rw [densityPairSum_weighted_sum]
       rfl
@@ -162,14 +139,14 @@ theorem actual_source_dual_density_cancellation {n : Type} [Fintype n] [Decidabl
 end CanonicalQuadraticSieve
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ENNReal
+open scoped Classical
 
 def cuspBaseArea : Measure (ℝ×ℝ) := volume.restrict cuspRectangle
 instance cuspBaseArea_sFinite : SFinite cuspBaseArea := by unfold cuspBaseArea; infer_instance
@@ -178,7 +155,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
+open scoped Classical
 
 lemma cusp_height_volume (a : ℝ) (ha : 0<a) :
     (∫⁻v in Set.Ioi a,ENNReal.ofReal ((v^3)⁻¹))=ENNReal.ofReal (1/(2*a^2)) := by
@@ -187,7 +164,7 @@ lemma cusp_height_volume (a : ℝ) (ha : 0<a) :
       zpow_natCast] using (integrableOn_Ioi_rpow_of_lt (by norm_num : (-3:ℝ) < -1) ha)
   have hn : 0≤ᵐ[volume.restrict (Set.Ioi a)] (fun v : ℝ => (v^3)⁻¹) := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-    exact inv_nonneg.mpr (pow_nonneg (ha.trans hv).le 3)
+    exact inv_nonneg.mpr (pow_nonneg (by grind) 3)
   rw [←ofReal_integral_eq_lintegral_ofReal hi hn]
   congr 1
   have he := integral_Ioi_rpow_of_lt (by norm_num : (-3:ℝ) < -1) ha
@@ -195,20 +172,20 @@ lemma cusp_height_volume (a : ℝ) (ha : 0<a) :
   simp only [show (-3:ℝ)=-(3:ℕ) by norm_num,Real.rpow_neg_natCast,zpow_neg,
     zpow_natCast] at he
   rw [he]
-  norm_num [show (-3:ℝ)+1=-2 by norm_num]
+  norm_num
   ring
 
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace ENNReal ContDiff
+open scoped Classical
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex IdealMobiusDivisorSum
+open ConcretePrimeRowBridge CompletedGauss
+open EisensteinSchwartzPoisson UnrestrictedIdealReindex IdealMobiusDivisorSum
 
 theorem commonMaskIdeal_primeSupport (D : Ideal O) :
     IdealMobiusDivisorSum.primeSupport (commonMaskIdeal D) = gcdMaskPrimes D := by
@@ -264,11 +241,7 @@ theorem originalPairIdealDualKernel_eq_divisors
   intro E hE
   simp only [Real.sq_sqrt hnonneg,primeSubsetGenerator,unrestrictedPairCharacter,
     idealGenerator_norm_sq,Complex.ofReal_natCast]
-  congr 1
-  apply tsum_congr
-  intro B
-  congr 2
-  ring
+  grind
 
 theorem originalPairDualKernel_eq_divisors
     (D I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)

@@ -9,25 +9,24 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.DetectorDictionaryInverseRawConjugateGates
 open CanonicalRowCompletion
 open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy
 open InverseInitialRayAttachment InverseInitialExcludedPeriod CanonicalCoefficientClass
 open DetectorDictionaryInverseRawInitialGates InverseInitialExcludedPool
-open InverseInitialExcludedOverlap InverseMoment InverseInitialProfile
-local notation "O"=>HeckeFamily.O
+open InverseInitialExcludedOverlap InverseMoment
 
-theorem conjugate_element_apply (η:Ideal O→*ℂ)(x:O):
+theorem conjugate_element_apply (η:Ideal HeckeFamily.O→*ℂ)(x:HeckeFamily.O):
     elementCharacter (conjugateIdealCharacter η) x=star (elementCharacter η x):=rfl
 
-theorem conjugate_element_factors (η:Ideal O→*ℂ)(Q:Ideal O)
+theorem conjugate_element_factors (η:Ideal HeckeFamily.O→*ℂ)(Q:Ideal HeckeFamily.O)
     (h:FactorsModulo Q (elementCharacter η)):
     FactorsModulo Q (elementCharacter (conjugateIdealCharacter η)):=by
   intro x y hxy
   exact congrArg star (h x y hxy)
 
-theorem conjugate_element_norm (η:Ideal O→*ℂ)(x:O):
+theorem conjugate_element_norm (η:Ideal HeckeFamily.O→*ℂ)(x:HeckeFamily.O):
     ‖elementCharacter (conjugateIdealCharacter η) x‖=‖elementCharacter η x‖:=by
   rw [conjugate_element_apply,norm_star]
 
@@ -42,9 +41,9 @@ theorem raw_conjugate_base_gates (data:RowData):
   refine ⟨hq,he,?_,conjugate_element_factors _ _ hp⟩
   intro x
   rw [conjugate_element_norm]
-  exact hn x
+  simp_all
 
-theorem raw_conjugate_zero_outside (data:RowData)(I:Ideal O)
+theorem raw_conjugate_zero_outside (data:RowData)(I:Ideal HeckeFamily.O)
     (hI:¬outside (excluded data) I):
     conjugateIdealCharacter (idealCoeff (deletedBase data)).toMonoidHom I=0:=by
   change star (idealCoeff (deletedBase data) I)=0

@@ -33,7 +33,7 @@ open Erdos821.P5Core (localAdditivePolynomial integerAdditivePolynomial)
 private theorem localAdditivePolynomial_eq_int (s : Finset ℕ) (a : ℕ → ℂ) (θ : ℝ) :
     localAdditivePolynomial s a θ =
       integerAdditivePolynomial (s.map Nat.castEmbedding) (fun z => a z.toNat) θ := by
-  simp [localAdditivePolynomial, integerAdditivePolynomial, Finset.sum_map]
+  simp [localAdditivePolynomial, integerAdditivePolynomial]
 
 /-- Additive polynomials are continuous. -/
 theorem continuous_localAdditivePolynomial (s : Finset ℕ) (a : ℕ → ℂ) :
@@ -45,8 +45,7 @@ theorem continuous_localAdditivePolynomial (s : Finset ℕ) (a : ℕ → ℂ) :
 theorem integral_norm_localAdditivePolynomial_sq (s : Finset ℕ) (a : ℕ → ℂ) :
     ∫ θ in (0 : ℝ)..1, ‖localAdditivePolynomial s a θ‖ ^ 2 = ∑ n ∈ s, ‖a n‖ ^ 2 := by
   simp_rw [localAdditivePolynomial_eq_int]
-  rw [Erdos821.P5Core.FourierArcTask_proof.2.1, Finset.sum_map]
-  simp
+  simp [Erdos821.P5Core.FourierArcTask_proof.2.1, Finset.sum_map]
 
 /-- The shift identity for one shift `d`. -/
 private theorem integral_star_mul_mul_e (s s' : Finset ℕ) (f g : ℕ → ℂ) (d : ℕ) :
@@ -61,9 +60,8 @@ private theorem integral_star_mul_mul_e (s s' : Finset ℕ) (f g : ℕ → ℂ) 
   refine Finset.sum_congr rfl fun n _ => ?_
   rw [Finset.sum_map]
   simp only [Nat.castEmbedding_apply, Int.toNat_natCast, star_star]
-  have hc : ∀ m : ℕ, ((m : ℤ) = (n : ℤ) + (d : ℤ)) ↔ m = n + d := fun m => by omega
-  simp only [hc]
-  rw [Finset.sum_ite_eq']
+  have hc : ∀ m : ℕ, ((m : ℤ) = (n : ℤ) + (d : ℤ)) ↔ m = n + d := by omega
+  simp_all
 
 /-- **The shift identity.** If every `n + D_l` with `c_l ≠ 0` and `n ∈ s` lies in `s'`, then
 `∫₀¹ star(∑ star(f_n) e(θn)) (∑ g_m e(θm)) ∑_l c_l e(-θ D_l) = ∑_l c_l ∑_n f_n g_{n + D_l}`. -/
@@ -91,31 +89,26 @@ theorem integral_star_mul_mul_sum {Λ : Type*} (Ls : Finset Λ) (c : Λ → ℂ)
   refine Finset.sum_congr rfl fun l hl => ?_
   rw [intervalIntegral.integral_const_mul, integral_star_mul_mul_e, Finset.mul_sum, Finset.mul_sum]
   refine Finset.sum_congr rfl fun n hn => ?_
-  by_cases hc : c l = 0
-  · simp [hc]
-  · rw [ite_eq_left (hD l hl hc n hn)]
+  grind
 
 /-- `|e(t)| = 1`. -/
 theorem norm_e (t : ℝ) : ‖e t‖ = 1 := by
-  rw [e, show 2 * (Real.pi : ℂ) * t * Complex.I = ((2 * Real.pi * t : ℝ) : ℂ) * Complex.I by
-    push_cast; ring]
-  exact Complex.norm_exp_ofReal_mul_I _
+  simp
 
 /-- `star(n^{it}) = n^{-it}` for `n ≥ 1`. -/
 private theorem star_natCast_cpow {n : ℕ} (hn : n ≠ 0) (t : ℝ) :
     star ((n : ℂ) ^ ((t : ℂ) * Complex.I)) = (n : ℂ) ^ (((-t : ℝ) : ℂ) * Complex.I) := by
-  rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hn),
-    Complex.cpow_def_of_ne_zero (by exact_mod_cast hn), ← Complex.natCast_log, Complex.star_def,
+  rw [Complex.cpow_def_of_ne_zero (by positivity),
+    Complex.cpow_def_of_ne_zero (by positivity), ← Complex.natCast_log, Complex.star_def,
     ← Complex.exp_conj, map_mul, map_mul, Complex.conj_ofReal, Complex.conj_ofReal,
     Complex.conj_I]
-  push_cast
-  ring_nf
+  simp
 
 /-- `n^{it} = mellin(n, t)` for `n ≥ 1`. -/
 private theorem natCast_cpow_eq_mellin {n : ℕ} (hn : n ≠ 0) (t : ℝ) :
     (n : ℂ) ^ ((t : ℂ) * Complex.I) = mellin n t := by
   unfold Erdos821.Blueprint.Analytic.mellin
-  rw [Complex.cpow_def_of_ne_zero (by exact_mod_cast hn), ← Complex.natCast_log]
+  rw [Complex.cpow_def_of_ne_zero (by positivity), ← Complex.natCast_log]
   ring_nf
 
 /-- **The Mellin side as a twisted polynomial.** On `s = [⌈Y⌉, ⌊2Y⌋]`,
@@ -128,12 +121,10 @@ theorem norm_sum_star_mul_cpow {Y : ℝ} (hY : 0 < Y) (f : ℕ → ℂ) (u : ℤ
     mul_inv_cancel_left₀ hY.ne', ← norm_star, star_sum]
   congr 1
   refine Finset.sum_congr rfl fun n hn => ?_
-  have hn0 : n ≠ 0 := (lt_of_lt_of_le (Nat.ceil_pos.2 hY) (Finset.mem_Icc.1 hn).1).ne'
+  have hn0 := (lt_of_lt_of_le (Nat.ceil_pos.2 hY) (Finset.mem_Icc.1 hn).1).ne'
   rw [star_mul', star_mul', star_star, star_natCast_cpow hn0, Erdos821.P5FourierArcProof.star_e,
     e]
-  congr 2
-  push_cast
-  ring_nf
+  grind
 
 /-- **The arc energy (PD Lemma 6.4 with the tail).** For `j ≥ 4` there is `K > 0` such that
 for `10 ≤ Y`, `1 ≤ H ≤ Y/10`, `2Y ≤ T₀ H` and coefficients supported in `[Y, 2Y]`, the energy
@@ -246,7 +237,7 @@ theorem exists_integral_norm_localAdditivePolynomial_le (j : ℕ) (hj : 4 ≤ j)
       (∫ t in (-T₀)..T₀, ‖F t‖ ^ 2) +
         ((1 + ℓ) ^ (j - 4))⁻¹ * (KW * Y * (1 / H + 2 * Real.log (4 * Y)) * S) := by
     refine hsplit.trans (add_le_add (le_of_eq ?_) ?_)
-    · congr 1
+    · simp
     · exact mul_le_mul_of_nonneg_left hwt (by positivity)
   have hmain0 : 0 ≤ ∫ t in (-T₀)..T₀, ‖F t‖ ^ 2 :=
     intervalIntegral.integral_nonneg (by nlinarith) fun t _ => by positivity
@@ -266,9 +257,7 @@ theorem exists_integral_norm_localAdditivePolynomial_le (j : ℕ) (hj : 4 ≤ j)
           ‖∑ n ∈ s, a n * e (c * n) * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2) +
         K₃ * KW * ((1 + ℓ) ^ (j - 4))⁻¹ * (1 / H + 2 * Real.log (4 * Y)) * S +
         K₃ * (H / Y) ^ 2 * S := by
-          generalize (∫ t in (-T₀)..T₀,
-            ‖∑ n ∈ s, a n * e (c * n) * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2) = Mn
-          field_simp
+          grind
     _ ≤ K₃ * (KW + 1) / Y * (∫ t in (-T₀)..T₀,
           ‖∑ n ∈ s, a n * e (c * n) * (n : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2) +
         K₃ * (KW + 1) * ((1 + ℓ) ^ (j - 4))⁻¹ * (1 / H + 2 * Real.log (4 * Y)) * S +

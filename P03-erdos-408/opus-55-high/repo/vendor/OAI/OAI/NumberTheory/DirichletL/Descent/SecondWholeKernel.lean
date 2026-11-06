@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondProfileIdentity
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (e k : Eis)
+    (p : ι → ActualEisensteinCubic.O) (e k : ActualEisensteinCubic.O)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (A₁ A₂ : Finset ι) (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ,ℂ)) (Y : ℝ) (S T : Finset ι) :
     secondSourcePairKernel p e k
@@ -26,10 +25,10 @@ lemma secondSourcePairKernel_mark_factors {ι σ : Type*} [DecidableEq ι] [Deci
   ring
 
 theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (F G V A₁ A₂ : Finset ι) (Ψ₁ Ψ₂ : Eis →* ℂ) (m r c d e k : Eis)
+    (F G V A₁ A₂ : Finset ι) (Ψ₁ Ψ₂ : ActualEisensteinCubic.O →* ℂ) (m r c d e k : ActualEisensteinCubic.O)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y : ℝ) :
     (‖eisEmbedding e‖^2 : ℂ)⁻¹ * secondChildKernelPair p hp hcop hg F V Ψ₁ Ψ₂
@@ -53,14 +52,13 @@ theorem secondChildKernelPair_whole_profile {ι σ : Type*} [DecidableEq ι] [De
   intro N hN
   apply Finset.sum_congr rfl
   intro M hM
-  have hVN : Disjoint V N := Finset.disjoint_of_subset_right
+  have hVN := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hN) disjoint_sdiff_self_right
-  have hVM : Disjoint V M := Finset.disjoint_of_subset_right
+  have hVM := Finset.disjoint_of_subset_right
     (Finset.mem_powerset.mp hM) disjoint_sdiff_self_right
   rw [secondSourcePairKernel_mark_factors]
   have hp := secondSourcePairKernel_profile p hp G V N M hVN hVM e k W₁ W₂ Φ Y
-  rw [← hp]
-  ring
+  grind
 
 end
 end SevenEighths.InverseMoment

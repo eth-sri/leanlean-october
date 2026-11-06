@@ -8,8 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open CompletedGauss
+open scoped Classical
 noncomputable section
 variable {φ : Type*} [Fintype φ]
 
@@ -44,8 +43,7 @@ theorem branch_count_small_power (ε : ℝ) (hε : 0<ε) :
       pow_le_pow_left₀ (by positivity) hh _
     _ = C^4*(Ideal.absNorm (∏ i,F.ideal i):ℝ)^ε := by
       rw [mul_pow,← Real.rpow_mul_natCast hnorm.le]
-      congr 2
-      norm_num
+      simp
 
 theorem surviving_branch_count_small_power (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ {ι : Type*} [Fintype ι] (F : PrimeFamily ι),

@@ -8,16 +8,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseInitialClippedColumns
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic
 
 theorem canonical_rank_loss_le {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (pool:Finset ι)(base:ActualEisensteinCubic.O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (W:𝓢(ℝ,ℂ))(Z M F z c eps eps' A:ℝ)(K degree:ℕ)
     (hZ:1≤Z)(hA:0≤A)(he:eps≤eps')
     (h:CanonicalRankMoments p hp hcop hg pool base slots lists a W Z M F z c eps A K degree):

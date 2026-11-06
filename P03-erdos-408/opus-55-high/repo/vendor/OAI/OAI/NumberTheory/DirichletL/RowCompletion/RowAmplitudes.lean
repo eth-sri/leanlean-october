@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,46 +31,38 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -98,7 +78,7 @@ end GoodMaskRowData
 end
 section
 
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 namespace GoodMaskRowData
 variable {m f z:Eis} (D:GoodMaskRowData m f z)
@@ -116,7 +96,7 @@ lemma residualActivePrimes_not_inr (e:α⊕β ≃ γ) (b:β) :
     e (Sum.inr b)∉residualActivePrimes e := by
   intro h
   obtain ⟨a,_,ha⟩:=Finset.mem_image.mp h
-  cases e.injective ha
+  simp_all
 
 def nonresidualComplementMap (e:α⊕β ≃ γ) : β → {g:γ // g∉residualActivePrimes e} :=
   fun b=>⟨e (Sum.inr b),residualActivePrimes_not_inr e b⟩
@@ -131,10 +111,10 @@ lemma nonresidualComplementMap_bijective (e:α⊕β ≃ γ) :
     obtain ⟨x,hx⟩:=e.surjective g.val
     cases x with
     | inl a=>
-      exact (g.property (Finset.mem_image.mpr ⟨a,Finset.mem_univ a,hx⟩)).elim
+      exact (g.property (Finset.mem_image.mpr (by grind))).elim
     | inr b=>exact ⟨b,Subtype.ext hx⟩
 
-noncomputable def nonresidualComplementEquiv (e:α⊕β ≃ γ) :
+def nonresidualComplementEquiv (e:α⊕β ≃ γ) :
     β ≃ {g:γ // g∉residualActivePrimes e} :=
   Equiv.ofBijective (nonresidualComplementMap e) (nonresidualComplementMap_bijective e)
 
@@ -155,9 +135,7 @@ lemma inactive_product_nonresidual (e:α⊕β ≃ γ) (z:γ → ℂ) (B:Finset �
       ∏b∈(Finset.univ:Finset β)\B,z (e (Sum.inr b)) := by
   symm
   apply Finset.prod_equiv (nonresidualComplementEquiv e)
-  · intro b
-    simp only [Finset.mem_sdiff,Finset.mem_univ,true_and,Finset.mem_map_equiv,
-      Equiv.symm_apply_apply]
+  · simp
   · intro b hb
     rfl
 
@@ -181,16 +159,16 @@ theorem inactive_weight_nonresidual_subsets (e:α⊕β ≃ γ) (z:γ → ℂ)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical ContDiff
+open scoped Classical ContDiff
 
 namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
+open CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
 namespace CubicEisenstein
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CanonicalQuadraticSieve
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
@@ -199,11 +177,10 @@ variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
 end FixedFourierGeometry
 end CubicEisenstein
 
-open scoped Classical BigOperators ContDiff
+open scoped Classical ContDiff
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalCoefficientClass
-open ConcretePrimeRowBridge SecondPassArithmetic
+open CompletedGauss CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma normTwistedSource_contDiff (W:ℝ→ℂ) (a b:ℝ) (ha:0<a)
@@ -218,10 +195,10 @@ lemma normTwistedSource_contDiff (W:ℝ→ℂ) (a b:ℝ) (ha:0<a)
 
 end CanonicalRowCompletion
 
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace CompletedGauss.ReflectedBranchData
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
+open CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 variable {levelBound K:ℝ} {I F Q:Ideal Eis}
 variable (d:ReflectedBranchData levelBound K I F Q)
@@ -231,7 +208,7 @@ variable (W:ℝ→ℂ) (X ρ q:ℝ) (k:idealRange (completedResidualScale K I Q)
 
 end CompletedGauss.ReflectedBranchData
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CanonicalRowCompletion
 variable {α β γ:Type*} [Fintype α] [Fintype β] [Fintype γ]
@@ -242,7 +219,7 @@ def completeActiveSet (e:α⊕β ≃ γ) (B:Finset β) : Finset γ :=
 omit [Fintype β] [Fintype γ] in
 lemma completeActiveSet_residual (e:α⊕β ≃ γ) (B:Finset β) (a:α) :
     e (Sum.inl a)∈completeActiveSet e B :=
-  Finset.mem_union_left _ (Finset.mem_image.mpr ⟨a,Finset.mem_univ a,rfl⟩)
+  Finset.mem_union_left _ (Finset.mem_image.mpr (by simp))
 
 omit [Fintype γ] in
 lemma optionalPrimeActive_completeActiveSet (e:α⊕β ≃ γ) (B:Finset β) :
@@ -251,14 +228,9 @@ lemma optionalPrimeActive_completeActiveSet (e:α⊕β ≃ γ) (B:Finset β) :
   rw [mem_optionalPrimeActive]
   change e (Sum.inr b)∈residualActivePrimes e∪B.image (fun b=>e (Sum.inr b)) ↔ b∈B
   simp only [Finset.mem_union,residualActivePrimes_not_inr,false_or,Finset.mem_image]
-  constructor
-  · rintro ⟨b',hb',he⟩
-    have hb:b'=b:=Sum.inr.inj (e.injective he)
-    exact hb ▸ hb'
-  · intro hb
-    exact ⟨b,hb,rfl⟩
+  simp
 
-noncomputable def selectedActiveEquiv (e:α⊕β ≃ γ) (B:Finset β) :
+def selectedActiveEquiv (e:α⊕β ≃ γ) (B:Finset β) :
     α⊕B ≃ completeActiveSet e B := by
   let t : B ≃ optionalPrimeActive e (completeActiveSet e B):={
     toFun:=fun b=>⟨b.val,by simpa only [optionalPrimeActive_completeActiveSet] using b.property⟩
@@ -270,10 +242,10 @@ noncomputable def selectedActiveEquiv (e:α⊕β ≃ γ) (B:Finset β) :
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CanonicalRowCompletion.ActualFiber
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
+open CompletedGauss CanonicalQuadraticSieve CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 def maskElement (q:ℕ) (m:Eis) : Eis := m*excludedGenerator (reflectionExcludedPrimes q)
@@ -292,10 +264,6 @@ variable (q:ℕ) (hq:q≠0) (m:Eis) (hm:m≠0)
     (rows:Finset (Ideal Eis)) (R F:Ideal Eis) (hR:R≠0) (hF:Squarefree F)
     (hrows:∀I∈rows,I≠0) (v:Eisˣ)
 
-noncomputable def data (J:RowIndex q m rows R F) :
-    GoodMaskRowData (maskElement q m) (ConcretePrimeRowBridge.idealGenerator F)
-      (v.val*ConcretePrimeRowBridge.idealGenerator J.val) :=
-  fiberGoodMaskRowData rows R F (maskElement q m) (maskElement_ne_zero q m hm) hF.ne_zero hrows v J
 
 variable [Fintype (Eis⧸Ideal.span {reflectionConductor q})]
 

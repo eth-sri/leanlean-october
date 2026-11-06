@@ -26,33 +26,30 @@ theorem eventually_add_le_rpow {a b : ℝ} (c₁ c₂ : ℝ) (ha : 0 ≤ a) (hab
     ∀ᶠ L : ℝ in atTop, c₁ * L ^ a + c₂ ≤ L ^ b := by
   filter_upwards [(tendsto_rpow_atTop (sub_pos.2 hab)).eventually_ge_atTop (|c₁| + |c₂|),
     eventually_ge_atTop 1] with L h₁ hL
-  have hLa : 1 ≤ L ^ a := Real.one_le_rpow hL ha
+  have hLa := Real.one_le_rpow hL ha
   have hsplit : L ^ b = L ^ (b - a) * L ^ a := by
     rw [← Real.rpow_add (by linarith)]
     ring_nf
   rw [hsplit]
   have h₂ : c₁ * L ^ a ≤ |c₁| * L ^ a := mul_le_mul_of_nonneg_right (le_abs_self _) (by linarith)
   have h₃ : c₂ ≤ |c₂| * L ^ a := (le_abs_self _).trans (le_mul_of_one_le_right (abs_nonneg _) hLa)
-  have h₄ : (|c₁| + |c₂|) * L ^ a ≤ L ^ (b - a) * L ^ a :=
-    mul_le_mul_of_nonneg_right h₁ (by linarith)
-  linarith
+  nlinarith
 
 /-- `|n^{-iσ}| ≤ 1`, including `n = 0`. -/
 theorem norm_natCast_cpow_neg_le_one (n : ℕ) (σ : ℝ) :
     ‖(n : ℂ) ^ (-((σ : ℂ) * Complex.I))‖ ≤ 1 := by
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · by_cases h : -((σ : ℂ) * Complex.I) = 0
-    · simp [h]
-    · simp [Complex.zero_cpow h]
-  · rw [Complex.norm_natCast_cpow_of_pos hn]
-    simp
+    · simp_all
+    simp_all
+  · simp [Complex.norm_natCast_cpow_of_pos hn]
 
 /-- `∑_t |h|² ≤ |t| b²` when `|h| ≤ b` on `t`. -/
 private theorem sum_norm_sq_le_card_mul {t : Finset ℕ} {h : ℕ → ℂ} {b : ℝ}
     (hb : ∀ n ∈ t, ‖h n‖ ≤ b) : ∑ n ∈ t, ‖h n‖ ^ 2 ≤ t.card * b ^ 2 := by
   have := Finset.sum_le_card_nsmul t (fun n => ‖h n‖ ^ 2) (b ^ 2) fun n hn =>
-    pow_le_pow_left₀ (norm_nonneg _) (hb n hn) 2
-  rwa [nsmul_eq_mul] at this
+    pow_le_pow_left₀ (norm_nonneg _) (by grind) 2
+  simp_all
 
 /-- `√(a + b) ≤ √a + √b`. -/
 private theorem sqrt_add_le {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) :
@@ -67,7 +64,7 @@ private theorem card_Icc_ceil_floor_le {Y : ℝ} (hY : 0 ≤ Y) :
   have h₁ : ⌊2 * Y⌋₊ + 1 - ⌈Y⌉₊ ≤ ⌊2 * Y⌋₊ + 1 := Nat.sub_le _ _
   have h₂ : (⌊2 * Y⌋₊ : ℝ) ≤ 2 * Y := Nat.floor_le (by positivity)
   calc ((⌊2 * Y⌋₊ + 1 - ⌈Y⌉₊ : ℕ) : ℝ) ≤ ((⌊2 * Y⌋₊ + 1 : ℕ) : ℝ) := by exact_mod_cast h₁
-    _ ≤ 2 * Y + 1 := by push_cast; linarith
+    _ ≤ 2 * Y + 1 := by simp_all
 
 /-- **(6.19) for the first endpoint.** `∑_{Y ≤ w ≤ 2Y} |𝒰(w)|² ≤ Y L^{2C_W + 3}` from
 `|ψ₁| ≤ M₀`, `|F| ≤ L` (crude U7) and `|W| ≤ L^{C_W}` (U9), once `3M₀² ≤ L`. -/
@@ -96,7 +93,7 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
     have := hW w
     calc ‖ψ₁ (w / Y)‖ * |centeredCore x q a u v Bc w| *
           ‖markedListWeight P q₀ (unsharedSlots C) b w‖
-        ≤ M0 * L * L ^ CW := by gcongr; exact hψ _
+        ≤ M0 * L * L ^ CW := by gcongr; simp_all
       _ = M0 * (L * L ^ CW) := by ring
   refine (sum_norm_sq_le_card_mul hpt).trans ?_
   have hsq : (M0 * L ^ (1 + CW)) ^ 2 = M0 ^ 2 * L ^ (2 * CW + 2) := by
@@ -106,7 +103,7 @@ theorem sum_norm_endpointCoeff_sq_le {x q q₀ : ℝ} {r d : ℕ} (a : Fin r →
   rw [hsq]
   have hcard := card_Icc_ceil_floor_le (show 0 ≤ Y by linarith)
   calc ((Finset.Icc ⌈Y⌉₊ ⌊2 * Y⌋₊).card : ℝ) * (M0 ^ 2 * L ^ (2 * CW + 2))
-      ≤ (3 * Y) * (M0 ^ 2 * L ^ (2 * CW + 2)) := by gcongr; linarith
+      ≤ (3 * Y) * (M0 ^ 2 * L ^ (2 * CW + 2)) := by nlinarith
     _ = Y * (3 * M0 ^ 2) * L ^ (2 * CW + 2) := by ring
     _ ≤ Y * L * L ^ (2 * CW + 2) := by gcongr
     _ = Y * L ^ (2 * CW + 3) := by
@@ -122,8 +119,8 @@ theorem sum_norm_second_sq_le {L B₀ CW Y : ℝ} (hL : 4 ≤ L) (hY : 1 ≤ Y) 
   have hL0 : 0 < L := by linarith
   have hpt : ∀ w ∈ Finset.Icc 0 ⌊3 * Y⌋₊, ‖(G w : ℂ) * W w‖ ≤ L ^ (B₀ + CW) := by
     intro w _
-    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (hG w).1, Real.rpow_add hL0]
-    exact mul_le_mul (hG w).2 (hW w) (norm_nonneg _) (by positivity)
+    rw [norm_mul, Complex.norm_real, Real.norm_of_nonneg (by grind), Real.rpow_add hL0]
+    exact mul_le_mul (by grind) (hW w) (norm_nonneg _) (by positivity)
   refine (sum_norm_sq_le_card_mul hpt).trans ?_
   have hsq : (L ^ (B₀ + CW)) ^ 2 = L ^ (2 * B₀ + 2 * CW) := by
     rw [← Real.rpow_mul_natCast hL0.le]
@@ -168,14 +165,14 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
     have he : L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)) = L ^ (-Am' + (CA + CB) / 2) := by
       rw [← Real.rpow_add hL0, ← Real.rpow_add hL0]
       ring_nf
-    have hle : L ^ (-Am' + (CA + CB) / 2) ≤ L ^ (-Am) :=
+    have hle :=
       Real.rpow_le_rpow_of_exponent_le hL hAm
     calc 4 * (Kmin * L ^ (-Am')) * (Real.sqrt Y * L ^ (CA / 2)) *
           (Real.sqrt Y * L ^ (CB / 2))
         = (Real.sqrt Y * Real.sqrt Y) *
             (4 * Kmin * (L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)))) := by ring
       _ = Y * (4 * Kmin * (L ^ (-Am') * (L ^ (CA / 2) * L ^ (CB / 2)))) := by
-          rw [Real.mul_self_sqrt hY.le]
+          grind
       _ ≤ Y * (4 * Kmin * L ^ (-Am)) := by
           rw [he]
           gcongr
@@ -206,20 +203,20 @@ theorem div_le_of_arcs {N Y L Kmin K₃ Am Am' A₀ CA CB Carc Ξ₀ E : ℝ} {R
       _ = (Real.sqrt Y * Real.sqrt Y) * (4 * Real.sqrt K₃ * ((L ^ (2 * Carc) * L ^ (CB / 2)) *
             (Real.sqrt Ξ₀ + 2 * L ^ (-A₀)))) := by ring
       _ = Y * (4 * Real.sqrt K₃ * ((L ^ (2 * Carc) * L ^ (CB / 2)) *
-            (Real.sqrt Ξ₀ + 2 * L ^ (-A₀)))) := by rw [Real.mul_self_sqrt hY.le]
+            (Real.sqrt Ξ₀ + 2 * L ^ (-A₀)))) := by grind
       _ ≤ Y * (8 * Real.sqrt K₃ * (L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀)))) := by
           rw [← Real.rpow_add hL0]
           have hp : 0 ≤ L ^ (2 * Carc + CB / 2) := by positivity
           refine mul_le_mul_of_nonneg_left ?_ hY.le
-          nlinarith [mul_nonneg hK hp, mul_nonneg (mul_nonneg hK hp) hΞs,
-            mul_nonneg (mul_nonneg hK hp) hA0]
+          nlinarith [mul_nonneg hK hp, mul_nonneg (by positivity) hΞs,
+            mul_nonneg (by positivity) hA0]
   rw [div_le_iff₀ hY]
   have hm0 : 0 ≤ L ^ (-Am) := by positivity
   have hp0 : 0 ≤ L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀)) := by positivity
   have hK := Real.sqrt_nonneg K₃
   calc N ≤ Y * (4 * Kmin * L ^ (-Am)) +
         Y * (8 * Real.sqrt K₃ * (L ^ (2 * Carc + CB / 2) * (Real.sqrt Ξ₀ + L ^ (-A₀)))) :=
-        hN.trans (add_le_add h₁ h₂)
+        by linarith
     _ ≤ _ := by
         have h₃ := mul_nonneg (mul_nonneg hY.le hKmin) hp0
         have h₄ := mul_nonneg (mul_nonneg hY.le hK) hm0
@@ -303,7 +300,7 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
   have hU0 : 0 < U := lt_of_lt_of_le (Real.exp_pos _) hU38
   have hU'0 : 0 < U' := lt_of_lt_of_le (Real.exp_pos _) hU'38
   have he4 : Real.exp 1 ≤ 4 := (Real.exp_one_lt_d9).le.trans (by norm_num)
-  have hV : ∀ g, harmonicMass (P g) ≠ 0 := fun g =>
+  have hV := fun g =>
     (lt_of_lt_of_le hvlo (hadm.2.2.2.2.2.1 g).1).ne'
   have hμ : ∀ (S : ι → Finset (Fin J)) (l : ι → Fin J → ℕ), 0 ≤ labelMass P S l :=
     labelMass_nonneg P
@@ -333,10 +330,10 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
     (fun l _ => hμ B l) (sum_labelMass hV A) (sum_labelMass hV B)
     (fun n => hb φ n (hφ n)) (fun n => hb φ' n (hφ' n)) ?_ ?_ hρA hρB ?_
   · intro n hn
-    have h := hsφ n fun h0 => hn (by rw [hb₁]; simp [h0])
+    have h := hsφ n fun h0 => hn (by grind)
     exact ⟨h.1, h.2.trans (by nlinarith)⟩
   · intro n hn
-    have h := hsφ' n fun h0 => hn (by rw [hb₂]; simp [h0])
+    have h := hsφ' n fun h0 => hn (by grind)
     exact ⟨h.1, h.2.trans (by nlinarith)⟩
   -- each box is a minor-arc sum of C2
   intro U₀ V₀ s t α β hU₀ hV₀ hs ht hα hβ
@@ -350,7 +347,7 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
     div_le_div_of_nonneg_left (Real.rpow_nonneg (by linarith) _) hUV0 hUV
   have hrad1 : Real.log x ^ Carc / (U * U') ≤ 1 := (div_le_one hUV0).2 hLCarc
   refine hC2x U₀ V₀ θ 1 s t α β (hU38.trans hU₀l) (hU'38.trans hV₀l) ?_ one_ne_zero
-    (by simpa using hLC) hs ht (hα.trans (div_le_div_of_nonneg_right hC₇C (by linarith)))
+    (by grind) hs ht (hα.trans (div_le_div_of_nonneg_right hC₇C (by linarith)))
     (hβ.trans (div_le_div_of_nonneg_right hC₇C (by linarith))) ?_
   · calc U₀ * V₀ ≤ (2 * U) * (2 * U') := mul_le_mul hU₀u hV₀u (by linarith) (by linarith)
       _ = 4 * (U * U') := by ring
@@ -361,23 +358,23 @@ theorem norm_multiplier_le {ι : Type} [Fintype ι] [DecidableEq ι] {c₀ C₀ 
     refine lt_of_le_of_lt hrad ?_
     by_cases hu₁ : -(R : ℤ) ≤ u
     · by_cases hu₂ : u ≤ 2 * R
-      · exact harc r u hr₁ hrR hu₁ hu₂
+      · grind
       · -- `u/r > 2`, so `|θ - u/r| > 1`
         have h₁ : (2 * r + 1 : ℝ) ≤ u := by
           have : (2 * (r : ℤ) + 1) ≤ u := by omega
           exact_mod_cast this
         have h₂ : 2 < (u : ℝ) / r := by rw [lt_div_iff₀ hr0]; linarith
         refine lt_of_le_of_lt hrad1 ?_
-        rw [abs_sub_comm, abs_of_pos (by linarith [hθ.2])]
-        linarith [hθ.2]
+        rw [abs_sub_comm, abs_of_pos (by grind)]
+        grind
     · -- `u/r < -1`, so `|θ - u/r| > 1`
       have h₁ : (u : ℝ) ≤ -(r : ℝ) - 1 := by
         have : u ≤ -(r : ℤ) - 1 := by omega
         exact_mod_cast this
       have h₂ : (u : ℝ) / r < -1 := by rw [div_lt_iff₀ hr0]; linarith
       refine lt_of_le_of_lt hrad1 ?_
-      rw [abs_of_pos (by linarith [hθ.1])]
-      linarith [hθ.1]
+      rw [abs_of_pos (by grind)]
+      grind
 
 /-- **The arc energy (S10).** With `H ≥ 1`, `2YL ≤ T₀H`, `Y ≤ x exp(L^{0.47})`,
 `H/Y ≤ 4κ/x` and `j - 4 ≥ C_A + 2A_e + 2`, the energy of S8–S10 is

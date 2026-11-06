@@ -8,12 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.FinalAssemblyMomentInput
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
 open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters PrincipalSignalComparison
-open HeckeInverseAmplification HeckeDetectorPhysicalSelection HeckeDetectorFiberPartition
-open ProbeMellinBoundary
 
 theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     (D : HighData (HeckeZeroSupremum.beta-7/8)) (F : SourceData D)
@@ -64,15 +62,15 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
   let rows := supportedNonfloorRows F.S F.maximal (rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+D.t))) grid
   let rows' := cubeBinRows (rows∩dyadicRows 1 k) idx grid i j
   have hsub : rows'⊆rows∩dyadicRows 1 k := Finset.filter_subset _ _
-  have hsubr : rows'⊆rows := hsub.trans Finset.inter_subset_left
+  have hsubr := hsub.trans Finset.inter_subset_left
   have hrows : ∀u∈rows,u.val≠1 ∧ Z^(1/100:ℝ)≤rowNorm u ∧ rowNorm u≤Z^(13/16+D.t) := by
     intro u hu
     have hh := mem_rowBand.mp ((mem_supportedNonfloorRows F.S F.maximal _ grid u).mp hu).1
     exact ⟨hh.1,hh.2.1,hh.2.2.le⟩
   have hg := hgeo rows hrows k (hne.mono hsub)
   obtain ⟨u,hu⟩ := hne
-  have huj : grid u=j := ((mem_cubeBinRows _ idx grid i j u).mp hu).2.2
-  have hjne : j≠0 := huj ▸ ((mem_supportedNonfloorRows F.S F.maximal _ grid u).mp (hsubr hu)).2.2
+  have huj := ((mem_cubeBinRows _ idx grid i j u).mp hu).2.2
+  have hjne := huj ▸ ((mem_supportedNonfloorRows F.S F.maximal _ grid u).mp (hsubr hu)).2.2
   have ha : (51/100:ℝ)<51/100+D.e*j := by
     have hjp : (0:ℝ)<j := by exact_mod_cast Nat.pos_of_ne_zero hjne
     nlinarith [D.e_pos]
@@ -89,7 +87,7 @@ theorem fixed_high_bound (hβ : (7/8:ℝ)<HeckeZeroSupremum.beta)
     calc
       _≤(3*(n:ℝ)+1)*Z^τ := by push_cast;gcongr
       _≤Z^τ*Z^τ := mul_le_mul_of_nonneg_right hnheight (by positivity)
-      _=Z^(2*τ) := by rw [←Real.rpow_add hZp];congr 1;ring
+      _=Z^(2*τ) := by rw [←Real.rpow_add hZp];ring
   apply hmom rows' (sourceDyadConductor Z D.t k) (51/100+D.e*j) hg.2.2.1 hg.2.2.2.1 ha ha' hrow' i
     ((17/50:ℂ)+t.1.2*Complex.I)
   · simp

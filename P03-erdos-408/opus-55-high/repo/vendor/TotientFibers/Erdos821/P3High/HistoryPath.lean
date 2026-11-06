@@ -11,7 +11,6 @@ public import Erdos821.P3High.PathSum
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
@@ -106,11 +105,11 @@ theorem abs_choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
             rw [ite_eq_left hV, hX0, hY0, ite_eq_left h0, ite_eq_left hn]
             have hgT : ∀ i, gT i (c1 i) =
                 |ghostChoiceWeight F n rho i (c1 i)| * φG i (bf i) (af i) (c1 i) :=
-              fun i => ite_eq_left (hg i)
+              by grind
             have heT : ∀ i, eT i (c2 i) = edgeSymmetryFactor P (J + F.ell) *
                 ‖edgeChoiceCoefficient A n rho theta i (af i.castSucc) (bf i.succ) (c2 i)‖ *
                   φE i (af i.castSucc) (bf i.succ) (c2 i) :=
-              fun i => ite_eq_left (he i)
+              by grind
             rw [norm_weight_eq]
             simp only [hgT, heT, localFactorR, Finset.prod_mul_distrib]
             ring
@@ -123,27 +122,17 @@ theorem abs_choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
           rw [ite_eq_right hV, Finset.prod_eq_zero (Finset.mem_univ i) (ite_eq_right hi)]
           ring
       · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => hn hV.2.1
-        rw [ite_eq_right hV, hY0, ite_eq_right hn]
-        ring
+        grind
     · have hV : ¬ (⟨bf, af, c1, c2⟩ : MemoryHistory A n).Valid := fun hV => h0 hV.1
-      rw [ite_eq_right hV, hX0, ite_eq_right h0]
-      ring
+      grind
   have hG : ∀ i, ∑ c, gT i c = ghostK F J n rho i (φG i) (bf i) (af i) := by
     intro i
     unfold ghostK
     by_cases hag : (bf i).1 = (af i).1 ∧ (bf i).2.1 = (af i).2.1
-    · rw [ite_eq_left hag]
-      apply Finset.sum_congr rfl
-      intro c _
-      by_cases hc : ghostChoiceValid c
-      · rw [ite_eq_left hc]
-        exact ite_eq_left ⟨hag.1, hag.2, hc⟩
-      · rw [ite_eq_right hc]
-        exact ite_eq_right (fun h => hc h.2.2)
+    · grind
     · rw [ite_eq_right hag]
       apply Finset.sum_eq_zero
-      intro c _
-      exact ite_eq_right (fun h => hag ⟨h.1, h.2.1⟩)
+      grind
   have hE : ∀ i, ∑ c, eT i c = edgeK A n rho theta i (φE i) (af i.castSucc) (bf i.succ) := by
     intro i
     unfold edgeK
@@ -151,11 +140,8 @@ theorem abs_choice_sum (A : Model F P J m) (n : ℕ) (rho theta : ℝ)
     apply Finset.sum_congr rfl
     intro c _
     by_cases hc : edgeChoiceValid A .all i (af i.castSucc) (bf i.succ) c
-    · rw [ite_eq_left hc]
-      simp only [eT, ite_eq_left hc]
-      ring
-    · rw [ite_eq_right hc]
-      simp only [eT, ite_eq_right hc, mul_zero]
+    · grind
+    · grind
   have hsplit : ∀ c1 : (i : Fin (n + 1)) → GhostChoice (bf i) (af i),
       ∑ c2 : (i : Fin n) → EdgeChoice A (af i.castSucc),
         X0 * (∏ i, gT i (c1 i)) * (∏ i, eT i (c2 i)) * Y0 =
@@ -178,7 +164,7 @@ theorem tsum_truncR (A : Model F P J m) (n B : ℕ) (f : MemoryHistory A n → �
   have hs : Function.support f ⊆ {H : MemoryHistory A n | H.Truncated B} := by
     intro H hH
     by_contra h
-    exact hH (hf H h)
+    exact hH (by grind)
   rw [← tsum_subtype_eq_of_support_subset hs, ← (truncEquiv A n B).tsum_eq, tsum_fintype]
   rfl
 
@@ -214,9 +200,9 @@ theorem ghostK_nonneg (F : FixedData) (J n : ℕ) (rho : ℝ) (i : Fin (n + 1))
   split_ifs
   · exact Finset.sum_nonneg fun c _ => by
       split_ifs
-      · exact mul_nonneg (abs_nonneg _) (hφ s t c)
-      · exact le_rfl
-  · exact le_rfl
+      · exact mul_nonneg (abs_nonneg _) (by grind)
+      simp
+  simp
 
 theorem edgeK_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
     (φ : (s t : P.MemoryState (J + F.ell)) → EdgeChoice A s → ℝ)
@@ -226,7 +212,7 @@ theorem edgeK_nonneg (A : Model F P J m) (n : ℕ) (rho theta : ℝ) (i : Fin n)
   apply mul_nonneg (edgeSymmetryFactor_nonneg P (J + F.ell))
   exact Finset.sum_nonneg fun c _ => by
     split_ifs
-    · exact mul_nonneg (norm_nonneg _) (hφ s t c)
-    · exact le_rfl
+    · exact mul_nonneg (norm_nonneg _) (by grind)
+    simp
 
 end Erdos821.P3High

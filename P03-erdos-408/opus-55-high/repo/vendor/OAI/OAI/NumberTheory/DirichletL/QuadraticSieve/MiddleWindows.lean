@@ -10,33 +10,23 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -45,43 +35,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -119,15 +102,15 @@ theorem HasSieveExponent.original_middle_window
   have hs := Summable.of_nonneg_of_le (fun h => (hbounds h).1) (fun h => (hbounds h).2) hs0
   refine ⟨hs, ?_⟩
   by_cases hcut : D₁ * D₂ ≤ (2 * U) * Real.sqrt (M / B)
-  · exact (hs.tsum_le_tsum (fun h => (hbounds h).2) hs0).trans
+  · exact (hs.tsum_le_tsum (fun h => by grind) hs0).trans
       (hexp.original_middle_block deltaLoss hδ ε hε S T D₁ D₂ B N M (2 * U)
         hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT rows left right hr hl hri hrows a₀ b₀ a b ha hb W hleft hright hcut)
   · have hp (D : S) (E : T) (i : m) : ¬ P (D.val * E.val) i := by
       intro hh
       apply hcut
       apply original_middle_rectangle_upper M B (Ideal.absNorm (rows i)) D₁ D₂
-        (Ideal.absNorm D.val) (Ideal.absNorm E.val) U hM (by linarith) (hrows i).2.1 hU
-        (by linarith) (by linarith) (hS D.val D.property).1 (hT E.val E.property).1
+        (Ideal.absNorm D.val) (Ideal.absNorm E.val) U hM (by linarith) (by grind) hU
+        (by linarith) (by linarith) (by grind) (by grind)
       simpa only [map_mul, Nat.cast_mul] using hP D E i hh
     have hz : (fun h : {h : O // h ≠ 0} =>
         originalMiddleWindowAt W S T rows left right (a h.val) (b h.val) M P h.val) = fun _ => 0 :=
@@ -160,15 +143,15 @@ theorem HasSieveExponent.dual_middle_window
   have hs := Summable.of_nonneg_of_le (fun h => (hbounds h).1) (fun h => (hbounds h).2) hs0
   refine ⟨hs, ?_⟩
   by_cases hcut : D₁ * D₂ ≤ (2 * U) * (N * Real.sqrt (F / (M * B)))
-  · exact (hs.tsum_le_tsum (fun h => (hbounds h).2) hs0).trans
+  · exact (hs.tsum_le_tsum (fun h => by grind) hs0).trans
       (hexp.dual_middle_block deltaLoss hδ ε hε S T D₁ D₂ B N M (2 * U)
         hD₁ hD₂ hB hN hD₁N hD₂N hM hS hT rows left right hr hl hri hrows a₀ b₀ a b ha hb W F hF hleft hright hcut)
   · have hp (D : S) (E : T) (i : m) : ¬ P (D.val * E.val) i := by
       intro hh
       apply hcut
       apply dual_middle_rectangle_upper M F B (Ideal.absNorm (rows i)) N D₁ D₂
-        (Ideal.absNorm D.val) (Ideal.absNorm E.val) U hM hF (by linarith) (hrows i).2.1 (by linarith) hU
-        (by linarith) (by linarith) (hS D.val D.property).1 (hT E.val E.property).1
+        (Ideal.absNorm D.val) (Ideal.absNorm E.val) U hM hF (by linarith) (by grind) (by linarith) hU
+        (by linarith) (by linarith) (by grind) (by grind)
       simpa only [map_mul, Nat.cast_mul] using hP D E i hh
     have hz : (fun h : {h : O // h ≠ 0} =>
         dualMiddleWindowAt W S T rows left right (a h.val) (b h.val) M F P h.val) = fun _ => 0 :=
@@ -183,7 +166,7 @@ theorem HasSieveExponent.dual_middle_window
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FourierBridge
+open EisensteinSchwartzPoisson FourierBridge
 
 theorem large_principal_scale_shape (X N Q D V : ℝ) (hD : 0 < D)
     (hcut : X * N ≤ V * D) :
@@ -222,7 +205,7 @@ theorem principalCorrectionAt_bound :
       (2 * Real.sqrt (M / B) / (D₁ * D₂)) *
         Real.sqrt (divisorBlockCost ε hε D₁ D₂ B N a b) := by
   have hh := canonical_original_divisor_block_phase_bound ε hε S T D₁ D₂ B N hD₁ hD₂ hN hS hT
-    rows left right hr hl hri (fun i => ⟨(hrows i).1, (hrows i).2.2⟩) hleft hright a b
+    rows left right hr hl hri (by grind) hleft hright a b
     (fun _ => 0) (fun _ => 0) 0
   simp only [zero_add, logPhase_zero, mul_one] at hh
   have heq : (∑ D : S, ∑ E : T, ∑ i, ‖∑ j, ∑ k, originalTerm rows left right a b D.val E.val i j k‖) =
@@ -233,8 +216,8 @@ theorem principalCorrectionAt_bound :
     exact Finset.sum_coe_sort T (fun E => ∑ i, ‖∑ j, ∑ k, originalTerm rows left right a b D E i j k‖)
   have hp := principal_middle_prefactor_sum S T rows
     (fun D E i => ‖∑ j, ∑ k, originalTerm rows left right a b D.val E.val i j k‖)
-    (fun _ _ _ => norm_nonneg _) M B D₁ D₂ hM (by linarith) (by linarith) (by linarith)
-    (fun i => (hrows i).2.1) (fun D hD => (hS D hD).1) (fun E hE => (hT E hE).1)
+    (by simp) M B D₁ D₂ hM (by linarith) (by linarith) (by linarith)
+    (by grind) (by grind) (by grind)
   change principalCorrectionAt S T rows left right a b M ≤ _ at hp
   rw [heq] at hp
   exact hp.trans (mul_le_mul_of_nonneg_left hh (by positivity))
@@ -265,7 +248,7 @@ theorem HasSieveExponent.large_principal_correction {α : ℝ} (hexp : HasSieveE
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -367,7 +350,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
           have hh := E.property
           simp only [hz, Finset.notMem_empty] at hh
         rw [he]
-        simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+        simpa using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
     · have hz := Finset.not_nonempty_iff_eq_empty.mp hSj
       have he : f j k = fun _ => 0 := by
         funext h
@@ -376,7 +359,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
         have hh := D.property
         simp only [hz, Finset.notMem_empty] at hh
       rw [he]
-      simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+      simpa using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
   have he : (fun h : {h : O // h ≠ 0} =>
       originalMiddleWindowAt W S T rows left right (a h.val) (b h.val) M P h.val) =
       fun h => ∑ j, ∑ k, f j k h := by
@@ -396,7 +379,7 @@ theorem HasSieveExponent.original_middle_pool {α : ℝ} (hexp : HasSieveExponen
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -490,7 +473,7 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
           have hh := E.property
           simp only [hz, Finset.notMem_empty] at hh
         rw [he]
-        simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+        simpa using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
     · have hz := Finset.not_nonempty_iff_eq_empty.mp hSj
       have he : f j k = fun _ => 0 := by
         funext h
@@ -499,7 +482,7 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
         have hh := D.property
         simp only [hz, Finset.notMem_empty] at hh
       rw [he]
-      simpa only [tsum_zero] using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
+      simpa using And.intro (summable_zero : Summable (fun _ : {h : O // h ≠ 0} => (0 : ℝ))) hV
   have he : (fun h : {h : O // h ≠ 0} =>
       dualMiddleWindowAt W S T rows left right (a h.val) (b h.val) M F P h.val) =
       fun h => ∑ j, ∑ k, f j k h := by
@@ -519,8 +502,8 @@ theorem HasSieveExponent.dual_middle_pool {α : ℝ} (hexp : HasSieveExponent α
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
+open scoped Classical SchwartzMap
+open EisensteinSchwartzPoisson
 
 theorem norm_double_sum_real_factor {n p : Type*} [Fintype n] [Fintype p]
     (u : n → p → ℂ) (z : ℂ) (c : ℝ) (hc : 0 ≤ c) :
@@ -582,8 +565,8 @@ theorem originalProductDivisorMiddleAt_le_window
       unfold originalPrincipalKernel
       simp only [map_mul, Nat.cast_mul]
       exact norm_double_sum_real_factor _ _ _ (by positivity)
-    · simp only [hd, hpi, and_false, ite_false, ite_true]
-  · simp only [hd, false_and, ite_false]
+    grind
+  grind
 
 theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -608,13 +591,13 @@ theorem HasSieveExponent.original_product_divisor_middle {α : ℝ} (hexp : HasS
             (N + (2 * U) * Real.sqrt M * B ^ (α - 1 / 2))) := by
   let S := columnDivisorPool left
   let T := columnDivisorPool right
-  have hl0 : ∀ j, left j ≠ 0 := fun j => (hleft j).1.1
-  have hr0 : ∀ k, right k ≠ 0 := fun k => (hright k).1.1
+  have hl0 := fun j => (hleft j).1.1
+  have hr0 := fun k => (hright k).1.1
   have hs := hexp.original_middle_pool deltaLoss hδ ε hε S T B N M U hB hN hM hU
-    (columnDivisorPool_norm_bounds left hl0 N (fun j => (hleft j).2))
-    (columnDivisorPool_norm_bounds right hr0 N (fun k => (hright k).2))
+    (columnDivisorPool_norm_bounds left hl0 N (by grind))
+    (columnDivisorPool_norm_bounds right hr0 N (by grind))
     rows left right hr hl hri hrows a₀ b₀ a b ha hb W (fun d i => d ∈ K ∧ P d i) hleft hright
-    (fun D E i hp => hP _ hp.1 i hp.2)
+    (by grind)
   have hdom (h : {h : O // h ≠ 0}) := originalProductDivisorMiddleAt_le_window W K S T
     rows left right (a h.val) (b h.val) M P h.val hl0 hr0
     (mem_columnDivisorPool_of_dvd left hl0) (mem_columnDivisorPool_of_dvd right hr0)

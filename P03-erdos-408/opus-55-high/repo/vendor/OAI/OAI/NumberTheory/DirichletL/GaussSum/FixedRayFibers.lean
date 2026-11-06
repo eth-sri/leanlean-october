@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,75 +30,64 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
-open scoped Classical BigOperators ContDiff
+open scoped Classical
 
 namespace CompletedGauss.FreeReflection
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss.FreeReflection
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic LocalReflectionBrackets
+open LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein LocalReflectionBrackets
+open LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
 end
 
-open ActualEisensteinCubic CubicEisenstein
 local notation "Eis" => ActualEisensteinCubic.O
 
 end CompletedGauss
 
-open scoped BigOperators Classical MatrixGroups
+open scoped Classical MatrixGroups
 
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic CompletedGauss CubicKubota CubicJacobiGlobal ConcreteTraceCRT
+open CompletedGauss CubicKubota
 open LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -141,9 +117,9 @@ lemma fixedCusp_ramified_index_pos (j:Fin 3) (hj:j≠0) (u:Eisˣ)
   simp only [fixedCuspArrayIndex,hm,pow_zero,mul_one] at hd
   have hu:IsCoprime lambda (u:Eis):=⟨0,(↑u⁻¹:Eis),by simp⟩
   have hni:IsCoprime lambda (primaryGenerator I):=coprime_of_dvd_sub_one lambda _
-    ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans (primaryGenerator_spec I helig.2.1).2)
+    ((dvd_pow_self lambda (by positivity)).trans (primaryGenerator_spec I helig.2.1).2)
   have hnj:IsCoprime lambda (primaryGenerator J):=coprime_of_dvd_sub_one lambda _
-    ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans (primaryGenerator_spec J helig.2.2).2)
+    ((dvd_pow_self lambda (by positivity)).trans (primaryGenerator_spec J helig.2.2).2)
   exact residue_lambda_prime.not_isUnit (((hu.mul_right hni).mul_right hnj.pow_right).isUnit_of_dvd hd)
 
 def sourcePhaseUnit (j:Fin 3) (w u:Eisˣ) : Eisˣ :=
@@ -162,7 +138,7 @@ lemma paperLambdaQuotient_succ (u:Eisˣ) (m:ℕ) (n b:Eis) :
     have hi:(paperLambdaUnit:Eis)*(paperLambdaUnit⁻¹:Eisˣ)=1:=by simp
     calc
       _=((paperLambdaUnit:Eis)*(paperLambdaUnit⁻¹:Eisˣ))*(u.val*lambda^m*lambda*n*b^3):=by ring
-      _=_:=by rw [hi,one_mul];ring
+      _=_:=by grind
   have hd:ramifiedTraceLambda∣(u.val*lambda^(m+1))*n*b^3:=⟨_,hp.symm⟩
   have hn:ramifiedTraceLambda≠0:=by
     intro hz
@@ -205,7 +181,7 @@ theorem fixedCuspArray_phase_brackets {ι:Type*} [Fintype ι]
       ramifiedBranchPhase P hg exponent (sourcePhaseUnit j w u) (sourcePhaseExponent j m)*
       ∑e:ι→Fin 3,reflectedBranch P hg exponent e (primaryGenerator I) (primaryGenerator J) := by
   by_cases hz:fixedConjugateCuspArray j u m I J=0
-  · rw [hz,zero_mul,zero_mul,zero_mul]
+  · simp_all
   · obtain ⟨he,hh⟩:=fixedConjugateCuspArray_nonzero j u m I J hz
     rw [sourceCuspPhaseNumerator_columns j w u m I J he hh,
       ramified_bracket_full_expansion]
@@ -213,7 +189,7 @@ theorem fixedCuspArray_phase_brackets {ι:Type*} [Fintype ι]
 
 end
 
-open ActualEisensteinCubic CompletedGauss CompletedDyadic CubicKubota CubicJacobiGlobal ConcreteTraceCRT
+open CompletedGauss CubicKubota
 open LocalReflectionBrackets ShortDraftCusp
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -255,11 +231,10 @@ theorem model_array_brackets {ι:Type*} [Fintype ι]
     _=φ m I J*(fixedConjugateCuspArray s.index u m I J*
       ramifiedBranchPhase P hg j (sourcePhaseUnit s.index s.phaseUpperUnit u)
         (sourcePhaseExponent s.index m)*
-        ∑e:ι→Fin 3,reflectedBranch P hg j e (primaryGenerator I) (primaryGenerator J)) := by rw [hbr]
+        ∑e:ι→Fin 3,reflectedBranch P hg j e (primaryGenerator I) (primaryGenerator J)) := by simp_all
     _=_ := by
       simp only [fixedCuspArrayWithPhase]
       rw [←Finset.mul_sum]
-      dsimp only [φ]
       ring
 
 end FixedCuspShape
@@ -281,8 +256,8 @@ lemma bracketProduct_eq (D:ControlledStratumArithmetic p N a0 c0 mode)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (x:Eis) :
     D.bracketProduct hp hg j x=D.activePhase hp hg j*
-      ∏i,bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i) (Ideal.Quotient.mk _ x) := by
-  exact Finset.prod_mul_distrib
+      ∏i,bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i) (Ideal.Quotient.mk _ x) :=
+  Finset.prod_mul_distrib
 
 def modelRowPhase (D:ControlledStratumArithmetic p N a0 c0 mode)
     [∀i,(Ideal.span {p i}).IsMaximal]

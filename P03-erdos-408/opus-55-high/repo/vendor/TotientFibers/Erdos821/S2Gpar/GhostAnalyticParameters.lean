@@ -7,7 +7,6 @@ public import Erdos821.S34.ScaleGrowth
 
 noncomputable section
 open Filter
-open scoped BigOperators
 
 namespace Erdos821.S2Gpar
 
@@ -28,7 +27,7 @@ theorem eventually_N_plus_one_le_half_exp (F : FixedData) :
   have hLpow : (L x) ^ (1 : ℝ) = L x := Real.rpow_one _
   have hscale' : L x ≤ (1 / 10) * Real.exp ((L x) ^ F.c) := by
     simpa only [hLpow] using hx
-  have hpow₀ : (L x) ^ ((52 : ℝ) / 100) ≤ (L x) ^ (1 : ℝ) :=
+  have hpow₀ :=
     Real.rpow_le_rpow_of_exponent_le hLx (by norm_num : (52 : ℝ) / 100 ≤ 1)
   have hpow : (L x) ^ ((52 : ℝ) / 100) ≤ L x := by
     simpa only [Real.rpow_one] using hpow₀
@@ -38,21 +37,15 @@ theorem eventually_N_plus_one_le_half_exp (F : FixedData) :
   have hR : (R x : ℝ) ≤ L x + 1 := by
     calc
       (R x : ℝ) ≤ (L x) ^ ((52 : ℝ) / 100) + 1 := hceil.le
-      _ ≤ L x + 1 := by simpa [add_comm] using add_le_add_right hpow 1
+      _ ≤ L x + 1 := by simp_all
   have hN : (N x : ℝ) + 1 ≤ 5 * L x := by
     dsimp [N]
     push_cast
     calc
       2 * (R x : ℝ) + 1 ≤ 2 * (L x + 1) + 1 := by
         gcongr
-      _ ≤ 5 * L x := by nlinarith [hLx]
-  calc
-    (N x : ℝ) + 1 ≤ 5 * L x := hN
-    _ ≤ (1 / 2) * Real.exp ((L x) ^ F.c) := by
-      calc
-        5 * L x ≤ 5 * ((1 / 10) * Real.exp ((L x) ^ F.c)) :=
-          mul_le_mul_of_nonneg_left hscale' (by norm_num)
-        _ = (1 / 2) * Real.exp ((L x) ^ F.c) := by ring
+      _ ≤ 5 * L x := by linarith
+  grind
 
 theorem baselinePrime_ge_half_of_scale
     (F : FixedData) (x : ℝ) (p : ℕ)
@@ -66,7 +59,7 @@ theorem baselinePrime_ge_half_of_scale
     have hv : 0 ≤ visitQ F.q (N x) i := by
       unfold visitQ
       split
-      · exact Real.sqrt_nonneg _
+      · simp
       · exact F.q_pos.le
     linarith
   have hsum :
@@ -74,18 +67,18 @@ theorem baselinePrime_ge_half_of_scale
     calc
       (∑ i : Fin (N x + 1), eta F (N x) i) ≤
           ∑ _i : Fin (N x + 1), (1 : ℝ) :=
-        Finset.sum_le_sum (fun i _ => heta i)
+        Finset.sum_le_sum (by grind)
       _ = ((N x + 1 : ℕ) : ℝ) := by simp
   have hN' : ((N x + 1 : ℕ) : ℝ) ≤ (1 / 2) * Real.exp ((L x) ^ F.c) := by
     simpa only [Nat.cast_add, Nat.cast_one] using hN
   have hpHalf : ((N x + 1 : ℕ) : ℝ) ≤ (p : ℝ) / 2 := by
     calc
-      ((N x + 1 : ℕ) : ℝ) ≤ Real.exp ((L x) ^ F.c) / 2 := by nlinarith [hN']
-      _ ≤ (p : ℝ) / 2 := div_le_div_of_nonneg_right hp (by norm_num)
+      ((N x + 1 : ℕ) : ℝ) ≤ Real.exp ((L x) ^ F.c) / 2 := by linarith
+      _ ≤ (p : ℝ) / 2 := by linarith
   have hinvprod : (p : ℝ)⁻¹ * ((N x + 1 : ℕ) : ℝ) ≤ 1 / 2 := by
     have hmul := mul_le_mul_of_nonneg_left hpHalf (inv_nonneg.mpr hppos.le)
     have heq : (p : ℝ)⁻¹ * ((p : ℝ) / 2) = 1 / 2 := by
-      field_simp [ne_of_gt hppos]
+      field_simp
     rw [heq] at hmul
     exact hmul
   have hprod :
@@ -134,7 +127,7 @@ theorem GhostAnalyticParametersTask_proof :
     intro g p
     have hrange := hPrime g.val p.val p.property
     rw [g.property] at hrange
-    have hpLower : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := hrange.1
+    have hpLower := hrange.1
     have hpPos : 0 < (p.val : ℝ) := by
       exact_mod_cast (P.prime g.val p.val p.property).pos
     exact baselinePrime_ge_half_of_scale F x p.val hL hN hpLower hpPos
@@ -143,9 +136,9 @@ theorem GhostAnalyticParametersTask_proof :
     intro g p
     exact lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1 / 2) (hBaselineHalf g p)
   refine ⟨hVpos, ?_, ?_, ?_⟩
-  · exact hBaseline
+  · omega
   · intro g
-    have hVg : 0 < P.V g.val := (hVpos g.val).1
+    have hVg := (hVpos g.val).1
     calc
       (∑ p : P.Prime g.val, tiltedMu F P (N x) g.val p) ≤
           ∑ p : P.Prime g.val,
@@ -169,7 +162,7 @@ theorem GhostAnalyticParametersTask_proof :
           _ ≤ (P.V g.val * (p.val : ℝ) * (1 / 2))⁻¹ :=
             (inv_le_inv₀ hmaxPos hminPos).mpr hden
           _ = 2 * (P.V g.val)⁻¹ * (p.val : ℝ)⁻¹ := by
-            field_simp [ne_of_gt hVg, ne_of_gt hpPos]
+            ring
       _ = 2 * (P.V g.val)⁻¹ *
           (∑ p : P.Prime g.val, (p.val : ℝ)⁻¹) := by
         rw [← Finset.mul_sum]
@@ -178,17 +171,16 @@ theorem GhostAnalyticParametersTask_proof :
           change (∑ p ∈ (P.primes g.val).attach, (p.val : ℝ)⁻¹) =
             ∑ p ∈ P.primes g.val, (p : ℝ)⁻¹
           exact Finset.sum_attach (P.primes g.val) (fun p : ℕ => (p : ℝ)⁻¹)
-        rw [hVsum]
-        field_simp [ne_of_gt hVg]
+        grind
   · calc
       (Real.exp (4 * max 1 F.vMax * r.v / r.rho)) ^ P.bigGroups.card =
           Real.exp (Acoef * (P.bigGroups.card : ℝ)) := by
             dsimp [Acoef]
             rw [← Real.exp_nat_mul]
-            congr 1; ring
+            ring
       _ ≤ Real.exp (Acoef * (F.C₀ * T x)) := by
         apply Real.exp_le_exp.mpr
-        exact mul_le_mul_of_nonneg_left hBigCount hAcoef
+        nlinarith
       _ = (L x) ^ Cv := by
         rw [Real.rpow_def_of_pos hLpos]
         congr 1

@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
-open Finset Complex
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,23 +30,18 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
+open scoped FourierTransform SchwartzMap
 
 namespace ActualEisensteinCubic
 
 section
 
-open scoped ComplexConjugate
 
 theorem canonicalSextic_conj_as_row_label
     (P : Ideal O) [P.IsMaximal] (hgood : lambda ∉ P) (e : O) :
@@ -74,21 +56,16 @@ theorem canonicalSextic_conj_as_row_label
       have hu : (u : O ⧸ P) = x := hx.unit_spec
       rw [← hu]
       exact (canonicalSextic_inverse_eq_conj_on_units P hgood u).symm
-    · have hzero : χ x = 0 := MulChar.map_nonunit χ hx
-      simp [hzero]
+    · simp_all
   rw [hconj]
   by_cases hx : IsUnit x
   · have h6 : (χ x) ^ 6 = 1 := by
-      rw [← MulChar.pow_apply' χ (by decide : 6 ≠ 0),
+      rw [← MulChar.pow_apply' χ (by positivity),
         canonicalSextic_pow_six P hgood]
       exact MulChar.one_apply hx
-    apply inv_eq_of_mul_eq_one_right
-    calc
-      χ x * (χ x * (χ x) ^ 4) = (χ x) ^ 6 := by ring
-      _ = 1 := h6
+    grind
   · have hzero : χ x = 0 := MulChar.map_nonunit χ hx
-    change (χ x)⁻¹ = χ x * (χ x) ^ 4
-    simp [hzero]
+    grind
 
 theorem finiteSquarefreeRow_mul
     {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -128,7 +105,7 @@ theorem finiteSquarefreeRow_second_child
 
 end
 
-noncomputable def rowCoprimeMask
+def rowCoprimeMask
     {ι : Type*} (P : ι → Ideal O) (S : Finset ι) (u : O) : ℂ := by
   classical
   exact if ∃ i ∈ S, u ∈ P i then 0 else 1
@@ -146,8 +123,7 @@ theorem finiteSquarefreeRow_self_pair
   · rw [ite_eq_left h]
     obtain ⟨i, hi, hui⟩ := h
     apply Finset.prod_eq_zero hi
-    rw [Ideal.Quotient.eq_zero_iff_mem.mpr hui, MulChar.map_zero]
-    simp
+    simp [Ideal.Quotient.eq_zero_iff_mem.mpr hui, MulChar.map_zero]
   · rw [ite_eq_right h]
     apply Finset.prod_eq_one
     intro i hi
@@ -168,8 +144,8 @@ theorem finiteSquarefreeRow_pair_kernel
   have hsplit (A B : Finset ι) :
       finiteSquarefreeRow P hgood A u =
         finiteSquarefreeRow P hgood (A ∩ B) u *
-        finiteSquarefreeRow P hgood (A \ B) u := by
-    exact (Finset.prod_inter_mul_prod_sdiff A B _).symm
+        finiteSquarefreeRow P hgood (A \ B) u :=
+    (Finset.prod_inter_mul_prod_sdiff A B _).symm
   rw [hsplit S T, hsplit T S, Finset.inter_comm T S, star_mul]
   calc
     _ = (star (finiteSquarefreeRow P hgood (S ∩ T) u) *
@@ -190,27 +166,20 @@ private theorem mask_powerset {ι : Type*} [DecidableEq ι]
       obtain ⟨i, hi, hp⟩ := h
       symm
       apply Finset.prod_eq_zero hi
-      simp [hp]
-    · rw [ite_eq_right h]
-      symm
-      apply Finset.prod_eq_one
-      intro i hi
-      simp [show ¬p i from fun hp => h ⟨i, hi, hp⟩]
+      simp_all
+    · simp_all
   rw [hprod, Finset.prod_sub]
   apply Finset.sum_congr rfl
   intro E hE
   simp only [Finset.prod_const_one, mul_one]
   congr 1
   by_cases h : ∀ i ∈ E, p i
-  · rw [ite_eq_left h]
-    apply Finset.prod_eq_one
-    intro i hi
-    simp [h i hi]
+  · simp_all
   · rw [ite_eq_right h]
     push Not at h
     obtain ⟨i, hi, hp⟩ := h
     apply Finset.prod_eq_zero hi
-    simp [hp]
+    simp_all
 
 theorem rowCoprimeMask_subsets
     {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) (S : Finset ι) (u : O) :
@@ -233,11 +202,10 @@ theorem prime_product_moebius
       apply IsCoprime.prod_right
       intro j hj
       apply Ideal.isCoprime_of_isMaximal
-      exact hinj.ne (by intro h; subst j; exact hi hj)
-    rw [Finset.prod_insert hi, hcop.isRelPrime.moebius_mul,
+      exact hinj.ne (by grind)
+    simp [Finset.prod_insert hi, hcop.isRelPrime.moebius_mul,
       (hprime i).irreducible.moebius_eq, Int.cast_mul, Int.cast_neg,
       Int.cast_one, ih, Finset.card_insert_of_notMem hi, pow_succ]
-    ring
 
 theorem mem_prime_product_iff
     {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
@@ -255,18 +223,16 @@ namespace ConcretePrimeRowBridge
 
 section
 
-open ActualEisensteinCubic ShortDraftHeckeBridge
-open scoped BigOperators Classical
+open scoped Classical
 
 end
 
-open ActualEisensteinCubic
 
 end ConcretePrimeRowBridge
 
 namespace EisensteinSchwartzPoisson
 open MeasureTheory Filter LineDeriv
-open scoped FourierTransform SchwartzMap Real RealInnerProductSpace
+open scoped FourierTransform SchwartzMap RealInnerProductSpace
 abbrev LogPlane := WithLp 2 (ℝ × ℝ)
 
 theorem fourier_prod_eq_iterated (f : LogPlane → ℂ) (hf : Integrable f) (ξ η : ℝ) :
@@ -391,7 +357,7 @@ theorem partialFourier_integrable (f : SchwartzMap ℂ ℂ) (η : ℝ) :
     (by fun_prop : Continuous G).aestronglyMeasurable
     (Eventually.of_forall fun z => by
       simp only [G, Circle.smul_def, smul_eq_mul, norm_mul, Circle.norm_coe, one_mul]
-      exact le_rfl)
+      simp)
   have hGp : Integrable (fun z : ℝ × ℝ => G (Complex.measurableEquivRealProd.symm z)) :=
     Complex.volume_preserving_equiv_real_prod.symm.integrable_comp_of_integrable hG
   change Integrable (fun x : ℝ => ∫ y : ℝ,
@@ -407,7 +373,7 @@ theorem fourier_partialFourier (f : SchwartzMap ℂ ℂ) (ξ η : ℝ) :
   have hcoe : (fp : LogPlane → ℂ) = (f : ℂ → ℂ) ∘ planeComplexIso := rfl
   rw [hcoe, Real.fourier_comp_linearIsometry] at hprod
   change 𝓕 (fun x : ℝ => 𝓕 (fun y : ℝ => f (complexPoint x y)) η) ξ = _
-  simpa only [Function.comp_apply, planeComplexIso_apply] using hprod.symm
+  simp_all
 
 def partialFourierSchwartz (f : SchwartzMap ℂ ℂ) (η : ℝ) : SchwartzMap ℝ ℂ :=
   𝓕⁻ (horizontalSlice (𝓕 f) η)
@@ -450,7 +416,7 @@ theorem horizontalSlice_lineDerivOp (F : SchwartzMap ℂ ℂ) (η : ℝ) :
   change fderiv ℝ (fun y : ℝ => F (complexPoint y η)) x (1 : ℝ) = _
   change fderiv ℝ ((F : ℂ → ℂ) ∘ (fun y => complexPoint y η)) x (1 : ℝ) = _
   rw [hcomp.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply, Complex.ofReal_one]
+  simp
 
 theorem horizontalSlice_lineDerivOp_twice (F : SchwartzMap ℂ ℂ) (η : ℝ) :
     ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} (horizontalSlice F η)) =
@@ -471,7 +437,7 @@ theorem summable_int_cauchy_weight :
   have hsq : 0 < (n.val : ℝ) ^ 2 := sq_pos_of_ne_zero hnr
   change (1 + (n.val : ℝ) ^ 2)⁻¹ ≤ 1 / (n.val : ℝ) ^ 2
   simpa only [one_div] using
-    one_div_le_one_div_of_le hsq (show (n.val : ℝ) ^ 2 ≤ 1 + (n.val : ℝ) ^ 2 by linarith)
+    one_div_le_one_div_of_le hsq (by simp)
 
 theorem summable_int_cauchy_product :
     Summable (fun p : ℤ × ℤ =>
@@ -483,7 +449,7 @@ theorem summable_norm_of_cauchy_product (F : ℤ × ℤ → ℂ) (C : ℝ)
     (hF : ∀ p, ‖F p‖ ≤ C *
       ((1 + (p.1 : ℝ) ^ 2)⁻¹ * (1 + (p.2 : ℝ) ^ 2)⁻¹)) :
     Summable (fun p => ‖F p‖) :=
-  Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hF
+  Summable.of_nonneg_of_le (by simp) hF
     (summable_int_cauchy_product.mul_left C)
 
 def planeDecayConstant (F : SchwartzMap ℂ ℂ) : ℝ :=
@@ -518,7 +484,7 @@ theorem norm_horizontalSlice_le (F : SchwartzMap ℂ ℂ) (η ξ : ℝ) :
     ‖horizontalSlice F η ξ‖ ≤
       (planeDecayConstant F / (1 + η ^ 2)) * (1 + ξ ^ 2)⁻¹ := by
   rw [horizontalSlice_apply, ← div_eq_mul_inv, div_div]
-  apply (le_div_iff₀ (by positivity : 0 < (1 + η ^ 2) * (1 + ξ ^ 2))).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   nlinarith [plane_schwartz_product_decay F ξ η]
 
 theorem norm_inverse_horizontalSlice_le (F : SchwartzMap ℂ ℂ) (η x : ℝ) :
@@ -540,11 +506,11 @@ theorem norm_inverse_lineDeriv (g : SchwartzMap ℝ ℂ) (x : ℝ) :
       (2 * Real.pi) * |x| * ‖(𝓕⁻ g) x‖ := by
   have ht : (fun u : ℝ => inner ℝ u (1 : ℝ)).HasTemperateGrowth := by fun_prop
   have hc : ‖(-(2 * Real.pi * Complex.I) : ℂ)‖ = 2 * Real.pi := by
-    simp [ Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
+    simp
   rw [SchwartzMap.fourierInv_lineDerivOp_eq]
   simp only [_root_.smul_apply, SchwartzMap.smulLeftCLM_apply_apply ht,
     norm_smul, hc]
-  simp [RCLike.inner_apply, Real.norm_eq_abs, mul_assoc]
+  simp [mul_assoc]
 
 theorem sq_mul_norm_inverse_le_second (g : SchwartzMap ℝ ℂ) (x : ℝ) :
     x ^ 2 * ‖(𝓕⁻ g) x‖ ≤ ‖(𝓕⁻ (∂_{(1 : ℝ)} (∂_{(1 : ℝ)} g))) x‖ := by
@@ -553,7 +519,7 @@ theorem sq_mul_norm_inverse_le_second (g : SchwartzMap ℝ ℂ) (x : ℝ) :
   calc
     x ^ 2 * ‖(𝓕⁻ g) x‖ ≤ ((2 * Real.pi) ^ 2 * x ^ 2) * ‖(𝓕⁻ g) x‖ :=
       mul_le_mul_of_nonneg_right (le_mul_of_one_le_left (sq_nonneg x) hp) (norm_nonneg _)
-    _ = ((2 * Real.pi) ^ 2 * |x| ^ 2) * ‖(𝓕⁻ g) x‖ := by rw [sq_abs]
+    _ = ((2 * Real.pi) ^ 2 * |x| ^ 2) * ‖(𝓕⁻ g) x‖ := by simp
     _ = _ := by ring
 
 theorem inverse_horizontalSlice_product_decay (F : SchwartzMap ℂ ℂ) (η x : ℝ) :
@@ -590,7 +556,7 @@ theorem norm_partialFourier_le (f : SchwartzMap ℂ ℂ) (η x : ℝ) :
     ‖partialFourier f η x‖ ≤
       partialFourierDecayConstant f * ((1 + x ^ 2)⁻¹ * (1 + η ^ 2)⁻¹) := by
   rw [← mul_inv, ← div_eq_mul_inv]
-  apply (le_div_iff₀ (by positivity : 0 < (1 + x ^ 2) * (1 + η ^ 2))).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   nlinarith [partialFourier_product_decay f η x]
 
 theorem partialFourier_gaussian_summable_norm (f : SchwartzMap ℂ ℂ) :
@@ -611,8 +577,7 @@ theorem plane_lattice_summable_norm (f : 𝓢(ℂ, ℂ)) :
   apply summable_norm_of_cauchy_product _ (planeDecayConstant f)
   intro p
   rw [← mul_inv, ← div_eq_mul_inv]
-  apply (le_div_iff₀ (by positivity :
-    0 < (1 + (p.1 : ℝ) ^ 2) * (1 + (p.2 : ℝ) ^ 2))).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   nlinarith [plane_schwartz_product_decay f (p.1 : ℝ) (p.2 : ℝ)]
 
 theorem plane_lattice_summable (f : 𝓢(ℂ, ℂ)) :
@@ -649,8 +614,8 @@ theorem schwartz_poisson_zero (g : 𝓢(ℝ, ℂ)) :
 
 theorem vertical_poisson (f : 𝓢(ℂ, ℂ)) (x : ℝ) :
     (∑' n : ℤ, f (complexPoint x (n : ℝ))) =
-      ∑' n : ℤ, partialFourier f (n : ℝ) x := by
-  exact schwartz_poisson_zero (verticalSlice f x)
+      ∑' n : ℤ, partialFourier f (n : ℝ) x :=
+  schwartz_poisson_zero (verticalSlice f x)
 
 private theorem horizontal_poisson (f : 𝓢(ℂ, ℂ)) (n : ℤ) :
     (∑' m : ℤ, partialFourier f (n : ℝ) (m : ℝ)) =
@@ -677,8 +642,8 @@ private theorem iterated_poisson_pair_sum
 
 theorem integer_pair_poisson (f : 𝓢(ℂ, ℂ)) :
     (∑' p : ℤ × ℤ, f (complexPoint (p.1 : ℝ) (p.2 : ℝ))) =
-      ∑' p : ℤ × ℤ, (𝓕 f) (complexPoint (p.1 : ℝ) (p.2 : ℝ)) := by
-  exact iterated_poisson_pair_sum
+      ∑' p : ℤ × ℤ, (𝓕 f) (complexPoint (p.1 : ℝ) (p.2 : ℝ)) :=
+  iterated_poisson_pair_sum
     (fun m n => f (complexPoint (m : ℝ) (n : ℝ)))
     (fun m n : ℤ => (𝓕 f : 𝓢(ℂ, ℂ)) (complexPoint (m : ℝ) (n : ℝ)))
     (fun m n => partialFourier f (n : ℝ) (m : ℝ))

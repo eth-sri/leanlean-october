@@ -6,7 +6,7 @@ public import Erdos821.S34.ProductDyads
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S34Core
@@ -29,7 +29,7 @@ theorem dyadRestriction_norm_le (G : PrimeGroups) (k : Fin G.size → ℕ)
   intro z _
   unfold dyadRestriction
   split_ifs
-  · exact le_rfl
+  · simp
   · simp only [norm_zero, zero_pow (by norm_num : 2 ≠ 0), mul_zero]
     exact mul_nonneg (Erdos821.S34.Proofs.tupleWeight_nonneg (coreGroups G) k z) (sq_nonneg _)
 
@@ -40,8 +40,7 @@ theorem dyadRestriction_support (G : PrimeGroups) (k : Fin G.size → ℕ)
     by_contra hn
     simp [dyadRestriction, hn] at hne
   have hs := product_in_dyad _ (tuple_product_pos G k z)
-  rw [heq] at hs
-  exact ⟨hs.1, hs.2.le⟩
+  grind
 
 theorem sum_quad_finset_reorder {α β γ δ M : Type*} [AddCommMonoid M]
     (s : Finset α) (t : Finset β) (u : Finset γ) (v : Finset δ) (F : α → β → γ → δ → M) :
@@ -66,15 +65,7 @@ theorem scalar_pairing_partition {α β κ η : Type} [Fintype α] [Fintype β]
   calc
     _ = ∑ j ∈ Finset.univ.image c, ∑ k ∈ Finset.univ.image d, ∑ x, ∑ y,
         if c x = j ∧ d y = k then (w x : ℂ) * (v y : ℂ) * star (f y) * g x * R x y else 0 := by
-      apply Finset.sum_congr rfl
-      intro j _
-      apply Finset.sum_congr rfl
-      intro k _
-      apply Finset.sum_congr rfl
-      intro x _
-      apply Finset.sum_congr rfl
-      intro y _
-      by_cases hc : c x = j <;> by_cases hd : d y = k <;> simp [hc, hd]
+      grind
     _ = ∑ x, ∑ y, ∑ j ∈ Finset.univ.image c, ∑ k ∈ Finset.univ.image d,
         if c x = j ∧ d y = k then (w x : ℂ) * (v y : ℂ) * star (f y) * g x * R x y else 0 :=
       sum_quad_finset_reorder _ _ _ _ _
@@ -85,7 +76,7 @@ theorem scalar_pairing_partition {α β κ η : Type} [Fintype α] [Fintype β]
       intro y _
       have hc := Finset.mem_image_of_mem c (Finset.mem_univ x)
       have hd := Finset.mem_image_of_mem d (Finset.mem_univ y)
-      simp [ite_and, hc, hd]
+      simp [ite_and]
 
 theorem comparison_dyadic_partition (G : PrimeGroups) (a b : Fin G.size → ℕ)
     (Q : ℕ) (h ξ θ ζ : ℝ) (f : Tuple G b → ℂ) (g : Tuple G a → ℂ) :

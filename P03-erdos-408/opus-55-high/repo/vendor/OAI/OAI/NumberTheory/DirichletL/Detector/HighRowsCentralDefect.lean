@@ -9,10 +9,9 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 include hc in
 lemma rowClosedMarked_central_size (eta a rho x w z : ℂ) (alpha eps : ℝ)
     (hQ : (4:ℝ)≤Ideal.absNorm (Ideal.span {p}))
@@ -31,19 +30,18 @@ lemma rowClosedMarked_central_size (eta a rho x w z : ℂ) (alpha eps : ℝ)
   simp only [Complex.ofReal_natCast] at hrem
   have ht := sourceRowTerm_central_strict_norm p hp hg hc eta a rho x w z heta ha hρ j hj
   rw [sourceRowTerm_pos p hp hg eta a rho x w z j 1 0 1 0 (by omega)] at ht
-  have hr := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha (by rw [hx];linarith) (by rw [hz]))
+  have hr := ProbeLocal.inv_one_sub_norm_le_two _ (first_region_R_half _ hQ a x z ha (by linarith) (by linarith))
   have he : Q^(1-x.re-w.re)=Q^(-10*eps) := by congr 1;rw [hx,hw];ring
-  have hn : Q^(1/2-x.re)≤Q^(-10*eps) := Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hx];linarith)
+  have hn : Q^(1/2-x.re)≤Q^(-10*eps) := Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
   have hdiv : ‖rowMarkedTerm p hp hg eta a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x))
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)) (coordV Q z) rho j 1 0 1 0 /
       (1-evenRatio (Ideal.absNorm (Ideal.span {p})) a ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) (coordV Q z))‖≤4*Q^(-10*eps) := by
     rw [div_eq_mul_inv,norm_mul]
     have hh := mul_le_mul ht hr (norm_nonneg _) (by positivity)
-    exact hh.trans_eq (by change (2*Q^(1-x.re-w.re))*2=4*Q^(-10*eps);rw [he];ring)
+    exact hh.trans_eq (by linarith)
   dsimp only [Q] at hdiv
   have hh := (norm_add_le _ _).trans (add_le_add hrem hdiv)
-  simp only [sub_add_cancel] at hh
-  exact hh.trans (by change 128*Q^(1/2-x.re)+4*Q^(-10*eps)≤132*Q^(-10*eps);nlinarith)
+  grind
 
 include hc in
 theorem ramifiedClosed_central_defect (eta a rho x w z : ℂ) (alpha eps : ℝ)
@@ -56,7 +54,7 @@ theorem ramifiedClosed_central_defect (eta a rho x w z : ℂ) (alpha eps : ℝ)
       198*(Ideal.absNorm (Ideal.span {p}):ℝ)^(-10*eps) := by
   have hb := rowClosedMarked_central_size p hp hg hc eta a rho x w z alpha eps hQ heta ha hρ
     halpha halpha1 heps heps1 hx hw hz j hj
-  have hv := first_region_V_half _ hQ z (by rw [hz])
+  have hv := first_region_V_half _ hQ z (by linarith)
   have hs := norm_sub_le (1:ℂ) (coordV (Ideal.absNorm (Ideal.span {p})) z)
   rw [norm_one] at hs
   unfold ramifiedClosed

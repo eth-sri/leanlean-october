@@ -8,9 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical SchwartzMap ContDiff FourierTransform
+open scoped Classical ContDiff
 namespace SevenEighths.InverseInitialOriginalHeight
-open InverseMoment InverseInitialProfile InverseInitialProfileBounds FourierBridge
+open InverseMoment InverseInitialProfile InverseInitialProfileBounds
 open JointLogSeparation CompletedHeight
 
 theorem child_eq_normTwisted (W:ℝ→ℂ)(θ:ℝ):childLogTest W θ=normTwistedSource W θ:=by

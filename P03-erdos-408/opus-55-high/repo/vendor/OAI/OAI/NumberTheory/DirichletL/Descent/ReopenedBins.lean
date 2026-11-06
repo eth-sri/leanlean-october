@@ -8,29 +8,28 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
 open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-local notation "O" => ActualEisensteinCubic.O
 
-theorem marked_column_zero_of_subunit (Ψ : O→*ℂ) (W : ℝ→ℂ) (b Y : ℝ)
-    (hY : 0<Y) (hW : ∀ t,W t≠0→t≤b) (hsub : b*Y<1) (mark : Ideal O→ℂ) :
-    (∑' I:Ideal O,columnWeight Ψ I*W ((Ideal.absNorm I:ℝ)/Y)*mark I)=0 := by
-  suffices hz : ∀ I:Ideal O,columnWeight Ψ I*W ((Ideal.absNorm I:ℝ)/Y)*mark I=0 by
+theorem marked_column_zero_of_subunit (Ψ : ActualEisensteinCubic.O→*ℂ) (W : ℝ→ℂ) (b Y : ℝ)
+    (hY : 0<Y) (hW : ∀ t,W t≠0→t≤b) (hsub : b*Y<1) (mark : Ideal ActualEisensteinCubic.O→ℂ) :
+    (∑' I:Ideal ActualEisensteinCubic.O,columnWeight Ψ I*W ((Ideal.absNorm I:ℝ)/Y)*mark I)=0 := by
+  suffices hz : ∀ I:Ideal ActualEisensteinCubic.O,columnWeight Ψ I*W ((Ideal.absNorm I:ℝ)/Y)*mark I=0 by
     simp only [hz,tsum_zero]
   intro I
   by_cases hI : I=0
-  · simp only [hI,columnWeight_zero,zero_mul]
+  · simp_all
   have hw : W ((Ideal.absNorm I:ℝ)/Y)=0 := by
     by_contra hn
     have hh := (div_le_iff₀ hY).mp (hW _ hn)
     have hone := norm_at_least_one I hI
     linarith
-  simp only [hw,mul_zero,zero_mul]
+  simp_all
 
 variable {σ : Type*} [DecidableEq σ]
-  (S : Finset (Ideal O)) (D : ℕ)
-  (Ψ : O→*ℂ) (m f z : O) (W : ℝ→ℂ) (b X H₀ : ℝ)
+  (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ)
+  (Ψ : ActualEisensteinCubic.O→*ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ→ℂ) (b X H₀ : ℝ)
   (slots : Finset σ)
   (lists : σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
   (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
@@ -62,8 +61,8 @@ theorem markedReopenedCubeBin_log_bins :
   dsimp only
   exact sum_activeCubeLogBins S D b X _
 
-def markedShortCompletedSum (Ψrow : O→*ℂ) (W : ℝ→ℂ) (X H₀ : ℝ) (mark : Ideal O→ℂ) : ℂ :=
-  ∑' H:Ideal O,if (Ideal.absNorm H:ℝ)<H₀ then
+def markedShortCompletedSum (Ψrow : ActualEisensteinCubic.O→*ℂ) (W : ℝ→ℂ) (X H₀ : ℝ) (mark : Ideal ActualEisensteinCubic.O→ℂ) : ℂ :=
+  ∑' H:Ideal ActualEisensteinCubic.O,if (Ideal.absNorm H:ℝ)<H₀ then
     (UniqueFactorizationMonoid.moebius H:ℂ)*cubeWeight Ψrow H*
       markedCompletedT Ψrow W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark (H^3*I)) else 0
 
@@ -96,8 +95,7 @@ theorem original_marked_binned_energy (hbad : fixedBadPrimes⊆S) (hSp : ∀ P�
     rw [norm_mul,norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (Real.sqrt_nonneg X),
       mul_pow,inv_pow,Real.sq_sqrt hX.le]
     field_simp
-  rw [hn]
-  convert mul_le_mul_of_nonneg_left hs hX.le using 1 ; ring
+  nlinarith
 
 end
 end SevenEighths.InverseMoment

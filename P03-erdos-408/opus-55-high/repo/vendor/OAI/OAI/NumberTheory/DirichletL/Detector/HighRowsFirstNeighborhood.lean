@@ -46,7 +46,7 @@ theorem unramifiedClosed_first_neighborhood_bound (Q : ℝ) (A eta v x w z : ℂ
   have hprod (a b aa bb c : ℝ) (ha : 0≤a) (hb : 0≤b)
       (haa : a≤Q^aa) (hbb : b≤Q^bb) (hc : aa+bb≤c) : a*b≤Q^c := by
     calc
-      a*b≤Q^aa*Q^bb := mul_le_mul haa hbb hb (Real.rpow_nonneg hQ0.le _)
+      a*b≤Q^aa*Q^bb := mul_le_mul haa hbb hb (by positivity)
       _=Q^(aa+bb) := (Real.rpow_add hQ0 _ _).symm
       _≤Q^c := Real.rpow_le_rpow_of_exponent_le hQ1 hc
   have hRL : ‖R‖*L≤E := hprod _ _ _ _ _ (norm_nonneg _) (by positivity) hR le_rfl (by norm_num)

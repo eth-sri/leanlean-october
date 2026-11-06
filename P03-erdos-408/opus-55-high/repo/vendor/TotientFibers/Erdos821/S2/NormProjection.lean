@@ -8,7 +8,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -31,16 +30,16 @@ theorem normBound_project {α : Type*} (mass : α → ℝ) (K : α → α → �
     · simp only [ha, ite_true]
       apply Finset.sum_congr rfl
       intro b _
-      by_cases hb : keep b <;> simp [projectKernel, ha, hb]
+      by_cases hb : keep b <;> simp [projectKernel, ha]
     · simp [projectKernel, ha]
   rw [he]
   have hs : (∑ a ∈ s.filter keep, mass a * ‖f a‖ ^ 2) ≤
       ∑ a ∈ s, mass a * ‖f a‖ ^ 2 :=
-    Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+    Finset.sum_le_sum_of_subset_of_nonneg (by simp)
       (fun a _ _ => mul_nonneg (hm a) (sq_nonneg _))
   have ht : (∑ b ∈ t.filter keep, mass b * ‖g b‖ ^ 2) ≤
       ∑ b ∈ t, mass b * ‖g b‖ ^ 2 :=
-    Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+    Finset.sum_le_sum_of_subset_of_nonneg (by simp)
       (fun b _ _ => mul_nonneg (hm b) (sq_nonneg _))
   calc
     _ ≤ C * Real.sqrt (∑ a ∈ s.filter keep, mass a * ‖f a‖ ^ 2) *
@@ -51,7 +50,7 @@ theorem normBound_project {α : Type*} (mass : α → ℝ) (K : α → α → �
         (mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hs) hC) (Real.sqrt_nonneg _)
     _ ≤ C * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
         Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) :=
-      mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ht) (mul_nonneg hC (Real.sqrt_nonneg _))
+      mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt ht) (by positivity)
 
 
 end Erdos821.S2Core

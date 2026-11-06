@@ -9,9 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic ProbeCompleted
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def highIdealMask (S : Finset Id) (D I J K L : Id) : ℂ :=
   completedMask S D I J *
@@ -25,26 +24,26 @@ lemma highIdealMask_norm_le_one (S : Finset Id) (D I J K L : Id) :
   all_goals norm_num
 
 def markedIdealHighSummand (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K L : Id) : ℂ :=
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) (I J K L : Id) : ℂ :=
   highIdealMask S D I J K L * bareIdealHighSummand η u x w z I J K L
 
 lemma markedIdealHighSummand_norm_le (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K L : Id) :
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) (I J K L : Id) :
     ‖markedIdealHighSummand S D η u x w z I J K L‖≤‖bareIdealHighSummand η u x w z I J K L‖ := by
   rw [markedIdealHighSummand,norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (highIdealMask_norm_le_one S D I J K L)
 
 theorem markedIdealHighSummand_summable (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     Summable (fun p : (Id×Id)×(Id×Id) =>
       markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2) := by
   apply Summable.of_norm
-  exact Summable.of_nonneg_of_le (fun _=>norm_nonneg _)
+  exact Summable.of_nonneg_of_le (by simp)
     (fun p=>markedIdealHighSummand_norm_le S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2)
     (bareIdealHighSummand_summable η u x w z hx hw hz).norm
 
 def markedIdealHighSeries (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) : ℂ :=
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) : ℂ :=
   ∑' p : (Id×Id)×(Id×Id), markedIdealHighSummand S D η u x w z p.1.1 p.1.2 p.2.1 p.2.2
 
 end SevenEighths.ProbePhysical

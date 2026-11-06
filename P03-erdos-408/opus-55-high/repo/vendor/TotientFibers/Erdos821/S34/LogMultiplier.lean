@@ -5,16 +5,15 @@ public import Erdos821.S34.CellCosts
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
-open Blueprint.Analytic
 
 def unitPhase (t : ℝ) : ℂ := Complex.exp (Complex.I * t)
 
 theorem norm_unitPhase (t : ℝ) : ‖unitPhase t‖ = 1 := by
-  simp [unitPhase, Complex.norm_exp]
+  simp [unitPhase]
 
 theorem unitPhase_add (s t : ℝ) : unitPhase (s + t) = unitPhase s * unitPhase t := by
   simp only [unitPhase, Complex.ofReal_add, mul_add, Complex.exp_add]
@@ -23,8 +22,7 @@ theorem norm_unitPhase_sub (s t : ℝ) : ‖unitPhase s - unitPhase t‖ ≤ |s 
   have he : unitPhase s - unitPhase t = unitPhase t * (unitPhase (s - t) - 1) := by
     rw [mul_sub, ← unitPhase_add]
     congr 1
-    · congr 1
-      ring
+    · simp
     · ring
   rw [he, norm_mul, norm_unitPhase, one_mul]
   simpa only [unitPhase, Real.norm_eq_abs] using
@@ -42,7 +40,7 @@ theorem exp_difference_bound (u v H : ℝ) (hu : u ≤ H) (hv : v ≤ H) :
     exact Real.exp_le_exp.mpr ht
   simpa only [Real.norm_eq_abs] using
     (Convex.norm_image_sub_le_of_norm_deriv_le
-      (fun t (_ht : t ∈ Set.Iic H) => Real.differentiableAt_exp) hb
+      (by simp) hb
       (convex_Iic H) hu hv)
 
 theorem logMultiplier_difference (ζ β u v H : ℝ) (hu : u ≤ H) (hv : v ≤ H) :
@@ -53,10 +51,10 @@ theorem logMultiplier_difference (ζ β u v H : ℝ) (hu : u ≤ H) (hv : v ≤ 
   calc
     _ ≤ |(ζ * v + 2 * Real.pi * β * Real.exp v) -
           (ζ * u + 2 * Real.pi * β * Real.exp u)| := norm_unitPhase_sub _ _
-    _ = |ζ * (v - u) + (2 * Real.pi * β) * (Real.exp v - Real.exp u)| := by congr 1; ring
+    _ = |ζ * (v - u) + (2 * Real.pi * β) * (Real.exp v - Real.exp u)| := by ring
     _ ≤ |ζ * (v - u)| + |(2 * Real.pi * β) * (Real.exp v - Real.exp u)| := abs_add_le _ _
     _ = |ζ| * |v - u| + (2 * Real.pi * |β|) * |Real.exp v - Real.exp u| := by
-      rw [abs_mul, abs_mul, abs_mul, abs_of_nonneg hπ]
+      simp
     _ ≤ |ζ| * |v - u| + (2 * Real.pi * |β|) * (Real.exp H * |v - u|) :=
       add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (exp_difference_bound u v H hu hv) hβ)
     _ = _ := by ring

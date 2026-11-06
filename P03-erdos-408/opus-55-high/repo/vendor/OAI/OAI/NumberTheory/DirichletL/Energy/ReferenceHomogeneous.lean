@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceReflection
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceHomogeneous
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeDyadic
 open CenteredMomentEnergyState CenteredMomentEnergyReferenceState
 open CenteredMomentAllocatedNaturalRadial CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentCommonMaskExpansion
 open CenteredMomentScaleSupremum CenteredMomentSectorLocalization
-open CenteredMomentUniformReflectionProfile CenteredExceptionalProfile CenteredMomentLattice
-local notation "O"=>HeckeFamily.O
+open CenteredMomentLattice
 
 open CenteredMomentEnergyReferenceReflection CenteredMomentFiniteProfileExceptional
 
@@ -30,8 +29,8 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
         (Wlong Wshort:𝓢(ℝ,ℂ)),
       Function.support (Wlong:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (Wshort:ℝ→ℂ)⊆Set.Icc a b →
-      ∀(α:Type*)(F:Finset α)(pool:α→Finset (Ideal O))
-        (β:α→Ideal O→ℂ)(P:α→ℝ)(t along bshort E:ℝ),
+      ∀(α:Type*)(F:Finset α)(pool:α→Finset (Ideal HeckeFamily.O))
+        (β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)(t along bshort E:ℝ),
       s.width≤L+along → 0≤E →
       (∀v:ℝ,∀j k:Fin 2,∀x∈Set.Icc 0 (max 0 (s.width-along+xi)*Real.log Z),
         radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false
@@ -73,7 +72,7 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
   have hpos:0<sourceControl S Wlong:=lt_of_le_of_ne (sourceControl_nonneg S Wlong) (Ne.symm hzero)
   let G:=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t
   let Src:=Ct*(S.sup (schwartzSeminormFamily ℝ ℝ ℂ) Wlong)*(1+‖t‖)^n
-  have hSrc:0<Src:=mul_pos (mul_pos hCt hpos) (by positivity)
+  have hSrc:0<Src:=by positivity
   have hcontrol:sourceControl T Wlong≤sourceControl S Wlong:=
     Seminorm.le_def.mp (Finset.sup_mono (Finset.subset_union_left:T⊆T∪{(0,0)})) Wlong
   have hnorm:H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G≤Src:=
@@ -88,13 +87,11 @@ theorem natural_reference_reflection_homogeneous (a b bΦ epsilon xi saving L:�
     s.radial.scale_pos s.radial.nonneg (fun z=>hbound _)
     (effective_character_nonprincipal s) hb hsShort (Wshort.smooth ⊤)
     hlength (effective_character_cap s hbΦ.le) hE hSrc (fun _ _=>hnorm)
-    (le_max_left _ _) (fun z hz=>(effective_character_cap s hbΦ.le z hz).trans (le_max_right _ _))
+    (by simp) (fun z hz=>(effective_character_cap s hbΦ.le z hz).trans (by simp))
     hchildren
   have hG:(G:ℝ→ℂ)=normPowerProfile Wlong a b ha hsLong (Wlong.smooth ⊤) t:=rfl
   simp only [hG,CenteredMomentNaturalMaskedFloor.twist_polynomial _ Wlong a b ha hsLong t] at hh
   apply hh.trans_eq
-  dsimp only [Src]
-  rw [show (1+‖t‖)^(2*n)=((1+‖t‖)^n)^2 by rw [Nat.mul_comm 2 n,pow_mul]]
   ring
 
 end SevenEighths.CenteredMomentEnergyReferenceHomogeneous

@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRawFiber
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeFamily HeckeDyadic HeckeRowClosure HeckeInverseAmplification
+open HeckeFamily HeckeDyadic HeckeInverseAmplification
 open HeckeDetectorCoefficientTransfer HeckeDetectorRawFiber HeckeDetectorRowwisePolynomial
 open HeckeDetectorDyadicProfiles CenteredMomentRetainedEnergy
 open CenteredMomentPrimeSlot ProbeHighRowFamily
-local notation "O" => HeckeFamily.O
-variable {M : Ideal O} {H : Subgroup (O⧸M)ˣ} {Label Slot : Type*}
+variable {M : Ideal HeckeFamily.O} {H : Subgroup (HeckeFamily.O⧸M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 def detectorPositiveRow (F : Fiber M H Label Slot U a ε tstar T allowance i)
@@ -47,8 +46,8 @@ theorem fiber_plain_energy_eq (F : Fiber M H Label Slot U a ε tstar T allowance
     ((logProfile^[j]) positiveAnnular) ((logProfile^[k]) positiveAnnular)
     (fun s : selected=>F.profile s.val) (fun s : selected=>F.upper s.val)
     (fun s : selected=>U^(F.widths s.val)) (fun s : selected=>F.external s.val)
-    (U^F.m) (U^F.m) σ t (Real.rpow_pos_of_pos hU _) (Real.rpow_pos_of_pos hU _)
-    (fun s=>Real.rpow_pos_of_pos hU _) (fun s=>hη s.val s.property)
+    (U^F.m) (U^F.m) σ t (by positivity) (by positivity)
+    (fun s=>Real.rpow_pos_of_pos hU _) (by grind)
   have hprod := Finset.prod_coe_sort selected (fun s=>HeckePrimeRow.canonicalPrimeAmplitude M H u.val
     (F.profile s) (F.upper s) (U^(F.widths s)) (F.external s))
   rw [hprod] at he

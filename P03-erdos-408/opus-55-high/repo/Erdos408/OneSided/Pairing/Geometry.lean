@@ -66,8 +66,7 @@ theorem abs_slopeCell_sub_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) {P Q : ℕ ×
   have h₁' : ⌊a⌋ - ⌊b⌋ < 11 := by exact_mod_cast h₁
   have h₂' : -11 < ⌊a⌋ - ⌊b⌋ := by exact_mod_cast h₂
   show |⌊a⌋ - ⌊b⌋| ≤ 10
-  rw [abs_le]
-  constructor <;> omega
+  grind
 
 /-- A slope cell holds at most `17 (512H + 1)` primitive positions with `P₁ ∈ [U, 16U]`. -/
 theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ × ℕ))
@@ -111,7 +110,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
           mul_le_mul hP₀16 hP16 hPpos.le (by positivity)
         nlinarith
       nlinarith [abs_nonneg (det P₀ P : ℝ), sq_nonneg U]
-    have h' : |det P₀ P| ≤ ⌊256 * H⌋ := Int.le_floor.2 (by rw [Int.cast_abs]; exact hle)
+    have h' : |det P₀ P| ≤ ⌊256 * H⌋ := Int.le_floor.2 (by simp_all)
     rwa [← Int.natCast_floor_eq_floor (by positivity)] at h'
   -- `P ↦ (det(P₀, P), ⌊P₁ / P₀₁⌋)` maps the cell into a box
   have hmaps : ∀ P ∈ T, (det P₀ P, P.1 / P₀.1) ∈ (Icc (-(n : ℤ)) n) ×ˢ range 17 := by
@@ -122,7 +121,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
       have : (P.1 : ℝ) < 17 * P₀.1 := by linarith
       exact_mod_cast this
     rw [mem_product, mem_Icc, mem_range]
-    exact ⟨hd, Nat.div_lt_of_lt_mul (by rwa [mul_comm])⟩
+    exact ⟨hd, Nat.div_lt_of_lt_mul (by omega)⟩
   -- and is injective: equal determinants differ by multiples of the primitive pivot
   have hinj : Set.InjOn (fun P : ℕ × ℕ => (det P₀ P, P.1 / P₀.1)) T := by
     intro P _ P' _ h
@@ -140,9 +139,9 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
     have hdvd : (P₀.1 : ℤ) ∣ P.1 - P'.1 :=
       (Nat.isCoprime_iff_coprime.2 hP₀cop).dvd_of_dvd_mul_right ⟨P.2 - P'.2, hlin.symm⟩
     have hmod : P'.1 % P₀.1 = P.1 % P₀.1 := Nat.modEq_iff_dvd.2 hdvd
-    have h1 : P.1 = P'.1 :=
+    have h1 :=
       calc P.1 = P₀.1 * (P.1 / P₀.1) + P.1 % P₀.1 := (Nat.div_add_mod _ _).symm
-        _ = P₀.1 * (P'.1 / P₀.1) + P'.1 % P₀.1 := by rw [hq, hmod]
+        _ = P₀.1 * (P'.1 / P₀.1) + P'.1 % P₀.1 := by grind
         _ = P'.1 := Nat.div_add_mod _ _
     have h2 : P.2 = P'.2 := by
       rw [h1, sub_self, zero_mul] at hlin
@@ -154,7 +153,7 @@ theorem card_slopeCell_le {U H : ℝ} (hU : 0 < U) (hH : 0 < H) (S : Finset (ℕ
     show (n + 1 - -(n : ℤ)).toNat = 2 * n + 1 by omega] at hcard
   have hn : (n : ℝ) ≤ 256 * H := Nat.floor_le (by positivity)
   calc (T.card : ℝ) ≤ ((2 * n + 1) * 17 : ℕ) := by exact_mod_cast hcard
-    _ ≤ 17 * (512 * H + 1) := by push_cast; linarith
+    _ ≤ 17 * (512 * H + 1) := by grind
 
 /-! ### Support of the operators -/
 
@@ -163,7 +162,7 @@ private theorem exists_ne_zero_of_mul_apply_ne_zero {ι : Type*} [Fintype ι]
     {M N : Matrix ι ι ℂ} {a c : ι} (h : (M * N) a c ≠ 0) : ∃ b, M a b ≠ 0 ∧ N b c ≠ 0 := by
   rw [Matrix.mul_apply] at h
   obtain ⟨b, -, hb⟩ := exists_ne_zero_of_sum_ne_zero h
-  exact ⟨b, left_ne_zero_of_mul hb, right_ne_zero_of_mul hb⟩
+  grind
 
 variable {q A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ}
 
@@ -177,8 +176,7 @@ private theorem eq_of_goodOp_ne_zero {s t : State x d Y d₀} (h : goodOp x d Y 
 private theorem pos_eq_of_symOp_ne_zero {s t : State x d Y d₀} (h : symOp x d Y d₀ s t ≠ 0) :
     s.1.1 = t.1.1 := by
   unfold symOp at h
-  by_contra hst
-  exact h (ite_eq_right fun hc => hst hc.1)
+  simp_all
 
 /-- A nonzero entry of `𝒜` comes from a nonzero entry of `𝒯` between the same positions. -/
 theorem exists_rowOp_ne_zero {s s' : State x d Y d₀} (h : edgeOp q A₀ x d Y d₀ s s' ≠ 0) :
@@ -200,10 +198,7 @@ theorem rowOp_ne_zero {t t' : State x d Y d₀} (h : rowOp q A₀ x d Y d₀ t t
   unfold rowOp at h
   rw [ne_eq, ite_eq_right_iff, not_imp] at h
   obtain ⟨hc, h⟩ := h
-  have h₁ := Complex.ofReal_ne_zero.1 (left_ne_zero_of_mul h)
-  exact ⟨hc.2.2.1, hc.2.2.2.1, hc.2.2.2.2,
-    right_ne_zero_of_mul (left_ne_zero_of_mul (left_ne_zero_of_mul (left_ne_zero_of_mul h₁))),
-    right_ne_zero_of_mul (left_ne_zero_of_mul h₁)⟩
+  simp_all
 
 /-- A nonzero entry of `𝒯` has `|det(P, Q)| < 10 d₀ Y`: the plateau gives `|t| < 5Y` for
 `t = det(P, Q) / D`, and `D < 2 d₀`. -/
@@ -222,8 +217,7 @@ theorem abs_det_lt_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
   have hdet : (det t.1.1 t'.1.1 : ℝ) = D * τ := by
     exact_mod_cast (Int.mul_ediv_cancel' hdvd).symm
   rw [hdet, abs_mul, Nat.abs_cast]
-  have hD₀ : (0 : ℝ) ≤ D := Nat.cast_nonneg _
-  nlinarith [abs_nonneg (τ : ℝ)]
+  nlinarith
 
 /-- The list product is the pad product times the product of the last slots. -/
 theorem listProd_eq_padProd_mul_lastProd {J : ℕ} (p : Lists K J) :
@@ -241,6 +235,6 @@ theorem le_listProd_of_rowOp_ne_zero (hY : 0 < Y) {t t' : State x d Y d₀}
     have h₁ := (lt_of_dyadicBump_ne_zero hη).1
     rwa [one_lt_div hY] at h₁
   rw [listProd_eq_padProd_mul_lastProd, Nat.cast_mul]
-  exact mul_le_mul hD₁ hb.le hY.le (Nat.cast_nonneg _)
+  nlinarith
 
 end Erdos408.OneSided

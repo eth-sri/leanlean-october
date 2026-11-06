@@ -14,7 +14,7 @@ public import Mathlib.Analysis.Complex.ExponentialBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Topology
 open Set Filter Metric Complex
 
 namespace SevenEighths.LogarithmicControl
@@ -24,8 +24,8 @@ theorem differentiableOn_of_exp_eq {U : Set ℂ} (hU : IsOpen U)
     (hg : ContinuousOn g U) (he : EqOn (Complex.exp ∘ g) L U) :
     DifferentiableOn ℂ g U := by
   intro z hz
-  have hgc : ContinuousAt g z := (hg z hz).continuousAt (hU.mem_nhds hz)
-  have hLc : DifferentiableAt ℂ L z := (hL z hz).differentiableAt (hU.mem_nhds hz)
+  have hgc := (hg z hz).continuousAt (hU.mem_nhds hz)
+  have hLc := (hL z hz).differentiableAt (hU.mem_nhds hz)
   have hs := Complex.hasStrictDerivAt_exp (g z)
   let inv := hs.localInverse Complex.exp (Complex.exp (g z)) (g z)
     (Complex.exp_ne_zero _)
@@ -49,8 +49,7 @@ theorem exists_holomorphic_log {L : ℂ → ℂ} {c : ℂ} {R : ℝ} (hR : 0 < R
     infer_instance
   obtain ⟨g, hg, he⟩ := Complex.exists_continuousOn_eqOn_exp_comp hsc
     isOpen_ball hL.continuousOn (by
-      rintro ⟨z, hz, heq⟩
-      exact h0 z hz heq)
+      simp_all)
   exact ⟨g, differentiableOn_of_exp_eq isOpen_ball hL hg he, he⟩
 
 theorem exists_holomorphic_log_normalized {L : ℂ → ℂ} {c m : ℂ} {R : ℝ} (hR : 0 < R)
@@ -84,7 +83,7 @@ theorem log_eqOn_of_eq_center {g h : ℂ → ℂ} {c : ℂ} {r : ℝ} (hr : 0 < 
   have heq : g =ᶠ[𝓝 c] h := by
     filter_upwards [hgleft, hhleft, isOpen_ball.mem_nhds hcm] with z hz1 hz2 hz
     rw [← hz1, ← hz2]
-    exact congrArg _ (he hz)
+    exact by grind
   exact (hg.analyticOnNhd isOpen_ball).eqOn_of_preconnected_of_eventuallyEq
     (hh.analyticOnNhd isOpen_ball) (convex_ball c r).isPreconnected hcm heq
 
@@ -102,8 +101,8 @@ theorem borel_caratheodory_closedBall {g : ℂ → ℂ} {c : ℂ} {r R M A : ℝ
     intro w hw
     simpa [mem_ball, dist_eq_norm] using hw
   have hb := Complex.borelCaratheodory hM hg' (fun w hw ↦ hRe _ (by
-    simpa [mem_ball, dist_eq_norm] using hw)) (hr.trans_lt hrR)
-    (show z - c ∈ ball 0 R by simpa using hzR)
+    simp_all)) (hr.trans_lt hrR)
+    (show z - c ∈ ball 0 R by simp_all)
   simp only [add_sub_cancel, add_zero] at hb
   refine hb.trans ?_
   apply add_le_add
@@ -121,7 +120,7 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
       B ^ ((Real.log ‖z - c‖ - Real.log r) / (Real.log R - Real.log r)) := by
   let F : ℂ → ℂ := fun w ↦ g (c + Complex.exp w)
   have hRp : 0 < R := hr.trans hrR
-  have hlog : Real.log r < Real.log R := Real.log_lt_log hr hrR
+  have hlog := Real.log_lt_log hr hrR
   have hmap (w : ℂ) (hw : w.re ≤ Real.log R) : c + Complex.exp w ∈ closedBall c R := by
     simp only [mem_closedBall, dist_eq_norm, add_sub_cancel_left, Complex.norm_exp]
     exact (Real.exp_le_exp.mpr hw).trans_eq (Real.exp_log hRp)
@@ -136,10 +135,10 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
     apply DifferentiableOn.diffContOnCl
     intro w hw
     have hm := hmap w (hclosed hw).2
-    have hm' : c + Complex.exp w ∈ ball c S :=
+    have hm' :=
       closedBall_subset_ball hRS hm
     exact ((hg _ hm').differentiableAt (isOpen_ball.mem_nhds hm')).comp w
-      ((differentiableAt_const c).add (Complex.differentiable_exp w)) |>.differentiableWithinAt
+      (by simp) |>.differentiableWithinAt
   have hbound : BddAbove ((norm ∘ F) ''
       HadamardThreeLines.verticalClosedStrip (Real.log r) (Real.log R)) := by
     refine ⟨B, ?_⟩
@@ -159,9 +158,8 @@ theorem three_circles {g : ℂ → ℂ} {c z : ℂ} {r R S A B : ℝ}
   · intro w hw
     apply ha
     simp only [mem_preimage, mem_singleton_iff] at hw
-    simp [mem_closedBall, dist_eq_norm, hw, Complex.norm_exp, Real.exp_log hr]
-  · intro w hw
-    exact hb _ (hmap w (le_of_eq hw))
+    simp [hw, Complex.norm_exp, Real.exp_log hr]
+  grind
 
 theorem three_circles_power_bound {g : ℂ → ℂ} {c z : ℂ} {r ρ R S A B T : ℝ}
     (hr : 0 < r) (hrρ : r < ρ) (hρR : ρ < R) (hRS : R < S)
@@ -174,38 +172,38 @@ theorem three_circles_power_bound {g : ℂ → ℂ} {c z : ℂ} {r ρ R S A B T 
       (Real.log R - Real.log r)) := by
   let θ := (Real.log ρ - Real.log r) / (Real.log R - Real.log r)
   have hlogR : 0 < Real.log R - Real.log r :=
-    sub_pos.mpr (Real.log_lt_log hr (hrρ.trans hρR))
+    sub_pos.mpr (Real.log_lt_log hr (by linarith))
   have hθ0 : 0 ≤ θ := div_nonneg
     (sub_nonneg.mpr (Real.log_le_log hr hrρ.le)) hlogR.le
   have hθ1 : θ ≤ 1 := (div_le_one hlogR).mpr (by
-    linarith [Real.log_le_log (hr.trans hrρ) hρR.le])
+    linarith [Real.log_le_log (by linarith) hρR.le])
   have hzn : ‖z - c‖ ≤ ρ := by simpa [mem_closedBall, dist_eq_norm] using hz
   have hAp : 0 ≤ A := zero_le_one.trans hA
   have hBp : 0 ≤ B := zero_le_one.trans hB
   have hTp : 0 ≤ T := zero_le_one.trans hT
-  have hp1 : 1 ≤ T ^ θ := Real.one_le_rpow hT hθ0
+  have hp1 := Real.one_le_rpow hT hθ0
   by_cases hzr : ‖z - c‖ ≤ r
   · have hgz := ha z (by simpa [mem_closedBall, dist_eq_norm] using hzr)
     exact hgz.trans (by nlinarith [mul_le_mul hB hp1 zero_le_one hBp])
-  · have hzr' : r ≤ ‖z - c‖ := (lt_of_not_ge hzr).le
+  · have hzr' : r ≤ ‖z - c‖ := by linarith
     have hzx : 0 < ‖z - c‖ := hr.trans_le hzr'
     let x := (Real.log ‖z - c‖ - Real.log r) / (Real.log R - Real.log r)
     have hx0 : 0 ≤ x := div_nonneg
       (sub_nonneg.mpr (Real.log_le_log hr hzr')) hlogR.le
     have hxθ : x ≤ θ := (div_le_div_iff_of_pos_right hlogR).mpr (by
       linarith [Real.log_le_log hzx hzn])
-    have hx1 : x ≤ 1 := hxθ.trans hθ1
-    have h := three_circles hr (hrρ.trans hρR) hRS hg ha hb hzr' (hzn.trans hρR.le)
+    have hx1 : x ≤ 1 := by linarith
+    have h := three_circles hr (by linarith) hRS hg ha hb hzr' (by linarith)
     have hAa : A ^ (1 - x) ≤ A := by
       simpa using Real.rpow_le_rpow_of_exponent_le hA (show 1 - x ≤ 1 by linarith)
     have hBb : B ^ x ≤ B := by
       simpa using Real.rpow_le_rpow_of_exponent_le hB hx1
-    have hTT : T ^ x ≤ T ^ θ := Real.rpow_le_rpow_of_exponent_le hT hxθ
+    have hTT := Real.rpow_le_rpow_of_exponent_le hT hxθ
     calc
       ‖g z‖ ≤ A ^ (1 - x) * (B * T) ^ x := h
       _ = A ^ (1 - x) * (B ^ x * T ^ x) := by rw [Real.mul_rpow hBp hTp]
       _ ≤ A * (B * T ^ θ) := mul_le_mul hAa
-        (mul_le_mul hBb hTT (Real.rpow_nonneg hTp _) hBp)
+        (mul_le_mul hBb hTT (by positivity) hBp)
         (by positivity) hAp
       _ = A * B * T ^ θ := by ring
 
@@ -213,14 +211,14 @@ def uniformTheta (e : ℝ) : ℝ := 1 - Real.log (1 + e) / Real.log (200 / 49)
 
 theorem uniformTheta_mem {e : ℝ} (he : 0 < e) (he' : e < 1 / 1000) :
     0 < uniformTheta e ∧ uniformTheta e < 1 := by
-  have hD : 0 < Real.log (200 / 49) := Real.log_pos (by norm_num)
+  have hD : 0 < Real.log (200 / 49) := by positivity
   have hn : 0 < Real.log (1 + e) := Real.log_pos (by linarith)
   have hnD : Real.log (1 + e) < Real.log (200 / 49) :=
     Real.log_lt_log (by linarith) (by linarith)
   unfold uniformTheta
   constructor
   · linarith [(div_lt_one hD).mpr hnD]
-  · linarith [div_pos hn hD]
+  simp_all
 
 theorem three_circles_exponent_uniform {a e : ℝ}
     (ha : 1 / 2 ≤ a) (ha' : a ≤ 1) (he : 0 < e) (he' : e < 1 / 1000) :
@@ -234,11 +232,11 @@ theorem three_circles_exponent_uniform {a e : ℝ}
   have hep : 0 < 1 + e := by linarith
   have hD : 0 < Real.log (2 - a - 4 * e) - Real.log (49 / 100) :=
     sub_pos.mpr (Real.log_lt_log hr h4)
-  have hU : 0 < Real.log (200 / 49) := Real.log_pos (by norm_num)
+  have hU : 0 < Real.log (200 / 49) := by positivity
   have hDU : Real.log (2 - a - 4 * e) - Real.log (49 / 100) ≤
       Real.log (200 / 49) := by
     rw [← Real.log_div h4p.ne' hr.ne']
-    apply Real.log_le_log (div_pos h4p hr)
+    apply Real.log_le_log (by positivity)
     apply (div_le_iff₀ hr).mpr
     norm_num
     linarith
@@ -247,21 +245,18 @@ theorem three_circles_exponent_uniform {a e : ℝ}
     nlinarith
   have hdiff : Real.log (1 + e) ≤ Real.log (2 - a - 4 * e) -
       Real.log (2 - a - 6 * e) := by
-    have h := Real.log_le_log (mul_pos h6p hep) hprod
+    have h := Real.log_le_log (by positivity) hprod
     rw [Real.log_mul h6p.ne' hep.ne'] at h
     linarith
   have hfrac : Real.log (1 + e) / Real.log (200 / 49) ≤
       (Real.log (2 - a - 4 * e) - Real.log (2 - a - 6 * e)) /
       (Real.log (2 - a - 4 * e) - Real.log (49 / 100)) := by
     gcongr
-    exact (Real.log_pos (by linarith : 1 < 1 + e)).le.trans hdiff
+    exact (Real.log_pos (by linarith)).le.trans hdiff
   calc
     _ = 1 - (Real.log (2 - a - 4 * e) - Real.log (2 - a - 6 * e)) /
         (Real.log (2 - a - 4 * e) - Real.log (49 / 100)) := by
-      apply eq_sub_iff_add_eq.mpr
-      rw [← add_div]
-      convert div_self hD.ne' using 1
-      ring
+      grind
     _ ≤ uniformTheta e := sub_le_sub_left hfrac 1
 
 theorem exp_sublinear_le {θ K ε : ℝ} (hθ : 0 ≤ θ) (hθ' : θ < 1)
@@ -275,12 +270,12 @@ theorem exp_sublinear_le {θ K ε : ℝ} (hθ : 0 ≤ θ) (hθ' : θ < 1)
   refine ⟨Real.exp (K * Y ^ θ), Real.exp_pos _, ?_⟩
   intro x hx
   have hxp : 0 < x := zero_lt_one.trans_le hx
-  have hYp : 0 < Y := zero_lt_one.trans_le (le_max_left _ _)
+  have hYp : 0 < Y := by positivity
   by_cases hxy : x ≤ Y
   · have h1 : Real.exp (K * x ^ θ) ≤ Real.exp (K * Y ^ θ) := by
       apply Real.exp_le_exp.mpr
       exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow hxp.le hxy hθ) hK
-    exact h1.trans (le_mul_of_one_le_right (Real.exp_pos _).le
+    exact h1.trans (le_mul_of_one_le_right (by positivity)
       (Real.one_le_exp (by positivity)))
   · have hlarge := hX x ((le_max_right 1 X).trans (lt_of_not_ge hxy).le)
     have heq : K * x ^ θ = (K * x ^ (-(1 - θ))) * x := by
@@ -293,7 +288,7 @@ theorem exp_sublinear_le {θ K ε : ℝ} (hθ : 0 ≤ θ) (hθ' : θ < 1)
       rw [heq]
       exact mul_le_mul_of_nonneg_right hlarge.le hxp.le
     exact (Real.exp_le_exp.mpr hlin).trans (le_mul_of_one_le_left
-      (Real.exp_pos _).le (Real.one_le_exp (mul_nonneg hK (Real.rpow_nonneg hYp.le _))))
+      (by positivity) (Real.one_le_exp (by positivity)))
 
 def outerConstant (e A M : ℝ) : ℝ := (4 * M + 4 * A) / e
 
@@ -313,8 +308,8 @@ theorem outer_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
   have hAp : 0 ≤ A := zero_le_one.trans hA
   have hMp : 0 < M := zero_lt_one.trans_le hM
   have hTp : 0 < T := zero_lt_one.trans_le hT
-  have hb := borel_caratheodory_closedBall (by linarith : 0 ≤ 2 - a - 4 * e)
-    (by linarith : 2 - a - 4 * e < 2 - a - 3 * e) (mul_pos hMp hTp) hAp
+  have hb := borel_caratheodory_closedBall (by linarith)
+    (by linarith) (by positivity) hAp
     (hg.mono (ball_subset_ball (by linarith))) hRe hc hz
   have hgap : 2 - a - 3 * e - (2 - a - 4 * e) = e := by ring
   rw [hgap] at hb
@@ -323,8 +318,8 @@ theorem outer_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
       (show 2 - a - 4 * e ≤ 2 by linarith) (show 0 ≤ 2 * M * T by positivity)]
   have hsecond : A * (2 - a - 3 * e + (2 - a - 4 * e)) ≤ 4 * A * T := by
     have h1 := mul_le_mul_of_nonneg_left
-      (show 2 - a - 3 * e + (2 - a - 4 * e) ≤ 4 by linarith) hAp
-    nlinarith [mul_le_mul_of_nonneg_left hT (show 0 ≤ 4 * A by positivity)]
+      (by linarith) hAp
+    nlinarith
   refine hb.trans ?_
   rw [← add_div]
   unfold outerConstant
@@ -343,10 +338,10 @@ theorem inner_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
   have hb : ∀ w ∈ closedBall c (2 - a - 4 * e), ‖g w‖ ≤ outerConstant e A M * T :=
     fun w hw ↦ outer_log_bound ha ha' he he' hA hM hT hg hRe
       (hin c (mem_closedBall_self (by norm_num))) hw
-  have h := three_circles_power_bound (by norm_num : (0 : ℝ) < 49 / 100)
-    (by linarith : 49 / 100 < 2 - a - 6 * e)
-    (by linarith : 2 - a - 6 * e < 2 - a - 4 * e)
-    (by linarith : 2 - a - 4 * e < 2 - a - 2 * e)
+  have h := three_circles_power_bound (by positivity)
+    (by linarith)
+    (by linarith)
+    (by linarith)
     hA hB hT hg hin hb hz
   exact h.trans (mul_le_mul_of_nonneg_left
     (Real.rpow_le_rpow_of_exponent_le hT (three_circles_exponent_uniform ha ha' he he'))
@@ -366,9 +361,9 @@ theorem logarithm_derivative_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
     have hdist := dist_triangle w z c
     change dist w c < _
     linarith
-  have h := Complex.norm_deriv_le_of_forall_mem_sphere_norm_le (by linarith : 0 < 2 * e)
+  have h := Complex.norm_deriv_le_of_forall_mem_sphere_norm_le (by positivity)
     (hg.diffContOnCl_ball hsub) (C := outerConstant e A M * T) ?_
-  · exact h.trans_eq (by ring)
+  · grind
   · intro w hw
     apply outer_log_bound ha ha' he he' hA hM hT hg hRe hc
     have hw' : dist w z = 2 * e := hw
@@ -390,15 +385,15 @@ theorem zero_free_disk_logarithm {L E : ℂ → ℂ} {c : ℂ} {a e A M C : ℝ}
       (∀ z ∈ ball c (2 - a - 3 * e), (g z).re ≤ M * Real.log C) := by
   have hR : (1 / 2 : ℝ) < 2 - a - 2 * e := by linarith
   obtain ⟨g, hg, hge, hgc⟩ := exists_holomorphic_log_normalized
-    (by linarith : 0 < 2 - a - 2 * e) hL h0
-    (hEL (mem_ball_self (by norm_num : (0 : ℝ) < 1 / 2)))
-  have hgE : EqOn g E (ball c (1 / 2)) := log_eqOn_of_eq_center (by norm_num)
+    (by positivity) hL h0
+    (hEL (by simp))
+  have hgE := log_eqOn_of_eq_center (by norm_num)
     (hg.mono (ball_subset_ball hR.le)) hE
-    (fun z hz ↦ (hge (ball_subset_ball hR.le hz)).trans (hEL hz).symm) hgc
+    (fun z hz ↦ (hge (ball_subset_ball hR.le hz)).trans (by grind)) hgc
   refine ⟨g, hg, hge, ?_, ?_⟩
   · intro z hz
-    rw [hgE (closedBall_subset_ball (by norm_num : (49 / 100 : ℝ) < 1 / 2) hz)]
-    exact hEb z hz
+    rw [hgE (closedBall_subset_ball (by linarith) hz)]
+    simp_all
   · intro z hz
     have hz' : z ∈ ball c (2 - a - 2 * e) := ball_subset_ball (by linarith) hz
     have hez : Complex.exp (g z) = L z := hge hz'
@@ -413,12 +408,11 @@ theorem logarithmic_derivative_eq {L g : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen
   have hd := hgz.hasDerivAt.cexp
   have heq : L =ᶠ[𝓝 z] (fun w ↦ Complex.exp (g w)) := by
     filter_upwards [hU.mem_nhds hz] with w hw
-    exact (he hw).symm
+    exact by grind
   have hdl := hd.congr_of_eventuallyEq heq
   rw [hdl.deriv]
   have hez : Complex.exp (g z) = L z := he hz
-  rw [← hez]
-  field_simp
+  simp [← hez]
 
 theorem logarithmic_control {e A M ε : ℝ}
     (he : 0 < e) (he' : e < 1 / 1000) (hA : 1 ≤ A) (hM : 1 ≤ M) (hε : 0 < ε) :
@@ -471,7 +465,7 @@ theorem logarithmic_control {e A M ε : ℝ}
 theorem conductor_height_scale_ge_exp (Q t : ℝ) (hQ : 1 ≤ Q) :
     Real.exp 1 ≤ 2 * Q * (3 + |t|) ^ 2 := by
   have hs : 9 ≤ (3 + |t|) ^ 2 := by nlinarith [abs_nonneg t]
-  have hq := mul_le_mul_of_nonneg_right hQ (sq_nonneg (3 + |t|))
+  have hq := mul_le_mul_of_nonneg_right hQ (by positivity)
   nlinarith [Real.exp_one_lt_three]
 
 theorem absorb_polynomial_constant {K p : ℝ} (hp : 0 ≤ p) :
@@ -479,7 +473,7 @@ theorem absorb_polynomial_constant {K p : ℝ} (hp : 0 ≤ p) :
   let J := max 1 K
   have hJ : 1 ≤ J := le_max_left _ _
   have hJp : 0 < J := zero_lt_one.trans_le hJ
-  have hlogJ : 0 ≤ Real.log J := Real.log_nonneg hJ
+  have hlogJ := Real.log_nonneg hJ
   refine ⟨p + Real.log J + 1, by linarith, ?_⟩
   intro C hC
   have hCp : 0 < C := (Real.exp_pos 1).trans_le hC
@@ -490,13 +484,13 @@ theorem absorb_polynomial_constant {K p : ℝ} (hp : 0 ≤ p) :
     apply Real.exp_le_exp.mpr
     nlinarith
   calc
-    K * C ^ p ≤ J * C ^ p := mul_le_mul_of_nonneg_right (le_max_right _ _)
-      (Real.rpow_nonneg hCp.le _)
+    K * C ^ p ≤ J * C ^ p := mul_le_mul_of_nonneg_right (by grind)
+      (by positivity)
     _ ≤ C ^ Real.log J * C ^ p := mul_le_mul_of_nonneg_right hJC
-      (Real.rpow_nonneg hCp.le _)
-    _ = C ^ (p + Real.log J) := by rw [← Real.rpow_add hCp]; congr 1; ring
+      (by positivity)
+    _ = C ^ (p + Real.log J) := by rw [← Real.rpow_add hCp]; ring
     _ ≤ C ^ (p + Real.log J + 1) := Real.rpow_le_rpow_of_exponent_le
-      ((show (1 : ℝ) ≤ Real.exp 1 by exact Real.one_le_exp (by norm_num)).trans hC)
+      ((show (1 : ℝ) ≤ Real.exp 1 by simp).trans hC)
       (by linarith)
 
 theorem disk_re_gt {a e t : ℝ} {z : ℂ}
@@ -505,11 +499,9 @@ theorem disk_re_gt {a e t : ℝ} {z : ℂ}
   have hn : ‖z - (2 + (t : ℂ) * Complex.I)‖ < 2 - a - 2 * e := by
     simpa [mem_ball, dist_eq_norm] using hz
   have hr := Complex.abs_re_le_norm (z - (2 + (t : ℂ) * Complex.I))
-  simp only [Complex.sub_re, Complex.add_re, Complex.mul_re,
-    Complex.ofReal_re, Complex.I_re, mul_zero, Complex.ofReal_im,
-    Complex.I_im, zero_mul, sub_zero, add_zero] at hr
+  simp only [Complex.sub_re, Complex.add_re, Complex.mul_re, Complex.I_re, mul_zero, Complex.ofReal_im, zero_mul, sub_zero, add_zero] at hr
   norm_num at hr
-  linarith [neg_le_abs (z.re - 2)]
+  grind
 
 theorem same_height_mem_disk {a e t v x : ℝ} (hev : 8 * e ≤ v)
     (hx : a + v ≤ x) (hx' : x ≤ 2) :
@@ -518,7 +510,7 @@ theorem same_height_mem_disk {a e t v x : ℝ} (hev : 8 * e ≤ v)
   rw [mem_closedBall, dist_eq_norm]
   have heq : (x : ℂ) + (t : ℂ) * Complex.I - (2 + (t : ℂ) * Complex.I) =
       ((x - 2 : ℝ) : ℂ) := by push_cast; ring
-  rw [heq, Complex.norm_real, Real.norm_eq_abs, abs_of_nonpos (by linarith : x - 2 ≤ 0)]
+  rw [heq, Complex.norm_real, Real.norm_eq_abs, abs_of_nonpos (by linarith)]
   linarith
 
 end SevenEighths.LogarithmicControl

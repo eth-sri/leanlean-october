@@ -6,7 +6,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Asymptotics
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 open Filter Topology
 attribute [local instance] Classical.propDecidable
 
@@ -30,10 +29,9 @@ theorem tendsto_log_sq_exp_neg_rpow (F : FixedData) :
     have hp : (L x) ^ (2 : ℕ) = ((L x) ^ F.c) ^ (2 / F.c) := by
       calc
         (L x) ^ (2 : ℕ) = (L x) ^ (2 : ℝ) :=
-          (Real.rpow_natCast (L x) 2).symm
+          by simp
         _ = (L x) ^ (F.c * (2 / F.c)) := by
-          congr 1
-          field_simp [hc.ne']
+          grind
         _ = ((L x) ^ F.c) ^ (2 / F.c) :=
           Real.rpow_mul hx.le F.c (2 / F.c)
     rw [hp]
@@ -62,7 +60,7 @@ theorem eventually_big_deficit_budget (F : FixedData) (M : ℕ) :
   have hsmallBase : ∀ᶠ x : ℝ in atTop,
       5 * (L x) ^ (2 : ℕ) * Real.exp (-((L x) ^ F.c)) < 1 / 2 := by
     simpa [mul_assoc] using (hdecay.const_mul 5).eventually
-      (Iio_mem_nhds (by norm_num : (5 : ℝ) * 0 < 1 / 2))
+      (Iio_mem_nhds (by simp))
   have hLlarge : ∀ᶠ x : ℝ in atTop, 1 ≤ L x :=
     Real.tendsto_log_atTop.eventually (eventually_ge_atTop 1)
   filter_upwards [hsmall, hsmallBase, hLlarge] with x hsmall hsmallBase hL
@@ -78,11 +76,11 @@ theorem eventually_big_deficit_budget (F : FixedData) (M : ℕ) :
   have hpowle : (L x) ^ ((52 : ℝ) / 100) ≤ L x := by
     calc
       _ ≤ (L x) ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
-      _ = L x := by rw [Real.rpow_one]
+      _ = L x := by simp
   have hN : (N x : ℝ) + 1 ≤ 5 * L x := by
     rw [N]
     push_cast
-    nlinarith [hceil, hpowle]
+    nlinarith
   have hTN : T x * ((N x : ℝ) + 1) ≤ 5 * (L x) ^ (2 : ℕ) := by
     calc
       _ ≤ L x * ((N x : ℝ) + 1) :=
@@ -100,7 +98,7 @@ theorem eventually_big_deficit_budget (F : FixedData) (M : ℕ) :
   refine ⟨hL, hTnonneg, hTle, hN, hsmallBase, ?_⟩
   calc
     _ ≤ ((5 * (M : ℝ) * F.C₀) * (L x) ^ (2 : ℕ)) / Real.exp ((L x) ^ F.c) :=
-      div_le_div_of_nonneg_right hnum (Real.exp_pos _).le
+      div_le_div_of_nonneg_right hnum (by positivity)
     _ = (5 * (M : ℝ) * F.C₀) * ((L x) ^ (2 : ℕ) * Real.exp (-((L x) ^ F.c))) := by
       rw [div_eq_mul_inv, Real.exp_neg]
       ring_nf

@@ -10,7 +10,7 @@ public import Mathlib.NumberTheory.Harmonic.EulerMascheroni
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators ContDiff
+open scoped ContDiff
 open Filter MeasureTheory
 attribute [local instance] Classical.propDecidable
 

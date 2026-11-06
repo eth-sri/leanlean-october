@@ -8,37 +8,36 @@ public import OAI.NumberTheory.DirichletL.Reflection.InactiveSource
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
-variable {Nlevel : Eis}
+variable {Nlevel : ActualEisensteinCubic.O}
 
 theorem low_original_inactive_energy
-    {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
-    [Fintype (Eis⧸Ideal.span {Nlevel^2})]
+    {γ : Type*} [Fintype γ] (a c₀ : γ→ActualEisensteinCubic.O) (mode : γ→Bool)
+    [Fintype (ActualEisensteinCubic.O⧸Ideal.span {Nlevel^2})]
     (lo hi : ℝ) (hlo : 0<lo)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (s : ∀ i,FixedCuspShape (ControlledStratumArithmetic.fixedCusp (a i) (c₀ i) (mode i))) (hc₀ : ∀ i,c₀ i≠0)
-    (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
+    (hNlevel : ∀ i,(9:ActualEisensteinCubic.O)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (Q : Ideal Eis) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
+    (Q : Ideal ActualEisensteinCubic.O) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
-    ∀ g : γ,∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal Eis)
+    ∀ g : γ,∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal ActualEisensteinCubic.O)
       (_hJ : J≠0) (_hF : F≠0),
     ∀ (A : Finset (FreeReflection.pool J Q Q₀))
       (Z d ell0 shift O₀ : ℝ),
       Z₀≤Z → 0≤d → d≤1/6 → 0≤ell0 → ell0≤1/6-d+η → |shift|≤η →
       O₀=normWidth Z (rowPowerfulPart J) →
-    ∀ (parents rows : Finset (Ideal Eis)),
+    ∀ (parents rows : Finset (Ideal ActualEisensteinCubic.O)),
       (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d)) →
       rows⊆originalResidualRows parents J Q →
       (∀ P∈fixedBadPrimes,P∣Q) →
       let G := (poolPrimeFamily J Q Q₀).restrict A
       let jF := fun b : A => completedLocalExponent J F b.val.val
-    ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ)
+    ∀ (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (H : σ→ℝ)
       (_hdis : Pairwise (fun i j => Disjoint (lists i) (lists j)))
       (hmax : ∀ i,∀ P∈lists i,P.IsMaximal)
       (hgood : ∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P)
@@ -46,10 +45,10 @@ theorem low_original_inactive_energy
       (hrows : ∀ K∈rows,Admissible K),
       (∀ i,1≤H i) → (∀ i,∀ P∈lists i,(Ideal.absNorm P:ℝ)≤H i) → (∏ i,H i)≤Z^ell0 →
       (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
+      (∀ f,ringChar (ActualEisensteinCubic.O⧸G.ideal f)≠2) →
       (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
       (∀ i,∀ P∈lists i,IsCoprime (Ideal.span {Nlevel}) P) →
-      (∀ i,∀ P∈lists i,ringChar (Eis⧸P)≠2) →
+      (∀ i,∀ P∈lists i,ringChar (ActualEisensteinCubic.O⧸P)≠2) →
     ∀ T : Finset σ,
     ∃ D : ∀ K : rows,
       ∀ _b : supportedSlotChoices (fun i : {i // i∉T} => lists i.val) (poolPrimeFamily J Q Q₀).ideal K.val,
@@ -116,7 +115,7 @@ theorem low_original_inactive_energy
         (slotChoiceFamily (fun i : T => lists i.val) (fun i => hmax i.val) (fun i => hgood i.val) p.val)).generator_good
       (reflectedExponent (fun b : A => completedLocalExponent J F b.val.val)) (slotIndices A (PrimeIndex K.val) T)
       (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift))
-  have hzpos : 0<Z := lt_trans zero_lt_one (lt_of_lt_of_le hZ₀ hZ)
+  have hzpos : 0<Z := by linarith
   apply supported_inactive_source_energy rows lists T FF H (fun i P hP => (hprime i P hP).ne_zero)
     hH w hw f (C*(1+‖θ‖)^degree*Z^((5/6-2*d)+505*η-O₀/2)) (by positivity)
   intro b

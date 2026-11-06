@@ -27,13 +27,9 @@ theorem actual_step_parameters (F eta r ell epsChild:ℝ)
   have he:0<firstPassEpsilon F eta:=div_pos heta hd
   have heq:firstPassEpsilon F eta*(10*F+32)=eta:=by unfold firstPassEpsilon;field_simp
   have heq':sourceMassEpsilon F eta*(20*(3*F+16)+30)=2*eta:=by unfold sourceMassEpsilon;field_simp
-  refine ⟨he,div_pos (by positivity) hm,by linarith,by linarith,by ring_nf;linarith,?_,?_⟩
-  · have hcap:5*ell+2*r+7*eta≤10*F+32:=by linarith
-    have hh:=mul_le_mul_of_nonneg_left hcap he.le
-    nlinarith
-  · have hcap:2*F+15*eta+eta+1≤10*F+32:=by linarith
-    have hh:=mul_le_mul_of_nonneg_left hcap he.le
-    nlinarith
+  refine ⟨he,div_pos (by positivity) hm,by linarith,by linarith,by linarith,?_,?_⟩
+  · nlinarith
+  nlinarith
 
 theorem actual_recursion_parameters (Mcap Fcap c eps:ℝ)(_hM:0≤Mcap)(_hF:0≤Fcap)(hc:0<c)(heps:0<eps):
     ∃cutoff eta:ℝ,0<cutoff ∧ 0<eta ∧ eta≤1 ∧ eta≤cutoff/32 ∧
@@ -49,18 +45,16 @@ theorem actual_recursion_parameters (Mcap Fcap c eps:ℝ)(_hM:0≤Mcap)(_hF:0≤
   let eta:=min 1 (min (cutoff/32) (min (c/200000) (min (c/(28*D)) (min (1/(30*D)) (eps/(800*D))))))
   have he:0<eta:=by dsimp[eta];positivity
   have he1:eta≤1:=min_le_left _ _
-  have he2:eta≤cutoff/32:=(min_le_right _ _).trans (min_le_left _ _)
-  have he3:eta≤c/200000:=(min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
-  have he4:eta≤c/(28*D):=(min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _)))
-  have he5:eta≤1/(30*D):=(min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))))
-  have he6:eta≤eps/(800*D):=(min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))))
-  refine ⟨cutoff,eta,hd,he,he1,he2,by dsimp[cutoff];linarith,by linarith,?_⟩
+  have he2:eta≤cutoff/32:=by grind
+  have he3:eta≤c/200000:=by grind
+  have he4:eta≤c/(28*D):=by grind
+  have he5:eta≤1/(30*D):=by grind
+  have he6:eta≤eps/(800*D):=by grind
+  refine ⟨cutoff,eta,hd,he,he1,he2,by grind,by linarith,?_⟩
   have h4:eta*(28*D)≤c:=(le_div_iff₀ (by positivity)).mp he4
   have h5:eta*(30*D)≤1:=(le_div_iff₀ (by positivity)).mp he5
   have h6:eta*(800*D)≤eps:=(le_div_iff₀ (by positivity)).mp he6
-  have hn:(depth:ℝ)*eta≤D*eta:=mul_le_mul_of_nonneg_right (by dsimp[D];linarith) he.le
-  change (depth:ℝ)*7*eta≤c/2 ∧ (depth:ℝ)*15*eta≤1 ∧ (depth:ℝ)*100*eta≤eps/4
-  constructor <;> first | nlinarith | constructor <;> nlinarith
+  grind
 
 end SevenEighths.InverseMoment
 

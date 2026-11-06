@@ -76,7 +76,7 @@ theorem exists_comparison_bound
   have hL1 : 1 ≤ L := by linarith
   have hyb0 : 0 ≤ yb := by positivity
   -- the source test reads only the big groups
-  have hCcard : ∀ g, (Aν g ∪ Bν g).card ≤ m₀ := fun g => (hpat.1 g).2
+  have hCcard := fun g => (hpat.1 g).2
   have hCbig : ∀ g ∉ big, Aν g ∪ Bν g = ∅ := fun g hg => by
     rw [(hpat.2.1 g hg).1, (hpat.2.1 g hg).2, Finset.empty_union]
   have hb₁ : ∀ p : ι → Fin (J + 1) → ℕ, ‖ψ' (slotProduct Bν fun g i => p g i.castSucc)‖ ≤ 1 :=
@@ -96,7 +96,7 @@ theorem exists_comparison_bound
     intro ξ hξ
     have hL3 : 2 * Real.pi ≤ L ^ (3 : ℝ) := by
       rw [show (3 : ℝ) = ((3 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-      nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 2) hL 3]
+      nlinarith [Real.pi_le_four, pow_le_pow_left₀ (by positivity) hL 3]
     rw [abs_mul, abs_of_pos Real.two_pi_pos]
     calc 2 * Real.pi * |ξ| ≤ L ^ (3 : ℝ) * L ^ Cf :=
           mul_le_mul hL3 hξ (abs_nonneg _) (by positivity)
@@ -110,7 +110,6 @@ theorem exists_comparison_bound
       _ = Real.sqrt |CE| * L ^ (-(A'' + KΨ + Ccost)) := by
           rw [Real.sqrt_mul (abs_nonneg _), Real.sqrt_eq_rpow, Real.sqrt_eq_rpow,
             ← Real.rpow_mul hL0.le]
-          congr 2
           ring
   have hpiece : ∀ ξ : ℝ, |ξ| ≤ L ^ Cf → ∀ m,
       ‖(((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
@@ -168,18 +167,9 @@ theorem exists_comparison_bound
       _ = n * yb * B := by
           rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
           ring
-  have h₁ : ∀ ξ : ℝ, |ξ| ≤ L ^ Cf →
-      ‖(x : ℂ) ^ (-(((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) *
-          ∑ m, (y m : ℂ) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
-            comparisonBilinear x q q₀ a u v Bc P Aν Bν φ φ' ψ ψ' G (ψ₁ m)
-              (y m * (x * U * U')) (2 * Real.pi * ξ))‖ ≤
-        n * yb * (|Karc| * (2 + Real.sqrt |CE|) * L ^ (-(A'' + KΨ))) :=
+  have h₁ :=
     fun ξ hξ => hsum_le ξ _ (by positivity) (hpiece ξ hξ)
-  have h₂ : ∀ ξ : ℝ,
-      ‖(x : ℂ) ^ (-(((2 * Real.pi * ξ : ℝ) : ℂ) * Complex.I)) *
-          ∑ m, (y m : ℂ) * ((((y m * (x * U * U')) : ℝ) : ℂ)⁻¹ *
-            comparisonBilinear x q q₀ a u v Bc P Aν Bν φ φ' ψ ψ' G (ψ₁ m)
-              (y m * (x * U * U')) (2 * Real.pi * ξ))‖ ≤ n * yb * L ^ C₅ :=
+  have h₂ :=
     fun ξ => hsum_le ξ _ (by positivity) fun m => habs P big hadm r a u v Bc G hin hsl hBc hco
       J Aν Bν φ φ' ψ ψ' U U' hpat (ψ₁ m) (y m) (2 * Real.pi * ξ) (hψ m).2.1
       (fun z => by simpa using (hψ m).2.2 0 z) (hy m).1 (hy m).2

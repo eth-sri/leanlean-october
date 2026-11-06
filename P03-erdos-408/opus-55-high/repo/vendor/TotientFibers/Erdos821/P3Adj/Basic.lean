@@ -6,7 +6,6 @@ public import Erdos821.Blueprint.Graph
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -19,12 +18,12 @@ variable {P : PrimeGroups} {g : P.Group}
 /-- Index enumeration counts each particle value correctly. -/
 lemma count_eq_card_filter (z : P.Memory g) (u : P.Particle g) :
     z.count u = (Finset.univ.filter (fun i : Fin z.card => memoryEntry z i = u)).card := by
-  have hlen : z.toList.length = z.card := Multiset.length_toList z
+  have hlen := Multiset.length_toList z
   have hcount : z.count u = z.toList.count u := by
     conv_lhs => rw [← Multiset.coe_toList z]
     rw [Multiset.coe_count]
   rw [hcount]
-  let v : List.Vector (P.Particle g) z.card := ⟨z.toList, by rw [hlen]⟩
+  let v : List.Vector (P.Particle g) z.card := ⟨z.toList, by omega⟩
   have hvec : v.toList.count u = z.toList.count u := rfl
   have hcard := Fin.card_filter_univ_eq_vector_get_eq_count u v
   rw [← hvec, ← hcard]
@@ -32,18 +31,13 @@ lemma count_eq_card_filter (z : P.Memory g) (u : P.Particle g) :
     intro i
     unfold memoryEntry
     rfl
-  have hfilter : Finset.univ.filter (fun i : Fin z.card => v.get i = u) =
-      Finset.univ.filter (fun i : Fin z.card => memoryEntry z i = u) := by
-    apply Finset.filter_congr
-    intro i _
-    rw [heq i]
-  rw [hfilter]
+  simp_all
 
 /-- Deletion keeps exactly the unremoved indices. -/
 lemma delete_card (z : P.Memory g) (A : Finset (Fin z.card)) :
     (deleteMemoryIndices z A).card = (Finset.univ \ A).card := by
   unfold deleteMemoryIndices
-  rw [Multiset.coe_card, List.length_map, Finset.length_toList]
+  simp
 
 /-- Deletion count per particle value via remaining indices. -/
 lemma delete_count_eq (s : P.Memory g) (A : Finset (Fin s.card))
@@ -65,13 +59,12 @@ lemma delete_count_eq (s : P.Memory g) (A : Finset (Fin s.card))
       = (((Finset.univ \ A).filter (fun i => memoryEntry s i = v)).card) := by
     rw [← Finset.filter_val]
     rfl
-  rw [h2]
+  omega
 
 /-- Ordered birth batch has the declared length. -/
 lemma birth_card {b : ℕ} (p : Fin b → P.Prime g) :
     (zeroBirthBatch (P := P) (g := g) p).card = b := by
   unfold zeroBirthBatch
-  rw [Multiset.coe_card]
   simp
 
 

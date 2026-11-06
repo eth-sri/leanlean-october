@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesBounds
 namespace OAI
 
 namespace SevenEighths.HeckeDetectorProfiles
-open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
+open scoped Classical ContDiff
 noncomputable section
 
 lemma logSource_support (Ω V T : ℝ → ℂ) (A B C : ℝ) :
@@ -25,7 +25,7 @@ theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ �
   obtain ⟨CT,hCT,hbT⟩ := scaled_schwartz_derivatives T L hL K
   obtain ⟨CE,hCE,hbE⟩ := scaled_expNeg_derivatives L hL K
   let P := (2 : ℝ)^K
-  refine ⟨P*(P*(P*CΩ*(1+CV))*CE)*CT,by dsimp [P]; positivity,?_⟩
+  refine ⟨P*(P*(P*CΩ*(1+CV))*CE)*CT,by positivity,?_⟩
   intro A B D hA hB hD j hj y hy
   let v : ℝ → ℂ := fun z => V (A*Real.exp z)
   let e : ℝ → ℂ := fun z => expNeg (B*Real.exp z)
@@ -35,17 +35,17 @@ theorem logSource_window_derivatives (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ �
   have ht : ContDiff ℝ ∞ t := (T.smooth ⊤).comp (by fun_prop)
   have hcv : ContDiff ℝ ∞ (fun z => 1-v z) := contDiff_const.sub hv
   have hcomp (i : ℕ) (hi : i ≤ K) : ‖iteratedFDeriv ℝ i (fun z => 1-v z) y‖ ≤ 1+CV :=
-    complement_derivative_bound v hv CV i y (hbV A hA i hi y hy)
+    complement_derivative_bound v hv CV i y (by grind)
   have hfirst (i : ℕ) (hi : i ≤ K) :
       ‖iteratedFDeriv ℝ i (fun z => Ω z*(1-v z)) y‖ ≤ P*CΩ*(1+CV) :=
     product_derivative_bound Ω _ hΩ hcv CΩ (1+CV) hCΩ (by positivity) K i hi y
-      (fun q hq => hbΩ q hq y) hcomp
+      (by grind) hcomp
   have hsecond (i : ℕ) (hi : i ≤ K) :
       ‖iteratedFDeriv ℝ i (fun z => Ω z*(1-v z)*e z) y‖ ≤ P*(P*CΩ*(1+CV))*CE :=
-    product_derivative_bound _ e (hΩ.mul hcv) he _ CE (by dsimp [P]; positivity) hCE
-      K i hi y hfirst (fun q hq => hbE B hB q hq y hy)
+    product_derivative_bound _ e (hΩ.mul hcv) he _ CE (by positivity) hCE
+      K i hi y hfirst (by grind)
   exact product_derivative_bound _ t ((hΩ.mul hcv).mul he) ht _ CT
-    (by dsimp [P]; positivity) hCT K j hj y hsecond (fun q hq => hbT D hD q hq y hy)
+    (by positivity) hCT K j hj y hsecond (by grind)
 
 theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ)
     (hΩc : HasCompactSupport Ω) (hΩ : ContDiff ℝ ∞ Ω)
@@ -63,11 +63,11 @@ theorem logSource_uniform_seminorm (Ω : ℝ → ℂ) (V T : SchwartzMap ℝ ℂ
   rw [← norm_iteratedFDeriv_eq_norm_iteratedDeriv]
   by_cases hz : ‖iteratedFDeriv ℝ j (logSourceFun Ω V T A B D) y‖ = 0
   · rw [hz, mul_zero]; positivity
-  have hys : y ∈ tsupport Ω := logSource_support Ω V T A B D
-    ((support_iteratedFDeriv_subset j) (by simpa [Function.mem_support] using hz))
-  have hy : |y| ≤ L := abs_le.mpr (hwindow hys)
-  exact mul_le_mul (by simpa [Real.norm_eq_abs] using pow_le_pow_left₀ (abs_nonneg y) hy k)
-    (hb A B D hA hB hD j hj y hy) (norm_nonneg _) (pow_nonneg hL k)
+  have hys := logSource_support Ω V T A B D
+    ((support_iteratedFDeriv_subset j) (by simpa using hz))
+  have hy : |y| ≤ L := by grind
+  exact mul_le_mul (by simpa using pow_le_pow_left₀ (abs_nonneg y) hy k)
+    (by grind) (norm_nonneg _) (by positivity)
 
 end
 end SevenEighths.HeckeDetectorProfiles

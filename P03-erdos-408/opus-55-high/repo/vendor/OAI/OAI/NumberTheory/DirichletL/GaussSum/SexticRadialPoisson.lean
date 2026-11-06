@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,23 +30,19 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
 
 namespace ActualEisensteinCubic
 
-noncomputable def finiteSexticQuotientRow
+def finiteSexticQuotientRow
     {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
     (hc : Pairwise (Function.onFun IsCoprime P))
@@ -121,8 +104,7 @@ end ActualEisensteinCubic
 
 namespace EisensteinSchwartzPoisson
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace
+open scoped FourierTransform SchwartzMap
 
 def paperE (z : ℂ) : ℂ := ShortDraftTrace.breveE (z / eisLam)
 
@@ -130,19 +112,18 @@ def paperFrequency (u : ℂ) : ℂ :=
   (2 * Complex.I / (Real.sqrt 3 : ℂ)) * (starRingEnd ℂ u)
 
 theorem paperE_eq_exp (z : ℂ) :
-    paperE z = Complex.exp (4 * Real.pi * Complex.I * (z.im / Real.sqrt 3)) := by
-  exact ShortDraftTrace.breveE_div_lam_eq_e z
+    paperE z = Complex.exp (4 * Real.pi * Complex.I * (z.im / Real.sqrt 3)) :=
+  ShortDraftTrace.breveE_div_lam_eq_e z
 
 theorem inner_paperFrequency (z u : ℂ) :
     inner ℝ z (paperFrequency u) = 2 * (z * u).im / Real.sqrt 3 := by
-  have hs : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
+  have hs : Real.sqrt 3 ≠ 0 := by positivity
   rw [Complex.inner]
   simp only [paperFrequency, Complex.mul_re, Complex.mul_im, Complex.div_re,
     Complex.div_im, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re,
     Complex.I_im, Complex.conj_re, Complex.conj_im, Complex.normSq_ofReal]
   norm_num
-  field_simp
-  rw [Real.sq_sqrt (by norm_num)]
+  grind
 
 theorem fourierChar_paperFrequency (z u : ℂ) :
     (Real.fourierChar (inner ℝ z (paperFrequency u)) : ℂ) = paperE (z * u) := by
@@ -161,14 +142,14 @@ theorem dualFrequencyEquiv_coordinates (p : ℤ × ℤ) :
 
 theorem explicitDualFrequency_eq_paperFrequency (c : ℂ) (p : ℤ × ℤ) :
     explicitDualFrequency c p = paperFrequency (eisEmbedding (dualFrequencyEquiv p) / c) := by
-  have hs : Real.sqrt 3 ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by norm_num))
+  have hs : Real.sqrt 3 ≠ 0 := by positivity
   have hnum : complexPoint (p.1 : ℝ)
       (((p.1 : ℝ) + 2 * (p.2 : ℝ)) / Real.sqrt 3) =
       (2 * Complex.I / (Real.sqrt 3 : ℂ)) *
         starRingEnd ℂ (eisEmbedding (dualFrequencyEquiv p)) := by
     rw [dualFrequencyEquiv_coordinates]
     apply Complex.ext <;>
-      norm_num [complexPoint, Complex.div_re, Complex.div_im] <;>
+      norm_num [complexPoint, Complex.div_im] <;>
       field_simp <;>
       simp only [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
   unfold explicitDualFrequency paperFrequency
@@ -179,15 +160,13 @@ theorem explicitDualFrequency_phase (r c : ℂ) (p : ℤ × ℤ) :
     (Real.fourierChar (inner ℝ r (explicitDualFrequency c p)) : ℂ) =
       paperE (r * eisEmbedding (dualFrequencyEquiv p) / c) := by
   rw [explicitDualFrequency_eq_paperFrequency, fourierChar_paperFrequency]
-  congr 1
   ring
 
 theorem paperFrequency_norm_sq (u : ℂ) :
     ‖paperFrequency u‖ ^ 2 = (4 / 3 : ℝ) * ‖u‖ ^ 2 := by
   have hnorm : ‖(2 * Complex.I / (Real.sqrt 3 : ℂ))‖ ^ 2 = (4 / 3 : ℝ) := by
     rw [norm_div, norm_mul]
-    norm_num [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (Real.sqrt_nonneg 3),
-      div_pow, Real.sq_sqrt]
+    norm_num [div_pow]
   rw [paperFrequency, norm_mul, mul_pow, Complex.norm_conj, hnorm]
 
 theorem explicitDualFrequency_norm_sq (c : ℂ) (p : ℤ × ℤ) :
@@ -210,7 +189,7 @@ theorem paperFourier_eq_standard (f : ℂ → ℂ) (u : ℂ) :
   have hp : (Real.fourierChar (-inner ℝ z (paperFrequency u)) : ℂ) =
       paperE (-(z * u)) := by
     simpa only [inner_neg_left, neg_mul] using fourierChar_paperFrequency (-z) u
-  rw [hp]
+  simp_all
 
 theorem eisTraceModChar_eq_paperE (c : O) (hc : c ≠ 0) (z : O) :
     eisTraceModChar ShortDraftTrace.breveE
@@ -219,7 +198,6 @@ theorem eisTraceModChar_eq_paperE (c : O) (hc : c ≠ 0) (z : O) :
       paperE (eisEmbedding z / eisEmbedding c) := by
   rw [eisTraceModChar, IdealGaussCRT.traceModChar_mk]
   unfold paperE
-  congr 1
   ring
 
 theorem eisTraceModChar_frequency (c : O) (hc : c ≠ 0)
@@ -231,7 +209,6 @@ theorem eisTraceModChar_frequency (c : O) (hc : c ≠ 0)
         eisEmbedding h / eisEmbedding c) := by
   conv_lhs => rw [← GaussianShiftedPartition.representative_spec c r, ← map_mul]
   rw [eisTraceModChar_eq_paperE, map_mul]
-  congr 1
   ring
 
 theorem actual_eisenstein_paper_poisson (f : 𝓢(ℂ, ℂ)) (c : O) (hc : c ≠ 0)
@@ -295,8 +272,7 @@ theorem actual_eisenstein_paper_poisson_trace (f : 𝓢(ℂ, ℂ)) (c : O) (hc :
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
   simpa only [eisTraceModChar_frequency] using actual_eisenstein_paper_poisson f c hc P
 
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic MeasureTheory
-open scoped FourierTransform SchwartzMap RealInnerProductSpace ContDiff
+open scoped FourierTransform SchwartzMap ContDiff
 
 theorem paperFourier_comp_mul (f : ℂ → ℂ) (a : ℂ) (ha : a ≠ 0) (u : ℂ) :
     paperFourier (fun z => f (a * z)) u =
@@ -315,7 +291,6 @@ theorem paperFourier_comp_mul (f : ℂ → ℂ) (a : ℂ) (ha : a ≠ 0) (u : �
   have hF := fourier_comp_linearEquiv (complexMulEquiv a ha) f (paperFrequency u)
   simp only [Function.comp_def, complexMulEquiv_apply] at hF
   rw [hF, hd, hj, smul_smul, smul_smul]
-  congr 1
   ring
 
 def paperRadialFourier (W : ℝ → ℂ) (t : ℝ) : ℂ :=
@@ -327,13 +302,13 @@ theorem paperFourier_radial (W : ℝ → ℂ) (u : ℂ) :
   unfold paperRadialFourier
   rw [Real.sqrt_sq (norm_nonneg u)]
   by_cases hu : u = 0
-  · simp [hu]
+  · simp_all
   have hn : ‖u‖ ≠ 0 := norm_ne_zero_iff.mpr hu
-  have hnC : (‖u‖ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hn
+  have hnC := Complex.ofReal_ne_zero.mpr hn
   let a : ℂ := u / (‖u‖ : ℂ)
   have ha : a ≠ 0 := div_ne_zero hu hnC
   have hna : ‖a‖ = 1 := by
-    simp [a, Complex.norm_real, hn]
+    simp [a, hn]
   have hq : u / a = (‖u‖ : ℂ) := by
     dsimp [a]
     field_simp
@@ -341,12 +316,11 @@ theorem paperFourier_radial (W : ℝ → ℂ) (u : ℂ) :
     funext z
     rw [norm_mul, hna, one_mul]
   have hF := paperFourier_comp_mul (fun z => W (‖z‖ ^ 2)) a ha u
-  rw [hfun, hna, hq] at hF
-  simpa using hF
+  simp_all
 
 theorem inverseSqrt_ne_zero (K : ℝ) (hK : 0 < K) :
     (Real.sqrt K : ℂ)⁻¹ ≠ 0 :=
-  inv_ne_zero (Complex.ofReal_ne_zero.mpr (ne_of_gt (Real.sqrt_pos.mpr hK)))
+  inv_ne_zero (Complex.ofReal_ne_zero.mpr (by positivity))
 
 theorem inverseSqrt_norm_sq (K : ℝ) (hK : 0 < K) :
     ‖(Real.sqrt K : ℂ)⁻¹‖ ^ 2 = 1 / K := by
@@ -371,7 +345,7 @@ theorem paperFourier_radial_scaled (W : ℝ → ℂ) (K : ℝ) (hK : 0 < K) (u :
     field_simp
   have hF := paperFourier_comp_mul (fun z => W (‖z‖ ^ 2)) a ha u
   rw [hfun, hna, one_div_one_div, paperFourier_radial, hnorm] at hF
-  exact hF
+  omega
 
 def scaledRadialTest (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) : 𝓢(ℂ, ℂ) :=
   affinePullback (radialTest W)
@@ -381,7 +355,6 @@ def scaledRadialTest (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) : 𝓢(ℂ, ℂ
     scaledRadialTest W K hK z = W (‖z‖ ^ 2 / K) := by
   simp only [scaledRadialTest, affinePullback_apply, complexMulEquiv_apply,
     add_zero, radialTest_apply, norm_mul, mul_pow, inverseSqrt_norm_sq K hK]
-  congr 1
   ring
 
 theorem paperFourier_scaledRadialTest (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) (u : ℂ) :
@@ -444,15 +417,15 @@ theorem actual_compact_radial_paper_poisson_trace (W : ℝ → ℂ)
       (K / ‖eisEmbedding c‖ ^ 2 : ℝ) • ∑' h : O,
         (∑ r : O ⧸ Ideal.span {c}, P r *
           ψ (Ideal.Quotient.mk (Ideal.span {c}) h * r)) *
-          paperRadialFourier W (K * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2) := by
-  exact actual_radial_paper_poisson_trace (hWc.toSchwartzMap hWs) K hK c hc P
+          paperRadialFourier W (K * ‖eisEmbedding h‖ ^ 2 / ‖eisEmbedding c‖ ^ 2) :=
+  actual_radial_paper_poisson_trace (hWc.toSchwartzMap hWs) K hK c hc P
 
 end EisensteinSchwartzPoisson
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 
 namespace ActualEisensteinCubic
-open ConcreteTraceCRT EisensteinSchwartzPoisson
+open EisensteinSchwartzPoisson
 
 def finiteSexticRow {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -487,7 +460,7 @@ theorem finitePrimeModulus_ne_zero {ι : Type*} [Fintype ι]
   intro hz
   have hspan := span_finitePrimeModulus P
   rw [hz] at hspan
-  exact finite_prime_product_ne_bot P (by simpa using hspan.symm)
+  exact finite_prime_product_ne_bot P (by simp_all)
 
 theorem eisEmbedding_norm_sq_eq_absNorm_span (a : O) :
     ‖eisEmbedding a‖ ^ 2 = (Ideal.absNorm (Ideal.span {a}) : ℝ) := by
@@ -499,7 +472,7 @@ theorem eisEmbedding_norm_sq_eq_absNorm_span (a : O) :
     have hNatR := congrArg (fun n : ℤ => (n : ℝ)) hNat
     simp only [Int.cast_natCast] at hNatR
     rw [← qNat_eq_absNorm_span, hNatR]
-    exact hnorm
+    omega
 
 theorem finitePrimeModulus_norm_sq {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) :
@@ -659,8 +632,8 @@ theorem canonical_radial_poisson_normalized {ι : Type*} [Fintype ι]
   change ((scale / ‖eisEmbedding c‖ ^ 2 : ℝ) : ℂ) * (G * ∑' h : O, F h) =
     ((scale : ℂ) * (G / (‖eisEmbedding c‖ : ℂ)) / (‖eisEmbedding c‖ : ℂ)) *
       ∑' h : O, F h
-  have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 := by
-    exact Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr
+  have hn : (‖eisEmbedding c‖ : ℂ) ≠ 0 :=
+    Complex.ofReal_ne_zero.mpr (norm_ne_zero_iff.mpr
       (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P)))
   push_cast
   field_simp
@@ -679,7 +652,7 @@ theorem finiteSexticRow_zero {ι : Type*} [Fintype ι] [Nonempty ι]
     (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ) :
     finiteSexticRow P hgood j 0 = 0 := by
   rw [finiteSexticRow_eq_zero_iff]
-  exact ⟨Classical.arbitrary ι, Ideal.zero_mem _⟩
+  simp
 
 theorem finiteSexticRow_radial_summable {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -695,7 +668,7 @@ theorem finiteSexticRow_radial_summable {ι : Type*} [Fintype ι]
   have hs := actual_eisenstein_periodic_summable (scaledRadialTest W scale hscale)
     (Ideal.Quotient.mk (Ideal.span {c}))
     (principalSexticRow P hcop hgood j c (span_finitePrimeModulus P))
-  simpa only [principalSexticRow_mk, scaledRadialTest_apply] using hs
+  simp_all
 
 end ActualEisensteinCubic
 

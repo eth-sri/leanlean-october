@@ -11,15 +11,10 @@ namespace OAI
 
 namespace LargePrimeGaps
 
-open Filter
 
-open Set Filter MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
 noncomputable def frequencyW (u : ℝ) : ℂ := 1+Complex.I*(u:ℂ)
 

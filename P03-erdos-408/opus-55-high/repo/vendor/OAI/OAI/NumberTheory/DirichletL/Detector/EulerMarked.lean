@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerFinsupp
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeEulerFinsupp
 variable {α β : Type*} [AddCommMonoid β]
@@ -25,12 +25,9 @@ lemma markedArray_finite (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
   congr 1
   · symm
     rw [←Finset.prod_subset hTS]
-    · apply Finset.prod_congr rfl
-      intro a ha
-      simp only [ite_eq_left ha]
-    · intro a ha hna
-      simp only [ite_eq_right hna]
-  · exact Finsupp.prod_of_support_subset v hv _ (fun a _=>h0 a)
+    · simp
+    simp_all
+  · exact Finsupp.prod_of_support_subset v hv _ (by grind)
 
 lemma markedArray_norm_le (T : Finset α) (m f : α→β→ℂ)
     (hm : ∀a∈T,∀b,‖m a b‖≤1) (v : α→₀β) :
@@ -38,7 +35,7 @@ lemma markedArray_norm_le (T : Finset α) (m f : α→β→ℂ)
   rw [markedArray,norm_mul]
   apply mul_le_of_le_one_left (norm_nonneg _)
   rw [norm_prod]
-  exact Finset.prod_le_one₀ (fun _ _=>norm_nonneg _) (fun a ha=>hm a ha _)
+  exact Finset.prod_le_one₀ (by simp) (by grind)
 
 lemma marked_finiteEuler (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
     (h0 : ∀a,f a 0=1) (hf : ∀a,Summable (fun b=>‖f a b‖))
@@ -52,12 +49,12 @@ lemma marked_finiteEuler (T S : Finset α) (hTS : T⊆S) (m f : α→β→ℂ)
     rw [markedArray_finite T S hTS m f h0 v.val v.property]
     exact (Finset.prod_coe_sort S _).symm
   have hg (a : α) : Summable (fun b=>‖markedLocal T m f a b‖) := by
-    apply Summable.of_nonneg_of_le (fun _=>norm_nonneg _) _ (hf a)
+    apply Summable.of_nonneg_of_le (by simp) _ (hf a)
     intro b
     rw [markedLocal,norm_mul]
     apply mul_le_of_le_one_left (norm_nonneg _)
     split_ifs with ha
-    · exact hm a ha b
+    · simp_all
     · simp
   simp_rw [he]
   rw [e.tsum_eq (fun v : S→β=>∏a:S,markedLocal T m f a.val (v a))]
@@ -78,12 +75,12 @@ theorem marked_hasProd (T : Finset α) (m f : α→β→ℂ) (h0 : ∀a,f a 0=1)
     · intro v
       apply tendsto_const_nhds.congr'
       filter_upwards [eventually_ge_atTop v.support] with S hS
-      simp only [ite_eq_left hS]
+      simp_all
     · apply Filter.Eventually.of_forall
       intro S v
       split_ifs
       · exact markedArray_norm_le T m f hm v
-      · simpa only [norm_zero] using norm_nonneg (v.prod f)
+      simp
   change Tendsto (fun S : Finset α=>∏a∈S,∑'b,markedLocal T m f a b) atTop _
   apply ht.congr'
   filter_upwards [eventually_ge_atTop T] with S hTS

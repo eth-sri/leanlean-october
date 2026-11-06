@@ -8,10 +8,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.RowNonprincipal
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.HeckePrimeNonprincipal
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem inverse_twist_elementCoeff (η χ θ : Character) (m f z : O)
     (hχ : ∀ n, elementCoeff χ n=rowTwist (elementHom η) m f z n) (n : O) :

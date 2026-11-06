@@ -10,7 +10,7 @@ public import OAI.NumberTheory.DirichletL.IdealCharacter
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.HeckeFamily
 
 private instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
@@ -93,22 +93,21 @@ theorem continuedLattice_eq_six_ideal_tsum (χ : Character) {s : ℂ} (hs : 1 < 
       ∑' I : Ideal O, idealTerm χ s I := by
     apply tsum_subtype_eq_of_support_subset
     intro I hI hzero
-    exact hI (by rw [hzero]; unfold idealTerm; rw [map_zero]; exact zero_div _)
-  rwa [hsum] at h
+    exact hI (by rw [hzero]; unfold idealTerm; simp_all)
+  simp_all
 
 def LFunction (χ : Character) (s : ℂ) : ℂ := continuedLattice χ s / 6
 
 theorem LFunction_eq_ideal_tsum (χ : Character) {s : ℂ} (hs : 1 < s.re) :
     LFunction χ s = ∑' I : Ideal O, idealTerm χ s I := by
-  rw [LFunction, continuedLattice_eq_six_ideal_tsum χ hs]
-  ring
+  simp [LFunction, continuedLattice_eq_six_ideal_tsum χ hs]
 
 theorem LFunction_differentiableAt (χ : Character) {s : ℂ}
     (hs₀ : s ≠ 0) (hs₁ : s ≠ 1 ∨ χ.residue ≠ 1) :
     DifferentiableAt ℂ (LFunction χ) s := by
   apply DifferentiableAt.div_const
   rcases hs₁ with hs₁ | hχ
-  · exact continuedLattice_differentiableAt χ hs₀ (Or.inl hs₁)
+  · exact continuedLattice_differentiableAt χ hs₀ (by grind)
   · exact HeckeCharacterAnalytic.continuedLattice_differentiableAt_nonprincipal χ hχ hs₀
 
 theorem LFunction_entire_nonprincipal (χ : Character) (hχ : χ.residue ≠ 1) :

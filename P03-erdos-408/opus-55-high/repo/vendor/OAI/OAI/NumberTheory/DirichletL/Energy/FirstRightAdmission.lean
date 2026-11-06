@@ -8,17 +8,17 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedRightTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstRightAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge
 open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
+open CenteredMomentAmplificationChildInput
 open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
 open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
 open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
@@ -28,13 +28,12 @@ open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
 open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
 open CenteredMomentPrimePool CenteredMomentPrimeElements
 open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
+open CenteredMomentChildRows RayFourExpansion
+open CenteredMomentLogDyadic
 open CenteredMomentEnergyFirstLiveAdmission CenteredMomentFirstMixedRightTransport
-local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-lemma main_radius_right (C D : Ideal O) (E : Finset (CommonIndex C D))
+lemma main_radius_right (C D : Ideal HeckeFamily.O) (E : Finset (CommonIndex C D))
     (K V Z σ δ reserve : ℝ) :
     columnMainRadius C D E K V Z σ δ reserve true =
       mainRadius D C (swapSubset C D E) K V Z σ δ reserve := by
@@ -50,8 +49,8 @@ theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       ∀ κ : ℝ, 1/6 ≤ κ → (∀ i, 1 ≤ s.P i) →
       length Z s.X₁ + length Z s.X₂ + 6*κ*(∑ i, Real.logb Z (s.P i)) ≤ A →
       (s.η.modulus.absNorm : ℝ) ≤ Z^A →
-      ∀ R seed0 : Ideal O, R ≠ 0 → (R.absNorm : ℝ) ≤ Z^P → Squarefree seed0 →
-      ∀ C D : Ideal O, ∀ hC : Supported C, ∀ hD : Supported D,
+      ∀ R seed0 : Ideal HeckeFamily.O, R ≠ 0 → (R.absNorm : ℝ) ≤ Z^P → Squarefree seed0 →
+      ∀ C D : Ideal HeckeFamily.O, ∀ hC : Supported C, ∀ hD : Supported D,
       (C,D) ∈ CenteredMomentFirstSectors.commonLabels
         (CenteredMomentSourceRow.supportedColumns (activeSource
           (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed0)))
@@ -63,21 +62,21 @@ theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       0 ≤ reserve →
       Tsec ≤ Csec * firstNominalScale C D
         (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K (volume s) →
-      ∀ rows : Finset O, ∀ W : 𝓢(ℝ,ℂ), ∀ n : Fin 4 → ℤ,
+      ∀ rows : Finset HeckeFamily.O, ∀ W : 𝓢(ℝ,ℂ), ∀ n : Fin 4 → ℤ,
       Retained (frequencyRadius Tsec Z ξ) (n 1) →
       block s.η (fixedBadMask*idealGenerator R) 1 s.t
         (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed0)
         C D hC hD E rows W (fun _ => logAnnulus) K
         (dyadicScale (n 0)) (dyadicScale (n 1))
         (dyadicScale (n 2)) (dyadicScale (n 3)) ≠ 0 →
-      ∀ B : actualAllocations s.pools D, ∀ t : ℝ, ∀ innerL : Ideal O,
+      ∀ B : actualAllocations s.pools D, ∀ t : ℝ, ∀ innerL : Ideal HeckeFamily.O,
       frozenCoefficient B.val D R s.ν s.W s.P ≠ 0 →
       let Km := mainRadius D C (swapSubset C D E) K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve
-      F.right.modulus = s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+      F.right.modulus = s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
         Ideal.span {(primeSubsetGenerator (fun P : CommonIndex D C => P.val)
           (swapSubset C D E)*activeConductor D C)} ∧
       Ready (child s D R B F.right t) (R*D) Km Z ξ (readyBudget A P) ∧
-      (∀ I : Ideal O, coefficient (child s D R B F.right t) (R*D) innerL I ≠ 0 →
+      (∀ I : Ideal HeckeFamily.O, coefficient (child s D R B F.right t) (R*D) innerL I ≠ 0 →
         lowerFactor N l a * volume (child s D R B F.right t) ≤ (I.absNorm : ℝ)) := by
   filter_upwards [eventually_main_packet N b b₁ b₂ l a A P hb hb₁ hb₂ hl ha hA hP] with Z hz
   refine ⟨hz.1, ?_⟩
@@ -95,7 +94,7 @@ theorem eventually_right_main_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       (columnMainRadius C D E K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve true)
       Z ξ (readyBudget A P) := hh.1
   rw [main_radius_right] at hr
-  exact hr
+  omega
 
 theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂)
@@ -106,8 +105,8 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       ∀ κ : ℝ, 1/6 ≤ κ → (∀ i, 1 ≤ s.P i) →
       length Z s.X₁ + length Z s.X₂ + 6*κ*(∑ i, Real.logb Z (s.P i)) ≤ A →
       (s.η.modulus.absNorm : ℝ) ≤ Z^A →
-      ∀ R seed0 : Ideal O, R ≠ 0 → (R.absNorm : ℝ) ≤ Z^P → Squarefree seed0 →
-      ∀ C D : Ideal O, ∀ hC : Supported C, ∀ hD : Supported D,
+      ∀ R seed0 : Ideal HeckeFamily.O, R ≠ 0 → (R.absNorm : ℝ) ≤ Z^P → Squarefree seed0 →
+      ∀ C D : Ideal HeckeFamily.O, ∀ hC : Supported C, ∀ hD : Supported D,
       (C,D) ∈ CenteredMomentFirstSectors.commonLabels
         (CenteredMomentSourceRow.supportedColumns (activeSource
           (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed0)))
@@ -119,16 +118,16 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       0 ≤ ξ → ξ ≤ 1 → 0 ≤ reserve →
       Tsec ≤ Csec * firstNominalScale C D
         (Ideal.span {primeSubsetGenerator (fun Q : CommonIndex C D => Q.val) E}) K (volume s) →
-      ∀ rows : Finset O, ∀ W : 𝓢(ℝ,ℂ), ∀ n : Fin 4 → ℤ,
+      ∀ rows : Finset HeckeFamily.O, ∀ W : 𝓢(ℝ,ℂ), ∀ n : Fin 4 → ℤ,
       Retained (frequencyRadius Tsec Z ξ) (n 1) →
       block s.η (fixedBadMask*idealGenerator R) 1 s.t
         (finiteColumns (Fintype.piFinset s.pools)) (coefficient s R seed0)
         C D hC hD E rows W (fun _ => logAnnulus) K
         (dyadicScale (n 0)) (dyadicScale (n 1))
         (dyadicScale (n 2)) (dyadicScale (n 3)) ≠ 0 →
-      ∀ B : actualAllocations s.pools D, ∀ t : ℝ, ∀ innerL : Ideal O,
+      ∀ B : actualAllocations s.pools D, ∀ t : ℝ, ∀ innerL : Ideal HeckeFamily.O,
       frozenCoefficient B.val D R s.ν s.W s.P ≠ 0 →
-      ∀ (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ) (Sbad : Finset (Ideal O)),
+      ∀ (M : Ideal HeckeFamily.O) [NeZero M] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (Sbad : Finset (Ideal HeckeFamily.O)),
       fixedBadPrimes ⊆ Sbad →
       ∀ p ∈ elementPool (primePool M H Sbad (1/2) 1 (Z^(σ/3))),
       ∀ k : ℕ, k = 1 ∨ k = 6 ∨ k = 7 →
@@ -139,12 +138,12 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
       let d := errorInput s D R B F.right t (Ideal.span {p}) k Bp υ v
       let Re := (R*D)*(Ideal.span {p})^k
       let Ke := errorRadius D C (swapSubset C D E) K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve p k
-      F.right.modulus = s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+      F.right.modulus = s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:HeckeFamily.O)}*
         Ideal.span {(primeSubsetGenerator (fun P : CommonIndex D C => P.val)
           (swapSubset C D E)*activeConductor D C)} ∧
-      (((∀ I : Ideal O, coefficient d Re innerL I = 0) ∧ normalizedGaussSource d Re innerL ballProfile Ke = 0) ∨
+      (((∀ I : Ideal HeckeFamily.O, coefficient d Re innerL I = 0) ∧ normalizedGaussSource d Re innerL ballProfile Ke = 0) ∨
       (Ready d Re Ke Z ξ (readyBudget A P) ∧
-        (∀ I : Ideal O, coefficient d Re innerL I ≠ 0 →
+        (∀ I : Ideal HeckeFamily.O, coefficient d Re innerL I ≠ 0 →
           lowerFactor N l a * volume d ≤ (I.absNorm : ℝ)))) := by
   filter_upwards [eventually_active_error_ready N b b₁ b₂ 1 hb hb₁ hb₂ (by norm_num),
     eventual_parent_radius N b b₁ b₂ hb hb₁ hb₂,
@@ -159,10 +158,10 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   let d := errorInput s D R B F.right t (Ideal.span {p}) k Bp υ v
   let Re := (R*D)*(Ideal.span {p})^k
   let Ke := errorRadius D C (swapSubset C D E) K (volume s) Z σ (frequencyLoss Z (32*Csec) ξ) reserve p k
-  by_cases hdead : ∀ I : Ideal O, coefficient d Re innerL I = 0
+  by_cases hdead : ∀ I : Ideal HeckeFamily.O, coefficient d Re innerL I = 0
   · exact Or.inl ⟨hdead, normalized_zero d Re innerL hdead ballProfile Ke⟩
   right
-  have hlive : ∃ I : Ideal O, (original d Re innerL).beta I ≠ 0 := by
+  have hlive : ∃ I : Ideal HeckeFamily.O, (original d Re innerL).beta I ≠ 0 := by
     simpa only [original_beta,not_forall] using hdead
   have hz := hready.1
   have hV := original_volume_cap s Z κ A hz hκ hPs hcapacity
@@ -171,8 +170,8 @@ theorem eventually_right_error_packet (N : ℕ) (b b₁ b₂ l a A P : ℝ)
   have hz₂ := lower_profile_zero s.W₂ a ha hW₂
   have hcdata := actual_common_gates s R seed0 hseed hz₁ hz₂ C D hlabel
   have hCN := hcdata.2.2.2.2.2.1.trans hH
-  have hJN : (D.absNorm : ℝ) ≤ Z^(A+1) := by
-    exact hcdata.2.2.2.2.2.2.trans hH
+  have hJN : (D.absNorm : ℝ) ≤ Z^(A+1) :=
+    hcdata.2.2.2.2.2.2.trans hH
   have hd := elementPool_data _
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).1)
     (fun Q hQ => (primePool_data M H Sbad hbad (1/2) 1 (Z^(σ/3)) Q hQ).2) p hp

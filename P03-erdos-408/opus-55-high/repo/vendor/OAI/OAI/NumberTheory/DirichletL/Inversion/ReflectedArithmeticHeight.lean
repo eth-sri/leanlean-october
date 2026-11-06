@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Reflection.UniformTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedArithmeticHeight
-open scoped Classical BigOperators ContDiff SchwartzMap
+open scoped Classical ContDiff
 open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
 open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
 open InverseReflectedPhase
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u v w
 
 theorem actual_reflected_finite_source_arithmetic_uniform
@@ -22,15 +21,15 @@ theorem actual_reflected_finite_source_arithmetic_uniform
     (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
     (hW : ContDiff ℝ ∞ W) (J : ℕ) :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
-      ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
+      ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-        (unit : Eisˣ) (m : ℕ) (θ X QK QP Qn Qb : ℝ),
+        (unit : ActualEisensteinCubic.Oˣ) (m : ℕ) (θ X QK QP Qn Qb : ℝ),
         0<X → 0<QK → 0<QP → 0<Qn → 0<Qb →
       let R := kernelCenter (actualKernelCoefficient F s m X) QK QP Qn Qb
       (∀ {κ : Type w} (source : Finset κ) (weight : κ→ℂ)
-        (K : κ→Ideal Eis) (hK : ∀ j, Admissible (K j)) (S : κ→PrimeFamily σ) (jF : φ→ℕ)
+        (K : κ→Ideal ActualEisensteinCubic.O) (hK : ∀ j, Admissible (K j)) (S : κ→PrimeFamily σ) (jF : φ→ℕ)
         (D : ∀ j, ControlledStratumArithmetic (F.reflected (K j) (hK j) (S j)).generator N a c mode)
-        (n b : κ→Ideal Eis), (∀ j ∈ source, n j≠0 ∧ b j≠0) →
+        (n b : κ→Ideal ActualEisensteinCubic.O), (∀ j ∈ source, n j≠0 ∧ b j≠0) →
         (∑ j ∈ source, weight j*actualKernelSourceTerm F (K j) (hK j) (S j) jF (D j) s hc
           unit m (n j) (b j) windows QK QP Qn Qb W θ X) =
         ((Real.exp (M 2/2+M 3)/(ramifiedScale 1 completedRamifiedStep m*Real.sqrt Qn*Qb)*smallScalar R:ℝ):ℂ)*
@@ -54,7 +53,7 @@ theorem actual_reflected_finite_source_arithmetic_uniform
     hQK hQP hQn hQb hr
   refine ⟨?_,hi,hiJ,hm,hp⟩
   intro κ source weight K hK S jF D n b hn
-  have hnorm (I : Ideal Eis) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
+  have hnorm (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) : (0:ℝ)<Ideal.absNorm I := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   have hpos (j : κ) (hj : j ∈ source) : (0:ℝ)<Ideal.absNorm (K j) ∧
       (0:ℝ)<Ideal.absNorm (∏ i, (S j).ideal i) ∧ (0:ℝ)<Ideal.absNorm (n j) ∧ (0:ℝ)<Ideal.absNorm (b j) :=
@@ -71,17 +70,17 @@ theorem weighted_finite_physical_row_common_measure_arithmetic_uniform
     (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
     (hW : ContDiff ℝ ∞ W) (J : ℕ) :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
-      ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
+      ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-        (unit : Eisˣ) (m : ℕ) (θ X QK QP Qn Qb : ℝ),
+        (unit : ActualEisensteinCubic.Oˣ) (m : ℕ) (θ X QK QP Qn Qb : ℝ),
         0<X → 0<QK → 0<QP → 0<Qn → 0<Qb →
       let R := kernelCenter (actualKernelCoefficient F s m X) QK QP Qn Qb
-      (∀ (K : Ideal Eis) (hK : Admissible K) (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ)
-        (Pset nset bset : Finset (Ideal Eis))
+      (∀ (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (jF : φ→ℕ)
+        (Pset nset bset : Finset (Ideal ActualEisensteinCubic.O))
         (D : ∀ P : Pset, IsCoprime K P.val →
           ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode),
         (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) → (∀ n ∈ nset, n≠0) → (∀ b ∈ bset, b≠0) →
-        ∀ (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+        ∀ (r₀ aw₀ : Ideal ActualEisensteinCubic.O→ℂ) (w₀ : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
         weightedFinitePhysicalKernelRow F K hK S jF Pset nset bset D s hc unit m windows QK QP Qn Qb W θ X r₀ aw₀ w₀ =
         ((Real.exp (M 2/2+M 3)/(ramifiedScale 1 completedRamifiedStep m*Real.sqrt Qn*Qb)*smallScalar R:ℝ):ℂ)*
           ∫ t : ℝ, twistedDensity U W θ R t *
@@ -125,17 +124,17 @@ theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform
     (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
     (hW : ContDiff ℝ ∞ W) (J : ℕ) :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
-      ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
+      ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-        (unit : Eisˣ) (m : ℕ) (θ X QK QP Qn Qb : ℝ),
+        (unit : ActualEisensteinCubic.Oˣ) (m : ℕ) (θ X QK QP Qn Qb : ℝ),
         0<X → 0<QK → 0<QP → 0<Qn → 0<Qb →
       let R := kernelCenter (actualKernelCoefficient F s m X) QK QP Qn Qb
-      (∀ (K : Ideal Eis) (hK : Admissible K) (S : Ideal Eis→PrimeFamily σ) (jF : φ→ℕ)
-        (Pset nset bset : Finset (Ideal Eis))
+      (∀ (K : Ideal ActualEisensteinCubic.O) (hK : Admissible K) (S : Ideal ActualEisensteinCubic.O→PrimeFamily σ) (jF : φ→ℕ)
+        (Pset nset bset : Finset (Ideal ActualEisensteinCubic.O))
         (D : ∀ P : Pset, IsCoprime K P.val →
           ControlledStratumArithmetic (F.reflected K hK (S P.val)).generator N a c mode),
         (∀ P ∈ Pset, (∏ i, (S P).ideal i)=P) → (∀ n ∈ nset, n≠0) → (∀ b ∈ bset, b≠0) →
-        ∀ (r₀ aw₀ : Ideal Eis→ℂ) (w₀ : Ideal Eis→Ideal Eis→ℂ),
+        ∀ (r₀ aw₀ : Ideal ActualEisensteinCubic.O→ℂ) (w₀ : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
         ∀ {ι : Type*} [Fintype ι] (G0 : PrimeFamily ι)
           (D0 : ControlledStratumArithmetic G0.generator N a c mode),
         (∀ P : Pset, IsCoprime K P.val → Pairwise (Function.onFun IsCoprime (F.reflected K hK (S P.val)).ideal)) →
@@ -173,12 +172,12 @@ theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform
 
 theorem literal_reflected_raw_tail_arithmetic_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
-    ∀ {N a c : Eis} {mode : Bool}, ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a₀ b₀ →
+    ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a₀ b₀ →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸G.ideal i)≠2) →
-    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : Eisˣ) (scale T : ℝ), 0<scale → 0<T →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) →
+    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (scale T : ℝ), 0<scale → 0<T →
     ∀ cut : RawTailIndex→Prop,
       (∀ x, cut x → T≤scale*(ramifiedScale 1 completedRamifiedStep x.1)^3*
         (Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3) →
@@ -192,16 +191,16 @@ theorem literal_reflected_raw_tail_arithmetic_uniform (a₀ b₀ : ℝ) (ha₀ :
   intro N a c mode V hV ι _ G D s hc hN hbase hchar j hj S u scale T hs hT cut hcut
   have hh := hb V hV scale 1 (Ideal.absNorm (∏ i,G.ideal i):ℝ) T hs (by norm_num) (Nat.cast_nonneg _) hT
     (literalRawCoefficient G D s hc j S u) (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u) cut hcut
-  simpa only [one_pow,mul_one] using hh
+  grind
 
 theorem literal_reflected_dyadic_tail_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
-    ∀ {N a c : Eis} {mode : Bool}, ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc lo hi →
+    ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc lo hi →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸G.ideal i)≠2) →
-    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : Eisˣ) (scale T : ℝ), 0<scale → 0<T →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) →
+    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (scale T : ℝ), 0<scale → 0<T →
     ∀ cut : (ℕ×ℕ×ℕ)→Prop,
       (∀ i, cut i → 16*T≤rawDyadicCenter scale i) →
       ‖∑' i : ℕ×ℕ×ℕ, if cut i then
@@ -220,16 +219,16 @@ theorem literal_reflected_dyadic_tail_arithmetic_uniform (lo hi : ℝ) (hlo : 0<
       have hl := rawDyadicCenter_lower scale hs.le x
       linarith)
   rw [tsum_cut_dyadic _ cut hn.of_norm] at hh
-  exact hh
+  omega
 
 theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
-    ∀ {N a c : Eis} {mode : Bool}, ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
+    ∀ {N a c : ActualEisensteinCubic.O} {mode : Bool}, ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸G.ideal i)≠2) →
-    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : Eisˣ) (θ X T : ℝ), 0<X → 0<T →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) →
+    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (θ X T : ℝ), 0<X → 0<T →
     ∀ cut : (ℕ×ℕ×ℕ)→Prop,
       (∀ i, cut i → 16*T≤rawDyadicCenter (literalRawScale G s X) i) →
       ‖∑' i : ℕ×ℕ×ℕ, if cut i then
@@ -268,13 +267,7 @@ theorem literal_dyadic_tail_height_arithmetic_uniform (lo hi : ℝ) (hlo : 0<lo)
   apply hh.trans
   have hsemi' := mul_le_mul_of_nonneg_left (hsemi θ) hC.le
   have hrest : 0≤(Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹ := by positivity
-  calc
-    _ = (C*orders.sup (schwartzSeminormFamily ℝ ℝ ℂ) (H θ))*
-        ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) := by ring
-    _ ≤ (C*(C₁*(1+‖θ‖)^degree))*
-        ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) :=
-      mul_le_mul_of_nonneg_right hsemi' hrest
-    _ = _ := by ring
+  nlinarith
 
 end
 end SevenEighths.InverseReflectedArithmeticHeight

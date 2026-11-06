@@ -9,10 +9,10 @@ public import OAI.NumberTheory.DirichletL.Detector.CanonicalPhysicalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds CanonicalQuadraticSieve
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
 open PrincipalMellinResidues ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
@@ -44,9 +44,7 @@ lemma principalPoolKernel_as_tuples {K : ℕ} (η : Character) (S : Finset Id) (
   unfold principalPoolKernel sourceMultiplier
   rw [slotMultiplier_as_tuples]
   simp only [Finset.mul_sum,Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro P hP
-  ring
+  grind
 
 theorem principal_physical_pool_initial {K : ℕ} (η : Character)
     (S : Finset Id) (hS : SourceExclusions S)
@@ -66,7 +64,7 @@ theorem principal_physical_pool_initial {K : ℕ} (η : Character)
       ((3:ℂ)+t.1.1*I) ((3:ℂ)+t.2*I) ((2:ℂ)+t.1.2*I)
   have hF (P : ∀i,T i) : Integrable (F P) heightMeasure := by
     apply source_joint_integrable η S hS Finset.univ (fun i=>{(P i).val}) (fun _ _=>1)
-      (by intro i hi p hp;simp only [Finset.mem_singleton] at hp;subst p;exact hT i _ (P i).property)
+      (by grind)
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z 3 2 3 3 hX hY hZ
       (by norm_num) (lt_of_le_of_lt HeckeZeroSupremum.beta_le_one (by norm_num))
       (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
@@ -75,7 +73,7 @@ theorem principal_physical_pool_initial {K : ℕ} (η : Character)
   apply Finset.sum_congr rfl
   intro P hP
   rw [principalRowIntegral_eq_sourceMultiplier η S hS (fun i=>(P i).val) (hdis P)
-    (fun i=>hT i _ (P i).property) W0 W1 X Y Z,integral_const_mul]
+    (by grind) W0 W1 X Y Z,integral_const_mul]
   dsimp only [F,principalPoolKernel]
   ring
 
@@ -102,7 +100,7 @@ theorem principal_physical_pool_ordered {K : ℕ} (η : Character)
   rw [principal_physical_pool_initial η S hS T hT hdis b W0 W1 a0 b0 a1 b1
     ha0 ha1 hW0 hW1 X Y Z hX hY hZ]
   exact ProbePrincipalTransport.source_initial_joint_ordered_at_a η S hS Finset.univ T b
-    (fun i _ p hp=>hT i p hp) W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    (by grind) W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a e hX hY hZ ha ha3 hβ he he2
 
 end SevenEighths.ProbePrincipalPhysical

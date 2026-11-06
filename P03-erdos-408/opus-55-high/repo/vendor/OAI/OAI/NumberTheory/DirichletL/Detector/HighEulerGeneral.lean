@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma highArray_val_prod (F : HighIdeal→ℂ) (h1 : F 1=1)
     (hmul : ∀ a b : HighIdeal,

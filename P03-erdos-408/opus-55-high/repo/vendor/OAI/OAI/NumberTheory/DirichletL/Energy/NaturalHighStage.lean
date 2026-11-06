@@ -10,26 +10,22 @@ public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalHighStage
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
+open HeckeFamily QuadraticInitialBound
+open CenteredMomentEnergyBands
+open CenteredMomentNaturalFixedRaySource
+open CenteredMomentEnergyPositiveHighSourceBound
 open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
-local notation "O"=>HeckeFamily.O
+open CenteredMomentEnergyStageMargins
+open CenteredMomentEnergyFirstLiveAdmission
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_high_stage
     (W:ℝ→ℂ)(hW:ContDiff ℝ ∞ W)(aslot bslot lo hi a b bΦ:ℝ)
@@ -45,8 +41,8 @@ theorem actual_high_stage
     (hdrop:Mparent-amplification ε/2≤Mchild)
     (degree:ℕ)(S:Finset (ℕ×ℕ))(lowDegree:ℕ)(Slow:Finset (ℕ×ℕ)):
     ∃U:Finset (ℕ×ℕ),∃J:ℕ,
-    ∀η₀:Character,∀Q:Ideal O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
-      internalQ Q η₀≤Ideal.span {(72:O)}→
+    ∀η₀:Character,∀Q:Ideal HeckeFamily.O,Q≤M→internalQ Q η₀≠0→internalQ Q η₀≠⊤→
+      internalQ Q η₀≤Ideal.span {(72:HeckeFamily.O)}→
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
     ∀εchild C₀ C₁ Clow:ℝ,εchild≤stageLoss Mglobal B ε k→0≤C₀→0≤C₁→0≤Clow→
       ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 (max Lgoal Mparent)
@@ -63,7 +59,7 @@ theorem actual_high_stage
   have hb:0≤b:=zero_le_one.trans hhi
   have hr:0<r:=(bounds Mglobal B κ ε hMg hB hκ0 hε).2.2.2.1
   have hr4:0<r/4:=by positivity
-  have hs:0<amplification ε:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
+  have hs:=(bounds Mglobal B κ ε hMg hB hκ0 hε).1
   obtain ⟨Ψ,hΨs,hΨn,hstage⟩:=actual_high_stage_from_physical (α:=α) M H hH
     W hW.continuous aslot bslot lo hi a b bΦ rho r Mparent Bmask (r/4) (r/4)
     (2*amplification ε+1) haslot hWs hbslot ha hlo hhi hbΦ hrho hr hMp hBm hr4 hr4
@@ -85,8 +81,8 @@ theorem actual_high_stage
   have hh:=hstageNow.2 Lgoal Lslot κ (physicalLoss Mglobal B ε k)
     (physicalLoss Mglobal B ε k) (reflectedLoss Mglobal B ε k) η₀ Q
     Clow (Cp*(C₀+C₁+1)) hκ hm.1.le hClow hmass
-    (by exact le_rfl) hm.2.2.2.1 (hm.2.2.1.trans hm.2.2.2.1)
-    (by have hpos:=hm.1.le.trans hm.2.2.2.1;linarith only [hpos,hs]) hlow hp
+    le_rfl hm.2.2.2.1 (hm.2.2.1.trans hm.2.2.2.1)
+    (by linarith) hlow hp
   have hconst:Cf*(Clow+Cp*(C₀+C₁+1)+1)≤(Cf*(Cp+1))*(C₀+C₁+Clow+1):=by
     have hh:0≤Cp*Clow:=mul_nonneg hCp.le hClow
     nlinarith only [mul_nonneg hCf.le hh,mul_nonneg hCf.le hC₀,mul_nonneg hCf.le hC₁]

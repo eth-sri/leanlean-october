@@ -15,7 +15,6 @@ namespace OAI
 namespace TwoPointCorrelations
 
 open Finset
-open scoped BigOperators
 
 lemma mrt_log_gap {x y N : ℝ} (hx : 0 < x) (hxy : x ≤ y) (hyN : y ≤ N) :
     (y - x) / N ≤ Real.log y - Real.log x := by
@@ -51,17 +50,17 @@ lemma mrt_quadratic_gap_sum {R : ℝ} (hR : 0 < R) (N : ℕ) :
       _ ≤ ∑ _k ∈ Ioc 0 K, (1 : ℝ) := by
         apply sum_le_sum
         intro k _
-        exact inv_le_one_of_one_le₀ (by nlinarith [sq_nonneg ((k : ℝ) / R)])
+        exact inv_le_one_of_one_le₀ (by nlinarith)
       _ = _ := by simp
   have hfar : (∑ k ∈ Ioc K M, (1 + ((k : ℝ) / R) ^ 2)⁻¹) ≤ R := by
     calc
       _ ≤ ∑ k ∈ Ioc K M, R ^ 2 * ((k : ℝ) ^ 2)⁻¹ := by
         apply sum_le_sum
         intro k hk
-        have hk0 : (0 : ℝ) < k := by exact_mod_cast (hK.trans (mem_Ioc.mp hk).1)
+        have hk0 : (0 : ℝ) < k := by exact_mod_cast (by grind)
         calc
           _ ≤ (((k : ℝ) / R) ^ 2)⁻¹ := by
-            apply inv_anti₀ (sq_pos_of_pos (div_pos hk0 hR))
+            apply inv_anti₀ (by positivity)
             linarith
           _ = _ := by field_simp
       _ = R ^ 2 * ∑ k ∈ Ioc K M, ((k : ℝ) ^ 2)⁻¹ := (mul_sum _ _ _).symm
@@ -69,17 +68,14 @@ lemma mrt_quadratic_gap_sum {R : ℝ} (hR : 0 < R) (N : ℕ) :
         mul_le_mul_of_nonneg_left (sum_Ioc_inv_sq_le_sub (α := ℝ) hK.ne' hKM)
           (sq_nonneg R)
       _ ≤ R ^ 2 * (K : ℝ)⁻¹ := by
-        apply mul_le_mul_of_nonneg_left _ (sq_nonneg R)
-        exact sub_le_self _ (inv_nonneg.mpr (Nat.cast_nonneg M))
+        simp_all
       _ ≤ R := by
         rw [← div_eq_mul_inv, div_le_iff₀ hK0]
         nlinarith
   calc
     _ ≤ ∑ k ∈ Ioc 0 M, (1 + ((k : ℝ) / R) ^ 2)⁻¹ := by
       apply sum_le_sum_of_subset_of_nonneg
-      · intro k hk
-        simp only [mem_Ioc] at hk ⊢
-        exact ⟨hk.1, hk.2.trans (le_max_right _ _)⟩
+      · grind
       · intro k _ _
         positivity
     _ = (∑ k ∈ Ioc 0 K, (1 + ((k : ℝ) / R) ^ 2)⁻¹) +
@@ -102,36 +98,24 @@ lemma mrt_nat_distance_sum (φ : ℕ → ℝ) (hφ : ∀ k, 0 ≤ φ k)
     omega
   have hleft : (∑ n ∈ Ioc 0 m, φ (Nat.dist n m)) = ∑ k ∈ range m, φ k := by
     apply sum_bij (fun n _ => m - n)
-    · intro n hn
-      have hn' := mem_Ioc.mp hn
-      simp only [mem_range]
-      omega
-    · intro n hn n' hn' he
-      have h1 := mem_Ioc.mp hn
-      have h2 := mem_Ioc.mp hn'
-      omega
+    · grind
+    · grind
     · intro k hk
       have hk' := mem_range.mp hk
-      refine ⟨m - k, mem_Ioc.mpr ⟨by omega, by omega⟩, ?_⟩
+      refine ⟨m - k, by grind, ?_⟩
       omega
     · intro n hn
-      rw [Nat.dist_eq_sub_of_le (mem_Ioc.mp hn).2]
+      rw [Nat.dist_eq_sub_of_le (by grind)]
   have hright : (∑ n ∈ Ioc m N, φ (Nat.dist n m)) = ∑ k ∈ Ioc 0 (N - m), φ k := by
     apply sum_bij (fun n _ => n - m)
-    · intro n hn
-      have hn' := mem_Ioc.mp hn
-      simp only [mem_Ioc]
-      omega
-    · intro n hn n' hn' he
-      have h1 := mem_Ioc.mp hn
-      have h2 := mem_Ioc.mp hn'
-      omega
+    · grind
+    · grind
     · intro k hk
       have hk' := mem_Ioc.mp hk
-      refine ⟨m + k, mem_Ioc.mpr ⟨by omega, by omega⟩, ?_⟩
+      refine ⟨m + k, by grind, ?_⟩
       omega
     · intro n hn
-      rw [Nat.dist_eq_sub_of_le_right (mem_Ioc.mp hn).1.le]
+      rw [Nat.dist_eq_sub_of_le_right (by grind)]
   have hrange : range m = insert 0 (Ioc 0 (m - 1)) := by
     ext k
     simp only [mem_range, mem_insert, mem_Ioc]
@@ -140,18 +124,12 @@ lemma mrt_nat_distance_sum (φ : ℕ → ℝ) (hφ : ∀ k, 0 ≤ φ k)
   conv_lhs => rw [hsplit, sum_union hd, hleft, hright, hrange, sum_insert hzero]
   have hL : (∑ k ∈ Ioc 0 (m - 1), φ k) ≤ ∑ k ∈ Ioc 0 N, φ k := by
     apply sum_le_sum_of_subset_of_nonneg
-    · intro k hk
-      have hk' := mem_Ioc.mp hk
-      exact mem_Ioc.mpr ⟨hk'.1, by omega⟩
-    · intro k _ _
-      exact hφ k
+    · grind
+    · grind
   have hR : (∑ k ∈ Ioc 0 (N - m), φ k) ≤ ∑ k ∈ Ioc 0 N, φ k := by
     apply sum_le_sum_of_subset_of_nonneg
-    · intro k hk
-      have hk' := mem_Ioc.mp hk
-      exact mem_Ioc.mpr ⟨hk'.1, by omega⟩
-    · intro k _ _
-      exact hφ k
+    · grind
+    · grind
   linarith
 
 lemma mrt_log_nat_gap {m n N : ℕ} (hm : m ∈ Ioc 0 N) (hn : n ∈ Ioc 0 N) :
@@ -162,11 +140,11 @@ lemma mrt_log_nat_gap {m n N : ℕ} (hm : m ∈ Ioc 0 N) (hn : n ∈ Ioc 0 N) :
   have hn0 : (0 : ℝ) < n := by exact_mod_cast hn'.1
   rcases le_total m n with h | h
   · rw [Nat.dist_eq_sub_of_le h, Nat.cast_sub h,
-      abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr (Real.log_le_log hm0 (by exact_mod_cast h)))]
-    exact mrt_log_gap hm0 (by exact_mod_cast h) (by exact_mod_cast hn'.2)
+      abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr (Real.log_le_log hm0 (by simp_all)))]
+    exact mrt_log_gap hm0 (by simp_all) (by simp_all)
   · rw [Nat.dist_eq_sub_of_le_right h, Nat.cast_sub h,
-      abs_of_nonneg (sub_nonneg.mpr (Real.log_le_log hn0 (by exact_mod_cast h)))]
-    exact mrt_log_gap hn0 (by exact_mod_cast h) (by exact_mod_cast hm'.2)
+      abs_of_nonneg (sub_nonneg.mpr (Real.log_le_log hn0 (by simp_all)))]
+    exact mrt_log_gap hn0 (by simp_all) (by simp_all)
 
 /-- The actual logarithmic-frequency kernel has row sum `O(T+N)`. -/
 theorem mrt_logarithmic_kernel_row {T : ℝ} (hT : 0 < T) {N m : ℕ}
@@ -174,7 +152,7 @@ theorem mrt_logarithmic_kernel_row {T : ℝ} (hT : 0 < T) {N m : ℕ}
     (∑ n ∈ Ioc 0 N,
       2 * T / (1 + T ^ 2 * (Real.log (m : ℝ) - Real.log (n : ℝ)) ^ 2)) ≤
       8 * (T + (N : ℝ)) := by
-  have hN : (0 : ℝ) < N := by exact_mod_cast (mem_Ioc.mp hm).1.trans_le (mem_Ioc.mp hm).2
+  have hN : (0 : ℝ) < N := by exact_mod_cast (by grind)
   let R := (N : ℝ) / T
   have hR : 0 < R := div_pos hN hT
   have hterm (n : ℕ) (hn : n ∈ Ioc 0 N) :
@@ -208,7 +186,7 @@ theorem mrt_logarithmic_kernel_row {T : ℝ} (hT : 0 < T) {N m : ℕ}
           inv_one] using hd
       exact hd'.trans (add_le_add le_rfl
         (mul_le_mul_of_nonneg_left (mrt_quadratic_gap_sum hR N)
-          (by norm_num : (0 : ℝ) ≤ 2)))
+          (by positivity)))
     _ ≤ 8 * (T + (N : ℝ)) := by
       dsimp only [R]
       have hc : T * ((N : ℝ) / T) = N := mul_div_cancel₀ _ hT.ne'

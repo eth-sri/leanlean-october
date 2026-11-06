@@ -7,7 +7,6 @@ public import Mathlib.Algebra.Order.Ring.Star
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Cancel
@@ -35,7 +34,7 @@ lemma sideFull_tail_norm (hSFC : SymmetricFullComponentTask) (hV : ∀ g, 0 < P.
         idealVectorNorm P (J + ell) F := by
   have hβ : 0 ≤ 2 * (ell : ℝ) ^ ell / (m : ℝ) ^ ell := by positivity
   rw [tail_sideFull hV, idealVectorNorm_flat, idealVectorNorm_flat, flatTest_of,
-    ← Real.sqrt_mul (pow_nonneg hβ _)]
+    ← Real.sqrt_mul (by positivity)]
   apply Real.sqrt_le_sqrt
   let f : ProbeSample (rowAlpha P) (J + ell) → ℂ := fun x => F ((toRows P (J + ell)).symm x)
   have hft : flatTest F = fun y => f (flattenRows.symm y) := rfl
@@ -58,8 +57,7 @@ lemma sideFull_tail_norm (hSFC : SymmetricFullComponentTask) (hV : ∀ g, 0 < P.
 
 lemma probeChoice_card_le (m : ℕ) (block : P.BigGroup → Bool) :
     (Fintype.card (ProbeChoice P m block) : ℝ) ≤ (3 : ℝ) ^ (m * Fintype.card P.BigGroup) := by
-  have h1 : Fintype.card (ProbeChoice P m block) ≤
-      Fintype.card (P.BigGroup → Finset (Fin m)) :=
+  have h1 :=
     Fintype.card_le_of_injective (fun c : ProbeChoice P m block => c.val) Subtype.val_injective
   rw [Fintype.card_fun, Fintype.card_finset, Fintype.card_fin, ← pow_mul] at h1
   have h2 : 2 ^ (m * Fintype.card P.BigGroup) ≤ 3 ^ (m * Fintype.card P.BigGroup) :=
@@ -142,7 +140,7 @@ theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
         (sub_sideFull_norm_le hV _ Fs)
     · exact sideFull_tail_norm hSFC hV J Fd.ell m hm Fd.ell_pos hj hcond block true Gs hsG
     · exact Real.sqrt_nonneg _
-    · exact hnF0
+    · omega
   have hcard := probeChoice_card_le (P := P) m block
   have hkey : idealFullPair Kp Fs Gs =
       (idealFullPair Kp Fs Gs - idealFullPair R Fs Gs +
@@ -160,7 +158,7 @@ theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
         (norm_add_le _ _).trans (add_le_add le_rfl (norm_add_le _ _))
     _ ≤ (Fintype.card (ProbeChoice P m block) : ℝ) * ε * nF * nG +
         (Real.sqrt (beta ^ b₁) * nF * nG + nF * (Real.sqrt (beta ^ b₂) * nG)) :=
-        add_le_add hcmp (add_le_add hUb hVb)
+        by linarith
     _ = (Real.sqrt (beta ^ b₁) + Real.sqrt (beta ^ b₂) +
           (Fintype.card (ProbeChoice P m block) : ℝ) * ε) * (nF * nG) := by ring
     _ ≤ (Real.sqrt (beta ^ b₁) + Real.sqrt (beta ^ b₂) +
@@ -169,7 +167,7 @@ theorem FiniteProbeCancellationTask_proof : FiniteProbeCancellationTask := by
         · exact add_le_add le_rfl (mul_le_mul_of_nonneg_right hcard hε)
         · exact mul_le_mul hFf hGg hnG0 (hnF0.trans hFf)
         · exact mul_nonneg hnF0 hnG0
-        · exact add_nonneg (add_nonneg hβ1 hβ2) h3
+        linarith
     _ = _ := by ring
 
 end

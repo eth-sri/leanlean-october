@@ -6,7 +6,6 @@ public import Erdos821.P3Edge.RowSummable
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -38,10 +37,6 @@ lemma source_card_bound (A : Model F P J m) {n : ℕ} (i : Fin n)
   have hb : (c.2.2.2.2.2.1 g).card ≤ J + F.ell := by
     calc (c.2.2.2.2.2.1 g).card ≤ Fintype.card (Fin (J + F.ell)) := Finset.card_le_univ _
       _ = J + F.ell := Fintype.card_fin _
-  have hc : (c.2.2.2.2.1 g).card ≤ J + F.ell := by
-    calc (c.2.2.2.2.1 g).card ≤ Fintype.card (Fin (J + F.ell)) := Finset.card_le_univ _
-      _ = J + F.ell := Fintype.card_fin _
-  -- hcard : tcard = scard - bcard + ccard
-  exact card_le_of_valid _ _ _ _ _ hb hcard
+  omega
 
 end Erdos821.P3Edge

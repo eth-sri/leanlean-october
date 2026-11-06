@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Moments.NaturalFixedRaySourceFiber
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCapacityRemoval
@@ -20,12 +20,11 @@ open CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval
 open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
 open CenteredMomentSecondHeightFamily CenteredMomentEnergyState
 open CenteredExceptionalProfile CenteredMomentFixedRowMask
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ))
+theorem compact_radial_summable (f : HeckeFamily.O→ℂ) (keep : HeckeFamily.O→Prop) (Φ : 𝓢(ℝ,ℂ))
     (K b : ℝ) (hK : 0<K) (hs : Function.support (Φ:ℝ→ℂ)⊆Set.Iic b) :
-    Summable (fun z : O=>if keep z then ‖f z‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
+    Summable (fun z : HeckeFamily.O=>if keep z then ‖f z‖^2*(Φ (‖eisEmbedding z‖^2/K)).re else 0) := by
   obtain ⟨N,hN⟩:=exists_nat_ge (b*K)
   apply summable_of_ne_finset_zero (s:=ShortDraftLatticeCount.rowNormBall N)
   intro z hz
@@ -36,28 +35,26 @@ theorem compact_radial_summable (f : O→ℂ) (keep : O→Prop) (Φ : 𝓢(ℝ,�
     apply ShortDraftLatticeCount.mem_rowNormBall_of_absNorm_le
     exact_mod_cast (show ((Ideal.span {z}).absNorm:ℝ)≤N by
       rwa [←ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span])
-  simp [hΦ]
+  simp_all
 
 omit [Fintype ι] in
 
-theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : O)
-    (W₁ W₂ : ℝ→ℂ) (S : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ)
+theorem selected_eq_positive (J : Finset ι) (η : Character) (m A z : HeckeFamily.O)
+    (W₁ W₂ : ℝ→ℂ) (S : ι→Finset (Ideal HeckeFamily.O)) (β : ι→Ideal HeckeFamily.O→ℂ)
     (P : ι→ℝ) (t X₁ X₂ : ℝ) (hX : 0≤X₁*X₂) (hP : ∀i,0≤P i) :
     selectedProduct J η m A z W₁ W₂ S β P t X₁ X₂=
       positiveSlotRow η m A z W₁ W₂ (fun i:J=>S i) (fun i:J=>β i)
         (fun i:J=>P i) t X₁ X₂ := by
   have hh:=selectedProduct_univ η m A z W₁ W₂
-    (fun i:J=>S i) (fun i:J=>β i) (fun i:J=>P i) t X₁ X₂ hX (fun i=>hP i)
-  have hp : (∏i:J,normalizedSlot η m A z (S i) (β i) t (P i))=
-      ∏i∈J,normalizedSlot η m A z (S i) (β i) t (P i) :=
+    (fun i:J=>S i) (fun i:J=>β i) (fun i:J=>P i) t X₁ X₂ hX (by grind)
+  have hp :=
     Finset.prod_coe_sort J (fun i=>normalizedSlot η m A z (S i) (β i) t (P i))
   unfold selectedProduct at hh ⊢
-  rw [hp] at hh
-  exact hh
+  simp_all
 
 theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
-    (S : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ) (P : ι→ℝ) (X₁ X₂ : ℝ)
-    (keep : O→Prop) (hz : ∀z,keep z→z≠0) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
+    (S : ι→Finset (Ideal HeckeFamily.O)) (β : ι→Ideal HeckeFamily.O→ℂ) (P : ι→ℝ) (X₁ X₂ : ℝ)
+    (keep : HeckeFamily.O→Prop) (hz : ∀z,keep z→z≠0) (Φ : 𝓢(ℝ,ℂ)) (K : ℝ) :
     energy η (fixedBadMask*ConcretePrimeRowBridge.idealGenerator 1) 1 t W₁ W₂ S β P X₁ X₂ keep Φ K=
       energy η fixedBadMask 1 t W₁ W₂ S β P X₁ X₂ keep Φ K := by
   unfold energy
@@ -65,13 +62,13 @@ theorem unit_puncture_energy (η : Character) (t : ℝ) (W₁ W₂ : ℝ→ℂ)
   intro z
   by_cases hk : keep z
   · simp only [ite_eq_left hk]
-    rw [natural_unit_mask_positive (naturalRow η z (hz z hk))]
-  · simp only [ite_eq_right hk]
+    rw [natural_unit_mask_positive (naturalRow η z (by grind))]
+  simp_all
 
 theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
     ∀ᶠZ:ℝ in atTop,1<Z ∧ ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
       s.rowWidth≤Mrow → ∀q:ℝ,(s.character.modulus.absNorm:ℝ)≤Z^q →
-      ∀z:O,∀hz:z≠0,s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)≠0 →
+      ∀z:HeckeFamily.O,∀hz:z≠0,s.radial.profile (‖eisEmbedding z‖^2/s.radial.scale)≠0 →
       ((naturalRow s.character z hz).character.modulus.absNorm:ℝ)≤Z^(Mrow+q+1) := by
   filter_upwards [eventually_gt_atTop (1:ℝ),eventually_ge_atTop ((fixedConductorFactor:ℝ)*bΦ)] with Z hZ hF
   refine ⟨hZ,?_⟩
@@ -85,15 +82,15 @@ theorem eventual_row_conductor (bΦ Mrow : ℝ) (hb : 0≤bΦ) :
     Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   apply he.trans
   calc
-    _≤Z*Z^(Mrow+q):=mul_le_mul hF hm (Real.rpow_nonneg (zero_lt_one.trans hZ).le _)
-      (zero_lt_one.trans hZ).le
+    _≤Z*Z^(Mrow+q):=mul_le_mul hF hm (by positivity)
+      (by positivity)
     _=Z^(Mrow+q+1):=by
       conv_rhs => rw [Real.rpow_add (zero_lt_one.trans hZ),Real.rpow_one]
       ring
 
 lemma state_unit_nonexceptional {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask bΦ)
-    (hpuncture : s.puncture=1) (Q : Ideal O) (hQ : s.fixedModulus=Q)
-    (z : O) (hk : s.radial.keep z) : ¬FixedInducingRow s.character Q fixedBadMask 1 z := by
+    (hpuncture : s.puncture=1) (Q : Ideal HeckeFamily.O) (hQ : s.fixedModulus=Q)
+    (z : HeckeFamily.O) (hk : s.radial.keep z) : ¬FixedInducingRow s.character Q fixedBadMask 1 z := by
   intro hh
   apply s.nonexceptional z hk
   rw [hQ,hpuncture]
@@ -102,9 +99,9 @@ lemma state_unit_nonexceptional {Z Bmask bΦ : ℝ} (s : NaturalState Z Bmask b�
     (ConcretePrimeRowBridge.idealGenerator_ne_zero 1 one_ne_zero) one_ne_zero (s.row_ne_zero z hk)
     (dvd_mul_right _ _) (dvd_mul_left _ _)).mpr hh
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 
 theorem actual_state_capacity_removal
@@ -122,7 +119,7 @@ theorem actual_state_capacity_removal
     ∀Z:ℝ,Z₀≤Z → ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
       s.puncture=1 → s.rowWidth≤Mrow → ∀q:ℝ,
       (s.character.modulus.absNorm:ℝ)≤Z^q → Mrow+q+1≤Lmod →
-    ∀Q:Ideal O,s.fixedModulus=Q → Q≤M → (∀i,Q≤(ν i).modulus) →
+    ∀Q:Ideal HeckeFamily.O,s.fixedModulus=Q → Q≤M → (∀i,Q≤(ν i).modulus) →
     ∀(σ freq:ι→ℝ)(t V:ℝ),(∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤V → (∀i,|freq i|≤V) →
     ∀(W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ),0<X₁ → 0<X₂ →
       let P:=fun i=>Z^(w i)
@@ -139,7 +136,7 @@ theorem actual_state_capacity_removal
   refine ⟨degree,C,hC,?_⟩
   intro ν
   obtain ⟨Zbase,hZbase,hbound⟩:=hbound ν
-  refine ⟨max Zbase Zsupport,lt_of_lt_of_le hZbase (le_max_left _ _),?_⟩
+  refine ⟨max Zbase Zsupport,lt_of_lt_of_le hZbase (by simp),?_⟩
   intro J w n₁ n₂ width mesh hmesh hw hwm hwcap
   obtain ⟨R,hR,hcapacity,hcost,hpoint⟩:=hbound J w n₁ n₂ width mesh hmesh hw hwm hwcap
   refine ⟨R,hR,hcapacity,hcost,?_⟩
@@ -180,9 +177,9 @@ theorem actual_state_capacity_removal
         Q hQM hQν (state_unit_nonexceptional s hpuncture Q hQ z hk)
         σ freq t V hσ hσhi hV hfreq W₁ W₂ X₁ X₂
       dsimp only at hh
-      rw [selected_eq_positive J s.character fixedBadMask 1 z W₁ W₂ S coeff P t X₁ X₂ (mul_pos hX₁ hX₂).le hscale,
-        selected_eq_positive (J\R) s.character fixedBadMask 1 z W₁ W₂ S coeff P t X₁ X₂ (mul_pos hX₁ hX₂).le hscale] at hh
-      exact (mul_le_mul_of_nonneg_right hh (s.radial.nonneg z)).trans_eq (by dsimp only [cost];ring)
+      rw [selected_eq_positive J s.character fixedBadMask 1 z W₁ W₂ S coeff P t X₁ X₂ (by positivity) hscale,
+        selected_eq_positive (J\R) s.character fixedBadMask 1 z W₁ W₂ S coeff P t X₁ X₂ (by positivity) hscale] at hh
+      exact (mul_le_mul_of_nonneg_right hh (s.radial.nonneg z)).trans_eq (by linarith)
   · simp only [ite_eq_right hk,mul_zero,le_refl]
 
 theorem actual_relative_state_capacity_removal
@@ -202,7 +199,7 @@ theorem actual_relative_state_capacity_removal
     ∀Z:ℝ,Z₀≤Z → ∀Bmask:ℝ,∀s:NaturalState Z Bmask bΦ,
       s.puncture=1 → s.rowWidth≤Mrow → ∀q:ℝ,
       (s.character.modulus.absNorm:ℝ)≤Z^q → Mrow+q+1≤Lmod →
-    ∀Q:Ideal O,s.fixedModulus=internalQ Q η₀ → Q≤M →
+    ∀Q:Ideal HeckeFamily.O,s.fixedModulus=internalQ Q η₀ → Q≤M →
     ∀(σ freq:ι→ℝ)(t V:ℝ),(∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤V → (∀i,|freq i|≤V) →
     ∀(W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ),0<X₁ → 0<X₂ →
       let P:=fun i=>Z^(w i)

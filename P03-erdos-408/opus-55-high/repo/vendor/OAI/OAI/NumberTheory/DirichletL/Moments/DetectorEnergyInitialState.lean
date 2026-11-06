@@ -10,22 +10,21 @@ public import OAI.NumberTheory.DirichletL.Moments.DetectorDictionaryUniformTests
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap Topology
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentDetectorEnergyInitialState
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentEnergyState CenteredMomentRadialEligibleEnergy
+open HeckeFamily HeckeInverseAmplification
+open CenteredMomentEnergyState
 open CenteredMomentSecondHeightFamily CenteredExceptionalProfile
 open CenteredMomentNaturalFixedRaySource ConcretePrimeRowBridge
 open CenteredMomentDetectorPlainFiberSource CenteredMomentDetectorDictionary
 open CenteredMomentFiniteProfileExceptional
-local notation "O"=>HeckeFamily.O
 
-def initialKeep (η:Character)(Q:Ideal O)(z:O):Prop:=
+def initialKeep (η:Character)(Q:Ideal HeckeFamily.O)(z:HeckeFamily.O):Prop:=
   z≠0 ∧ ¬FixedInducingRow η Q (fixedBadMask*idealGenerator 1) 1 z
 
-def initialState (η:Character)(Q:Ideal O)(Φ:𝓢(ℝ,ℂ))(bΦ U δ:ℝ)
+def initialState (η:Character)(Q:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(bΦ U δ:ℝ)
     (hU:1≤U)(hδ:0≤δ)(hs:Function.support (Φ:ℝ→ℂ)⊆Set.Iic bΦ)
     (hp:∀x,0≤(Φ x).re)(hη:(η.modulus.absNorm:ℝ)≤U^δ):NaturalState U 0 bΦ where
   character:=η
@@ -67,9 +66,9 @@ def detectorProfiles (reverse:Bool)(j k:ℕ)(σ t:ℝ):Profiles (1/4) (9/4) wher
 theorem radialMajorant_support_bound:
     ∃bΦ:ℝ,0<bΦ ∧ Function.support (radialMajorant:ℝ→ℂ)⊆Set.Iic bΦ:=by
   obtain ⟨b,hb⟩:=radialMajorant_compact.isCompact.bddAbove
-  refine ⟨max 1 b,lt_of_lt_of_le zero_lt_one (le_max_left _ _),?_⟩
+  refine ⟨max 1 b,by positivity,?_⟩
   intro x hx
-  exact (hb (subset_tsupport _ hx)).trans (le_max_right _ _)
+  exact (hb (subset_tsupport _ hx)).trans (by simp)
 
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
@@ -84,13 +83,13 @@ theorem source_label_modulus_eventually (F:ProbeFinalAssembly.SourceData D)
         ≤Z^((1/200)*δ):=by
     apply Filter.eventually_all.mpr
     intro label
-    exact (tendsto_rpow_atTop (mul_pos (by norm_num) hδ)).eventually (eventually_ge_atTop _)
+    exact (tendsto_rpow_atTop (by positivity)).eventually (eventually_ge_atTop _)
   filter_upwards [hc,eventually_gt_atTop (1:ℝ)] with Z hz hZ
   refine ⟨hZ,?_⟩
   intro label d hd
   apply (hz label).trans
-  rw [←Real.rpow_mul (zero_lt_one.trans hZ).le]
-  exact Real.rpow_le_rpow_of_exponent_le hZ.le (mul_le_mul_of_nonneg_right hd hδ.le)
+  rw [←Real.rpow_mul (by positivity)]
+  simp_all
 
 lemma source_keep_iff (F:ProbeFinalAssembly.SourceData D)(η:Character)(u:FreeRow):
     initialKeep η (internalQ (sourceFixedIdeal F) η) u.val↔¬sourceExceptional F η u:=by
@@ -100,7 +99,7 @@ lemma source_fixed_gates (F:ProbeFinalAssembly.SourceData D)(η:Character):
     internalQ (sourceFixedIdeal F) η≠0 ∧
     internalQ (sourceFixedIdeal F) η≤F.modulus ∧
     internalQ (sourceFixedIdeal F) η≤η.modulus ∧
-    internalQ (sourceFixedIdeal F) η≤Ideal.span {(72:O)}:=
+    internalQ (sourceFixedIdeal F) η≤Ideal.span {(72:HeckeFamily.O)}:=
   ⟨internalQ_ne_zero _ (sourceFixedIdeal_ne_zero F) η,
     inf_le_left.trans (sourceFixedIdeal_le_modulus F),inf_le_right,
     inf_le_left.trans (sourceFixedIdeal_le_72 F)⟩

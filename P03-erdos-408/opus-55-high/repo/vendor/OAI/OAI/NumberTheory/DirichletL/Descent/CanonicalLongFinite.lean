@@ -8,18 +8,17 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
     ∃C:ℝ,0<C ∧ ∀{σ:Type*}[DecidableEq σ]
-      (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(_hSp:∀P∈S,Prime P)
-      (labels:Finset (Ideal O))(_hlabels:∀I∈labels,I≠0)
-      (Ψ:O→*ℂ)(m:O)(slots:Finset σ)
+      (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)(_hSp:∀P∈S,Prime P)
+      (labels:Finset (Ideal ActualEisensteinCubic.O))(_hlabels:∀I∈labels,I≠0)
+      (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(slots:Finset σ)
       (lists:σ→Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)))
       (a:σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ)
       (W:ℝ→ℂ)(_hWc:HasCompactSupport W)(b Z N V R H₀:ℝ),
@@ -46,7 +45,7 @@ theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
     (progressingCubes S D H₀ (activeCubeLogBin S D b (Z^N) j))
     Ψ m (idealGenerator I) z W (Z^N) H₀ slots lists a
   let ball:=nonzeroChildFrequencyBall 1 R
-  have hpoint (I:Ideal O)(z:O):
+  have hpoint (I:Ideal ActualEisensteinCubic.O)(z:ActualEisensteinCubic.O):
       ‖outsideCanonicalMarkedRow S D hbad Ψ m (idealGenerator I) z slots lists a W (Z^N)‖^2≤
       2*Z^N*(‖short I z‖^2+bins.card*∑j∈bins,‖long j I z‖^2) := by
     have hh:=original_marked_binned_energy S D Ψ m (idealGenerator I) z W b (Z^N) H₀ slots lists a
@@ -68,7 +67,7 @@ theorem actual_complete_finite_split (K:ℕ)(L eps:ℝ)(hL:0≤L)(heps:0<eps) :
           simpa only [one_mul] using ((mem_nonzeroChildFrequencyBall 1 one_ne_zero R z).mp hz).2)
       (by intro z hz he
           have hn:=((mem_nonzeroChildFrequencyBall 1 one_ne_zero R z).mp hz).1
-          simp only [he,mul_zero,map_zero,norm_zero,pow_succ,lt_self_iff_false] at hn)
+          simp_all)
     exact (mul_le_mul_of_nonneg_right (hweight Z V hZ hV I (hlabels I hI) (hnorm I hI))
       (Finset.sum_nonneg (fun _ _=>sq_nonneg _))).trans (mul_le_mul_of_nonneg_left hb (by positivity))
   have hsum:=Finset.sum_le_sum (s:=labels) (fun I hI=>

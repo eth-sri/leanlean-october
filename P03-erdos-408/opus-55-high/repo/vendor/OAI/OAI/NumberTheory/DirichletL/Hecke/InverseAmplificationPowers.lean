@@ -28,18 +28,18 @@ theorem amplified_energy_power (U A b p r κ : ℝ) (hU : 0<U) :
   rw [amplified_norm_power U A b p hU]
   have hHD : ((b*A)^6*U^(1+6*p))*U^r=(b*A)^6*U^(1+6*p+r) := by
     rw [mul_assoc,←Real.rpow_add hU]
-  rw [hHD,Real.mul_rpow (by positivity) (Real.rpow_nonneg hU.le _),
+  rw [hHD,Real.mul_rpow (by positivity) (by positivity),
     ←Real.rpow_mul hU.le]
   calc
     _ = ((b*A)^6*((b*A)^6)^κ/A)*
         ((U^(1+6*p)*U^((1+6*p+r)*κ))/U^p) := by ring
     _ = ((b*A)^6*((b*A)^6)^κ/A)*U^((1+6*p)+(1+6*p+r)*κ-p) := by
       rw [←Real.rpow_add hU,←Real.rpow_sub hU]
-    _ = _ := by congr 2; ring
+    _ = _ := by ring
 
 theorem fixed_multiplier_lower (U A p : ℝ) (hU : 1≤U) (hA : 0≤A) (hp : 0≤p) :
     A≤A*U^p := by
-  simpa only [mul_one] using mul_le_mul_of_nonneg_left (Real.one_le_rpow hU hp) hA
+  simpa using mul_le_mul_of_nonneg_left (Real.one_le_rpow hU hp) hA
 
 theorem amplified_norm_dominates (U A b c r : ℝ) (hU : 1≤U) (hbA : 1≤b*A) :
     (U^r)^(1+c)≤U*(b*(A*U^(amplificationPower c r)))^6 := by
@@ -51,7 +51,7 @@ theorem amplified_norm_dominates (U A b c r : ℝ) (hU : 1≤U) (hbA : 1≤b*A) 
     nlinarith
   have hp := Real.rpow_le_rpow_of_exponent_le hU he
   have hconst : (1 : ℝ)≤(b*A)^6 := one_le_pow₀ hbA
-  exact hp.trans (le_mul_of_one_le_left (Real.rpow_nonneg hUp.le _) hconst)
+  exact hp.trans (le_mul_of_one_le_left (by positivity) hconst)
 
 end SevenEighths.HeckeInverseAmplification
 

@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.DyadIntegral
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.ProbeHighRowFamily
 
 lemma selected_scale_power {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ) (r : ℝ) :
@@ -22,7 +21,6 @@ lemma physical_scale_power {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
   rw [selected_scale_power Z hZ]
   simp_rw [←Real.rpow_mul hZ.le]
   rw [←Real.rpow_add hZ,←Real.rpow_add hZ,←Real.rpow_add hZ]
-  congr 1
   ring
 
 lemma small_source_scale {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
@@ -31,7 +29,6 @@ lemma small_source_scale {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
       ((Z^(17/48:ℝ))^(1/2-(17/50:ℝ))*Z^(β+8*e+(17/50:ℝ)-1)*
         (Z^(23/48:ℝ))^((1/2:ℝ)-1))=Z^(β-11/16-79/800+8*e) := by
   rw [physical_scale_power Z hZ,hlength]
-  congr 1
   ring
 
 lemma large_source_scale {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
@@ -40,8 +37,7 @@ lemma large_source_scale {K : ℕ} (Z : ℝ) (hZ : 0<Z) (length : Fin K→ℝ)
       ((Z^(17/48:ℝ))^(1/2-b)*Z^(2+b-1)*(Z^(23/48:ℝ))^((2:ℝ)-1))=
       Z^((53/32:ℝ)+(13/16:ℝ)*b) := by
   rw [physical_scale_power Z hZ,hlength]
-  congr 1
-  ring
+  linarith
 
 end SevenEighths.ProbeHighRowFamily
 end

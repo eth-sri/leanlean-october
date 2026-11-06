@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Complex Set
 namespace SevenEighths.PrincipalMellinGrowth
 open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
@@ -23,7 +23,7 @@ theorem principalConstant_pos (M : Ideal HeckeFamily.O) [NeZero M] :
   have hQ : 0<(M.absNorm : ℝ) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (NeZero.ne M))
   exact mul_pos (mul_pos (by linarith [HeckeLogarithmicInput.uniformConstant_nonneg])
-    (Real.rpow_pos_of_pos hQ _)) (pow_pos (HeckeDeletionBounds.localBound_pos (by norm_num)) _)
+    (by positivity)) (pow_pos (HeckeDeletionBounds.localBound_pos (by norm_num)) _)
 
 lemma poleRemoved_eq_mul_regular (χ : Character) (hχ : χ.residue=1)
     {s : ℂ} (hs : s+1≠0) :
@@ -35,7 +35,7 @@ theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
     {s : ℂ} (hs : (19/20 : ℝ)≤s.re) :
     ‖HeckeOrigin.poleRemoved χ s‖≤principalConstant χ.modulus*‖s+1‖*(3+|s.im|)^2 := by
   obtain ⟨ψ,_,hp,hQ,hmask⟩ := exists_primitive_character χ
-  have hψ : ψ.residue=1 := (HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mp hχ
+  have hψ := (HeckeFiniteDeletion.principal_iff_of_mask χ ψ hmask).mp hχ
   have hs0 : 0<s.re := by linarith
   have h0 : s≠0 := by intro hh; norm_num [hh] at hs
   have hplus : s+1≠0 := by
@@ -57,7 +57,7 @@ theorem principal_poleRemoved_growth (χ : Character) (hχ : χ.residue=1)
   have hd := (HeckeDeletionBounds.factors_bound_pow (19/20) (by norm_num)
     χ.modulus ψ hs).1
   have hQ' : (ψ.modulus.absNorm : ℝ)^(3/5 : ℝ)≤(χ.modulus.absNorm : ℝ)^(3/5 : ℝ) :=
-    Real.rpow_le_rpow (by positivity) (by exact_mod_cast hQ) (by norm_num)
+    Real.rpow_le_rpow (by positivity) (by simp_all) (by norm_num)
   have hC := HeckeLogarithmicInput.uniformConstant_nonneg
   have hD := (HeckeDeletionBounds.localBound_pos (by norm_num : (0 : ℝ)<19/20)).le
   rw [heq,norm_mul,norm_mul]
@@ -78,24 +78,24 @@ def wAmplitude (M : Ideal HeckeFamily.O) (cw : ℝ) : ℝ := 9*(cw+2)*principalC
 theorem wAmplitude_pos (M : Ideal HeckeFamily.O) [NeZero M] {cw : ℝ} (hcw : 1<cw) :
     0<wAmplitude M cw := by
   unfold wAmplitude
-  exact mul_pos (mul_pos (by norm_num) (by linarith)) (principalConstant_pos M)
+  exact mul_pos (by positivity) (principalConstant_pos M)
 
 theorem fixed_principal_w_growth (M : Ideal HeckeFamily.O) [NeZero M]
     {cw : ℝ} (hcw : 1<cw) {x : ℝ} (hx : x∈Icc (19/20 : ℝ) cw) (t : ℝ) :
     ‖HeckeOrigin.poleRemoved (fixedPrincipal M) ((x:ℂ)+t*I)‖≤wAmplitude M cw*height t^3 := by
   have hb := principal_poleRemoved_growth (fixedPrincipal M) rfl
-    (show (19/20 : ℝ)≤(((x:ℂ)+t*I) : ℂ).re by simpa using hx.1)
+    (show (19/20 : ℝ)≤(((x:ℂ)+t*I) : ℂ).re by simp_all)
   have hn : ‖((x:ℂ)+t*I)+1‖≤(cw+2)*height t := by
     apply (Complex.norm_le_abs_re_add_abs_im _).trans
     simp only [add_re,add_im,ofReal_re,ofReal_im,mul_re,mul_im,I_re,I_im,
       mul_zero,sub_zero,add_zero,zero_add,mul_one,one_re,one_im]
-    rw [abs_of_pos (by linarith [hx.1] : 0<x+1)]
+    rw [abs_of_pos (by grind : 0<x+1)]
     unfold height
-    have hmul : 0≤(cw+1)*|t| := mul_nonneg (by linarith) (abs_nonneg t)
+    have hmul : 0≤(cw+1)*|t| := by positivity
     nlinarith [hx.2]
   have hheight : (3+|t|)^2≤9*height t^2 := by
     have hh : 3+|t|≤3*height t := by unfold height; linarith [abs_nonneg t]
-    have hp := pow_le_pow_left₀ (by positivity : 0≤3+|t|) hh 2
+    have hp := pow_le_pow_left₀ (by positivity) hh 2
     simpa only [mul_pow,show (3:ℝ)^2=9 by norm_num] using hp
   have hC := (principalConstant_pos M).le
   have ht0 := (height_pos t).le

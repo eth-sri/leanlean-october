@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstProfileIdentity
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 noncomputable section
 
 def firstRootScale (s : Fin 9 → ℝ) : ℝ :=
@@ -16,8 +16,7 @@ def firstRootScale (s : Fin 9 → ℝ) : ℝ :=
 theorem firstRootScale_pos (s : Fin 9 → ℝ) (hs : ∀ i, 0 < s i) :
     0 < firstRootScale s := by
   unfold firstRootScale
-  exact mul_pos (mul_pos (mul_pos (mul_pos (hs 3) (Real.sqrt_pos.2 (hs 4)))
-    (hs 5)) (Real.sqrt_pos.2 (hs 7))) (Real.sqrt_pos.2 (hs 8))
+  simp_all
 
 theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (V : Fin 9 → ℝ → ℂ) (s q : Fin 9 → ℝ)
@@ -39,7 +38,7 @@ theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
   have hd : (q 3/s 3)*Real.sqrt (q 4/s 4)*(q 5/s 5)*
       Real.sqrt (q 7/s 7)*Real.sqrt (q 8/s 8) =
       (q 3*Real.sqrt (q 4)*q 5*Real.sqrt (q 7)*Real.sqrt (q 8))/firstRootScale s := by
-    rw [Real.sqrt_div (hq 4).le,Real.sqrt_div (hq 7).le,Real.sqrt_div (hq 8).le]
+    rw [Real.sqrt_div (by grind),Real.sqrt_div (by grind),Real.sqrt_div (by grind)]
     unfold firstRootScale
     ring
   unfold firstNormProfile
@@ -50,9 +49,9 @@ theorem firstNormProfile_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
       ((q 3:ℂ)*↑(Real.sqrt (q 4))*(q 5:ℂ)*↑(Real.sqrt (q 7))*↑(Real.sqrt (q 8)))/
         (firstRootScale s:ℂ) := by exact_mod_cast hd
   rw [hdC]
-  have hDc : (firstRootScale s:ℂ) ≠ 0 :=
+  have hDc :=
     Complex.ofReal_ne_zero.mpr (firstRootScale_pos s hs).ne'
-  field_simp [hDc]
+  grind
 
 end
 end SevenEighths.InverseMoment

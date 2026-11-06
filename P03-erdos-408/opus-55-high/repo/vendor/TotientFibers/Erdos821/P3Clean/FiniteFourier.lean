@@ -8,7 +8,6 @@ public import Mathlib.Analysis.Fourier.FiniteAbelian.PontryaginDuality
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -45,12 +44,10 @@ theorem finiteFourier_inner (f g : G → ℂ) :
       apply Finset.sum_congr rfl
       intro s _
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro ψ _
-      ring
+      grind
     _ = _ := by
       simp only [character_orthogonality, mul_ite, mul_zero]
-      simp [mul_comm, mul_left_comm]
+      simp [mul_comm]
 
 theorem finiteFourier_parseval (f : G → ℂ) :
     (∑ ψ : AddChar G ℂ, ‖finiteFourier f ψ‖ ^ 2) =
@@ -67,16 +64,16 @@ theorem finiteFourier_translate (f : G → ℂ) (d : G) (ψ : AddChar G ℂ) :
       ψ d * (star (ψ (r + d)) * f (r + d)) := by
     rw [AddChar.map_add_eq_mul, star_mul]
     have hψ : ψ d * star (ψ d) = 1 := by
-      simp [Complex.mul_conj', ψ.norm_apply]
+      simp [Complex.mul_conj']
     calc
-      _ = (ψ d * star (ψ d)) * (star (ψ r) * f (r + d)) := by rw [hψ, one_mul]
+      _ = (ψ d * star (ψ d)) * (star (ψ r) * f (r + d)) := by simp_all
       _ = _ := by ring
   simp_rw [h]
   rw [← Finset.mul_sum]
   congr 1
   exact Fintype.sum_equiv (Equiv.addRight d)
     (fun r => star (ψ (r + d)) * f (r + d))
-    (fun r => star (ψ r) * f r) (fun _ => rfl)
+    (fun r => star (ψ r) * f r) (by simp)
 
 theorem finiteFourier_convolution (H g : G → ℂ) (ψ : AddChar G ℂ) :
     finiteFourier (fun r => ∑ d : G, H d * g (r + d)) ψ =

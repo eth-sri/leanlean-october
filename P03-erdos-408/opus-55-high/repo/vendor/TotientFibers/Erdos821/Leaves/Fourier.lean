@@ -6,7 +6,6 @@ public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 @[expose] public section
 
-open scoped BigOperators
 open MeasureTheory intervalIntegral
 
 attribute [local instance] Classical.propDecidable

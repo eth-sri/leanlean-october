@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.CharacterTransport
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 namespace SevenEighths.HeckePresentation
 open HeckeFamily
 
@@ -67,7 +67,7 @@ theorem principalResidue_ne_one (η : Character) (hη : η.residue ≠ 1) :
   intro h
   have he := congrArg (CharacterTransport.pullback (quotientEquiv η).symm) h
   rw [principalResidue, CharacterTransport.pullback_symm, pullback_one] at he
-  exact hη he
+  simp_all
 
 theorem LFunction_principalCharacter (η : Character) (hη : η.residue ≠ 1) (s : ℂ) :
     LFunction (principalCharacter η) s = LFunction η s := by
@@ -77,12 +77,12 @@ theorem LFunction_principalCharacter (η : Character) (hη : η.residue ≠ 1) (
   have he : LFunction (principalCharacter η) = LFunction η := by
     apply (Complex.analyticOnNhd_univ_iff_differentiable.mpr ha).eq_of_eventuallyEq
       (Complex.analyticOnNhd_univ_iff_differentiable.mpr hb) (z₀ := (2 : ℂ))
-    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
+    filter_upwards [(Complex.isOpen_re_gt 1).mem_nhds (by simp)] with z hz
     unfold LFunction
     congr 1
     apply continuedLattice_eq_of_elementCoeff_eq _ _ (principalCharacter_elementCoeff η)
-      (by linarith) (by intro h; norm_num [h] at hz)
-  exact congr_fun he s
+      (by linarith) (by intro h; simp_all)
+  simp_all
 
 theorem uniform_strip_bound (η : Character)
     (hp : FiniteFourier.IsPrimitiveOnIdeals η.residue) (hη : η.residue ≠ 1)

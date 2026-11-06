@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.PatternBridgeTasks
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -37,7 +36,7 @@ lemma probeFamily_idealRaw_eq (F : FixedData) (P : PrimeGroups) (J m : ℕ)
       change term (rawPattern P J F.ell m) + ∑ c, term (signedPattern hj block Q h ξ c) =
         (∑ _v : Fin 1, term (rawPattern P J F.ell m)) +
         ∑ c, ∑ _v : Fin 1, term (signedPattern hj block Q h ξ c)
-      simp only [Fin.sum_univ_one]
+      simp
 
 lemma idealFullPair_add {P : PrimeGroups} {M : ℕ}
     (K H : P.BigLabels M → P.BigLabels M → ℂ) (f g : P.BigLabels M → ℂ) :

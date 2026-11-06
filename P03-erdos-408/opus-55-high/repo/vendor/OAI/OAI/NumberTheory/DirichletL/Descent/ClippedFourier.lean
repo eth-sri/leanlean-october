@@ -9,13 +9,12 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialClippedColumns InverseInitialOverlapFourier JointLogSeparation
+open FirstPassCubeLabels CompletedGauss
 
 theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
     (hW:Function.support W⊆Set.Icc lo hi):
@@ -26,11 +25,11 @@ theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
   let a:=lo/b
   let B:=a+|hi|+1
   have ha:0<a:=div_pos hlo hb0
-  obtain ⟨wFresh,hc,hone,hs⟩:=InverseSecondChildWindows.positive_cutoff a B ha (by dsimp [B];linarith [abs_nonneg hi])
-  refine ⟨wFresh,a/2,B+1,half_pos ha,by dsimp [B];linarith [abs_nonneg hi],hc,hs,?_⟩
+  obtain ⟨wFresh,hc,hone,hs⟩:=InverseSecondChildWindows.positive_cutoff a B ha (by grind)
+  refine ⟨wFresh,a/2,B+1,half_pos ha,by grind,hc,hs,?_⟩
   intro c hc hcb y hy
   by_cases hz:W (c*y)=0
-  · simp only [hz,mul_zero]
+  · simp_all
   have hw:=hW hz
   have hay:a≤y:=by
     apply (div_le_iff₀ hb0).mpr
@@ -38,8 +37,7 @@ theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
       lo≤c*y:=hw.1
       _≤y*b:=by nlinarith
   have hyhi:y≤hi:=le_trans (by nlinarith) hw.2
-  have hyB:y≤B:=by dsimp [B];linarith [le_abs_self hi]
-  rw [hone y ⟨hay,hyB⟩,one_mul]
+  grind
 
 theorem clipped_test_fourier (W:ℝ→ℂ) (lo hi:ℝ) (hlo:0<lo)
     (hs:Function.support W⊆Set.Icc lo hi) (hW:ContDiff ℝ ∞ W)
@@ -58,26 +56,22 @@ theorem clipped_test_fourier (W:ℝ→ℂ) (lo hi:ℝ) (hlo:0<lo)
   have hi':(∫t:ℝ,(𝓕 g) t*logPhase t (Real.log c+Real.log y))=W (c*y):=by
     calc
       _=(∫t:ℝ,logPhase t (Real.log c+Real.log y)*(𝓕 g) t):=by
-        apply integral_congr_ae
-        filter_upwards with t
-        ring
+        grind
       _=g (Real.log c+Real.log y):=(schwartz_logPhase_inversion g _).symm
       _= _:=by
         simp only [g,CubicReflectionKernel.logSchwartz_apply,Real.exp_add,Real.exp_log hc,Real.exp_log hy]
   rw [hi']
   unfold clippedTest childLogTest
-  calc
-    W (c*y)*logPhase θ (Real.log y)=(wFresh y*W (c*y))*logPhase θ (Real.log y):=by rw [hwFresh]
-    _= _:=by ring
+  grind
 
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem canonical_clipped_mode_integrable
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m f k:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (g:𝓢(ℝ,ℂ))(wFresh:ℝ→ℂ)(c θ X:ℝ):
     Integrable (fun t:ℝ=>density g (Real.log c) t*
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (childLogTest wFresh (θ+t)) X):=by
@@ -94,7 +88,7 @@ theorem canonical_clipped_mode_integrable
 
 theorem canonical_clipped_fourier
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+    (pool:Finset ι)(Ψ:ActualEisensteinCubic.O→*ℂ)(m f k:ActualEisensteinCubic.O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (W:ℝ→ℂ)(lo hi:ℝ)(hlo:0<lo)(hs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
     (wFresh:ℝ→ℂ)(c θ X:ℝ)(hc:0<c)(hX:0<X)(hwFresh:∀y,0<y→wFresh y*W (c*y)=W (c*y)):
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (clippedTest W c θ) X=
@@ -119,8 +113,6 @@ theorem canonical_clipped_fourier
   rw [clipped_test_fourier W lo hi hlo hs hW wFresh c θ _ hc
     (div_pos (FirstPassCubeLabels.primeProductNorm_pos p hp U) hX) (hwFresh _ (div_pos (FirstPassCubeLabels.primeProductNorm_pos p hp U) hX))]
   rw [←integral_const_mul,←integral_const_mul]
-  apply integral_congr_ae
-  filter_upwards with t
   ring
 
 end SevenEighths.InverseMoment

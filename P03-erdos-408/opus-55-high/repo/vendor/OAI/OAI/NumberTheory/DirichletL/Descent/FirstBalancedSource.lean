@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstProfileUniform
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open JointLogSeparation MeasureTheory
 noncomputable section
 
@@ -69,37 +69,30 @@ theorem first_fresh_physical_profile
     by_cases h2 : W₂ (q 1*q 2*q 5*q 8/(s 1*s 2*s 5*s 8)) = 0
     · simp only [firstNormProfile,h2,mul_zero,zero_mul,zero_div]
     simp only [hω₁ h1,hω₂ h2,one_mul]
-  calc
-    _ = (firstRootScale s:ℂ)⁻¹*(ω₁ (q 7/s 7)*ω₂ (q 8/s 8))*
-        (normalization * firstNormProfile W₁ W₂ Φ (fun _ _ => 1)
-          (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) (fun i => q i/s i)) := by
-      conv_lhs => rw [hm,hnom]
-      ring
-    _ = _ := by rw [hfull]
+  grind
 
 theorem first_balanced_density_integrable (g : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) :
-    Integrable (InverseMomentFirstProfileUniform.density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) := by
-  exact (full_density_integrable _ _ _ _).const_mul _
+    Integrable (InverseMomentFirstProfileUniform.density g g₁ g₂ b₃ ρ c₁ c₂ θ₁ θ₂ L) :=
+  (full_density_integrable _ _ _ _).const_mul _
 
 open ActualEisensteinCubic FirstPassCubeLabels
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 include hp in
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem firstCommonNorms_pos (A₁ A₂ C R : ℝ) (hA₁ : 0 < A₁) (hA₂ : 0 < A₂)
-    (hC : 0 < C) (hR : 0 < R) (d h : Eis) (hd : d ≠ 0) (hh : h ≠ 0)
+    (hC : 0 < C) (hR : 0 < R) (d h : ActualEisensteinCubic.O) (hd : d ≠ 0) (hh : h ≠ 0)
     (j : FirstCommonIndex ι) : ∀ i,0 < firstCommonNorms p A₁ A₂ C R d h j i := by
   intro i
   fin_cases i <;> simp only [firstCommonNorms]
-  · exact hA₁
-  · exact hA₂
-  · exact hC
+  · positivity
+  · positivity
+  · positivity
   · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero hd))
-  · exact hR
+  · positivity
   · exact primeProductNorm_pos p hp _
   · exact sq_pos_of_pos (norm_pos_iff.mpr (ConcreteTraceCRT.eisEmbedding_ne_zero hh))
   · exact primeProductNorm_pos p hp _
@@ -111,7 +104,7 @@ theorem actual_first_balanced_block (F : Finset ι) (selector : Finset ι → �
     (C₁ C₂ : Finset ι → ℂ) (W₁ W₂ ω₁ ω₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ))
     (V : Fin 9 → ℝ → ℂ) (A₁ A₂ C R K L : ℝ)
     (hA₁ : 0 < A₁) (hA₂ : 0 < A₂) (hC : 0 < C) (hR : 0 < R)
-    (d h : Eis) (hd : d ≠ 0) (hh : h ≠ 0) (s : Fin 9 → ℝ) (hs : ∀ i,0 < s i)
+    (d h : ActualEisensteinCubic.O) (hd : d ≠ 0) (hh : h ≠ 0) (s : Fin 9 → ℝ) (hs : ∀ i,0 < s i)
     (density : Frequency × (Fin 9 → ℝ) → ℂ) (hDensity : Integrable density)
     (hsep : ∀ y : Fin 9 → ℝ,
       (Real.exp (-(9/2:ℝ)*L):ℂ)*firstPoissonProfile W₁ W₂ Φ V

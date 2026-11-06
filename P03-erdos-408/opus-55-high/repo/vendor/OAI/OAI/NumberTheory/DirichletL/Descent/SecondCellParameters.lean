@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Descent.PhysicalBlockBudget
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels
 open InverseSecondSourceBlocks InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def secondCellExponent (Z:ℝ) (d:BlockIndex) (i:Fin 4):ℝ:=Real.logb Z (scales d i)
 
 theorem secondCellExponent_nonneg (Z:ℝ) (d:BlockIndex) (i:Fin 4) (hZ:1<Z):
     0≤secondCellExponent Z d i := by
   apply Real.logb_nonneg hZ
-  exact one_le_pow₀ (by norm_num : (1:ℝ)≤2)
+  exact one_le_pow₀ (by simp)
 
 theorem second_cell_scale_rpow (Z:ℝ) (d:BlockIndex) (i:Fin 4) (hZ:1<Z):
     Z^(secondCellExponent Z d i)=scales d i :=
@@ -32,7 +31,7 @@ theorem second_cell_formal_column (Z r A B t:ℝ) (d:BlockIndex) (hZ:1<Z):
       secondFormalColumn r A B t (secondCellExponent Z d 0) (secondCellExponent Z d 2) := by
   have hz:0<Z:=zero_lt_one.trans hZ
   apply (Real.rpow_right_inj hz (ne_of_gt hZ)).mp
-  rw [second_cell_column_scale Z _ d hZ (Real.rpow_pos_of_pos hz _)]
+  rw [second_cell_column_scale Z _ d hZ (by positivity)]
   rw [←second_cell_scale_rpow Z d 0 hZ,←second_cell_scale_rpow Z d 2 hZ,
     ←Real.rpow_add hz,←Real.rpow_sub hz]
   congr 1
@@ -40,8 +39,8 @@ theorem second_cell_formal_column (Z r A B t:ℝ) (d:BlockIndex) (hZ:1<Z):
   ring
 
 theorem actual_second_child_label_norm {ι:Type*} [DecidableEq ι]
-    (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn:ℕ} (x:MarkedSecondSource ι Jo Jn) (u v:Oˣ):
+    (p:ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
+    {Jo Jn:ℕ} (x:MarkedSecondSource ι Jo Jn) (u v:ActualEisensteinCubic.Oˣ):
     (Ideal.absNorm (actualSecondChild p u v x).2.1:ℝ)=
       ‖eisEmbedding (jLabel p x.cube.support
         (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)‖^2*
@@ -56,10 +55,10 @@ theorem actual_second_child_label_norm {ι:Type*} [DecidableEq ι]
   simp only [map_mul,Nat.cast_mul,hn,←eisEmbedding_norm_sq_eq_absNorm_span]
 
 theorem actual_cell_child_label_bound {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
     (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex)
-    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ):
+    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:ActualEisensteinCubic.Oˣ):
     (Ideal.absNorm (actualSecondChild p u v x).2.1:ℝ)≤
       4*‖eisEmbedding (jLabel p x.cube.support
         (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)‖^2*
@@ -83,10 +82,10 @@ theorem actual_cell_child_label_bound {ι:Type*} [DecidableEq ι]
     _ = _ := by ring
 
 theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
     (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex)
-    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ)
+    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:ActualEisensteinCubic.Oˣ)
     (Z B j eta:ℝ) (hZ:1<Z) (hbin:2≤Z^eta)
     (hC:primeProductNorm p x.firstCommon≤Z^(B+eta))
     (hJ:‖eisEmbedding (jLabel p x.cube.support
@@ -95,7 +94,7 @@ theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
       Z^(secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta) := by
   have hz:0<Z:=zero_lt_one.trans hZ
   have hfour:(4:ℝ)≤Z^(2*eta):=by
-    have hh:=mul_le_mul hbin hbin (by norm_num) (Real.rpow_nonneg hz.le _)
+    have hh:=mul_le_mul hbin hbin (by norm_num) (by positivity)
     norm_num only [←Real.rpow_add hz,show eta+eta=2*eta by ring] at hh
     exact hh
   apply (actual_cell_child_label_bound p hp source hk d x hx u v).trans
@@ -115,8 +114,8 @@ theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
 theorem second_cell_clipping_width (Z X b eta:ℝ) (d:BlockIndex)
     (hZ:1<Z) (hX:0<X) (hb:1≤b)
     (hsource:scales d 0*scales d 2≤b*X) (hthreshold:b≤Z^(6*eta)) :
-    max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d≤6*eta := by
-  exact (Real.rpow_le_rpow_left_iff hZ).mp
+    max 0 (secondCellColumnExponent Z X d)-secondCellColumnExponent Z X d≤6*eta :=
+  (Real.rpow_le_rpow_left_iff hZ).mp
     ((second_cell_clipping_ratio Z X b d hZ hX hb hsource).2.trans hthreshold)
 
 end SevenEighths.InverseMoment

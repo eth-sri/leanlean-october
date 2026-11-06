@@ -8,14 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
-local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseInitialArithmetic InverseInitialPhysicalMeasure
+open InverseInitialEnergyCallerSource
+open InverseInitialEnergyCallerWindows InverseInitialProfile
+open CenteredMomentSectorLocalization
 
 def windowMass {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ) : ℝ :=
   ∑k∈F,∏i:Fin 4,dyadicWeight (k i).val (q i)
@@ -54,14 +53,14 @@ theorem windowMass_ne_zero_exists {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fi
   rw [windowMass_cast] at hc
   exact Finset.exists_ne_zero_of_sum_ne_zero hc
 
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
   (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
   (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem windowBlock_eq_full
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:1<Z)(k:Fin 4→ℤ) :
     windowBlock p hp hcop hg pool S w Ψ j marks W₁ W₂ Φ Z D m k =
       physicalBlock p hp hcop hg (pointSource pool S)
@@ -73,7 +72,7 @@ theorem windowBlock_eq_full
 theorem sum_windowBlock_eq_mass
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (a b:Fin 4→ℝ)(F:Finset (Windows a b))
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(hZ:1<Z) :
     (∑k∈F,windowBlock p hp hcop hg pool S w Ψ j marks W₁ W₂ Φ Z D m (fun i=>(k i).val)) =
       physicalBlock p hp hcop hg (pointSource pool S)
@@ -117,7 +116,7 @@ theorem tail_mass_live_bounds (a b:Fin 4→ℝ)(Z D m L:ℝ)(hZ:1<Z)
 
 theorem physicalBlock_filter_of_live
     (source:Finset (Point ι))(P:Point ι→Prop)(w:Point ι→ℂ)
-    (Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)
     (hP:∀x∈source,∀ρ:SecondRayIndex,
       w x*physicalTerm p hp hcop hg Ψ j marks W₁ W₂ Φ Z D m x ρ≠0→P x) :
@@ -128,12 +127,10 @@ theorem physicalBlock_filter_of_live
   apply Finset.sum_congr rfl
   intro x hx
   by_cases hh:P x
-  · rw [ite_eq_left hh]
+  · simp_all
   · rw [ite_eq_right hh]
     apply Finset.sum_eq_zero
-    intro ρ hρ
-    by_contra hn
-    exact hh (hP x hx ρ hn)
+    grind
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem exists_source_frequency_cap (S:Finset (Source (ι:=ι) 0)) :
@@ -141,7 +138,7 @@ theorem exists_source_frequency_cap (S:Finset (Source (ι:=ι) 0)) :
   have hn (x:Source (ι:=ι) 0) : 0≤sourceNorms p x 3 := by
     change 0≤‖ConcreteTraceCRT.eisEmbedding x.frequency‖^2
     positivity
-  have hs:0≤∑x∈S,sourceNorms p x 3:=Finset.sum_nonneg (fun x hx=>hn x)
+  have hs:0≤∑x∈S,sourceNorms p x 3:=Finset.sum_nonneg (by grind)
   refine ⟨1+∑x∈S,sourceNorms p x 3,by linarith,?_⟩
   intro x hx
   have he:sourceNorms p x 3≤∑y∈S,sourceNorms p y 3 :=
@@ -152,7 +149,7 @@ theorem actual_physical_retained_tail
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
-    (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)
+    (w:Source (ι:=ι) 0→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(j:ActualEisensteinCubic.O)(marks:Finset ι→ℂ)
     (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m b T L:ℝ)(hZ:1<Z)
     (hW₁:Function.support W₁⊆Set.Iic b)(hW₂:Function.support W₂⊆Set.Iic b)
     (hT:∀x∈S,sourceNorms p x 3≤T) :

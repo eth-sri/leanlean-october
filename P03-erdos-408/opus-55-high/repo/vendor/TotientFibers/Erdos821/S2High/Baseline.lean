@@ -5,7 +5,6 @@ public import Erdos821.S2High.LocalEstimates
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2High
 
@@ -14,7 +13,6 @@ open Erdos821.Blueprint.Graph
 theorem baselinePrime_eq_sum_div (F : FixedData) (n p : ℕ) :
     baselinePrime F n p = 1 - (∑ i : Fin (n + 1), eta F n i) / (p : ℝ) := by
   unfold baselinePrime
-  congr 1
   ring
 
 theorem baselinePrime_bounds_of_cutoff (F : FixedData) (P : PrimeGroups) (x : ℝ)
@@ -25,7 +23,7 @@ theorem baselinePrime_bounds_of_cutoff (F : FixedData) (P : PrimeGroups) (x : �
   rcases hP with ⟨_, _, _, _, hV, hPrime⟩
   have hpRange := hPrime g.val p.val p.property
   simp only [g.property, ite_true] at hpRange
-  have hpstar : Real.exp ((L x) ^ F.c) ≤ (p.val : ℝ) := hpRange.1
+  have hpstar := hpRange.1
   have hpPos : 0 < (p.val : ℝ) := by
     exact_mod_cast (P.prime g.val p.val p.property).pos
   let e : ℝ := ∑ i : Fin (n + 1), eta F n i
@@ -49,8 +47,7 @@ theorem baselinePrime_bounds_of_cutoff (F : FixedData) (P : PrimeGroups) (x : �
   have hdivNonneg : 0 ≤ e / (p.val : ℝ) := div_nonneg he hpPos.le
   have hdivLe : e / (p.val : ℝ) ≤ 1 / 2 :=
     (div_le_iff₀ hpPos).2 (by nlinarith)
-  rw [hbaseEq]
-  constructor <;> linarith
+  grind
 
 
 end Erdos821.S2High

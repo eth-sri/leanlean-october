@@ -9,21 +9,20 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
+open HeckeFamily
 open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
 open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
+open CenteredMomentSecondPhysicalBlock
+open CenteredMomentCanonicalFirst
 open CenteredMomentSectorLocalization CenteredMomentActiveSource
 open CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentFirstSectors CenteredMomentSourceRow RayFourExpansion
-local notation "O"=>HeckeFamily.O
+open RayFourExpansion
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-lemma live_radical_sum_le (η:Character)(S:Finset (Ideal O))(β:Ideal O→ℂ)(K R H:ℝ):
+lemma live_radical_sum_le (η:Character)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)(K R H:ℝ):
     (∑p∈liveLabels η S β,∑U:Finset (CommonIndex p.val.1 p.val.2),
       ∑_n:SourceBlocks p.val.1 p.val.2 U K R H,radicalWeight p.val.1 p.val.2)≤
     ∑q:ActiveBlocks S β K R H,radicalWeight q.1.1.val.1 q.1.1.val.2:=by
@@ -33,7 +32,7 @@ lemma live_radical_sum_le (η:Character)(S:Finset (Ideal O))(β:Ideal O→ℂ)(K
     (fun p _ _=>Finset.sum_nonneg (fun U _=>mul_nonneg (Nat.cast_nonneg _) (radicalWeight_nonneg _ _)))
 
 theorem part_energy_radical_bound (exceptional:Bool)(η:Character)(χ:RayCharacter)
-    (Q:Ideal O)(m:O)(t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(W:𝓢(ℝ,ℂ))
+    (Q:Ideal HeckeFamily.O)(m:HeckeFamily.O)(t:ℝ)(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ)(W:𝓢(ℝ,ℂ))
     (K Tsec Z ξ H V E:ℝ)(hV:0<V)(hE:0≤E)
     (hb:∀p∈liveLabels η S β,∀U:Finset (CommonIndex p.val.1 p.val.2),
       ∀n:SourceBlocks p.val.1 p.val.2 U K (frequencyRadius Tsec Z ξ) H,
@@ -68,10 +67,10 @@ theorem part_energy_radical_bound (exceptional:Bool)(η:Character)(χ:RayCharact
 theorem source_part_radical_bound (B L Cr ε:ℝ)(hB:0≤B)(hL:0≤L)
     (hCr:0<Cr)(hε:0<ε):
     ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in Filter.atTop,
-    ∀(seed:Ideal O),Squarefree seed → seed≠0 →
-    ∀(S:Finset (Ideal O))(β:Ideal O→ℂ),
+    ∀(seed:Ideal HeckeFamily.O),Squarefree seed → seed≠0 →
+    ∀(S:Finset (Ideal HeckeFamily.O))(β:Ideal HeckeFamily.O→ℂ),
     (∀I∈S,β I≠0→seed∣I) → (∀I∈S,β I≠0→(I.absNorm:ℝ)≤Z^B) →
-    ∀(exceptional:Bool)(η:Character)(χ:RayCharacter)(Q:Ideal O)(m:O)(t:ℝ)(W:𝓢(ℝ,ℂ))
+    ∀(exceptional:Bool)(η:Character)(χ:RayCharacter)(Q:Ideal HeckeFamily.O)(m:HeckeFamily.O)(t:ℝ)(W:𝓢(ℝ,ℂ))
       (K Tsec ξ H V E:ℝ),0<K → frequencyRadius Tsec Z ξ≤Cr*Z^L → H≤Z^B → 0<V → 0≤E →
     (∀p∈liveLabels η S β,∀U:Finset (CommonIndex p.val.1 p.val.2),
       ∀n:SourceBlocks p.val.1 p.val.2 U K (frequencyRadius Tsec Z ξ) H,

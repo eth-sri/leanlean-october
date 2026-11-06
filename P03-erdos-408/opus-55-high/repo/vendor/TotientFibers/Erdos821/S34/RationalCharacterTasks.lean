@@ -5,7 +5,7 @@ public import Erdos821.Blueprint.Analytic
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 open Blueprint.Analytic

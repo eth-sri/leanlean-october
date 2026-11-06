@@ -7,7 +7,7 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.P4Probe
 open Blueprint.Graph
@@ -31,13 +31,13 @@ lemma selectedKernel_bound {P : PrimeGroups} {J ell m : ℕ} (ν : Pattern P J e
         intro χ _
         rw [norm_mul, norm_star]
         simpa using mul_le_mul (Erdos821.P4Char.norm_part Q χ D)
-          (Erdos821.P4Char.norm_part Q χ X) (norm_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
+          (Erdos821.P4Char.norm_part Q χ X) (norm_nonneg _) (by positivity)
       _ ≤ (Q : ℝ) ^ 2 := by
         simpa using (Nat.cast_le (α := ℝ)).mpr (Erdos821.P4Char.count_part Q)
   unfold selectedKernel
   dsimp only
   split_ifs with hc
-  · have hv : 0 < v := hξ.trans_le hc.2
+  · have hv : 0 < v := by linarith
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs,
       abs_of_pos hv]
     calc
@@ -66,7 +66,7 @@ lemma probeChoice_card_le (P : PrimeGroups) (m : ℕ) (block : P.BigGroup → Bo
     Fintype.card (ProbeChoice P m block) ≤ 2 ^ (m * Fintype.card P.BigGroup) := by
   calc
     _ ≤ Fintype.card (P.BigGroup → Finset (Fin m)) := Fintype.card_subtype_le _
-    _ = _ := by simp [Fintype.card_pi, ← pow_mul]
+    _ = _ := by simp [← pow_mul]
 
 lemma probeFamily_count_le (F : FixedData) (P : PrimeGroups) (J m : ℕ)
     (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ) :
@@ -79,7 +79,7 @@ lemma sSup_range_le_nonneg {α : Type*} (f : α → ℝ) (C : ℝ)
     (hC : 0 ≤ C) (hf : ∀ a, f a ≤ C) : sSup (Set.range f) ≤ C := by
   rcases (Set.range f).eq_empty_or_nonempty with he | hn
   · simp [he, hC]
-  · exact csSup_le hn (by rintro _ ⟨a, rfl⟩; exact hf a)
+  · exact csSup_le hn (by simp_all)
 
 lemma probeFamily_patternMass_le (F : FixedData) (P : PrimeGroups) (J m : ℕ)
     (hj : m ≤ J) (block : P.BigGroup → Bool) (Q : ℕ) (h ξ : ℝ) (hξ : 0 < ξ) :
@@ -87,14 +87,14 @@ lemma probeFamily_patternMass_le (F : FixedData) (P : PrimeGroups) (J m : ℕ)
       ((2 : ℝ) ^ (m * Fintype.card P.BigGroup) + 1) *
         max 1 (((Q : ℝ) ^ 2 / ξ) ^ 2) := by
   let C : ℝ := max 1 (((Q : ℝ) ^ 2 / ξ) ^ 2)
-  have hC : 0 ≤ C := le_trans (by norm_num) (le_max_left ..)
+  have hC : 0 ≤ C := by positivity
   have hp (v : Fin (probeFamily F P J m hj block Q h ξ).count)
       (a b : P.BigLabels (J + F.ell)) (u : P.BigAux J) :
       ‖((probeFamily F P J m hj block Q h ξ).pattern v).coefficient a b u‖ ≤ C := by
     dsimp [probeFamily]
     split
     · simp only [rawPattern, norm_one]
-      exact le_max_left ..
+      grind
     · exact (signedPattern_bound hj block Q h ξ hξ _ a b u).trans (le_max_right ..)
   calc
     _ ≤ ∑ _v : Fin (probeFamily F P J m hj block Q h ξ).count, C := by

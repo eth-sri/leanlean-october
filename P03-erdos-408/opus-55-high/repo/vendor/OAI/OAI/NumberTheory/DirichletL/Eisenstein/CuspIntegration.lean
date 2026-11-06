@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
 open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,40 +33,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical
 
 def spatialTriple (x y v : ℝ) : SpatialCoordinates := ![x,y,v]
 @[simp] lemma spatialTriple_zero (x y v : ℝ) : spatialTriple x y v 0=x := rfl
@@ -85,11 +68,11 @@ def spatialTriple (x y v : ℝ) : SpatialCoordinates := ![x,y,v]
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → ℂ) :
@@ -102,11 +85,7 @@ theorem sum_subtype_powerset_products (S : Finset (Ideal O)) (f : Ideal O → �
       exists_eq_right]
   conv_rhs => rw [← hS, Finset.powerset_image]
   rw [Finset.sum_image]
-  · apply Finset.sum_congr rfl
-    intro E hE
-    congr 1
-    rw [Finset.prod_image]
-    exact fun _ _ _ _ h => Subtype.val_injective h
+  · simp
   · exact fun _ _ _ _ h => Finset.image_injective Subtype.val_injective h
 
 theorem primePool_singleton_eq_primeSupport (G : Ideal O) :
@@ -144,9 +123,7 @@ theorem middleTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
   intro E hE
   dsimp only [f, subsetNorm, subsetMobius]
   push_cast
-  by_cases hY : Y < (Ideal.absNorm (∏ P ∈ E, P.val) : ℝ) <;>
-    by_cases hZ : (Ideal.absNorm (∏ P ∈ E, P.val) : ℝ) ≤ Z <;> simp only [hY, hZ, and_self,
-      false_and, and_false, ite_true, ite_false]
+  grind
 
 theorem middleTruncation_eq_ideal_frequencies (G : Ideal O) (hG : Squarefree G)
     (W : ℝ → ℂ) (X Y Z lengthScale : ℝ) :
@@ -194,7 +171,6 @@ theorem principalTruncation_eq_ideal_divisors (G : Ideal O) (hG : Squarefree G)
 
 end
 
-open ActualEisensteinCubic
 
 theorem finite_middle_triangle
     {m n p H D : Type*} [Fintype m] [Fintype n] [Fintype p] [Fintype H] [Fintype D]
@@ -221,7 +197,7 @@ theorem finite_middle_triangle
   apply Finset.sum_le_sum
   intro d hd
   rw [norm_mul]
-  exact mul_le_of_le_one_left (norm_nonneg _) (hμ d)
+  exact mul_le_of_le_one_left (norm_nonneg _) (by grind)
 
 theorem finite_nonzero_frequency_sum_le (H : Finset O) (hH : ∀ h ∈ H, h ≠ 0)
     (f : O → ℝ) (hf : ∀ h, 0 ≤ f h)
@@ -232,14 +208,14 @@ theorem finite_nonzero_frequency_sum_le (H : Finset O) (hH : ∀ h ∈ H, h ≠ 
   have he : Function.Injective e := by
     intro h k hh
     apply Subtype.ext
-    exact congrArg (fun x : {h : O // h ≠ 0} => x.val) hh
+    exact by grind
   have hsH : Summable (fun h : H => f h.val) :=
     summable_of_hasFiniteSupport (Set.toFinite _)
   have hb := hsH.tsum_le_tsum_of_inj e he (fun h _ => hf h.val) (fun _ => le_rfl) hs
   rw [tsum_fintype, Finset.sum_coe_sort H f] at hb
-  exact hb
+  omega
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem sum_two_finite_subtypes {α β A : Type*} [AddCommMonoid A]
@@ -286,17 +262,17 @@ theorem original_truncated_pair_expansion
     rw [middleTruncation_eq_ideal_frequencies _ hsq, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro h hh
-    rw [← divisorPool_filter K (left j * right k) hsq.ne_zero (hK j k), Finset.sum_filter, Finset.mul_sum]
+    rw [← divisorPool_filter K (left j * right k) hsq.ne_zero (by grind), Finset.sum_filter, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro d hd
     by_cases hdv : d ∣ left j * right k
     · by_cases hp : Y i < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z i
       · simp only [hdv, hp, and_self, ite_true, originalPrincipalKernel]
         ring
-      · simp only [hdv, hp, ite_true, ite_false, mul_zero]
-    · simp only [hdv, ite_false, ite_self, mul_zero]
+      grind
+    simp_all
   · have hz : originalTerm rows left right a b 1 1 i j k = 0 := by simp only [originalTerm, hc, ite_false]
-    simp only [hz, zero_mul, ite_self, mul_zero, Finset.sum_const_zero]
+    simp_all
 
 omit [DecidableEq m] [DecidableEq n] [DecidableEq p] in
 theorem originalTruncatedMiddle_le_product_divisors
@@ -372,8 +348,8 @@ theorem HasSieveExponent.original_truncated_middle {α : ℝ} (hexp : HasSieveEx
     Y i < (Ideal.absNorm d : ℝ) ∧ (Ideal.absNorm d : ℝ) ≤ Z i
   have hb := hexp.original_product_divisor_middle deltaLoss hδ ε hε K B N M U hB hN hM hU
     rows left right hr hl hri hrows a b (fun _ => a) (fun _ => b)
-    (fun _ _ => le_rfl) (fun _ _ => le_rfl) W P hleft hright
-    (fun d hd i hp => hp.2.trans (hZ i))
+    (by simp) (by simp) W P hleft hright
+    (by grind)
   have hH (h : O) (hh : h ∈ rowNormDisk ⌊lengthScale⌋₊) : h ≠ 0 := by
     intro hz
     have hn := (mem_rowNormDisk.mp hh).1
@@ -381,7 +357,7 @@ theorem HasSieveExponent.original_truncated_middle {α : ℝ} (hexp : HasSieveEx
   calc
     _ ≤ ∑ h ∈ rowNormDisk ⌊lengthScale⌋₊, originalProductDivisorMiddleAt W K rows left right a b M P h :=
       originalTruncatedMiddle_le_product_divisors W K rows left right a b M Y Z lengthScale
-        (fun j => (hleft j).1) (fun k => (hright k).1) hK
+        (by grind) (by grind) hK
     _ ≤ ∑' h : {h : O // h ≠ 0}, originalProductDivisorMiddleAt W K rows left right a b M P h.val :=
       finite_nonzero_frequency_sum_le (rowNormDisk ⌊lengthScale⌋₊) hH _
         (fun h => originalProductDivisorMiddleAt_nonneg W K rows left right a b M P h) hb.1

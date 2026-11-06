@@ -14,7 +14,7 @@ The explicit size `𝒩 = (2/(1-q))^{K N'} S_B` of the remainders, with
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 /-- The bound `S_B` for the centred slot statistic on `[1, x²]`. -/
 noncomputable def slotBound (c E₂ x : ℝ) : ℝ :=
@@ -66,8 +66,7 @@ theorem abs_slot_sub_le {c E₂ x : ℝ} (hx : 2 ≤ x) (hc : 0 < c) (hT : 0 < l
           pow_le_pow_left₀ hs0 (by linarith) _
       _ ≤ (logLog x + E₂ + 1) ^ 3 := pow_le_pow_right₀ (by linarith) hk3
   unfold slotBound
-  rw [abs_le]
-  constructor <;> linarith
+  grind
 
 /-- The endpoint data at `x`. -/
 theorem endpointData_of {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw₁ : cw ≤ 1)
@@ -87,7 +86,7 @@ theorem endpointData_of {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ c
   layout := hlay
   small a ha p hp i := by
     have hL0 : 0 < Real.log x := by linarith
-    have h1 : Real.log x ^ a ≤ Real.log x ^ (19 / 100 : ℝ) :=
+    have h1 :=
       Real.rpow_le_rpow_of_exponent_le hL.le ha
     refine (band_le hp).trans ?_
     calc Real.exp (2 * Real.log x ^ a) ≤ Real.exp (2 * Real.log x ^ (19 / 100 : ℝ)) :=
@@ -97,8 +96,6 @@ theorem endpointData_of {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ c
   norm_pos := by
     unfold normBound
     have h1 := slotBound_pos (E₂ := E₂) (x := x) hc hE₂0 hT.le
-    have h2 : 0 < 1 - q := by linarith
-    have h3 : 0 < 2 / (1 - q) := by positivity
     positivity
   rest_le S hS h h1 hh := by
     have hV' : ∀ (c : Fin K) i, i < inertPerCluster K CN x →
@@ -126,11 +123,11 @@ theorem abs_endpoint_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c E₂ x : �
     rw [markedWeight_eq_prod hq.ne', abs_prod]
     rw [show (2 / (1 - q)) ^ K = ∏ _i : Fin K, 2 / (1 - q) by
       rw [prod_const, card_univ, Fintype.card_fin]]
-    refine prod_le_prod₀ (fun _ _ => abs_nonneg _) fun i _ => ?_
-    have hd : distIndex S i < inertPerCluster K CN x :=
+    refine prod_le_prod₀ (by simp) fun i _ => ?_
+    have hd :=
       mem_range.1 (((mem_clusterSets.1 hS) i).2 (distIndex_mem ((mem_clusterSets.1 hS) i).1))
     have hwin := inertExponent_mem hE.one_le_K hE.logLog_pos hE.layout i.isLt hd
-    have hVi := hV (distExponent K x S i) (by unfold distExponent; linarith [hwin.1])
+    have hVi := hV (distExponent K x S i) (by unfold distExponent; linarith)
     rw [abs_of_nonneg (bandWeight_nonneg hq _ _ _)]
     refine (bandWeight_le hq hq₁ _ _ _ (by linarith)).trans ?_
     rw [div_le_div_iff₀ (by nlinarith) (by linarith)]
@@ -142,14 +139,12 @@ theorem abs_endpoint_le {q cw : ℝ} (hq₁ : q < 1) {K : ℕ} {CN c E₂ x : �
           (2 / (1 - q)) ^ K * normBound q K CN c E₂ x := by
         refine sum_le_sum fun S hS => ?_
         rw [abs_mul]
-        exact mul_le_mul (hW S hS) (hE.rest_le S hS h h1 hh) (abs_nonneg _) (by
-          have : 0 < 1 - q := by linarith
+        exact mul_le_mul (by grind) (hE.rest_le S hS h h1 hh) (abs_nonneg _) (by
           positivity)
     _ ≤ 2 ^ (K * inertPerCluster K CN x) * ((2 / (1 - q)) ^ K * normBound q K CN c E₂ x) := by
         rw [sum_const, nsmul_eq_mul]
         exact mul_le_mul_of_nonneg_right (card_clusterSets_le _ _) (by
           have := hE.norm_pos
-          have : 0 < 1 - q := by linarith
           positivity)
     _ = endBound q K CN c E₂ x := by unfold endBound; ring
 

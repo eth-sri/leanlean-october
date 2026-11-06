@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplifiedRetainedRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentFirstAnnularGeometry
 open CenteredMomentSectorLocalization CenteredMomentFirstAnnularMajorant
 open CenteredMomentFirstAnnularEnergy CenteredMomentGaussEnergy CanonicalQuadraticSieve
 
-local notation "O"=>HeckeFamily.O
 
 lemma retained_of_scale_le (j:ℤ)(R:ℝ)(h:dyadicScale j≤R):Retained R j:=by
   refine ⟨dyadicScale j/2, by exact div_pos (dyadicScale_pos j) (by norm_num), by linarith [dyadicScale_pos j], ?_⟩
@@ -35,15 +34,15 @@ lemma bands_log_cap (H Z A:ℝ)(hH:0<H)(hZ:1<Z)(hcap:8*H≤Z^A)
 
 lemma bands_nonempty (H:ℝ)(hH:0<H):(bands H).Nonempty:=by
   by_contra hn
-  have he:bands H=∅:=Finset.not_nonempty_iff_eq_empty.mp hn
+  have he:=Finset.not_nonempty_iff_eq_empty.mp hn
   have hp:=weighted_partition H (H/2) hH
   have hr:(H/2)/H=(1/2:ℝ):=by field_simp
   rw [hr,profile_one _ (by norm_num) (by norm_num),he] at hp
-  norm_num at hp
+  simp_all
 
-theorem common_bound {α:Type*}(S:Finset α)(a:α→O)
+theorem common_bound {α:Type*}(S:Finset α)(a:α→HeckeFamily.O)
     (ha:∀i,Supported (Ideal.span {a i}))(c:α→ℂ)(H B:ℝ)(hH:0<H)(hB:0≤B)
-    (hb:∀j∈bands H,(∑' z : O, dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2)≤B):
+    (hb:∀j∈bands H,(∑' z : HeckeFamily.O, dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2)≤B):
     (gaussEnergy S a ha c profile H).re≤7*B:=by
   apply (energy_le_dyadic S a ha c H hH).trans
   calc
@@ -51,9 +50,9 @@ theorem common_bound {α:Type*}(S:Finset α)(a:α→O)
     _=((bands H).card:ℝ)*B:=by simp
     _≤7*B:=mul_le_mul_of_nonneg_right (bands_card H hH) hB
 
-theorem common_bound_auto {α:Type*}(S:Finset α)(a:α→O)
+theorem common_bound_auto {α:Type*}(S:Finset α)(a:α→HeckeFamily.O)
     (ha:∀i,Supported (Ideal.span {a i}))(c:α→ℂ)(H B:ℝ)(hH:0<H)
-    (hb:∀j∈bands H,(∑' z : O, dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2)≤B):
+    (hb:∀j∈bands H,(∑' z : HeckeFamily.O, dyadicWeight j (normValue z)*‖gaussPolynomial S a ha c z‖^2)≤B):
     (gaussEnergy S a ha c profile H).re≤7*B:=by
   obtain ⟨j,hj⟩:=bands_nonempty H hH
   have hB:0≤B:=(tsum_nonneg (fun z=>mul_nonneg (dyadicWeight_bounds j _).1 (sq_nonneg _))).trans (hb j hj)

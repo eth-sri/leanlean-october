@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.Probability
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -52,12 +51,12 @@ lemma raw_matches_prefix {P : PrimeGroups} {J ell m : ℕ}
     funext g j
     exact h g (Fin.castAdd ell j) ((raw_shared_iff g.val _).mpr j.isLt)
   · intro h g i hi
-    have hj : i.val < J := (raw_shared_iff g.val i).mp hi
+    have hj := (raw_shared_iff g.val i).mp hi
     let j : Fin J := ⟨i.val, hj⟩
     have he : Fin.castAdd ell j = i := by apply Fin.ext; rfl
     have hv := congrFun (congrFun h g) j
     change a g (Fin.castAdd ell j) = b g (Fin.castAdd ell j) at hv
-    rwa [he] at hv
+    simp_all
 
 lemma raw_freshMass_tail {P : PrimeGroups} {J ell m : ℕ} (b : P.BigLabels (J + ell)) :
     (rawPattern P J ell m).freshMass b = P.idealMass ((splitBigLabels P J ell b).2) := by

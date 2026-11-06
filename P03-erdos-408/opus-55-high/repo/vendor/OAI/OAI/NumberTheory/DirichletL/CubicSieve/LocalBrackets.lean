@@ -8,33 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
+open scoped SchwartzMap
+open Finset
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,39 +32,32 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace FirstPassCubeLabels
-open ActualEisensteinCubic
 open MixedCrossSeparation (columnPrimeCoprime quadraticCrossPhase)
 open FiniteGaussPhase (canonicalProductGauss)
 open ConcreteTraceCRT (eisEmbedding)
@@ -103,7 +85,7 @@ theorem blockRow_congr {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).Is
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (e f : ι → ℕ)
     (hef : ∀ i ∈ S, e i = f i) (u : O) : blockRow p hg S e u = blockRow p hg S f u := by
   simp only [blockRow_eq_product]
-  exact Finset.prod_congr rfl (fun i hi => by rw [hef i hi])
+  simp_all
 
 theorem blockRow_one {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hg : ∀ i, lambda ∉ Ideal.span {p i}) (S : Finset ι) (u : O) :
@@ -116,7 +98,7 @@ theorem blockRow_five {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsM
   simp only [blockRow_eq_product, finiteSquarefreeRow, star_prod]
   apply Finset.prod_congr rfl
   intro i hi
-  rw [MulChar.pow_apply' _ (by decide : (5 : ℕ) ≠ 0), canonicalSextic_conj_as_row_label]
+  rw [MulChar.pow_apply' _ (by positivity), canonicalSextic_conj_as_row_label]
   ring
 
 theorem threeBlockRow_factor {ι : Type*} [DecidableEq ι]
@@ -143,7 +125,7 @@ theorem threeBlockRow_factor {ι : Type*} [DecidableEq ι]
     simp [threeBlockExponent,
       show i ∉ N from fun hn => Finset.disjoint_left.mp hNC hn hi,
       show i ∉ P from fun hp => Finset.disjoint_left.mp hPC hp hi]
-  rw [blockRow_union p hg (N ∪ P) _ (Finset.disjoint_union_left.mpr ⟨hNC, hPC⟩),
+  rw [blockRow_union p hg (N ∪ P) _ (Finset.disjoint_union_left.mpr (by grind)),
     blockRow_union p hg N P hNP, blockRow_congr p hg N _ _ hN,
     blockRow_congr p hg P _ _ hP, blockRow_congr p hg _ _ _ hC,
     blockRow_five, blockRow_one]
@@ -172,13 +154,13 @@ theorem masked_block_radial_poisson_product {ι : Type*} [DecidableEq ι]
   let hQ := columnPrimeCoprime p hcop S
   let j := fun i : S => e i.val
   have h := canonical_masked_radial_poisson_collected (fun i => Ideal.span {p i}) hinj M
-    Q hQ (fun i => hg i.val) (fun i => hc i.val) j
-    (fun i => he i.val i.property) (fun i => he6 i.val i.property) W lengthScale hL
+    Q hQ (by grind) (fun i => hc i.val) j
+    (by grind) (by grind) W lengthScale hL
   have hn : ‖eisEmbedding (finitePrimeModulus Q)‖ = ‖eisEmbedding (∏ i ∈ S, p i)‖ := by
     rw [GaussGeneratorTransport.finitePrimeModulus_norm_eq_product q, Finset.prod_coe_sort]
   dsimp only at h
   rw [hn] at h
-  have hrow : finiteSexticRow Q (fun i => hg i.val) j = blockRow p hg S e := rfl
+  have hrow : finiteSexticRow Q (by grind) j = blockRow p hg S e := rfl
   rw [hrow] at h
   rw [h]
   let a := fun E : Finset ι =>
@@ -189,15 +171,9 @@ theorem masked_block_radial_poisson_product {ι : Type*} [DecidableEq ι]
     let d := primeSubsetGenerator (fun i => Ideal.span {p i}) E
     paperRadialFourier W (lengthScale * t / (‖eisEmbedding d‖ ^ 2 * ‖eisEmbedding (∏ i ∈ S, p i)‖ ^ 2))
   have ht := GaussGeneratorTransport.gauss_weighted_finite_radial_sum_transport
-    q (fun i => hp i.val) hQ (fun i => hg i.val) j M.powerset a F
+    q (by grind) hQ (by grind) j M.powerset a F
   rw [hrow] at ht
-  change ((lengthScale : ℂ) * canonicalNormalizedGauss Q hQ (fun i => hg i.val) j /
-      (‖eisEmbedding (∏ i ∈ S, p i)‖ : ℂ)) * _ = _
-  calc
-    _ = ((lengthScale : ℂ) / (‖eisEmbedding (∏ i ∈ S, p i)‖ : ℂ)) *
-      (canonicalNormalizedGauss Q hQ (fun i => hg i.val) j *
-        ∑ E ∈ M.powerset, a E * ∑' h : O, star (blockRow p hg S e h) * F E (‖eisEmbedding h‖ ^ 2)) := by ring
-    _ = _ := by rw [ht]; ring
+  grind
 
 def cubeBaseFactor {ι : Type*} [DecidableEq ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -258,8 +234,7 @@ theorem threeGaussRowFactor_eq_transformedPair {ι : Type*} [DecidableEq ι]
 end FirstPassCubeLabels
 
 section
-open MeasureTheory
-open scoped FourierTransform SchwartzMap ContDiff
+open scoped SchwartzMap
 namespace LocalLogFourier
 
 end LocalLogFourier
@@ -269,8 +244,7 @@ namespace EisensteinSchwartzPoisson
 end EisensteinSchwartzPoisson
 end
 
-open scoped Classical BigOperators
-open AddChar MulChar
+open scoped Classical
 namespace LocalReflectionBrackets
 
 section
@@ -282,7 +256,7 @@ def rootCard (F : Type*) [Fintype F] : ℝ := Real.sqrt (Fintype.card F)
 
 theorem rootCard_pos : 0 < rootCard F := by
   apply Real.sqrt_pos.mpr
-  exact_mod_cast Fintype.card_pos_iff.mpr ⟨(0 : F)⟩
+  positivity
 
 theorem rootCard_sq : rootCard F ^ 2 = (Fintype.card F : ℝ) := Real.sq_sqrt (by positivity)
 
@@ -309,22 +283,21 @@ theorem bracket_four_split (χ : MulChar F ℂ) (x : F) :
   have hr : (rootCard F : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (ne_of_gt rootCard_pos)
   have hsq : (rootCard F : ℂ) ^ 2 = (Fintype.card F : ℂ) := by exact_mod_cast (rootCard_sq (F := F))
   simp only [bracket, ↓reduceIte]
-  rw [← hsq]
-  field_simp
+  grind
 
 theorem bracket_four_cube_split (χ : MulChar F ℂ) (n b : F) :
     bracket χ 4 (n * b ^ 3) = -(rootCard F : ℂ)⁻¹ +
       (rootCard F : ℂ) * (if n = 0 then 1 else 0) +
       (rootCard F : ℂ) * (if n ≠ 0 ∧ b = 0 then 1 else 0) := by
   rw [bracket_four_split]
-  by_cases hn : n = 0 <;> by_cases hb : b = 0 <;> simp [hn, hb]
+  grind
 
 theorem norm_bracket_nonexceptional (χ : MulChar F ℂ) (j : ℕ)
     (hj4 : j ≠ 4) (hj0 : j ≠ 0) (x : F) :
     ‖bracket χ j x‖ = if x = 0 then 0 else 1 := by
   simp only [bracket, ite_eq_right hj4, ite_eq_right hj0]
   by_cases hx : x = 0
-  · simp [hx]
+  · simp_all
   · rw [ite_eq_right hx]
     exact FiniteRayExpansion.norm_char_unit ((χ ^ (j + 2))⁻¹) (Units.mk0 x hx)
 
@@ -334,14 +307,14 @@ theorem norm_bracket_zero (χ : MulChar F ℂ) (x : F) :
     Complex.norm_real, Real.norm_of_nonneg rootCard_pos.le]
   congr 1
   by_cases hx : x = 0
-  · simp [hx]
+  · simp_all
   · rw [ite_eq_right hx]
     exact FiniteRayExpansion.norm_char_unit ((χ ^ 2)⁻¹) (Units.mk0 x hx)
 
 theorem norm_bracket_four_nonzero (χ : MulChar F ℂ) (x : F) (hx : x ≠ 0) :
     ‖bracket χ 4 x‖ = (rootCard F)⁻¹ := by
   rw [bracket_four_split]
-  simp [hx, Complex.norm_real, Real.norm_of_nonneg rootCard_pos.le]
+  simp [hx, Real.norm_of_nonneg rootCard_pos.le]
 
 theorem norm_bracket_four_zero (χ : MulChar F ℂ) :
     ‖bracket χ 4 (0 : F)‖ = ((Fintype.card F : ℝ) - 1) / rootCard F := by
@@ -365,9 +338,8 @@ theorem shifted_power_nontrivial (χ : MulChar F ℂ) (h6 : χ ^ 6 = 1)
   · subst j
     have heq : χ ^ (5 + 2) = χ ^ 1 := by
       rw [show (5 + 2 : ℕ) = 6 + 1 by decide, pow_add, h6, one_mul]
-    rw [heq]
-    exact hn 1 (by decide) (by decide)
-  · exact hn (j + 2) (by omega) (by omega)
+    grind
+  grind
 
 theorem phase_norm (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     (h6 : χ ^ 6 = 1) (hn : ∀ k : ℕ, k ≠ 0 → k < 6 → χ ^ k ≠ 1)
@@ -378,22 +350,19 @@ theorem phase_norm (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
   by_cases hj4 : j = 4
   · subst j
     simp only [phase, ↓reduceIte]
-    exact norm_tau χ _ 4 (hn 4 (by decide) (by decide)) hψminus
+    exact norm_tau χ _ 4 (by grind) hψminus
   by_cases hj0 : j = 0
   · subst j
     simp only [phase, ite_eq_right hj4, ↓reduceIte, norm_mul, norm_neg]
-    rw [norm_tau χ ψ 2 (hn 2 (by decide) (by decide)) hψ,
+    simp [norm_tau χ ψ 2 (hn 2 (by decide) (by decide)) hψ,
       FiniteRayExpansion.norm_char_unit]
-    norm_num
   · simp only [phase, ite_eq_right hj4, ite_eq_right hj0, norm_mul]
-    rw [norm_tau χ _ j (hn j hj0 hj6) hψminus,
+    simp [norm_tau χ _ j (hn j hj0 hj6) hψminus,
       norm_tau χ ψ (j + 2) (shifted_power_nontrivial χ h6 hn j hj0 hj6 hj4) hψ,
       FiniteRayExpansion.norm_char_unit]
-    norm_num
 
 end
 
-open ActualEisensteinCubic
 
 noncomputable local instance quotientField (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 
@@ -410,8 +379,7 @@ theorem canonical_phase_norm (P : Ideal O) [P.IsMaximal]
 
 end LocalReflectionBrackets
 
-open scoped Classical BigOperators
-open AddChar MulChar
+open scoped Classical
 namespace LocalReflectionBrackets
 
 variable {F : Type*} [Field F] [Fintype F]
@@ -421,7 +389,6 @@ def activeRow (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (j : ℕ) (σ ε : Fˣ) 
     ∑ h : Fˣ, (∑ t : F, (χ ^ j) t * ψ (-(h * t))) *
       (((χ⁻¹) ^ 2) (σ * h)) * ψ (((ε : F) * x) * ((h⁻¹ : Fˣ) : F))
 
-open ActualEisensteinCubic
 noncomputable local instance quotientFieldNormalized (P : Ideal O) [P.IsMaximal] : Field (O ⧸ P) := Ideal.Quotient.field P
 noncomputable local instance quotientFintypeNormalized (P : Ideal O) [P.IsMaximal] : Fintype (O ⧸ P) := Fintype.ofFinite _
 
@@ -443,8 +410,7 @@ theorem canonical_A5_normalized (P : Ideal O) [P.IsMaximal]
     simp only [Nat.card_eq_fintype_card] at hh
     rw [activeRow, hh]
     simp only [phase, bracket, tau, show (0 : ℕ) ≠ 4 by decide, ↓reduceIte]
-    rw [← hsq]
-    field_simp
+    grind
   by_cases hj4 : j = 4
   · subst j
     have hh := canonical_A5_jfour P hgood hchar ψ hψne σ ε x
@@ -456,19 +422,16 @@ theorem canonical_A5_normalized (P : Ideal O) [P.IsMaximal]
     have hsum : (if (ε : O ⧸ P) * x = 0 then (Fintype.card (O ⧸ P)ˣ : ℂ) else -1) =
         -1 + (Fintype.card (O ⧸ P) : ℂ) * if x = 0 then 1 else 0 := by
       by_cases hx : x = 0
-      · simp [hx, hcardunits]
-        ring
-      · simp [hx, mul_ne_zero (Units.ne_zero ε) hx]
+      · grind
+      · simp [hx]
     rw [hsum]
     simp only [phase, bracket, tau,  ↓reduceIte]
-    rw [← hsq]
-    field_simp
+    grind
   · have hh := canonical_A5_nonexceptional P hgood hchar ψ j hj0 hj6 hj4 σ ε x
     simp only [Nat.card_eq_fintype_card] at hh
     rw [activeRow, hh]
     simp only [phase, bracket, tau, ite_eq_right hj4, ite_eq_right hj0]
-    rw [← hsq]
-    field_simp
+    grind
 
 theorem canonical_bracket_four_cube_split (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (n b : O) :

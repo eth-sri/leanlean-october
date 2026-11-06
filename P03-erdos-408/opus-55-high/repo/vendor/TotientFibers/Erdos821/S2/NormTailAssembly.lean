@@ -8,7 +8,6 @@ public import Erdos821.S2.MomentCRT
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -32,7 +31,7 @@ theorem full_memory_norm_le_two (A : Model F P J m) (n B : ℕ)
     ‖distinctMemoryExpression A n rho theta‖ ≤ 2 * U := by
   have hpow : 0 ≤ (2 : ℝ) ^
       (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) :=
-    zpow_nonneg (by norm_num) _
+    by positivity
   have ht : (2 : ℝ) ^
         (((n * ((J + F.ell) * Fintype.card P.BigGroup) : ℕ) : ℤ) - (B : ℤ)) *
         CG ^ (n + 1) * CE ^ n * initialMemoryBoundaryMass A n ≤ U := by
@@ -45,7 +44,7 @@ theorem full_memory_norm_le_two (A : Model F P J m) (n B : ℕ)
         mul_le_mul_of_nonneg_left hCost hpow
       _ ≤ U := hGain
   exact (distinctMemoryExpression_norm_le_cutoff A n B rho v theta CG CE hv hCG hCE hG hE).trans
-    ((add_le_add hTrunc ht).trans_eq (by ring))
+    (by linarith)
 
 theorem averagedMoment_le_of_bounds (hPath : PhysicalPathExpansionTask)
     (A : Model F P J m) (r : ℕ) (hr : 0 < r) (X epsilon C D : ℝ) (heps : 0 ≤ epsilon)
@@ -60,9 +59,7 @@ theorem averagedMoment_le_of_bounds (hPath : PhysicalPathExpansionTask)
   have hdiff := averagedMoment_replacement_bound A hPath r hr X epsilon hreplace
   have hreal := Complex.re_le_norm (closedResidueExpression A (2 * r))
   have habs := le_abs_self (A.averagedMoment r X - (closedResidueExpression A (2 * r)).re)
-  have he : A.averagedMoment r X ≤ ‖closedResidueExpression A (2 * r)‖ +
-      |A.averagedMoment r X - (closedResidueExpression A (2 * r)).re| := by linarith
-  exact he.trans (add_le_add hClosed (hdiff.trans (mul_le_mul_of_nonneg_left hAbs heps)))
+  nlinarith
 
 
 end Erdos821.S2Core

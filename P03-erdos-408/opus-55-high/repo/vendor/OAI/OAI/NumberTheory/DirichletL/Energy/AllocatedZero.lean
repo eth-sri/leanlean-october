@@ -9,21 +9,18 @@ public import OAI.NumberTheory.DirichletL.Energy.Bands
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentEnergyAllocatedZero
-open HeckeFamily CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentAllocatedNaturalSource CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentRetainedProfile CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy CenteredMomentRetainedEnergy
+open CenteredMomentAllocatedNaturalSource CenteredMomentDivisorAllocation
+open CenteredMomentRetainedProfile
 open CenteredMomentRadialEligibleEnergy (Radial)
-open QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-lemma allocatedScale_le (D:Ideal O)
+lemma allocatedScale_le (D:Ideal HeckeFamily.O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2)))(X:ℝ)(hX:0<X)
-    (j:Fin 2)(F:Finset (Ideal O))(hF:∀I∈F,I≠0):
+    (j:Fin 2)(F:Finset (Ideal HeckeFamily.O))(hF:∀I∈F,I≠0):
     clippedScale (rawScale D a X j)/(Ideal.absNorm (∏I∈F,I):ℝ)≤max 1 X:=by
   have hn:1≤(Ideal.absNorm (CenteredMomentDivisorRectangle.selectedPlain D a j):ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr

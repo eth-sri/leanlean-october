@@ -33,16 +33,14 @@ theorem arcIntegral_neg (A₀ x Y : ℝ) (n : ℤ) :
   rw [← Complex.exp_conj]
   congr 1
   simp only [map_mul, Complex.conj_ofReal, Complex.conj_I, map_ofNat]
-  push_cast
-  ring
+  simp
 
 /-- The labels of a list are in their bands. -/
 theorem mem_band_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K J}
     (hp : p ∈ lists x d J) (i : Fin K) (h : Fin (J + 1)) : p i h ∈ band x (d.a i) := by
   classical
   have hp' := (mem_filter.1 hp).1
-  simp only [Fintype.mem_piFinset] at hp'
-  exact hp' i h
+  simp_all
 
 /-- The groups of a list are injective. -/
 theorem injective_of_mem_lists {x : ℝ} {d : Data K} {J : ℕ} {p : Lists K J}
@@ -64,7 +62,7 @@ theorem ban_iff_last {x : ℝ} {d : Data K} {J : ℕ}
       ∀ i i', p' i (Fin.last _) ≠ p i' (Fin.last _) := by
   refine ⟨fun h i i' => h i i' _, fun h i i' h' => ?_⟩
   induction h' using Fin.lastCases with
-  | last => exact h i i'
+  | last => simp_all
   | cast k =>
     rw [← hpad]
     by_cases hii : i = i'
@@ -116,8 +114,6 @@ theorem star_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)
       simp only [hind, hψ, harc, arcIntegral_neg, star_mul', Complex.star_def,
         Complex.conj_ofReal, map_sub, Complex.conj_conj, apply_ite (starRingEnd ℂ), map_one,
         map_zero]
-      congr 2
-      rw [add_comm (((M.bandCount x d s'.1.1 : ℝ) - K * (padCount x + 1)) / 2)]
       ring
     · rw [rowOp, rowOp, ite_eq_right (mt hiff.1 hC), ite_eq_right hC, star_zero]
   · -- step: the pads differ in both directions
@@ -136,7 +132,7 @@ theorem conjTranspose_symOp : (M.symOp x d)ᴴ = M.symOp x d := by
       ∀ i, s.1.2 i = s'.1.2 i ∘ σ i) →
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i :=
     fun s s' ⟨σ, hσ⟩ => ⟨fun i => (σ i)⁻¹, fun i => funext fun h => by
-      simp [hσ]⟩
+      simp_all⟩
   have hiff : (s'.1.1 = s.1.1 ∧ ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)),
       ∀ i, s.1.2 i = s'.1.2 i ∘ σ i) ↔ (s.1.1 = s'.1.1 ∧
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i) :=
@@ -148,10 +144,7 @@ theorem conjTranspose_symOp : (M.symOp x d)ᴴ = M.symOp x d := by
 theorem conjTranspose_goodOp (Y d₀ : ℝ) : (M.goodOp x d Y d₀)ᴴ = M.goodOp x d Y d₀ := by
   classical
   rw [goodOp, Matrix.diagonal_conjTranspose]
-  congr 1
-  funext s
-  rw [Pi.star_apply]
-  split_ifs <;> simp
+  simp
 
 /-- With an antisymmetric determinant and disjoint bands, the row operation is Hermitian. -/
 theorem conjTranspose_rowOp (hdet : ∀ P Q, M.det Q P = -M.det P Q)

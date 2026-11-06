@@ -7,8 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.EulerRegion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open Complex
+open scoped Classical
 
 namespace SevenEighths.PrincipalSlotEstimate
 open ProbeEuler ProbeLocal
@@ -59,16 +58,15 @@ theorem principal_correction_inverse_bound {Q : ℝ} {A η s : ℂ}
     ‖(unramifiedClosed Q A η 1 s 1 (1 / 6))⁻¹‖ ≤ 2 := by
   have hl := principal_correction_lower_bound hQ hA hη hs
   rw [norm_inv, inv_eq_one_div]
-  apply (div_le_iff₀ (by linarith : 0 < ‖unramifiedClosed Q A η 1 s 1 (1 / 6)‖)).mpr
+  apply (div_le_iff₀ (by positivity)).mpr
   linarith
 
 theorem unit_phase_inverse (η : ℂ) (hη : ‖η‖ = 1) : star η * η = 1 := by
-  rw [Complex.star_def, ← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, hη]
-  norm_num
+  simp [Complex.star_def, ← Complex.normSq_eq_conj_mul_self, Complex.normSq_eq_norm_sq, hη]
 
 theorem principal_coord_cancellation {Q : ℝ} (hQ : 0 < Q) (η s : ℂ) (hη : ‖η‖ = 1) :
     (star η * (Q : ℂ) ^ s) * coordD Q η 1 s = 1 := by
-  have hQ0 : (Q : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hQ.ne'
+  have hQ0 := Complex.ofReal_ne_zero.mpr hQ.ne'
   unfold coordD
   simp only [star_one, mul_one]
   calc
@@ -123,7 +121,7 @@ theorem compensated_unit_error_bound (V W D P B q : ℂ) (T : ℝ)
   have hright : ‖(B + 1 - q) * (P + D)‖ ≤ 84 * T := by
     have hc : ‖B + 1 - q‖ ≤ ‖B‖ + 2 := by
       calc
-        _ = ‖B + (1 - q)‖ := by congr 1; ring
+        _ = ‖B + (1 - q)‖ := by ring
         _ ≤ ‖B‖ + ‖1 - q‖ := norm_add_le _ _
         _ ≤ _ := by linarith
     calc
@@ -132,7 +130,7 @@ theorem compensated_unit_error_bound (V W D P B q : ℂ) (T : ℝ)
       _ ≤ 84 * T := by nlinarith
   have hid := continued_normalized_cancellation V W D P B q 1
     (one_sub_ne_zero_of_norm_le_half V hV) (one_sub_ne_zero_of_norm_le_half D hD)
-    hBD (by simpa using hWq)
+    hBD (by simp_all)
   simp only [mul_one] at hid
   rw [hid, norm_mul]
   calc
@@ -162,7 +160,7 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
     norm_num
     congr 1
     ring
-  have hD : ‖coordD Q η 1 s‖ ≤ Q ^ (-s.re) :=
+  have hD :=
     coordD_norm_le Q hQ0 η 1 s hη.le (by simp)
   have hK : ‖coordK Q η s 1‖ ≤ Q ^ (-s.re) := by
     convert coordK_norm_le Q hQ1 η s 1 hη.le using 1
@@ -185,13 +183,13 @@ theorem principal_marked_error_bounds {Q : ℝ} {A η s : ℂ}
   have hKV : ‖coordK Q η s 1‖ * ‖coordV Q (1 / 6)‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     calc
       _ ≤ Q ^ (-s.re) * Q ^ (-1 : ℝ) := by rw [hV]; gcongr
-      _ = Q ^ (-s.re - 1) := by rw [← Real.rpow_add hQ0]; congr 1
+      _ = Q ^ (-s.re - 1) := by rw [← Real.rpow_add hQ0]; ring
       _ ≤ _ := hpow _ _ (by linarith)
   have hBR : ‖star η * (Q : ℂ) ^ s‖ * ‖coordR Q A s (1 / 6)‖ ≤
       Q ^ (-(7 / 8 : ℝ)) := by
     calc
       _ ≤ Q ^ s.re * Q ^ (3 - 6 * s.re) := by rw [hB]; gcongr
-      _ = Q ^ (3 - 5 * s.re) := by rw [← Real.rpow_add hQ0]; congr 1; ring
+      _ = Q ^ (3 - 5 * s.re) := by rw [← Real.rpow_add hQ0]; ring
       _ ≤ _ := hpow _ _ (by linarith)
   have hBKV : ‖star η * (Q : ℂ) ^ s‖ *
       (‖coordK Q η s 1‖ * ‖coordV Q (1 / 6)‖) ≤ Q ^ (-(7 / 8 : ℝ)) := by
@@ -230,7 +228,7 @@ theorem principal_replacement_error {Q : ℝ} {A η s : ℂ}
   have hDT : ‖coordD Q η 1 s‖ ≤ Q ^ (-(7 / 8 : ℝ)) :=
     hD.trans (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hE := principal_marked_error_bounds hQ hA hη hs
-  exact compensated_unit_error_bound _ _ _ _ _ _ _ (Real.rpow_nonneg hQ0.le _)
+  exact compensated_unit_error_bound _ _ _ _ _ _ _ (by positivity)
     hVhalf hW hDhalf hq hVT hDT hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
 
@@ -263,7 +261,7 @@ theorem weighted_slot_error {ι : Type*} (S : Finset ι) (w : ι → ℝ) (B : �
     _ ≤ ∑ i ∈ S, δ * w i := by
       apply Finset.sum_le_sum
       intro i hi
-      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hw i hi)]
+      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by grind)]
       simpa [mul_comm] using mul_le_mul_of_nonneg_left (hB i hi) (hw i hi)
     _ = _ := by rw [Finset.mul_sum]
 
@@ -277,9 +275,9 @@ theorem weighted_principal_slot_error {ι : Type*} (S : Finset ι) (w Q : ι →
       (1440 * P ^ (-(7 / 8 : ℝ))) * ∑ i ∈ S, w i := by
   apply weighted_slot_error S w _ _ hw
   intro i hi
-  apply (principal_slot_error (hP.trans (hQ i hi)) (hA i hi) (hη i hi) hs).trans
+  apply (principal_slot_error (by grind) (by grind) (by grind) hs).trans
   apply mul_le_mul_of_nonneg_left _ (by norm_num)
-  exact Real.rpow_le_rpow_of_nonpos (by linarith) (hQ i hi) (by norm_num)
+  exact Real.rpow_le_rpow_of_nonpos (by linarith) (by grind) (by norm_num)
 
 theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
     (δ : ℝ) (hδ : 0 ≤ δ) (hF : ∀ i ∈ S, ‖F i - 1‖ ≤ δ) :
@@ -289,7 +287,7 @@ theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
   | empty => simp
   | @insert a S ha ih =>
     have haF := hF a (Finset.mem_insert_self a S)
-    have hSF : ∀ i ∈ S, ‖F i - 1‖ ≤ δ := fun i hi => hF i (Finset.mem_insert_of_mem hi)
+    have hSF := fun i hi => hF i (Finset.mem_insert_of_mem hi)
     have hprod := ih hSF
     have haN : ‖F a‖ ≤ 1 + δ := by
       have h := norm_sub_norm_le (F a) (1 : ℂ)
@@ -297,12 +295,12 @@ theorem product_error {κ : Type*} (S : Finset κ) (F : κ → ℂ)
       linarith
     rw [Finset.prod_insert ha, Finset.card_insert_of_notMem ha]
     calc
-      _ = ‖F a * ((∏ i ∈ S, F i) - 1) + (F a - 1)‖ := by congr 1; ring
+      _ = ‖F a * ((∏ i ∈ S, F i) - 1) + (F a - 1)‖ := by ring
       _ ≤ ‖F a * ((∏ i ∈ S, F i) - 1)‖ + ‖F a - 1‖ := norm_add_le _ _
       _ ≤ (1 + δ) * ((1 + δ) ^ S.card - 1) + δ := by
         rw [norm_mul]
         exact add_le_add (mul_le_mul haN hprod (norm_nonneg _) (by linarith)) haF
-      _ = _ := by rw [pow_succ]; ring
+      _ = _ := by ring
 
 theorem product_error_linear (n : ℕ) {δ : ℝ} (hδ : 0 ≤ δ) (hδ1 : δ ≤ 1) :
     (1 + δ) ^ n - 1 ≤ n * 2 ^ n * δ := by
@@ -310,13 +308,12 @@ theorem product_error_linear (n : ℕ) {δ : ℝ} (hδ : 0 ≤ δ) (hδ1 : δ �
   | zero => simp
   | succ n ih =>
     have hp : 1 ≤ (2 : ℝ) ^ n := one_le_pow₀ (by norm_num)
-    have hbase : 0 ≤ (1 + δ) ^ n - 1 := by
-      exact sub_nonneg.mpr (one_le_pow₀ (by linarith))
+    have hbase : 0 ≤ (1 + δ) ^ n - 1 :=
+      sub_nonneg.mpr (one_le_pow₀ (by linarith))
     calc
-      _ = (1 + δ) * ((1 + δ) ^ n - 1) + δ := by rw [pow_succ]; ring
+      _ = (1 + δ) * ((1 + δ) ^ n - 1) + δ := by ring
       _ ≤ 2 * ((n : ℝ) * 2 ^ n * δ) + δ := by
-        gcongr
-        linarith
+        nlinarith
       _ ≤ _ := by rw [Nat.cast_succ, pow_succ]; nlinarith
 
 def principalScalar {κ : Type*} (S : Finset κ) (M : κ → ℝ) : ℂ :=
@@ -326,9 +323,7 @@ theorem principalScalar_eq {κ : Type*} (S : Finset κ) (M : κ → ℝ) :
     principalScalar S M = ∏ i ∈ S, (-(M i : ℂ)) := by
   unfold principalScalar
   rw [Complex.ofReal_prod, ← Finset.prod_const, ← Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro i _
-  ring
+  simp
 
 theorem fixed_product_relative_error {κ : Type*} (S : Finset κ)
     (M : κ → ℝ) (W : κ → ℂ) (δ : ℝ) (hδ : 0 ≤ δ)
@@ -338,7 +333,7 @@ theorem fixed_product_relative_error {κ : Type*} (S : Finset κ)
   rw [principalScalar_eq, ← Finset.prod_div_distrib]
   apply product_error S _ δ hδ
   intro i hi
-  have hMi : (M i : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (hM i hi).ne'
+  have hMi := Complex.ofReal_ne_zero.mpr (hM i hi).ne'
   have hid : W i / (-(M i : ℂ)) - 1 = -(W i + (M i : ℂ)) / (M i : ℂ) := by
     field_simp
     ring
@@ -360,7 +355,7 @@ theorem weighted_principal_product_error {κ ι : Type*} (S : Finset κ)
   apply fixed_product_relative_error S _ _ _ (by positivity) hM
   intro j hj
   exact weighted_principal_slot_error (T j) (w j) (Q j) (A j) (η j) s P hP
-    (hw j hj) (hQ j hj) (hA j hj) (hη j hj) hs
+    (by grind) (by grind) (by grind) (by grind) hs
 
 theorem principal_geometric_bounds {Q : ℝ} {η s : ℂ}
     (hQ : 480 ≤ Q) (hη : ‖η‖ ≤ 1) (hs : 7 / 8 ≤ s.re) :
@@ -373,7 +368,7 @@ theorem principal_geometric_bounds {Q : ℝ} {η s : ℂ}
     norm_num
     exact rpow_le_half Q (-1) hQ4 (by norm_num)
   refine ⟨hV, ?_, ?_⟩
-  · rw [principal_W, ← principal_V]; exact hV
+  · rw [principal_W, ← principal_V]; omega
   · exact (coordD_norm_le Q hQ0 η 1 s hη (by simp)).trans
       (rpow_le_half Q (-s.re) hQ4 (by linarith))
 
@@ -441,7 +436,7 @@ theorem region_correction_inverse_bound {Q : ℝ} {A η s w z : ℂ}
     ‖(unramifiedClosed Q A η 1 s w z)⁻¹‖ ≤ 2 := by
   have hl := region_correction_lower_bound hQ hA hη hs hw hz
   rw [norm_inv, inv_eq_one_div]
-  apply (div_le_iff₀ (by linarith : 0 < ‖unramifiedClosed Q A η 1 s w z‖)).mpr
+  apply (div_le_iff₀ (by positivity)).mpr
   linarith
 
 theorem region_geometric_bounds {Q : ℝ} {η s w z : ℂ}
@@ -485,19 +480,19 @@ theorem region_marked_error_bounds {Q : ℝ} {A η s w z : ℂ}
   have hKV : ‖coordK Q η s w‖ * ‖coordV Q z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     calc
       _ ≤ Q ^ (1 - s.re - w.re) * Q ^ (-6 * z.re) := by rw [hV]; gcongr
-      _ = Q ^ (1 - s.re - w.re - 6 * z.re) := by rw [← Real.rpow_add hQ0]; congr 1; ring
+      _ = Q ^ (1 - s.re - w.re - 6 * z.re) := by rw [← Real.rpow_add hQ0]; ring
       _ ≤ _ := hpow _ _ (by linarith)
   have hBR : ‖star η * (Q : ℂ) ^ s‖ * ‖coordR Q A s z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     calc
       _ ≤ Q ^ s.re * Q ^ (4 - 6 * s.re - 6 * z.re) := by rw [hB]; gcongr
-      _ = Q ^ (4 - 5 * s.re - 6 * z.re) := by rw [← Real.rpow_add hQ0]; congr 1; ring
+      _ = Q ^ (4 - 5 * s.re - 6 * z.re) := by rw [← Real.rpow_add hQ0]; ring
       _ ≤ _ := hpow _ _ (by linarith)
   have hBKV : ‖star η * (Q : ℂ) ^ s‖ * (‖coordK Q η s w‖ * ‖coordV Q z‖) ≤
       Q ^ (-(7 / 8 : ℝ)) := by
     calc
       _ ≤ Q ^ s.re * (Q ^ (1 - s.re - w.re) * Q ^ (-6 * z.re)) := by rw [hB, hV]; gcongr
       _ = Q ^ (1 - w.re - 6 * z.re) := by
-        rw [← Real.rpow_add hQ0, ← Real.rpow_add hQ0]; congr 1; ring
+        rw [← Real.rpow_add hQ0, ← Real.rpow_add hQ0]; ring
       _ ≤ _ := hpow _ _ (by linarith)
   have hE' : ‖regionMarked Q A η s w z + coordD Q η 1 s‖ ≤
       24 * ‖coordR Q A s z‖ + 4 * (‖coordK Q η s w‖ * ‖coordV Q z‖) := by
@@ -517,15 +512,15 @@ theorem region_replacement_error {Q : ℝ} {A η s w z : ℂ}
   have hQ1 : 1 ≤ Q := by linarith
   have hg := region_geometric_bounds hQ hη.le hs hw hz
   have hWq : coordW Q 1 w = (Q : ℂ) ^ (-w) := by simp [coordW]
-  have hq : ‖(Q : ℂ) ^ (-w)‖ ≤ 1 := by rw [← hWq]; linarith [hg.2.1]
-  have hW : ‖coordW Q 1 w‖ ≤ 1 := by linarith [hg.2.1]
+  have hq : ‖(Q : ℂ) ^ (-w)‖ ≤ 1 := by rw [← hWq]; linarith
+  have hW : ‖coordW Q 1 w‖ ≤ 1 := by linarith
   have hVT : ‖coordV Q z‖ ≤ Q ^ (-(7 / 8 : ℝ)) := by
     rw [coordV_norm Q hQ0]; exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
   have hDT : ‖coordD Q η 1 s‖ ≤ Q ^ (-(7 / 8 : ℝ)) :=
     (coordD_norm_le Q hQ0 η 1 s hη.le (by simp)).trans
       (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hE := region_marked_error_bounds hQ hA hη hs hw hz
-  exact compensated_unit_error_bound _ _ _ _ _ _ _ (Real.rpow_nonneg hQ0.le _)
+  exact compensated_unit_error_bound _ _ _ _ _ _ _ (by positivity)
     hg.1 hW hg.2.2 hq hVT hDT hE.1 hE.2
     (principal_coord_cancellation hQ0 η s hη) hWq
 
@@ -577,12 +572,12 @@ theorem weighted_region_slot_norm {ι : Type*} (S : Finset ι) (b Q : ι → ℝ
         apply he.trans
         apply add_le_add le_rfl
         apply mul_le_mul_of_nonneg_left _ (by norm_num)
-        exact Real.rpow_le_rpow_of_nonpos (by linarith) (hQ i hi) (by norm_num)
-      rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hb i hi),
+        exact Real.rpow_le_rpow_of_nonpos (by linarith) (by grind) (by norm_num)
+      rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by grind),
         Complex.norm_cpow_eq_rpow_re_of_pos hQi]
       simp only [Complex.sub_re, Complex.one_re]
       exact (mul_le_mul_of_nonneg_left he'
-        (mul_nonneg (hb i hi) (Real.rpow_nonneg hQi.le _))).trans_eq (mul_comm _ _)
+        (mul_nonneg (by grind) (by positivity))).trans_eq (by linarith)
     _ = _ := by rw [Finset.mul_sum]
 
 end SevenEighths.PrincipalSlotEstimate

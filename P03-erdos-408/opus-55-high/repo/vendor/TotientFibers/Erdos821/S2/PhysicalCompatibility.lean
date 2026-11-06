@@ -7,7 +7,6 @@ public import Erdos821.Leaves.Arith
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -18,28 +17,28 @@ variable {P : PrimeGroups} {J ell m : ℕ}
 
 theorem prime_group_eq {g h : P.Group} (p : P.Prime g) (q : P.Prime h) (he : p.val = q.val) : g = h := by
   by_contra hgh
-  exact Finset.disjoint_left.mp (P.disjoint g h hgh) p.property (he.symm ▸ q.property)
+  exact Finset.disjoint_left.mp (P.disjoint g h hgh) p.property (by grind)
 
 theorem source_label_dvd_D_iff (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u : P.Aux J)
     (hinj : ∀ g, Function.Injective (a g)) (hban : ν.ban a b u) (g : P.Group) (i : Fin (J + ell)) :
     (a g i).val ∣ ν.D a u ↔ ν.shared g i := by
   constructor
   · intro hd
-    have hp := P.prime g (a g i).val (a g i).property
+    have hp := P.prime g (a g i).val (by simp)
     unfold Pattern.D at hd
     obtain ⟨h, _, hd⟩ := (hp.prime.dvd_finsetProd_iff _).mp hd
     obtain ⟨j, _, hd⟩ := (hp.prime.dvd_finsetProd_iff _).mp hd
     by_cases hj : j ∈ ν.changed h
     · rw [ite_eq_left hj] at hd
-      have he := (Nat.prime_dvd_prime_iff_eq hp (P.prime h _ (u h j).property)).mp hd
+      have he := (Nat.prime_dvd_prime_iff_eq hp (P.prime h _ (by simp))).mp hd
       have hg := prime_group_eq (a g i) (u h j) he
       subst h
       exact False.elim ((hban g j hj i).1 (Subtype.ext he.symm))
     · rw [ite_eq_right hj] at hd
-      have he := (Nat.prime_dvd_prime_iff_eq hp (P.prime h _ (a h (ν.slot j)).property)).mp hd
+      have he := (Nat.prime_dvd_prime_iff_eq hp (P.prime h _ (by simp))).mp hd
       have hg := prime_group_eq (a g i) (a h (ν.slot j)) he
       subst h
-      exact ⟨j, (hinj g (Subtype.ext he)).symm, hj⟩
+      exact ⟨j, by grind, hj⟩
   · rintro ⟨j, hj, hc⟩
     rw [← hj]
     have h1 := Finset.dvd_prod_of_mem
@@ -59,7 +58,7 @@ theorem compatible_D_eq (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (u :
   apply Finset.prod_congr rfl
   intro j _
   by_cases hj : j ∈ ν.changed g
-  · simp only [ite_eq_left hj]
+  · simp_all
   · simp only [ite_eq_right hj]
     exact congrArg Subtype.val (hc g (ν.slot j) ⟨j, rfl, hj⟩)
 
@@ -82,12 +81,12 @@ theorem active_both_shared (ν : Pattern P J ell m) (a b : P.Labels (J + ell)) (
     (hn' : ((a g i).val : ℤ) ∣ n + k * (ν.D a u : ℤ))
     (hk : ¬ ((a g i).val : ℤ) ∣ k) :
     ν.shared g i ∧ ν.shared g j ∧ i = j := by
-  have hp := P.prime g (a g i).val (a g i).property
+  have hp := P.prime g (a g i).val (by simp)
   have hdZ := active_both_divides_step (a g i).val n k (ν.D a u) hp hn hn' hk
   have hd : (a g i).val ∣ ν.D a u := by exact_mod_cast hdZ
   have hshared := (source_label_dvd_D_iff ν a b u hinjA hban g i).mp hd
-  have hij : i = j := hinjB g ((hcompat g i hshared).symm.trans he)
-  exact ⟨hshared, hij ▸ hshared, hij⟩
+  have hij := hinjB g ((hcompat g i hshared).symm.trans he)
+  simp_all
 
 
 end Erdos821.S2Core

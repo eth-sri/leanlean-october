@@ -122,7 +122,7 @@ lemma admissible {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀
       (Real.exp (Real.log x ^ (0.46 : ℝ)))) :
     (primeGroups P big hP hd).Admissible (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) x := by
   have hC : C₀ * Real.log (Real.log x) ≤ max C₀ 1 * Real.log (Real.log x) :=
-    mul_le_mul_of_nonneg_right (le_max_left _ _) hT
+    mul_le_mul_of_nonneg_right (by simp) hT
   refine ⟨?_, ?_, ?_, ?_, fun g => ?_, fun g p hp => ?_⟩
   · rw [smallGroups_primeGroups]; exact hs₁
   · rw [smallGroups_primeGroups]; exact hs₂.trans hC
@@ -130,13 +130,13 @@ lemma admissible {q₀ c₀ C₀ vlo vhi : ℝ} {hq₀ : 0 < q₀} {hq₁ : q₀
   · rw [bigGroups_primeGroups]; exact hb₂.trans hC
   · change vlo ≤ (primeGroups P big hP hd).V g ∧ (primeGroups P big hP hd).V g ≤ max vhi 1
     rw [V_primeGroups]
-    exact ⟨(hV g).1, (hV g).2.trans (le_max_left _ _)⟩
+    simp_all
   · change p ∈ P g at hp
     change if decide (g ∈ big) = true then _ else _
     by_cases hg : g ∈ big
     · rw [ite_eq_left (decide_eq_true hg)]
       exact (mem_primesIcc (hbig g hg hp)).2
-    · rw [ite_eq_right (by simpa using hg)]
+    · rw [ite_eq_right (by simp_all)]
       exact (mem_primesIcc (hsmall g hg hp)).2
 
 end

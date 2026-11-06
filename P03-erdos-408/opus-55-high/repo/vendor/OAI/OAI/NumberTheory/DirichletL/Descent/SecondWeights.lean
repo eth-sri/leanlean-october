@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceProfile
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
-def secondSignedSourceWeight (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
+def secondSignedSourceWeight (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (x : SecondExpansionData ι) : ℂ :=
   (‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) x.sourceCommon‖^2 : ℝ) *
     (UniqueFactorizationMonoid.moebius (∏ i ∈ x.divisor, Ideal.span {p i}) : ℂ) *
@@ -24,7 +23,7 @@ def secondSignedSourceWeight (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayInd
       m (secondExpansionQuotient p x) c d (primeSubsetGenerator (fun i => Ideal.span {p i}) x.divisor)
       x.frequency (-x.frequency) x.overlap
 
-theorem expansionProfileWeight_eq_signed (Ψ : Eis →* ℂ) (m c d : Eis)
+theorem expansionProfileWeight_eq_signed (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O)
     (z : SecondRayIndex) (Y : ℝ) (x : SecondExpansionData ι) :
     expansionProfileWeight p hp hcop hg Ψ m c d z Y x =
       (Y : ℂ)*secondRayCoefficient z*secondSignedSourceWeight p hp hcop hg Ψ m c d z x := by
@@ -33,8 +32,8 @@ theorem expansionProfileWeight_eq_signed (Ψ : Eis →* ℂ) (m c d : Eis)
 
 theorem secondSignedSourceWeight_norm_le_one
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : Eis) (z : SecondRayIndex)
+    (hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (x : SecondExpansionData ι) :
     ‖secondSignedSourceWeight p hp hcop hg Ψ m c d z x‖ ≤ 1 := by
   have hinput : ‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) x.sourceCommon‖^2 ≤ 1 := by
@@ -50,17 +49,17 @@ theorem secondSignedSourceWeight_norm_le_one
       x.frequency (-x.frequency) x.overlap‖ ≤ 1 := by
     apply hcommon.trans
     exact (mul_le_of_le_one_left (norm_nonneg _)
-      ((secondRayMinus_norm_le Ψ z _).trans (hΨ _))).trans
-      ((secondRayPlus_norm_le Ψ z _).trans (hΨ _))
+      ((secondRayMinus_norm_le Ψ z _).trans (by grind))).trans
+      ((secondRayPlus_norm_le Ψ z _).trans (by grind))
   simp only [secondSignedSourceWeight,norm_mul,Complex.norm_real,Real.norm_eq_abs]
-  rw [abs_of_nonneg (sq_nonneg (‖secondInputCoefficient p hg Ψ m c d (fun _ => 1) x.sourceCommon‖))]
+  rw [abs_of_nonneg (by positivity)]
   exact (mul_le_of_le_one_left (norm_nonneg _)
     ((mul_le_of_le_one_left (norm_nonneg _) hinput).trans hμ)).trans hc1
 
 theorem secondExpansionSource_signed_profile
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
     (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis) (z : SecondRayIndex)
+    (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m c d : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (source : Finset (SecondExpansionData ι)) (hE : ∀ x ∈ source, x.divisor ⊆ x.sourceCommon)
     (A₁ A₂ : Finset ι) (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι)
     (a₁ a₂ : σ → ι → ℂ) (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (X Y : ℝ) :

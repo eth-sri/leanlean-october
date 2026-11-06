@@ -7,21 +7,20 @@ public import OAI.NumberTheory.DirichletL.Moments.ExceptionalIndexedWindow
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalWholeWindow
-open CenteredMomentExceptionalIndexedWindow CenteredMomentPlainWindowEnergy
+open CenteredMomentExceptionalIndexedWindow
 open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentHeckeColumnWindow
-open CenteredMomentHeckeWindowEnergy HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
+open HeckeFamily
 
-theorem rowPolynomial_factor {α:Type*}(S:Finset α)(a:α→O)(c:α→ℂ)(v:ℂ)(z:O):
+theorem rowPolynomial_factor {α:Type*}(S:Finset α)(a:α→ActualEisensteinCubic.O)(c:α→ℂ)(v:ℂ)(z:ActualEisensteinCubic.O):
     rowPolynomial S a (fun i=>v*c i) z=v*rowPolynomial S a c z:=by
   simp only [rowPolynomial,Finset.mul_sum,mul_assoc]
 
 theorem whole_plain_window_pair {γ α β:Type*}
-    (Ds:Finset γ)(μ:γ→ℂ)(rows:Finset O)(S:Finset α)(T:Finset β)(a:α→O)(b:β→O)
+    (Ds:Finset γ)(μ:γ→ℂ)(rows:Finset ActualEisensteinCubic.O)(S:Finset α)(T:Finset β)(a:α→ActualEisensteinCubic.O)(b:β→ActualEisensteinCubic.O)
     (ha:∀i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))
     (hb:∀j,CanonicalQuadraticSieve.Supported (Ideal.span {b j}))
     (c:γ→α→ℂ)(d:γ→β→ℂ)(τ₁ τ₂:Character)(t₁ t₂ θ₁ θ₂ X Y:ℝ)(hX:0<X)(hY:0<Y)
@@ -38,7 +37,7 @@ theorem whole_plain_window_pair {γ α β:Type*}
         columnPhase V₂ (Real.log ((Ideal.absNorm (Ideal.span {b j}):ℝ)/Y)) θ₂) z‖)≤
       E*(∫u:ℝ,(1+‖u‖)^J₁*‖columnDensity V₁ hc₁ hs₁ u‖)*
         (∫v:ℝ,(1+‖v‖)^J₂*‖columnDensity V₂ hc₂ hs₂ v‖):=by
-  have hh:=indexed_plain_window_pair (Ds×ˢrows) (fun x:γ×O=>x.2) S T a b ha hb
+  have hh:=indexed_plain_window_pair (Ds×ˢrows) (fun x:γ×ActualEisensteinCubic.O=>x.2) S T a b ha hb
     (fun x i=>μ x.1*c x.1 i) (fun x j=>d x.1 j) τ₁ τ₂ t₁ t₂ θ₁ θ₂ X Y hX hY
     V₁ V₂ hc₁ hc₂ hs₁ hs₂ J₁ J₂ E hE ?_
   · simpa only [mul_assoc,rowPolynomial_factor,norm_mul,

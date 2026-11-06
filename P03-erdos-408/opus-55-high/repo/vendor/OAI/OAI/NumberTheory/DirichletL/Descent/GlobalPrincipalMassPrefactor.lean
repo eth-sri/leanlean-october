@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
 open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def physicalPrincipalFactor (Z M r ell V delta A B R j t eta tau eps window : ℝ) : ℝ :=
   (Z^(firstKappa M r ell V delta A B R)*Real.exp ((9/2:ℝ)*(eta*Real.log Z)))*
@@ -33,7 +32,7 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
   have hw : (Real.exp window)^(1+eps)=Real.exp (window*(1+eps)) := by
     rw [Real.rpow_def_of_pos (Real.exp_pos _),Real.log_exp]
   unfold physicalPrincipalFactor
-  rw [he,Real.mul_rpow (Real.rpow_nonneg hZ.le _) (Real.exp_pos _).le,
+  rw [he,Real.mul_rpow (by positivity) (by positivity),
     ←Real.rpow_mul hZ.le,hw]
   have hx : r+3*ell+V-B-j+(33/2:ℝ)*eta+tau+eps*(r-A-B-t)+loss=
     firstKappa M r ell V delta A B R+(9/2:ℝ)*eta+
@@ -46,7 +45,7 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
   ring
 
 theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall : 0<dsmall) :
-    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
+    ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→ActualEisensteinCubic.O)(_hp : ∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))

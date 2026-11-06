@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallDyad
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
-def finitePhysicalRows {K : ℕ} (S : Finset (Ideal O)) (hmax : ∀P∈S,P.IsMaximal)
+def finitePhysicalRows {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hmax : ∀P∈S,P.IsMaximal)
     (η : Character) (R : Finset FreeRow) (T : Fin K→Finset PrimeIdeal)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) : ℂ :=
   ∑u∈R,∑P:(∀i,T i),(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
     rowIntegral η S (calibrationForSet S hmax)
       (fun i=>CompletedGauss.primaryGenerator (P i).val.val) W0 W1 X Y Z u
 
-def weightedRowOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def weightedRowOnLines {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) : ℂ :=
@@ -30,7 +29,7 @@ def weightedRowOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S
     calibratedTupleValue S hS hmax η u P hPS W Yp
       ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I)
 
-lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+lemma weightedRowOnLines_eq {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) :
@@ -49,7 +48,7 @@ section
 variable {K : ℕ} (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ) (hσ3 : σ≤3)
     (hυ : (1/2:ℝ)≤υ) (hυ3 : υ≤3) (hr : (17/50:ℝ)≤r)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (η : Character) (R : Finset FreeRow) (hR : ∀u∈R,u.val≠1)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→P.val∉S)
     (hdis : ∀P:(∀i,T i),Function.Injective (fun i=>(P i).val))
@@ -69,13 +68,13 @@ theorem finitePhysicalRows_eq_integral :
           weightedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
             η u W Yp W0 W1 X Y Z σ υ r t) ∂heightMeasure := by
   let f (u : FreeRow) (P : ∀i,T i) := weightedRowOnLines S hS hmax
-    (fun i=>(P i).val) (fun i=>hT i _ (P i).property) η u W Yp W0 W1 X Y Z σ υ r
+    (fun i=>(P i).val) (by grind) η u W Yp W0 W1 X Y Z σ υ r
   have hsource (u : FreeRow) (hu : u∈R) (P : ∀i,T i) := rowIntegral_source_lines e σ υ r he he' hσ hσβ hσ3 hυ hυ3 hr
-    S hS hmax hfirst (fun i=>(P i).val) (hdis P) (fun i=>hT i _ (P i).property) η u (hR u hu)
+    S hS hmax hfirst (fun i=>(P i).val) (hdis P) (by grind) η u (by grind)
     W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
   have hfi (u : FreeRow) (hu : u∈R) (P : ∀i,T i) : Integrable (f u P) heightMeasure := by
     have heq : f u P=(fun t=>(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
-        continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
+        continuedRowOnLines S hS hmax (fun i=>(P i).val) (by grind)
           η u W0 W1 X Y Z σ υ r t) := by
       funext t
       exact weightedRowOnLines_eq S hS hmax _ _ η u W Yp W0 W1 X Y Z σ υ r t
@@ -98,12 +97,11 @@ theorem finitePhysicalRows_eq_integral :
   rw [(hsource u hu P).2]
   have hi' : (∫t,f u P t ∂heightMeasure)=
       (∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
-        ∫t,continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
+        ∫t,continuedRowOnLines S hS hmax (fun i=>(P i).val) (by grind)
           η u W0 W1 X Y Z σ υ r t ∂heightMeasure := by
     simp_rw [f,weightedRowOnLines_eq]
     exact integral_const_mul _ _
-  rw [hi']
-  ring
+  grind
 
 include he he' hσ hσβ hσ3 hυ hυ3 hr hfirst hR hdis ha0 ha1 hW0 hW1 hX hY hZ in
 theorem norm_finitePhysicalRows_le_absolute :
@@ -111,13 +109,13 @@ theorem norm_finitePhysicalRows_le_absolute :
       ‖((1/(2*Real.pi):ℝ):ℂ)^3‖*
         absolutePhysicalDyadIntegral S hS hmax η R T hT W Yp W0 W1 X Y Z σ υ r := by
   let f (u : FreeRow) (P : ∀i,T i) := weightedRowOnLines S hS hmax
-    (fun i=>(P i).val) (fun i=>hT i _ (P i).property) η u W Yp W0 W1 X Y Z σ υ r
+    (fun i=>(P i).val) (by grind) η u W Yp W0 W1 X Y Z σ υ r
   have hfi (u : FreeRow) (hu : u∈R) (P : ∀i,T i) : Integrable (f u P) heightMeasure := by
     have hi := continuedPhysicalRowKernel_integrable e σ υ r he he' hσ hσβ hυ hr S hS hmax hfirst
-      (fun i=>(P i).val) (hdis P) (fun i=>hT i _ (P i).property) η u (hR u hu)
+      (fun i=>(P i).val) (hdis P) (by grind) η u (by grind)
       W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z hX hY hZ
     have heq : f u P=(fun t=>(∏i,W i (((P i).val.val.absNorm:ℝ)/Yp i))*
-        continuedRowOnLines S hS hmax (fun i=>(P i).val) (fun i=>hT i _ (P i).property)
+        continuedRowOnLines S hS hmax (fun i=>(P i).val) (by grind)
           η u W0 W1 X Y Z σ υ r t) := by
       funext t
       exact weightedRowOnLines_eq S hS hmax _ _ η u W Yp W0 W1 X Y Z σ υ r t

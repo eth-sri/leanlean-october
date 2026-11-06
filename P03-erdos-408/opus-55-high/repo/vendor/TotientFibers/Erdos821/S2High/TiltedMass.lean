@@ -5,7 +5,6 @@ public import Erdos821.S2High.Baseline
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2High
 
@@ -25,9 +24,6 @@ lemma reciprocalTilt_sum_eq_one (P : PrimeGroups) (g : P.BigGroup)
   calc
     (∑ p : P.Prime g.val, (P.V g.val * (p.val : ℝ))⁻¹) =
         ∑ p : P.Prime g.val, (P.V g.val)⁻¹ * (p.val : ℝ)⁻¹ := by
-      apply Finset.sum_congr rfl
-      intro p hp
-      rw [mul_inv_rev]
       ring
     _ = (P.V g.val)⁻¹ * ∑ p : P.Prime g.val, (p.val : ℝ)⁻¹ := by
       rw [← Finset.mul_sum]
@@ -38,7 +34,6 @@ theorem tiltedMu_factor (F : FixedData) (P : PrimeGroups) (n : ℕ)
     tiltedMu F P n g.val p =
       (P.V g.val * (p.val : ℝ))⁻¹ * (baselinePrime F n p.val)⁻¹ := by
   unfold tiltedMu
-  rw [mul_inv_rev]
   ring
 
 theorem tiltedMu_atom_bound (F : FixedData) (P : PrimeGroups) (n : ℕ)
@@ -54,23 +49,20 @@ theorem tiltedMu_atom_bound (F : FixedData) (P : PrimeGroups) (n : ℕ)
       P.V g.val * (p.val : ℝ) * baselinePrime F n p.val := by
     calc
       F.vMin * Pstar * (1 / 2) ≤ P.V g.val * (Pstar * (1 / 2)) := by
-        calc
-          F.vMin * Pstar * (1 / 2) = F.vMin * (Pstar * (1 / 2)) := by ring
-          _ ≤ P.V g.val * (Pstar * (1 / 2)) :=
-            mul_le_mul_of_nonneg_right hV (mul_nonneg hPstarPos.le (by norm_num))
+        nlinarith
       _ ≤ P.V g.val * ((p.val : ℝ) * baselinePrime F n p.val) := by
         apply mul_le_mul_of_nonneg_left _ hVpos.le
-        exact mul_le_mul hp hbase (by norm_num) hpPos.le
+        nlinarith
       _ = P.V g.val * (p.val : ℝ) * baselinePrime F n p.val := by ring
   have hdenPos : 0 < F.vMin * Pstar * (1 / 2) :=
     mul_pos (mul_pos F.vMin_pos hPstarPos) (by norm_num)
   calc
     tiltedMu F P n g.val p =
         1 / (P.V g.val * (p.val : ℝ) * baselinePrime F n p.val) := by
-          simp [tiltedMu, mul_assoc]
+          simp [tiltedMu]
     _ ≤ 1 / (F.vMin * Pstar * (1 / 2)) :=
           one_div_le_one_div_of_le hdenPos hden
-    _ = 2 / (F.vMin * Pstar) := by field_simp [ne_of_gt F.vMin_pos, ne_of_gt hPstarPos]
+    _ = 2 / (F.vMin * Pstar) := by ring
 
 theorem tiltedMu_group_mass_bounds (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (n : ℕ) (hP : P.Admissible F x)
@@ -82,7 +74,7 @@ theorem tiltedMu_group_mass_bounds (F : FixedData) (P : PrimeGroups) (x : ℝ)
       (∑ p : P.Prime g.val, tiltedMu F P n g.val p) ≤ 2 := by
   have hAdm := hP
   rcases hP with ⟨_, _, _, _, hV, hPrime⟩
-  have hVmin : F.vMin ≤ P.V g.val := (hV g.val).1
+  have hVmin := (hV g.val).1
   have hVpos : 0 < P.V g.val := lt_of_lt_of_le F.vMin_pos hVmin
   have hBase (p : P.Prime g.val) := baselinePrime_bounds_of_cutoff F P x n hAdm hcut g p
   have hPstar (p : P.Prime g.val) :
@@ -114,8 +106,7 @@ theorem tiltedMu_group_mass_bounds (F : FixedData) (P : PrimeGroups) (x : ℝ)
   have hmuBaseNonneg (p : P.Prime g.val) :
       0 ≤ (P.V g.val * (p.val : ℝ))⁻¹ := by positivity
   constructor
-  · intro p
-    exact ⟨hpos p, hAtom p⟩
+  · grind
   constructor
   · calc
       1 = ∑ p : P.Prime g.val, (P.V g.val * (p.val : ℝ))⁻¹ :=

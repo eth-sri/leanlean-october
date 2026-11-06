@@ -6,7 +6,7 @@ public import Erdos821.P5Mellin.FourierBridge
 @[expose] public section
 
 open MeasureTheory Filter
-open scoped BigOperators ContDiff
+open scoped ContDiff
 
 namespace Erdos821.P5Mellin
 
@@ -47,7 +47,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
       (g := coordinateEval)
   have hFsupport : Function.support F ⊆ Metric.closedBall 0 R := by
     intro y hy
-    have hFne : F y ≠ 0 := Function.mem_support.mp hy
+    have hFne := Function.mem_support.mp hy
     have hΨne : Ψ (Real.exp (y 0)) ≠ 0 := by
       simpa [F, coordinateEval] using hFne
     have hinterval := hcut.2.1 (Function.mem_support.mpr hΨne)
@@ -57,7 +57,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
         _ = y 0 := Real.log_exp _
     have hloghi : y 0 ≤ Real.log hi := by
       calc
-        y 0 = Real.log (Real.exp (y 0)) := (Real.log_exp _).symm
+        y 0 = Real.log (Real.exp (y 0)) := by simp
         _ ≤ Real.log hi := Real.log_le_log (Real.exp_pos _) hinterval.2
     have habs : |y 0| ≤ R := by
       apply abs_le.mpr
@@ -67,7 +67,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
     have hyNorm : ‖y‖ ≤ R := by
       apply (pi_norm_le_iff_of_nonneg (x := y) (r := R) hR.le).2
       intro i
-      have hi0 : i = 0 := Subsingleton.elim i 0
+      have hi0 := Subsingleton.elim i 0
       subst i
       change |y 0| ≤ R
       exact habs
@@ -92,7 +92,7 @@ theorem mellinCutoffTask_proof : Erdos821.P5Core.MellinCutoffTask := by
       apply integral_congr_ae
       filter_upwards with ξ
       rw [show e (∑ i, ξ i * y i) = mellin t (2 * Real.pi * ξ 0) by
-        simpa [y] using mellinCharacter_eq_fourier ξ t]
+        simpa using mellinCharacter_eq_fourier ξ t]
 
 end
 end Erdos821.P5Mellin

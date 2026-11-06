@@ -54,8 +54,8 @@ theorem birthEvent_iff_exists_pivotAssignment
   · intro he
     let values : PivotAssignment pi hpi := fun C =>
       ⟨H.valueFin B (blockPivotIndex pi hpi C), by
-        have hpivotMem : blockPivotIndex pi hpi C ∈ C.val := by
-          exact birthBlockPivot_mem _ _
+        have hpivotMem : blockPivotIndex pi hpi C ∈ C.val :=
+          birthBlockPivot_mem _ _
         have hperf : blockPivotIndex pi hpi C ∈ H.performedFin B :=
           (he C.val C.property).1 hpivotMem
         have haddr : H.addressPerformed B ((Fintype.equivFin
@@ -73,11 +73,11 @@ theorem birthEvent_iff_exists_pivotAssignment
     have haddr : H.addressPerformed B ((Fintype.equivFin
         (Erdos821.S2Core.BirthAddress P (J + F.ell) n B)).symm j) := by
       simpa [Erdos821.S2Core.MemoryHistory.performedFin] using hperf
-    have hEq : H.valueFin B j = H.valueFin B (blockPivotIndex pi hpi C) :=
+    have hEq :=
       (he C.val C.property).2 j hj (blockPivotIndex pi hpi C) hpivotMem
     refine ⟨haddr, ?_⟩
     change H.valueFin B j = H.valueFin B (blockPivotIndex pi hpi C)
-    exact hEq
+    omega
   · rintro ⟨values, hv⟩
     intro C hC
     constructor
@@ -88,7 +88,7 @@ theorem birthEvent_iff_exists_pivotAssignment
         simpa [Erdos821.S2Core.MemoryHistory.valueFin] using (hv ⟨C, hC⟩ i hi).2
       have hjEq : H.valueFin B j = (values ⟨C, hC⟩).val := by
         simpa [Erdos821.S2Core.MemoryHistory.valueFin] using (hv ⟨C, hC⟩ j hj).2
-      exact hiEq.trans hjEq.symm
+      omega
 
 
 end Erdos821.S2High

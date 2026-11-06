@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianSummation
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology
-open Filter Set Metric
+open scoped Classical
+open Filter Set
 namespace SevenEighths.ProbePhysical
 
 def gaussianFlow (R : ℝ) (z : ℂ) : ℂ :=
@@ -20,7 +20,7 @@ lemma gaussianFlow_analytic (R : ℝ) (z : ℂ) : AnalyticAt ℂ (gaussianFlow R
 lemma gaussianFlow_real (R : ℝ) (hR : 0<R) (s : ℝ) :
     gaussianFlow R (s:ℂ)=gaussianMellinProfile (R*Real.exp s) := by
   unfold gaussianFlow gaussianMellinProfile
-  rw [←Complex.ofReal_log (mul_pos hR (Real.exp_pos _)).le,Real.log_mul hR.ne' (Real.exp_pos _).ne',Real.log_exp,
+  rw [←Complex.ofReal_log (by positivity),Real.log_mul hR.ne' (by positivity),Real.log_exp,
     Complex.ofReal_add]
 
 lemma iteratedDeriv_restrict_real (f : ℂ→ℂ)
@@ -61,7 +61,7 @@ lemma gaussianFlow_disk_bound (a L : ℝ) (_hL : 0≤L) :
       _ = |a| *|z.re| := abs_mul _ _
       _ ≤ _ := mul_le_mul_of_nonneg_left hre (abs_nonneg _)
   have he : (-((Real.log R:ℂ)+z)^2/4).re=(z.im^2-(Real.log R+z.re)^2)/4 := by
-    simp [pow_two,Complex.mul_re]
+    simp [pow_two]
   unfold gaussianFlow
   rw [norm_mul,Complex.norm_exp,he]
   have hb : Real.exp ((z.im^2-(Real.log R+z.re)^2)/4)≤B*R^(-a) := by
@@ -81,7 +81,7 @@ lemma gaussianFlow_derivative_bound (a L : ℝ) (hL : 0≤L) (n : ℕ) :
   rw [iteratedDeriv_restrict_real _ (fun x=>gaussianFlow_analytic R (x:ℂ)) n y]
   have hf : Differentiable ℂ (gaussianFlow R) := fun z=>(gaussianFlow_analytic R z).differentiableAt
   have h := Complex.norm_iteratedDeriv_le_of_forall_mem_sphere_norm_le n
-    (by norm_num : (0:ℝ)<1) hf.diffContOnCl
+    (by positivity) hf.diffContOnCl
     (fun z hz=>hbound R hR y hy z (Metric.sphere_subset_closedBall hz))
   simpa only [one_pow,div_one,mul_assoc] using h
 

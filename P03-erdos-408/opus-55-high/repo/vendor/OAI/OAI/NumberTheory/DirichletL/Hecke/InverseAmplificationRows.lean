@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowSpecialization
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily UniqueFactorizationMonoid
 
@@ -18,8 +18,8 @@ theorem ideal_decomposition_unique {I J A B : Ideal O}
     (hIf : SixthFree I) (hJf : SixthFree J) (he : I*A^6=J*B^6) :
     I=J ∧ A=B := by
   have hf := congrArg normalizedFactors he
-  rw [normalizedFactors_mul hI (pow_ne_zero _ hA),
-    normalizedFactors_mul hJ (pow_ne_zero _ hB),normalizedFactors_pow,normalizedFactors_pow] at hf
+  rw [normalizedFactors_mul hI (by positivity),
+    normalizedFactors_mul hJ (by positivity),normalizedFactors_pow,normalizedFactors_pow] at hf
   have hc (P : Ideal O) := congrArg (Multiset.count P) hf
   have hcounts (P : Ideal O) :
       (normalizedFactors I).count P=(normalizedFactors J).count P ∧
@@ -29,9 +29,9 @@ theorem ideal_decomposition_unique {I J A B : Ideal O}
     have hi := hIf P
     have hj := hJf P
     omega
-  have hIJ : normalizedFactors I=normalizedFactors J :=
+  have hIJ :=
     Multiset.ext.mpr (fun P => (hcounts P).1)
-  have hAB : normalizedFactors A=normalizedFactors B :=
+  have hAB :=
     Multiset.ext.mpr (fun P => (hcounts P).2)
   constructor
   · simpa only [Ideal.prod_normalizedFactors_eq_self hI,Ideal.prod_normalizedFactors_eq_self hJ]
@@ -71,7 +71,7 @@ theorem rowMap_injective : Function.Injective rowMap := by
     rw [ha] at hpq
     exact mul_right_cancel₀ (pow_ne_zero _ (ConcretePrimeRowBridge.idealGenerator_ne_zero
       q.2.val q.2.property)) hpq
-  · exact ha
+  omega
 
 theorem rowMap_norm (p : FreeRow×NonzeroIdeal) :
     (Ideal.span {rowMap p}).absNorm=(Ideal.span {p.1.val}).absNorm*p.2.val.absNorm^6 := by

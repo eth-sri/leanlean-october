@@ -8,22 +8,20 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFixedChildStepUn
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstLabelCell
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers InverseInitialClippedColumns RayFourExpansion FirstCauchyArithmetic
-open InverseWholePriorityRetainedSource
+open InverseMomentFirstChildWindows
+open InverseSecondSourceBlocks
+open InverseInitialClippedColumns RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 
 def ChildBounds {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ) (negative : Bool)
-    (Ψ : O→*ℂ) (m : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (Z M r ell V eta tau window b epschild A : ℝ) (K degree : ℕ) : Prop :=
   ∀(ray : RayCharacter×RayCharacter)(core : FirstCoreIndex)(assigned : Finset σ),assigned⊆slots→
   let S := source p pool Q k l j negative assigned lists Z M r ell V eta tau window b
@@ -59,14 +57,14 @@ theorem actual_label_cell_step (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
       HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
     ∀degree : ℕ,∃C Cbin Czero Ctail : ℝ,0≤C ∧ 0≤Cbin ∧ 0≤Czero ∧ 0≤Ctail ∧
-    ∀{ι σ : Type}[DecidableEq ι][DecidableEq σ](p : ι→O)(hp : ∀i,p i≠0)
+    ∀{ι σ : Type}[DecidableEq ι][DecidableEq σ](p : ι→ActualEisensteinCubic.O)(hp : ∀i,p i≠0)
       [∀i,(Ideal.span {p i}).IsMaximal]
       (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (_hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (hinj : Function.Injective (fun i=>Ideal.span {p i})) (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (hinj : Function.Injective (fun i=>Ideal.span {p i})) (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
       (pool : Finset ι)(Q : Finset (ι→₀ℕ))(k : SourceIndex)(l j : ℕ)
-      (Ψ : O→*ℂ)(m : O)(slots : Finset σ)(lists : σ→Finset ι)(a : σ→ι→ℂ)
+      (Ψ : ActualEisensteinCubic.O→*ℂ)(m : ActualEisensteinCubic.O)(slots : Finset σ)(lists : σ→Finset ι)(a : σ→ι→ℂ)
       (Z M r ell V eta pi b Lcol LY epschild A t : ℝ)(ρ : Fin 6→ℝ),
       2≤Z→0≤eta→2≤Z^eta→0≤ell+eta→
       (∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta))→
@@ -99,7 +97,7 @@ theorem actual_label_cell_step (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
         Z^(r+3*ell+V+48*eta+tau+pi+epschild)+Ctail*Z^(-saving) := by
   obtain ⟨ω₁,ω₂,af,bf,haf,hab,hw₁,hw₂,hs₁,hs₂,hstep⟩ := global_priority_fixed_child_step_uniform_types
     om lo hi hlo hsupport negative window Ltail tau saving hhi hLtail htau bcap hbcap
-    0 dsmall hdsmall (fun _=>Lgate) (fun _=>hLgate) B₀ hB₀ K epsmass hepsmass
+    0 dsmall hdsmall (fun _=>Lgate) (by grind) B₀ hB₀ K epsmass hepsmass
   refine ⟨ω₁,ω₂,af,bf,haf,hab,hw₁,hw₂,hs₁,hs₂,?_⟩
   intro degree
   obtain ⟨C,Cbin,Czero,Ctail,hC,hCbin,hCzero,hCtail,he⟩ := hstep degree
@@ -141,22 +139,22 @@ theorem actual_label_cell_step (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
       (fun i hi q hq=>ha i (Finset.mem_sdiff.mp hi).1 q hq),
       (fun d hd x hx=>hlabels d x hx),by omega,hrest,hrest,hA,rfl,rfl,rfl,(fun _=>rfl),hZ2,hb1,hb6,
       hcaps,hgeometry,hmass,hbchild.1,hbchild.2⟩
-  · exact Nat.zero_le _
-  · exact hell
+  · omega
+  · omega
   · exact dyadic_exponent_nonneg Z hZ _
   · exact dyadic_exponent_nonneg Z hZ _
-  · exact hcost
+  · omega
   · exact fun y hy=>(hparent y hy).1
   · exact fun y hy=>(hparent y hy).2.1
   · exact fun y hy=>(hparent y hy).2.2.1
   · exact fun y hy=>(hparent y hy).2.2.2.1
   · exact fun y hy=>(hparent y hy).2.2.2.2.1
-  · exact hY1
-  · exact hX1
-  · exact hYcap
-  · exact hYicap
-  · exact hXcap
-  · exact hPcap
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
+  · omega
   · exact fun y hy=>(htail y hy).1
   · exact fun y hy=>(htail y hy).2.1
   · exact fun y hy=>(htail y hy).2.2.1

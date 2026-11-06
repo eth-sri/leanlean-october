@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedSeries
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 namespace SevenEighths.CenteredMomentReflectedTruncation
 open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
 open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open CenteredMomentReflectedSeries EisensteinSchwartzPoisson
-local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
+open CenteredMomentReflectedSeries
 
 theorem normalized_subseries (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
     (Y : ℝ) (hY : 0<Y) (A : Set ℤ) :
@@ -23,11 +22,11 @@ theorem normalized_subseries (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
       ∑'n : ℤ,if n∈A then (Real.sqrt (dyadicScale n):ℂ)*
         HeckeDyadic.polynomial η false (annularProfile F (dyadicScale n)) (dyadicScale n*Y) 0 0 else 0 := by
   have hs := (dyadic_ideal_absolute η F hF Y hY).of_norm
-  have hi : Summable (fun p : NI×ℤ=>if p.2∈A then dyadicIdealTerm η F Y p.1 p.2 else 0) :=
-    hs.indicator {p : NI×ℤ | p.2∈A}
+  have hi : Summable (fun p : UnrestrictedIdealReindex.NonzeroIdeal×ℤ=>if p.2∈A then dyadicIdealTerm η F Y p.1 p.2 else 0) :=
+    hs.indicator {p : UnrestrictedIdealReindex.NonzeroIdeal×ℤ | p.2∈A}
   have he (n : ℤ) : (if n∈A then (Real.sqrt (dyadicScale n):ℂ)*
       HeckeDyadic.polynomial η false (annularProfile F (dyadicScale n)) (dyadicScale n*Y) 0 0 else 0)=
-      (Real.sqrt Y:ℂ)⁻¹*∑'I : NI,if n∈A then dyadicIdealTerm η F Y I n else 0 := by
+      (Real.sqrt Y:ℂ)⁻¹*∑'I : UnrestrictedIdealReindex.NonzeroIdeal,if n∈A then dyadicIdealTerm η F Y I n else 0 := by
     split_ifs with hn
     · rw [←normalized_annular_term η F (dyadicScale n) Y (dyadicScale_pos n) hY,
         polynomial_plain _ _ _ hY]
@@ -56,14 +55,14 @@ def retainedAnnuli (R Y : ℝ) (hY : 0<Y) : Finset ℤ :=
   (finite_retained_above R (Y⁻¹) (inv_pos.mpr hY)).toFinset
 
 lemma retainedAnnuli_mem (R Y : ℝ) (hY : 0<Y) (n : ℤ) :
-    n∈retainedAnnuli R Y hY ↔ Retained R n ∧ ∃q : ℝ,Y⁻¹≤q ∧ dyadicWeight n q≠0 := by
-  exact (finite_retained_above R (Y⁻¹) (inv_pos.mpr hY)).mem_toFinset
+    n∈retainedAnnuli R Y hY ↔ Retained R n ∧ ∃q : ℝ,Y⁻¹≤q ∧ dyadicWeight n q≠0 :=
+  (finite_retained_above R (Y⁻¹) (inv_pos.mpr hY)).mem_toFinset
 
-lemma original_norm_lower (I : NI) (Y : ℝ) (hY : 0<Y) :
+lemma original_norm_lower (I : UnrestrictedIdealReindex.NonzeroIdeal) (Y : ℝ) (hY : 0<Y) :
     Y⁻¹≤(I.val.absNorm:ℝ)/Y := by
   have hn : (1:ℝ)≤I.val.absNorm := by
     exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr I.property))
-  simpa only [one_div] using div_le_div_of_nonneg_right hn hY.le
+  simpa using div_le_div_of_nonneg_right hn hY.le
 
 theorem retained_finite_series (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F)
     (R Y : ℝ) (hY : 0<Y) :
@@ -80,15 +79,15 @@ theorem retained_finite_series (η : Character) (F : ℝ→ℂ) (hF : DecayTwo F
     split_ifs with hr
     · rw [←normalized_annular_term η F (dyadicScale n) Y (dyadicScale_pos n) hY,
         polynomial_plain _ _ _ hY]
-      have hz (I : NI) : dyadicWeight n ((I.val.absNorm:ℝ)/Y)=0 := by
+      have hz (I : UnrestrictedIdealReindex.NonzeroIdeal) : dyadicWeight n ((I.val.absNorm:ℝ)/Y)=0 := by
         by_contra hne
         exact hn ((retainedAnnuli_mem R Y hY n).mpr ⟨hr,_,original_norm_lower I Y hY,hne⟩)
-      have he (I : NI) : idealCoeff η I.val*
+      have he (I : UnrestrictedIdealReindex.NonzeroIdeal) : idealCoeff η I.val*
           ((annulus (((I.val.absNorm:ℝ)/Y)/dyadicScale n):ℂ)*F ((I.val.absNorm:ℝ)/Y))=0 := by
         change idealCoeff η I.val*((dyadicWeight n ((I.val.absNorm:ℝ)/Y):ℂ)*F _)=0
         rw [hz,Complex.ofReal_zero,zero_mul,mul_zero]
       simp_rw [he,tsum_zero,mul_zero]
-    · rfl
+    simp
 
 end SevenEighths.CenteredMomentReflectedTruncation
 

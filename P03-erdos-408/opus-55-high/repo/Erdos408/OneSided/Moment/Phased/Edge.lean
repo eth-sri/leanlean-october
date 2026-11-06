@@ -86,25 +86,25 @@ theorem sum_crudeTerm_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY : 1 
     calc crudeTerm A₀ x Y b a t
         ≤ 1 * ‖(if t = (b : ℤ) - a then (1 : ℂ) else 0) - arcIntegral A₀ x Y (t - b + a)‖ :=
           mul_le_mul_of_nonneg_right hψ (norm_nonneg _)
-      _ ≤ _ := by rw [one_mul]; exact hn
+      _ ≤ _ := by linarith
   -- `2M + 1 ≤ 13 Y`
   have hcard : ((Icc (-(M : ℤ)) M).card : ℝ) ≤ 13 * Y := by
     have hM' : (M : ℝ) < 5 * Y + 1 := Nat.ceil_lt_add_one (by linarith)
-    rw [Int.card_Icc, show (M : ℤ) + 1 - -(M : ℤ) = ((2 * M + 1 : ℕ) : ℤ) by push_cast; ring,
+    rw [Int.card_Icc, show (M : ℤ) + 1 - -(M : ℤ) = ((2 * M + 1 : ℕ) : ℤ) by omega,
       Int.toNat_natCast]
     push_cast
     linarith
   calc ∑ t ∈ Icc (-(M : ℤ)) M, crudeTerm A₀ x Y b a t
       ≤ ∑ t ∈ Icc (-(M : ℤ)) M,
           ((if t = (b : ℤ) - a then 1 else 0) + 4 * Real.log x ^ (3 * A₀) / Y) :=
-        sum_le_sum fun t _ => hpt t
+        sum_le_sum (by grind)
     _ = (if (b : ℤ) - a ∈ Icc (-(M : ℤ)) M then 1 else 0) +
           ((Icc (-(M : ℤ)) M).card : ℝ) * (4 * Real.log x ^ (3 * A₀) / Y) := by
         rw [sum_add_distrib, sum_ite_eq', sum_const, nsmul_eq_mul]
     _ ≤ 1 + 13 * Y * (4 * Real.log x ^ (3 * A₀) / Y) := by
         gcongr
-        split_ifs <;> norm_num
-    _ = 1 + 52 * Real.log x ^ (3 * A₀) := by field_simp; ring
+        grind
+    _ = 1 + 52 * Real.log x ^ (3 * A₀) := by grind
 
 /-- A kernel term vanishes unless `|t| ≤ ⌈5Y⌉`. -/
 theorem mem_Icc_of_crudeTerm_ne_zero {A₀ x Y : ℝ} (hY : 0 < Y) {b a : ℕ} {t : ℤ}
@@ -151,26 +151,24 @@ variable {q x : ℝ} {d : Data K} {N : ℕ}
 /-- A band prime is a band prime of the data. -/
 private theorem mem_bandPrimes_of_mem_band {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
     p ∈ bandPrimes x d :=
-  mem_biUnion.2 ⟨i, mem_univ i, hp⟩
+  mem_biUnion.2 (by grind)
 
 /-- `V(p) ≥ 0`. -/
 private theorem primeMass_nonneg' (p : ℕ) : 0 ≤ primeMass x d p :=
   sum_nonneg fun i _ => by
     split_ifs
-    · exact sum_nonneg fun p _ => by positivity
-    · exact le_rfl
+    · exact sum_nonneg (by simp)
+    simp
 
 /-- With band masses at least `1/2`, a prime of a band has `V(p) ≥ 1/2`. -/
 private theorem half_le_primeMass' (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i))) {i : Fin K}
     {p : ℕ} (hp : p ∈ band x (d.a i)) : 1 / 2 ≤ primeMass x d p :=
   calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := hV i
-    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := (ite_eq_left hp).symm
+    _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := by grind
     _ ≤ primeMass x d p :=
         single_le_sum (f := fun i => if p ∈ band x (d.a i) then harmonicMass (band x (d.a i))
           else 0) (fun j _ => by
-            split_ifs
-            · exact sum_nonneg fun p _ => by positivity
-            · exact le_rfl) (mem_univ i)
+            grind) (mem_univ i)
 
 /-- With baselines at least `1/2` at the band primes, the birth weights are nonnegative. -/
 private theorem primeWeight_nonneg' (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) (p : ℕ) :
@@ -182,8 +180,7 @@ private theorem primeWeight_nonneg' (hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ ba
       (by linarith))
   · have h0 : primeMass x d p = 0 :=
       sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_bandPrimes_of_mem_band hpi)
-    rw [h0]
-    simp
+    simp_all
 
 /-- At a prime of a band, `0 < ν(p) ≤ 4/p`. -/
 private theorem primeWeight_pos_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
@@ -194,13 +191,13 @@ private theorem primeWeight_pos_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (
   have hb₁ := hb p (mem_bandPrimes_of_mem_band hp)
   have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hp).pos
   unfold primeWeight
-  refine ⟨one_div_pos.2 (mul_pos (mul_pos (by linarith) (by positivity)) (by linarith)), ?_⟩
+  refine ⟨by positivity, ?_⟩
   calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
       ≤ 1 / (1 / 2 * p * (1 / 2)) :=
         one_div_le_one_div_of_le (by positivity)
           (mul_le_mul (mul_le_mul hV₁ (by linarith) hp0.le (by linarith)) hb₁ (by norm_num)
-            (mul_nonneg (by linarith) (by linarith)))
-    _ = 4 * (1 / p) := by field_simp; norm_num
+            (by positivity))
+    _ = 4 * (1 / p) := by ring
 
 /-- With band masses in `[1/2, 1]`, the birth weights of a band sum to at most `4`. -/
 private theorem sum_primeWeight_band_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)))
@@ -210,7 +207,7 @@ private theorem sum_primeWeight_band_le (hV : ∀ i, 1 / 2 ≤ harmonicMass (ban
   calc ∑ p ∈ band x (d.a i), primeWeight q x d N p ≤ ∑ p ∈ band x (d.a i), 4 * (1 / (p : ℝ)) :=
         sum_le_sum fun p hp => (primeWeight_pos_le hV hb hp).2
     _ = 4 * harmonicMass (band x (d.a i)) := (mul_sum _ _ _).symm
-    _ ≤ 4 * 1 := mul_le_mul_of_nonneg_left (hV₁ i) (by norm_num)
+    _ ≤ 4 * 1 := by grind
     _ = 4 := mul_one 4
 
 end Facts
@@ -236,8 +233,8 @@ theorem crudeWeight_nonneg (hν : ∀ p, 0 ≤ primeWeight q x d N p)
     0 ≤ crudeWeight q x d Y d₀ u v r B N s c :=
   prod_nonneg fun i _ => by
     split_ifs
-    · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity) (primeMass_nonneg' _)
-    · exact hν _
+    · exact div_nonneg (sum_nonneg fun xp _ => by positivity) (primeMass_nonneg' _)
+    simp_all
 
 /-- `|η| ≤ 1`. -/
 private theorem abs_dyadicBump_le (y : ℝ) : |dyadicBump y| ≤ 1 := by
@@ -246,11 +243,11 @@ private theorem abs_dyadicBump_le (y : ℝ) : |dyadicBump y| ≤ 1 := by
   have h₂ := smoothTransition.le_one (y - 1)
   have h₃ := smoothTransition.nonneg (y / 2 - 1)
   have h₄ := smoothTransition.le_one (y / 2 - 1)
-  exact abs_le.2 ⟨by linarith, by linarith⟩
+  grind
 
 /-- A product of a number at most one and a number in `[0, 1]` is at most one. -/
 private theorem mul_le_one_of_le {a b : ℝ} (ha : a ≤ 1) (hb0 : 0 ≤ b) (hb : b ≤ 1) : a * b ≤ 1 :=
-  (mul_le_mul_of_nonneg_right ha hb0).trans (by rw [one_mul]; exact hb)
+  (mul_le_mul_of_nonneg_right ha hb0).trans (by linarith)
 
 /-- **The coefficient bound**: `|ℰ(s, c)| ≤ M!^{-2K} ∏_i w_i κ`, where `κ` is the kernel at
 `det(z, z')` with the pad product `D` and the label products `b, a`. The pending weights, the
@@ -270,11 +267,11 @@ theorem norm_chainEdgeCoef_le_crude (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
       crudeWeight q x d Y d₀ u v r B N s c *
         crudeKernel A₀ x Y (edgePad s c) (∏ i, edgeSrc s c i (Fin.last _))
           (∏ i, (c.2.2.2.1 i).1) (edgeDet s c) :=
-    mul_nonneg (mul_nonneg (by positivity) hW) (crudeKernel_nonneg _ _ _ _ _ _ _)
+    mul_nonneg (by positivity) (crudeKernel_nonneg _ _ _ _ _ _ _)
   unfold chainEdgeCoef
   split_ifs with hv
   · obtain ⟨-, -, hD₀, -, hdvd, -⟩ := hv
-    have hD : 0 < (edgePad s c : ℝ) := hd₀.trans_le hD₀
+    have hD : 0 < (edgePad s c : ℝ) := by linarith
     rw [crudeKernel, ite_eq_left hdvd, crudeTerm]
     unfold crudeWeight at hW ⊢
     dsimp only
@@ -291,7 +288,7 @@ theorem norm_chainEdgeCoef_le_crude (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
         ((∏ i, edgeSrc s c i (Fin.last _) : ℕ) : ℤ) + ((∏ i, (c.2.2.2.1 i).1 : ℕ) : ℤ))‖ with hk
     have hr0 : 0 ≤ r₀ := by positivity
     have hψ0 : 0 ≤ ψ := smoothTransition.nonneg _
-    have hdD0 : 0 ≤ d₀ / (edgePad s c : ℝ) := div_nonneg hd₀.le hD.le
+    have hdD0 : 0 ≤ d₀ / (edgePad s c : ℝ) := by positivity
     have hdD1 : d₀ / (edgePad s c : ℝ) ≤ 1 := (div_le_one hD).2 hD₀
     simp only [abs_mul, abs_of_nonneg hr0, abs_of_nonneg hW, abs_of_nonneg hψ0,
       abs_of_nonneg hdD0, abs_of_nonneg (pow_nonneg hρ0 _)]
@@ -314,10 +311,9 @@ theorem norm_chainEdgeCoef_le_crude (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d�
               |dyadicBump ((∏ i, (c.2.2.2.1 i).1 : ℕ) / Y)|) := by ring
       _ ≤ r₀ * W * (ψ * k) * 1 :=
           mul_le_mul_of_nonneg_left h1 (mul_nonneg (mul_nonneg hr0 hW)
-            (mul_nonneg hψ0 (norm_nonneg _)))
+            (by positivity))
       _ = r₀ * W * (ψ * k) := mul_one _
-  · rw [norm_zero]
-    exact hR
+  simp_all
 
 end Coef
 
@@ -334,7 +330,7 @@ def primeMult (S : Particle x d → ℕ) (p : ℕ) : ℝ :=
 
 /-- The multiplicity of a prime is nonnegative. -/
 theorem primeMult_nonneg (S : Particle x d → ℕ) (p : ℕ) : 0 ≤ primeMult x d S p :=
-  sum_nonneg fun xp _ => by split_ifs <;> positivity
+  sum_nonneg fun xp _ => by positivity
 
 /-- The multiplicities of distinct primes sum to at most the size of the memory. -/
 theorem sum_primeMult_le (S : Particle x d → ℕ) (T : Finset ℕ) :
@@ -344,15 +340,14 @@ theorem sum_primeMult_le (S : Particle x d → ℕ) (T : Finset ℕ) :
   rw [sum_comm, Nat.cast_sum]
   refine sum_le_sum fun xp _ => ?_
   rw [sum_ite_eq]
-  split_ifs
-  exacts [le_rfl, by positivity]
+  grind
 
 /-- The labels of an edge choice lie in the bands of their groups. -/
 theorem mem_band_of_mem_edgeChoices {c : EdgeChoice x d Y d₀ u v r}
     (hc : c ∈ edgeChoices x d Y d₀ u v r) (i : Fin K) : (c.2.2.2.1 i).1 ∈ band x (d.a i) := by
   simp only [edgeChoices, mem_product, Fintype.mem_piFinset, mem_univ, true_and,
     and_true] at hc
-  exact hc i
+  simp_all
 
 /-- The reordered source labels of each group lie in its band. -/
 theorem mem_band_edgeSrc (s : ChainState x d Y d₀ u v r B) (c : EdgeChoice x d Y d₀ u v r)
@@ -400,7 +395,7 @@ theorem sum_norm_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀
       (crudeKernel_nonneg _ _ _ _ _ _ _)
     refine prod_le_prod₀ (fun i _ => ?_) (fun i _ => ?_)
     · split_ifs
-      · exact div_nonneg (sum_nonneg fun xp _ => by split_ifs <;> positivity)
+      · exact div_nonneg (sum_nonneg fun xp _ => by positivity)
           (primeMass_nonneg' _)
       · exact hν _
     · have hVi := hV i _ (mem_band_of_mem_edgeChoices hc i)
@@ -411,19 +406,14 @@ theorem sum_norm_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀
               primeMult x d s.2.2.1 (c.2.2.2.1 i).1 := by
           refine sum_le_sum fun xp _ => ?_
           split_ifs with h₁ h₂ h₂
-          · exact le_rfl
+          · simp
           · exact absurd (congrArg Prod.fst h₁) h₂
           · positivity
-          · exact le_rfl
+          · simp
         rw [div_le_iff₀ (by linarith)]
         have hm := primeMult_nonneg s.2.2.1 (c.2.2.2.1 i).1
-        calc (∑ xp : Particle x d, if xp.1 = edgePromoted c i then (s.2.2.1 xp : ℝ) else 0)
-            ≤ primeMult x d s.2.2.1 (c.2.2.2.1 i).1 * 1 := by rw [mul_one]; exact hnum
-          _ ≤ primeMult x d s.2.2.1 (c.2.2.2.1 i).1 * (2 * primeMass x d (c.2.2.2.1 i).1) :=
-              mul_le_mul_of_nonneg_left (by linarith) hm
-          _ = 2 * primeMult x d s.2.2.1 (c.2.2.2.1 i).1 * primeMass x d (c.2.2.2.1 i).1 := by
-              ring
-      · exact le_rfl
+        nlinarith
+      simp
   -- each label sum is at most `2B + 4`
   have hlab : ∀ i, ∑ pf ∈ band x (d.a i) ×ˢ (univ : Finset Bool), ω pf ≤ 2 * B + 4 := by
     intro i
@@ -460,7 +450,7 @@ theorem sum_norm_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀
           exact sum_congr rfl fun lab _ => by ring
       _ ≤ r₀ * Kz * ∏ _i : Fin K, (2 * (B : ℝ) + 4) :=
           mul_le_mul_of_nonneg_left (prod_le_prod₀ (fun i _ => sum_nonneg fun pf _ => hω0 pf)
-            fun i _ => hlab i) (mul_nonneg hr0 (by positivity))
+            fun i _ => hlab i) (by positivity)
       _ = r₀ * ((2 * B + 4) ^ K * Kz) := by
           rw [prod_const, card_univ, Fintype.card_fin]
           ring
@@ -510,8 +500,7 @@ private theorem pow_div_factorial_mul_eq {a P Q : ℕ} (y : ℝ) (hP : P ≤ 1) 
     field_simp
     ring
   · obtain ⟨b, rfl⟩ : ∃ b, a = b + 1 := ⟨a - 1, by omega⟩
-    rw [Nat.add_sub_cancel]
-    ring
+    grind
 
 /-- **The memory weight under an edge**: removing `P ≤ 1` and adding `Q ≤ 1` particles at each
 point, `w(S) ∏ S^P ∏ ν^Q = w(S') ∏ ν^P ∏ S'^Q` for `S' = S - P + Q`. -/
@@ -537,13 +526,12 @@ private theorem prod_pow_card_filter {α ι M : Type*} [DecidableEq α] [CommMon
     _ = ∏ i ∈ F, ∏ y : ↥T with y.1 = g i, f y :=
         prod_congr rfl fun i _ => by
           rw [prod_filter]
-          exact prod_congr rfl fun y _ => by simp only [eq_comm]
+          grind
 
 /-- The fiber of a point of a subtype is a singleton. -/
 private theorem filter_val_eq {α : Type*} [DecidableEq α] {T : Finset α} {y : α} (z : ↥T)
     (hz : z.1 = y) : (univ.filter fun w : ↥T => w.1 = y) = {z} := by
-  ext w
-  simp only [mem_filter, mem_univ, true_and, mem_singleton, ← hz, Subtype.ext_iff]
+  grind
 
 variable {q x : ℝ} {d : Data K} {Y d₀ u v r : ℝ} {B N : ℕ}
 
@@ -553,7 +541,7 @@ theorem chainEdgeOut_of_valid {s : ChainState x d Y d₀ u v r B} {c : EdgeChoic
     chainEdgeOut x d Y d₀ u v r B s c =
       (c.2.2.1, ⟨edgeTgt s c, hv.1⟩, ⟨edgeMem s c, hv.2.2.2.2.2.2.2.2.2⟩) := by
   unfold chainEdgeOut
-  rw [dite_eq_left hv]
+  simp_all
 
 /-- The target lists after undoing `σ'`: the new label in the last slot, and the source lists
 reordered by `σ` elsewhere. -/
@@ -595,8 +583,7 @@ theorem prod_edgeTgt_mul (f : ℕ → ℝ) (s : ChainState x d Y d₀ u v r B)
       (∏ h : Fin (padCount x), f (edgeSrc s c i h.castSucc)) * f (c.2.2.2.1 i).1 := by
     rw [← Equiv.prod_comp (c.2.2.2.2 i).symm, Fin.prod_univ_castSucc]
     simp only [edgeTgt_symm, Fin.castSucc_ne_last, ↓reduceIte]
-  rw [h₁, h₂]
-  ring
+  grind
 
 end Adjoint
 
@@ -636,8 +623,7 @@ theorem card_promoted_le
   classical
   rcases Nat.eq_zero_or_pos
     (univ.filter fun i => (c.2.2.2.1 i).2 ∧ edgePromoted c i = xp.1).card with h0 | hpos
-  · rw [h0]
-    exact Nat.zero_le _
+  · omega
   · obtain ⟨i, hi⟩ := card_pos.1 hpos
     obtain ⟨hf, he⟩ := (mem_filter.1 hi).2
     obtain ⟨yp, hyp, hS1⟩ := hv.2.2.2.2.2.2.2.1 i hf
@@ -718,7 +704,7 @@ theorem crudeWeight_le_col
   have hv' : ∏ xp : Particle x d, ((S' xp : ℕ) : ℝ) ^ Q xp ≤
       ∏ i, if i ∈ c.2.1 then primeMult x d S' (edgeSrc s c i (Fin.last _)) else 1 := by
     rw [prod_pow_card_filter, prod_ite_mem, univ_inter]
-    refine prod_le_prod₀ (fun i _ => prod_nonneg fun _ _ => by positivity) fun i hi => ?_
+    refine prod_le_prod₀ (fun i _ => prod_nonneg (by simp)) fun i hi => ?_
     rw [filter_val_eq ⟨_, hstore i hi⟩ rfl, prod_singleton]
     unfold primeMult
     calc ((S' ⟨_, hstore i hi⟩ : ℕ) : ℝ)
@@ -727,7 +713,7 @@ theorem crudeWeight_le_col
       _ ≤ ∑ xp : Particle x d, if xp.1.1 = edgeSrc s c i (Fin.last _) then (S' xp : ℝ) else 0 :=
           single_le_sum (f := fun xp : Particle x d =>
             if xp.1.1 = edgeSrc s c i (Fin.last _) then (S' xp : ℝ) else 0)
-            (fun _ _ => by split_ifs <;> positivity) (mem_univ _)
+            (fun _ _ => by positivity) (mem_univ _)
   -- the memory weights
   have hmw := memWeight_mul_eq (fun xp : Particle x d => ν xp.1.1) S P Q hP1 hQ1 hPS
   change memWeight _ S * _ * _ = memWeight _ S' * _ * ∏ xp, ((S' xp : ℕ) : ℝ) ^ Q xp at hmw
@@ -758,19 +744,19 @@ theorem crudeWeight_le_col
     rw [hAdef, hEdef, ← prod_mul_distrib]
     refine prod_congr rfl fun i _ => ?_
     split_ifs
-    · rw [div_eq_mul_inv]
-    · rw [one_mul]
+    · ring
+    · linarith
   have hBE : Bν * E = Na * G := by
     rw [hBdef, hEdef, hNa, hGdef, ← prod_mul_distrib, ← prod_mul_distrib]
     refine prod_congr rfl fun i _ => ?_
     split_ifs
     · rfl
-    · rw [one_mul, mul_one]
+    · simp
   have hNbM : Nb * Mm = Cm * T := by
     rw [hNb, hMdef, hCm, hTdef, ← prod_mul_distrib, ← prod_mul_distrib]
     refine prod_congr rfl fun i _ => ?_
     split_ifs
-    · rw [mul_comm]
+    · linarith
     · rfl
   have hcol : ∏ i, colFactor q x d N S' (decide (i ∈ c.2.1)) (c.2.2.2.1 i).2
       (edgeSrc s c i (Fin.last _)) = Cm * Two := by
@@ -787,7 +773,7 @@ theorem crudeWeight_le_col
       · have := hV i _ (mem_band_of_mem_edgeChoices hc i)
         rw [inv_le_comm₀ (by linarith) (by norm_num)]
         linarith
-      · exact le_rfl
+      simp
   have hT : 0 < T := prod_pos fun i _ => by
     split_ifs
     exacts [hνpos i _ (mem_band_edgeSrc s c i _), zero_lt_one]
@@ -869,9 +855,9 @@ theorem sum_col_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀)
       Fintype.piFinset (fun i => (univ : Finset Bool) ×ˢ (univ : Finset Bool) ×ˢ
         band x (d.a i)) ×ˢ (univ : Finset ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r))
   have hcolF0 : ∀ st f b, 0 ≤ colFactor q x d N s'.2.2.1 st f b := fun st f b =>
-    mul_nonneg (by split_ifs; exacts [primeMult_nonneg _ _, hν _]) (by split_ifs <;> norm_num)
+    mul_nonneg (by split_ifs; exacts [primeMult_nonneg _ _, hν _]) (by positivity)
   have hF0 : ∀ y, 0 ≤ F y := fun y =>
-    mul_nonneg (mul_nonneg (mul_nonneg (hμ0 s') hr0) (prod_nonneg fun i _ => hcolF0 _ _ _))
+    mul_nonneg (mul_nonneg (mul_nonneg (by grind) hr0) (prod_nonneg (by grind)))
       (crudeKernel_nonneg _ _ _ _ _ _ _)
   -- an admissible choice reaching `s'`
   have hfacts : ∀ p ∈ A, p.2 ∈ edgeChoices x d Y d₀ u v r ∧ EdgeValid x d Y d₀ u v r B p.1 p.2 ∧
@@ -895,11 +881,11 @@ theorem sum_col_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀)
     obtain ⟨hσ, hσ', htr, hz⟩ := h
     have htr' := fun i => congrFun htr i
     simp only [Prod.mk.injEq] at htr'
-    have hst : c₁.2.1 = c₂.2.1 := Finset.ext fun i => by simpa using (htr' i).1
-    have hb : ∀ i, edgeSrc s₁ c₁ i (Fin.last _) = edgeSrc s₂ c₂ i (Fin.last _) :=
+    have hst := Finset.ext fun i => by simpa using (htr' i).1
+    have hb :=
       fun i => (htr' i).2.2
-    have htgt : edgeTgt s₁ c₁ = edgeTgt s₂ c₂ := htgt₁.symm.trans htgt₂
-    have hlab : c₁.2.2.2.1 = c₂.2.2.2.1 := funext fun i => Prod.ext
+    have htgt := htgt₁.symm.trans htgt₂
+    have hlab := funext fun i => Prod.ext
       (by rw [label_eq_tgt s₁ c₁, label_eq_tgt s₂ c₂, htgt, hσ']) (htr' i).2.1
     have hc : c₁ = c₂ :=
       Prod.ext hσ (Prod.ext hst (Prod.ext (hz₁.symm.trans hz₂) (Prod.ext hlab hσ')))
@@ -968,8 +954,7 @@ theorem sum_col_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀)
           mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hw hr0)
             (crudeKernel_nonneg _ _ _ _ _ _ _)
       _ = F (φ (s, c)) := by
-          simp only [F, φ]
-          ring
+          linarith
   -- the image of the parameters
   have himage : A.image φ ⊆ Params := by
     intro y hy
@@ -1054,7 +1039,7 @@ theorem sum_col_chainEdgeCoef_le (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀)
         simp only [A]
         rw [sum_filter_of_ne hne, sum_filter, sum_product]
         simp only [sum_filter]
-        congr! 3
+        ring
     _ ≤ ∑ p ∈ A, F (φ p) := sum_le_sum hpt
     _ = ∑ y ∈ A.image φ, F y := (sum_image hinj).symm
     _ ≤ ∑ y ∈ Params, F y := sum_le_sum_of_subset_of_nonneg himage fun y _ _ => hF0 y
@@ -1103,12 +1088,12 @@ theorem normLe_edgeChoiceOp (hq : 0 < q) (hq₁ : q < 1) (hd₀ : 0 < d₀) (hY 
     refine le_trans (le_of_eq ?_) ((sum_le_sum fun s _ => sum_le_sum fun c _ =>
       mul_le_mul_of_nonneg_left (ha s c) (hμ0 s)).trans
         (sum_col_chainEdgeCoef_le (A₀ := A₀) hq hq₁ hd₀ hY hU hL hdisj hV hν hνpos hνi s'))
-    congr! 3
+    linarith
 
 /-- The damping defects are in `[0, 1]`. -/
 private theorem dampDefect_mem_Icc' (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
     0 ≤ dampDefect q N j ∧ dampDefect q N j ≤ 1 := by
-  have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
+  have hs := Real.sqrt_le_one.2 hq₁.le
   unfold dampDefect
   split_ifs <;> constructor <;> linarith [Real.sqrt_nonneg q]
 
@@ -1116,8 +1101,8 @@ private theorem dampDefect_mem_Icc' (hq : 0 < q) (hq₁ : q < 1) (N j : ℕ) :
 private theorem half_le_baseline' (hq : 0 < q) (hq₁ : q < 1) {N p : ℕ}
     (hp : 2 * N + 1 ≤ p) : 1 / 2 ≤ baseline q N p := by
   have hp1 : (0 : ℝ) < p + 1 := by positivity
-  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-  have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
+  have hNp : 2 * ((N : ℝ) + 1) ≤ p + 1 := by exact_mod_cast (by omega)
+  have hsum :=
     calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
           sum_le_sum fun j _ => (dampDefect_mem_Icc' hq hq₁ N j).2
       _ = (N : ℝ) + 1 := by simp
@@ -1182,9 +1167,9 @@ theorem exists_edgeChoiceOp_normLe {q C CX alo ahi g : ℝ} (A₀ : ℝ) (hq : 0
   have hL1 : 1 ≤ L := hc₀1.trans hLc
   have hL0 : 0 < L := by linarith
   -- the band facts
-  have hV₀ : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) := fun i => (hV _ (hd.window i).1).1
-  have hV₁ : ∀ i, harmonicMass (band x (d.a i)) ≤ 1 := fun i => (hV _ (hd.window i).1).2
-  have hb : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p :=
+  have hV₀ := fun i => (hV _ (hd.window i).1).1
+  have hV₁ := fun i => (hV _ (hd.window i).1).2
+  have hb :=
     fun p hp => half_le_baseline' hq hq₁ (hbig d hd p hp)
   have hdisj' : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)) := by
     intro i j hij
@@ -1199,8 +1184,8 @@ theorem exists_edgeChoiceOp_normLe {q C CX alo ahi g : ℝ} (A₀ : ℝ) (hq : 0
     (sum_primeWeight_band_le hV₀ hV₁ hb) ha
   -- `√(R C) ≤ L^{C_e}`
   have hLA : L ^ (3 * A₀) ≤ L ^ (3 * A) :=
-    Real.rpow_le_rpow_of_exponent_le hL1 (by rw [hA]; linarith [le_max_left A₀ 0])
-  have hLA1 : 1 ≤ L ^ (3 * A) := Real.one_le_rpow hL1 (by rw [hA]; linarith [le_max_right A₀ 0])
+    Real.rpow_le_rpow_of_exponent_le hL1 (by grind)
+  have hLA1 : 1 ≤ L ^ (3 * A) := Real.one_le_rpow hL1 (by positivity)
   have hκ : 16 * (1 + 52 * L ^ (3 * A₀)) ≤ 848 * L ^ (3 * A) := by linarith
   have hκ0 : 0 ≤ 16 * (1 + 52 * L ^ (3 * A₀)) := by positivity
   have hL3 : 1 ≤ L ^ 3 := one_le_pow₀ hL1
@@ -1215,7 +1200,7 @@ theorem exists_edgeChoiceOp_normLe {q C CX alo ahi g : ℝ} (A₀ : ℝ) (hq : 0
     linarith
   have hpow : L ^ (3 * (K : ℝ) + 3 * A + 1) = (L ^ 3) ^ K * L ^ (3 * A) * L := by
     rw [Real.rpow_add hL0, Real.rpow_add hL0, Real.rpow_one, ← pow_mul,
-      show 3 * (K : ℝ) = ((3 * K : ℕ) : ℝ) by push_cast; ring, Real.rpow_natCast]
+      show 3 * (K : ℝ) = ((3 * K : ℕ) : ℝ) by simp, Real.rpow_natCast]
   have hfin : (2 ^ K * (2 * (B : ℝ) + 4) ^ K * (16 * (1 + 52 * L ^ (3 * A₀)))) *
       (3 ^ K * ((B : ℝ) + 4) ^ K * (16 * (1 + 52 * L ^ (3 * A₀)))) ≤
         (L ^ (3 * (K : ℝ) + 3 * A + 1)) ^ 2 := by
@@ -1234,11 +1219,11 @@ theorem exists_edgeChoiceOp_normLe {q C CX alo ahi g : ℝ} (A₀ : ℝ) (hq : 0
             _ ≤ L ^ 2 := by
                 rw [sq]
                 exact le_mul_of_one_le_left hL0.le hL1
-      _ = (L ^ (3 * (K : ℝ) + 3 * A + 1)) ^ 2 := by rw [hpow]; ring
+      _ = (L ^ (3 * (K : ℝ) + 3 * A + 1)) ^ 2 := by grind
   intro f
   refine (hnorm f).trans (mul_le_mul_of_nonneg_right ?_ ?_)
   · rw [Real.sq_sqrt (mul_nonneg (by positivity) (by positivity))]
-    exact hfin
+    omega
   · exact sum_nonneg fun s _ => mul_nonneg (mul_nonneg
       (prod_nonneg fun i _ => prod_nonneg fun h _ => primeWeight_nonneg' hb _)
       (memWeight_nonneg (fun xp => primeWeight_nonneg' hb _) _)) (sq_nonneg _)

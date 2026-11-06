@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.HeterogeneousCRT
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentProductCRT
 open CenteredMomentCorrelation CenteredMomentCommonSupport
 open CenteredMomentHeterogeneousCRT
@@ -92,15 +92,14 @@ theorem fullModulusCorrelation_product (a b : ι → A)
   have hcrt := fullCorrelation_three_equiv (productCRT a ha).toEquiv (productCRT b hb).toEquiv
     (jointCRT a b hab)
     (scaledResidue (∏ i, a i) (∏ i, b i) ((∏ i, a i) * ∏ i, b i) rfl)
-    (scaledResidue (∏ i, b i) (∏ i, a i) ((∏ i, a i) * ∏ i, b i) (mul_comm _ _))
+    (scaledResidue (∏ i, b i) (∏ i, a i) ((∏ i, a i) * ∏ i, b i) (by ring))
     (fun i x => scaledResidue (a i) (b i) (a i * b i) rfl
       (Ideal.Quotient.mk _ (cofactor b i) * x))
-    (fun i y => scaledResidue (b i) (a i) (a i * b i) (mul_comm _ _)
+    (fun i y => scaledResidue (b i) (a i) (a i * b i) (by ring)
       (Ideal.Quotient.mk _ (cofactor a i) * y))
     (left_crt_component a b ha hab) (right_crt_component a b hb hab)
     (fun i => χ i) (fun i => ψ i) (Ideal.Quotient.mk _ h)
-  simpa only [fullModulusCorrelation, fullCorrelation, crtCharacter_apply, jointCRT_mk,
-    RingEquiv.toEquiv_eq_coe, EquivLike.coe_coe] using hcrt
+  simpa
 
 theorem cross_cofactor_coprime (a b : ι → A)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
@@ -108,7 +107,7 @@ theorem cross_cofactor_coprime (a b : ι → A)
   unfold cofactor
   apply IsCoprime.prod_right
   intro j hj
-  have hji : j ≠ i := (Finset.mem_erase.mp hj).1
+  have hji := (Finset.mem_erase.mp hj).1
   have hij := (Ideal.isCoprime_span_singleton_iff _ _).mp (hab hji.symm)
   exact (IsCoprime.mul_right_iff.mp (IsCoprime.mul_left_iff.mp hij).1).2
 
@@ -150,12 +149,11 @@ theorem fullModulusCorrelation_product_norm (a b : ι → A)
   exact local_cofactor_norm a b hab χ ψ h i
 
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
+open ConcreteTraceCRT CanonicalQuadraticSieve
 open CenteredMomentSupportedCorrelation
-local notation "O" => ActualEisensteinCubic.O
 
 omit [DecidableEq ι] in
-theorem supported_character_product (a : ι → O)
+theorem supported_character_product (a : ι → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i}))
     (hprod : Supported (Ideal.span {∏ i, a i}))
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i}))) :
@@ -167,14 +165,14 @@ theorem supported_character_product (a : ι → O)
   simp only [crtCharacter_apply, productCRT_mk, supportedModulusCharacter_mk]
   rw [← Ideal.prod_span_singleton Finset.univ a, map_prod]
 
-theorem actualCorrelation_product_norm (a b : ι → O)
+theorem actualCorrelation_product_norm (a b : ι → ActualEisensteinCubic.O)
     (ha : ∀ i, Supported (Ideal.span {a i}))
     (hb : ∀ i, Supported (Ideal.span {b i}))
     (hA : Supported (Ideal.span {∏ i, a i}))
     (hB : Supported (Ideal.span {∏ i, b i}))
     (hca : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
     (hcb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
-    (hcab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i}))) (h : O) :
+    (hcab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i}))) (h : ActualEisensteinCubic.O) :
     ‖actualCorrelation (∏ i, a i) (∏ i, b i) hA hB h‖ =
       ∏ i, ‖actualCorrelation (a i) (b i) (ha i) (hb i) h‖ := by
   let : ∀ i, Finite (Residue (a i)) := fun i => finite_quotient_span (supported_element_ne_zero (a i) (ha i))

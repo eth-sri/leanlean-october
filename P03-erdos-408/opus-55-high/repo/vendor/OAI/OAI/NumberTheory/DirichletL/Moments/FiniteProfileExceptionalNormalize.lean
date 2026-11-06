@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalUnit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
 open HeckeFamily CenteredMomentHeckeTwist
@@ -34,21 +34,21 @@ theorem normalizedProfile_control (S) (W : 𝓢(ℝ,ℂ)) :
   rw [map_smul_eq_mul,Real.norm_of_nonneg (inv_nonneg.mpr (sourceControl_nonneg S W))]
   change (sourceControl S W)⁻¹*sourceControl S W≤1
   by_cases h : sourceControl S W=0
-  · simp [h]
-  · rw [inv_mul_cancel₀ h]
+  · simp_all
+  simp_all
 
 theorem normalizedProfile_support (S) (W : 𝓢(ℝ,ℂ)) :
     Function.support (normalizedProfile S W:ℝ→ℂ)⊆Function.support (W:ℝ→ℂ) := by
   intro x hx hw
   apply hx
-  simp [normalizedProfile,smul_apply,hw]
+  simp [normalizedProfile, hw]
 
 theorem normalizedProfile_reconstruct (S : Finset (ℕ×ℕ)) (hS : (0,0)∈S)
     (W : 𝓢(ℝ,ℂ)) : sourceControl S W • normalizedProfile S W=W := by
   by_cases h : sourceControl S W=0
   · rw [sourceControl_zero S hS W h]
-    simp [sourceControl,normalizedProfile]
-  · simp [normalizedProfile,smul_smul,h]
+    simp [normalizedProfile]
+  · simp [normalizedProfile, h]
 
 theorem twistedIdealSum_profile_smul (χ : Character) (W : 𝓢(ℝ,ℂ))
     (c t X : ℝ) : twistedIdealSum χ (c • W : 𝓢(ℝ,ℂ)) t X = (c:ℂ)*twistedIdealSum χ W t X := by

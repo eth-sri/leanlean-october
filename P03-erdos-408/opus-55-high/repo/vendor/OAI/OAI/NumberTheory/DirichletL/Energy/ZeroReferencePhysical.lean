@@ -9,19 +9,14 @@ public import OAI.NumberTheory.DirichletL.Energy.PhysicalEntry
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferencePhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferenceLive CenteredMomentEnergyOriginalSource
-open CenteredMomentEnergyFixedRadialReduction CenteredMomentEnergyPhysicalEntry
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
-open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
+open CenteredMomentEnergyState
+open CenteredMomentEnergyReferenceState
+open CenteredMomentEnergyOriginalSource
+open CenteredMomentCommonRadialData
+open CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 local instance : DecidableEq (Fin 0⊕Fin 2):=Classical.decEq _
 

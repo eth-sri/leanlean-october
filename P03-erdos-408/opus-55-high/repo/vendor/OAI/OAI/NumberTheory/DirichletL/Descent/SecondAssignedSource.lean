@@ -8,10 +8,8 @@ public import OAI.NumberTheory.DirichletL.Descent.SlotAssignments
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def pairedSlotAssignment (J₁ J₂ : Finset σ)
@@ -52,8 +50,8 @@ theorem pairedSlotWeight_norm_le_one (J₁ J₂ : Finset σ)
     ‖pairedSlotWeight J₁ J₂ a₁ a₂ q‖ ≤ 1 := by
   rw [pairedSlotWeight,norm_mul,norm_star]
   exact (mul_le_of_le_one_left (norm_nonneg _)
-    (slotAssignmentWeight_norm_le_one J₁ L₁ a₁ A q.1 (Finset.mem_product.mp hq).1 ha₁)).trans
-    (slotAssignmentWeight_norm_le_one J₂ L₂ a₂ A q.2 (Finset.mem_product.mp hq).2 ha₂)
+    (slotAssignmentWeight_norm_le_one J₁ L₁ a₁ A q.1 (by grind) ha₁)).trans
+    (slotAssignmentWeight_norm_le_one J₂ L₂ a₂ A q.2 (by grind) ha₂)
 
 def attachSecondSlots {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo 0)
     (newAssigned : Fin Jn → ι) : MarkedSecondSource ι Jo Jn where
@@ -91,9 +89,9 @@ theorem attachPairedSlots_injective {Jo : ℕ} (J₁ J₂ : Finset σ) :
   intro q r h
   have he := @attachSecondSlots_injective ι Jo (J₁.card+J₂.card)
     (q.1,pairedSlotAssignment J₁ J₂ q.2) (r.1,pairedSlotAssignment J₁ J₂ r.2) h
-  exact Prod.ext (congrArg (fun z : MarkedSecondSource ι Jo 0 × (Fin (J₁.card+J₂.card) → ι) => z.1) he)
+  exact Prod.ext (by grind)
     (pairedSlotAssignment_injective J₁ J₂
-      (congrArg (fun z : MarkedSecondSource ι Jo 0 × (Fin (J₁.card+J₂.card) → ι) => z.2) he))
+      (by grind))
 
 def assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :
@@ -125,8 +123,8 @@ theorem mem_assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource
   · rintro ⟨y,hy,q₁,hq₁,q₂,hq₂,rfl⟩
     apply Finset.mem_image.mpr
     refine ⟨(y,(q₁,q₂)),Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨hy,Finset.mem_product.mpr ⟨?_,?_⟩⟩,?_⟩,rfl⟩
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₁ i hi)).1)
-    · exact Finset.mem_pi.mpr (fun i hi => (Finset.mem_inter.mp (Finset.mem_pi.mp hq₂ i hi)).1)
+    · simp_all
+    · simp_all
     · intro j
       refine Fin.addCases (fun k => ?_) (fun k => ?_) j
       · simpa only [pairedSlotAssignment,Fin.addCases_left] using
@@ -134,7 +132,7 @@ theorem mem_assignedSecondSource {Jo : ℕ} (source : Finset (MarkedSecondSource
       · simpa only [pairedSlotAssignment,Fin.addCases_right] using
           (Finset.mem_inter.mp (indexedSlotAssignment_support J₂ L₂ _ q₂ hq₂ k)).2
 
-theorem assignedSecondSource_conditions (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem assignedSecondSource_conditions (p : ι → ActualEisensteinCubic.O) [∀ i, (Ideal.span {p i}).IsMaximal]
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
     (J₁ J₂ : Finset σ) (L₁ L₂ : σ → Finset ι) :
@@ -145,7 +143,7 @@ theorem assignedSecondSource_conditions (p : ι → Eis) [∀ i, (Ideal.span {p 
     intro x hx
     obtain ⟨⟨y,q⟩,hmem,he⟩ := Finset.mem_image.mp hx
     obtain ⟨hmem,hq⟩ := Finset.mem_filter.mp hmem
-    exact ⟨y,(Finset.mem_product.mp hmem).1,q,he,hq⟩
+    exact by grind
   constructor
   all_goals
     intro x hx

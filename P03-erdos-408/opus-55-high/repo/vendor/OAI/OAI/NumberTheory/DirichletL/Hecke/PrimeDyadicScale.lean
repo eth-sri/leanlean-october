@@ -24,8 +24,8 @@ theorem binCost_le_log (χ : Character) (B U H η : ℝ)
       _ = _ := by rw [Real.rpow_add hUp, Real.rpow_one]; ring
   have hlog : Real.log (complexity χ H) ≤ (2+η)*Real.log U := by
     apply (Real.log_le_log hcp hcomplex).trans
-    rw [Real.log_mul (by norm_num) (Real.rpow_pos_of_pos hUp _).ne', Real.log_rpow hUp]
-    have h2 := Real.log_le_log (by norm_num : (0 : ℝ)<2) hU
+    rw [Real.log_mul (by norm_num) (by positivity), Real.log_rpow hUp]
+    have h2 := Real.log_le_log (by positivity) hU
     nlinarith
   have hrad : 0<((radical χ.modulus).absNorm : ℝ) := by
     exact_mod_cast Nat.pos_iff_ne_zero.mpr
@@ -35,7 +35,7 @@ theorem binCost_le_log (χ : Character) (B U H η : ℝ)
   calc
     _ ≤ B*((2+η)*Real.log U)+localBound (1/2)*Real.log U :=
       add_le_add (mul_le_mul_of_nonneg_left hlog hB)
-        (mul_le_mul_of_nonneg_left hrlog (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le)
+        (mul_le_mul_of_nonneg_left hrlog (localBound_pos (by positivity)).le)
     _ = _ := by ring
 
 theorem binCost_le_power (χ : Character) (B U H η ε : ℝ)
@@ -48,7 +48,7 @@ theorem binCost_le_power (χ : Character) (B U H η ε : ℝ)
       (localBound_pos (by norm_num : (0 : ℝ)<1/2)).le
   have hh := mul_le_mul_of_nonneg_left
     (Real.log_le_rpow_div (by linarith : 0≤U) hε) hc
-  convert hh using 1 ; ring
+  grind
 
 end SevenEighths.HeckePrimeDyadic
 

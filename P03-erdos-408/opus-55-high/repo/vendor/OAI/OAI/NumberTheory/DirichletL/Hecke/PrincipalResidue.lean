@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.RayFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckePrincipalResidue
 open HeckeFamily HeckeCharacterAnalytic HeckeCoordinates
 
@@ -33,8 +33,8 @@ theorem coefficients_sum_positive (χ : Character) (hχ : χ.residue=1) :
           MulChar.sum_one_eq_card_units]
   refine ⟨(Nat.card (coordinateQuotientHom χ).ker : ℝ) * Fintype.card (O ⧸ χ.modulus)ˣ, ?_, ?_⟩
   · exact mul_pos (Nat.cast_pos.mpr (Nat.card_pos (α := (coordinateQuotientHom χ).ker)))
-      (Nat.cast_pos.mpr (Fintype.card_pos (α := (O ⧸ χ.modulus)ˣ)))
-  · simpa only [Complex.ofReal_mul, Complex.ofReal_natCast] using heq
+      (by positivity)
+  · simpa using heq
 
 theorem principal_residue_positive (χ : Character) (hχ : χ.residue=1) :
     ∃ R : ℝ, 0<R ∧ HeckeOrigin.poleRemoved χ 1=(R : ℂ) := by
@@ -42,8 +42,7 @@ theorem principal_residue_positive (χ : Character) (hχ : χ.residue=1) :
   have hN : (0 : ℝ)<χ.period := Nat.cast_pos.mpr (NeZero.pos χ.period)
   let d : ℝ := (((χ.period : ℝ)^2)^(-(1/2 : ℝ))) *
     ((3*(χ.period : ℝ)^2)^(-(1/2 : ℝ)))
-  have hd : 0<d := mul_pos (Real.rpow_pos_of_pos (sq_pos_of_pos hN) _)
-    (Real.rpow_pos_of_pos (mul_pos (by norm_num) (sq_pos_of_pos hN)) _)
+  have hd : 0<d := by positivity
   refine ⟨Real.pi*(2*d*c)/6, by positivity, ?_⟩
   rw [HeckeOrigin.poleRemoved_one, HeckeReciprocal.regularizedL_at_one,
     HeckeTheta.pair_g₀, he]

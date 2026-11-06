@@ -7,13 +7,11 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceTuples
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic CompletedGauss
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
   [∀ i, (Ideal.span {p i}).IsMaximal]
 
 lemma sourceIdeal_isRadical
@@ -28,7 +26,7 @@ lemma sourceIdeal_isRadical
     · exact (inferInstance : (Ideal.span {p a}).IsPrime).isRadical.inf ih
     · apply IsCoprime.prod_right
       intro b hb
-      exact hcop (fun he => ha (he.symm ▸ hb))
+      exact hcop (by grind)
 
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma cubeRadical_span_dvd_product (B : Finset ι) (v : ι → ℕ)
@@ -39,7 +37,7 @@ lemma cubeRadical_span_dvd_product (B : Finset ι) (v : ι → ℕ)
   unfold primeProduct
   apply Finset.prod_dvd_prod_of_dvd
   intro i hi
-  exact dvd_pow_self _ (Nat.ne_of_gt (hv i hi))
+  exact dvd_pow_self _ (by grind)
 
 theorem cubeSupport_dvd_radical
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
@@ -73,7 +71,7 @@ theorem firstMask_dvd_cube_radical
   exact hd.trans (mul_dvd_mul_left _ (cubeSupport_dvd_radical p hcop B v₁ v₂ hv))
 
 def cubeSecondSource {Jo Jn : ℕ} (B C D G E V : Finset ι)
-    (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (t : Ideal Eis) (k : Eis)
+    (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (t : Ideal ActualEisensteinCubic.O) (k : ActualEisensteinCubic.O)
     (oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal) (newAssigned : Fin Jn → ι) :
     SecondOriginalSource ι Jo Jn where
   q0 := Ideal.span {b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂}
@@ -100,7 +98,7 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
     {Jo Jn : ℕ} (B C D G E V : Finset ι) (hCB : Disjoint C B)
     (hD : D ⊆ C∪B) (hE : E ⊆ G)
     (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
-    (t : Ideal Eis) (k : Eis)
+    (t : Ideal ActualEisensteinCubic.O) (k : ActualEisensteinCubic.O)
     (oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal) (newAssigned : Fin Jn → ι)
     (hold : ∀ i, (oldAssigned i).val ∣
       Ideal.span {b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂} *
@@ -112,7 +110,7 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
         Ideal.span {j2Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂} = _
     rw [Ideal.span_singleton_mul_span_singleton,←jLabel_eq_squarefree_mul_j2]
     rfl
-  · have hb := congrArg (fun a : Eis => (Ideal.span {a} : Ideal Eis))
+  · have hb := congrArg (fun a : ActualEisensteinCubic.O => (Ideal.span {a} : Ideal ActualEisensteinCubic.O))
       (cube_pair_product_decomposition p B v₁ v₂ ε₁ ε₂ hv)
     simpa only [cubeSecondSource,pow_two,←Ideal.span_singleton_mul_span_singleton] using hb
   · exact (aLabel_dvd_cubeSupport p B ε₁).trans (cubeSupport_dvd_radical p hcop B v₁ v₂ hv)
@@ -120,7 +118,7 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
   · exact firstMask_dvd_cube_radical p hcop B C D hCB hD v₁ v₂ hv
   · change primaryGenerator (sourceIdeal p D) ≠ 0
     rw [sourceIdeal_gen p hp hpr]
-    exact Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
+    exact Finset.prod_ne_zero_iff.mpr (by grind)
   · exact hE
   · exact hold
   · exact hnew
@@ -128,7 +126,7 @@ theorem cubeSecondSource_valid (hp : ∀ i, p i ≠ 0)
 omit [DecidableEq ι] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem oldSlot_dvd_reconstructed_support
     (B C : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (hv : ∀ i ∈ B, 0 < v i) (P t : Ideal Eis)
+    (hv : ∀ i ∈ B, 0 < v i) (P t : Ideal ActualEisensteinCubic.O)
     (hP : P ∣ sourceIdeal p B*sourceIdeal p C*t) :
     P ∣ Ideal.span {b0Label p B v ε₁ ε₂}*
       Ideal.span {jLabel p B v ε₁ ε₂}*sourceIdeal p C*t := by
@@ -143,7 +141,7 @@ theorem cubeSecondSource_valid_original_slots (hp : ∀ i, p i ≠ 0)
     {Jo Jn : ℕ} (B C D G E V : Finset ι) (hCB : Disjoint C B)
     (hD : D ⊆ C∪B) (hE : E ⊆ G)
     (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i)
-    (t : Ideal Eis) (k : Eis)
+    (t : Ideal ActualEisensteinCubic.O) (k : ActualEisensteinCubic.O)
     (oldAssigned : Fin Jo → SmoothMobiusCorrection.PrimeIdeal) (newAssigned : Fin Jn → ι)
     (hold : ∀ i, (oldAssigned i).val ∣ sourceIdeal p B*sourceIdeal p C*t)
     (hnew : ∀ i, newAssigned i ∈ G∪V) :

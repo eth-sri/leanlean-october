@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.BufferedSlices
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
 lemma rowAmplitudeOnLines_buffered_height_uniform {K : ℕ}
@@ -53,7 +52,7 @@ lemma rowAmplitudeOnLines_buffered_height_uniform {K : ℕ}
 
 theorem buffered_x_slice_arbitrary_decay {K : ℕ}
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -84,8 +83,8 @@ theorem buffered_x_slice_arbitrary_decay {K : ℕ}
       _ ≤ (A*(3+|H|)^2)*(3*jointHeight tx q.1 q.2)^2 := mul_le_mul_of_nonneg_left
         (pow_le_pow_left₀ (by positivity) hh 2) (by positivity)
       _ = _ := by ring
-  have ht := hprofile σ ⟨by linarith [hσ.1],hσ.2⟩ r ⟨le_rfl,le_rfl⟩ (1-a-6*e)
-    ⟨by linarith,by linarith⟩ .s tx (9*A*(3+|H|)^2) (by positivity)
+  have ht := hprofile σ ⟨by grind,hσ.2⟩ r (by simp) (1-a-6*e)
+    (by grind) .s tx (9*A*(3+|H|)^2) (by positivity)
     X Y Z hX hY hZ G hG.aestronglyMeasurable hb
   have ht' : Integrable (fun q : ℝ×ℝ=>continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z
         σ (1-a-6*e) r ((tx,q.1),q.2)) (volume.prod volume) ∧
@@ -94,14 +93,14 @@ theorem buffered_x_slice_arbitrary_decay {K : ℕ}
         (9*A*(3+|H|)^2)*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height tx^(N+2) := by
     simpa only [sliceMap,G,continuedRowOnLines_eq_amplitude] using ht
   refine ⟨ht'.1,ht'.2.trans ?_⟩
-  have hH0 : 0≤H := htx ▸ abs_nonneg tx
+  have hH0 : 0≤H := by grind
   have hheight : height tx=height H := by simp [height,htx,abs_of_nonneg hH0]
   have hpow : (3+|H|)^2≤9*(height H)^2 := by
     have hh : 3+|H|≤3*height H := by unfold height;linarith [abs_nonneg H]
     have hh' := pow_le_pow_left₀ (by positivity) hh 2
     norm_num [mul_pow] at hh'
     exact hh'
-  have hden : 0<height H := height_pos H
+  have hden := height_pos H
   rw [hheight]
   calc
     _ ≤ (9*A*(9*(height H)^2))*D*(X^(1/2-r)*Z^(σ+r-1)*Y^((1-a-6*e)-1))/height H^(N+2) := by

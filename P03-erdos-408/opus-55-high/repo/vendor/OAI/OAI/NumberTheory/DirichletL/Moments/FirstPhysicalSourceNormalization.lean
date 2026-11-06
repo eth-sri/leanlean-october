@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourcePool
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
 open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
 open CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced
+open CenteredMomentSupportedCorrelation CenteredMomentActive
 local notation "O"=>ActualEisensteinCubic.O
 
-theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
+theorem scalar_norm (C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(E:Finset (CommonIndex C D))
     (K A₀ B₀:ℝ)(hK:0<K)(_hA₀:0<A₀)(_hB₀:0<B₀):
     ‖scalar C D hC E K A₀ B₀‖=
       ‖inactiveWeight C D E‖*K/
@@ -26,7 +25,7 @@ theorem scalar_norm (C D:Ideal O)(hC:Supported C)(E:Finset (CommonIndex C D))
     norm_pos_iff.mpr (eisEmbedding_ne_zero
       (supported_element_ne_zero _ (subsetGenerator_supported C D hC E)))
   have hk:0<K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2:=
-    div_pos hK (sq_pos_of_pos he)
+    by positivity
   unfold scalar
   rw [norm_mul,norm_div,norm_mul,
     norm_canonicalNormalizedGauss (activePrime C D) (activeCoprime C D) (activeGood C D hC)

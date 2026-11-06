@@ -104,7 +104,7 @@ theorem exists_endpoint_meanSquare
     have : 1 ≤ L ^ (Cm + 2) := by
       have hCm : 0 ≤ Cm := by
         by_contra hneg
-        have : L ^ Cm < 1 := Real.rpow_lt_one_of_one_lt_of_neg hL (by linarith)
+        have  := Real.rpow_lt_one_of_one_lt_of_neg hL (by linarith)
         have : (1 : ℝ) ≤ k := by exact_mod_cast hk₁
         linarith
       exact Real.one_le_rpow hL.le (by linarith)
@@ -126,7 +126,7 @@ theorem exists_endpoint_meanSquare
     σ k h hY₁ hY₂ hσ hk₁ hk₂
   rw [one_mul] at he₁
   -- the remainder is at most `2 L^{-A₀}`
-  have hemar : Real.exp (-(c * L / Real.log L ^ 20)) ≤ L ^ (-(A₀ + CR)) := he₂
+  have hemar := he₂
   have hR : ∫ t in -T₀..T₀, ‖twistedPoly Y Ue h k t‖ ^ 2 ≤ 2 * L ^ (-A₀) := by
     refine he.trans ?_
     rw [mul_add]

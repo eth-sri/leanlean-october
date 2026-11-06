@@ -19,13 +19,13 @@ lemma first_tail_fixed_cap (K D E U₁ U₂ B G₁ G₂ P H : ℝ) (A : ℕ)
     65536*G₁*G₂*P*B^19/(1+H)^A := by
   have hB0 : 0≤B := zero_le_one.trans hB
   have hB2 : B≤B^2 := by nlinarith
-  have hB3 : B≤B*B^2 := le_mul_of_one_le_right hB0 (one_le_pow₀ hB)
+  have hB3 : B≤B*B^2 := le_mul_of_one_le_right hB0 (by linarith)
   have hb := firstTail_scalar_bound K D E U₁ U₂ B B G₁ G₂ P H A hK hD hE hU₁ hU₂
     hB0 hG₁ hG₂ hP hH (hDb.trans hB3) (hEb.trans hB2) h₁ h₂
   have hscale : 1+B^3*B^4/K≤2*B^8 := by
     calc
       _ ≤ 1+B^3*B^4*B := by rw [div_eq_mul_inv]; gcongr
-      _ ≤ 2*B^8 := by have hh : 1≤B^8 := one_le_pow₀ hB; nlinarith [hh]
+      _ ≤ 2*B^8 := by have hh : 1≤B^8 := one_le_pow₀ hB; linarith
   apply hb.trans
   apply div_le_div_of_nonneg_right _ (by positivity)
   calc
@@ -45,15 +45,13 @@ theorem choose_first_tail_order (Lcap tau saving : ℝ) (hL : 0≤Lcap) (htau : 
   have hz : 0<Z := zero_lt_one.trans_le hZ
   have hb := first_tail_fixed_cap K D E U₁ U₂ (Z^Lcap) G₁ G₂ P (Z^tau) A
     hK hD hE hU₁ hU₂ (Real.one_le_rpow hZ hL) hG₁ hG₂ hP
-    (Real.rpow_pos_of_pos hz _).le hKb hKi hDb hEb h₁ h₂
+    (by positivity) hKb hKi hDb hEb h₁ h₂
   have hdecay : (Z^Lcap)^19/(1+Z^tau)^A≤Z^(-saving) := by
     calc
       _ ≤ (Z^Lcap)^19/(Z^tau)^A := div_le_div_of_nonneg_left (by positivity)
         (by positivity) (pow_le_pow_left₀ (by positivity) (by linarith) A)
       _ = Z^(19*Lcap-tau*(A:ℝ)) := by
         rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_mul_natCast hz.le,←Real.rpow_sub hz]
-        congr 1
-        norm_num
         ring
       _ ≤ _ := by
         apply Real.rpow_le_rpow_of_exponent_le hZ

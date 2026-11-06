@@ -9,20 +9,19 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CompletedGauss
+open ProbeEuler ProbeRow ConcretePrimeRowBridge
 
-lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (b : O) (hb : IsCoprime b p)
+lemma row_initial_geometric (η : HeckeFamily.Character) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (b : ActualEisensteinCubic.O) (hb : IsCoprime b p)
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let Q : ℝ := Ideal.absNorm (Ideal.span {p})
     let rho := actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)
     ‖coordV Q z‖<1 ∧ ‖coordR Q ((actualACube η p)^2) x z‖<1 ∧
       ‖coordW Q rho w‖<1 ∧ ‖coordD Q (targetMonoid η p) rho x‖<1 := by
   dsimp only
-  have hP : Prime (Ideal.span {p}:Ideal O) := (Ideal.prime_span_singleton_iff).mpr hp
+  have hP := (Ideal.prime_span_singleton_iff).mpr hp
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le ⟨_,hP⟩
   have hQ0 : (0:ℝ)<Ideal.absNorm (Ideal.span {p}) := by linarith
@@ -40,10 +39,10 @@ lemma row_initial_geometric (η : HeckeFamily.Character) (p : O) (hp : Prime p)
   · apply (coordD_norm_le _ hQ0 _ _ x (targetMonoid_norm_le_one η p) hn).trans_lt
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)
 
-theorem idealRowHighLocalFactor_unramified (η : HeckeFamily.Character) (p : O) (hp : Prime p)
-    [(Ideal.span {p}:Ideal O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
-    (hs : Supported (Ideal.span {p})) (b : O) (hb : IsCoprime b p)
+theorem idealRowHighLocalFactor_unramified (η : HeckeFamily.Character) (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal] (hg : goodLambda∉Ideal.span {p})
+    (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2) (hprimary : goodLambda^2∣p-1)
+    (hs : Supported (Ideal.span {p})) (b : ActualEisensteinCubic.O) (hb : IsCoprime b p)
     (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     let Q : ℝ := Ideal.absNorm (Ideal.span {p})
     let rho := actualSextic (Ideal.span {p}) hg (Ideal.Quotient.mk _ b)

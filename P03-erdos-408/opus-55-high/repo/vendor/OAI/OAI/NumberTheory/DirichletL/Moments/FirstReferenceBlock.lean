@@ -8,33 +8,30 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstMixedWindow
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceBlock
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
 open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstAmplificationChoice
-open CenteredMomentSourceRow CenteredMomentFirstSectors CenteredMomentGaussEnergy
-open CenteredMomentFirstDivisorSupport CenteredMomentChildAssembly
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport RayFourExpansion
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondWindowBudget
+open CenteredMomentFirstPhysicalSource
+open CenteredMomentCanonicalFirst RayFourExpansion
+open CenteredMomentSecondWindowBudget
 open CenteredMomentSectorLocalization CenteredMomentLogDyadic CenteredMomentMobiusRegroup
-open CenteredMomentSecondHeightFamily CenteredMomentFirstPhysicalAnnularCommonBound
+open CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalCommonHarmonic CenteredMomentFirstMixedAllowance
 open CenteredMomentFirstMixedWindow CenteredMomentFirstWindowBudgets
-open CenteredMomentFirstCanonicalFamily CenteredMomentRankinRadical
-local notation "O"=>HeckeFamily.O
+open CenteredMomentRankinRadical
 
 theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
     (B δ:ℝ)(hB:0≤B)(hδ:0<δ):
     ∃Cb:ℝ,0<Cb ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
-    ∀{ι:Type*}[Fintype ι][DecidableEq ι],∀s:Input ι,∀R seed:Ideal O,
+    ∀{ι:Type*}[Fintype ι][DecidableEq ι],∀s:Input ι,∀R seed:Ideal HeckeFamily.O,
     ∀a₁ a₂:ℝ,0<a₁→0<a₂→
     (∀x,s.W₁ x≠0→a₁≤x)→(∀x,s.W₂ x≠0→a₂≤x)→
-    ∀(C D:Ideal O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
+    ∀(C D:Ideal HeckeFamily.O)(hC:Supported C)(hD:Supported D),primeSupport C=primeSupport D→
     ∀E:Finset (CommonIndex C D),∀ξ₁ ξ₂:RayCharacter,
-    ∀F:FixedPair s.η C D hC E ξ₁ ξ₂,∀rows:Finset O,∀K:ℝ,0<K→∀n:Fin 4→ℤ,
+    ∀F:FixedPair s.η C D hC E ξ₁ ξ₂,∀rows:Finset HeckeFamily.O,∀K:ℝ,0<K→∀n:Fin 4→ℤ,
     sourceRadius s/(D.absNorm:ℝ)≤Z^B→∀EL ER:Fin 4→ℝ,(∀i,0≤EL i)→(∀i,0≤ER i)→
     let V:=volume s;
     let refL:=(F.left.modulus.absNorm:ℝ)*(V/(C.absNorm:ℝ))^2*Z^(allowance C D Z);
@@ -98,7 +95,7 @@ theorem actual_reference_block (W:𝓢(ℝ,ℂ)) (decay J₁ J₂:ℕ)
       (dyadicScale_pos _) (dyadicScale_pos _) hZ.1 hEL hER
       (fun _ x hx=>by
         have hh:=logAnnulus_support hx
-        exact abs_le.mpr ⟨hh.1,hh.2.trans (Real.log_nonneg (by norm_num))⟩) hn
+        exact abs_le.mpr ⟨hh.1,hh.2.trans (by positivity)⟩) hn
     have hh:=div_le_div_of_nonneg_right hb' hV.le
     have hscale:0≤Cb*Z^δ:=by positivity
     have hmul:=mul_le_mul_of_nonneg_left href hscale

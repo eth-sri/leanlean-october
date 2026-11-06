@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Reflection.TailEnergyBudgetUniformDegr
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 theorem actual_finite_source_tail_budget_uniform_degree
     (Lcap δ saving : ℝ) (hδ : 0<δ) :
-    ∃ A : ℕ, ∀ {a c : Eis} {mode : Bool}
+    ∃ A : ℕ, ∀ {a c : ActualEisensteinCubic.O} {mode : Bool}
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)), ∀ {φ : Type*} [Fintype φ] (F : PrimeFamily φ)
-      (rows Pset : Finset (Ideal Eis)) (Z X QK QP : ℝ),
+      (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) (Z X QK QP : ℝ),
       128≤Z → 0<X → 1≤QK → 1≤QP →
       (∀ K∈rows,K≠0 ∧ (Ideal.absNorm K:ℝ)≤QK) →
       (∀ P∈Pset,P≠0 ∧ (Ideal.absNorm P:ℝ)≤QP) →
@@ -32,8 +31,8 @@ theorem actual_finite_source_tail_budget_uniform_degree
   have hz : 1≤Z := by linarith
   exact hA s F Z X QK QP rows.card Pset.card hz hX (by linarith) (by linarith)
     (Nat.cast_nonneg _) (Nat.cast_nonneg _) hF hK hP hXi
-    (finite_ideal_count_polynomial rows Z QK Lcap hZ hQK (fun K hK => (hrows K hK).1) (fun K hK => (hrows K hK).2) hK)
-    (finite_ideal_count_polynomial Pset Z QP Lcap hZ hQP (fun P hP => (hPs P hP).1) (fun P hP => (hPs P hP).2) hP)
+    (finite_ideal_count_polynomial rows Z QK Lcap hZ hQK (by grind) (by grind) hK)
+    (finite_ideal_count_polynomial Pset Z QP Lcap hZ hQP (by grind) (by grind) hP)
 end
 end SevenEighths.InverseReflectedPhase
 

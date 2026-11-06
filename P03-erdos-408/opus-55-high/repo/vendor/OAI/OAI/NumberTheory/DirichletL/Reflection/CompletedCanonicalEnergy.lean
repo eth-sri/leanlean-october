@@ -9,25 +9,23 @@ public import OAI.NumberTheory.DirichletL.Reflection.CanonicalCellArithmetic
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical
+open CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
 
-lemma maximal_prime_level_coprime (P : Ideal Eis) (hP : P.IsMaximal)
-    (hg : ConcretePrimeRowBridge.goodLambda∉P) (Q₀ : Ideal Eis) (c : Eis)
-    (hc : Ideal.span {c}=Ideal.span {(9:Eis)}*Q₀) (hQ : IsCoprime Q₀ P) :
-    IsCoprime (Ideal.span {(9:Eis)*c}) P := by
-  let S : PrimeFamily Unit := ⟨fun _ => P,fun _ => hP,fun _ => hg⟩
-  exact S.level_coprime Q₀ c hc (fun _ => hQ) ()
+lemma maximal_prime_level_coprime (P : Ideal ActualEisensteinCubic.O) (hP : P.IsMaximal)
+    (hg : ConcretePrimeRowBridge.goodLambda∉P) (Q₀ : Ideal ActualEisensteinCubic.O) (c : ActualEisensteinCubic.O)
+    (hc : Ideal.span {c}=Ideal.span {(9:ActualEisensteinCubic.O)}*Q₀) (hQ : IsCoprime Q₀ P) :
+    IsCoprime (Ideal.span {(9:ActualEisensteinCubic.O)*c}) P := by
+  let S : PrimeFamily Unit := ⟨fun _ => P,by grind,by grind⟩
+  exact S.level_coprime Q₀ c hc (by grind) ()
 
-lemma original_powerful_norm_le (J : Ideal Eis) (hJ : J≠0) :
+lemma original_powerful_norm_le (J : Ideal ActualEisensteinCubic.O) (hJ : J≠0) :
     (Ideal.absNorm (rowPowerfulPart J):ℝ)≤(Ideal.absNorm J:ℝ) := by
-  have he := congrArg (fun I : Ideal Eis => (Ideal.absNorm I:ℝ)) (row_powerful_simple_product J hJ)
+  have he := congrArg (fun I : Ideal ActualEisensteinCubic.O => (Ideal.absNorm I:ℝ)) (row_powerful_simple_product J hJ)
   simp only [map_mul,Nat.cast_mul] at he
   have hs := QuadraticMainBoundary.norm_one_le (rowSimplePart_ne_zero J)
-  have hp : (0:ℝ)≤Ideal.absNorm (rowPowerfulPart J) := Nat.cast_nonneg _
   nlinarith
 
 end

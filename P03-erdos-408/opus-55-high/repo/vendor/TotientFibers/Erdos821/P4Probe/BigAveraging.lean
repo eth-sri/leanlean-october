@@ -6,7 +6,6 @@ public import Erdos821.P4Probe.AverageOrthogonality
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -32,8 +31,8 @@ def bigFlatSet (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fin M)) :
   Finset.univ.filter (fun z => z.2 ∈ S z.1)
 
 lemma bigFlatWeight_eq (P : PrimeGroups) (M : ℕ) (a : P.BigLabels M) :
-    productWeight (bigFlatWeight P M) (flattenBig P M a) = P.idealMass a := by
-  exact Fintype.prod_prod_type (fun z : BigSite P M => P.mu z.1.val (a z.1 z.2))
+    productWeight (bigFlatWeight P M) (flattenBig P M a) = P.idealMass a :=
+  Fintype.prod_prod_type (fun z : BigSite P M => P.mu z.1.val (a z.1 z.2))
 
 lemma bigFlat_sqNorm (P : PrimeGroups) (M : ℕ) (f : P.BigLabels M → ℂ) :
     productSqNorm (bigFlatWeight P M) (fun a => f ((flattenBig P M).symm a)) =
@@ -43,7 +42,7 @@ lemma bigFlat_sqNorm (P : PrimeGroups) (M : ℕ) (f : P.BigLabels M → ℂ) :
   apply Fintype.sum_equiv (flattenBig P M)
   intro a
   rw [bigFlatWeight_eq]
-  simp [flattenBig]
+  simp
 
 lemma bigFlat_average (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fin M))
     (f : P.BigLabels M → ℂ) (a : P.BigLabels M) :
@@ -58,8 +57,8 @@ lemma bigFlat_average (P : PrimeGroups) (M : ℕ) (S : P.BigGroup → Finset (Fi
   have he : (fun g i => if i ∈ S g then y g i else a g i) =
       (flattenBig P M).symm (mixCoords (bigFlatSet P M S) (flattenBig P M a) (flattenBig P M y)) := by
     funext g i
-    by_cases hi : i ∈ S g <;> simp [flattenBig, mixCoords, bigFlatSet, hi]
-  exact congrArg (fun z => (P.idealMass y : ℂ) * f z) he
+    by_cases hi : i ∈ S g <;> simp [flattenBig, mixCoords, bigFlatSet]
+  simp_all
 
 lemma bigCoordinateAverage_sqNorm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g)
     (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) :
@@ -77,7 +76,7 @@ lemma bigCoordinateAverage_sqNorm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 
     have h' := bigFlat_average P M S f ((flattenBig P M).symm y)
     simpa only [Equiv.apply_symm_apply] using h'
   rw [hf, bigFlat_sqNorm] at h
-  exact h
+  omega
 
 lemma bigCoordinateAverage_norm_le (P : PrimeGroups) (M : ℕ) (hV : ∀ g, 0 < P.V g)
     (S : P.BigGroup → Finset (Fin M)) (f : P.BigLabels M → ℂ) :

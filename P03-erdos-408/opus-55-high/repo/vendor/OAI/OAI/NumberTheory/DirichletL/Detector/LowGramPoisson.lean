@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Detector.LowGramProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion CenteredMomentGaussEnergy
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma lowGram_pair_prefactor (C : CalibrationData) (W1 : ℝ→ℂ)
     (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v Q : ℝ) (s t : {I : Id // Supported I}) :
@@ -45,7 +44,7 @@ theorem lowGram_source_poisson (C : CalibrationData) (W1 : ℝ→ℂ)
         ∑s∈lowGaussColumns W1 hW1 Y hY,∑t∈lowGaussColumns W1 hW1 Y hY,
           ((lowGramCoefficient C σ s*lowGramProfile W1 v ((Ideal.absNorm s.val:ℝ)/Y))*
             star (lowGramCoefficient C σ t*lowGramProfile W1 v ((Ideal.absNorm t.val:ℝ)/Y)))*
-          ∑'h : O,actualCorrelation (primaryGenerator s.val) (primaryGenerator t.val)
+          ∑'h : ActualEisensteinCubic.O,actualCorrelation (primaryGenerator s.val) (primaryGenerator t.val)
             ((supported_span_primaryGenerator_iff s.val).mpr s.property)
             ((supported_span_primaryGenerator_iff t.val).mpr t.property) (-h)*
             paperRadialFourier U (Q*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator s.val*primaryGenerator t.val)‖^2) := by
@@ -60,7 +59,7 @@ theorem lowGram_source_poisson (C : CalibrationData) (W1 : ℝ→ℂ)
   rw [hes,het,←mul_assoc,lowGram_pair_prefactor C W1 Y hY σ v Q s t,mul_assoc]
 
 theorem lowGram_kernel_scale (Y Q : ℝ) (hY : 0<Y) (hQ : 0<Q)
-    (s t : {I : Id // Supported I}) (h : O) :
+    (s t : {I : Id // Supported I}) (h : ActualEisensteinCubic.O) :
     Q*‖eisEmbedding h‖^2/‖eisEmbedding (primaryGenerator s.val*primaryGenerator t.val)‖^2=
       ‖eisEmbedding h‖^2/((Y^2/Q)*((Ideal.absNorm s.val:ℝ)/Y)*((Ideal.absNorm t.val:ℝ)/Y)) := by
   simp_rw [ActualEisensteinCubic.eisEmbedding_norm_sq_eq_absNorm_span]

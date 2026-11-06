@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.Poisson
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped BigOperators Classical
+open scoped Classical
 open LocalReflectionBrackets
 noncomputable section
 
 lemma scalar_inverse_pair (a b c d : ℂ) (ha : a ≠ 0) (hb : b ≠ 0) (hd : d ≠ 0)
     (h : c*a*b=d) : a⁻¹*b⁻¹ = d⁻¹*c := by
-  field_simp
-  linear_combination -h
+  grind
 
 theorem marked_local_phase {F : Type*} [Field F] [Fintype F]
     (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (B z : F)
@@ -30,9 +29,7 @@ theorem marked_local_phase {F : Type*} [Field F] [Fintype F]
   have hi := scalar_inverse_pair (χ σ) (χ ε) (χ B*χ z) (χ (-1)) hs he' hn hh
   simp only [phase, show (0 : ℕ) ≠ 4 by decide, ↓reduceIte,
     MulChar.pow_apply_coe, MulChar.inv_apply_eq_inv']
-  calc
-    _ = (-tau χ ψ 2)*((χ σ)⁻¹*(χ ε)⁻¹)^2 := by ring
-    _ = _ := by rw [hi]; ring
+  grind
 
 theorem residual_local_phase {F : Type*} [Field F] [Fintype F]
     (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (σ ε : Fˣ) (A B z : F)
@@ -50,11 +47,7 @@ theorem residual_local_phase {F : Type*} [Field F] [Fintype F]
   simp only [phase, show (1 : ℕ) ≠ 4 by decide, show (1 : ℕ) ≠ 0 by decide,
     ↓reduceIte, show (1 : ℕ)+2 = 3 by decide,
     MulChar.pow_apply_coe, MulChar.inv_apply_eq_inv']
-  have hid : (χ σ)⁻¹^2*(χ ε)⁻¹^3 = (χ σ)*((χ σ)⁻¹*(χ ε)⁻¹)^3 := by
-    field_simp
-  calc
-    _ = (tau χ (ψ.mulShift (-1)) 1*tau χ ψ 3)*((χ σ)⁻¹^2*(χ ε)⁻¹^3) := by ring
-    _ = _ := by rw [hid,hi,hsig]; ring
+  grind
 
 end
 end SevenEighths.InverseReflectedPhase

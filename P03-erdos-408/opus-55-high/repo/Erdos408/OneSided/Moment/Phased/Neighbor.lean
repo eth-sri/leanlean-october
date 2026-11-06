@@ -38,7 +38,7 @@ theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
     intro z hz
     unfold rootPositions at hz
     simp only [mem_filter] at hz
-    exact ⟨hz.1.2.2.1, hz.1.2.2.2.1, hz.2⟩
+    exact by grind
   calc _ ≤ (Icc (1 : ℤ) 16).card := by
         refine card_le_card_of_injOn (fun z => ⌊u * tau r z / U⌋) (fun z hz => ?_)
           (fun z hz z' hz' h => ?_)
@@ -46,7 +46,7 @@ theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
           obtain ⟨h₁, h₂, -⟩ := hbox z hz
           have h₁' : (1 : ℝ) ≤ u * tau r z / U := (one_le_div hU).2 h₁
           have h₂' : u * tau r z / U ≤ 16 := (div_le_iff₀ hU).2 h₂
-          refine mem_coe.2 (mem_Icc.2 ⟨Int.le_floor.2 (by exact_mod_cast h₁'), ?_⟩)
+          refine mem_coe.2 (mem_Icc.2 ⟨Int.le_floor.2 (by linarith), ?_⟩)
           have := Int.floor_le (u * tau r z / U)
           exact_mod_cast this.trans h₂'
         · -- the difference is `m w` with `|m| u τ(w) < U ≤ u τ(w)`, so `m = 0`
@@ -69,8 +69,7 @@ theorem card_filter_det_le {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
             rw [← sub_div, abs_div, abs_of_pos hU, div_lt_one hU, htau, abs_mul,
               abs_of_pos (hU.trans_le hwU)] at hlt
             nlinarith
-          rw [hm0, zero_mul, sub_eq_zero] at hm₁ hm₂
-          exact Prod.ext hm₁ hm₂
+          grind
     _ = 16 := by simp
 
 /-- **The neighbor count** with the fixed position second: at most `16` positions `z` of the
@@ -80,8 +79,7 @@ theorem card_filter_det_le' {U V u v r : ℝ} (hU : 0 < U) {w : ℤ × ℤ}
     ((rootPositions U V u v r).filter fun z => z.1 * w.2 - z.2 * w.1 = n).card ≤ 16 := by
   calc _ = ((rootPositions U V u v r).filter fun z => w.1 * z.2 - w.2 * z.1 = -n).card := by
         congr 1
-        refine filter_congr fun z _ => ?_
-        constructor <;> intro h <;> linear_combination -h
+        grind
     _ ≤ 16 := card_filter_det_le hU hw (-n)
 
 /-- **The sum over the neighbors**: if every fiber of `e` on `T` has at most `16` points, then
@@ -98,27 +96,23 @@ theorem sum_dvd_le_of_card_le {α : Type*} {T : Finset α} {e : α → ℤ}
       ∑ t ∈ Icc (-(M : ℤ)) M, if e z = D * t then g t else 0 := by
     intro z
     have hnn : 0 ≤ ∑ t ∈ Icc (-(M : ℤ)) M, if e z = D * t then g t else 0 :=
-      sum_nonneg fun t _ => by split_ifs; exacts [hg t, le_rfl]
+      sum_nonneg fun t _ => by grind
     split_ifs with hdvd
     · obtain ⟨t₀, ht₀⟩ := hdvd
-      rw [show e z / D = t₀ by rw [ht₀, Int.mul_ediv_cancel_left _ hD']]
+      rw [show e z / D = t₀ by simp_all]
       by_cases hg₀ : g t₀ = 0
-      · rw [hg₀]
-        exact hnn
-      · calc g t₀ = if e z = D * t₀ then g t₀ else 0 := (ite_eq_left ht₀).symm
-          _ ≤ ∑ t ∈ Icc (-(M : ℤ)) M, if e z = D * t then g t else 0 :=
-            single_le_sum (f := fun t => if e z = D * t then g t else 0)
-              (fun t _ => by split_ifs; exacts [hg t, le_rfl]) (hgM t₀ hg₀)
-    · exact hnn
+      · linarith
+      simp_all
+    · omega
   calc ∑ z ∈ T, (if (D : ℤ) ∣ e z then g (e z / D) else 0)
       ≤ ∑ z ∈ T, ∑ t ∈ Icc (-(M : ℤ)) M, if e z = D * t then g t else 0 :=
-        sum_le_sum fun z _ => hpt z
+        sum_le_sum (by grind)
     _ = ∑ t ∈ Icc (-(M : ℤ)) M, ((T.filter fun z => e z = D * t).card : ℝ) * g t := by
         rw [sum_comm]
         refine sum_congr rfl fun t _ => ?_
         rw [← sum_filter, sum_const, nsmul_eq_mul]
     _ ≤ ∑ t ∈ Icc (-(M : ℤ)) M, 16 * g t :=
-        sum_le_sum fun t _ => mul_le_mul_of_nonneg_right (by exact_mod_cast he _) (hg t)
+        sum_le_sum fun t _ => mul_le_mul_of_nonneg_right (by simp_all) (hg t)
     _ = 16 * ∑ t ∈ Icc (-(M : ℤ)) M, g t := (mul_sum _ _ _).symm
 
 end Erdos408.OneSided

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianCoupled
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology SchwartzMap FourierTransform
+open scoped Classical
 open MeasureTheory Filter Set FourierBridge CompletedGauss
 namespace SevenEighths.ProbePhysical
 
@@ -31,14 +31,12 @@ lemma gaussianSlot_argument {ι : Type*} [Fintype ι] (x : ℝ) (hx : 0<x) (q : 
 
 lemma logPhase_neg_argument (t y : ℝ) : logPhase t (-y)=logPhase (-t) y := by
   unfold logPhase
-  congr 1
-  push_cast
-  ring
+  simp
 
 lemma gaussianFixedWindow_Vstar_twist (t x : ℝ) (hx : 0<x) :
     Vstar (CompletedHeight.normTwistedSource gaussianFixedWindow t) x=
       gaussianAnnulus x*logPhase t (Real.log x) := by
-  have hs : (Real.sqrt x:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
+  have hs := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hx).ne'
   unfold Vstar CompletedHeight.normTwistedSource gaussianFixedWindow
   field_simp
 
@@ -48,12 +46,9 @@ lemma gaussianAnnulus_log_support (y : ℝ) (hy : gaussianAnnulus (Real.exp y)�
     by_contra h; exact hy (gaussianAnnulus_small _ (le_of_not_gt h))
   have hhi : Real.exp y<2 := by
     by_contra h; exact hy (gaussianAnnulus_large _ (le_of_not_gt h))
-  have hl : Real.log (1/2)≤y := by simpa using Real.log_le_log (by norm_num : (0:ℝ)<1/2) hlo.le
+  have hl : Real.log (1/2)≤y := by simpa using Real.log_le_log (by positivity) hlo.le
   have hh : y≤Real.log 2 := by simpa using Real.log_le_log (Real.exp_pos y) hhi.le
-  rw [abs_le]
-  constructor
-  · have := neg_abs_le (Real.log (1/2)); have := abs_nonneg (Real.log 2); linarith
-  · have := le_abs_self (Real.log 2); have := abs_nonneg (Real.log (1/2)); linarith
+  grind
 
 theorem gaussian_selected_slot_family {ι : Type*} [Fintype ι]
     (W : ι→ℝ→ℂ) (M : ι→ℝ) (hM : ∀i,0≤M i)
@@ -70,8 +65,8 @@ theorem gaussian_selected_slot_family {ι : Type*} [Fintype ι]
     | none => |Real.log (1/2)|+|Real.log 2|+1
     | some i => M i
   have hM' : ∀o,0≤M' o := by intro o; cases o with
-    | none => dsimp [M']; positivity
-    | some i => exact hM i
+    | none => positivity
+    | some i => grind
   have hW : ∀o y,gaussianSlotWindow W o y≠0→|y|≤M' o := by
     intro o y
     cases o with

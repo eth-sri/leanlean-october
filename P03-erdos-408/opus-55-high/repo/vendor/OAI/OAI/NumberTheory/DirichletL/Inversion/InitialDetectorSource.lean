@@ -10,28 +10,27 @@ public import OAI.NumberTheory.DirichletL.Detector.RayPoolGood
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ComplexConjugate
+open scoped Classical
 namespace SevenEighths.InverseInitialDetectorSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorCoefficientTransfer
-open InverseInitialRawDictionary InverseInitialConjugateEnergy
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification
+open InverseInitialRawDictionary
 
 def baseCharacter (data : RowData) : Character := data.character ⟨1,one_ne_zero⟩
 
-theorem baseCharacter_coeff (data : RowData) (I : Ideal O) :
+theorem baseCharacter_coeff (data : RowData) (I : Ideal HeckeFamily.O) :
     idealCoeff (baseCharacter data) I=fixedBase data.η data.m data.f I := by
   rw [HeckeRowClosure.idealCoeff_eq_row data.η (baseCharacter data) data.m data.f 1
     (data.character_spec ⟨1,one_ne_zero⟩),mul_one]
   rfl
 
-theorem base_nonzero_prime (data : RowData) (P : Ideal O) (hP : Prime P)
+theorem base_nonzero_prime (data : RowData) (P : Ideal HeckeFamily.O) (hP : Prime P)
     (hN : ((baseCharacter data).modulus.absNorm:ℝ)<(P.absNorm:ℝ)) :
     fixedBase data.η data.m data.f P≠0 := by
   rw [←baseCharacter_coeff]
   exact HeckeDetectorRelativePrime.idealCoeff_ne_zero_of_coprime _ P hP.ne_zero
     (ProbeRaySlots.prime_coprime_of_norm_gt (baseCharacter data) ⟨P,hP⟩ hN)
 
-def primeProfile (V : ℝ→ℂ) (D : ℝ) (ζ : ℂ) (P : Ideal O) : ℂ :=
+def primeProfile (V : ℝ→ℂ) (D : ℝ) (ζ : ℂ) (P : Ideal HeckeFamily.O) : ℂ :=
   V ((P.absNorm:ℝ)/D)*(((P.absNorm:ℝ)/D:ℝ):ℂ)^(ζ-1)
 
 end SevenEighths.InverseInitialDetectorSource

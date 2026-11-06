@@ -10,23 +10,17 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 def PatternMaps {ι : Type*} (r : Setoid ι) (α : Type*) :=
   {b : ι → α // Setoid.ker b = r}
@@ -49,7 +43,7 @@ theorem patternLift_injective {ι α : Type*} {r : Setoid ι} (b : PatternMaps r
       intro h
       apply Quotient.sound
       rw [←b.property]
-      exact h
+      simp_all
 
 noncomputable def patternClass {ι α : Type*} [Fintype ι] [Fintype α]
     (r : Setoid ι) : Finset (ι → α) := Finset.univ.filter (fun b => Setoid.ker b=r)
@@ -95,7 +89,7 @@ theorem constant_boxTuple_injective_iff {s h : ℕ} (a : ℤ) (n : Fin s → Fin
     apply hn
     have hv : (n i:ℕ)=(n j:ℕ) := by
       exact_mod_cast (add_left_cancel he : (n i:ℤ)=(n j:ℤ))
-    exact Fin.ext hv
+    omega
 
 noncomputable def patternTupleEquiv {ι : Type*} [Fintype ι] (r : Setoid ι) (h : ℕ) (a : ℤ) :
     {b // b∈patternClass (α:=Fin h) r} ≃

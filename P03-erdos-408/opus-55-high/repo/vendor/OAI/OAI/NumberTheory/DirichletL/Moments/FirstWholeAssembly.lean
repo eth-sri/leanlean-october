@@ -9,14 +9,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstWholeAssembly
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson
-open CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy
-open CenteredMomentFirstAssembly CenteredMomentCommonSupport CenteredMomentFirstReduced
-open CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstWholeKernel
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentFirstWholeAssembly

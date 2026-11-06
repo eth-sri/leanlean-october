@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsCentralLower
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily ProbeRaySlots
-local notation "O" => HeckeFamily.O
 
 theorem central_pool_good_eventually (η : Character) (e c b dmin rmin : ℝ)
     (he : 0<e) (hc : 0<c) (hcb : c≤b) (hd : 0<dmin) (hr : 0<rmin) :

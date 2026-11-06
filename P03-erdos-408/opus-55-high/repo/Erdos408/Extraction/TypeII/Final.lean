@@ -16,7 +16,7 @@ so that `|Comp_j - Prox_j| ≤ (C₄ + C₅)(x/L) L^{-1/20}`.
 
 namespace Erdos408.TypeII
 
-open Finset Real Filter
+open Finset Filter
 
 /-- The E4 bound against the fudge factor `u`. -/
 theorem bound4_le {q : ℝ} {K : ℕ} {CN c E₂ κ CΦ C₂ : ℝ} {M : ℕ → ℝ} {x γ : ℝ} {A r : ℕ}
@@ -121,14 +121,14 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
   have hu0 : 0 ≤ u := by linarith
   set e := L ^ (-(1 / 10) : ℝ) with he
   have he0 : 0 < e := by positivity
-  have hLinv : L ^ (-1 : ℝ) = L⁻¹ := Real.rpow_neg_one L
+  have hLinv := Real.rpow_neg_one L
   -- the strip term
   have hstrip : 2 * cW * K' ≤ 6 * CW * u * e := by
     have h1 : L ^ (9 / 10 : ℝ) / L = e := by
       rw [he, div_eq_mul_inv, ← Real.rpow_neg_one, ← Real.rpow_add hL0]; norm_num
     calc 2 * cW * K' ≤ 2 * (CW * u / L) * (3 * L ^ (9 / 10 : ℝ)) := by gcongr
       _ = 6 * CW * u * (L ^ (9 / 10 : ℝ) / L) := by ring
-      _ = 6 * CW * u * e := by rw [h1]
+      _ = 6 * CW * u * e := by simp_all
   -- the candidate-logarithm term
   have hlogt : 2 * SP * highProd x ⌊κ * x + 1⌋₊ 1 * (Real.log (proxyCutoff x) / c₃) /
       (γ ^ 2 * L ^ (19 / 10 : ℝ)) ≤ 4 / c₃ * u ^ 2 * e := by
@@ -166,7 +166,7 @@ theorem bound5_le {q : ℝ} {K : ℕ} {CN c E₂ κ : ℝ} {M : ℕ → ℝ} {x 
         gcongr
     _ = 2 * κ * M 0 * CW * (6 * CW + 4 / c₃) * x * L⁻¹ * e * u ^ 6 := by
         field_simp
-    _ = _ := by rw [hLinv]
+    _ = _ := by simp_all
 
 /-- Combining the two bounds with `u = L^{1/200}`. -/
 theorem combine_le {x C₄ C₅ : ℝ} (hL : 1 ≤ Real.log x) (hx : 0 < x) (hC₄ : 0 ≤ C₄)
@@ -195,8 +195,8 @@ theorem combine_le {x C₄ C₅ : ℝ} (hL : 1 ≤ Real.log x) (hx : 0 < x) (hC�
   have e2 : C₅ * x * L ^ (-1 : ℝ) * L ^ (-(1 / 10) : ℝ) * L ^ (6 / 200 : ℝ) =
       C₅ * x * (L ^ (-1 : ℝ) * L ^ (-(1 / 10) : ℝ) * L ^ (6 / 200 : ℝ)) := by ring
   rw [e1, e2]
-  have := mul_le_mul_of_nonneg_left h1 (show 0 ≤ C₄ * x by positivity)
-  have := mul_le_mul_of_nonneg_left h2 (show 0 ≤ C₅ * x by positivity)
+  have := mul_le_mul_of_nonneg_left h1 (by positivity)
+  have := mul_le_mul_of_nonneg_left h2 (by positivity)
   nlinarith
 
 end Erdos408.TypeII

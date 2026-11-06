@@ -79,23 +79,22 @@ theorem sum_binom_exp_le {B s : ℕ} {a b e : ℝ} (P : Prop) [Decidable P] (ha 
       have : (range (B + 1)).filter (· ≤ s) = range (s + 1) := by
         ext d; simp only [mem_filter, mem_range]; omega
       rw [this]
-      exact sum_congr rfl fun d _ => by ring
+      exact by grind
     rw [h₂]
     calc (a + b) ^ s * ∑ n ∈ range (B + 1), e ^ n / n.factorial
         ≤ 1 * Real.exp e :=
-          mul_le_mul (pow_le_one₀ (add_nonneg ha hb) hab) (Real.sum_le_exp_of_nonneg he _)
-            (sum_nonneg fun n _ => div_nonneg (pow_nonneg he _) (Nat.cast_nonneg _)) zero_le_one
+          mul_le_mul (pow_le_one₀ (by positivity) hab) (Real.sum_le_exp_of_nonneg he _)
+            (by positivity) zero_le_one
       _ = Real.exp e := one_mul _
   · have hs0 := hP hP'
     subst hs0
     simp only [hP', false_or, nonpos_iff_eq_zero, ite_false]
     rw [sum_eq_single 0, sum_eq_single 0]
     · simp
-    · intro n _ hn; simp [hn]
-    · intro h; simp at h
-    · intro d _ hd
-      exact sum_eq_zero fun n _ => ite_eq_right fun h => hd h.1
-    · intro h; simp at h
+    · simp_all
+    · simp
+    · simp_all
+    simp
 
 /-! ### The ghost operation -/
 
@@ -168,7 +167,7 @@ theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     split_ifs
     · have := hν x
       positivity
-    · exact le_rfl
+    · simp
   -- each choice is bounded by `v₀^{size(S)} ∏_x G`
   have hterm : ∀ c ∈ multBox B ×ˢ multBox B,
       ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize (ghostOut hit B S c).1 ≤
@@ -183,20 +182,20 @@ theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
       have hd := hc.1 x
       have hn : hit x ∨ c.2 x = 0 := by
         by_cases hx : hit x
-        · exact Or.inl hx
+        · simp_all
         · exact Or.inr (hc.2.1 x hx)
       have hhs : hitPart hit S.1 x ≤ S.1 x := by
         unfold hitPart; split_ifs <;> omega
       rw [hG]
       dsimp only
-      rw [ite_eq_left ⟨hd, hn⟩]
+      rw [ite_eq_left (by grind)]
       obtain ⟨r, hr⟩ : ∃ r, S.1 x = r + c.1 x := ⟨S.1 x - c.1 x, by omega⟩
       rw [hr, show r + c.1 x - c.1 x + c.2 x = r + c.2 x by omega, pow_add, pow_add]
-      have hv : v₀ ≠ 0 := hv₀.ne'
+      have hv := hv₀.ne'
       simp only [div_pow, mul_pow]
       field_simp
     · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul]
-      exact mul_nonneg (pow_nonneg hv₀.le _) (prod_nonneg fun x _ => hG0 x _ _)
+      exact mul_nonneg (by positivity) (prod_nonneg (by grind))
   -- sum over the box, factor over particles, and bound each factor
   have hfac : ∀ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G x d n ≤
       if hit x then Real.exp (|cre x| * ν x * v₀) else 1 := by
@@ -205,7 +204,7 @@ theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
       have := mem_memStates.1 S.2
       have := le_memSize S.1 x
       unfold hitPart; split_ifs <;> omega
-    refine sum_binom_exp_le (hit x) (div_nonneg (abs_nonneg _) hv₀.le) hsurv
+    refine sum_binom_exp_le (hit x) (by positivity) hsurv
       (by have := hν x; positivity) (by linarith) hhB fun hx => ?_
     simp [hitPart, hx]
   calc ∑ c ∈ multBox B ×ˢ multBox B,
@@ -216,20 +215,18 @@ theorem ghost_row (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
         rw [← mul_sum, sum_multBox_prod]
     _ ≤ v₀ ^ memSize S.1 * ∏ x, (if hit x then Real.exp (|cre x| * ν x * v₀) else 1) :=
         mul_le_mul_of_nonneg_left (prod_le_prod₀
-          (fun x _ => sum_nonneg fun d _ => sum_nonneg fun n _ => hG0 x d n)
-          (fun x _ => hfac x)) (pow_nonneg hv₀.le _)
+          (fun x _ => sum_nonneg fun d _ => sum_nonneg (by grind))
+          (by grind)) (by positivity)
     _ = Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1 := by
         rw [prod_ite, prod_const_one, mul_one, ← Real.exp_sum, mul_sum, mul_comm]
-        congr 2
-        exact sum_congr rfl fun x _ => by ring
+        grind
 
 omit [Fintype X] [DecidableEq X] in
 /-- `C(r + d, d) / (r + d)! = 1 / (r! d!)`, in the form used for the column identity. -/
 theorem choose_cast_eq (r d : ℕ) :
     (((r + d).choose d : ℕ) : ℝ) = ((r + d).factorial : ℝ) / (r.factorial * d.factorial) := by
   rw [eq_div_iff (by positivity), ← Nat.add_choose_mul_factorial_mul_factorial r d]
-  push_cast
-  ring
+  grind
 
 /-- The column sums:
 `∑_{S, c : out(S, c) = T} w(S) |a(S, c)| v₀^{size(S)} ≤ exp(v₀ |del| ∑_{hits} ν) w(T) v₀^{size(T)}`.
@@ -242,7 +239,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     ∑ S : MemState X B, ∑ c ∈ multBox B ×ˢ multBox B with ghostOut hit B S c = T,
         memWeight ν S.1 * ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize S.1 ≤
       Real.exp (v₀ * |del| * ∑ x with hit x, ν x) * (memWeight ν T.1 * v₀ ^ memSize T.1) := by
-  have hv : v₀ ≠ 0 := hv₀.ne'
+  have hv := hv₀.ne'
   -- the per-particle column factor `G'`: `d` deletions, `n` births
   set G' : X → ℕ → ℕ → ℝ := fun x d n =>
     if n ≤ hitPart hit T.1 x ∧ (hit x ∨ d = 0) then
@@ -255,7 +252,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     split_ifs
     · have := hν x
       positivity
-    · exact le_rfl
+    · simp
   set V : (X → ℕ) × (X → ℕ) → ℝ := fun c =>
     memWeight ν T.1 * v₀ ^ memSize T.1 * ∏ x, G' x (c.1 x) (c.2 x) with hV
   have hV0 : ∀ c, 0 ≤ V c := fun c =>
@@ -299,7 +296,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
         have := hc.1 x
         simp only [hitPart, hx, ite_false] at this
         omega
-      have hn0 : c.2 x = 0 := hc.2.1 x hx
+      have hn0 := hc.2.1 x hx
       simp only [hitPart, hx, ite_false] at hT ⊢
       rw [ite_eq_left ⟨by omega, Or.inr hd0⟩, hT, hd0, hn0]
       simp
@@ -310,8 +307,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     intro c _
     rw [← sum_filter_of_ne (p := fun S : MemState X B => GhostValid hit B S.1 c)]
     · refine (sum_le_card_nsmul _ _ (V c) fun S hS => ?_).trans ?_
-      · simp only [mem_filter] at hS
-        exact (hval S c hS.2 hS.1.2).le
+      · grind
       · have hcard : ((univ.filter fun S : MemState X B => ghostOut hit B S c = T).filter
             fun S => GhostValid hit B S.1 c).card ≤ 1 := by
           refine card_le_one.2 fun S hS S' hS' => ?_
@@ -327,7 +323,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
     · intro S _ hne
       by_contra hc
       rw [ghostCoef, ite_eq_right hc, norm_zero, mul_zero, zero_mul] at hne
-      exact hne rfl
+      grind
   -- the per-particle bound, with the roles of births and deletions exchanged
   have hfac : ∀ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G' x d n ≤
       if hit x then Real.exp (|del| * ν x * v₀) else 1 := by
@@ -338,14 +334,14 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
       unfold hitPart; split_ifs <;> omega
     rw [sum_comm]
     refine sum_binom_exp_le (hit x) (div_nonneg (abs_nonneg _) hv₀.le) hsurv
-      (by have := hν x; positivity) (by linarith [hcre x]) hhB fun hx => ?_
+      (by have := hν x; positivity) (by grind) hhB fun hx => ?_
     simp [hitPart, hx]
   calc ∑ S : MemState X B, ∑ c ∈ multBox B ×ˢ multBox B with ghostOut hit B S c = T,
         memWeight ν S.1 * ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize S.1
       = ∑ c ∈ multBox B ×ˢ multBox B,
           ∑ S ∈ univ.filter (fun S : MemState X B => ghostOut hit B S c = T),
             memWeight ν S.1 * ‖ghostCoef hit ν del surv cre B S c‖ * v₀ ^ memSize S.1 :=
-        sum_comm' fun S c => by simp only [mem_filter, mem_univ, true_and, and_comm]
+        sum_comm' fun S c => by grind
     _ ≤ ∑ c ∈ multBox B ×ˢ multBox B, V c := sum_le_sum hchoice
     _ = memWeight ν T.1 * v₀ ^ memSize T.1 *
           ∏ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G' x d n := by
@@ -357,8 +353,7 @@ theorem ghost_col (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ} (h
           (fun x _ => hfac x)) (mul_nonneg (memWeight_nonneg hν _) (pow_nonneg hv₀.le _))
     _ = Real.exp (v₀ * |del| * ∑ x with hit x, ν x) * (memWeight ν T.1 * v₀ ^ memSize T.1) := by
         rw [prod_ite, prod_const_one, mul_one, ← Real.exp_sum, mul_sum, mul_comm]
-        congr 2
-        exact sum_congr rfl fun x _ => by ring
+        grind
 
 end Ghost
 

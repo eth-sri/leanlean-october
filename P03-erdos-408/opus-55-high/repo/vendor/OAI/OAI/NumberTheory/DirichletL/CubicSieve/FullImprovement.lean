@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.AnnularImprovement
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open scoped Classical
+open ActualEisensteinCubic ConcretePrimeRowBridge
 open CanonicalQuadraticSieve (columnDyadicLength)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma improved_shape_shell (M N Y ξ : ℝ) (hM : 0 < M) (hN : 0 < N) (hY : 0 ≤ Y)
     (hYN : Y ≤ 2*N) (hξ : 1 ≤ ξ) (hξ2 : ξ ≤ 2) :
@@ -65,11 +64,11 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   intro M N hM hN
   have hM0 : 0 < M := by linarith
   have hN0 : 0 < N := by linarith
-  let cols : idealRange N → Ideal O := fun j => j.val
+  let cols : idealRange N → Ideal ActualEisensteinCubic.O := fun j => j.val
   have hc (j : idealRange N) : Admissible (cols j) := (mem_idealRange.mp j.property).1
   have hn (j : idealRange N) : (Ideal.absNorm (cols j) : ℝ) ≤ N := (mem_idealRange.mp j.property).2
   let R := elementRange M
-  have hR (z : O) (hz : z ∈ R) : (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
+  have hR (z : ActualEisensteinCubic.O) (hz : z ∈ R) : (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M :=
     ((mem_elementRange M z).mp hz).2
   let S := M+(M*N)^(2/3 : ℝ)+M^(1-ξ)*N^(2*ξ-1)
   have hS : 0 ≤ S := by dsimp [S]; positivity
@@ -85,7 +84,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
       have hY1 : 1 ≤ (2:ℝ)^l.val := one_le_pow₀ (by norm_num)
       have hs := hb M ((2:ℝ)^l.val) hM hY1
         (fun j : CubicColumnShell cols N l => cols j.val)
-        (fun j k he => Subtype.ext (Subtype.ext he)) (fun j => hc j.val)
+        (fun j k he => by grind) (fun j => hc j.val)
         (fun j => cubicColumnShell_bounds cols N hc hn l j)
         (fun j => a j.val) R hR
       have hl := improved_loss_shell N ((2:ℝ)^l.val) θ hN0.le (by positivity) hYN hθ.le hθsmall.le
@@ -94,7 +93,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
       apply hs.trans
       apply mul_le_mul_of_nonneg_right _ (by positivity)
       have hh := mul_le_mul (mul_le_mul_of_nonneg_left hl hK.le) ht (by positivity) (by positivity)
-      convert hh using 1; dsimp only [S]; ring
+      linarith
     · let : IsEmpty (CubicColumnShell cols N l) := not_nonempty_iff.mp hne
       simp
   have hsum := cubic_energy_column_shells cols N a R
@@ -111,9 +110,7 @@ theorem HasCubicExponent.full_improved {ξ : ℝ} (h : HasCubicExponent ξ)
   rw [← Finset.sum_coe_sort] at he'
   change (∑ z : elementRange M, ‖∑ j : idealRange N, cubicRow j.val z.val*a j‖^2) ≤ _
   apply he'.trans_eq
-  calc
-    _ = (64*K*D)*(N^θ*N^(6*θ))*S*∑ j, ‖a j‖^2 := by dsimp [D]; ring
-    _ = _ := by rw [hp]
+  grind
 
 end
 end SevenEighths.CubicSieve

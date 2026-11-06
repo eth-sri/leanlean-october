@@ -9,15 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open FirstPassCubeLabels
 namespace SevenEighths.InverseInitialEnergyCallerState
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
+open InverseInitialArithmetic
 open InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry
-local notation "Eis"=>ActualEisensteinCubic.O
-local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
 
 omit [DecidableEq ι] in
 theorem windowSource_subset_retained

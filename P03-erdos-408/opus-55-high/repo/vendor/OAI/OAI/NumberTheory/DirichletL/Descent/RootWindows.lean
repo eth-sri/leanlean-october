@@ -7,8 +7,7 @@ public import OAI.NumberTheory.DirichletL.Descent.WindowFourier
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
+open scoped Classical ContDiff
 noncomputable section
 
 theorem inverseNormWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
@@ -27,7 +26,7 @@ theorem inverseRootWindow_contDiff (V : ℝ → ℂ) (hV : ContDiff ℝ ∞ V) :
     Real.contDiff_exp.sqrt Real.exp_ne_zero
   have hn : ∀ y : ℝ, (Real.sqrt (Real.exp y) : ℂ) ≠ 0 := by
     intro y
-    exact_mod_cast ne_of_gt (Real.sqrt_pos.2 (Real.exp_pos y))
+    exact_mod_cast (by positivity)
   simpa only [div_eq_mul_inv, Pi.inv_apply, Function.comp_apply, Complex.ofRealCLM_apply] using
     hV.mul ((Complex.ofRealCLM.contDiff.comp hs).inv hn)
 

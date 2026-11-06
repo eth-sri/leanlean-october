@@ -27,7 +27,7 @@ theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ
     (hh : AEStronglyMeasurable h) {M : ℝ} (hM : ∀ ξ, |h ξ| ≤ M) :
     (∫ ξ, w ξ * h ξ) ^ 2 ≤ (∫ ξ, w ξ) * ∫ ξ, w ξ * h ξ ^ 2 := by
   have h₁ : Integrable fun ξ => w ξ * h ξ :=
-    hw.mul_bdd hh (Filter.Eventually.of_forall fun ξ => by rw [Real.norm_eq_abs]; exact hM ξ)
+    hw.mul_bdd hh (Filter.Eventually.of_forall (by omega))
   have h₂ : Integrable fun ξ => w ξ * h ξ ^ 2 :=
     hw.mul_bdd (hh.pow 2) (Filter.Eventually.of_forall fun ξ => by
       rw [Real.norm_eq_abs, abs_pow]
@@ -37,7 +37,7 @@ theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ
       ∫ ξ, w ξ * h ξ ^ 2 := by
     intro s
     have e : ∀ ξ, w ξ * (h ξ - s) ^ 2 =
-        (w ξ * h ξ ^ 2 - (2 * s) * (w ξ * h ξ)) + (s * s) * w ξ := fun ξ => by ring
+        (w ξ * h ξ ^ 2 - (2 * s) * (w ξ * h ξ)) + (s * s) * w ξ := by grind
     have hint : ∫ ξ, w ξ * (h ξ - s) ^ 2 = (∫ ξ, w ξ) * (s * s) +
         (-2 * ∫ ξ, w ξ * h ξ) * s + ∫ ξ, w ξ * h ξ ^ 2 := by
       simp_rw [e]
@@ -50,7 +50,6 @@ theorem sq_integral_mul_le {w h : ℝ → ℝ} (hw : Integrable w) (hw0 : ∀ ξ
     exact integral_nonneg fun ξ => mul_nonneg (hw0 ξ) (sq_nonneg _)
   have hd := discrim_le_zero hq
   rw [discrim] at hd
-  have e : (-2 * ∫ ξ, w ξ * h ξ) ^ 2 = 4 * (∫ ξ, w ξ * h ξ) ^ 2 := by ring
   linarith
 
 /-- The energy of an average: if `0 ≤ F(τ) ≤ c ∫ w(ξ) h(ξ, τ) dξ` with `w ≥ 0` integrable and
@@ -76,15 +75,14 @@ theorem integral_sq_le_of_le_integral {a b c M E : ℝ} (hab : a ≤ b) {w : ℝ
     · simp only [Function.uncurry, f, Real.norm_eq_abs]
       rw [abs_of_nonneg (mul_nonneg (hw0 _) (sq_nonneg _)), mul_comm (M ^ 2)]
       gcongr
-      · exact hw0 _
-      · exact hh0 _ _
-      · exact hhM _ _
+      · simp_all
+      · simp_all
+      simp_all
   -- pointwise Cauchy–Schwarz in `ξ`
   have hCS : ∀ τ, F τ ^ 2 ≤ c ^ 2 * W * ∫ ξ, f τ ξ := by
     intro τ
     have hM : ∀ ξ, |h ξ τ| ≤ M := fun ξ => by
-      rw [abs_of_nonneg (hh0 ξ τ)]
-      exact hhM ξ τ
+      grind
     have h₁ := sq_integral_mul_le hw hw0
       (hh.comp (continuous_id.prodMk continuous_const)).aestronglyMeasurable hM
     calc F τ ^ 2 ≤ (c * ∫ ξ, w ξ * h ξ τ) ^ 2 := pow_le_pow_left₀ (hF0 τ) (hF τ) 2

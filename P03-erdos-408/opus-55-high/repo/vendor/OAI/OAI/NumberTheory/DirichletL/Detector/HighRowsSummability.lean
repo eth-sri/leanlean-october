@@ -8,9 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.HighRowsDiagonal
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePrimePower
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
+open CompletedGauss ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 lemma geometric_indicator_summable (V A : ℂ) (hV : ‖V‖<1) (p : ℕ→Prop) :
@@ -28,11 +28,11 @@ lemma gaussValuationTable_geometric_summable (Q G V : ℂ) (hV : ‖V‖<1)
     convert ha.sub hb using 1
     funext m
     simp only [gaussValuationTable,ite_eq_left hr,sub_mul]
-    split_ifs <;> rfl
+    simp
   · convert geometric_indicator_summable V (Q^n*G) hV (fun m=>j m=n) using 1
     funext m
     simp only [gaussValuationTable,ite_eq_right hr]
-    split_ifs <;> rfl
+    simp
 
 theorem positiveScalar_geometric_summable (p : O) (hp : Prime p)
     [(Ideal.span {p} : Ideal O).IsMaximal]
@@ -53,7 +53,7 @@ theorem positiveScalar_geometric_summable (p : O) (hp : Prime p)
 
 end SevenEighths.ProbePrimePower
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
+open CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 local notation "O" => ActualEisensteinCubic.O
 variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
   (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
@@ -70,8 +70,7 @@ theorem rowMarkedTerm_frequency_summable (eta a X W V rho : ℂ) (hV : ‖V‖<1
         (a*X^3/(Ideal.absNorm (Ideal.span {p}):ℂ))^l *
         localCubePhase (star (localGamma p hp.ne_zero hg 3))
           (actualSextic (Ideal.span {p}) hg (-1)) e l k) *W^k) using 1
-    funext m
-    ring
+    grind
 
 theorem rowMarkedTerm_zero_lower_edge (eta a X W V rho : ℂ)
     (j e l k : ℕ) (hj : j<6) (ht : 0<e+3*l) :
@@ -93,8 +92,8 @@ theorem rowMarkedFamily_hasSum (eta a X W V rho : ℂ) (hρ : rho^6=1)
   · intro r
     rw [show l+2*(r+1)=(l+2*r)+2 by omega]
     exact rowMarkedTerm_zero_lower_edge p hp hg hc eta a X W V rho j e (l+2*r) k hj (by omega)
-  · simpa only [mul_zero,add_zero] using rowMarkedTerm_frequency_summable p hp hg hc eta a X W V rho hV j e l k
-  · exact hR
+  · simpa using rowMarkedTerm_frequency_summable p hp hg hc eta a X W V rho hV j e l k
+  omega
 
 end SevenEighths.ProbeEuler
 end

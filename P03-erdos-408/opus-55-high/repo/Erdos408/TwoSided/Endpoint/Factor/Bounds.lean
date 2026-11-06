@@ -36,7 +36,7 @@ theorem abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → 
       exact mem_Icc.2 ⟨hp.1.one_lt.le, Nat.le_floor hp.2⟩
     calc ∑ p ∈ primesIoc 1 x, (1 : ℝ) / p ≤ ∑ p ∈ Icc 1 ⌊x⌋₊, (p : ℝ)⁻¹ := by
           simp only [one_div]
-          exact sum_le_sum_of_subset_of_nonneg hsub fun _ _ _ => by positivity
+          exact sum_le_sum_of_subset_of_nonneg hsub (by simp)
       _ ≤ 1 + Real.log ⌊x⌋₊ := OneSided.sum_Icc_inv_le _
       _ ≤ 1 + Real.log x := by
           have h1 : (0 : ℝ) < ⌊x⌋₊ := by exact_mod_cast Nat.floor_pos.2 hx.le
@@ -50,14 +50,14 @@ theorem abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → 
         exact div_le_div_of_nonneg_right (hB _) (prod_nonneg fun i _ => Nat.cast_nonneg _)
     _ ≤ (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := Sieve.sum_inv_slotTuples_le hx hv
     _ ≤ (1 + Real.log x) ^ (k + 1) :=
-        pow_le_pow_left₀ (sum_nonneg fun _ _ => by positivity) hprimes _
+        pow_le_pow_left₀ (by positivity) hprimes _
 
 /-! ### Counting -/
 
 /-- `ω(n) ≤ 4L` for `0 < n ≤ x²`. -/
 theorem card_primeFactors_le_four_mul_log {x : ℝ} (hx : 1 < x) {n : ℕ} (hn : 0 < n)
     (hnx : (n : ℝ) ≤ x ^ 2) : (n.primeFactors.card : ℝ) ≤ 4 * Real.log x := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hε : 0 < 1 / (2 * Real.log x) := by positivity
   have h := Sieve.card_primeFactors_gt_le hx hε hn hnx
   have hfilt : n.primeFactors.filter (fun p : ℕ => x ^ (1 / (2 * Real.log x)) < (p : ℝ)) =
@@ -72,11 +72,9 @@ theorem card_primeFactors_le_four_mul_log {x : ℝ} (hx : 1 < x) {n : ℕ} (hn :
     have he : Real.exp (1 / 2) < 2 := by
       have h₁ : Real.exp (1 / 2) ^ 2 = Real.exp 1 := by
         rw [← Real.exp_nat_mul]; norm_num
-      nlinarith [Real.exp_one_lt_d9, Real.exp_pos (1 / 2)]
+      nlinarith [Real.exp_one_lt_d9]
     linarith
-  rw [hfilt] at h
-  calc (n.primeFactors.card : ℝ) ≤ 2 / (1 / (2 * Real.log x)) := h
-    _ = 4 * Real.log x := by field_simp; ring
+  grind
 
 /-- The multiples of `m > 0` in `[1, N]` number at most `N / m`. -/
 theorem card_filter_dvd_le (N : ℕ) {m : ℕ} (hm : 0 < m) :
@@ -85,7 +83,7 @@ theorem card_filter_dvd_le (N : ℕ) {m : ℕ} (hm : 0 < m) :
     ext k
     simp only [mem_filter, mem_Icc, mem_range]
     omega
-  rw [h, Nat.card_multiples', le_div_iff₀ (by exact_mod_cast hm)]
+  rw [h, Nat.card_multiples', le_div_iff₀ (by positivity)]
   exact_mod_cast Nat.div_mul_le_self N m
 
 /-! ### The mean value theorem -/
@@ -104,14 +102,14 @@ theorem integral_norm_twistedPoly_sq_le {Y : ℝ} (hY : 1 ≤ Y) (c : ℕ → �
   have hsub : Icc ⌈Y⌉₊ N ⊆ Icc 1 N := by
     intro w hw
     rw [mem_Icc] at hw ⊢
-    exact ⟨le_trans (Nat.one_le_iff_ne_zero.2 (Nat.ceil_pos.2 (by linarith)).ne') hw.1, hw.2⟩
+    exact ⟨le_trans (Nat.one_le_iff_ne_zero.2 (by positivity)) hw.1, hw.2⟩
   have hpoly : ∀ t : ℝ, twistedPoly Y c h k t =
       (Y : ℂ)⁻¹ * ∑ w ∈ Icc 1 N, c' w * (w : ℂ) ^ ((t : ℂ) * Complex.I) := by
     intro t
     unfold twistedPoly
     congr 1
-    rw [← sum_subset hsub fun w _ hw => by simp only [hc', ite_eq_right hw, zero_mul]]
-    exact sum_congr rfl fun w hw => by simp only [hc', ite_eq_left hw]
+    rw [← sum_subset hsub fun w _ hw => by simp_all]
+    exact sum_congr rfl fun w hw => by simp_all
   have hsq : ∀ t : ℝ, ‖twistedPoly Y c h k t‖ ^ 2 =
       (Y ^ 2)⁻¹ * ‖∑ w ∈ Icc 1 N, c' w * (w : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 := by
     intro t
@@ -124,7 +122,7 @@ theorem integral_norm_twistedPoly_sq_le {Y : ℝ} (hY : 1 ≤ Y) (c : ℕ → �
   have hlog : 0 ≤ 1 + Real.log N := by
     have := Real.log_natCast_nonneg N
     linarith
-  refine mul_le_mul_of_nonneg_left ?_ (add_nonneg (by linarith) (mul_nonneg (by positivity) hlog))
+  refine mul_le_mul_of_nonneg_left ?_ (add_nonneg (by linarith) (by positivity))
   rw [← sum_subset hsub fun w _ hw => by simp only [hc', ite_eq_right hw, norm_zero,
     ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow]]
   refine sum_le_sum fun w hw => ?_
@@ -169,11 +167,11 @@ theorem eventually_slot_ratio_le {c : ℝ} (hc : 0 < c) :
   simp only [Function.comp_apply] at h₁
   set L := Real.log x
   have hL0 : 0 < L := by linarith
-  have hT : 0 < Real.log L := Real.log_pos hL
+  have hT := Real.log_pos hL
   have h20 : Real.log L ^ (20 : ℝ) = Real.log L ^ 20 := by
     rw [show (20 : ℝ) = ((20 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-  rw [Real.norm_of_nonneg (Real.rpow_nonneg hT.le _), Real.norm_of_nonneg
-    (Real.rpow_nonneg hL0.le _), h20, Real.rpow_one] at h₁
+  rw [Real.norm_of_nonneg (by positivity), Real.norm_of_nonneg
+    (by positivity), h20, Real.rpow_one] at h₁
   rw [div_div_eq_mul_div, div_le_iff₀ hc]
   linarith
 

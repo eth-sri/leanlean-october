@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.SpectralCompensation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeEuler ProbeLocal
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ProbeEuler ProbeLocal
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ)
     (hx : 0<x.re) (hw : 0<w.re) (hz : 0<z.re) :
@@ -21,7 +20,7 @@ lemma initialPrime_denominators (η : HeckeFamily.Character) (P : PrimeIdeal) (x
   dsimp only
   have hQ : (1:ℝ)<Ideal.absNorm P.val := by
     have hh := SmoothMobiusCorrection.prime_norm_two_le P
-    exact_mod_cast (by omega : 1<Ideal.absNorm P.val)
+    exact_mod_cast (by omega)
   have hQ0 : (0:ℝ)<Ideal.absNorm P.val := by linarith
   constructor
   · apply one_sub_ne_zero_of_norm_lt_one
@@ -44,8 +43,7 @@ lemma standardFactor_times_continued (V W D M : ℂ)
     (hV : 1-V≠0) (hW : 1-W≠0) (hD : 1-D≠0) :
     (1-D)/((1-V)*(1-W))*continuedCorrection V W D M=localFactor V W M := by
   unfold continuedCorrection localFactor
-  field_simp
-  ring
+  grind
 
 lemma idealHighLocalFactor_eq_raw (η : HeckeFamily.Character) (P : PrimeIdeal)
     (hs : CanonicalQuadraticSieve.Supported P.val) (x w z : ℂ)
@@ -76,7 +74,7 @@ theorem idealCompensatedRatio_eq_continued (S : Finset Id) (hS : SourceExclusion
   have hraw := idealHighLocalFactor_eq_raw η P hs x w z hx hw hz
   have hn := source_idealHighLocalFactor_ne_zero S hS η P hP x w z hx hw hz
   rw [hraw] at hn
-  have hH : idealClosedCorrection η P x w z≠0 :=
+  have hH :=
     factor_ne_zero_of_defect _ ((idealClosedCorrection_bound η P (hS.tail.norm_four P hP)
       x w z (by linarith) (by linarith) (by linarith)).trans (hS.tail.half ⟨P,hP⟩))
   have he := compensatedReplacement_eq_raw (coordV (Ideal.absNorm P.val) z)
@@ -86,7 +84,7 @@ theorem idealCompensatedRatio_eq_continued (S : Finset Id) (hS : SourceExclusion
     ←idealClosedCorrection_eq_continued] at he
   dsimp only at hraw he ⊢
   rw [idealMarkedLocalFactor_rational η P hs x w z hx hz,hraw,he]
-  exact (mul_div_cancel_left₀ _ hH).symm
+  simp_all
 
 theorem spectralCompensatedHigh_continued (S : Finset Id) (hS : SourceExclusions S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S) (η : HeckeFamily.Character)
@@ -104,7 +102,7 @@ theorem spectralCompensatedHigh_continued (S : Finset Id) (hS : SourceExclusions
   congr 1
   apply Finset.prod_congr rfl
   intro P hP
-  exact idealCompensatedRatio_eq_continued S hS η P (hT P hP) x w z (B P) (q P) hx hw hz
+  exact idealCompensatedRatio_eq_continued S hS η P (by grind) x w z (B P) (q P) hx hw hz
 
 end SevenEighths.ProbePhysical
 end

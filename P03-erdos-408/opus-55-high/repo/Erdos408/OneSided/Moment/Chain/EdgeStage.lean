@@ -49,10 +49,9 @@ theorem sum_finset_prod_decide (H : Fin K → Bool → ℝ) :
   refine sum_congr rfl fun St _ => ?_
   rw [← prod_filter_mul_prod_filter_not univ fun i => i ∈ St]
   congr 1
-  · rw [filter_mem_eq_inter, univ_inter]
-    exact prod_congr rfl fun i hi => by simp [hi]
-  · rw [show univ.filter (fun i => i ∉ St) = univ \ St by ext; simp]
-    exact prod_congr rfl fun i hi => by simp [(mem_sdiff.1 hi).2]
+  · simp_all
+  · rw [show univ.filter (fun i => i ∉ St) = univ \ St by grind]
+    exact prod_congr rfl fun i hi => by simp_all
 
 section Choice
 
@@ -71,18 +70,18 @@ theorem leavePrime_mem_band (i : Fin K) : leavePrime s c₀ i ∈ band x (d.a i)
 theorem enterPrime_mem_band (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (i : Fin K) :
     c₀.2.2.1 i ∈ band x (d.a i) := by
   simp only [freeChoices, mem_product, Fintype.mem_piFinset] at hc₀
-  exact hc₀.2.2.1 i
+  simp_all
 
 /-- A prime of the band `𝒫_i` is a band prime. -/
 theorem mem_bandPrimes_of_band {i : Fin K} {p : ℕ} (hp : p ∈ band x (d.a i)) :
     p ∈ bandPrimes x d :=
-  mem_biUnion.2 ⟨i, mem_univ _, hp⟩
+  mem_biUnion.2 (by grind)
 
 /-- With disjoint bands, primes of the bands of `i` and `j` agree only if `i = j`. -/
 theorem eq_of_mem_band (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     {i j : Fin K} {p : ℕ} (hi : p ∈ band x (d.a i)) (hj : p ∈ band x (d.a j)) : i = j := by
   by_contra h
-  exact disjoint_left.1 (hdisj i j h) hi hj
+  exact disjoint_left.1 (by grind) hi hj
 
 /-- The particle promoted into group `i`: the entering prime at its target line. -/
 def promPart (hc₀ : c₀ ∈ freeChoices x d Y d₀ u v r) (i : Fin K) : Particle x d :=
@@ -163,7 +162,7 @@ include hdisj hv in
 /-- A leaving prime is not in the target lists. -/
 theorem leavePrime_not_tgt (i : Fin K) :
     ¬∃ i' h, edgeTgt s (toEdge₀ c₀) i' h = leavePrime s c₀ i :=
-  ((leave_iff hv hdisj _).2 ⟨i, rfl⟩).2
+  ((leave_iff hv hdisj _).2 (by simp)).2
 
 end Admissible
 
@@ -211,7 +210,6 @@ theorem edgeMem_eq (St : Finset (Fin K)) (fl : Fin K → Bool) (xp : Particle x 
     have hP₀ : P = 0 := card_eq_zero.2 (filter_eq_empty_iff.2 fun j _ h =>
       enterPrime_ne_leavePrime hv j i (congrArg Prod.fst h.2))
     have hQ₀ : Q ≠ 0 := card_ne_zero.2 ⟨i, mem_filter.2 ⟨hi, rfl⟩⟩
-    rw [hS₀, hP₀]
     omega
   · rw [ite_eq_right hst]
     have hQ₀ : Q = 0 := card_eq_zero.2 (filter_eq_empty_iff.2 fun i hi h =>
@@ -225,7 +223,7 @@ theorem edgeMem_eq (St : Finset (Fin K)) (fl : Fin K → Bool) (xp : Particle x 
     · rw [ite_eq_right hpr]
       have hP₀ : P = 0 := card_eq_zero.2 (filter_eq_empty_iff.2 fun i _ h =>
         hpr ⟨i, h.1, Subtype.ext h.2⟩)
-      rw [hP₀, Nat.sub_zero]
+      omega
 
 open scoped Classical in
 /-- The multiplicity of `p` among the fresh labels. -/
@@ -235,7 +233,7 @@ theorem count_freshBirths (St : Finset (Fin K)) (fl : Fin K → Bool) (p : ℕ) 
   rw [freshBirths_toEdge, Multiset.count_sum', card_eq_sum_ones, sum_filter]
   refine sum_congr rfl fun i _ => ?_
   by_cases hf : fl i = true
-  · simp [hf]
+  · simp_all
   · simp [hf, Multiset.count_singleton, eq_comm]
 
 open scoped Classical in
@@ -263,8 +261,7 @@ theorem consistent_edgeMem (St : Finset (Fin K)) {fl : Fin K → Bool}
     · exact Or.inl hst
     · rw [ite_eq_right hst] at h
       by_cases hpr : ∃ i, fl i = true ∧ promPart hc₀ i = xp
-      · rw [ite_eq_left hpr] at h
-        exact absurd rfl h
+      · simp_all
       · rw [ite_eq_right hpr] at h
         exact Or.inr ⟨hpr, h⟩
   refine ⟨?_, ?_, fun xp => ?_, fun xp h => ?_, fun xp h => ?_, fun xp xp' h h' hp => ?_⟩
@@ -441,14 +438,14 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
         (edgeMem s (toEdge c₀ St fl)) (Bn + freshBirths (toEdge c₀ St fl)) (leavePrime s c₀ i) =
           if i ∈ St then .pending (lineOf (leavePrime s c₀ i) s.1.1) else .dead := by
       intro i
-      have hb : ∃ j, leavePrime s c₀ j = leavePrime s c₀ i := ⟨i, rfl⟩
+      have hb : ∃ j, leavePrime s c₀ j = leavePrime s c₀ i := by simp
       rw [statusOf_edge hdisj hc₀ hv hS St hg, ite_eq_right fun ⟨j, hj⟩ =>
         enterPrime_ne_leavePrime hv j i hj, dite_eq_left hb,
         leavePrime_injective hdisj hb.choose_spec]
     have henter : ∀ i, statusOf (edgeTgt s (toEdge c₀ St fl))
         (edgeMem s (toEdge c₀ St fl)) (Bn + freshBirths (toEdge c₀ St fl)) (c₀.2.2.1 i) =
           .active := fun i => by
-      rw [statusOf_edge hdisj hc₀ hv hS St hg, ite_eq_left ⟨i, rfl⟩]
+      rw [statusOf_edge hdisj hc₀ hv hS St hg, ite_eq_left (by simp)]
     rw [prod_congr (s₁ := restPrimes s c₀) rfl fun p hp =>
       congrArg (primeLife q N π p (t + 1)) (hrest p hp)]
     simp only [hleave, henter]
@@ -459,7 +456,7 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
       rw [memLabelWeight_toEdge q hc₀]
       cases hfi : fl i
       · simp [(hg i).2 hfi]
-      · rfl
+      simp
     simp only [hw, prod_mul_distrib]
     ring
   · -- an incompatible flag kills both sides
@@ -468,17 +465,11 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
     have hR : (if fl i then (s.2.2.1 (promPart hc₀ i) : ℝ)
         else if c₀.2.2.1 i ∈ Bn then 0 else birthConst q N (c₀.2.2.1 i)) = 0 := by
       cases hfi : fl i
-      · have : c₀.2.2.1 i ∈ Bn := by
-          by_contra h
-          exact hi ⟨fun h' => by simp [hfi] at h', fun _ => h⟩
-        simp [this]
-      · have : s.2.2.1 (promPart hc₀ i) = 0 := by
-          by_contra h
-          exact hi ⟨fun _ => h, fun h' => by simp [hfi] at h'⟩
-        simp [this]
+      · simp_all
+      · simp_all
     refine Eq.trans ?_ (mul_eq_zero_of_right _ (prod_eq_zero (mem_univ i) ?_)).symm
     swap
-    · rw [hR, zero_mul, mul_zero]
+    · simp_all
     by_cases hfi : fl i
     · -- a promotion from an empty particle
       have hm : ¬MemValid x d Y d₀ u v r B s (toEdge c₀ St fl) := by
@@ -486,8 +477,8 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
         obtain ⟨xp, hxp, h1⟩ := hm i hfi
         have : xp = promPart hc₀ i := Subtype.ext hxp
         subst this
-        exact hi ⟨fun _ => (Nat.one_le_iff_ne_zero.1 h1), fun h => by simp [hfi] at h⟩
-      rw [ite_eq_right hm, zero_mul, zero_mul]
+        exact hi ⟨by omega, fun h => by simp_all⟩
+      simp_all
     · -- a fresh label already born
       have hB' : c₀.2.2.1 i ∈ Bn := by
         by_contra h
@@ -498,9 +489,9 @@ theorem edge_summand_eq_prod (hB : (bandPrimes x d).card ≤ B) (N t : ℕ)
         rw [Multiset.count_add, count_freshBirths] at h₁
         have h₂ := Multiset.count_pos.2 hB'
         have h₃ : 0 < (univ.filter fun j => fl j = false ∧ c₀.2.2.1 j = c₀.2.2.1 i).card :=
-          card_pos.2 ⟨i, mem_filter.2 ⟨mem_univ _, by simpa using hfi, rfl⟩⟩
+          card_pos.2 ⟨i, mem_filter.2 ⟨mem_univ _, by simp_all, rfl⟩⟩
         omega
-      rw [ite_eq_right hnd, mul_zero, zero_mul]
+      simp_all
 
 open scoped Classical in
 include hdisj hc₀ hv hS in
@@ -573,7 +564,7 @@ theorem edge_stage (hB : (bandPrimes x d).card ≤ B) {N t : ℕ} (htN : t < N)
     rfl
   · -- an entering prime is promoted or fresh
     refine prod_congr rfl fun i _ => ?_
-    have hin : t + 1 ∈ activeSet (c₀.2.2.1 i) π := (hact' _).2 (enterPrime_tgt hv i)
+    have hin := (hact' _).2 (enterPrime_tgt hv i)
     simp only [hΛ, ite_true, Bool.false_eq_true, ite_false, ← add_mul]
     cases hst : statusOf s.2.1.1 s.2.2.1 Bn (c₀.2.2.1 i) with
     | active => exact absurd ((statusOf_eq_active_iff _).1 hst) (enterPrime_not_act hv i)
@@ -586,23 +577,21 @@ theorem edge_stage (hB : (bandPrimes x d).card ≤ B) {N t : ℕ} (htN : t < N)
       congr 1
       by_cases hℓ : ℓ = lineOf (c₀.2.2.1 i) c₀.2.1.1
       · have : promPart hc₀ i = xp := Subtype.ext (by rw [hxp, hℓ]; rfl)
-        rw [ite_eq_left hℓ, this, le_antisymm (hS.le_one xp) (Nat.one_le_iff_ne_zero.2 hS₀)]
-        simp
+        simp [ite_eq_left hℓ, this, le_antisymm (hS.le_one xp) (Nat.one_le_iff_ne_zero.2 hS₀)]
       · rw [ite_eq_right hℓ]
         have : s.2.2.1 (promPart hc₀ i) = 0 := by
           by_contra h
           have := hS.pend_unique _ _ h hS₀ (by rw [hxp]; rfl)
           exact hℓ ((congrArg Prod.snd hxp).symm.trans
             (congrArg (fun y : Particle x d => y.1.2) this).symm)
-        simp [this]
+        simpa
     | dead =>
       have h0 : s.2.2.1 (promPart hc₀ i) = 0 :=
-        eq_zero_of_statusOf (p := c₀.2.2.1 i) hS (fun ℓ h => by rw [hst] at h; cases h) rfl
-      rw [primePost, postValue_enter_dead hin, h0, ite_eq_left (mem_of_statusOf_eq_dead hst)]
-      simp
+        eq_zero_of_statusOf (p := c₀.2.2.1 i) hS (fun ℓ h => by simp [hst] at h) rfl
+      simp [primePost, postValue_enter_dead hin, h0, ite_eq_left (mem_of_statusOf_eq_dead hst)]
     | unborn =>
       have h0 : s.2.2.1 (promPart hc₀ i) = 0 :=
-        eq_zero_of_statusOf (p := c₀.2.2.1 i) hS (fun ℓ h => by rw [hst] at h; cases h) rfl
+        eq_zero_of_statusOf (p := c₀.2.2.1 i) hS (fun ℓ h => by simp [hst] at h) rfl
       rw [primePost, postValue_enter_unborn hin, h0,
         ite_eq_right (notMem_of_statusOf_eq_unborn hst)]
       simp only [Nat.cast_zero, zero_add]

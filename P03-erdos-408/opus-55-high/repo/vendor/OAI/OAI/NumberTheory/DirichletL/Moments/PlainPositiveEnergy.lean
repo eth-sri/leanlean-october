@@ -8,19 +8,18 @@ public import OAI.NumberTheory.DirichletL.Moments.OriginalRadialComparison
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap BigOperators
+open scoped Classical
 namespace SevenEighths.CenteredMomentPlainPositiveEnergy
 open HeckeFamily HeckeDyadic CenteredMomentPlainPositiveScale CenteredMomentPlainGlobalEnergy
 open CenteredMomentOriginalRadialComparison
 open CenteredMomentRadialEligibleEnergy (Radial)
-open QuadraticInitialBound ConcreteTraceCRT
-local notation "O"=>HeckeFamily.O
+open QuadraticInitialBound
 
  theorem actual_radial_pair_bound (a b:ℝ)(ha:0<a):
     ∃S:Finset (ℕ×ℕ),∃C:ℝ,0<C ∧
     ∀(W₁ W₂:SchwartzMap ℝ ℂ),Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b→
-    ∀(χ:O→Character)(r:Radial)(R X₁ X₂ freq₁ freq₂:ℝ),0≤R→0<X₁→0<X₂→
+    ∀(χ:HeckeFamily.O→Character)(r:Radial)(R X₁ X₂ freq₁ freq₂:ℝ),0≤R→0<X₁→0<X₂→
       (∀z,r.keep z→(χ z).residue≠1)→
       (∀z,r.keep z→((χ z).modulus.absNorm:ℝ)≤R)→
     radialEnergy (fun z=>polynomial (χ z) false W₁ X₁ 0 freq₁*
@@ -38,7 +37,7 @@ local notation "O"=>HeckeFamily.O
   have hB₂:0≤B₂:=apply_nonneg _ _
   let B:=C^2*(B₁*B₂)*R^2*(3+|freq₁|)^2*(3+|freq₂|)^2
   have hB:0≤B:=by dsimp [B];positivity
-  have hp (z:O)(hz:r.keep z):
+  have hp (z:HeckeFamily.O)(hz:r.keep z):
       ‖polynomial (χ z) false W₁ X₁ 0 freq₁*polynomial (χ z) false W₂ X₂ 0 freq₂‖≤B:=by
     rw [norm_mul]
     have h₁:‖polynomial (χ z) false W₁ X₁ 0 freq₁‖≤C*B₁*R*(3+|freq₁|)^2:=

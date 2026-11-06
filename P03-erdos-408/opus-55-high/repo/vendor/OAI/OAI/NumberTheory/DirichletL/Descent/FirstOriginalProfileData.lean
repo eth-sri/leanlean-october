@@ -9,26 +9,25 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsCells
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
 open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
-open CompletedHeight FourierBridge
-local notation "O" => ActualEisensteinCubic.O
-abbrev OriginalIndex (ι : Type*) := Σ _ : FirstOriginalOuter ι,Ideal O×O
+open CompletedHeight
+abbrev OriginalIndex (ι : Type*) := Σ _ : FirstOriginalOuter ι,Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def leftNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.rightBit)‖^2
 def rightNorm (x : OriginalIndex ι) : ℝ := ‖eisEmbedding (aLabel p x.1.1.support x.1.1.leftBit)‖^2
 def commonNorm (x : OriginalIndex ι) : ℝ := primeProductNorm p x.1.2.1
 def activeNorm (x : OriginalIndex ι) : ℝ := primeProductNorm p (cubeActiveSupport x.1.1.support
   (fun i=>x.1.1.leftExponent i+x.1.1.rightExponent i) x.1.1.leftBit x.1.1.rightBit)
-def divisorElement (k : FirstOriginalOuter ι) : O := primeSubsetGenerator (fun i=>Ideal.span {p i}) k.2.2
+def divisorElement (k : FirstOriginalOuter ι) : ActualEisensteinCubic.O := primeSubsetGenerator (fun i=>Ideal.span {p i}) k.2.2
 
 include hp in
 theorem original_source_positive (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (Y : ℝ) :
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ) :
     ∀x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun k=>k.1) Y,
       0<leftNorm p x ∧ 0<rightNorm p x ∧ 0<commonNorm p x ∧ 0<activeNorm p x ∧
       divisorElement p x.1≠0 ∧ x.2.2≠0 := by
@@ -44,7 +43,7 @@ theorem original_source_positive (pool : Finset ι) (Q : Finset (ι→₀ℕ))
 
 include hp in
 theorem original_source_norms_ge_one (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (Y : ℝ) :
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (Y : ℝ) :
     ∀x∈firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun k=>k.1) Y,
       ∀i,1≤InverseMomentFirstChildWindows.sourceNorms (leftNorm p) (rightNorm p) (commonNorm p)
         (activeNorm p) (fun x=>divisorElement p x.1) (fun x=>x.2.2) x i := by
@@ -55,13 +54,13 @@ theorem original_source_norms_ge_one (pool : Finset ι) (Q : Finset (ι→₀ℕ
   · exact element_norm_ge_one _ (primeProduct_ne_zero p hp _ _)
   · exact primeProductNorm_ge_one p hp _
   · exact primeProductNorm_ge_one p hp _
-  · exact hh.2.2.2.2.1
-  · exact hh.2.2.2.2.2
+  · simp_all
+  simp_all
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem original_weight_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
-    (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)
-    (R : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ) (Γ Y : ℝ)
+    (labels : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)
+    (R : CubeCoordinates ι→Finset ι→Ideal ActualEisensteinCubic.O→Finset ι→ℝ) (Γ Y : ℝ)
     (hΓ : 0≤Γ) (hβ : ∀I∈labels,∀v∈Q,‖β I v‖≤Γ) :
     ∀k∈firstOriginalOuter pool Q,∀x∈firstRetainedSource p labels k.1 Y,
       ‖firstOriginalWeight p β R k x‖≤Γ^2 := by
@@ -78,11 +77,8 @@ theorem actual_old_profile (om : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0<a)
     InverseMomentFirstProfileUniform.positiveSource (priorityLogWindow om a b ha hs true) 1 (-theta) x=
       star (normTwistedSource om theta x) := by
   constructor
-  · simp [InverseMomentFirstProfileUniform.positiveSource,priorityLogWindow,
-      CubicReflectionKernel.logSchwartz_apply,Real.exp_log hx,normTwistedSource]
-  · simp [InverseMomentFirstProfileUniform.positiveSource,priorityLogWindow,
-      SecondPassIntegration.conjugateProfile_apply,CubicReflectionKernel.logSchwartz_apply,
-      Real.exp_log hx,normTwistedSource,SecondPassIntegration.logPhase_conjugate]
+  · simp [InverseMomentFirstProfileUniform.positiveSource, priorityLogWindow, Real.exp_log hx, normTwistedSource]
+  · simp [InverseMomentFirstProfileUniform.positiveSource, priorityLogWindow, Real.exp_log hx, normTwistedSource, SecondPassIntegration.logPhase_conjugate]
 
 end SevenEighths.InverseMomentFirstOriginalProfile
 end

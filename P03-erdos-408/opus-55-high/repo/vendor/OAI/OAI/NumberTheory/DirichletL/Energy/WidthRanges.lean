@@ -11,7 +11,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyProfiles CenteredMomentEnergyWidthSchedule
+open CenteredMomentEnergyWidthSchedule
 
 def step (M B L:ℝ):ℝ:=4*(L+M+B+4)
 def range (M B L:ℝ):ℕ→ℝ

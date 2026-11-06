@@ -8,7 +8,6 @@ public import Erdos821.S2.PerformedSigns
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
@@ -31,7 +30,7 @@ lemma permutationsWithBlocks_sign_sum {a : ℕ} (π : Finset (Finset (Fin a)))
     _ = birthMobius π := by
       rw [permutationsWithBlocks_card π hπ, birthMobius_eq_sign_mul_factorials]
       simp only [Nat.cast_prod]
-      exact mul_comm _ _
+      linarith
 
 /-- Distinctness is an exact sum over disjoint nonsingleton blocks.
 Unperformed addresses contribute no block conditions. -/
@@ -49,7 +48,7 @@ theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a)) (value :
     apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_powerset.mpr ?_, cycleBirthBlocks_collection σ⟩
     intro B _
-    exact Finset.mem_powerset.mpr (Finset.subset_univ _)
+    exact by simp
   have hterm (π : Finset (Finset (Fin a))) (σ : Equiv.Perm (Fin a))
       (hσ : σ ∈ permutationsWithBlocks π) :
       term σ = if birthEvent performed value π then (Equiv.Perm.sign σ : ℤ) else 0 := by
@@ -60,7 +59,7 @@ theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a)) (value :
       (∑ σ ∈ Finset.univ.filter (fun σ : Equiv.Perm (Fin a) => cycleBirthBlocks σ = π), term σ) =
         if birthEvent performed value π then birthMobius π else 0 := by
     change (∑ σ ∈ permutationsWithBlocks π, term σ) = _
-    have hp : BirthCollection π := (Finset.mem_filter.mp hπ).2
+    have hp := (Finset.mem_filter.mp hπ).2
     calc
       _ = ∑ σ ∈ permutationsWithBlocks π,
           if birthEvent performed value π then (Equiv.Perm.sign σ : ℤ) else 0 :=
@@ -69,15 +68,11 @@ theorem distinct_birth_expansion (a : ℕ) (performed : Finset (Fin a)) (value :
         by_cases he : birthEvent performed value π
         · simp only [ite_eq_left he]
           exact permutationsWithBlocks_sign_sum π hp
-        · simp only [ite_eq_right he, Finset.sum_const_zero]
+        simp_all
   calc
     _ = ∑ σ : Equiv.Perm (Fin a), term σ := by
       refine (performed_value_preserving_sign_sum performed value).trans ?_
-      apply Finset.sum_congr rfl
-      intro σ _
-      by_cases h : σ.support ⊆ performed ∧ ∀ i, value (σ i) = value i
-      · simp only [term, ite_eq_left h]
-      · simp only [term, ite_eq_right h]
+      grind
     _ = ∑ π ∈ C,
         ∑ σ ∈ Finset.univ.filter (fun σ => cycleBirthBlocks σ = π), term σ :=
       (Finset.sum_fiberwise_of_maps_to hmap term).symm

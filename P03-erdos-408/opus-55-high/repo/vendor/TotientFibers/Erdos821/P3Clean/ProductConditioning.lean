@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.SplitGroups
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance 10000] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -47,9 +46,8 @@ theorem conditioning_pi_normSq_bound {I : Type*} [Fintype I] [DecidableEq I]
     _ ≤ ∏ _ : I, C := by
       apply Finset.prod_le_prod₀
       · intro i _
-        exact mul_nonneg (sq_nonneg _) (Nat.cast_nonneg _)
-      · intro i _
-        exact hC i (d i)
+        positivity
+      simp_all
     _ = _ := by simp
 
 def smallArrayStates (P : PrimeGroups) (M : ℕ) (y : P.SmallResidues) :
@@ -108,11 +106,7 @@ theorem small_array_conditioning_uniform (F : FixedData) :
       (Real.rpow_nonneg F.q_pos.le _)
   rw [hsq]
   have hb := hbound P g.val J (y g) d (hV g)
-  simp only [mul_assoc, mul_left_comm, mul_comm] at hb ⊢
-  convert hb using 1
-  congr 6
-  ext p
-  simp
+  grind
 
 
 theorem small_array_conditioning_log_gain (F : FixedData) :
@@ -128,12 +122,12 @@ theorem small_array_conditioning_log_gain (F : FixedData) :
   intro x P hP hL J y f
   have hV (g : P.SmallGroup) : F.vMin ≤ P.V g.val := (hP.2.2.2.2.1 g.val).1
   have hpow : C ^ Fintype.card P.SmallGroup ≤ (max 1 C) ^ Fintype.card P.SmallGroup :=
-    pow_le_pow_left₀ hC.le (le_max_right _ _) _
-  have hg : (max 1 C) ^ Fintype.card P.SmallGroup ≤ (L x) ^ (F.C₀ * Real.log (max 1 C)) := by
-    exact small_group_gain F (max 1 C) (le_max_left _ _) x P hP hL
+    pow_le_pow_left₀ hC.le (by simp) _
+  have hg : (max 1 C) ^ Fintype.card P.SmallGroup ≤ (L x) ^ (F.C₀ * Real.log (max 1 C)) :=
+    small_group_gain F (max 1 C) (by simp) x P hP hL
   exact (hbound P J y hV f).trans (mul_le_mul_of_nonneg_right
     (hpow.trans hg)
-    (Finset.sum_nonneg (fun _ _ => sq_nonneg _)))
+    (by positivity))
 
 
 end Erdos821.P3Clean

@@ -99,24 +99,21 @@ theorem lifeTail_of_lt (ht : N < t) (ℓ : ℕ) : lifeTail N L η' A t ℓ = 1 :
 /-- At an inactive visit, `a_t = a_{t+1}`. -/
 theorem lifeQuiet_succ (ht : t ∉ A) : lifeQuiet A t = lifeQuiet A (t + 1) := by
   unfold lifeQuiet
-  refine if_congr ⟨fun h j hj => (h j hj).trans (Nat.lt_succ_self t), fun h j hj => ?_⟩ rfl rfl
-  have := h j hj
-  have hne : j ≠ t := fun hjt => ht (hjt ▸ hj)
-  omega
+  grind
 
 /-- At an active visit, `a_t = 0`. -/
 theorem lifeQuiet_of_mem (ht : t ∈ A) : lifeQuiet A t = 0 :=
-  ite_eq_right fun h => absurd (h t ht) (lt_irrefl t)
+  ite_eq_right (by grind)
 
 /-- Past the last visit, `a_t = 1`. -/
 theorem lifeQuiet_of_lt (hA : A ⊆ range (N + 1)) (ht : N < t) : lifeQuiet A t = 1 :=
-  ite_eq_left fun _ hj => (mem_range.1 (hA hj)).trans_le ht
+  ite_eq_left (by grind)
 
 /-- At an active visit, the line sum of the tail is the tail at the active line. -/
 theorem sum_lifeTail_of_mem (hL : ∀ j ≤ N, L j ≤ p) (ht : t ∈ A) (htN : t ≤ N) :
     ∑ ℓ ∈ range (p + 1), lifeTail N L η' A t ℓ = lifeTail N L η' A t (L t) := by
   simp only [lifeTail_eq_mul htN, lifeStep, ht, ite_true, ite_mul, one_mul, zero_mul]
-  rw [sum_ite_eq', ite_eq_left (mem_range.2 (Nat.lt_succ_of_le (hL t htN)))]
+  simp_all
 
 /-! ### The ghost -/
 
@@ -160,11 +157,11 @@ theorem lifeValue_unborn (hL : ∀ j ≤ N, L j ≤ p) (hA : A ⊆ range (N + 1)
     simp only [lifeTail_eq_mul htN, lifeStep, ht, ite_false, sub_mul, one_mul, sum_sub_distrib]
     congr 1
     simp only [mul_ite, mul_one, mul_zero, ite_mul, zero_mul]
-    rw [sum_ite_eq', ite_eq_left (mem_range.2 (Nat.lt_succ_of_le (hL t htN)))]
+    rw [sum_ite_eq', ite_eq_left (by grind)]
   simp only [lifeValue, postValue, hsum, lifeQuiet_succ ht]
   by_cases h₁ : t + 1 ∈ A
   · -- the prime enters at `t + 1`: the lifeQuiet value vanishes
-    have hN : t + 1 ≤ N := Nat.lt_succ_iff.1 (mem_range.1 (hA h₁))
+    have hN := Nat.lt_succ_iff.1 (mem_range.1 (hA h₁))
     rw [ite_eq_left h₁, lifeQuiet_of_mem h₁, sum_lifeTail_of_mem hL h₁ hN]
     ring
   · rw [ite_eq_right h₁]
@@ -197,7 +194,7 @@ theorem postValue_enter_pending (h₁ : t + 1 ∈ A) (hN : t + 1 ≤ N) (ℓ : �
   simp only [postValue, lifeValue, lifeQuiet_of_mem h₁, sub_zero]
   rw [lifeTail_eq_mul hN, lifeTail_eq_mul hN]
   simp only [lifeStep, h₁, ite_true]
-  split_ifs with h <;> simp [h]
+  simp_all
 
 /-- A dead prime cannot enter activity. -/
 theorem postValue_enter_dead (h₁ : t + 1 ∈ A) : postValue p N L η' A c t .dead = 0 :=
@@ -207,7 +204,7 @@ theorem postValue_enter_dead (h₁ : t + 1 ∈ A) : postValue p N L η' A c t .d
 theorem postValue_idle (h₁ : t + 1 ∉ A) (st : Status) (hst : st ≠ .active) :
     postValue p N L η' A c t st = lifeValue p N L η' A c (t + 1) st := by
   cases st with
-  | active => exact absurd rfl hst
+  | active => simp_all
   | pending ℓ => rfl
   | dead => rfl
   | unborn => simp only [postValue, h₁, ite_false]
@@ -221,7 +218,7 @@ theorem postValue_last (hA : A ⊆ range (N + 1))
     postValue p N L η' A c N st = match st with
       | .pending _ => 0
       | _ => 1 := by
-  have hN : N + 1 ∉ A := fun h => by simpa using hA h
+  have hN : N + 1 ∉ A := fun h => by grind
   have hq : lifeQuiet A (N + 1) = 1 := lifeQuiet_of_lt hA (Nat.lt_succ_self N)
   cases st with
   | active => exact lifeTail_of_lt (Nat.lt_succ_self N) _
@@ -230,9 +227,7 @@ theorem postValue_last (hA : A ⊆ range (N + 1))
   | unborn =>
     simp only [postValue, hN, ite_false, lifeValue, lifeTail_of_lt (Nat.lt_succ_self N), hq,
       sum_const, card_range, nsmul_eq_mul, mul_one, one_mul]
-    rw [← hc]
-    push_cast
-    ring
+    simp_all
 
 /-- At the first visit, the unborn value is `c ∑_ℓ Λ_0(ℓ)`. -/
 theorem lifeValue_zero_unborn :

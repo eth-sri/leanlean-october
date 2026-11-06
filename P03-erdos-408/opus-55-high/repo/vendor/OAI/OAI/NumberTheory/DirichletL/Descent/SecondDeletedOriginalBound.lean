@@ -9,33 +9,32 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondWholeMass
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open ActualEisensteinCubic SecondPassArithmetic
 open JointLogSeparation
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 theorem actual_second_deleted_mode_original_bound
     (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
     (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    {Jo : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo 0))
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
+    {Jo : ℕ} (u v : ActualEisensteinCubic.Oˣ) (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
-    (pool : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ a,‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
+    (pool : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀ a,‖Ψ a‖ ≤ 1) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
     (slots₁ slots₂ J₁ J₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (deleted₁ deleted₂ : MarkedSecondSource ι Jo 0→Finset ι)
     (hd₁ : ∀ x∈source,∀ i∈deleted₁ x,i∈x.cube.support∪x.firstCommon ∨
-      (Ideal.span {p i}:Ideal Eis)∣x.quotient)
+      (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient)
     (hd₂ : ∀ x∈source,∀ i∈deleted₂ x,i∈x.cube.support∪x.firstCommon ∨
-      (Ideal.span {p i}:Ideal Eis)∣x.quotient)
+      (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient)
     (ha₁ : ∀ i∈J₁,∀ q∈lists₁ i,‖a₁ i q‖ ≤ 1)
     (ha₂ : ∀ i∈J₂,∀ q∈lists₂ i,‖a₂ i q‖ ≤ 1)
     (ω₁ ω₂ : ℝ → ℂ) (G E V B X R : ℝ) (t : Frequency × (Fin 6 → ℝ))
-    (labels : Finset (Ideal Eis))
+    (labels : Finset (Ideal ActualEisensteinCubic.O))
     (hlabels : ∀ x∈source,(actualSecondChild p 1 1 x).2.1 ∈ labels)
     (hrows : ∀ x∈source,x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R)
     (K : ℕ) (ho : Jo ≤ 2*K) (hJ₁ : J₁.card ≤ K) (hJ₂ : J₂.card ≤ K)
@@ -64,7 +63,7 @@ theorem actual_second_deleted_mode_original_bound
     slots₁ slots₂ J₁ J₂ lists₁ lists₂ a₁ a₂ deleted₁ deleted₂ hd₁ hd₂ ha₁ ha₂ ω₁ ω₂ G E V B X R t labels
     hlabels' hrows K ho hJ₁ hJ₂ w hw).trans
   apply (second_geometric_energy_of_bound K (labels.filter Squarefree) (nonzeroChildFrequencyBall 1 R)
-    _ _ _ A hA (fun γ hγ => hright γ (hΓ hγ)) (fun γ hγ => hleft γ (hΓ hγ))).trans
+    _ _ _ A hA (by grind) (by grind)).trans
   exact mul_le_mul_of_nonneg_left
     (Finset.sum_le_sum_of_subset_of_nonneg hΓ (fun γ _ _=>tripleDivisorWeight_nonneg K γ)) hA
 

@@ -9,31 +9,25 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -53,31 +47,27 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
+open scoped Classical
+open scoped Classical SchwartzMap ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter
-open scoped BigOperators Classical Topology ContDiff
+open scoped Classical Topology ContDiff
 
 lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠0)
     (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -86,7 +76,7 @@ lemma cuspSeed_row_defect (a b : ℝ) (s c : ℂ) (u : Fin 2 → ℂ) (hu : u≠
         c*cuspSeedDefectProfile a b s (rowHeight u p) := by
   rw [axisLaplacian_const_mul,rowProfile_laplacian _ (cuspSeedProfile_contDiffAt a b s) u hu p hp]
   have h := cuspSeedProfile_laplace_defect a b s (rowHeight u p) (rowHeight_pos u hu p hp).ne'
-  linear_combination c*h
+  grind
 
 theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (hab : a<b)
     (p : SpatialCoordinates) (hp : 0<p 2) :
@@ -100,12 +90,12 @@ theorem heightPoincare_cuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) 
     filter_upwards [hU.mem_nhds hpU] with q hq
     apply tsum_eq_sum
     intro r hr
-    rw [cuspSeedProfile_zero a b s _ hab (le_trans ((hrows q hq).2 r hr).le ha.le),mul_zero]
+    rw [cuspSeedProfile_zero a b s _ hab (by grind),mul_zero]
   have hD : heightPoincareField (cuspSeedDefectProfile a b s) p=
       ∑r∈S,(cosetCharacter r)⁻¹*cuspSeedDefectProfile a b s (rowHeight (embeddedRow r) p) := by
     apply tsum_eq_sum
     intro r hr
-    rw [cuspSeedDefectProfile_zero a b s _ hab (Or.inl (((hrows p hpU).2 r hr).trans ha)),mul_zero]
+    rw [cuspSeedDefectProfile_zero a b s _ hab (by grind),mul_zero]
   have hreg : ∀r∈S,∀q,0<q 2→∀j : Fin 3,
       DifferentiableAt ℝ (axisSlice (f r) q j) (q j) ∧
       DifferentiableAt ℝ (deriv (axisSlice (f r) q j)) (q j) := by
@@ -154,12 +144,12 @@ theorem actual_smoothCuspSeed_laplace_defect (a b : ℝ) (s : ℂ) (ha : 1<a) (h
 
 end CubicEisenstein
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open TruncatedPrincipalPoisson
 
 def sectorBadIdeal (E : fixedBadPrimes.powerset) : Ideal O := ∏ P ∈ E.val, P
 
@@ -198,7 +188,7 @@ theorem unrestrictedPairTerm_sector (rows : m → Ideal O) (left : n → Ideal O
   by_cases hc : IsCoprime (left j) (right k)
   · simp only [unrestrictedPairTerm, originalTerm, hc, ite_true, one_dvd]
     have hp := unrestrictedPairCharacter_squarefree_bad_split (left j) (right k) (rows i)
-      (hleft j) (hright k) (hray j k) (hrows i)
+      (hleft j) (hright k) (by grind) (hrows i)
     have hs : badPrimeSupport (rows i) = E.val := congrArg Subtype.val (hE i)
     rw [hp, hs]
     simp only [sectorBadIdeal, unrestrictedPairCharacter, star_mul,
@@ -248,7 +238,7 @@ theorem unrestrictedDualTruncatedMiddle_sector
           (Ideal.absNorm (sectorBadIdeal E * goodSquarefreePart (rows i)) : ℝ) :=
         congrArg (fun I : Ideal O => (Ideal.absNorm I : ℝ))
           (sector_bad_good_product (rows i) (hrows i) E (hE i)).symm
-      _ = _ := by rw [map_mul, Nat.cast_mul]
+      _ = _ := by simp
   rw [hn]
   have harg : F * (Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ) /
       (M * ((Ideal.absNorm (sectorBadIdeal E) : ℝ) * (Ideal.absNorm (goodSquarefreePart (rows i)) : ℝ))) =
@@ -259,14 +249,14 @@ theorem unrestrictedDualTruncatedMiddle_sector
       (1 / (Ideal.absNorm (sectorBadIdeal E) : ℝ)) *
         ((M * (Ideal.absNorm (sectorBadIdeal E) : ℝ)) /
           (Real.sqrt ((Ideal.absNorm (left j) : ℝ) * (Ideal.absNorm (right k) : ℝ)) * F)) := by
-    field_simp [hQn]
+    field_simp
   rw [hs, Complex.ofReal_mul]
   ring
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 
 lemma divisorEnergyFactor_mono_coefficients {n p : Type*} [Fintype n] [Fintype p]
     (ε : ℝ) (hε : 0 < ε) (N : ℝ) (a a' : n → ℂ) (b b' : p → ℂ)
@@ -289,7 +279,7 @@ lemma dual_bad_sector_scale (M F B Q U α : ℝ)
   have hQp : 0 < Q := by linarith
   have hpow : (B / Q) ^ (α - 1 / 2) ≤ B ^ (α - 1 / 2) :=
     Real.rpow_le_rpow (by positivity) (div_le_self hB hQ) (by linarith)
-  have hsQ : Real.sqrt Q ≤ Q := Real.sqrt_le_self_iff.mpr (Or.inr hQ)
+  have hsQ := Real.sqrt_le_self_iff.mpr (Or.inr hQ)
   have hs : (1 / Q) * Real.sqrt (M * Q / F) ≤ Real.sqrt (M / F) := by
     have he : M * Q / F = (M / F) * Q := by ring
     rw [he, Real.sqrt_mul (by positivity)]
@@ -354,32 +344,30 @@ theorem HasSieveExponent.dual_truncated_middle_sector {α : ℝ} (hexp : HasSiev
     let good := fun i => goodSquarefreePart (rows i)
     let a' := fun j => a j * quadraticRow (left j) (idealGenerator (sectorBadIdeal E))
     let b' := fun k => b k * quadraticRow (right k) (idealGenerator (sectorBadIdeal E))
-    have hQnz := sectorBadIdeal_ne_zero_of_row (rows i₀) (hrows i₀).1 E (hE i₀)
+    have hQnz := sectorBadIdeal_ne_zero_of_row (rows i₀) (by grind) E (by grind)
     have hQ : 1 ≤ Q := by
       dsimp only [Q]
       exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (fun h => hQnz (Ideal.absNorm_eq_zero_iff.mp h)))
     have hQp : 0 < Q := by linarith
     have hn (i : m) : (Ideal.absNorm (rows i) : ℝ) = Q * (Ideal.absNorm (good i) : ℝ) := by
       have hi := congrArg (fun I : Ideal O => (Ideal.absNorm I : ℝ))
-        (sector_bad_good_product (rows i) (hrows i).1 E (hE i))
+        (sector_bad_good_product (rows i) (by grind) E (hE i))
       simpa only [map_mul, Nat.cast_mul] using hi.symm
     have hgr : Function.Injective good := by
       intro i k h
-      exact hr (goodSquarefreePart_injective_on_sector _ _ (hrows i).1 (hrows k).1
-        ((hE i).trans (hE k).symm) h)
+      exact hr (goodSquarefreePart_injective_on_sector _ _ (by grind) (by grind)
+        (by grind) h)
     have hg (i : m) : Admissible (good i) ∧ (B / Q) / 2 ≤ (Ideal.absNorm (good i) : ℝ) ∧
         (Ideal.absNorm (good i) : ℝ) ≤ B / Q := by
       refine ⟨goodSquarefreePart_admissible _, ?_, ?_⟩
       · rw [show B / Q / 2 = (B / 2) / Q by ring]
         apply (div_le_iff₀ hQp).2
-        have hx := (hrows i).2.1
-        rw [hn i] at hx
-        nlinarith
-      · exact (le_div_iff₀ hQp).2 (by simpa only [mul_comm] using (hn i).symm.trans_le (hrows i).2.2)
+        grind
+      · exact (le_div_iff₀ hQp).2 (by grind)
     have hBQ : 1 ≤ B / Q := by
       have hh : 1 ≤ (Ideal.absNorm (good i₀) : ℝ) := by
         exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (fun h => (hg i₀).1.1 (Ideal.absNorm_eq_zero_iff.mp h)))
-      exact hh.trans (hg i₀).2.2
+      exact by grind
     have hZa (i : m) : Z i ≤ U * (N * Real.sqrt (F / ((M * Q) * (Ideal.absNorm (good i) : ℝ)))) := by
       simpa only [hn i, mul_assoc] using hZ i
     have hbnd := hexp.dual_truncated_middle deltaLoss hδ ε hε (B / Q) N (M * Q) F U hBQ hN
@@ -387,10 +375,10 @@ theorem HasSieveExponent.dual_truncated_middle_sector {α : ℝ} (hexp : HasSiev
     change ‖dualTruncatedMiddle W good left right a' b' (M * Q) F Y Z lengthScale‖ ≤
       dualMiddleMajorant hexp deltaLoss hδ ε hε (B / Q) N (M * Q) F U a' b' W at hbnd
     have htr := unrestrictedDualTruncatedMiddle_sector W rows left right a b M F Y Z lengthScale
-      (fun i => (hrows i).1) (fun j => (hleft j).1) (fun k => (hright k).1) hray E hE hQnz
+      (by grind) (by grind) (by grind) hray E hE hQnz
     change unrestrictedDualTruncatedMiddle W rows left right a b M F Y Z lengthScale =
       ((1 / Q : ℝ) : ℂ) * dualTruncatedMiddle W good left right a' b' (M * Q) F Y Z lengthScale at htr
-    rw [htr, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity : 0 ≤ 1 / Q)]
+    rw [htr, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     apply (mul_le_mul_of_nonneg_left hbnd (by positivity)).trans
     have hae (j : n) : ‖a' j‖ ≤ ‖a j‖ := by
       dsimp only [a']; rw [norm_mul]
@@ -418,7 +406,7 @@ theorem HasSieveExponent.dual_truncated_middle_sector {α : ℝ} (hexp : HasSiev
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -450,9 +438,9 @@ theorem HasSieveExponent.unrestricted_dual_truncated_middle {α : ℝ} (hexp : H
         dualMiddleMajorant hexp deltaLoss hδ ε hε B N M F U a b W := by
     apply hexp.dual_truncated_middle_sector hα deltaLoss hδ ε hε B N M F U hB hN hM hF hU
       (fun i : {i // σ i = E} => rows i.val) left right
-      (fun i k h => Subtype.ext (hr h)) hl hri (fun i => hrows i.val) a b W
-      (fun i => Y i.val) (fun i => Z i.val) lengthScale hleft hright hray (fun i => hZ i.val) E
-    exact fun i => i.property
+      (fun i k h => by grind) hl hri (by grind) a b W
+      (fun i => Y i.val) (fun i => Z i.val) lengthScale hleft hright hray (by grind) E
+    exact by grind
   rw [hs]
   calc
     _ ≤ ∑ E : fixedBadPrimes.powerset,
@@ -467,9 +455,8 @@ theorem HasSieveExponent.unrestricted_dual_truncated_middle {α : ℝ} (hexp : H
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -479,7 +466,6 @@ variable {ι : Type*} [DecidableEq ι]
 end SecondPassArithmetic
 
 namespace SecondPassIntegration
-open ActualEisensteinCubic SecondPassArithmetic
 section
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -495,9 +481,8 @@ open FirstPassCubeLabels (primeProductNorm)
 
 end SecondPassIntegration
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct primeProductNorm squarefreeLabel jLabel j2Label b0Label
   bit parity conductorExponent cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
@@ -505,7 +490,7 @@ open ConcreteTraceCRT (eisEmbedding)
 lemma element_norm_le_of_dvd {a b : O} (hb : b ≠ 0) (h : a ∣ b) :
     ‖eisEmbedding a‖^2 ≤ ‖eisEmbedding b‖^2 := by
   obtain ⟨c,rfl⟩ := h
-  have hc : c ≠ 0 := (mul_ne_zero_iff.mp hb).2
+  have hc := (mul_ne_zero_iff.mp hb).2
   rw [map_mul, norm_mul, mul_pow]
   exact le_mul_of_one_le_right (sq_nonneg _) (element_norm_ge_one c hc)
 
@@ -549,14 +534,14 @@ lemma jLabel_dvd_cube_product (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε
   apply pow_dvd_pow
   dsimp only
   unfold bit
-  split <;> have h := hv i hi <;> omega
+  grind
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
 lemma b0_square_dvd_cube_product (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (hv : ∀ i ∈ B, 0 < v₁ i+v₂ i) :
     b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂ ^ 2 ∣ primeProduct p B v₁ * primeProduct p B v₂ := by
   rw [FirstPassCubeLabels.cube_pair_product_decomposition p B v₁ v₂ ε₁ ε₂ hv]
-  exact dvd_mul_of_dvd_left (dvd_mul_right _ _) _
+  exact dvd_mul_of_dvd_left (by simp) _
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
 lemma b0_jLabel_square (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
@@ -589,22 +574,21 @@ theorem cube_label_norm_bounds (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ �
   have hb0sq := (element_norm_le_of_dvd hbb0 (b0_square_dvd_cube_product p B v₁ v₂ ε₁ ε₂ hv)).trans hbb
   simp only [map_pow,norm_pow] at hb0sq
   have hb0 : ‖eisEmbedding (b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂)‖^2 ≤ B₀ := by
-    nlinarith [sq_nonneg ‖eisEmbedding (b0Label p B (fun i => v₁ i+v₂ i) ε₁ ε₂)‖]
+    nlinarith
   refine ⟨hJ,hb0,?_⟩
   have heq := congrArg (fun a : O => ‖eisEmbedding a‖^2) (b0_jLabel_square p B v₁ v₂ ε₁ ε₂ hv)
   simp only [map_pow,map_mul,norm_pow,norm_mul,mul_pow] at heq
   have hs := squarefreeLabel_active_bound p hp B (fun i => v₁ i+v₂ i) ε₁ ε₂
   have hNprod : ‖eisEmbedding (primeProduct p B v₁)‖^2 * ‖eisEmbedding (primeProduct p B v₂)‖^2 ≤ B₀^2 := by
     simpa only [map_mul,norm_mul,mul_pow] using hbb
-  have hmul := mul_le_mul hNprod hs (sq_nonneg _) (sq_nonneg B₀)
+  have hmul := mul_le_mul hNprod hs (sq_nonneg _) (by positivity)
   change _ ≤ B₀^2*‖eisEmbedding (∏ i ∈ cubeActiveSupport B (fun i => v₁ i+v₂ i) ε₁ ε₂,p i)‖^2 at hmul
-  have hjpos : 0 < ‖eisEmbedding (jLabel p B (fun i => v₁ i+v₂ i) ε₁ ε₂)‖^2 := by
-    exact zero_lt_one.trans_le (element_norm_ge_one _ (primeProduct_ne_zero p hp B _))
+  have hjpos : 0 < ‖eisEmbedding (jLabel p B (fun i => v₁ i+v₂ i) ε₁ ε₂)‖^2 :=
+    zero_lt_one.trans_le (element_norm_ge_one _ (primeProduct_ne_zero p hp B _))
   apply (le_div_iff₀ hjpos).mpr
-  apply (sq_le_sq₀ (mul_nonneg (sq_nonneg _) (sq_nonneg _))
-    (mul_nonneg hB (norm_nonneg _))).mp
-  simp only [mul_pow]
-  exact heq.trans_le hmul
+  apply (sq_le_sq₀ (by positivity)
+    (by positivity)).mp
+  linarith
 
 end SecondPassArithmetic
 

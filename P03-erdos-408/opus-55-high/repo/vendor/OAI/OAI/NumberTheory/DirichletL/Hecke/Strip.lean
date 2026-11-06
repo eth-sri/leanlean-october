@@ -8,15 +8,15 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
-open Filter Asymptotics Set MeasureTheory
+open scoped Classical
+open Filter Asymptotics Set
 
 namespace SevenEighths.HeckeStrip
 
 def gammaConstant : ℝ := Real.Gamma (11 / 10) / Real.Gamma (19 / 10)
 
 theorem gammaConstant_pos : 0 < gammaConstant :=
-  div_pos (Real.Gamma_pos_of_pos (by norm_num)) (Real.Gamma_pos_of_pos (by norm_num))
+  div_pos (by positivity) (by positivity)
 
 theorem gamma_ratio_left_bound (t : ℝ) :
     ‖Complex.Gamma (1 - ((-(1 / 10) : ℂ) + t * Complex.I)) /
@@ -31,8 +31,7 @@ theorem gamma_ratio_left_bound (t : ℝ) :
   have hden : ((1 / 2 : ℝ) : ℂ) - ((3 / 5 : ℝ) + (-t) * Complex.I) + (2 : ℕ) = s + 2 := by
     dsimp [s]; push_cast; ring
   rw [hnum, hden] at hb
-  norm_num only [show (1 / 2 : ℝ) + 3 / 5 = 11 / 10 by norm_num,
-    show (1 / 2 : ℝ) - 3 / 5 + (2 : ℕ) = 19 / 10 by norm_num] at hb
+  norm_num only at hb
   have heq : Complex.Gamma (1 - s) / Complex.Gamma s =
       (∏ k ∈ Finset.range 2, (s + k)) *
         (Complex.Gamma (1 - s) / Complex.Gamma (s + 2)) := by
@@ -67,7 +66,7 @@ theorem completionScale_left_power (Q : ℝ) (hQ : 0 < Q) :
       (Real.sqrt 3 / (2 * Real.pi)) ^ (6 / 5 : ℝ) * Q ^ (3 / 5 : ℝ) := by
   have he : completionScale Q = (Real.sqrt 3 / (2 * Real.pi)) * Real.sqrt Q := by
     unfold completionScale
-    rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 3)]
+    rw [Real.sqrt_mul (by positivity)]
     ring
   rw [he, Real.mul_rpow (by positivity) (Real.sqrt_nonneg _)]
   congr 1
@@ -78,7 +77,7 @@ def leftConstant : ℝ :=
   (Real.sqrt 3 / (2 * Real.pi)) ^ (6 / 5 : ℝ) * gammaConstant
 
 theorem leftConstant_pos : 0 < leftConstant :=
-  mul_pos (Real.rpow_pos_of_pos (by positivity) _) gammaConstant_pos
+  mul_pos (by positivity) gammaConstant_pos
 
 theorem left_boundary_of_functional_equation (Q D : ℝ) (hQ : 0 < Q) (_hD : 0 ≤ D)
     (L Ldual : ℂ → ℂ) (ε : ℂ) (hε : ‖ε‖ = 1)
@@ -119,7 +118,7 @@ theorem vertical_strip_of_exp_bound (F : ℂ → ℂ) (C : ℝ)
   obtain ⟨A, B, hA, hB, hgrowth⟩ := hgrowth
   apply PhragmenLindelof.vertical_strip hF ?_ hleft hright hz.1 hz.2
   refine ⟨1, ?_, B, ?_⟩
-  · apply (lt_div_iff₀ (by norm_num : (0 : ℝ) < 11 / 10 - -(1 / 10))).mpr
+  · apply (lt_div_iff₀ (by positivity)).mpr
     linarith [Real.two_le_pi]
   · apply isBigO_iff.mpr
     refine ⟨A, eventually_inf_principal.mpr (Eventually.of_forall fun z hz => ?_)⟩
@@ -143,7 +142,7 @@ theorem shift_ne_zero (z : ℂ) (hz : z ∈ closedStrip) : z + 2 ≠ 0 := by
   have h := shift_norm_lower z hz
   intro hzero
   rw [hzero, norm_zero] at h
-  norm_num at h
+  linarith
 
 theorem height_le_shift_norm (z : ℂ) (hz : z ∈ closedStrip) :
     3 + |z.im| ≤ 3 * ‖z + 2‖ := by
@@ -164,13 +163,12 @@ def normalized (Q : ℝ) (L : ℂ → ℂ) (z : ℂ) : ℂ :=
 
 theorem norm_normalized (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ) (z : ℂ) :
     ‖normalized Q L z‖ = ‖L z‖ / (Q ^ (3 / 5 : ℝ) * ‖z + 2‖ ^ 2) := by
-  simp [normalized, norm_pow,
-    Real.norm_eq_abs, abs_of_pos (Real.rpow_pos_of_pos hQ _)]
+  simp [normalized, abs_of_pos (Real.rpow_pos_of_pos hQ _)]
 
 theorem normalized_diffContOnCl (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
     (hL : DiffContOnCl ℂ L strip) : DiffContOnCl ℂ (normalized Q L) strip := by
   have hqn : ((Q ^ (3 / 5 : ℝ) : ℝ) : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)).ne'
+    exact_mod_cast (by positivity)
   have hd : Differentiable ℂ (fun z : ℂ => ((Q ^ (3 / 5 : ℝ) : ℝ) : ℂ) * (z + 2) ^ 2) := by
     fun_prop
   refine ⟨hL.differentiableOn.div hd.differentiableOn ?_, hL.continuousOn.div hd.continuous.continuousOn ?_⟩
@@ -195,7 +193,7 @@ theorem normalized_exp_bound (Q : ℝ) (hQ : 0 < Q) (L : ℂ → ℂ)
     _ ≤ ‖L z‖ / Q ^ (3 / 5 : ℝ) :=
       div_le_div_of_nonneg_left (norm_nonneg _) hq (by nlinarith)
     _ ≤ (A * Real.exp (B * |z.im|)) / Q ^ (3 / 5 : ℝ) :=
-      div_le_div_of_nonneg_right (hg z hz) hq.le
+      div_le_div_of_nonneg_right (by grind) hq.le
     _ = _ := by ring
 
 theorem normalized_boundary_bound (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
@@ -228,10 +226,10 @@ theorem uniform_strip_bound_of_edges (Q C : ℝ) (hQ : 0 < Q) (hC : 0 ≤ C)
       (normalized_exp_bound Q hQ L hgrowth) ?_ ?_ z hz
     · intro w hw
       apply normalized_boundary_bound Q C hQ hC L w
-        (show w ∈ closedStrip from ⟨by rw [hw], by rw [hw]; norm_num⟩) (hleft w hw)
+        (show w ∈ closedStrip from ⟨by linarith, by linarith⟩) (hleft w hw)
     · intro w hw
       apply normalized_boundary_bound Q C hQ hC L w
-        (show w ∈ closedStrip from ⟨by rw [hw]; norm_num, by rw [hw]⟩) (hright w hw)
+        (show w ∈ closedStrip from ⟨by linarith, by linarith⟩) (hright w hw)
   have hq := Real.rpow_pos_of_pos hQ (3 / 5 : ℝ)
   have hnz : 0 < ‖z + 2‖ := lt_of_lt_of_le zero_lt_one (shift_norm_lower z hz)
   rw [norm_normalized Q hQ] at hn
@@ -251,7 +249,7 @@ theorem uniform_strip_bound (Q C : ℝ) (hQ : 1 ≤ Q) (hC : 0 ≤ C)
     (hright : ∀ z : ℂ, z.re = 11 / 10 → ‖L z‖ ≤ C)
     (z : ℂ) (hz : z ∈ closedStrip) :
     ‖L z‖ ≤ 36 * C * Q ^ (3 / 5 : ℝ) * (3 + |z.im|) ^ 2 := by
-  apply uniform_strip_bound_of_edges Q C (lt_of_lt_of_le zero_lt_one hQ) hC L hL
+  apply uniform_strip_bound_of_edges Q C (by positivity) hC L hL
     hgrowth hleft ?_ z hz
   intro w hw
   apply (hright w hw).trans
@@ -259,7 +257,7 @@ theorem uniform_strip_bound (Q C : ℝ) (hQ : 1 ≤ Q) (hC : 0 ≤ C)
   have hh : 1 ≤ (3 + |w.im|) ^ 2 := by nlinarith [abs_nonneg w.im]
   calc
     C ≤ C * Q ^ (3 / 5 : ℝ) := le_mul_of_one_le_right hC hq
-    _ ≤ _ := le_mul_of_one_le_right (mul_nonneg hC (le_trans zero_le_one hq)) hh
+    _ ≤ _ := le_mul_of_one_le_right (by positivity) hh
 
 theorem uniform_strip_bound_of_functional_equation
     (Q D : ℝ) (hQ : 1 ≤ Q) (hD : 0 ≤ D) (L Ldual : ℂ → ℂ)
@@ -280,7 +278,7 @@ theorem uniform_strip_bound_of_functional_equation
     apply (left_boundary_of_functional_equation Q D hQ0 hD L Ldual ε hε hfe hdual w hw).trans
     have hbase : leftConstant * D ≤ (1 + leftConstant) * D := by nlinarith
     exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_right hbase (Real.rpow_nonneg hQ0.le _)) (sq_nonneg _)
+      (mul_le_mul_of_nonneg_right hbase (by positivity)) (sq_nonneg _)
   · intro w hw
     apply (hright w hw).trans
     nlinarith
@@ -316,7 +314,7 @@ theorem mellin_uncompleted_exp_bound (a : ℝ) (ha : 0 < a) (f : ℝ → ℂ)
         A * Real.exp (B * |z.im|) := by
   apply uncompleted_exp_bound a ha (mellin f)
   obtain ⟨C, hC, hb⟩ := VerticalContourShift.mellin_uniform_strip_bound f
-    (-(1 / 10)) (11 / 10) (by simpa using hleft) (by simpa using hright)
+    (-(1 / 10)) (11 / 10) (by simp_all) (by simp_all)
   exact ⟨C, hC, fun z hz => hb z hz.1 hz.2⟩
 
 end SevenEighths.HeckeStrip

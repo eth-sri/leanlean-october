@@ -36,8 +36,8 @@ namespace Sobolev
 namespace Euclidean
 namespace L2Compactness
 
-open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open scoped MeasureTheory Topology
+open MeasureTheory
 
 noncomputable section
 
@@ -65,7 +65,7 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
   have hf_cont : Continuous f := hf_smooth.continuous
   have hf_nonneg : ∀ x, 0 ≤ f x := by
     intro x
-    have hx : f x ∈ Set.Icc (0 : ℝ) 1 := hf_range ⟨x, rfl⟩
+    have hx := hf_range ⟨x, rfl⟩
     exact hx.1
   have hf0_ne : f (0 : E) ≠ 0 := by
     -- `f 0 = 1`.
@@ -77,12 +77,12 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
       (Continuous.integral_pos_of_hasCompactSupport_nonneg_nonzero (μ := (volume : Measure E))
         hf_cont hf_cs hf_nonneg hf0_ne)
   set I : ℝ := ∫ x, f x ∂(volume : Measure E)
-  have hI0 : I ≠ 0 := ne_of_gt hIpos
+  have hI0 := ne_of_gt hIpos
   have hIpos' : 0 < I := by simpa [I] using hIpos
   -- Normalize: `ψ = I⁻¹ • f`.
   let ψ : E → ℝ := fun x => I⁻¹ * f x
-  have hψc : Continuous ψ := by
-    exact (continuous_const.mul hf_cont)
+  have hψc : Continuous ψ :=
+    (continuous_const.mul hf_cont)
   have hψcs : HasCompactSupport ψ := by
     exact
       (HasCompactSupport.smul_left (f := fun _x : E => I⁻¹) (f' := f) hf_cs)
@@ -103,7 +103,7 @@ theorem exists_kernel_tsupport_subset_ball_integral_eq_one {deltaLoss : ℝ} (h�
     have hsub : tsupport ψ ⊆ tsupport f := by
       simpa [ψ, smul_eq_mul] using (tsupport_smul_subset_right (f := fun _x : E => I⁻¹) (g := f))
     exact hsub.trans hf_tsupp
-  exact ⟨ψ, hψc, hψcs, hψ0, hψint, hψ_tsupp⟩
+  grind
 
 end Volume
 

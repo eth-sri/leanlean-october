@@ -32,7 +32,7 @@ theorem priority_cell_physical_budget
   intro N Vchild
   have hz:0<Z:=zero_lt_one.trans hZ
   have hclip:=second_cell_clipping_width Z (Z^(r-A-B-t)) b eta d hZ
-    (Real.rpow_pos_of_pos hz _) hb hsource hthreshold
+    (by positivity) hb hsource hthreshold
   rw [second_cell_formal_column Z r A B t d hZ] at hclip
   have he:=physical_block_scalar_budget Z hZ.le M r ell V delta A B R j t
     (secondCellExponent Z d 0) (secondCellExponent Z d 1) (secondCellExponent Z d 2)
@@ -40,7 +40,7 @@ theorem priority_cell_physical_budget
   dsimp only [N,Vchild]
   rw [second_cell_formal_column Z r A B t d hZ]
   rw [second_cell_scale_rpow Z d 1 hZ,second_cell_scale_rpow Z d 2 hZ] at he
-  convert he using 1 <;> congr 1 <;> ring_nf
+  grind
 
 end SevenEighths.InverseMoment
 

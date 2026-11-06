@@ -10,10 +10,9 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
-  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda∉Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p})≠2)
 
 def ramifiedStrictSelected (eta a rho x w z : ℂ) (j : ℕ) : ℂ :=
   star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x*(1-coordV (Ideal.absNorm (Ideal.span {p})) z)*
@@ -39,8 +38,8 @@ theorem ramifiedSelected_central_regular (eta a rho x w z : ℂ) (alpha eps : �
   dsimp only at hrem
   simp only [Complex.ofReal_natCast] at hrem
   have hH := ramifiedClosed_first_region_bound p hp hg hc eta a rho x w z hQ heta ha hρ
-    (by rw [hx];linarith) (by rw [hw];linarith) (by rw [hz]) (by rw [hx,hw];linarith) j hj
-  have hV := first_region_V_half _ hQ z (by rw [hz])
+    (by linarith) (by linarith) (by linarith) (by linarith) j hj
+  have hV := first_region_V_half _ hQ z (by linarith)
   have h1V : ‖1-coordV Q z‖≤3/2 := by
     have h := norm_sub_le (1:ℂ) (coordV Q z)
     rw [norm_one] at h
@@ -48,10 +47,10 @@ theorem ramifiedSelected_central_regular (eta a rho x w z : ℂ) (alpha eps : �
     linarith
   have hphase : ‖star eta*(Ideal.absNorm (Ideal.span {p}):ℂ)^x‖≤Q^x.re := by
     rw [norm_mul,norm_star,←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
-    exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
+    exact mul_le_of_le_one_left (by positivity) heta
   have hqw : ‖(Ideal.absNorm (Ideal.span {p}):ℂ)^(-w)‖≤Q^(1/2:ℝ) := by
     rw [←Complex.ofReal_natCast,Complex.norm_cpow_eq_rpow_re_of_pos hQ0,Complex.neg_re]
-    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith)
+    exact Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith)
   have hid (B V M T q H : ℂ) : B*V*M-q*H-B*V*T=B*V*(M-T)-q*H := by ring
   unfold ramifiedSelected ramifiedStrictSelected
   rw [hid]
@@ -62,7 +61,7 @@ theorem ramifiedSelected_central_regular (eta a rho x w z : ℂ) (alpha eps : �
       gcongr
     _=385*Q^(1/2:ℝ) := by
       have ht : Q^x.re*Q^(1/2-x.re)=Q^(1/2:ℝ) := by rw [←Real.rpow_add hQ0];congr 1;ring
-      nlinarith [ht]
+      linarith
 end SevenEighths.ProbeEuler
 end
 

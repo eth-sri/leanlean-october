@@ -11,23 +11,17 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 noncomputable def cumulativeExtension {ι : Type*} [Fintype ι]
     (T : ℝ) (f : EuclideanSpace ℝ ι → ℝ) : EuclideanSpace ℝ ι → ℝ :=
@@ -118,7 +112,7 @@ noncomputable def euclideanFinDirections (n : ℕ) : List (EuclideanSpace ℝ (F
   intro i _
   convert laplaceFrequency_coordinate i u using 1
   congr 2
-  exact Subsingleton.elim _ _
+  grind
 
 noncomputable def cumulativeProfile {n : ℕ} (tau : ℝ) (f : (Fin n → ℝ) → ℝ) :
     (Fin n → ℝ) → ℝ :=

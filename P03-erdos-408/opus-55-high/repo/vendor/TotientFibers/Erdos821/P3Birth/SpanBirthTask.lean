@@ -8,7 +8,6 @@ public import Erdos821.S2.HistoryBirths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Birth
@@ -35,12 +34,12 @@ theorem birthCutoff_truncated : H.Truncated (birthCutoff H) := by
     (f := fun j : Fin (n + 1) =>
       P.memorySize (H.before j) + P.memorySize (H.after j) +
         ∑ g : P.BigGroup, ((H.ghost j).2.1 g).val)
-    (fun _ _ => Nat.zero_le _) (Finset.mem_univ i)
+    (by omega) (Finset.mem_univ i)
   have hterm' :
       P.memorySize (H.before i) + P.memorySize (H.after i) +
         ∑ g : P.BigGroup, ((H.ghost i).2.1 g).val ≤ birthCutoff H := by
     simpa [birthCutoff] using hterm
-  constructor <;> omega
+  omega
 
 end MemoryHistory
 
@@ -52,20 +51,15 @@ theorem initial_birth_at_zero
   let p := Q.labels 0 g.val h
   have hactive : (0 : Fin (n + 1)) ∈ Q.activeVisits g p := by
     apply Finset.mem_filter.mpr
-    exact ⟨Finset.mem_univ _, ⟨h, rfl⟩⟩
+    exact by grind
   rcases hs : S g p with _ | ⟨birth, stop⟩
   · have hnone : Q.activeVisits g p = ∅ := by
       simpa [ResiduePath.spanValid, hs] using hS g p
-    simp [hnone] at hactive
+    simp_all
   · have hspan : Q.spanValid g p (some (birth, stop)) := by
       simpa [hs] using hS g p
     have hbirth := (hspan.2.2.1 0 hactive).1
-    have hb0 : birth = 0 := by
-      apply Fin.ext
-      have hbirthVal : birth.val ≤ 0 := by
-        simpa using (Fin.le_iff_val_le_val).mp hbirth
-      simpa using Nat.le_antisymm hbirthVal (Nat.zero_le _)
-    exact ⟨stop, by simp [hb0]⟩
+    simp_all
 
 /-- A fresh active target can only occur at its assigned lifespan start. -/
 theorem fresh_birth_at_target
@@ -85,15 +79,15 @@ theorem fresh_birth_at_target
   rcases hs : S g p with _ | ⟨birth, stop⟩
   · have hnone : Q.activeVisits g p = ∅ := by
       simpa [ResiduePath.spanValid, hs] using hS g p
-    simp [hnone] at hactiveTarget
+    simp_all
   · have hspan : Q.spanValid g p (some (birth, stop)) := by
       simpa [hs] using hS g p
     have hbirth_le := (hspan.2.2.1 i.succ hactiveTarget).1
     by_cases hb : birth = i.succ
-    · exact ⟨stop, by simp [hb]⟩
+    · simp_all
     · have hbirth_le_i : birth ≤ i.castSucc := by
-        have hleVal : birth.val ≤ i.succ.val := Fin.le_iff_val_le_val.mp hbirth_le
-        have hneVal : birth.val ≠ i.succ.val := fun he => hb (Fin.ext he)
+        have hleVal := Fin.le_iff_val_le_val.mp hbirth_le
+        have hneVal : birth.val ≠ i.succ.val := by omega
         change birth.val ≤ i.val
         simp only [Fin.val_succ] at hleVal hneVal
         omega
@@ -111,15 +105,13 @@ theorem fresh_birth_at_target
         have hkκ : ¬ (p.val : ℤ) ∣ κ := by
           dsimp [κ]
           by_cases hf : edgeForward i
-          · simpa [hf] using hk g p
+          · grind
           · simpa [hf] using hk g p
         have hsource_hit := Q.span_active_hit S hS i.castSucc g p hactive
         have htarget_hit := Q.span_active_hit S hS i.succ g p hactiveTarget
-        have hsource_dvd : (p.val : ℤ) ∣
-            Q.offset i.castSucc - Q.spanAnchor (S g p) :=
+        have hsource_dvd :=
           (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hsource_hit
-        have htarget_dvd : (p.val : ℤ) ∣
-            Q.offset i.succ - Q.spanAnchor (S g p) :=
+        have htarget_dvd :=
           (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp htarget_hit
         have hdisplacement :
             (Q.offset i.castSucc - Q.spanAnchor (S g p)) + κ * (D : ℤ) =
@@ -142,25 +134,25 @@ theorem fresh_birth_at_target
           (Q.source i) (Q.target i) (Q.free i)
           (fun g₀ => Q.source_injective hQ i g₀)
           (fun g₀ => Q.target_injective hQ i g₀)
-          (hQ.2 i).1 (hQ.2 i).2 g.val j h (by simpa [p] using hsource)
+          (hQ.2 i).1 (hQ.2 i).2 g.val j h (by omega)
           (Q.offset i.castSucc - Q.spanAnchor (S g p)) κ
           hsource_dvd' htarget_dvd'' hkSource
-        exact (hfreshParts.1 hshared.2.1).elim
+        simp_all
       · have hstop : i.castSucc < stop := by
-          have hle : i.succ ≤ stop := (hspan.2.2.1 i.succ hactiveTarget).2
+          have hle := (hspan.2.2.1 i.succ hactiveTarget).2
           change i.val < stop.val
-          have hleVal : i.succ.val ≤ stop.val := Fin.le_iff_val_le_val.mp hle
+          have hleVal := Fin.le_iff_val_le_val.mp hle
           simp only [Fin.val_succ] at hleVal
           omega
         have hpendingSpan : Q.pendingAfter g p (S g p) i.castSucc := by
           rw [hs]
           exact ⟨hbirth_le_i, hstop, hactive⟩
-        have hpending : p ∈ Q.pendingAfterPrimes S i.castSucc g := by
-          exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hpendingSpan⟩
+        have hpending : p ∈ Q.pendingAfterPrimes S i.castSucc g :=
+          Finset.mem_filter.mpr (by grind)
         have hpromotion : h ∈ Q.promotionSlots S i g := by
           apply Finset.mem_filter.mpr
-          exact ⟨Finset.mem_univ h, hfreshParts.1, hpending⟩
-        exact (hfreshParts.2 hpromotion).elim
+          exact by grind
+        simp_all
 
 /-- The ghost batch enumerates each selected prime at most once. -/
 theorem ghostBatchLabels_injective
@@ -170,14 +162,11 @@ theorem ghostBatchLabels_injective
   let ps := Q.ghostBirthPrimes S i g
   let idx : Fin ps.card → Fin ps.toList.length := fun h =>
     ⟨h.val, by simp⟩
-  have hnodup : ps.toList.Nodup := Finset.nodup_toList ps
+  have hnodup := Finset.nodup_toList ps
   intro h k he
   have hvalues : (ps.toList.get (idx h)).val = (ps.toList.get (idx k)).val :=
     congrArg Subtype.val he
-  have hget : ps.toList.get (idx h) = ps.toList.get (idx k) := Subtype.ext hvalues
-  have hidx : idx h = idx k := hnodup.get_inj_iff.mp hget
-  apply Fin.ext
-  simpa [idx] using congrArg Fin.val hidx
+  grind
 
 def ghostAddress (B : ℕ) : BirthAddress P (J + F.ell) n B → Prop
   | .inl _ => False
@@ -222,9 +211,9 @@ theorem address_birth_classification
       let p := Q.labels 0 g.val h
       have hactive : (0 : Fin (n + 1)) ∈ Q.activeVisits g p := by
         apply Finset.mem_filter.mpr
-        exact ⟨Finset.mem_univ _, ⟨h, rfl⟩⟩
+        exact by grind
       obtain ⟨stop, hspan⟩ := initial_birth_at_zero Q S hS g h
-      refine ⟨g, p, 0, ?_, ?_, ⟨stop, hspan⟩, rfl, ?_⟩
+      refine ⟨g, p, 0, ?_, ?_, by grind, rfl, ?_⟩
       · rfl
       · rfl
       · simp [ghostAddress, hactive]
@@ -237,11 +226,9 @@ theorem address_birth_classification
           obtain ⟨stop, hspan⟩ := fresh_birth_at_target Q S hQ hS hk y i g h hfresh
           let p := Q.target i g.val h
           have hactive : i.succ ∈ Q.activeVisits g p := Q.target_activeVisit i g h
-          refine ⟨g, p, i.succ, ?_, ?_, ⟨stop, hspan⟩, rfl, ?_⟩
+          refine ⟨g, p, i.succ, ?_, ?_, by grind, rfl, ?_⟩
           · rfl
-          · simp [MemoryHistory.addressValue, ResiduePath.reconstructedHistory,
-              ResiduePath.target, ResiduePath.stateBefore, permuteActive,
-              PrimeGroups.act, p]
+          · simp [MemoryHistory.addressValue, ResiduePath.reconstructedHistory, ResiduePath.target, ResiduePath.stateBefore, permuteActive, p]
           · simp [ghostAddress, hactive]
       | inr addr =>
           rcases addr with ⟨i, g, h⟩
@@ -254,8 +241,8 @@ theorem address_birth_classification
           let p := Q.ghostBatchLabels S i g ⟨h.val, hindex⟩
           have hmem : p ∈ Q.ghostBirthPrimes S i g := by
             dsimp [p, ResiduePath.ghostBatchLabels]
-            exact Finset.mem_toList.mp (List.get_mem _ _)
-          have hborn : Q.ghostBirthAt g p (S g p) i := (Finset.mem_filter.mp hmem).2
+            exact Finset.mem_toList.mp (by simp)
+          have hborn := (Finset.mem_filter.mp hmem).2
           rcases hs : S g p with _ | ⟨birth, stop⟩
           · simp [ResiduePath.ghostBirthAt, hs] at hborn
           · have hborn' : birth = i ∧ i ∉ Q.activeVisits g p := by
@@ -266,11 +253,9 @@ theorem address_birth_classification
             have hvalue :
                 (Q.reconstructedHistory S hS y).addressValue B
                   (.inr (.inr (i, g, h))) = p.val := by
-              simp [MemoryHistory.addressValue, ResiduePath.reconstructedHistory,
-                ResiduePath.reconstructedGhostChoice, hindex, p,
-                ResiduePath.ghostBatchLabels]
+              simp [MemoryHistory.addressValue, ResiduePath.reconstructedHistory, ResiduePath.reconstructedGhostChoice, hindex, p]
             exact ⟨g, p, i, by simp [addressPrime, hindex, p], hvalue,
-              ⟨stop, hs'⟩, rfl, by simp [ghostAddress, hnotactive]⟩
+              by grind, rfl, by simp [ghostAddress, hnotactive]⟩
 
 /-- Equal numerical birth values come from the same performed address. -/
 theorem performed_address_value_injective
@@ -283,12 +268,12 @@ theorem performed_address_value_injective
       (Finset.univ.filter ((Q.reconstructedHistory S hS y).addressPerformed B)) := by
   let H := Q.reconstructedHistory S hS y
   intro a ha b hb hab
-  have haPerf : H.addressPerformed B a := (Finset.mem_filter.mp ha).2
-  have hbPerf : H.addressPerformed B b := (Finset.mem_filter.mp hb).2
+  have haPerf : H.addressPerformed B a := by grind
+  have hbPerf : H.addressPerformed B b := by grind
   obtain ⟨ga, pa, ba, hprimeA, hvalA, hspanA, hvisitA, hghostA⟩ :=
-    address_birth_classification Q S hQ hS hk y B a (by simpa [H] using haPerf)
+    address_birth_classification Q S hQ hS hk y B a (by omega)
   obtain ⟨gb, pb, bb, hprimeB, hvalB, hspanB, hvisitB, hghostB⟩ :=
-    address_birth_classification Q S hQ hS hk y B b (by simpa [H] using hbPerf)
+    address_birth_classification Q S hQ hS hk y B b (by omega)
   have hval : pa.val = pb.val := by
     calc
       pa.val = H.addressValue B a := hvalA.symm
@@ -304,7 +289,7 @@ theorem performed_address_value_injective
   have hspanB' := hspanB
   rcases hspanA' with ⟨sa, hsa⟩
   rcases hspanB' with ⟨sb, hsb⟩
-  have hpair : (ba, sa) = (bb, sb) := Option.some.inj (hsa.symm.trans hsb)
+  have hpair := Option.some.inj (hsa.symm.trans hsb)
   have hbirth : ba = bb := congrArg Prod.fst hpair
   have hvisitEq : addressVisit (P := P) (J := J) (F := F) (n := n) B a =
       addressVisit (P := P) (J := J) (F := F) (n := n) B b := by
@@ -316,9 +301,9 @@ theorem performed_address_value_injective
       ghostAddress (P := P) (J := J) (F := F) (n := n) B b := by
     calc
       _ ↔ ba ∉ Q.activeVisits ga pa := hghostA
-      _ ↔ bb ∉ Q.activeVisits ga pa := by rw [hbirth]
+      _ ↔ bb ∉ Q.activeVisits ga pa := by grind
       _ ↔ _ := hghostB.symm
-  have hprimeAddress : addressPrime Q S B a = addressPrime Q S B b :=
+  have hprimeAddress :=
     hprimeA.trans hprimeB.symm
   cases a with
   | inl xa =>
@@ -338,22 +323,17 @@ theorem performed_address_value_injective
           have hlabels : Q.labels 0 ga'.val haSlot = Q.labels 0 ga'.val hbSlot :=
             Subtype.ext hraw
           have hslot := (hQ.1 0 ga'.val) hlabels
-          subst hbSlot
-          rfl
+          grind
       | inr rb =>
           cases rb with
           | inl xb =>
               rcases xb with ⟨i, gb', hbSlot⟩
               have htime := hvisitEq
               change (0 : Fin (n + 1)) = i.succ at htime
-              have hfalse : False := by
-                have hv := congrArg Fin.val htime
-                simp only [Fin.val_zero, Fin.val_succ] at hv
-                omega
-              exact hfalse.elim
+              grind
           | inr xb =>
               have hf : False := by simp [ghostAddress] at hsameGhost
-              exact hf.elim
+              grind
   | inr ra =>
       cases ra with
       | inl xa =>
@@ -363,11 +343,7 @@ theorem performed_address_value_injective
               rcases xb with ⟨gb', hbSlot⟩
               have htime := hvisitEq
               change (i.succ : Fin (n + 1)) = 0 at htime
-              have hfalse : False := by
-                have hv := congrArg Fin.val htime
-                simp only [Fin.val_zero, Fin.val_succ] at hv
-                omega
-              exact hfalse.elim
+              grind
           | inr rb =>
               cases rb with
               | inl xb =>
@@ -392,27 +368,26 @@ theorem performed_address_value_injective
                   have hlabels : Q.target i ga'.val haSlot = Q.target i ga'.val hbSlot :=
                     Subtype.ext hraw
                   have hslot := Q.target_injective hQ i ga'.val hlabels
-                  subst hbSlot
-                  rfl
+                  grind
               | inr xb =>
                   have hf : False := by simp [ghostAddress] at hsameGhost
-                  exact hf.elim
+                  grind
       | inr xa =>
           rcases xa with ⟨i, ga', haSlot⟩
           cases b with
           | inl xb =>
               have hf : False := by simpa [ghostAddress] using hsameGhost.symm
-              exact hf.elim
+              grind
           | inr rb =>
               cases rb with
               | inl xb =>
                   have hf : False := by simpa [ghostAddress] using hsameGhost.symm
-                  exact hf.elim
+                  grind
               | inr xb =>
                   rcases xb with ⟨j, gb', hbSlot⟩
                   have htime := hvisitEq
                   simp [addressVisit] at htime
-                  have hij : i = j := htime
+                  have hij := htime
                   have hindexA : haSlot.val < (Q.ghostBirthPrimes S i ga').card := by
                     simpa [H, MemoryHistory.addressPerformed,
                       ResiduePath.reconstructedHistory, ResiduePath.reconstructedGhostChoice]
@@ -437,11 +412,7 @@ theorem performed_address_value_injective
                   have hlabels : Q.ghostBatchLabels S i ga' ⟨haSlot.val, hindexA⟩ =
                       Q.ghostBatchLabels S i ga' ⟨hbSlot.val, hindexB⟩ := Subtype.ext hraw
                   have hslots := ghostBatchLabels_injective Q S i ga' hlabels
-                  have hslot : haSlot = hbSlot := by
-                    apply Fin.ext
-                    simpa using congrArg Fin.val hslots
-                  subst hbSlot
-                  rfl
+                  grind
 
 end Erdos821.P3Birth
 
@@ -451,8 +422,8 @@ theorem SpanBirthTask_proof : SpanBirthTask := by
   intro F P J m n A Q S hQ hS hk y
   let H := Q.reconstructedHistory S hS y
   let B := Erdos821.P3Birth.MemoryHistory.birthCutoff H
-  have htruncated : H.Truncated B := by
-    exact Erdos821.P3Birth.MemoryHistory.birthCutoff_truncated H
+  have htruncated : H.Truncated B :=
+    Erdos821.P3Birth.MemoryHistory.birthCutoff_truncated H
   rw [H.distinctBirths_iff_addresses B htruncated]
   exact Erdos821.P3Birth.performed_address_value_injective Q S hQ hS hk y B
 

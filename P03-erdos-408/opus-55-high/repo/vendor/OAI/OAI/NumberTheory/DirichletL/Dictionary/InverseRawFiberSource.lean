@@ -10,15 +10,11 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 namespace SevenEighths.DetectorDictionaryInverseRawFiberSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots
-open InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy
-open HeckeDetectorPhysicalSelection
 local notation "O"=>HeckeFamily.O
 
-variable {M : Ideal O} {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
+variable {M : Ideal HeckeFamily.O} {H : Subgroup (HeckeFamily.O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 end SevenEighths.DetectorDictionaryInverseRawFiberSource

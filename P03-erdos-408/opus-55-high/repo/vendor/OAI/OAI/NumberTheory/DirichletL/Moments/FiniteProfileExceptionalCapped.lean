@@ -6,22 +6,21 @@ public import OAI.NumberTheory.DirichletL.Moments.FiniteProfileExceptionalRow
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeVolume
-open CenteredMomentHeckeTwist CenteredMomentExceptionalCappedAmplitude
-local notation "O" => HeckeFamily.O
+open HeckeFamily CenteredMomentHeckeHeight
+open CenteredMomentExceptionalCappedAmplitude
 theorem capped_rectangle_source_control
     (a b ε B : ℝ) (ha : 0<a) (hb : 0≤b) (hε : 0<ε) (hB : 0≤B) :
     ∃ J : ℕ, ∃ S : Finset (ℕ×ℕ), (0,0)∈S ∧
-      ∀ Q : Ideal O, Q≠0 → ∃ C : ℝ, 0<C ∧
+      ∀ Q : Ideal HeckeFamily.O, Q≠0 → ∃ C : ℝ, 0<C ∧
       ∀ W₁ W₂ : 𝓢(ℝ,ℂ),
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b →
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b →
-      ∀ Z : ℝ, 1≤Z → ∀ (η : Character) (m A₀ z : O),
+      ∀ Z : ℝ, 1≤Z → ∀ (η : Character) (m A₀ z : HeckeFamily.O),
       m ≠ 0 → A₀ ≠ 0 → z ≠ 0 →
-      (ConcretePrimeRowBridge.goodLambda ∣ m) → ((2:O) ∣ m) →
+      (ConcretePrimeRowBridge.goodLambda ∣ m) → ((2:HeckeFamily.O) ∣ m) →
       (HeckeRowClosure.rowConductorBound η m 1 (A₀*z):ℝ) ≤ Z^B →
       CenteredExceptionalProfile.FixedInducingRow η Q m A₀ z →
       ∀ t X₁ X₂ Y₁ Y₂ T L : ℝ, 0 < L →
@@ -56,23 +55,23 @@ theorem capped_rectangle_source_control
     apply (hcancel W₁ W₂ hs₁ hs₂ Z hZ η m A z hm hA hz hml hm2 hcond hex
       t X₁ X₂ Y₁ Y₂ T L hL hX₁ hX₂ hY₁ hY₂ hpX hpY).trans
     gcongr
-    exact le_add_of_nonneg_right hD
+    linarith
   · rw [max_eq_left (le_of_not_ge hlarge),div_one]
     have habs := normalized_rectangle_absolute η m A z W₁ W₂ b b P₁ P₂ hb hb hP₁ hP₂
       (fun _ hx=>(hs₁ hx).2) (fun _ hx=>(hs₂ hx).2) hw₁ hw₂
-      t X₁ X₂ Y₁ Y₂ T (hL.trans_le hX₁) (hL.trans_le hX₂)
-      (hL.trans_le hY₁) (hL.trans_le hY₂) hpX hpY
+      t X₁ X₂ Y₁ Y₂ T (by linarith) (by linarith)
+      (by linarith) (by linarith) hpX hpY
     have hc : D ≤ (C+D)*Z^ε*(1+‖t‖)^J := by
       calc
         _ ≤ C+D := le_add_of_nonneg_left hC.le
         _ ≤ (C+D)*Z^ε := le_mul_of_one_le_right (by positivity) (Real.one_le_rpow hZ hε.le)
-        _ ≤ _ := le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by linarith [norm_nonneg t]))
+        _ ≤ _ := le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by simp))
     apply habs.trans
     calc
-      _ = D*(P₁*P₂)*Real.sqrt T := by dsimp [D]; ring
+      _ = D*(P₁*P₂)*Real.sqrt T := by linarith
       _ ≤ ((C+D)*Z^ε*(1+‖t‖)^J)*(P₁*P₂)*Real.sqrt T := by
         gcongr
-      _ = _ := by dsimp [P₁,P₂]; ring
+      _ = _ := by linarith
 end SevenEighths.CenteredMomentFiniteProfileExceptional
 
 end

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DeletionBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDeletionDerivative
 open HeckeFamily HeckeDeletionBounds
 
@@ -46,7 +46,7 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
       localBound σ * Real.log ((radical M).absNorm : ℝ) := by
   have hp0 (P : SmoothMobiusCorrection.PrimeIdeal) : 0 < (P.val.absNorm : ℝ) := by
     have h := SmoothMobiusCorrection.prime_norm_two_le P
-    exact_mod_cast (by omega : 0 < P.val.absNorm)
+    exact_mod_cast (by positivity)
   have hp2 (P : SmoothMobiusCorrection.PrimeIdeal) : 2 ≤ (P.val.absNorm : ℝ) := by
     exact_mod_cast SmoothMobiusCorrection.prime_norm_two_le P
   have he : logDeriv (HeckeFiniteDeletion.factors M ψ) s =
@@ -54,8 +54,8 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
         logDeriv (EulerFactors.factor (P.val.absNorm : ℝ) (idealCoeff ψ P.val)) s := by
     apply logDeriv_fun_prod
     · intro P _
-      exact EulerFactors.factor_ne_zero (by linarith [hp2 P]) (idealCoeff_norm_le_one ψ P.val)
-        (hσ.trans_le hs)
+      exact EulerFactors.factor_ne_zero (by grind) (idealCoeff_norm_le_one ψ P.val)
+        (by linarith)
     · intro P _
       exact EulerFactors.differentiable_factor (hp0 P) _ s
   rw [he]
@@ -66,7 +66,7 @@ theorem factors_logDeriv_norm (σ : ℝ) (hσ : 0 < σ) (M : Ideal O)
       intro P _
       exact factor_logDeriv_norm hσ (hp2 P) (idealCoeff_norm_le_one ψ P.val) hs
     _ = localBound σ * Real.log ((radical M).absNorm : ℝ) := by
-      rw [← Finset.mul_sum, ← Real.log_prod (fun P _ => (hp0 P).ne')]
+      rw [← Finset.mul_sum, ← Real.log_prod (fun P _ => by grind)]
       simp only [radical, SmoothMobiusCorrection.primeProduct, map_prod, Nat.cast_prod]
 
 end SevenEighths.HeckeDeletionDerivative

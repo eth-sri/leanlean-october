@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwise
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical ContDiff Topology
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwisePolynomial
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
@@ -72,9 +72,7 @@ lemma power_freq_deriv (x σ freq : ℝ) (hx : 0<x) :
     simp [HeckeDyadic.shift]
     ring
   · have he : -HeckeDyadic.shift σ freq= -(σ : ℂ)+(freq : ℂ)*I := by unfold HeckeDyadic.shift; ring
-    rw [he]
-    simp only [id_eq]
-    ring
+    grind
 
 theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
@@ -98,7 +96,7 @@ theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     unfold logProfile
     ring
   convert (HasDerivAt.sum (u:=S) hd).const_mul ((D : ℂ)^(-(1/2 : ℂ))) using 1
-  all_goals simp only [Finset.sum_apply,neg_mul,Finset.sum_neg_distrib,mul_neg]
+  all_goals simp
 
 theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))

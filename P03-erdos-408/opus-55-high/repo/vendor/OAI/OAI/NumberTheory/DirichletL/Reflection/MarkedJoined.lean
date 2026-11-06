@@ -7,14 +7,12 @@ public import OAI.NumberTheory.DirichletL.Reflection.MarkedOverlap
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 lemma joined_whole_prime_mark {ι σ : Type*} [Fintype ι] [Fintype σ]
-    (G : PrimeFamily ι) (S : PrimeFamily σ) (A : Ideal Eis) :
+    (G : PrimeFamily ι) (S : PrimeFamily σ) (A : Ideal ActualEisensteinCubic.O) :
     (∏ i∈(markedSumSlots : Finset (ι⊕σ)),
       if Ideal.span {(G.sum S).generator i}∣A then (1:ℂ) else 0)=
       ∏ i, if S.ideal i∣A then (1:ℂ) else 0 := by
@@ -28,10 +26,10 @@ lemma joined_whole_prime_mark {ι σ : Type*} [Fintype ι] [Fintype σ]
   rfl
 
 theorem actual_marked_row_eq_joined {σ : Type*} [Fintype σ]
-    {m f z : Eis} (D : GoodMaskRowData m f z) (S : PrimeFamily σ)
-    (Ψ : Eis→*ℂ) (Q : Ideal Eis) (hmLam : λ₀∣m) (hm2 : (2:Eis)∣m)
+    {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z) (S : PrimeFamily σ)
+    (Ψ : ActualEisensteinCubic.O→*ℂ) (Q : Ideal ActualEisensteinCubic.O) (hmLam : ConcretePrimeRowBridge.goodLambda∣m) (hm2 : (2:ActualEisensteinCubic.O)∣m)
     (W : ℝ→ℂ) (X : ℝ) :
-    let Q₀ := Q*Ideal.span {(72:Eis)}
+    let Q₀ := Q*Ideal.span {(72:ActualEisensteinCubic.O)}
     let G := (freePrimeFamily D.movingIdeal Q₀ D.movingSupported).sum S
     let j := Sum.elim
       (fun P : FreePrimeIndex D.movingIdeal Q₀ =>
@@ -41,19 +39,19 @@ theorem actual_marked_row_eq_joined {σ : Type*} [Fintype σ]
         W X (fun A => ∏ i∈markedSumSlots, if Ideal.span {G.generator i}∣A then (1:ℂ) else 0) := by
   dsimp only
   rw [actual_marked_row_fixed_factor D Ψ Q hmLam hm2,
-    free_row_eq_joined_unmarked D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported S]
+    free_row_eq_joined_unmarked D.movingIdeal (Q*Ideal.span {(72:ActualEisensteinCubic.O)}) D.movingSupported S]
   congr 1
   funext A
-  exact (joined_whole_prime_mark (freePrimeFamily D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported) S A).symm
+  exact (joined_whole_prime_mark (freePrimeFamily D.movingIdeal (Q*Ideal.span {(72:ActualEisensteinCubic.O)}) D.movingSupported) S A).symm
 
 lemma joined_free_pairwise {σ : Type*} [Fintype σ]
-    (I Q : Ideal Eis) (hI : Supported I) (S : PrimeFamily σ)
+    (I Q : Ideal ActualEisensteinCubic.O) (hI : Supported I) (S : PrimeFamily σ)
     (hS : Pairwise (Function.onFun IsCoprime S.ideal))
     (hdis : ∀ P : FreePrimeIndex I Q, ∀ i, S.ideal i≠P.val.val) :
     Pairwise (Function.onFun IsCoprime ((freePrimeFamily I Q hI).sum S).ideal) := by
   apply PrimeFamily.sum_pairwise (freePrimeFamily I Q hI) S
   · exact freePrimeIndex_pairwise_coprime I Q
-  · exact hS
+  · omega
   · intro P i
     exact Ideal.isCoprime_of_isMaximal (hdis P i).symm
 

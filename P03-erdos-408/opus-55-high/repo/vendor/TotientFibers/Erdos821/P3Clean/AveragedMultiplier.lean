@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.IdealMultiplier
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
@@ -42,7 +41,7 @@ theorem idealMultiplierRaw_norm_le_average (A : Model F P J m) (theta delta : �
           abs_of_nonneg hu, abs_of_nonneg hf, imaginaryPower_norm, phase_norm, mul_one]
         have hh := mul_le_mul_of_nonneg_left (coefficient_norm_le_amplitude A v a b u)
           (mul_nonneg (mul_nonneg hu hf) (norm_nonneg (w v a b u)))
-        simpa only [mul_assoc, mul_left_comm, mul_comm] using hh
+        linarith
       _ = (∑ u : P.BigAux J, (A.pattern v).bigAuxMass u * ‖w v a b u‖) *
           (patternAmplitude A v * (A.pattern v).freshMass b) := by rw [Finset.sum_mul]
       _ ≤ delta * (patternAmplitude A v * (A.pattern v).freshMass b) :=
@@ -66,19 +65,19 @@ theorem normBound_idealMultiplierRaw_average (A : Model F P J m) (theta delta : 
     unfold R
     split_ifs
     · exact freshMass_nonneg (A.pattern v) b
-    · exact le_refl 0
-  have hrow (v : Fin A.patternCount) (a : P.BigLabels (J + F.ell)) : (∑ b, R v a b) = 1 := by
-    exact bigFreshMass_row_sum (A.pattern v) (fun g p => P.mu g.val p)
+    · simp
+  have hrow (v : Fin A.patternCount) (a : P.BigLabels (J + F.ell)) : (∑ b, R v a b) = 1 :=
+    bigFreshMass_row_sum (A.pattern v) (fun g p => P.mu g.val p)
       (fun g => mu_sum g.val (hV g)) a
   have hrev (v : Fin A.patternCount) (a b : P.BigLabels (J + F.ell)) :
       P.idealMass a * R v a b = P.idealMass b * R v b a := by
     have hs : (A.pattern v).matchesBig a b ↔ (A.pattern v).matchesBig b a := by
       unfold Pattern.matchesBig
-      exact forall_congr' (fun g => forall_congr' (fun i => imp_congr_right (fun _ => eq_comm)))
+      exact by grind
     by_cases h : (A.pattern v).matchesBig a b
     · simp only [R, ite_eq_left h, ite_eq_left (hs.mp h)]
       exact bigFreshMass_reversal (A.pattern v) (fun g p => P.mu g.val p) a b h
-    · simp only [R, ite_eq_right h, ite_eq_right (fun hh => h (hs.mpr hh)), mul_zero]
+    · grind
   have h := normBound_probability_mixture P.idealMass R (fun v => delta * patternAmplitude A v)
     (idealMultiplierRaw A theta w) hm hR
     (fun v => mul_nonneg hd (patternAmplitude_nonneg A v)) hrow hrev

@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
+open InverseMoment FirstPassCubeLabels
+open InverseMomentFirstChildWindows
+open InverseMomentGlobalRetainedGates InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem source_labels (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
@@ -38,10 +37,10 @@ theorem source_child_margins
     (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (Z M r ell V eta tau window b : ℝ)
-    (m : O) (hm : m≠0) (Qwidth z c : ℝ)
+    (m : ActualEisensteinCubic.O) (hm : m≠0) (Qwidth z c : ℝ)
     (hZ : 1<Z) (heta : 0≤eta) (hbin : 2≤Z^eta) (hV : 0≤V)
     (hparent : CanonicalMargins (r+3*ell+V) M Qwidth z c)
-    (hpuncture : (Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Qwidth)
+    (hpuncture : (Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Qwidth)
     (hQ : ∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta)) :
     let S := source p pool Q k l j negative J lists Z M r ell V eta tau window b
     ∀d,∀γ∈actualSecondTriples p 1 1 (cell p S d),

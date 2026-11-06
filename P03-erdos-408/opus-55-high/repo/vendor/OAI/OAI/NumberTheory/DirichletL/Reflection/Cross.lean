@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.Frozen
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
@@ -25,9 +25,9 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
       rw [← hu]
       ext k
       by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk]
-    rw [he, ite_eq_left hi, Finset.prod_union (hd.mono_left (Finset.erase_subset _ _))]
+      · simp_all
+      · grind
+    rw [he, ite_eq_left hi, Finset.prod_union (hd.mono_left (by grind))]
   have hB (i : ι) (hi : i ∈ B) :
       (∏ k ∈ U.erase i, x i k ^ (if i ∈ A then a else b)) =
         (∏ k ∈ B.erase i, x i k ^ b) * (∏ k ∈ A, x i k ^ b) := by
@@ -36,9 +36,9 @@ theorem ordered_cross_partition_on {ι : Type*} [Fintype ι] [DecidableEq ι]
       rw [← hu]
       ext k
       by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk, or_comm]
-    rw [he, ite_eq_right hn, Finset.prod_union (hd.symm.mono_left (Finset.erase_subset _ _))]
+      · simp_all
+      · grind
+    rw [he, ite_eq_right hn, Finset.prod_union (hd.symm.mono_left (by grind))]
   have hpA : (∏ i ∈ A, ((∏ k ∈ U.erase i,
       x i k ^ (if i ∈ A then a else b)) * l i)) =
       (∏ i ∈ A, (∏ k ∈ A.erase i, x i k ^ a) * l i) *
@@ -90,20 +90,19 @@ theorem ordered_cross_frozen_partition {ι : Type*} [Fintype ι] [DecidableEq ι
       rw [← hu]
       ext k
       by_cases hk : k = i
-      · subst k; simp [hn]
-      · simp [hk,or_assoc]
-    rw [he,Finset.prod_union (hF.mono_left (Finset.erase_subset _ _))]
+      · simp_all
+      · grind
+    rw [he,Finset.prod_union (hF.mono_left (by grind))]
     dsimp [ll]
     ring
   rw [hx,ordered_cross_partition_on x ll a b R P (R ∪ P) hRP rfl]
   congr 2
   · apply Finset.prod_congr rfl
-    intro i hi
-    simp [ll,hi]
+    grind
   · apply Finset.prod_congr rfl
     intro i hi
     have hn : i ∉ R := fun hr => Finset.disjoint_left.mp hRP hr hi
-    simp [ll,hn]
+    grind
 
 end
 end SevenEighths.InverseReflectedPhase

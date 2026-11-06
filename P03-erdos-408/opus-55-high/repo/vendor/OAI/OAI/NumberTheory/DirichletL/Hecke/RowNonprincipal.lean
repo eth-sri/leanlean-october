@@ -9,21 +9,20 @@ public import OAI.NumberTheory.DirichletL.Hecke.ExceptionalRows
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeRowNonprincipal
 open HeckeFamily CanonicalRowCompletion CenteredMomentCanonical
 open ConcretePrimeRowBridge hiding O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem nonprincipal_of_local_factor (χ : Character)
     (Q J P : Ideal O) [P.IsMaximal]
-    (hQ : Q ≤ Ideal.span {λ₀ ^ 2})
+    (hQ : Q ≤ Ideal.span {ConcretePrimeRowBridge.goodLambda ^ 2})
     (φ : O →* ℂ) (hφ : CanonicalCoefficientClass.FactorsModulo Q φ)
     (hJ : CanonicalQuadraticSieve.Supported J)
-    (hg : λ₀ ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
+    (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
     {c : ℕ} (hc : 1 ≤ c) (hc6 : ¬ 6 ∣ c)
     (hcop : IsCoprime (Q * J) (P ^ c))
-    (hrow : ∀ n : O, λ₀ ^ 2 ∣ n - 1 →
+    (hrow : ∀ n : O, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ n - 1 →
       elementCoeff χ n = φ n * idealRowHom n (P ^ c * J)) :
     χ.residue ≠ 1 := by
   let ψ := canonicalPrimePowerCharacter P hg hc
@@ -32,9 +31,7 @@ theorem nonprincipal_of_local_factor (χ : Character)
     by_contra! h
     apply hψ
     apply MulChar.ext
-    intro u
-    rw [MulChar.one_apply u.isUnit]
-    exact h u
+    simp_all
   let e := Ideal.quotientInfEquivQuotientProd (Q * J) (P ^ c) hcop
   obtain ⟨x, hx⟩ := e.surjective ((1 : O ⧸ Q * J), (u : O ⧸ P ^ c))
   obtain ⟨n, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -42,10 +39,10 @@ theorem nonprincipal_of_local_factor (χ : Character)
   have hnQJ := congrArg Prod.fst hx
   have hnP := congrArg Prod.snd hx
   dsimp only at hnQJ hnP
-  have hn : n - 1 ∈ Q * J := Ideal.Quotient.eq.mp (by simpa using hnQJ)
+  have hn : n - 1 ∈ Q * J := Ideal.Quotient.eq.mp (by simp_all)
   have hnQ : n - 1 ∈ Q := Ideal.mul_le_left hn
   have hnJ : n - 1 ∈ J := Ideal.mul_le_right hn
-  have hnprimary : λ₀ ^ 2 ∣ n - 1 := Ideal.mem_span_singleton.mp (hQ hnQ)
+  have hnprimary : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ n - 1 := Ideal.mem_span_singleton.mp (hQ hnQ)
   have hv : elementCoeff χ n = ψ (u : O ⧸ P ^ c) := by
     rw [hrow n hnprimary, map_mul, hφ n 1 hnQ, map_one, one_mul,
       idealRowHom_congr_mod J n 1 hnJ, idealRowHom_one_supported J hJ, mul_one]
@@ -56,15 +53,15 @@ theorem nonprincipal_of_local_factor (χ : Character)
   have hv1 : elementCoeff χ n = 1 := by
     change χ.residue _ = 1
     rw [hχ, MulChar.one_apply hunit]
-  exact hu (hv.symm.trans hv1)
+  simp_all
 
 theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
     (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
+    (hpr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * ConcretePrimeRowBridge.goodLambda ^ a * (2 : O) ^ b * r)
     (P J : Ideal O) [P.IsMaximal]
-    (hg : λ₀ ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
+    (hg : ConcretePrimeRowBridge.goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
     (hJ : CanonicalQuadraticSieve.Supported J)
     {c : ℕ} (hc : 1 ≤ c) (hc6 : ¬ 6 ∣ c)
     (hsplit : Ideal.span {r} = P ^ c * J)
@@ -74,8 +71,8 @@ theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
   let φ := HeckeRowClosure.elementHom η * coprimalityMask m * numeratorBadTwist u a b r hr
   refine nonprincipal_of_local_factor χ (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)}) J P
       ?_ φ ?_ hJ hg hchar hc hc6 hcop ?_
-  · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
-    have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
+  · have hd3 : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
+    have hd72 : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
     exact Ideal.mul_le_right.trans ((Ideal.span_singleton_le_iff_mem _).mpr
       (Ideal.mem_span_singleton.mpr hd72))
   · intro x y hxy
@@ -87,7 +84,7 @@ theorem actual_row_nonprincipal (η χ : Character) (m f z : O)
   · intro n hn
     rw [hχ n, rowTwist_eq_actualPeriodicRow_primary _ _ _ _ hmLam hm2 u a b r hr hpr hx n hn]
     change φ n * idealRowHom n (Ideal.span {r}) = φ n * idealRowHom n (P ^ c * J)
-    rw [hsplit]
+    simp_all
 
 open UniqueFactorizationMonoid in
 
@@ -118,10 +115,10 @@ theorem extract_prime_power (I : Ideal O) (hI : CanonicalQuadraticSieve.Supporte
 open UniqueFactorizationMonoid in
 
 theorem principal_row_multiplicity (η χ : Character) (m f z : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
     (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
+    (hpr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * ConcretePrimeRowBridge.goodLambda ^ a * (2 : O) ^ b * r)
     (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m f z n)
     (hprincipal : χ.residue = 1)
     (P : Ideal O) (hP : P ∈ normalizedFactors (Ideal.span {r}))
@@ -138,10 +135,10 @@ theorem principal_row_multiplicity (η χ : Character) (m f z : O)
 open UniqueFactorizationMonoid in
 
 theorem principal_row_fixed_support (η χ : Character) (m f z : O)
-    (hm : m ≠ 0) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+    (hm : m ≠ 0) (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
     (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * λ₀ ^ a * (2 : O) ^ b * r)
+    (hpr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ r - 1) (hx : f ^ 4 * z = (u : O) * ConcretePrimeRowBridge.goodLambda ^ a * (2 : O) ^ b * r)
     (hχ : ∀ n, elementCoeff χ n = rowTwist (HeckeRowClosure.elementHom η) m f z n)
     (hprincipal : χ.residue = 1)
     (hfree : ∀ P ∈ normalizedFactors (Ideal.span {r}),
@@ -151,7 +148,7 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
   let Q := η.modulus * Ideal.span {m} * Ideal.span {(72 : O)}
   have hQ : Q ≠ ⊥ := mul_ne_zero
     (mul_ne_zero η.modulus_ne_bot (Ideal.span_singleton_eq_bot.not.mpr hm))
-    (Ideal.span_singleton_eq_bot.not.mpr (by norm_num))
+    (by simp)
   refine ⟨Ideal.span_singleton_eq_bot.not.mp hr.1, ?_⟩
   intro P hP
   refine ⟨?_, hfree P hP⟩
@@ -165,9 +162,9 @@ theorem principal_row_fixed_support (η χ : Character) (m f z : O)
     apply Ideal.coprime_of_no_prime_ge
     intro J hQJ hPJ hJ
     have hPJ' : P = J := hgood.1.eq_of_le hJ.ne_top hPJ
-    exact hQP (hPJ' ▸ hQJ)
+    exact by grind
   have hd := principal_row_multiplicity η χ m f z hmLam hm2 u a b r hr hpr hx hχ hprincipal P hP hcop
-  exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) (hfree P hP) hd
+  exact Nat.not_dvd_of_pos_of_lt (Multiset.count_pos.mpr hP) (by grind) hd
 
 end SevenEighths.HeckeRowNonprincipal
 

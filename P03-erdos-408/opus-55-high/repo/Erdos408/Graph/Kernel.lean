@@ -52,14 +52,14 @@ lemma prod_block_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bo
   have hsmall : ∏ g : {g : G.Group // ¬ G.big g = true}, ∏ i ∈ blockSlots ν block s g.val,
       x g i = 1 := by
     refine Finset.prod_eq_one fun g _ => ?_
-    have : ν.changed g.val = ∅ := ν.small g.val (by simpa using g.property)
+    have  := ν.small g.val (by grind)
     simp [blockSlots, this]
   rw [hsmall, mul_one]
   refine Finset.prod_congr rfl fun g _ => ?_
   have hside : side block g.val = block g := by simp [side, g.property]
   by_cases hb : block g = s
   · simp only [blockSlots, hside, hb, true_and, ite_true]
-    rw [Finset.prod_ite_mem, Finset.univ_inter]
+    simp
   · simp [blockSlots, hside, hb]
 
 /-- Upstream's selected product of the auxiliary labels is the slot product of
@@ -72,7 +72,7 @@ lemma selectedProduct_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s
   refine Finset.prod_congr rfl fun g _ => Finset.prod_congr rfl fun i _ => ?_
   by_cases h : block g = s ∧ i ∈ ν.changed g.val
   · rw [ite_eq_left h, ite_eq_left h, trim, ite_eq_left h.2]
-  · rw [ite_eq_right h, ite_eq_right h]
+  grind
 
 /-- Upstream's selected endpoint is the slot product of the label values. -/
 lemma selectedEndpoint_eq (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
@@ -122,8 +122,8 @@ lemma selectedCellMass_nonneg (ν : Pattern G J 1 m) (block : G.BigGroup → Boo
   refine Finset.sum_nonneg fun u _ => ?_
   split_ifs
   · exact Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun i _ =>
-      inv_nonneg.mpr (mul_nonneg (Finset.sum_nonneg fun p _ => by positivity) (by positivity))
-  · exact le_rfl
+      inv_nonneg.mpr (mul_nonneg (Finset.sum_nonneg (by simp)) (by positivity))
+  simp
 
 /-- A cell of positive mass is the cell of some selected product. -/
 lemma mem_image_of_selectedCellMass_pos {ν : Pattern G J 1 m} {block : G.BigGroup → Bool}
@@ -131,7 +131,7 @@ lemma mem_image_of_selectedCellMass_pos {ν : Pattern G J 1 m} {block : G.BigGro
     j ∈ Finset.univ.image fun u : G.BigAux J => cell h (selectedProduct ν block s u) := by
   by_contra hc
   refine hj.ne' (Finset.sum_eq_zero fun u _ => ite_eq_right fun hu => hc ?_)
-  exact Finset.mem_image.mpr ⟨u, Finset.mem_univ _, hu⟩
+  grind
 
 /-- There are at most `ξ⁻¹` good cells. -/
 lemma card_goodCells_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s : Bool)
@@ -144,7 +144,7 @@ lemma card_goodCells_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s 
     unfold selectedCellMass
     rw [Finset.sum_comm]
     refine Finset.sum_congr rfl fun u _ => ?_
-    rw [Finset.sum_ite_eq, ite_eq_left (Finset.mem_image_of_mem _ (Finset.mem_univ u))]
+    rw [Finset.sum_ite_eq, ite_eq_left (by grind)]
   have hle : (goodCells ν block s h ξ).card • ξ ≤ 1 := by
     refine (Finset.card_nsmul_le_sum _ _ _ fun j hj => (Finset.mem_filter.mp hj).2).trans ?_
     rw [← hsum]
@@ -152,7 +152,7 @@ lemma card_goodCells_le (ν : Pattern G J 1 m) (block : G.BigGroup → Bool) (s 
       fun j _ _ => selectedCellMass_nonneg ν block s h j
   rw [nsmul_eq_mul] at hle
   rw [← one_div, le_div_iff₀ hξ]
-  exact hle
+  omega
 
 /-! ### The cell-character expansion -/
 
@@ -176,7 +176,7 @@ lemma selectedKernel_eq_sum (ν : Pattern G J 1 m) (block : G.BigGroup → Bool)
   by_cases hc : cell h D = cell h X ∧ ξ ≤ selectedCellMass ν block s h (cell h X)
   · rw [ite_eq_left hc]
     have hmem : cell h X ∈ goodCells ν block s h ξ := Finset.mem_filter.mpr
-      ⟨mem_image_of_selectedCellMass_pos (hξ.trans_le hc.2), hc.2⟩
+      ⟨mem_image_of_selectedCellMass_pos (by linarith), hc.2⟩
     rw [Finset.sum_eq_single_of_mem _ hmem fun j _ hj =>
       Finset.sum_eq_zero fun χ _ => by simp [cellMark, Ne.symm hj], Finset.mul_sum]
     refine Finset.sum_congr rfl fun χ _ => ?_
@@ -186,9 +186,9 @@ lemma selectedKernel_eq_sum (ν : Pattern G J 1 m) (block : G.BigGroup → Bool)
     unfold cellTest cellMark
     by_cases h₁ : cell h X = j
     · have h₂ : ¬ cell h D = j := fun h₂ =>
-        hc ⟨h₂.trans h₁.symm, h₁ ▸ (Finset.mem_filter.mp hj).2⟩
-      simp [h₂]
-    · simp [h₁]
+        hc ⟨by omega, h₁ ▸ (Finset.mem_filter.mp hj).2⟩
+      simp_all
+    simp_all
 
 /-- A cell of log-width `h ≤ 1` lies in `[U, eU]`, `U = e^{jh}`. -/
 lemma mem_cell {h : ℝ} (hh₀ : 0 < h) (hh₁ : h ≤ 1) {n : ℕ} (hn : 0 < n) {j : ℤ}
@@ -214,7 +214,7 @@ lemma norm_cellTest_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n 
   split_ifs
   · rw [norm_star]
     exact DirichletCharacter.norm_le_one _ _
-  · simp
+  simp
 
 /-- The mark factor is bounded by one. -/
 lemma norm_cellMark_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n : ℕ) :
@@ -222,7 +222,7 @@ lemma norm_cellMark_le (h : ℝ) {Q : ℕ} (j : ℤ) (χ : CharacterIndex Q) (n 
   unfold cellMark charValue
   split_ifs
   · exact DirichletCharacter.norm_le_one _ _
-  · simp
+  simp
 
 /-- There are at most `Q²` primitive characters of modulus at most `Q`. -/
 lemma card_primitiveCharacters_le (Q : ℕ) : (primitiveCharacters Q).card ≤ Q ^ 2 := by
@@ -259,11 +259,11 @@ lemma inv_le_norm_selectedKernel (ν : Pattern G J 1 m) (block : G.BigGroup → 
     simp [χ₁, charValue, MulChar.one_apply (isUnit_of_subsingleton _)]
   have hv := selectedCellMass_nonneg ν block s h j
   rw [hsum, norm_mul, norm_inv, Complex.norm_real, Complex.norm_real, Real.norm_of_nonneg hv,
-    Real.norm_of_nonneg (Finset.sum_nonneg fun _ _ => by positivity)]
+    Real.norm_of_nonneg (by positivity)]
   refine le_mul_of_one_le_right (inv_nonneg.mpr hv) ?_
-  calc (1 : ℝ) = ‖charValue χ₁ D‖ ^ 2 := by rw [hone, one_pow]
+  calc (1 : ℝ) = ‖charValue χ₁ D‖ ^ 2 := by simp_all
     _ ≤ _ := Finset.single_le_sum (f := fun χ => ‖charValue χ D‖ ^ 2)
-        (fun _ _ => by positivity) hχ₁
+        (by simp) hχ₁
 
 /-- For a comparison pattern of upstream's residual form, each pair of good
 cells has `v_j⁻¹ v_{j'}⁻¹` at most the supremum of the coefficient. -/

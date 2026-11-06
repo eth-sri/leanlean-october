@@ -9,15 +9,14 @@ public import Mathlib.NumberTheory.LSeries.MellinEqDirichlet
 namespace OAI
 
 noncomputable section
-open Filter Asymptotics Set MeasureTheory
-open scoped Topology BigOperators
+open Filter Set MeasureTheory
 namespace SevenEighths.HeckeTheta
 open EisensteinTheta
 
 theorem locallyIntegrableOn_sum {ι : Type*} (s : Finset ι)
     (f : ι → ℝ → ℂ) (hf : ∀ i ∈ s, LocallyIntegrableOn (f i) (Ioi 0)) :
-    LocallyIntegrableOn (∑ i ∈ s, f i) (Ioi 0) := by
-  exact Finset.sum_induction f (fun g => LocallyIntegrableOn g (Ioi 0))
+    LocallyIntegrableOn (∑ i ∈ s, f i) (Ioi 0) :=
+  Finset.sum_induction f (fun g => LocallyIntegrableOn g (Ioi 0))
     (fun _ _ => LocallyIntegrableOn.add) (locallyIntegrableOn_const 0) hf
 
 def finitePair {ι : Type*} [Fintype ι] (P : ι → WeakFEPair ℂ)
@@ -122,8 +121,8 @@ theorem pair_f₀ {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
   have hconst (a : Fin N × Fin N) :
       cosetConstant a.1 a.2 N (Nat.cast_pos.mpr (NeZero.pos N)) =
         if a = (0, 0) then 1 else 0 := by
-    rw [cosetConstant_eq _ _ _ _ (by positivity) (by exact_mod_cast a.1.isLt)
-      (by positivity) (by exact_mod_cast a.2.isLt)]
+    rw [cosetConstant_eq _ _ _ _ (by positivity) (by simp)
+      (by positivity) (by simp)]
     have hz : (a.1 : ℝ) = 0 ∧ (a.2 : ℝ) = 0 ↔ a = (0, 0) := by
       simp only [Prod.ext_iff, Fin.ext_iff, Fin.val_zero, Nat.cast_eq_zero]
     simp only [hz]
@@ -158,12 +157,12 @@ def completed {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) : ℂ → ℂ :=
 
 theorem completed_differentiableAt {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs₀ : s ≠ 0) (hs₁ : s ≠ 1) : DifferentiableAt ℂ (completed w) s :=
-  (pair w).differentiableAt_Λ (Or.inl hs₀) (Or.inl (by simpa using hs₁))
+  (pair w).differentiableAt_Λ (by grind) (Or.inl (by simp_all))
 
 theorem pair_hasMellin {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs : 1 < s.re) :
     HasMellin (fun t => (pair w).f t - (pair w).f₀) s (completed w s) :=
-  (pair w).hasMellin (by simpa using hs)
+  (pair w).hasMellin (by simp_all)
 
 def latticeL {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : ℂ) : ℂ :=
   (Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹ * completed w s
@@ -171,7 +170,7 @@ def latticeL {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : ℂ) : ℂ :
 theorem completed_differentiableAt_of_mean_zero {N : ℕ} [NeZero N]
     (w : Fin N × Fin N → ℂ) (hw : ∑ a, w a = 0) {s : ℂ} (hs₀ : s ≠ 0) :
     DifferentiableAt ℂ (completed w) s :=
-  (pair w).differentiableAt_Λ (Or.inl hs₀) (Or.inr (pair_g₀_eq_zero w hw))
+  (pair w).differentiableAt_Λ (by grind) (Or.inr (pair_g₀_eq_zero w hw))
 
 theorem latticeL_differentiableAt {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
     {s : ℂ} (hs₀ : s ≠ 0) (hs₁ : s ≠ 1 ∨ ∑ a, w a = 0) :
@@ -180,8 +179,7 @@ theorem latticeL_differentiableAt {N : ℕ} [NeZero N] (w : Fin N × Fin N → �
     rcases hs₁ with hs₁ | hw
     · exact completed_differentiableAt w hs₀ hs₁
     · exact completed_differentiableAt_of_mean_zero w hw hs₀
-  exact (((differentiable_id.const_cpow (Or.inl
-    (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).differentiableAt).mul
+  exact (((differentiable_id.const_cpow (by simp)).differentiableAt).mul
       (Complex.differentiable_one_div_Gamma s)).mul hΛ
 
 def regularizedCompleted {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : ℂ) : ℂ :=
@@ -189,8 +187,8 @@ def regularizedCompleted {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : 
 
 theorem regularizedCompleted_differentiableAt {N : ℕ} [NeZero N]
     (w : Fin N × Fin N → ℂ) {s : ℂ} (hs₀ : s ≠ 0) :
-    DifferentiableAt ℂ (regularizedCompleted w) s := by
-  exact (((differentiableAt_id.sub_const 1).mul
+    DifferentiableAt ℂ (regularizedCompleted w) s :=
+  (((differentiableAt_id.sub_const 1).mul
     (((pair w).differentiable_Λ₀ s).sub
       ((differentiableAt_id.inv hs₀).mul_const (pair w).f₀))).add_const (pair w).g₀)
 
@@ -200,18 +198,15 @@ theorem regularizedCompleted_eq {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ
   unfold regularizedCompleted completed WeakFEPair.Λ
   simp only [pair_k, Complex.ofReal_one, show (pair w).ε = 1 from rfl,
     smul_eq_mul, one_div]
-  have hsub : (1 : ℂ) - s ≠ 0 := sub_ne_zero.mpr hs₁.symm
-  field_simp
-  ring
+  grind
 
 def regularizedLatticeL {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) (s : ℂ) : ℂ :=
   (Real.pi : ℂ) ^ s * (Complex.Gamma s)⁻¹ * regularizedCompleted w s
 
 theorem regularizedLatticeL_differentiableAt {N : ℕ} [NeZero N]
     (w : Fin N × Fin N → ℂ) {s : ℂ} (hs₀ : s ≠ 0) :
-    DifferentiableAt ℂ (regularizedLatticeL w) s := by
-  exact (((differentiable_id.const_cpow (Or.inl
-    (Complex.ofReal_ne_zero.mpr Real.pi_ne_zero))).differentiableAt).mul
+    DifferentiableAt ℂ (regularizedLatticeL w) s :=
+  (((differentiable_id.const_cpow (by simp)).differentiableAt).mul
       (Complex.differentiable_one_div_Gamma s)).mul
         (regularizedCompleted_differentiableAt w hs₀)
 

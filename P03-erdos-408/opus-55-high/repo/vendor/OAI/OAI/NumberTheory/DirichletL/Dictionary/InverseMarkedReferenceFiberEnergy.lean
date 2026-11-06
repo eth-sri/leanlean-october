@@ -9,14 +9,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
 open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseMoment InverseInitialProfile
-open ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion
+open HeckeDetectorCoefficientTransfer InverseMoment
+open ConcreteTraceCRT ConcretePrimeRowBridge
 open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseMarkedPhysicalRows
 open InverseInitialPhysicalSlots IdealMobiusDivisorSum
-local notation "O"=>HeckeFamily.O
 
 theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     (S:ProbeFinalAssembly.SourceData D)
@@ -25,7 +24,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     (εm:ℝ)(hεm:0<εm)(K:ℕ):
     ∃degree:ℕ,∀data:RowData,∃C U₀:ℝ,0<C ∧ 1<U₀ ∧
     ∀U:ℝ,U₀≤U →
-    ∀(M:Ideal O)[NeZero M](H:Subgroup (O⧸M)ˣ)
+    ∀(M:Ideal HeckeFamily.O)[NeZero M](H:Subgroup (HeckeFamily.O⧸M)ˣ)
       {Label Slot:Type}{a ε tstar T allowance:ℝ}{i:ℕ}
       (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finset Slot),
       F.rowData=data → selected.card≤K →
@@ -54,17 +53,17 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   choose C U₀ hC hU₀ hb using fun b:Bool=>hj b data
   let Tbad:=idealDivisors (∏P∈excluded data,P)
   let Ctotal:ℝ:=((Tbad.card:ℝ)+1)^2*(∑b:Bool,C b)
-  have hCsum:0<∑b:Bool,C b:=Finset.sum_pos (fun b _=>hC b) Finset.univ_nonempty
-  refine ⟨Ctotal,max (U₀ false) (U₀ true),mul_pos (by positivity) hCsum,
-    lt_max_of_lt_left (hU₀ false),?_⟩
+  have hCsum:0<∑b:Bool,C b:=Finset.sum_pos (by grind) Finset.univ_nonempty
+  refine ⟨Ctotal,max (U₀ false) (U₀ true),by positivity,
+    by grind,?_⟩
   intro U hU M neM H Label Slot a ε tstar T allowance i F selected hdata hK hprofile hupper
     hell hext hdis hlarge hr hfirst hsecond v
   have hUb (b:Bool):U₀ b≤U:=by cases b <;> exact le_trans (by simp) hU
   have hUone:1<U:=(hU₀ false).trans_le (hUb false)
   have hpr (s:selected):F.profile s=S.W:=hprofile s s.property
   have hup (s:selected):F.upper s=2:=hupper s s.property
-  have hprof:(fun s:selected=>F.profile s)=(fun _=>(S.W:ℝ→ℂ)):=funext hpr
-  have hups:(fun s:selected=>F.upper s)=(fun _=>2):=funext hup
+  have hprof:=funext hpr
+  have hups:=funext hup
   have hslots:∀s∈selected,∀x,F.profile s x≠0 → x∈Set.Icc (1:ℝ) (F.upper s) := by
     intro s hs x hx
     rw [hprofile s hs] at hx
@@ -75,9 +74,9 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
   have hphys:=fiber_child_rows_le_deleted_sources F selected W v bo (fun _=>1) hUone
     (fun x hx=>(hsW hx).2) hslots hlarge'
   rw [hdata] at hphys
-  let rows:Finset O:=F.rows.image (fun u=>u.val)
-  have hsum (f:O→ℝ):(∑u∈rows,f u)=∑u∈F.rows,f u.val:=
-    Finset.sum_image (fun u _ w _ he=>Subtype.ext he)
+  let rows:Finset HeckeFamily.O:=F.rows.image (fun u=>u.val)
+  have hsum (f:HeckeFamily.O→ℝ):(∑u∈rows,f u)=∑u∈F.rows,f u.val:=
+    Finset.sum_image (by simp)
   have hrows:∀u∈rows,‖eisEmbedding u‖^2≤U := by
     intro u hu
     obtain ⟨w,hw,rfl⟩:=Finset.mem_image.mp hu
@@ -88,9 +87,9 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     have hn:‖orientedFrequency b v‖=‖v‖:=by cases b <;> simp [orientedFrequency]
     rw [hn]
     apply pow_le_pow_left₀ (by positivity)
-    apply pow_le_pow_right₀ (by linarith [norm_nonneg v])
-    exact Finset.single_le_sum (fun b _=>Nat.zero_le _) (Finset.mem_univ b)
-  have hterm (j:Ideal O)(hj:j∈Tbad):
+    apply pow_le_pow_right₀ (by simp)
+    exact Finset.single_le_sum (by omega) (Finset.mem_univ b)
+  have hterm (j:Ideal HeckeFamily.O)(hj:j∈Tbad):
       (∑u∈F.rows,‖deletedSelectedSource data M H
         (childLogTest (orientedProfile F.reverse W) (orientedFrequency F.reverse v))
         (fun s:selected=>F.profile s) U (shiftedExponent data U F.r j)
@@ -114,7 +113,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     rw [hsum] at hh
     refine hh.trans ?_
     apply mul_le_mul _ (hpow F.reverse) (by positivity) (by positivity)
-    apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg (by linarith) _)
+    apply mul_le_mul_of_nonneg_right _ (by positivity)
     exact Finset.single_le_sum (fun b _=>(hC b).le) (Finset.mem_univ F.reverse)
   refine hphys.trans ?_
   change (Tbad.card:ℝ)*(∑j∈Tbad,_)≤_
@@ -127,7 +126,7 @@ theorem fiber_reference_energy {Δ:ℝ}{D:Parameters.HighData Δ}
     _≤Ctotal*U^(1+εm)*((1+‖v‖)^(∑b:Bool,J b))^2:=by
       show _≤((Tbad.card:ℝ)+1)^2*(∑b:Bool,C b)*U^(1+εm)*((1+‖v‖)^(∑b:Bool,J b))^2
       gcongr
-      nlinarith [show 0≤(Tbad.card:ℝ) by positivity]
+      simp
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 

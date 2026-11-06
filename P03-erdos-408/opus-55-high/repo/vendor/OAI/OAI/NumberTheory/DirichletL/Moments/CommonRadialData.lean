@@ -8,21 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.ActiveCanonicalSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonRadialData
-open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
-open CenteredMomentSourceRectangle CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceLiveColumn CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentCommonRawScale
-open CenteredMomentRestrictedSource CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstSectors ConcretePrimeRowBridge CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentEligibleEnergy
+open CenteredMomentSourceRectangle
+open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
+open CenteredMomentSecondHeightFamily
+open ConcretePrimeRowBridge
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 structure Input (ι:Type*) [Fintype ι] extends Data ι where
-  plain₁ : Finset (Ideal O)
-  plain₂ : Finset (Ideal O)
+  plain₁ : Finset (Ideal ActualEisensteinCubic.O)
+  plain₂ : Finset (Ideal ActualEisensteinCubic.O)
   plain₁_ne : ∀I∈plain₁,I≠0
   plain₂_ne : ∀I∈plain₂,I≠0
   coverage₁ : PlainCoverage plain₁ W₁ 1 X₁ Y₁
@@ -35,7 +33,7 @@ structure Input (ι:Type*) [Fintype ι] extends Data ι where
   lower_le : ∀i,lower≤lo i
   upper_ge : ∀i,hi i≤upper
 
- def Input.pools (s:Input ι) : (ι⊕Fin 2)→Finset (Ideal O) :=
+ def Input.pools (s:Input ι) : (ι⊕Fin 2)→Finset (Ideal ActualEisensteinCubic.O) :=
   Sum.elim s.slots (fun j=>if j=0 then s.plain₁ else s.plain₂)
 
 omit [DecidableEq ι] in
@@ -52,16 +50,16 @@ lemma Input.slot_support (s:Input ι) (i:ι) : Function.support (s.W i)⊆Set.Ic
   fun _x hx=>⟨(s.lower_le i).trans (s.support i hx).1,((s.support i hx).2).trans (s.upper_ge i)⟩
 
 omit [DecidableEq ι] in
-lemma alloc_ne (s:Input ι) (C:Ideal O) (B:actualAllocations s.pools C)
+lemma alloc_ne (s:Input ι) (C:Ideal ActualEisensteinCubic.O) (B:actualAllocations s.pools C)
     (j:ι⊕Fin 2) : B.val j≠0 :=
   (allocation_data s.pools C B (Finset.mem_filter.mp B.property).1).1 j
 
 omit [DecidableEq ι] in
-lemma alloc_norm_pos (s:Input ι) (C:Ideal O) (B:actualAllocations s.pools C)
+lemma alloc_norm_pos (s:Input ι) (C:Ideal ActualEisensteinCubic.O) (B:actualAllocations s.pools C)
     (j:ι⊕Fin 2) : (0:ℝ)<Ideal.absNorm (B.val j) := by
   exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (alloc_ne s C B j))
 
- def commonData (s:Input ι) (C R:Ideal O) (B:actualAllocations s.pools C) : Data (liveIndices B.val) where
+ def commonData (s:Input ι) (C R:Ideal ActualEisensteinCubic.O) (B:actualAllocations s.pools C) : Data (liveIndices B.val) where
   η:=s.η
   m:=fixedBadMask*idealGenerator (R*C)
   A:=1
@@ -99,7 +97,7 @@ lemma alloc_norm_pos (s:Input ι) (C:Ideal O) (B:actualAllocations s.pools C)
   weight_nonneg:=by simp
 
 omit [DecidableEq ι] in
-lemma common_profile_le (s:Input ι) (C R:Ideal O) (B:actualAllocations s.pools C) :
+lemma common_profile_le (s:Input ι) (C R:Ideal ActualEisensteinCubic.O) (B:actualAllocations s.pools C) :
     (commonData s C R B).profileFactor≤s.toData.profileFactor := by
   unfold Data.profileFactor
   change (2*(max 1 s.b₁*max 1 s.b₂))*(∏i:liveIndices B.val,s.M i.val)^2≤_

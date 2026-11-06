@@ -5,12 +5,10 @@ public import Erdos821.S2High.TiltedMass
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2High
 
 open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
 
 theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (n : ℕ) (hP : P.Admissible F x)
@@ -24,13 +22,13 @@ theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
     mul_pos F.vMin_pos (Real.exp_pos _)
   have haPos : 0 < a := by dsimp [a]; exact div_pos two_pos hden
   have ha : 0 ≤ a := haPos.le
-  have hsum : (∑ p : P.Prime g.val, tiltedMu F P n g.val p) ≤ 2 := hm.2.2
+  have hsum := hm.2.2
   calc
     (∑ p : P.Prime g.val, (tiltedMu F P n g.val p) ^ k) ≤
         ∑ p : P.Prime g.val, a ^ (k - 1) * tiltedMu F P n g.val p := by
       apply Finset.sum_le_sum
       intro p hp
-      have hp0 : 0 ≤ tiltedMu F P n g.val p := (hm.1 p).1.le
+      have hp0 : 0 ≤ tiltedMu F P n g.val p := by grind
       have hpA : tiltedMu F P n g.val p ≤ a := by
         simpa [a] using (hm.1 p).2
       have hpow : (tiltedMu F P n g.val p) ^ (k - 1) ≤ a ^ (k - 1) :=
@@ -40,16 +38,15 @@ theorem tiltedMu_power_sum_bound (F : FixedData) (P : PrimeGroups) (x : ℝ)
             (tiltedMu F P n g.val p) ^ (k - 1) * tiltedMu F P n g.val p := by
           calc
             _ = (tiltedMu F P n g.val p) ^ ((k - 1) + 1) :=
-              (congrArg (fun j : ℕ => (tiltedMu F P n g.val p) ^ j)
-                (Nat.sub_add_cancel hk)).symm
-            _ = _ := by rw [pow_succ]
+              by grind
+            _ = _ := by ring
         _ ≤ a ^ (k - 1) * tiltedMu F P n g.val p :=
           mul_le_mul_of_nonneg_right hpow hp0
     _ = a ^ (k - 1) * ∑ p : P.Prime g.val, tiltedMu F P n g.val p := by
       rw [← Finset.mul_sum]
     _ ≤ a ^ (k - 1) * 2 :=
-      mul_le_mul_of_nonneg_left hsum (pow_nonneg ha _)
+      mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = 2 * (2 / (F.vMin * Real.exp ((L x) ^ F.c))) ^ (k - 1) := by
-      simp [a, mul_comm]
+      linarith
 
 end Erdos821.S2High

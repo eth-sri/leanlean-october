@@ -9,17 +9,15 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ZeroMode
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical SchwartzMap
 open EisensteinSchwartzPoisson
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ {n : Type*} [Fintype n] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M N : ℝ) (_hM : 0 < M) (_hN : 1 ≤ N)
-        (cols : n → Ideal O) (_hc : Function.Injective cols)
+        (cols : n → Ideal ActualEisensteinCubic.O) (_hc : Function.Injective cols)
         (_hcols : ∀ j, Admissible (cols j) ∧ N / 2 ≤ (Ideal.absNorm (cols j) : ℝ) ∧
           (Ideal.absNorm (cols j) : ℝ) ≤ N)
         (a : n → ℂ),
@@ -30,10 +28,10 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
   refine ⟨C, hC, ?_⟩
   intro n _ _ ε hε M N hM hN cols hc hcols a
   have hN0 : 0 < N := by linarith
-  let f : O → ℂ := cubicDualRow cols (fun j => (hcols j).1) a W M
+  let f : ActualEisensteinCubic.O → ℂ := cubicDualRow cols (by grind) a W M
   let B : ℝ := C * (IdealCoprimeSieveOperator.supportConstant ε hε * N^ε) *
     ((2 / N) * ∑ j, ‖a j‖^2)
-  have hf : Summable f := cubicDualRow_summable cols (fun j => (hcols j).1) a W M hM
+  have hf : Summable f := cubicDualRow_summable cols (by grind) a W M hM
   have hblock (l : ℕ) : ‖∑ h : frequencyDyad l, f h.val‖ ≤ B * frequencyMajorant M N l := by
     have hp := hshell ε hε M ((2 : ℝ)^l) N hM (by positivity) hN0
       (fun h : frequencyDyad l => h.val) cols Subtype.val_injective hc
@@ -54,14 +52,14 @@ theorem cubic_smoothed_frequency_recurrence_all (W : 𝓢(ℝ, ℂ)) :
     (frequencyMajorant_summable M N hM hN).mul_left B
   have hb := (hg.of_norm_bounded hblock).hasSum.norm_le_of_bounded hg.hasSum hblock
   rw [tsum_mul_left] at hb
-  rw [cubicSmoothedCoprime_poisson cols (fun j => (hcols j).1) a W M hM, norm_mul,
+  rw [cubicSmoothedCoprime_poisson cols (by grind) a W M hM, norm_mul,
     Complex.norm_real, Real.norm_eq_abs, abs_of_pos hM]
-  change M * ‖∑' h : O, f h‖ ≤ _
+  change M * ‖∑' h : ActualEisensteinCubic.O, f h‖ ≤ _
   rw [tsum_frequencyDyads_with_zero f hf]
   apply mul_le_mul_of_nonneg_left _ hM.le
   exact (norm_add_le _ _).trans (add_le_add
-    (cubicDualRow_zero_bound cols (fun j => (hcols j).1) hc a W M N hN0
-      (fun j => (hcols j).2.1)) hb)
+    (cubicDualRow_zero_bound cols (by grind) hc a W M N hN0
+      (by grind)) hb)
 
 end
 end SevenEighths.CubicSieve

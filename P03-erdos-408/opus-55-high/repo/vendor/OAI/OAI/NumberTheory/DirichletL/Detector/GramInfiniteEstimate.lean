@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramSourceEstimate
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff Topology
+open scoped Classical ContDiff Topology
 namespace SevenEighths.ProbeGramCommon
 open Filter ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma sourceTruncation_tendsto (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)
     (F : Finset SupportedIdeal) (W : ℝ→ℂ) (hW : HasCompactSupport W)
@@ -49,7 +48,7 @@ theorem original_energy_nonzero_bound (δ ε : ℝ) (hδ : 0<δ) (hδ1 : δ<1)
   intro S hS hbad σ U v Y Q hY hQ
   rw [original_energy_common_blocks S hS σ W hcompact Y Q hY hQ U v,add_sub_cancel_left]
   exact le_of_tendsto (sourceTruncation_tendsto S hS σ _ W hcompact Y Q hY hQ U v).norm
-    (Eventually.of_forall (fun E=>hbound S hS hbad σ _ E U v Y Q hY hQ))
+    (Eventually.of_forall (by grind))
 
 end SevenEighths.ProbeGramCommon
 end

@@ -8,12 +8,11 @@ public import Erdos821.P3Clean.ResidueAction
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Clean
 
-open Erdos821.Blueprint.Graph Erdos821.S2Core
+open Erdos821.Blueprint.Graph
 
 variable {P : PrimeGroups}
 
@@ -85,7 +84,7 @@ theorem memoryMass_coordinates (F : FixedData) (J n : ℕ)
   classical
   simp only [PrimeGroups.memoryMass, smallPhysical_join, joinLabels_big,
     smallMarkMass, tiltedIdealMass, pendingMass]
-  split_ifs <;> ring
+  grind
 
 
 end Erdos821.P3Clean

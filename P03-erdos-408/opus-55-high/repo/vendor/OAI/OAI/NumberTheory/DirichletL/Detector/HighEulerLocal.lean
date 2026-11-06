@@ -7,12 +7,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighEuler
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ProbeEuler ProbePrimePower ProbeRow
 local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma highPrimeTerm_summable_norm (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
@@ -42,7 +40,7 @@ theorem highPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (x w z : 
     (hs.prod_factor (e,l)).tsum_prod
   simp_rw [he]
   rw [tsum_eq_sum (s:=Finset.range 2) (fun e he=>by
-    have hh : 2≤e := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
+    have hh := Nat.le_of_not_gt (by simpa only [Finset.mem_range] using he)
     simp only [highPrimeTerm_zero_of_two_le η x w z P e _ _ _ hh,tsum_zero]),
     ←Fin.sum_univ_eq_sum_range]
   rfl

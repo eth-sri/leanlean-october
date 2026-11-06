@@ -9,19 +9,18 @@ public import OAI.NumberTheory.DirichletL.Reflection.Surviving
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
+open scoped Classical
+open CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u
-variable {a c : Eis} {mode : Bool}
+variable {a c : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem actual_surviving_retained_gates
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
     (kK kP η : ℝ) (hkK : 0<kK) (hkP : 0<kP) (hη : 0<η) :
     ∃ Z₀ : ℝ, 1<Z₀ ∧ ∀ {φ : Type u} [Fintype φ],
     ∀ (F : PrimeFamily φ), Pairwise (Function.onFun IsCoprime F.ideal) →
-    ∀ (jF : φ→ℕ) (A : Ideal Eis→Ideal Eis→ℂ) (e : φ→Fin 3)
+    ∀ (jF : φ→ℕ) (A : Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ) (e : φ→Fin 3)
       (Z X QK QP δ : ℝ) (i : ℕ×ℕ×ℕ),
       Z₀≤Z → 0<X → 0<QK → 0<QP →
       i∈retainedDyads (familyRawScale F s X QK QP) (16*Z^δ) →
@@ -34,7 +33,7 @@ theorem actual_surviving_retained_gates
           F.ideal jF e+δ+η := by
   obtain ⟨Z₁,hZ₁,hwidth⟩ := actual_retained_width_uniform s hc kK kP 1 1 η hkK hkP (by norm_num) (by norm_num) hη
   obtain ⟨Z₂,hZ₂,hram⟩ := InverseTerminalWidths.ramified_width_threshold η hη
-  refine ⟨max Z₁ Z₂,lt_of_lt_of_le hZ₁ (le_max_left _ _),?_⟩
+  refine ⟨max Z₁ Z₂,by grind,?_⟩
   intro φ _ F hF jF A e Z X QK QP δ i hZ hX hQK hQP hi he
   have hz1 := (le_max_left Z₁ Z₂).trans hZ
   have hz2 := (le_max_right Z₁ Z₂).trans hZ
@@ -46,8 +45,8 @@ theorem actual_surviving_retained_gates
   have hp (v : Fin 3) : (0:ℝ)<Ideal.absNorm (frozenExtracted F jF e v) := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   refine ⟨Real.logb_nonneg hz ((one_le_div (hp 1)).mpr hnorm.1),
-    Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),hram Z hz2 i.1,?_⟩
-  simpa only [one_mul] using hwidth F jF e Z X QK QP δ i hz1 hX hQK hQP hi
+    Real.logb_nonneg hz ((one_le_div (hp 2)).mpr hnorm.2),by grind,?_⟩
+  simpa using hwidth F jF e Z X QK QP δ i hz1 hX hQK hQP hi
 end
 end SevenEighths.InverseReflectedPhase
 

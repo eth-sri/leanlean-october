@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParent
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-variable (p:ι→O)
+variable (p:ι→ActualEisensteinCubic.O)
 
 def firstCellRadius (Z M r ell V eta tau:ℝ)(k:SourceIndex)(j:ℕ):ℝ:=
   Z^(firstPhysicalHeight M r ell V (dyadicExponent Z (k 3))
@@ -31,7 +30,7 @@ theorem first_dyadic_radius_cell (pool:Finset ι)(Q:Finset (ι→₀ℕ))
       firstCellRadius Z M r ell V eta tau k j:=by
   rw [refinedOuter_label] at hx
   obtain ⟨hx,hj⟩:=Finset.mem_filter.mp hx
-  have hg:outerGate p k x:=(Finset.mem_filter.mp hx).2
+  have hg:=(Finset.mem_filter.mp hx).2
   have hC:=hg 2
   have hD:=hg 3
   change dyadIndex (primeProductNorm p x.2.1)=k 2 at hC
@@ -41,11 +40,11 @@ theorem first_dyadic_radius_cell (pool:Finset ι)(Q:Finset (ι→₀ℕ))
   rw [hD,hC]
   change dyadIndex (‖eisEmbedding (jLabel p x.1.support
     (fun i=>x.1.leftExponent i+x.1.rightExponent i) x.1.leftBit x.1.rightBit)‖^2)=j at hj
-  rw [hj]
+  simp_all
 
 theorem first_dyadic_refined_cutoff (pool:Finset ι)(Q:Finset (ι→₀ℕ))
     (k:SourceIndex)(j:ℕ)(Z M r ell V eta tau:ℝ):
-    ∀x∈refinedOuter p pool Q k (labelGate p j),∀_I:Ideal O,
+    ∀x∈refinedOuter p pool Q k (labelGate p j),∀_I:Ideal ActualEisensteinCubic.O,
       firstDyadicRadius p x.1 x.2.1 x.2.2 Z M r ell V eta tau≤
         firstCellRadius Z M r ell V eta tau k j:=by
   intro x hx I

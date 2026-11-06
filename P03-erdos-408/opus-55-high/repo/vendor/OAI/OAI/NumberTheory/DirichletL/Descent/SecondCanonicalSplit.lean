@@ -8,18 +8,16 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondSourceProfile
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open scoped Classical
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
 def actualMarkedSecondProfileData {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
-    (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) (A₁ A₂ : Finset ι) : SecondProfileData ι :=
+    (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex) (A₁ A₂ : Finset ι) : SecondProfileData ι :=
   let d := primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor
   let c := (∏ i ∈ x.firstCommon,p i)*jLabel p x.cube.support
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit
@@ -33,7 +31,7 @@ theorem actual_second_split_child_uniform
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) :
-    ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m k : Eis)
+    ∃ u v : ActualEisensteinCubic.Oˣ, ∀ (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m k : ActualEisensteinCubic.O)
       (A : Finset ι), A ⊆ (x.cube.support∪x.firstCommon)∪x.second.sourceCommon →
       ∀ (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ),
       let d := primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor
@@ -70,7 +68,7 @@ theorem actual_second_separated_pair_canonical
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) :
-    ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
+    ∃ u v : ActualEisensteinCubic.Oˣ, ∀ (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (z : SecondRayIndex)
       (A₁ A₂ : Finset ι), A₁ ⊆ x.cube.support∪x.firstCommon → A₂ ⊆ x.cube.support∪x.firstCommon →
       ∀ (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
       (ω₁ ω₂ : ℝ → ℂ) (G₀ E₀ V₀ K₀ X₀ : ℝ) (t : JointLogSeparation.Frequency × (Fin 6 → ℝ)),
@@ -96,8 +94,8 @@ theorem actual_second_separated_pair_canonical
     Finset.union_subset_union_left ha
   unfold secondSeparatedPair
   dsimp only [actualMarkedSecondProfileData,expansionProfileData]
-  rw [hsplit F (secondRayMinus Ψ z) m x.second.frequency _ (hA A₁ hA₁),
-    hsplit F (secondRayPlus Ψ z) m (-x.second.frequency) _ (hA A₂ hA₂)]
+  rw [hsplit F (secondRayMinus Ψ z) m x.second.frequency _ (by grind),
+    hsplit F (secondRayPlus Ψ z) m (-x.second.frequency) _ (by grind)]
   simp only [star_sum,star_mul,Finset.sum_mul,Finset.mul_sum]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl

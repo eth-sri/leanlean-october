@@ -64,9 +64,9 @@ theorem sub_eq_sum_confDiff {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ :
   simp only [confDiff, mul_sub, sum_sub_distrib, mul_sum]
   congr 1
   · rw [sum_comm]
-    exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
+    ring
   · rw [sum_comm]
-    exact sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => by ring
+    grind
 
 /-- A configuration that is not live has `D(ω) = 0`: the roots of the positions and the cube
 corners lie in the root box. -/
@@ -101,9 +101,9 @@ theorem confDiff_eq_zero_of_not_live (q x : ℝ) (d : Data K) {Y d₀ : ℝ}
     have h₁₀ : (0 : ℝ) ≤ i.1 / n := by positivity
     have h₂₀ : (0 : ℝ) ≤ i.2.1 / n := by positivity
     rw [hω _ _ _ (le_mul_of_one_le_right hU.le (by linarith))
-      (by rw [mul_comm 16]; exact mul_le_mul_of_nonneg_left (by linarith) hU.le)
+      (by nlinarith)
       (le_mul_of_one_le_right hV.le (by linarith))
-      (by rw [mul_comm 2]; exact mul_le_mul_of_nonneg_left (by linarith) hV.le)
+      (by nlinarith)
       (by positivity) h₃, Complex.ofReal_zero, zero_mul]
   rw [confDiff, sum_eq_zero hpos, sum_eq_zero hcube, mul_zero, mul_zero, mul_zero, sub_zero]
 
@@ -126,7 +126,7 @@ theorem norm_sub_le_of_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ :
   rw [sub_eq_sum_confDiff hq hU hV.le hR hdisj n]
   calc ‖∑ ω : Conf x d Y d₀, confCoeff A₀ x d Y d₀ ω * confDiff q x d Y d₀ n ω‖
       ≤ ∑ ω : Conf x d Y d₀, ‖confCoeff A₀ x d Y d₀ ω‖ * ‖confDiff q x d Y d₀ n ω‖ :=
-        (norm_sum_le _ _).trans_eq (sum_congr rfl fun ω _ => norm_mul _ _)
+        (norm_sum_le _ _).trans_eq (by simp)
     _ = ∑ ω ∈ univ.filter (fun ω : Conf x d Y d₀ => ConfLive ω),
           ‖confCoeff A₀ x d Y d₀ ω‖ * ‖confDiff q x d Y d₀ n ω‖ := by
         -- step: the configurations that are not live contribute nothing
@@ -140,9 +140,9 @@ theorem norm_sub_le_of_conf {q A₀ x : ℝ} (hq : 0 < q) {d : Data K} {Y d₀ :
         refine sum_le_sum fun ω hω => ?_
         by_cases hc : confCoeff A₀ x d Y d₀ ω = 0
         · rw [hc, norm_zero, zero_mul, zero_mul]
-        · exact mul_le_mul_of_nonneg_left (hD ω (mem_filter.1 hω).2 hc) (norm_nonneg _)
+        · exact mul_le_mul_of_nonneg_left (by grind) (norm_nonneg _)
     _ ≤ M * ε := by
         rw [← sum_mul]
-        exact mul_le_mul_of_nonneg_right hM hε
+        nlinarith
 
 end Erdos408.OneSided

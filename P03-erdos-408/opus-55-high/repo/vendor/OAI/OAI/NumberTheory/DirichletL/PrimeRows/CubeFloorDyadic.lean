@@ -7,9 +7,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SmallPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 lemma bounded_dyadic_power_sum (p : ℝ) (hp : 0<p) :
     ∃C : ℝ,0<C ∧ ∀H : ℝ,0<H → ∀F : Finset ℕ,
@@ -22,12 +22,12 @@ lemma bounded_dyadic_power_sum (p : ℝ) (hp : 0<p) :
     have hd : 0<1+H⁻¹*(2:ℝ)^n := by positivity
     have hu : H⁻¹*(2:ℝ)^n≤1 := by
       rw [mul_comm,←div_eq_mul_inv]
-      exact (div_le_one hH).mpr (hF n hn)
+      exact (div_le_one hH).mpr (by grind)
     have hh : (1+H⁻¹*(2:ℝ)^n)^(p+1)≤(2:ℝ)^(p+1) :=
       Real.rpow_le_rpow hd.le (by linarith) (by linarith)
     unfold CompletedDyadic.kernelTerm
     rw [←mul_div_assoc]
-    apply (le_div_iff₀ (Real.rpow_pos_of_pos hd _)).mpr
+    apply (le_div_iff₀ (by positivity)).mpr
     simpa only [mul_comm] using mul_le_mul_of_nonneg_left hh
       (Real.rpow_nonneg (show (0:ℝ)≤(2:ℝ)^n by positivity) p)
   calc
@@ -43,15 +43,13 @@ lemma retained_dyadic_partition (rows : Finset FreeRow) (H : ℝ)
     (smallDyadicIndices H).biUnion (fun n=>rows∩dyadicRows 1 n)=rows := by
   ext u
   constructor
+  · simp_all
   · intro hu
-    obtain ⟨n,hn,hu⟩ := Finset.mem_biUnion.mp hu
-    exact (Finset.mem_inter.mp hu).1
-  · intro hu
-    obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u (hrows u hu).1 (rowNorm_ge_one u)
-    refine Finset.mem_biUnion.mpr ⟨n,?_,Finset.mem_inter.mpr ⟨hu,hn⟩⟩
+    obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u (by grind) (rowNorm_ge_one u)
+    refine Finset.mem_biUnion.mpr ⟨n,?_,by grind⟩
     rw [mem_smallDyadicIndices]
     have hlo := (mem_dyadicRows.mp hn).2.1
-    simpa only [one_mul] using hlo.trans (hrows u hu).2
+    grind
 
 lemma retained_dyadic_sum {A : Type*} [AddCommMonoid A] (rows : Finset FreeRow) (H : ℝ)
     (hrows : ∀u∈rows,u.val≠1 ∧ rowNorm u≤H) (f : FreeRow→A) :

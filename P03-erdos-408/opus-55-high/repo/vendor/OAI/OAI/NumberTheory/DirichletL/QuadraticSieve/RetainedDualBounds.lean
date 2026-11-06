@@ -10,33 +10,23 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -45,43 +35,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 def primePoolDensity (G : Ideal O) : ℂ :=
@@ -106,7 +89,7 @@ theorem principalTruncation_scaled (G : Ideal O) (hG : Squarefree G)
     by_cases hd : Z < (Ideal.absNorm d:ℝ)
     · simp only [hd,ite_true,Complex.ofReal_div,Complex.ofReal_natCast]
       ring
-    · simp only [hd,ite_false,mul_zero]
+    · grind
   have hs : (∑ d ∈ idealDivisors G, if (Ideal.absNorm d:ℝ) ≤ Z then
         (UniqueFactorizationMonoid.moebius d:ℂ)*(c:ℂ) else 0) =
       (c:ℂ)*(∑ d ∈ idealDivisors G, if (Ideal.absNorm d:ℝ) ≤ Z then
@@ -171,11 +154,11 @@ theorem unrestrictedDualPrincipalTruncation_eq
         squarefree_mul_iff.mpr ⟨hc.isRelPrime,(hleft j).2.1,(hright k).2.1⟩
       rw [principalTruncation_scaled _ hsq,dual_principal_prefactor_identity M F (Ideal.absNorm (rows i))
         (Ideal.absNorm (left j)) (Ideal.absNorm (right k)) hM hF
-        (hpos _ (hrows i)) (hpos _ (hleft j).1) (hpos _ (hright k).1)]
+        (by grind) (hpos _ (hleft j).1) (hpos _ (hright k).1)]
       ring
     · have hz : unrestrictedPairTerm rows left right a b i j k = 0 := by
         simp only [unrestrictedPairTerm,hc,ite_false]
-      simp only [hz,zero_mul,mul_zero,sub_zero]
+      grind
   unfold unrestrictedDualPrincipalTruncation
   simp_rw [ht]
   simp only [unrestrictedPrincipalDensity,unrestrictedLargePrincipalSum,unrestrictedSmallPrincipalSum,
@@ -184,7 +167,7 @@ theorem unrestrictedDualPrincipalTruncation_eq
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson UnrestrictedIdealReindex GaussGeneratorTransport
 
 theorem dualPrincipalIdeal_truncated_all_conductors
@@ -201,12 +184,11 @@ theorem dualPrincipalIdeal_truncated_all_conductors
     simpa only [scaledRadialTest_apply] using actual_eisenstein_summable_norm (scaledRadialTest V X hX)
   have hf : Summable f := by
     apply Summable.of_norm
-    apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ hV
+    apply Summable.of_nonneg_of_le (by simp) _ hV
     intro z
     dsimp only [f]
     by_cases hz : z=0
-    · simp only [hz,ite_true,mul_zero,norm_zero]
-      exact norm_nonneg _
+    · simp_all
     · rw [ite_eq_right hz,norm_mul]
       exact mul_le_of_le_one_left (norm_nonneg _)
         (QuadraticUnitInvariance.rowCoprimeMask_norm_le_one P Finset.univ z)
@@ -229,15 +211,11 @@ theorem dualPrincipalIdeal_truncated_all_conductors
     unfold truncationError
     dsimp only [f]
     ring
-  change dualPrincipalIdeal I J V X=(6:ℂ)⁻¹ *
-    (principalTruncation P Finset.univ V X Z + middleTruncation P Finset.univ V X Y Z lengthScale +
-      truncationError P Finset.univ V X Y Z lengthScale)
-  rw [hs,he]
-  ring
+  grind
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge EisensteinSchwartzPoisson
 open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem unrestrictedDualPrincipal_error_uniform (l : ℕ) :
@@ -273,7 +251,7 @@ theorem unrestrictedDualPrincipal_error_uniform (l : ℕ) :
     have hi : 0 < (Ideal.absNorm (rows i) : ℝ) := by
       exact_mod_cast Nat.pos_of_ne_zero (fun h => (hrows i).1 (Ideal.absNorm_eq_zero_iff.mp h))
     obtain ⟨hX₀, hlo, hhi⟩ := dual_truncation_reference_bounds M F (Ideal.absNorm (rows i)) N
-      (Ideal.absNorm (cols j)) (Ideal.absNorm (cols k)) hM hF hi (by linarith) (hcols j).2 (hcols k).2
+      (Ideal.absNorm (cols j)) (Ideal.absNorm (cols k)) hM hF hi (by linarith) (by grind) (by grind)
     have hh := hb ε hε (cols j * cols k) (mul_ne_zero (hcols j).1.1 (hcols k).1.1) W
       _ _ T hX₀ hlo hhi hT
     simp only [map_mul, Nat.cast_mul] at hh
@@ -285,15 +263,15 @@ theorem unrestrictedDualPrincipal_error_uniform (l : ℕ) :
       apply hh.trans
       dsimp only [E₀]
       gcongr
-      · exact (hcols j).2.2
-      · exact (hcols k).2.2
+      · grind
+      · grind
     dsimp only [error]
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     exact mul_le_mul
       (dual_truncation_prefactor_bound M F N (Ideal.absNorm (cols j)) (Ideal.absNorm (cols k))
-        hM hF (by linarith) (hcols j).2 (hcols k).2) he (norm_nonneg _) (by positivity)
+        hM hF (by linarith) (by grind) (by grind)) he (norm_nonneg _) (by positivity)
   exact unrestricted_pair_error_ideal_bound rows cols hr hc B N hB hN hrows
-    (fun j => ⟨(hcols j).1.1, (hcols j).2.2⟩) a _ (by positivity) error herr
+    (fun j => ⟨(hcols j).1.1, by grind⟩) a _ (by positivity) error herr
 
 section
 variable {m n : Type} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -334,8 +312,7 @@ theorem retainedDualPrincipalSum_symmetric_truncation
   · have hi := hpos _ (hrows i)
     have hj := hpos _ (hcols j).1
     have hk := hpos _ (hcols k).1
-    exact Real.sqrt_pos.mpr (by positivity : 0 <
-      F*(Ideal.absNorm (cols j):ℝ)*(Ideal.absNorm (cols k):ℝ)/(M*(Ideal.absNorm (rows i):ℝ)))
+    positivity
 
 end
 
@@ -390,12 +367,12 @@ theorem retained_dual_principal_difference (l : ℕ) :
     ring
   have hl := hexp.unrestricted_large_principal_sum hα deltaLoss hδ ε hε B N M F T hB hN hM hF hT
     rows cols cols hr hc hc hrows (fun j => ⟨(hcols j).1,(hcols j).2.2⟩)
-    (fun k => ⟨(hcols k).1,(hcols k).2.2⟩) hray a a Z (fun _ => le_rfl)
+    (fun k => ⟨(hcols k).1,(hcols k).2.2⟩) hray a a Z (by grind)
   have hs := hexp.unrestricted_small_principal_sum hα deltaLoss hδ ε hε B N M F T hB hN hM hF hT0
     rows cols cols hr hc hc hrows hcols hcols hray a a (fun d i => (Ideal.absNorm d:ℝ)≤Z i)
-    (fun _ _ h => h)
+    (by grind)
   have hm := hexp.unrestricted_dual_truncated_middle hα deltaLoss hδ ε hε B N M F T hB hN hM hF hT0
-    rows cols cols hr hc hc hrows a a W Y Z (T^4) hcols hcols hray (fun _ => le_rfl)
+    rows cols cols hr hc hc hrows a a W Y Z (T^4) hcols hcols hray (by grind)
   have he := herr ε hε B N M F T hB hN hM hF hT rows cols hr hc
     (fun i => ⟨(hrows i).1.ne_zero,(hrows i).2.2⟩) hcols a W
   rw [heq]
@@ -529,8 +506,8 @@ theorem retained_dual_principal_global (l : ℕ) :
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic QuadraticSquarefreeKernel CompletedGauss
+open scoped Classical
+open QuadraticSquarefreeKernel CompletedGauss
 
 def highSquareParts (M K : ℝ) : Finset (Ideal O) := (highKernelRange M K).image squarePart
 
@@ -557,7 +534,7 @@ theorem highSquareParts_bounds (M K : ℝ) (hK : 0 < K) (A : Ideal O)
   have hroot : (Ideal.absNorm (squarePart I) : ℝ) ≤ Real.sqrt (M/K) := by
     nlinarith [Real.sq_sqrt hM,Real.sqrt_nonneg (M/K)]
   refine ⟨hparts.1,hna,hroot,?_⟩
-  apply (le_div_iff₀ (by positivity : 0 < (Ideal.absNorm (squarePart I) : ℝ)^2)).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   nlinarith
 
 theorem highSquarePart_fiber_row_bounds (M K : ℝ) (A I : Ideal O)
@@ -596,7 +573,7 @@ theorem highSquarePartFiber_energy (M N K : ℝ) (A : Ideal O)
     calc
       I.val = A^2 * squarefreePart I.val := by
         simpa only [hI] using (squarePart_sq_mul_squarefreePart I.val).symm
-      _ = A^2 * squarefreePart I'.val := by rw [heq]
+      _ = A^2 * squarefreePart I'.val := by simp_all
       _ = I'.val := by simpa only [hI'] using squarePart_sq_mul_squarefreePart I'.val
   have hnorm : ‖FiniteSieveOperator.operator B‖^2 ≤
       sieveNorm (M/(Ideal.absNorm A : ℝ)^2) N := by
@@ -628,7 +605,7 @@ theorem highSquarePartFiber_energy (M N K : ℝ) (A : Ideal O)
   simp_rw [hrow]
   exact (FiniteSieveOperator.energy_bound B b).trans
     ((mul_le_mul_of_nonneg_right hnorm (by positivity)).trans
-      (mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun J _ => hb J)
+      (mul_le_mul_of_nonneg_left (Finset.sum_le_sum (by grind))
         (sieveNorm_nonneg _ _)))
 
 theorem highKernelNorm_le_squarePart_sum (M N K : ℝ) :

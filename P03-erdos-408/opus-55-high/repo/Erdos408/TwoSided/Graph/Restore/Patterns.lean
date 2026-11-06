@@ -54,24 +54,11 @@ lemma card_slotLists_empty (P : ι → Finset ℕ) (n : ℕ) :
     simp only [slotLists, unsharedSlots_empty, mem_filter, Fintype.mem_piFinset,
       mem_singleton, coe_singleton, Set.injOn_singleton, true_and, forall_eq]
     constructor
-    · rintro ⟨h₁, h₂⟩ g j
-      have := h₁ g j
-      split_ifs at this ⊢ with hj
-      · subst hj
-        exact mem_filter.2 ⟨this, h₂ g⟩
-      · exact this
-    · intro h
-      refine ⟨fun g j => ?_, fun g => ?_⟩
-      · have := h g j
-        split_ifs at this ⊢ with hj
-        · exact (mem_filter.1 this).1
-        · exact this
-      · have := h g (Fin.last J)
-        rw [ite_eq_left rfl] at this
-        exact (mem_filter.1 this).2
+    · grind
+    · grind
   rw [h, Fintype.card_piFinset]
   refine prod_congr rfl fun g _ => ?_
-  rw [Fintype.card_piFinset, Fintype.prod_eq_single (Fin.last J) fun j hj => by simp [hj]]
+  rw [Fintype.card_piFinset, Fintype.prod_eq_single (Fin.last J) fun j hj => by simp_all]
   simp [primeCount]
 
 /-- `W₁ = q₀^{ω - s} ∏_g ω_g / V_g` is the stripped damping times the number of represented
@@ -88,7 +75,7 @@ lemma markedWeight_eq_listDamping_mul (P : ι → Finset ℕ) (q₀ : ℝ) (n : 
   rw [mul_assoc]
   congr 1
   rw [← prod_mul_distrib]
-  exact prod_congr rfl fun g _ => by ring
+  grind
 
 /-- **The raw pattern.** Its stripped correlation is the raw correlation, once `κ x ≤ x²`. -/
 lemma stripSum_raw_eq {x q₀ κ : ℝ} (hx : 0 < x) (hκx : κ * x ≤ x ^ 2) (P : ι → Finset ℕ)
@@ -108,9 +95,9 @@ lemma stripSum_raw_eq {x q₀ κ : ℝ} (hx : 0 < x) (hκx : κ * x ≤ x ^ 2) (
     |>.trans (sum_congr rfl fun w _ => ?_)
   · have hlt : ⌊κ * x⌋₊ < w := by
       by_contra h
-      exact hw' (mem_Icc.2 ⟨(mem_Icc.1 hw).1, not_lt.1 h⟩)
+      exact by grind
     have hw0 : (0 : ℝ) < w := by
-      have := (mem_Icc.1 hw).1
+      have := by omega
       exact_mod_cast (show 0 < w by omega)
     have hwx : κ < w / x := by
       rw [lt_div_iff₀ hx]
@@ -120,8 +107,7 @@ lemma stripSum_raw_eq {x q₀ κ : ℝ} (hx : 0 < x) (hκx : κ * x ≤ x ^ 2) (
     have hψ : Ψ (w / x) = 0 := by
       by_contra h
       linarith [(hsupp _ h).2]
-    rw [hψ]
-    simp
+    simp_all
   · rw [markedWeight_eq_listDamping_mul P q₀ w, markedWeight_eq_listDamping_mul P q₀ (w + 1)]
     simp only [Nat.cast_one, mul_one, sum_const, nsmul_eq_mul]
     push_cast
@@ -159,7 +145,7 @@ lemma stripSum_comparison_eq (x q₀ : ℝ) (P : ι → Finset ℕ) (A B : ι �
     rw [sum_mul_sum, mul_sum]
     refine sum_congr rfl fun l _ => ?_
     rw [mul_sum]
-    exact sum_congr rfl fun l' _ => by ring
+    exact by grind
   rw [mul_sum]
   refine sum_congr rfl fun a _ => ?_
   rw [mul_sum, mul_sum, mul_sum]
@@ -184,13 +170,13 @@ lemma pad_invariant_comparison (A B : ι → Finset (Fin J)) (β : ℂ) (φ φ' 
       slotProduct A fun h i => pad (fun h => A h ∪ B h) p' h i.castSucc := by
     unfold slotProduct
     refine prod_congr rfl fun h _ => prod_congr rfl fun i hi => ?_
-    exact (ite_eq_left (castSucc_mem_unsharedSlots.2 (mem_union_left _ hi))).symm
+    exact (ite_eq_left (castSucc_mem_unsharedSlots.2 (by grind))).symm
   have hB : (slotProduct B fun h i => p h i.castSucc) =
       slotProduct B fun h i => pad (fun h => A h ∪ B h) p h i.castSucc := by
     unfold slotProduct
     refine prod_congr rfl fun h _ => prod_congr rfl fun i hi => ?_
-    exact (ite_eq_left (castSucc_mem_unsharedSlots.2 (mem_union_right _ hi))).symm
-  rw [hA, hB]
+    exact (ite_eq_left (castSucc_mem_unsharedSlots.2 (by grind))).symm
+  simp_all
 
 end Restore
 

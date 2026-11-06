@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ActiveDivisorShell
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentUniformDivisorShell
-open CenteredMomentActiveDivisorShell CenteredMomentDivisorAllocation
-open CenteredMomentDivisorRaw CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentActiveDivisorShell
+open CenteredMomentSlotRatios
 
 theorem subset_allowance {ι:Type*} [Fintype ι] [DecidableEq ι]
     (J:Finset ι) (s:Source J) (lo hi:ι→ℝ) (hlo:∀i:J,s.lo i=lo i) (hhi:∀i:J,s.hi i=hi i)

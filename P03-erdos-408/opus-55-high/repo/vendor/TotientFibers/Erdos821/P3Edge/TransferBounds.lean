@@ -6,13 +6,11 @@ public import Erdos821.Leaves
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
 
 open Erdos821.Blueprint.Graph
-open Erdos821.S2Core
 
 variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
@@ -23,7 +21,7 @@ lemma nonshared_card_le (ν : Pattern P J F.ell m) (g : P.Group) :
   classical
   have hslot_inj : Function.Injective ν.slot := by
     intro a b h
-    have hval : (ν.slot a).val = (ν.slot b).val := congrArg Fin.val h
+    have hval := congrArg Fin.val h
     have hval2 : a.val = b.val := hval
     exact Fin.ext hval2
   have himg_card : (((Finset.univ \ ν.changed g).map
@@ -47,7 +45,7 @@ lemma nonshared_card_le (ν : Pattern P J F.ell m) (g : P.Group) :
       (s := (Finset.univ : Finset (Fin (J + F.ell)))) (fun i => ν.shared g i)
     rw [Finset.card_univ, Fintype.card_fin] at h
     linarith
-  have htb : (ν.changed g).card ≤ m := ν.bound g
+  have htb := ν.bound g
   unfold Pattern.t
   omega
 
@@ -61,7 +59,7 @@ lemma prom_card_le (ν : Pattern P J F.ell m) (g : P.BigGroup)
     simp only [Finset.mem_filter, Finset.mem_univ, true_and]
     exact hB i hi
   have h2 := nonshared_card_le ν g.val
-  have h3 : (ν.changed g.val).card ≤ m := ν.bound g.val
+  have h3 := ν.bound g.val
   unfold Pattern.t at h2
   omega
 
@@ -73,13 +71,13 @@ lemma transfer_pairs_card_le (ν : Pattern P J F.ell m) (g : P.BigGroup) :
   have htg : (Finset.univ.filter
       (fun i : Fin (J + F.ell) => ¬ ν.shared g.val i)).card ≤ F.ell + m := by
     have h2 := nonshared_card_le ν g.val
-    have h3 : (ν.changed g.val).card ≤ m := ν.bound g.val
+    have h3 := ν.bound g.val
     unfold Pattern.t at h2
     omega
   calc ((Finset.univ.filter (fun i : Fin (J + F.ell) => ¬ ν.shared g.val i)).powerset ×ˢ
         (Finset.univ.filter (fun i : Fin (J + F.ell) => ¬ ν.shared g.val i)).powerset).card
       = 2 ^ (Finset.univ.filter _).card * 2 ^ (Finset.univ.filter _).card := by
-        rw [Finset.card_product, Finset.card_powerset]
+        simp
     _ ≤ 2 ^ (F.ell + m) * 2 ^ (F.ell + m) :=
         Nat.mul_le_mul (pow_le_pow_right₀ (by norm_num) htg)
           (pow_le_pow_right₀ (by norm_num) htg)
@@ -87,8 +85,7 @@ lemma transfer_pairs_card_le (ν : Pattern P J F.ell m) (g : P.BigGroup) :
         calc 2 ^ (F.ell+m) * 2 ^ (F.ell+m)
             = (2 * 2) ^ (F.ell+m) := (mul_pow (2:Nat) 2 (F.ell+m)).symm
           _ = 4 ^ (F.ell+m) := by
-              have h44 : (2:Nat) * 2 = 4 := by norm_num
-              rw [h44]
+              simp
 
 /-- Promotion coefficients are bounded via `vMin`, uniformly for `a ≤ ell+m`. -/
 lemma Vinv_pow_le (hv : 0 < F.vMin) (V : ℝ) (hV : F.vMin ≤ V)

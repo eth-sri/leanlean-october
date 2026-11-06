@@ -9,27 +9,24 @@ public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSourceBounded
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighAssemblyBounded
 open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
+open CenteredMomentEnergyReferenceLowBands
 open CenteredMomentEnergyPositiveHighSource (balancedInput)
 open CenteredMomentEnergyOriginalHighReflectionSymmetric (balanced_four_scale_gates)
 open CenteredMomentEnergyPositiveHighSourceBounded CenteredMomentEnergyOriginalHighReflectionSymmetricBounded
-open CenteredMomentCommonRadialData CenteredMomentSourceRow
 open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
+open CenteredMomentNaturalFixedRaySource
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveHighAssembly (low_restrict)
 
@@ -46,7 +43,7 @@ theorem actual_high_source_split
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),
     ∃Ju Jr:ℕ,∃Uu Ur:Finset (ℕ×ℕ),∃Cu Cr:ℝ,0<Cu ∧ 0<Cr ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e Lslot κ:ℝ)(η₀:Character)(Q:Ideal O)(K:ℝ),0≤e→ 0≤K→
+      ∀(e Lslot κ:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K:ℝ),0≤e→ 0≤K→
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap e κ Z η₀ Q degree S K→
       ∀(θ:α→ RayQuotient.Characters M H)(w σ freq:α→ ℝ)(t height:ℝ),
@@ -82,7 +79,7 @@ theorem actual_high_source_split
     actual_positive_source_entry (α:=α) M H hH Wslot aslot bslot lo hi haslot hsSlot hcSlot
       a b bΦ rho ε Mcap Bmask εdiag ξ saving ha hlo hhi hbΦ hrho hε hM hBmask hbslot hεdiag hξ
   refine ⟨min du dr,max Lu Lr,lt_min hdu hdr,?_,max_le hLuUpper hLrUpper,Ψ,hsΨ,hnΨ,Sdiag,Stail,Cdiag,Ctail,hCd,hCt,?_⟩
-  · exact (show 0≤Lu by linarith).trans (le_max_left _ _)
+  · exact (show 0≤Lu by linarith).trans (by simp)
   intro degree S
   obtain ⟨Ju,Uu,Cu,hCu,hu⟩:=hustage degree S
   obtain ⟨Jr,Ur,Cr,hCr,hr⟩:=hrstage degree S
@@ -92,16 +89,16 @@ theorem actual_high_source_split
   intro e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
     s hQ hslo hs p X₁ X₂ hX₁ hX₂ hlarge hcap
   have hlu:=low_restrict (α:=α) M H hH Wslot bslot a b bΦ Bmask (max Lu Lr) Lu
-    Lslot lo hi Mcap e e κ Z η₀ Q degree S K hzu.1.le (le_max_left _ _) le_rfl hK hlow
+    Lslot lo hi Mcap e e κ Z η₀ Q degree S K hzu.1.le (by simp) le_rfl hK hlow
   have hlr:=low_restrict (α:=α) M H hH Wslot bslot a b bΦ Bmask (max Lu Lr) Lr
-    Lslot lo hi Mcap e e κ Z η₀ Q degree S K hzu.1.le (le_max_right _ _) le_rfl hK hlow
+    Lslot lo hi Mcap e e κ Z η₀ Q degree S K hzu.1.le (by simp) le_rfl hK hlow
   by_cases hshort:min (length Z X₁) (length Z X₂)≤s.width/4
   · left
     exact hzu.2 e Lslot κ η₀ Q K he hK hlu θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
       s hQ hslo hs (p.profile 0) (p.profile 1) (p.support 0) (p.support 1)
       X₁ X₂ hX₁ hX₂ hshort hlarge hcap
   · have hfour:=balanced_four_scale_gates Z s.width X₁ X₂ hzu.1 (hrho.trans_le hslo)
-      hX₁ hX₂ (le_of_lt (lt_of_not_ge hshort))
+      hX₁ hX₂ (by linarith)
     rcases hzr.2 e Lslot κ η₀ Q K he hK hlr θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
       s hQ hslo hs p X₁ X₂ hX₁ hX₂ hlarge hcap with hzero|hsource
     · left

@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.PrimeLogProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Set
 namespace SevenEighths.HeckePrimeAnnular
 open HeckeFamily HeckeDyadic ConcretePrimeRowBridge
-local notation "O" => HeckeFamily.O
 
-def annulusSet (b D : ℝ) : Finset (Ideal O) := idealsUpTo ⌊max 1 b*D⌋₊
+def annulusSet (b D : ℝ) : Finset (Ideal HeckeFamily.O) := idealsUpTo ⌊max 1 b*D⌋₊
 
-def annularWeight (W : ℝ→ℂ) (D σ freq : ℝ) (I : Ideal O) : ℂ :=
+def annularWeight (W : ℝ→ℂ) (D σ freq : ℝ) (I : Ideal HeckeFamily.O) : ℂ :=
   W ((I.absNorm : ℝ)/D)*(((I.absNorm : ℝ)/D : ℝ) : ℂ)^(-shift σ freq)
 
 def primePolynomial (χ : Character) (W : ℝ→ℂ) (b D σ freq : ℝ) : ℂ :=
@@ -24,7 +23,7 @@ def primePolynomial (χ : Character) (W : ℝ→ℂ) (b D σ freq : ℝ) : ℂ :
     idealCoeff χ I*annularWeight W D σ freq I
 
 theorem annular_support (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (hD : 0<D)
-    (hWs : Function.support W⊆Icc a b) (I : Ideal O)
+    (hWs : Function.support W⊆Icc a b) (I : Ideal HeckeFamily.O)
     (hw : W ((I.absNorm : ℝ)/D)≠0) : I∈annulusSet b D := by
   have hs := hWs hw
   apply mem_idealsUpTo.mpr
@@ -34,7 +33,7 @@ theorem annular_support (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (hD : 0<D)
       nlinarith
     exact_mod_cast hnorm
   · have hn := (div_le_iff₀ hD).mp hs.2
-    exact Nat.le_floor (hn.trans (mul_le_mul_of_nonneg_right (le_max_right 1 b) hD.le))
+    exact Nat.le_floor (hn.trans (mul_le_mul_of_nonneg_right (by simp) hD.le))
 
 theorem log_polynomial_eq_finite (χ : Character) (W : ℝ→ℂ) (a b D σ freq : ℝ)
     (ha : 0<a) (hD : 0<D) (hWs : Function.support W⊆Icc a b)
@@ -57,12 +56,12 @@ theorem log_polynomial_eq_finite (χ : Character) (W : ℝ→ℂ) (a b D σ freq
     ring
   rw [he]
   calc
-    _ = ∑' I : Ideal O, (HeckePrimePowers.logWeight I : ℂ)*idealCoeff χ I*annularWeight W D σ freq I := by
-      apply tsum_subtype_eq_of_support_subset (s := {I : Ideal O | I≠0})
-        (f := fun I : Ideal O => (HeckePrimePowers.logWeight I : ℂ)*idealCoeff χ I*annularWeight W D σ freq I)
+    _ = ∑' I : Ideal HeckeFamily.O, (HeckePrimePowers.logWeight I : ℂ)*idealCoeff χ I*annularWeight W D σ freq I := by
+      apply tsum_subtype_eq_of_support_subset (s := {I : Ideal HeckeFamily.O | I≠0})
+        (f := fun I : Ideal HeckeFamily.O => (HeckePrimePowers.logWeight I : ℂ)*idealCoeff χ I*annularWeight W D σ freq I)
       intro I hI hzero
       subst I
-      exact hI (by simp [HeckePrimePowers.logWeight])
+      exact hI (by grind)
     _ = _ := by
       apply tsum_eq_sum
       intro I hI
@@ -84,7 +83,7 @@ theorem fixed_profile_norm_bound (W : ℝ→ℂ) (hW : Continuous W)
   refine ⟨|M|+1,by positivity,?_⟩
   intro σ hσ y hy
   exact (hM (Set.mem_image_of_mem _ (show (σ,y)∈K from ⟨hσ,hy⟩))).trans
-    (by linarith [le_abs_self M])
+    (by grind)
 
 theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ, 0<C ∧ ∀ (χ : Character) (W : ℝ→ℂ) (a b D σ freq B : ℝ),
@@ -98,17 +97,17 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
   refine ⟨C,hC,?_⟩
   intro χ W a b D σ freq B ha hD hWs hlarge hB hWbound
   have hDp : 0<D := lt_of_lt_of_le zero_lt_one hD
-  have hX : 1≤max 1 b*D := hD.trans (le_mul_of_one_le_left hDp.le (le_max_left _ _))
-  have hnorm (I : Ideal O) (hI : I∈annulusSet b D) : (I.absNorm : ℝ)≤max 1 b*D := by
-    exact (Nat.cast_le.mpr (mem_idealsUpTo.mp hI).2).trans
+  have hX : 1≤max 1 b*D := hD.trans (le_mul_of_one_le_left hDp.le (by simp))
+  have hnorm (I : Ideal HeckeFamily.O) (hI : I∈annulusSet b D) : (I.absNorm : ℝ)≤max 1 b*D :=
+    (Nat.cast_le.mpr (mem_idealsUpTo.mp hI).2).trans
       (Nat.floor_le (by positivity))
-  have hw (I : Ideal O) (_hI : I∈annulusSet b D) : ‖annularWeight W D σ freq I‖≤B := by
+  have hw (I : Ideal HeckeFamily.O) (_hI : I∈annulusSet b D) : ‖annularWeight W D σ freq I‖≤B := by
     by_cases hz : W ((I.absNorm : ℝ)/D)=0
     · simpa [annularWeight,hz] using hB
     · have hs := hWs hz
       have hy : 0<(I.absNorm : ℝ)/D := ha.trans_le hs.1
       rw [annularWeight,norm_mul,Complex.norm_cpow_eq_rpow_re_of_pos hy]
-      simpa only [Complex.neg_re,shift_re] using hWbound _ hs
+      simpa using hWbound _ hs
   have hb := herr χ (annulusSet b D) (annularWeight W D σ freq) (max 1 b*D) B
     hX hB hnorm hw
   have hn : ‖(D : ℂ)^(-(1/2 : ℂ))‖=D^(-(1/2 : ℝ)) := by
@@ -117,17 +116,15 @@ theorem extraction_bound (ε : ℝ) (hε : 0<ε) :
   rw [log_polynomial_eq_finite χ W a b D σ freq ha hDp hWs hlarge,
     primePolynomial,←mul_sub,norm_mul,hn]
   calc
-    _ ≤ D^(-(1/2 : ℝ))*(C*(max 1 b*D)^(1/2+ε)*B) := by
-      exact mul_le_mul_of_nonneg_left hb (Real.rpow_nonneg hDp.le _)
+    _ ≤ D^(-(1/2 : ℝ))*(C*(max 1 b*D)^(1/2+ε)*B) :=
+      mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by
-      rw [Real.mul_rpow (by positivity : 0≤max 1 b) hDp.le]
+      rw [Real.mul_rpow (by positivity) hDp.le]
       have he : D^(-(1/2 : ℝ))*D^(1/2+ε)=D^ε := by
         rw [←Real.rpow_add hDp]
         congr 1
         ring
-      calc
-        _ = C*(max 1 b)^(1/2+ε)*(D^(-(1/2 : ℝ))*D^(1/2+ε))*B := by ring
-        _ = _ := by rw [he]
+      grind
 
 end SevenEighths.HeckePrimeAnnular
 

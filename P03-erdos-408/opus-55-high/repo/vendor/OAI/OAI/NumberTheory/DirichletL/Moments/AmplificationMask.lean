@@ -9,9 +9,8 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentAmplificationMask
-open CenteredMomentRectangle CenteredMomentAmplificationRectangle CenteredMomentAmplificationShortening
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentAmplificationMask

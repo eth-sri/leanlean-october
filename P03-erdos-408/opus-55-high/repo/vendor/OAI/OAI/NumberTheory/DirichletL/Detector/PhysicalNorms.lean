@@ -28,18 +28,18 @@ lemma physical_radial_argument (B A s H : ActualEisensteinCubic.O) (X : ℝ)
 lemma physical_poisson_prefactor (B A S X : ℝ) (hB : 0<B) (hA : 0<A) (hS : 0<S) (hX : 0<X) :
     (Real.sqrt (B*S*X):ℂ)⁻¹*(Real.sqrt S:ℂ)⁻¹*((B*S*X/(B*A):ℝ):ℂ)=
       (Real.sqrt X:ℂ)/(Real.sqrt B:ℂ)/(A:ℂ) := by
-  have hBc : (B:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hB.ne'
-  have hAc : (A:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hA.ne'
-  have hSb : (Real.sqrt B:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB).ne'
-  have hSs : (Real.sqrt S:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hS).ne'
-  have hSx : (Real.sqrt X:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hX).ne'
+  have hBc := Complex.ofReal_ne_zero.mpr hB.ne'
+  have hAc := Complex.ofReal_ne_zero.mpr hA.ne'
+  have hSb := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB).ne'
+  have hSs := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hS).ne'
+  have hSx := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hX).ne'
   rw [Real.sqrt_mul (mul_pos hB hS).le,Real.sqrt_mul hB.le]
   simp only [Complex.ofReal_mul,Complex.ofReal_div]
   field_simp
   have hb : (Real.sqrt B:ℂ)^2=(B:ℂ) := by exact_mod_cast Real.sq_sqrt hB.le
   have hs : (Real.sqrt S:ℂ)^2=(S:ℂ) := by exact_mod_cast Real.sq_sqrt hS.le
   have hx : (Real.sqrt X:ℂ)^2=(X:ℂ) := by exact_mod_cast Real.sq_sqrt hX.le
-  rw [hs,hx]
+  simp_all
 
 end SevenEighths.ProbePhysical
 end

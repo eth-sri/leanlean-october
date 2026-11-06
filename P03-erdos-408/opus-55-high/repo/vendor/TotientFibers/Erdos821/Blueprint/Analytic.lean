@@ -13,8 +13,8 @@ All divisions in analytic quantities take place in ℝ or ℂ. -/
 
 @[expose] public section
 
-open scoped BigOperators ContDiff
-open Filter MeasureTheory
+open scoped ContDiff
+open Filter
 
 namespace Erdos821.Blueprint.Analytic
 
@@ -23,11 +23,8 @@ attribute [local instance] Classical.propDecidable
 
 def L (x : ℝ) : ℝ := Real.log x
 def T (x : ℝ) : ℝ := Real.log (L x)
-def W (x : ℝ) : ℝ := Real.exp (Real.sqrt (L x))
 def e (t : ℝ) : ℂ := Complex.exp (2 * Real.pi * t * Complex.I)
 def mellin (n t : ℝ) : ℂ := Complex.exp (Complex.I * t * Real.log n)
-def rough (y : ℝ) (n : ℕ) : Prop :=
-  0 < n ∧ ∀ p : ℕ, p.Prime → p ∣ n → y < (p : ℝ)
 
 def dp (s : Finset ℕ) (c : ℕ → ℂ) (t : ℝ) : ℂ :=
   ∑ n ∈ s, c n * mellin n t
@@ -156,22 +153,9 @@ abbrev comparison_kernel_statement : Prop :=
             (L x ^ (-ξexp)) α ζ f g‖ ≤ L x ^ (-A) * tupleNorm G b f * tupleNorm G a g
 -- `inclusion_exclusion` is proved in `Erdos821/Leaves/`.
 
-def omegaGroup (G : PrimeGroups) (g : Fin G.size) (n : ℕ) : ℕ :=
-  ((G.primes g).filter fun p => p ∣ n).card
-def omega (G : PrimeGroups) (n : ℕ) : ℕ := ∑ g, omegaGroup G g n
 
 -- `mark_sup` is proved in `Erdos821/Leaves/`.
 
-structure Endpoint where
-  alpha : ℕ → ℂ
-  residual : ℕ → ℂ
-  modulus : ℕ
-  positive : 0 < modulus
-  chi : DirichletCharacter ℂ modulus
-  sigma₀ : ℝ
-  sigma₁ : ℝ
-  lo : ℝ
-  hi : ℝ
 
 def CutoffBound (x C lo hi : ℝ) (Ψ : ℝ → ℂ) (bounds : ℕ → ℝ) : Prop :=
   ContDiff ℝ ∞ Ψ ∧ Function.support Ψ ⊆ Set.Icc lo hi ∧

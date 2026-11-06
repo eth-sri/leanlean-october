@@ -32,7 +32,7 @@ def candKappa (x : ℝ) (j : ℕ) : ℝ :=
 
 /-- `κ_j > 0` for `j ≥ 1`. -/
 lemma candKappa_pos (x : ℝ) {j : ℕ} (hj : 1 ≤ j) : 0 < candKappa x j := by
-  have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
+  have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by simp_all)
   refine prod_pos fun p hp => ?_
   have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
   have : (j : ℝ)⁻¹ / p < 1 := by rw [div_lt_one (by linarith)]; linarith
@@ -50,16 +50,16 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
   rw [candKappa, ← prod_pow, ← prod_mul_distrib, mul_sum, exp_sum]
   refine prod_le_prod₀ (fun p hp => ?_) fun p hp => ?_
   · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
-    have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
+    have hj1 : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by simp_all)
     have h1 : (j : ℝ)⁻¹ / p < 1 := by rw [div_lt_one (by linarith)]; linarith
     have h2 : (1 : ℝ) / p < 1 := by rw [div_lt_one (by linarith)]; linarith
-    exact mul_nonneg (pow_nonneg (by linarith) _) (inv_nonneg.2 (by linarith))
+    positivity
   · have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast (prime_of_mem_candidatePrimes hp).two_le
     have hj0 : (0 : ℝ) < j := by exact_mod_cast hj
     -- `(1 - 1/(j p))^j ≤ exp(-1/p)`
     have h1 : (1 - (j : ℝ)⁻¹ / p) ^ j ≤ Real.exp (-(1 / p)) := by
       have h0 : 0 ≤ 1 - (j : ℝ)⁻¹ / p := by
-        have : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by exact_mod_cast hj)
+        have : (j : ℝ)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by simp_all)
         have : (j : ℝ)⁻¹ / p ≤ 1 / 2 := by
           rw [div_le_iff₀ (by linarith)]
           nlinarith
@@ -69,8 +69,7 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
             linarith [add_one_le_exp (-((j : ℝ)⁻¹ / p))]
         _ = Real.exp (-(1 / p)) := by
             rw [← exp_nat_mul]
-            congr 1
-            field_simp
+            grind
     -- `(1 - 1/p)⁻¹ = 1 + 1/(p - 1) ≤ exp(1/p + 2/p²)`
     have h2 : (1 - (1 : ℝ) / p)⁻¹ ≤ Real.exp (1 / p + 2 * (1 / p ^ 2)) := by
       have hp1 : (0 : ℝ) < p - 1 := by linarith
@@ -84,10 +83,10 @@ lemma candKappa_pow_mul_le (x : ℝ) {j : ℕ} (hj : 1 ≤ j) :
       nlinarith
     calc (1 - (j : ℝ)⁻¹ / p) ^ j * (1 - (1 : ℝ) / p)⁻¹
         ≤ Real.exp (-(1 / p)) * Real.exp (1 / p + 2 * (1 / p ^ 2)) := by
-          refine mul_le_mul h1 h2 (inv_nonneg.2 ?_) (exp_pos _).le
+          refine mul_le_mul h1 h2 (inv_nonneg.2 ?_) (by positivity)
           have : (1 : ℝ) / p ≤ 1 / 2 := one_div_le_one_div_of_le (by norm_num) hp2
           linarith
-      _ = Real.exp (2 * (1 / p ^ 2)) := by rw [← exp_add]; ring_nf
+      _ = Real.exp (2 * (1 / p ^ 2)) := by simp [← exp_add]
 
 /-- Each core factor contributes `∑_a b(a)/a ≤ κ_j H`. -/
 lemma sum_coreFactor_div_le {x γ : ℝ} (hx : 0 < x) (hγL : 0 < γ * Real.log x) {j : ℕ}
@@ -107,18 +106,18 @@ lemma sum_coreFactor_div_le {x γ : ℝ} (hx : 0 < x) (hγL : 0 < γ * Real.log 
     field_simp
   rw [← mul_assoc, ← hW, mul_sum, sum_filter]
   refine sum_le_sum fun a ha => ?_
-  have ha1 : (1 : ℝ) ≤ a := by exact_mod_cast (mem_Icc.1 ha).1
+  have ha1 : (1 : ℝ) ≤ a := by exact_mod_cast (by grind)
   unfold coreFactor
   split_ifs with h1 h2
   · have hlog : γ * Real.log x < Real.log a := by
       rw [← Real.log_rpow hx]
-      exact Real.log_lt_log (rpow_pos_of_pos hx γ) h1.1
+      exact Real.log_lt_log (by positivity) h1.1
     rw [mul_one_div]
     gcongr
   · exact absurd h1.2 h2
   · rw [zero_div, mul_one_div]
     positivity
-  · rw [zero_div]
+  simp
 
 /-- Real arithmetic for combining the factors of the main term. -/
 lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ} (m : ℕ) (hXr : 0 ≤ Xr) (hWP0 : 0 ≤ WP)
@@ -138,8 +137,7 @@ lemma main_combine {Xr WP Sd Sb κ E Q δ H γL : ℝ} (m : ℕ) (hXr : 0 ≤ Xr
       _ ≤ Xr * (2 * κ / γL) * (E * (Q + δ)) * (κ * H) ^ m :=
           mul_le_mul_of_nonneg_left h1 (by positivity)
   refine h2.trans (le_of_eq ?_)
-  rw [mul_pow, pow_succ]
-  field_simp
+  ring
 
 /-- The free-factor sum of one family at one scale, in Euler products. -/
 theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset (Finset ℕ)}
@@ -175,7 +173,7 @@ theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset
     have : (2 : ℝ) ≤ p := by exact_mod_cast (mem_primesIcc.1 hp).1.two_le
     have : (1 : ℝ) / p < 1 := by rw [div_lt_one (by linarith)]; linarith
     linarith
-  have hε0 : 0 ≤ ε := sum_nonneg fun u _ => prod_nonneg fun p _ => by positivity
+  have hε0 : 0 ≤ ε := sum_nonneg fun u _ => by positivity
   have hpow1 : (1 : ℝ) ≤ (5 / 2) ^ F.card := one_le_pow₀ (by norm_num)
   -- `8 ε / Π ≤ 1`, so `2 ε K / Π ≤ 1/2` and `ε ≤ Π / 2`
   have h8 : 8 * ε / Pi ≤ 1 := by
@@ -192,7 +190,7 @@ theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset
     have : 2 * ε * K / Pi = (8 * ε * K / Pi) / 4 := by ring
     linarith
   have hW0 : 0 ≤ 1 / (dampedDensity x (j' + 1) * (γ * Real.log x)) := by positivity
-  have hfree := freeFactorSum_le R hc₁ hc₁' (fun g hgF => hg g (hFC hgF)) hFS
+  have hfree := freeFactorSum_le R hc₁ hc₁' (by grind) hFS
     ((pairwiseDisjoint_candidateGroups hlogx).subset hFC) hγ hb1 hW0 (by linarith) hwf hδ hδ'
   refine hfree.trans (add_le_add ?_ le_rfl)
   -- the main term
@@ -216,9 +214,7 @@ theorem freeFactorSum_le_at {x γ c₁ : ℝ} {j' X : ℕ} (R : ℕ) {F : Finset
     sum_nonneg fun a _ => div_nonneg (coreFactor_nonneg hj hγ a) (Nat.cast_nonneg _)
   have h := main_combine (Xr := (X : ℝ)) j' (Nat.cast_nonneg X) (by positivity) hWP hSd0 hSd hSb0
     hSb hκ0.le hγL
-  refine le_trans (le_of_eq ?_) (h.trans (le_of_eq ?_))
-  · ring
-  · ring
+  linarith
 
 end
 

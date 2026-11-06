@@ -7,25 +7,23 @@ public import OAI.NumberTheory.DirichletL.Reflection.ActualExtractedEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
+open scoped Classical
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def SourcePair (rows Pset : Finset (Ideal Eis)) :=
+def SourcePair (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) :=
   {x : rows × Pset // IsCoprime x.1.val x.2.val}
 
 variable {φ σ : Type*} [Fintype φ] [Fintype σ]
 
 theorem exists_source_pair_templates (F : PrimeFamily φ)
-    (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis → PrimeFamily σ)
+    (rows Pset : Finset (Ideal ActualEisensteinCubic.O)) (S : Ideal ActualEisensteinCubic.O → PrimeFamily σ)
     (hrows : ∀ K ∈ rows, Admissible K)
     (hprod : ∀ P ∈ Pset, (∏ i, (S P).ideal i)=P)
-    (N a c : Eis) (mode : Bool)
+    (N a c : ActualEisensteinCubic.O) (mode : Bool)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hc : c ≠ 0) (hN : (9:Eis)*c ∣ N)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hac : IsCoprime a c)
+    (hc : c ≠ 0) (hN : (9:ActualEisensteinCubic.O)*c ∣ N)
+    (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2 ∣ a-1 else ConcretePrimeRowBridge.goodLambda^2 ∣ c-1) (hac : IsCoprime a c)
     (hF : Pairwise (Function.onFun IsCoprime F.ideal))
     (hNF : ∀ f, IsCoprime (Ideal.span {N}) (F.ideal f))
     (hrowcop : ∀ K ∈ rows, (∀ f, IsCoprime (F.ideal f) K) ∧ IsCoprime (Ideal.span {N}) K)
@@ -34,31 +32,30 @@ theorem exists_source_pair_templates (F : PrimeFamily φ)
     ∃ E : ∀ x : SourcePair rows Pset,
       ControlledStratumArithmetic
         (F.reflected x.val.1.val (hrows x.val.1.val x.val.1.property) (S x.val.2.val)).generator N a c mode,
-      ∃ (κ : ((Eis ⧸ Ideal.span {N^2}) × (Eis ⧸ Ideal.span {N^2})) → ℂ)
-        (A : ((Eis ⧸ Ideal.span {N^2}) × (Eis ⧸ Ideal.span {N^2})) →
-          Eisˣ → ℕ → Ideal Eis → Ideal Eis → ℂ),
+      ∃ (κ : ((ActualEisensteinCubic.O ⧸ Ideal.span {N^2}) × (ActualEisensteinCubic.O ⧸ Ideal.span {N^2})) → ℂ)
+        (A : ((ActualEisensteinCubic.O ⧸ Ideal.span {N^2}) × (ActualEisensteinCubic.O ⧸ Ideal.span {N^2})) →
+          ActualEisensteinCubic.Oˣ → ℕ → Ideal ActualEisensteinCubic.O → Ideal ActualEisensteinCubic.O → ℂ),
         (∀ q, ‖κ q‖ ≤ 1) ∧ (∀ q u m n b, ‖A q u m n b‖ ≤ 1) ∧
         (∀ x, (E x).fixedFactor = κ (separateSector N (primaryGenerator x.val.1.val)
           (primaryGenerator x.val.2.val))) ∧
         ∀ x u m n b, actualCuspColumn (E x) s hc u m n b =
           A (separateSector N (primaryGenerator x.val.1.val) (primaryGenerator x.val.2.val)) u m n b := by
   let G := fun x : SourcePair rows Pset =>
-    F.reflected x.val.1.val (hrows x.val.1.val x.val.1.property) (S x.val.2.val)
+    F.reflected x.val.1.val (by grind) (S x.val.2.val)
   have hpair (x : SourcePair rows Pset) : Pairwise (Function.onFun IsCoprime (G x).ideal) := by
-    apply F.reflected_pairwise x.val.1.val (hrows x.val.1.val x.val.1.property) (S x.val.2.val) hF
+    apply F.reflected_pairwise x.val.1.val (by grind) (S x.val.2.val) hF
     · intro i k hik
       change IsCoprime ((F.sum (S x.val.2.val)).ideal (Sum.inr i))
         ((F.sum (S x.val.2.val)).ideal (Sum.inr k))
       exact hScop x.val.2.val x.val.2.property (Sum.inr_injective.ne hik)
-    · rw [hprod _ x.val.2.property]
-      exact x.property
-    · exact (hrowcop _ x.val.1.property).1
+    · grind
+    · simp_all
     · intro f i
       change IsCoprime ((F.sum (S x.val.2.val)).ideal (Sum.inl f))
         ((F.sum (S x.val.2.val)).ideal (Sum.inr i))
-      exact hScop x.val.2.val x.val.2.property (Sum.inl_ne_inr : (Sum.inl f : φ ⊕ σ) ≠ Sum.inr i)
+      exact hScop x.val.2.val x.val.2.property (by simp)
   have hNp (x : SourcePair rows Pset) : ∀ i, IsCoprime (Ideal.span {N}) ((G x).ideal i) :=
-    F.reflected_period _ _ _ N hNF (hrowcop _ x.val.1.property).2 (hSN _ x.val.2.property)
+    F.reflected_period _ _ _ N hNF (by grind) (by grind)
   apply canonical_bounded_cusp_templates G N a c mode s hc hN hbase hac hpair hNp
     (∏ i, F.ideal i) (fun x => x.val.1.val) (fun x => x.val.2.val)
   intro x

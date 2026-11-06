@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.SelectedFirst
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
 open CanonicalQuadraticSieve CanonicalRowCompletion
@@ -30,9 +29,9 @@ lemma compensatedReplacement_crude (V W D M B q : ℂ) (A E : ℝ)
   calc
     _ ≤ ((‖B-q‖*‖1-V‖*‖1-W‖*‖M‖)+‖q‖*‖1-V*W‖)*2 := by
       apply mul_le_mul _ hi (norm_nonneg _) (by positivity)
-      simpa only [norm_mul] using norm_sub_le ((B-q)*(1-V)*(1-W)*M) (q*(1-V*W))
+      simpa using norm_sub_le ((B-q)*(1-V)*(1-W)*M) (q*(1-V*W))
     _ ≤ ((E+A)*2*(1+A)*388+A*(1+A))*2 := by
-      have hbq : ‖B-q‖≤E+A := (norm_sub_le B q).trans (add_le_add hB hq)
+      have hbq : ‖B-q‖≤E+A := (norm_sub_le B q).trans (by linarith)
       gcongr
     _ = _ := by ring
 
@@ -79,7 +78,7 @@ theorem continuedCompensatedLocal_first_bound (η : Character) (u : FreeRow) (P 
       Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
     exact Real.rpow_le_rpow_of_exponent_le hQ1 hxR
   exact compensatedReplacement_crude _ _ _ _ _ _ _ _ (by positivity) (by positivity)
-    (hV.trans (by norm_num)) hW hD hM hB hq
+    (by linarith) hW hD hM hB hq
 
 end SevenEighths.ProbeHighRowFamily
 

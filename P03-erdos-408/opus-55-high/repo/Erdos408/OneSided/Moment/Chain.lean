@@ -44,7 +44,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 def rowKernelScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
     (W0 : SchwartzMap ℝ ℂ) (X Z : ℝ) (x z : ℂ) : ℂ :=
@@ -21,7 +20,7 @@ def rowKernelScalar {K : ℕ} (P : Fin K→PrimeIdeal) (u : FreeRow)
     frequencyWeight z ⟨u.val,u.property.1⟩
 
 lemma continuedPhysicalRowKernel_w_factor {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ) :
     continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z=
@@ -32,7 +31,7 @@ lemma continuedPhysicalRowKernel_w_factor {K : ℕ}
   ring
 
 theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W1⊆Icc a b)
     (X Y Z : ℝ) (hY : 0<Y) (x z : ℂ) (l r C : ℝ) (N : ℕ) (hC : 0≤C)
@@ -46,10 +45,10 @@ theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
     (W1.smooth ⊤) l r (N+2)
   have hscale := (scaleBound_pos Y (l-1) (r-1)).le
   let A := ‖rowKernelScalar P u W0 X Z x z‖*scaleBound Y (l-1) (r-1)*C
-  refine ⟨A*D,by dsimp [A]; positivity,?_⟩
+  refine ⟨A*D,by positivity,?_⟩
   intro v hv t
   have hYbd := cpow_le_scaleBound hY (((v:ℂ)+t*I)-1)
-    (show (((v:ℂ)+t*I)-1).re∈Icc (l-1) (r-1) by simpa using hv)
+    (show (((v:ℂ)+t*I)-1).re∈Icc (l-1) (r-1) by simp_all)
   have hm' : height t^2*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖)≤D := by
     simpa [height,pow_add,mul_assoc,mul_comm,mul_left_comm] using hm v hv t
   have hmc : height t^N*‖mellin W1 ((v:ℂ)+t*I)‖≤D*cauchy t :=
@@ -59,14 +58,14 @@ theorem continuedPhysicalRowKernel_cauchy {K : ℕ}
   calc
     _ ≤ (‖rowKernelScalar P u W0 X Z x z‖*scaleBound Y (l-1) (r-1)*
         ‖mellin W1 ((v:ℂ)+t*I)‖)*(C*height t^N) := by
-      apply mul_le_mul _ (hpoly v hv t) (norm_nonneg _) (by positivity)
+      apply mul_le_mul _ (by grind) (norm_nonneg _) (by positivity)
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hYbd (norm_nonneg _)) (norm_nonneg _)
-    _ = A*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖) := by dsimp [A]; ring
-    _ ≤ A*(D*cauchy t) := mul_le_mul_of_nonneg_left hmc (by dsimp [A]; positivity)
+    _ = A*(height t^N*‖mellin W1 ((v:ℂ)+t*I)‖) := by linarith
+    _ ≤ A*(D*cauchy t) := mul_le_mul_of_nonneg_left hmc (by positivity)
     _ = _ := by ring
 
 theorem nonprincipal_w_integral_eq_of_polynomial {K : ℕ}
-    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hfirst : FirstTail (eps/2) S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W1⊆Icc a b)
@@ -86,7 +85,7 @@ theorem nonprincipal_w_integral_eq_of_polynomial {K : ℕ}
     (by intro t; simp [cauchy]) cauchy_tendsto hlr _ hbound
   intro w hw
   exact (continuedPhysicalRowKernel_differentiableAt_w eps heps S hS hfirst hmax P hPS η u hu
-    W0 W1 a b ha hW X Y Z hY x w z hx (hl.trans hw.1) hz (by linarith [hw.1])).differentiableWithinAt
+    W0 W1 a b ha hW X Y Z hY x w z hx (hl.trans hw.1) hz (by grind)).differentiableWithinAt
 
 end SevenEighths.ProbeHighRowFamily
 

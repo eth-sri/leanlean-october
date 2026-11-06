@@ -9,7 +9,6 @@ namespace OAI
 
 noncomputable section
 open Filter
-open scoped Topology
 namespace SevenEighths.HeckePrimeScale
 open HeckeFamily
 
@@ -28,7 +27,7 @@ theorem log_scale_eventually (dmin rmin K : ℝ) (hd : 0<dmin) (hr : 0<rmin) :
     nlinarith
   have hprod : dmin*rmin≤d*r := mul_le_mul hd' hr' hr.le (hd.trans_le hd').le
   have hl : 0≤Real.log Z := (le_max_left _ _).trans hlog
-  nlinarith [mul_le_mul_of_nonneg_right hprod hl]
+  nlinarith
 
 theorem product_modulus_bound (χ ψ : Character) :
     (χ.product ψ).modulus.absNorm≤χ.modulus.absNorm*ψ.modulus.absNorm := by

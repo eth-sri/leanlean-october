@@ -54,8 +54,7 @@ theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
     · rw [show 2 * π * Complex.I * ((((h : ℝ) / k + θ) * n : ℝ) : ℂ) =
           ((2 * π * (((h : ℝ) / k + θ) * n) : ℝ) : ℂ) * Complex.I by push_cast; ring]
       exact (Complex.norm_exp_ofReal_mul_I _).le
-    · rw [one_mul, sub_neg_eq_add, abs_of_nonneg (by linarith)]
-      exact le_of_eq (by ring)
+    · grind
   calc ‖arcIntegral A₀ x Y n‖
       ≤ ∑ k ∈ Icc 1 N, ∑ h ∈ (range k).filter (fun h => Nat.Coprime h k),
           4 * L ^ A₀ / Y := by
@@ -66,7 +65,7 @@ theorem norm_arcIntegral_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
         refine sum_le_sum fun k hk => ?_
         rw [sum_const, nsmul_eq_mul]
         gcongr
-        exact_mod_cast (card_filter_le _ _).trans ((card_range k).le.trans (mem_Icc.1 hk).2)
+        grind
     _ = (N : ℝ) * N * (4 * L ^ A₀ / Y) := by
         rw [sum_const, nsmul_eq_mul, Nat.card_Icc, Nat.add_sub_cancel, mul_assoc]
     _ ≤ L ^ A₀ * L ^ A₀ * (4 * L ^ A₀ / Y) := by
@@ -92,7 +91,7 @@ theorem norm_majorWeight_le (A₀ : ℝ) {x Y : ℝ} (hL : 0 < Real.log x) (hY :
       have := abs_lt_of_plateau_ne_zero hψ
       rw [abs_div, abs_of_pos hY, div_lt_iff₀ hY] at this
       exact ht this.le
-    rw [hψ, mul_zero, Complex.ofReal_zero, zero_mul, norm_zero]
+    simp_all
 
 /-! ### The pair error -/
 
@@ -187,8 +186,7 @@ theorem norm_pairError_le (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 0 < Real.l
     · split_ifs <;> simp
     · refine (norm_majorWeight_le A₀ hL hY _ _ _).trans_eq ?_
       push_cast
-      simp only [w, L]
-      ring_nf
+      grind
   calc ‖pairError A₀ x d Y a b‖
       ≤ ∑ m ∈ d.mRange, ∑ n ∈ d.nRange, ∑ r ∈ d.mRange, ∑ s ∈ d.nRange,
           L ^ (4 * C) * ((if ∃ h, 1 ≤ h ∧ m * n - 1 = a * h ∧ r * s - 1 = b * h then 1 else 0) +
@@ -227,16 +225,16 @@ theorem norm_pairError_le_of (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 1 ≤ R
   set M := ⌊2 * d.Hm⌋₊ * ⌊2 * d.Hn⌋₊
   have hL0 : 0 < L := by linarith
   have h17 : 1 ≤ 17 * d.X := by linarith
-  have hXY : 0 ≤ d.X / Y := div_nonneg (by linarith) hY.le
+  have hXY : 0 ≤ d.X / Y := by positivity
   -- a logarithm below `log(17X)` costs at most `(2L)³`
   have hcube : ∀ N : ℕ, (N : ℝ) ≤ 17 * d.X → (1 + Real.log N) ^ 3 ≤ (2 * L) ^ 3 := by
     intro N hN
-    have hlogN : 0 ≤ Real.log N := Real.log_natCast_nonneg N
+    have hlogN := Real.log_natCast_nonneg N
     refine pow_le_pow_left₀ (by linarith) ?_ 3
     rcases Nat.eq_zero_or_pos N with h0 | h0
     · rw [h0, Nat.cast_zero, Real.log_zero]
-      linarith [Real.log_nonneg h17]
-    · linarith [Real.log_le_log (by exact_mod_cast h0) hN]
+      linarith
+    · linarith [Real.log_le_log (by positivity) hN]
   -- the divisor moment up to `M ≤ 4X`
   have hM : (M : ℝ) ≤ 4 * d.X := by
     have h₁ : (⌊2 * d.Hm⌋₊ : ℝ) ≤ 2 * d.Hm := Nat.floor_le (by linarith)
@@ -258,7 +256,7 @@ theorem norm_pairError_le_of (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 1 ≤ R
       push_cast
       have : (l : ℝ) * Z ≤ 4 * Y * (4 * d.X / Y) :=
         mul_le_mul hl.le hZ (Nat.cast_nonneg _) (by linarith)
-      rw [show 4 * Y * (4 * d.X / Y) = 16 * d.X by field_simp; ring] at this
+      rw [show 4 * Y * (4 * d.X / Y) = 16 * d.X by grind] at this
       linarith
     refine (sum_card_divisors_one_add_mul_sq_le l Z).trans ?_
     have h₁ : ((1 + l * Z : ℕ) : ℝ) ^ (3 / 4 : ℝ) ≤ d.X / Y :=
@@ -266,7 +264,7 @@ theorem norm_pairError_le_of (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 1 ≤ R
     calc 4 * (Z + ((1 + l * Z : ℕ) : ℝ) ^ (3 / 4 : ℝ)) * (1 + Real.log ((1 + l * Z : ℕ) : ℝ)) ^ 3
         ≤ 4 * (4 * d.X / Y + d.X / Y) * (2 * L) ^ 3 :=
           mul_le_mul (by gcongr) (hcube _ hlZ)
-            (pow_nonneg (by linarith [Real.log_natCast_nonneg (1 + l * Z)]) 3) (by positivity)
+            (pow_nonneg (by positivity) 3) (by positivity)
       _ = 160 * (d.X / Y) * L ^ 3 := by ring
   have hR : ∑ h ∈ Icc 1 Z, ((1 + a * h).divisors.card : ℝ) * (1 + b * h).divisors.card ≤
       160 * (d.X / Y) * L ^ 3 := by
@@ -279,8 +277,7 @@ theorem norm_pairError_le_of (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 1 ≤ R
             ∑ h ∈ Icc 1 Z, (((1 + b * h).divisors.card : ℕ) : ℝ) ^ 2) / 2 := by
           rw [← sum_add_distrib, sum_div]
       _ ≤ (160 * (d.X / Y) * L ^ 3 + 160 * (d.X / Y) * L ^ 3) / 2 := by
-          gcongr
-          exacts [hprog a ha4, hprog b hb4]
+          grind
       _ = 160 * (d.X / Y) * L ^ 3 := by ring
   refine (norm_pairError_le A₀ hL0 hα hβ hHm hHn hY ha hb).trans ?_
   have hLA : 0 ≤ L ^ (3 * A₀) := Real.rpow_nonneg hL0.le _
@@ -291,7 +288,6 @@ theorem norm_pairError_le_of (A₀ : ℝ) {C x : ℝ} {d : Data K} (hL : 1 ≤ R
           4 * L ^ (3 * A₀) / Y * (11 * (32 * d.X * L ^ 3))) := by
         gcongr
     _ = d.X / Y * L ^ (4 * C) * L ^ 3 * (160 + 1408 * L ^ (3 * A₀)) := by
-        field_simp
         ring
 
 end Erdos408.OneSided

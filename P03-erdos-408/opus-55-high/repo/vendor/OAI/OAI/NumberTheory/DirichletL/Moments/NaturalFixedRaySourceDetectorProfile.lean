@@ -10,13 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff Topology
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification HeckeDyadic HeckeDetectorCoefficientTransfer
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles CenteredMomentDetectorDictionary
-open CenteredMomentLattice CenteredMomentHeckeCancellation CenteredMomentHeckeVolume
-open CenteredMomentMask QuadraticInitialBound EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

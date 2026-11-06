@@ -7,11 +7,9 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianTuple
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbePhysical
 open ProbeCompleted ProbeRow CompletedGauss CubicEisenstein FourierBridge
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma gaussianAnnulus_norm_le_one (y : ℝ) : ‖gaussianAnnulus y‖≤1 := by
   rw [gaussianAnnulus_norm]
@@ -31,7 +29,7 @@ lemma gaussianAnnulus_scaled_square (N T : ℝ) (hN : 0<N) (hT : 0<T) :
     _ ≤ N^2 := mul_le_of_le_one_right (sq_nonneg _) (gaussianAnnulus_norm_le_one _)
     _ ≤ _ := by nlinarith
 
-lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : ActualEisensteinCubic.O→*ℂ)
     (T t : ℝ) (hT : 0<T) (I J : Id) (hI : I≠0) (hJ : J≠0) :
     correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J=
       spectralSummand S D Ψ 2 I J*
@@ -45,13 +43,13 @@ lemma gaussianFixedWindow_spectral_identity (S : Finset Id) (D : Id) (Ψ : O→*
   have hic : (Ideal.absNorm I:ℂ)≠0 := by exact_mod_cast hi.ne'
   have hjc : (Ideal.absNorm J:ℂ)≠0 := by exact_mod_cast hj.ne'
   unfold correctedSummand markedSummand CompletedGauss.summand spectralSummand fullIdealWeight
-  rw [gaussianFixedWindow_Vstar_twist t _ (div_pos (mul_pos hi (pow_pos hj 3)) hT)]
+  rw [gaussianFixedWindow_Vstar_twist t _ (by positivity)]
   simp only [ite_eq_right hI,ite_eq_right hJ]
-  norm_num only [show (3:ℂ)*2=6 by norm_num,Complex.cpow_neg,Complex.cpow_ofNat]
+  norm_num only [Complex.cpow_neg, Complex.cpow_ofNat]
   push_cast
   field_simp
 
-lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
+lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : ActualEisensteinCubic.O→*ℂ)
     (hΨ : ∀n,‖Ψ n‖≤1) (T t : ℝ) (hT : 0<T) (I J : Id) :
     ‖correctedSummand S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T I J‖≤
       4*T^2*rowMajorant 2 (I,J) := by
@@ -69,7 +67,7 @@ lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   have hj : (0:ℝ)<Ideal.absNorm J := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hJ)
-  have hN : 0<(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := mul_pos hi (pow_pos hj 3)
+  have hN : 0<(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by positivity
   rw [gaussianFixedWindow_spectral_identity S D Ψ T t hT I J hI hJ,
     norm_mul,norm_mul,norm_pow,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hN,
     norm_mul,logPhase_norm,mul_one]
@@ -80,7 +78,7 @@ lemma gaussianFixedWindow_summand_crude (S : Finset Id) (D : Id) (Ψ : O→*ℂ)
   exact (mul_le_mul hs hn (by positivity) (by unfold rowMajorant;positivity)).trans_eq (by ring)
 
 theorem gaussianFixedWindow_completed_crude :
-    ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀D : Id,∀Ψ : O→*ℂ,
+    ∃C : ℝ,0<C ∧ ∀S : Finset Id,∀D : Id,∀Ψ : ActualEisensteinCubic.O→*ℂ,
       (∀n,‖Ψ n‖≤1)→∀T t : ℝ,0<T→
       ‖correctedCompletedT S D Ψ (CompletedHeight.normTwistedSource gaussianFixedWindow t) T‖≤C*T^2 := by
   let M : ℝ := ∑'p : Id×Id,rowMajorant 2 p
@@ -94,8 +92,8 @@ theorem gaussianFixedWindow_completed_crude :
     _ ≤ ∑'p : Id×Id,4*T^2*rowMajorant 2 p := hs.norm.tsum_le_tsum
       (fun p=>gaussianFixedWindow_summand_crude S D Ψ hΨ T t hT p.1 p.2)
       ((rowMajorant_summable 2 (by norm_num)).mul_left (4*T^2))
-    _ = (4*M)*T^2 := by rw [tsum_mul_left];dsimp only [M];ring
-    _ ≤ _ := by nlinarith [sq_nonneg T]
+    _ = (4*M)*T^2 := by rw [tsum_mul_left];linarith
+    _ ≤ _ := by simp_all
 
 end SevenEighths.ProbePhysical
 end

@@ -8,19 +8,18 @@ public import OAI.NumberTheory.DirichletL.Reflection.OriginalMask
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+variable {σ : Type*} [Fintype σ] [DecidableEq σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))
     (hpow : rowPowerfulPart R=rowPowerfulPart I)
     (hmask : rowMaskPart R (Ideal.span {m}*F)=rowMaskPart I (Ideal.span {m}*F))
 
-variable (L : σ→Finset (Ideal Eis))
+variable (L : σ→Finset (Ideal ActualEisensteinCubic.O))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
 

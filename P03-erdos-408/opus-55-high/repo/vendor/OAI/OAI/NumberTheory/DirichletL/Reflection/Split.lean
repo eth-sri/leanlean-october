@@ -7,14 +7,10 @@ public import OAI.NumberTheory.DirichletL.Reflection.Partition
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped BigOperators Classical
-open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT
-open LocalReflectionBrackets FiniteGaussPhase
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
-noncomputable local instance splitPhaseFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
+variable {ι : Type*} [Fintype ι] {p : ι → ActualEisensteinCubic.O} {N a0 c0 : ActualEisensteinCubic.O} {mode : Bool}
+noncomputable local instance splitPhaseFinite (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] : Fintype (ActualEisensteinCubic.O ⧸ P) := Fintype.ofFinite _
 
 end
 end SevenEighths.InverseReflectedPhase

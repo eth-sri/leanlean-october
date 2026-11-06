@@ -9,15 +9,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalRetainedGatesRank
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open FirstPassCubeLabels SecondPassArithmetic
 open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
+open InverseMomentGlobalRetainedGates InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
 
 def extra (negative : Bool) (c : CubeCoordinates ι) : Finset ι :=
   if negative then c.rightExponent.support else c.leftExponent.support
@@ -29,7 +28,7 @@ lemma extra_subset (negative : Bool) (c : CubeCoordinates ι) : extra negative c
 
 lemma dyadic_exponent_nonneg (Z : ℝ) (hZ : 1<Z) (n : ℕ) :
     0≤InverseFirstGlobalCaps.dyadicExponent Z n :=
-  Real.logb_nonneg hZ (by unfold dyadScale;exact one_le_pow₀ (by norm_num : (1:ℝ)≤2))
+  Real.logb_nonneg hZ (by unfold dyadScale;exact one_le_pow₀ (by simp))
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 lemma label_parent_valid (pool : Finset ι) (Q : Finset (ι→₀ℕ))
@@ -64,7 +63,7 @@ theorem label_parent_bounds (pool : Finset ι) (Q : Finset (ι→₀ℕ))
   have hj := InverseFirstGlobalCaps.labelParentCell_bounds p hp pool Q (fun _ _=>1) k l j Z eta hZ hbin y hy
   refine ⟨hc.1,hc.2,?_,hi.1.2,?_,?_,hj.2.2,?_⟩
   · simpa only [InverseFirstGlobalCaps.sourceIdeal_norm] using hi.2.2.2
-  · simpa only [hn.2.1] using hn.2.2.2
+  · linarith
   · exact (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)).trans hj.2.1
   · simpa only [InverseFirstGlobalCaps.sourceIdeal_norm] using hi.2.1.2
 

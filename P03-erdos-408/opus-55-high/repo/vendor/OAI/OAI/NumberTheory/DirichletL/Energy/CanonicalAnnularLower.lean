@@ -7,50 +7,47 @@ public import OAI.NumberTheory.DirichletL.Energy.CanonicalAnnularPower
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalAnnularLower
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst
+open HeckeFamily CenteredMomentCanonicalFirst
 open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstAmplificationChoice
 open CenteredMomentPrimeElements CenteredMomentSectorLocalization
 open CenteredMomentEnergyFirstRawScaleAdmission CenteredMomentEnergyAmplifiedChildWidth
 open CenteredMomentAmplificationChildInput CenteredMomentCommonRadialData
 open CenteredMomentCommonAllocationSum CenteredMomentFirstChildProfileControl
 open CenteredMomentSecondChildPowerBudget
-local notation "O"=>HeckeFamily.O
-local notation "Ray"=>RayFourExpansion.RayCharacter
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
 lemma parent_lower_ge {ι:Type*}[Fintype ι](s:Input ι)(Z r:ℝ)(hZ:1<Z)
     (hX₁:Z^r≤s.X₁)(hX₂:Z^r≤s.X₂)(hY₁:Z^r≤s.Y₁)(hY₂:Z^r≤s.Y₂):
     r≤parentLower s Z:=by
   have h (x:ℝ)(hx:Z^r≤x):r≤Real.logb Z x:=by
-    have hh:=Real.logb_le_logb_of_le hZ (Real.rpow_pos_of_pos (zero_lt_one.trans hZ) r) hx
+    have hh:=Real.logb_le_logb_of_le hZ (by positivity) hx
     simpa only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] using hh
-  exact le_min (le_min (h _ hX₁) (h _ hX₂)) (le_min (h _ hY₁) (h _ hY₂))
+  exact le_min (by grind) (by grind)
 
 lemma exceptional_cap_antitone (Z r s:ℝ)(hZ:1≤Z)(hrs:r≤s):
     Z^(-2*max s 0/3)≤Z^(-2*max r 0/3):=by
   apply Real.rpow_le_rpow_of_exponent_le hZ
-  have hm:=max_le_max_right 0 hrs
-  linarith
+  grind
 
 lemma main_powers_antitone (q Z K ell deficit paid saving r s:ℝ)
     (hZ:1≤Z)(hK:0≤K)(hrs:r≤s):
     ∀j,mainPowers q Z K ell deficit paid saving s j≤mainPowers q Z K ell deficit paid saving r j:=by
   intro j
   fin_cases j <;> simp only [mainPowers,Matrix.cons_val,Fin.reduceFinMk,le_refl]
-  exact mul_le_mul_of_nonneg_left (exceptional_cap_antitone Z r s hZ hrs) (Real.rpow_nonneg hK _)
+  exact mul_le_mul_of_nonneg_left (exceptional_cap_antitone Z r s hZ hrs) (by positivity)
 
-lemma error_powers_antitone (p:O)(k:ℕ)(q Z K deficit paid saving r s:ℝ)
+lemma error_powers_antitone (p:HeckeFamily.O)(k:ℕ)(q Z K deficit paid saving r s:ℝ)
     (hZ:1≤Z)(hK:0≤K)(hrs:r≤s):
     ∀j,errorPowers p k q Z K deficit paid saving s j≤errorPowers p k q Z K deficit paid saving r j:=by
   intro j
   fin_cases j <;> simp only [errorPowers,Matrix.cons_val,Fin.reduceFinMk,le_refl]
-  exact mul_le_mul_of_nonneg_left (exceptional_cap_antitone Z r s hZ hrs) (Real.rpow_nonneg hK _)
+  exact mul_le_mul_of_nonneg_left (exceptional_cap_antitone Z r s hZ hrs) (by positivity)
 
-lemma source_coefficients_mono (P:Finset (Ideal O))(mainFactor:ℝ)(hf:0≤mainFactor)
-    (am bm:Fin 4→ℝ)(ae be:elementPool P→Fin 3→Ray→Fin 4→ℝ)(alpha:Fin 4→ℝ)
+lemma source_coefficients_mono (P:Finset (Ideal HeckeFamily.O))(mainFactor:ℝ)(hf:0≤mainFactor)
+    (am bm:Fin 4→ℝ)(ae be:elementPool P→Fin 3→RayFourExpansion.RayCharacter→Fin 4→ℝ)(alpha:Fin 4→ℝ)
     (hm:∀j,am j≤bm j)(he:∀p i χ j,ae p i χ j≤be p i χ j):
     ∀j,sourceCoefficients P mainFactor am ae alpha j≤sourceCoefficients P mainFactor bm be alpha j:=by
   intro j
@@ -65,11 +62,11 @@ lemma source_coefficients_mono (P:Finset (Ideal O))(mainFactor:ℝ)(hf:0≤mainF
     (mul_nonneg (by positivity) (CenteredMomentAmplificationErrorEnergy.localErrorCost_nonneg p (errorIndex i)))
   apply Finset.sum_le_sum
   intro χ _
-  exact mul_le_mul_of_nonneg_right (he p i χ j)
+  exact mul_le_mul_of_nonneg_right (by grind)
     (Real.rpow_nonneg (pow_nonneg (by unfold normValue;positivity) _) _)
 
 theorem actual_source_coefficients_lower {ι:Type*}[Fintype ι]
-    (src:Input ι)(P:Finset (Ideal O))(C D:Ideal O)(E:Finset (CommonIndex C D))
+    (src:Input ι)(P:Finset (Ideal HeckeFamily.O))(C D:Ideal HeckeFamily.O)(E:Finset (CommonIndex C D))
     (K Z sigma delta reserve Mamp q deficit paid saving r:ℝ)
     (hZ:1<Z)(hsigma:0<sigma)(hMamp:0≤Mamp)
     (hX₁:Z^r≤src.X₁)(hX₂:Z^r≤src.X₂)(hY₁:Z^r≤src.Y₁)(hY₂:Z^r≤src.Y₂)
@@ -92,14 +89,14 @@ theorem actual_source_coefficients_lower {ι:Type*}[Fintype ι]
   · intro j
     exact mul_le_mul_of_nonneg_left (main_powers_antitone q Z _ _ _ _ _ _ _ hZ.le
       (by unfold mainRadius CenteredMomentAmplifiedRetainedRadius.mainCommonRadius;positivity)
-      (sub_le_sub_right hr _) j) (hH j)
+      (by linarith) j) (hH j)
   · intro p i χ j
     exact mul_le_mul_of_nonneg_left (error_powers_antitone p (errorIndex i+1) q Z _ _ _ _ _ _ hZ.le
       (by unfold errorRadius CenteredMomentAmplifiedRetainedRadius.errorCommonRadius;positivity)
-      (sub_le_sub_right (sub_le_sub_right hr _) _) j) (hH j)
+      (by linarith) j) (hH j)
 
 theorem actual_high_annular_sum {ι:Type*}[Fintype ι]
-    (src:Input ι)(P:Finset (Ideal O))(C D R:Ideal O)(E:Finset (CommonIndex C D))
+    (src:Input ι)(P:Finset (Ideal HeckeFamily.O))(C D R:Ideal HeckeFamily.O)(E:Finset (CommonIndex C D))
     (B:actualAllocations src.pools C)(τ:Character)(t:ℝ)
     (K Z sigma delta reserve Mamp deficit paid saving Mwidth eps:ℝ)
     (hZ:1<Z)(hsigma:0<sigma)(hMamp:0≤Mamp)

@@ -5,7 +5,7 @@ public import Erdos821.S34.ProbabilityPairing
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -21,7 +21,7 @@ theorem product_reproduction_error (a b A B : ℂ) (ε : ℝ)
   rw [he]
   calc
     _ ≤ ‖(A - a) * b‖ + ‖A * (B - b)‖ := norm_add_le _ _
-    _ = ‖A - a‖ * ‖b‖ + ‖A‖ * ‖B - b‖ := by simp only [norm_mul]
+    _ = ‖A - a‖ * ‖b‖ + ‖A‖ * ‖B - b‖ := by simp
     _ ≤ ε * 1 + (1 + ε) * ε := add_le_add
       (mul_le_mul hA hb (norm_nonneg _) hε)
       (mul_le_mul hnA hB (norm_nonneg _) (by linarith))
@@ -64,9 +64,9 @@ theorem kernel_multiplier_freeze {α β : Type} [Fintype α] [Fintype β]
       apply Finset.sum_le_sum
       intro y _
       by_cases hk : K x = 0
-      · simp [hk]
+      · simp_all
       by_cases hh : H y = 0
-      · simp [hh]
+      · simp_all
       simp only [norm_mul, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (hw x), abs_of_nonneg (hv y)]
       have hn : 0 ≤ w x * v y * ‖K x‖ * ‖H y‖ :=
@@ -74,7 +74,7 @@ theorem kernel_multiplier_freeze {α β : Type} [Fintype α] [Fintype β]
       have ht := mul_le_mul
         (mul_le_mul_of_nonneg_left (hM x y hk hh) hn) (hphase x y)
         (norm_nonneg _) (mul_nonneg hn hE)
-      convert ht using 1; ring
+      linarith
     _ = E * (∑ x, w x * ‖K x‖) * (∑ y, v y * ‖H y‖) := by
       simp_rw [Finset.mul_sum, Finset.sum_mul]
       exact Finset.sum_comm

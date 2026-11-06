@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.OneReflectionScaleEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff ComplexConjugate
+open scoped Classical SchwartzMap ContDiff ComplexConjugate
 namespace SevenEighths.CenteredMomentUniformReflectionScale
 open HeckeFamily HeckeDyadic EisensteinSchwartzPoisson
 open CenteredMomentSectorLocalization CenteredMomentScaleSupremum
@@ -33,11 +33,11 @@ theorem actual_rowwise_scales (A J : ℕ) :
         (Real.exp (lx i)) 0 0*
         polynomial (χ i) false Wshort (Real.exp (ly i)) 0 (omega i)*P i‖^2)≤
         C*D^2*(1+2*(hi-lo))*(1+2*(high-low))*E := by
-  have hlog : 0≤Real.log 4 := Real.log_nonneg (by norm_num)
+  have hlog : 0≤Real.log 4 := by positivity
   have hwindow : ∀y,CenteredMomentReflectedAnnuli.logWindow y≠0 → |y|≤Real.log 4 := by
     intro y hy
     have hh := CenteredMomentReflectedAnnuli.logWindow_support hy
-    exact abs_le.mpr ⟨hh.1,hh.2.trans hlog⟩
+    exact by grind
   have hreal : ∀y,conj (CenteredMomentReflectedAnnuli.logWindow y)=
       CenteredMomentReflectedAnnuli.logWindow y := by
     intro y
@@ -59,7 +59,7 @@ theorem actual_rowwise_scales (A J : ℕ) :
       χ χ (fun _=>-2*Real.pi*v) omega P (fun z : ℝ=>(annulus z:ℂ)) Wshort
       (1/4) 1 c d (by norm_num) hd annulus_complex_support hshort annulus_complex_smooth hshortsmooth
       lo hi low high (E*(1+‖v‖)^(2*J)) hlh hlw lx ly
-      (fun i _=>hlx i) (fun i _=>hly i) (henergy v)
+      (by grind) (by grind) (henergy v)
     rw [actual_log_window]
     simp only [←mul_assoc]
     have hp : ((1+‖v‖)^J)^2=(1+‖v‖)^(2*J) := by rw [←pow_mul,Nat.mul_comm J 2]
@@ -68,9 +68,9 @@ theorem actual_rowwise_scales (A J : ℕ) :
     ring
   have hh:=hbound G χ (fun i=>polynomial (χ i) false Wshort (Real.exp (ly i)) 0 (omega i)*P i)
     s (fun i=>Real.exp (lx i)) hspos (fun i=>Real.exp_pos _) D
-    ((1+2*(hi-lo))*((1+2*(high-low))*E)) hD (mul_nonneg hdx (mul_nonneg hdy hE)) hGD hfixed
+    ((1+2*(hi-lo))*((1+2*(high-low))*E)) hD (by positivity) hGD hfixed
   simp only [actual_log_window,←mul_assoc] at hh
-  convert hh using 1
+  omega
 
 end SevenEighths.CenteredMomentUniformReflectionScale
 

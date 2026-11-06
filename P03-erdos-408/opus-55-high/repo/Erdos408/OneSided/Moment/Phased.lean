@@ -113,7 +113,7 @@ theorem exists_phasedGhost_normLe {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ :
   refine hx d hd Y d₀ u v r B j _ fun s c => ?_
   rw [phasedGhostCoef, norm_mul, norm_prod]
   exact mul_le_of_le_one_right (norm_nonneg _)
-    (prod_le_one₀ (fun k _ => norm_nonneg _) fun k _ => hψ k _)
+    (prod_le_one₀ (by simp) fun k _ => hψ k _)
 
 /-- M4, the crude edge: for `B ≤ L³`, every phased edge with multipliers of modulus at most
 one has norm at most `L^{C_e}` for the chain measure, uniformly in the root box. -/
@@ -137,7 +137,7 @@ theorem exists_phasedEdge_normLe {q C CX alo ahi g A₀ : ℝ} (hq : 0 < q) (hq�
     fun s c => ?_
   rw [phasedEdgeCoef, norm_mul, norm_prod]
   exact mul_le_of_le_one_right (norm_nonneg _)
-    (prod_le_one₀ (fun i _ => norm_nonneg _) fun i _ => hψ i _)
+    (prod_le_one₀ (by simp) fun i _ => hψ i _)
 
 /-- M9, the signed edge: for `K ≥ K₀` and `B ≤ L³`, the edge has norm at most `L^{-G}` for the
 chain measure, uniformly in the root box. -/

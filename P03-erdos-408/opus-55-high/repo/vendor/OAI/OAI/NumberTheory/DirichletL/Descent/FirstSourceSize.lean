@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstTailAbsorption
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
-variable {ι : Type*} (p : ι→O) (hp : ∀i,p i≠0)
+variable {ι : Type*} (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0)
 
 variable [DecidableEq ι]
 
@@ -39,23 +38,21 @@ theorem first_source_scalar_caps (b : CubeCoordinates ι) (C D : Finset ι)
       _ ≤ 1 := inv_le_one_of_one_le₀ (Real.one_le_rpow hZ hM)
       _ ≤ _ := Real.one_le_rpow hZ hcap
   · have hd := cubeSourceDivisor_norm_bound p hp b C D (Z^(ell+eta)) (Z^(r+eta))
-      (Real.rpow_pos_of_pos hz _).le (Real.rpow_pos_of_pos hz _).le hCB h1 h2 hC hD
+      (by positivity) (by positivity) hCB h1 h2 hC hD
     apply hd.trans
     rw [←Real.rpow_mul_natCast hz.le,←Real.rpow_add hz]
     apply Real.rpow_le_rpow_of_exponent_le hZ
-    norm_num
-    linarith
+    grind
   · apply (primeProductNorm_mono p hp (Finset.filter_subset _ _)).trans
-    apply (cubeCoordinates_radical_bound p hp b (Z^(ell+eta)) (Real.rpow_pos_of_pos hz _).le h1 h2).trans
+    apply (cubeCoordinates_radical_bound p hp b (Z^(ell+eta)) (by positivity) h1 h2).trans
     rw [←Real.rpow_mul_natCast hz.le]
     apply Real.rpow_le_rpow_of_exponent_le hZ
-    norm_num
-    linarith
+    grind
   · intro eps
     have ha := element_norm_ge_one (aLabel p b.support eps) (primeProduct_ne_zero p hp _ _)
     have hc := primeProductNorm_ge_one p hp C
     calc
-      _ ≤ Z^(r+eta) := div_le_self (Real.rpow_pos_of_pos hz _).le (one_le_mul_of_one_le_of_one_le ha hc)
+      _ ≤ Z^(r+eta) := div_le_self (by positivity) (one_le_mul_of_one_le_of_one_le ha hc)
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
 
 end

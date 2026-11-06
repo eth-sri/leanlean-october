@@ -8,12 +8,11 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-local notation "O" => ActualEisensteinCubic.O
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic
 
 theorem primeProductNorm_union_le_mul {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal] (A U : Finset ι) :
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal] (A U : Finset ι) :
     primeProductNorm p (A∪U)≤primeProductNorm p A*primeProductNorm p U := by
   have he : A∪U=A∪(U\A) := by ext i;simp only [Finset.mem_union,Finset.mem_sdiff];tauto
   rw [he,primeProductNorm_union p A (U\A) Finset.disjoint_sdiff]
@@ -22,7 +21,7 @@ theorem primeProductNorm_union_le_mul {ι : Type*} [DecidableEq ι]
 
 theorem whole_cube_marked_test_uniform (ε : ℝ) (hε : 0<ε) :
     ∃ Cm : ℝ,0<Cm ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (_hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (_hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
       (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
       (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
       (slots : Set σ).PairwiseDisjoint lists → (∀ i∈slots,∀ k∈lists i,‖a i k‖≤1) →
@@ -37,7 +36,7 @@ theorem whole_cube_marked_test_uniform (ε : ℝ) (hε : 0<ε) :
   · simp only [hz,mul_zero,norm_zero];positivity
   have hnorm : primeProductNorm p (extra∪U)≤E*L :=
     (primeProductNorm_union_le_mul p hp extra U).trans
-      (mul_le_mul he (hs U hz) (primeProductNorm_pos p hp U).le hE)
+      (mul_le_mul he (by grind) (primeProductNorm_pos p hp U).le hE)
   have hnorm0 := (primeProductNorm_pos p hp (extra∪U)).le
   rw [norm_mul]
   calc

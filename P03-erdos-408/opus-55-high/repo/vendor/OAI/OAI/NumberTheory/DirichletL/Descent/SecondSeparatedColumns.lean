@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open FourierBridge JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open FourierBridge JointLogSeparation FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 def secondOuterPhase (h y : Fin 6 → ℝ) : ℂ :=
   logPhase (h 0) (y 0) * logPhase (h 1) (y 1) *
@@ -27,21 +26,21 @@ lemma second_mode_split (y : Fin 6 → ℝ) (t : Frequency) (u : Fin 6 → ℝ) 
         logPhase (profileHeight secondLeftSlope secondRightSlope secondKernelSlope t u 5) (y 5) := by
   rw [pureProfileMode_height]
   simp only [Fin.prod_univ_succ, secondOuterPhase]
-  simp only [Fin.succ,  Fin.val_mk]
+  simp only [Fin.succ]
   norm_num
   ring
 
 lemma secondOuterPhase_norm (h y : Fin 6 → ℝ) : ‖secondOuterPhase h y‖ = 1 := by
   simp only [secondOuterPhase,norm_mul,logPhase_norm,mul_one]
 
-lemma second_fresh_scale {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+lemma second_fresh_scale {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
     (hp : ∀ i, p i ≠ 0) (V N : Finset ι) (hVN : Disjoint V N) (X : ℝ) :
     primeProductNorm p (V ∪ N)/(primeProductNorm p V*X) = primeProductNorm p N/X := by
   rw [primeProductNorm_union p V N hVN]
   field_simp [(primeProductNorm_pos p hp V).ne']
 
 theorem actual_second_columns_separated {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
     (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
@@ -67,11 +66,11 @@ theorem actual_second_columns_separated {ι σ : Type*} [DecidableEq ι] [Decida
   have hVN : Disjoint x.overlap N := by
     apply Finset.disjoint_left.mpr
     intro i hi hiN
-    exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hN) hiN)).2 hi
+    exact by grind
   have hVM : Disjoint x.overlap M := by
     apply Finset.disjoint_left.mpr
     intro i hi hiM
-    exact (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hM) hiM)).2 hi
+    exact by grind
   dsimp only
   rw [second_fresh_scale p hp x.overlap N hVN,second_fresh_scale p hp x.overlap M hVM]
   simp only [secondActualCoefficient,childLogTest,secondChildColumn,

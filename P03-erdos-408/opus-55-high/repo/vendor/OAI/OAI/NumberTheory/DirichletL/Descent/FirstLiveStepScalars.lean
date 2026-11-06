@@ -11,14 +11,13 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStep
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
+open InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile InverseMomentFirstLabelCell CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 
 lemma columnScale_physical (Z r:ℝ)(hZ:1<Z)(k:SourceIndex)(l:ℕ)(negative:Bool):
     columnScale Z r k l negative=physicalScales (Z^r) k l (if negative then 7 else 8):=by
@@ -26,11 +25,11 @@ lemma columnScale_physical (Z r:ℝ)(hZ:1<Z)(k:SourceIndex)(l:ℕ)(negative:Bool
   cases negative <;> rfl
 
  theorem original_live_step_scalars {ι:Type}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
-    (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(om:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+    (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal ActualEisensteinCubic.O))
+    (β:Ideal ActualEisensteinCubic.O→(ι→₀ℕ)→ℂ)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(mark:(ι→₀ℕ)→Finset ι→ℂ)(om:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
     (K Z M r ell V F eta tau theta oldb b window em ed pi:ℝ)
     (hZ:1<Z)(hbin:2≤Z^eta)(hF:0≤F)(hM:0≤M)(hMF:M≤F)
     (hr: -eta≤r)(hrF:r≤F)(hell:0≤ell)(hellF:ell≤F)(hV:0≤V)(hVF:V≤F)
@@ -41,7 +40,7 @@ lemma columnScale_physical (Z r:ℝ)(hZ:1<Z)(k:SourceIndex)(l:ℕ)(negative:Bool
     (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta))
     (hlabels:∀I∈labels,I≠0)(hs:∀y,om y≠0→y≤oldb):
     let A:=3*F+16;
-    let cutoff:=fun (q:CubeCoordinates ι)(C:Finset ι)(_I:Ideal O)(D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
+    let cutoff:=fun (q:CubeCoordinates ι)(C:Finset ι)(_I:Ideal ActualEisensteinCubic.O)(D:Finset ι)=>firstDyadicRadius p q C D Z M r ell V eta tau;
     let W:=fun y=>normTwistedSource om theta (y/Z^r);
     let S:=firstGlobalRetainedSource p (firstOriginalOuter pool Q) (fun _=>labels) (fun x=>x.1) (Z^(2*F+15*eta+tau));
     ∀k∈liveJointKeys p S pool (sourceSummand p hp hcop hg β cutoff Ψ m mark W Φ K),∀negative:Bool,
@@ -64,33 +63,33 @@ lemma columnScale_physical (Z r:ℝ)(hZ:1<Z)(k:SourceIndex)(l:ℕ)(negative:Bool
   obtain ⟨hcoords,ht,hj⟩:=original_live_exponent_caps p hp hcop hg pool Q labels β cutoff Ψ m mark om Φ K Z r ell F eta tau theta oldb
     hZ hbin hF hrF hellF heta htau (hold.trans hwindow) hQ hlabels hs k hk
   have hecap:3*F+15*eta+tau≤A:=by dsimp [A];linarith
-  have hkcap:∀i,0≤exponent Z (k.1 i) ∧ exponent Z (k.1 i)≤A:=fun i=>⟨(hcoords i).1,(hcoords i).2.trans hecap⟩
+  have hkcap:∀i,0≤exponent Z (k.1 i) ∧ exponent Z (k.1 i)≤A:=by grind
   have hacap:0≤columnA Z k.1 negative ∧ columnA Z k.1 negative≤A:=hkcap (if negative then 0 else 1)
   have htcap:exponent Z k.2.1≤A:=ht.2.trans hecap
   have hjcap:exponent Z k.2.2≤A:=hj.2.trans hecap
   have hscl:=first_step_scalar_caps Z A M r ell V (exponent Z (k.1 3)) (columnA Z k.1 negative)
     (exponent Z (k.1 2)) (exponent Z (k.1 4)) (exponent Z k.2.1) (exponent Z k.2.2) eta tau window b
     hZ hA hM (hMF.trans hFA) (by linarith) (hrF.trans hFA) hell (hellF.trans hFA) hV (hVF.trans hFA)
-    (hkcap 3).1 (hkcap 3).2 hacap.1 hacap.2 (hkcap 2).1 (hkcap 2).2 (hkcap 4).1 (hkcap 4).2
+    (by grind) (by grind) hacap.1 hacap.2 (by grind) (by grind) (by grind) (by grind)
     ht.1 htcap hj.1 hjcap heta heta1 htau htau1 hwindow (hb.trans hwindow)
   have hloss:=first_step_scalar_losses A r ell (columnA Z k.1 negative) (exponent Z (k.1 2)) (exponent Z (k.1 4))
-    (exponent Z k.2.1) eta pi em ed hA (hrF.trans hFA) (hellF.trans hFA) hacap.1 (hkcap 2).1 (hkcap 2).2
-    (hkcap 4).2 ht.1 htcap heta heta1 hem hed hpi hetapi hsmall hsmall'
+    (exponent Z k.2.1) eta pi em ed hA (hrF.trans hFA) (hellF.trans hFA) hacap.1 (by grind) (by grind)
+    (by grind) ht.1 htcap heta heta1 hem hed hpi hetapi hsmall hsmall'
   have hYone:=first_live_cell_radius_one p hp hcop hg pool Q labels _ Z M r ell V eta tau β Ψ m mark W Φ K hlabels k hk
   have hW:∀y,W y≠0→y≤oldb*Z^r:=by
     intro y hy
     have hnon:om (y/Z^r)≠0:=by intro h;exact hy (by simp [W,normTwistedSource,h])
-    exact (div_le_iff₀ (Real.rpow_pos_of_pos hz _)).mp (hs _ hnon)
+    exact (div_le_iff₀ (by positivity)).mp (hs _ hnon)
   have hcol:=original_live_column_scale p hp hcop hg pool Q labels _ β cutoff Ψ m mark W Φ K (Z^r) oldb
-    (Real.rpow_pos_of_pos hz _) hW k hk
+    (by positivity) hW k hk
   have hXone:1≤X*Real.exp window:=by
     have hpos:0≤X:=Real.rpow_nonneg hz.le _
     apply le_trans _ (mul_le_mul_of_nonneg_left hold hpos)
     dsimp [X]
     rw [columnScale_physical Z r hZ]
     cases negative
-    · exact hcol.2
-    · exact hcol.1
+    · grind
+    · grind
   refine ⟨hYone,hXone,hscl.1,hscl.2.1,hscl.2.2.1,hscl.2.2.2.1,hscl.2.2.2.2.1,
     hscl.2.2.2.2.2.1,hloss.1,hloss.2,?_,?_,?_,?_⟩ <;> linarith [(hkcap 4).2,(hkcap 2).2]
 

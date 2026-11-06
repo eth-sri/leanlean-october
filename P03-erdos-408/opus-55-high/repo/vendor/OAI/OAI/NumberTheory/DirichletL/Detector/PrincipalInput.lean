@@ -8,13 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.FiniteProductBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary
+open CompletedGauss ProbeMellinBoundary
 open PrincipalMellinResidues ProbeFiniteProductBounds
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma principalTuple_source_integrand {K : ℕ} (η : HeckeFamily.Character)
     (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
@@ -56,9 +54,9 @@ theorem principalRowIntegral_eq_sourceMultiplier {K : ℕ} (η : HeckeFamily.Cha
   intro t
   exact principalTuple_source_integrand η S hS P hP hPS W0 W1 X Y Z
     ((3:ℂ)+t.1.1*Complex.I) ((3:ℂ)+t.2*Complex.I) ((2:ℂ)+t.1.2*Complex.I)
-    (by norm_num [Complex.add_re,Complex.mul_re])
-    (by norm_num [Complex.add_re,Complex.mul_re])
-    (by norm_num [Complex.add_re,Complex.mul_re])
+    (by simp)
+    (by norm_num)
+    (by norm_num)
 
 end SevenEighths.ProbePhysical
 end

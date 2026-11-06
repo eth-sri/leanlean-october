@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Moments.UniformReflectionProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentUniformReflectionApproximation
 open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
 open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
 open CenteredMomentRetainedReflection CenteredMomentOriginalReflectionApproximation
 open CenteredMomentSectorLocalization CenteredMomentNaturalPrimitive
 open EisensteinSchwartzPoisson
-local notation "O" => HeckeFamily.O
 
 theorem discarded_bound (A B : ℕ) (hB : 2≤B) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀(G : 𝓢(ℝ,ℂ))(χ : Character)(Y R : ℝ),
@@ -49,7 +48,7 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
         C*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G*Z^(-saving) := by
   obtain ⟨A,hA⟩ := exists_nat_gt ((saving+L*(3/2))/(xi/2))
   have hsav : saving+L*(3/2)≤xi/2*(A:ℝ) := by
-    have hh := (div_le_iff₀ (by linarith : 0<xi/2)).mp hA.le
+    have hh := (div_le_iff₀ (by positivity)).mp hA.le
     nlinarith
   obtain ⟨H,C,hC,hbound⟩ := discarded_bound A 2 (by omega)
   refine ⟨H,C*Cscale^(3/2:ℝ),by positivity,?_⟩
@@ -59,7 +58,7 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
   have hR : 0<Z^(xi/2) := Real.rpow_pos_of_pos hz _
   have hp : Y^2/Real.sqrt Y≤Cscale^(3/2:ℝ)*Z^(L*(3/2)) := by
     rw [normalized_power_eq Y hY 2]
-    norm_num only [Nat.cast_ofNat,show (2:ℝ)-1/2=3/2 by norm_num]
+    norm_num only
     calc
       _≤(Cscale*Z^L)^(3/2:ℝ) := Real.rpow_le_rpow hY.le hYZ (by norm_num)
       _=_ := by rw [Real.mul_rpow hscale.le (by positivity),←Real.rpow_mul hz.le]
@@ -67,7 +66,7 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
     rw [←Real.rpow_natCast,←Real.rpow_mul hz.le]
   calc
     _≤C*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G*(Y^2/Real.sqrt Y)/(Z^(xi/2))^A :=
-      hbound G χ Y _ hY hR
+      by grind
     _≤C*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G*
         (Cscale^(3/2:ℝ)*Z^(L*(3/2)))/(Z^(xi/2))^A :=
       div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hp (by positivity)) (by positivity)
@@ -81,7 +80,7 @@ theorem discarded_negligible (xi saving L Cscale : ℝ)
 theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
     (hxi : 0<xi) (hscale : 0<Cscale) (hepsilon : 0<epsilon) :
     ∃H : Finset (ℕ×ℕ),∃C : ℝ,0<C ∧ ∀(G : 𝓢(ℝ,ℂ))
-      (S : Finset (Ideal O))(_hS : ∀P∈S,Prime P)(η ηi χ : Character)(Q X Z : ℝ),
+      (S : Finset (Ideal HeckeFamily.O))(_hS : ∀P∈S,Prime P)(η ηi χ : Character)(Q X Z : ℝ),
       1≤Z → 0<Q → 0<X → Q*(Ideal.absNorm (∏P∈S,P):ℝ)≤Cscale*Z^L*X →
       let F := fun x=>(discardedWeight (Z^(xi/2)) x:ℂ)*paperRadialFourier G x
       (∀D∈S.powerset,Summable (fun I : SmoothIdeal S=>coefficient η ηi S D I*
@@ -105,8 +104,8 @@ theorem deleted_discarded_negligible (xi saving L Cscale epsilon : ℝ)
     (C*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) G*Z^(-saving)) (by positivity) (by
       intro E hE I
       have hy := dual_scale_bounds S E hS (Finset.mem_powerset.mp hE) I Q X (Cscale*Z^L) hQ hX hcap
-      exact hCb G χ _ Z hZ hy.1 hy.2)
-  exact ⟨hh.1,hh.2.trans_eq (by ring)⟩
+      grind)
+  grind
 
 def retainedSchwartz (χ ψ : Character) (G : 𝓢(ℝ,ℂ)) (X R : ℝ) : ℂ :=
   let S := redundantSet χ.modulus ψ.modulus

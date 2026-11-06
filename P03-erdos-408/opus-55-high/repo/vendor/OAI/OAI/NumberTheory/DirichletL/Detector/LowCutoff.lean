@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Detector.GaussianPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped ContDiff
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
 
 def lowOuterCutoff (a b x : ℝ) : ℂ :=
   (Real.smoothTransition (2*x/a-1):ℂ)*(Real.smoothTransition (2-x/b):ℂ)
@@ -35,7 +34,7 @@ lemma lowOuterCutoff_one (a b : ℝ) (ha : 0<a) (hb : 0<b) (x : ℝ) (hlo : a≤
     have hh : 2≤2*x/a := (le_div_iff₀ ha).mpr (by linarith)
     linarith
   have hr : 1≤2-x/b := by
-    have hh : x/b≤1 := (div_le_iff₀ hb).mpr (by simpa using hhi)
+    have hh : x/b≤1 := (div_le_iff₀ hb).mpr (by linarith)
     linarith
   simp only [lowOuterCutoff,Real.smoothTransition.one_of_one_le hl,
     Real.smoothTransition.one_of_one_le hr,Complex.ofReal_one,mul_one]
@@ -50,9 +49,9 @@ lemma lowOuterCutoff_support (a b : ℝ) (ha : 0<a) (hb : 0<b) :
   intro x hx
   constructor
   · by_contra hh
-    exact hx (lowOuterCutoff_small a b ha x (le_of_lt (lt_of_not_ge hh)))
+    exact hx (lowOuterCutoff_small a b ha x (by linarith))
   · by_contra hh
-    exact hx (lowOuterCutoff_large a b hb x (le_of_lt (lt_of_not_ge hh)))
+    exact hx (lowOuterCutoff_large a b hb x (by linarith))
 
 lemma lowOuterCutoff_compact (a b : ℝ) (ha : 0<a) (hb : 0<b) :
     HasCompactSupport (lowOuterCutoff a b) :=
@@ -70,14 +69,13 @@ lemma physical_window_cutoff_one (W0 W1 : ℝ→ℂ) (a0 b0 a1 b1 : ℝ)
     lowOuterCutoff (a0*a1) (max 1 (b0*b1)) (m/(B*X*Y))=1 := by
   have h0b := hW0 h0
   have h1b := hW1 h1
-  apply lowOuterCutoff_one _ _ (mul_pos ha0 ha1) (lt_of_lt_of_le (by norm_num) (le_max_left _ _))
+  apply lowOuterCutoff_one _ _ (by positivity) (by positivity)
   · rw [physical_ratio_factor B q X Y m hq hY]
-    have hh := mul_le_mul h0b.1 h1b.1 ha1.le (le_trans ha0.le h0b.1)
-    simpa only [mul_comm] using hh
+    have hh := mul_le_mul h0b.1 h1b.1 ha1.le (by grind)
+    linarith
   · rw [physical_ratio_factor B q X Y m hq hY]
-    have hh := mul_le_mul h0b.2 h1b.2 (le_trans ha1.le h1b.1) (le_trans ha0.le (h0b.1.trans h0b.2))
-    have hd : (q/Y)*(m/(B*q*X))≤b0*b1 := by simpa only [mul_comm] using hh
-    exact hd.trans (le_max_right _ _)
+    have hh := mul_le_mul h0b.2 h1b.2 (by positivity) (by grind)
+    grind
 
 theorem physicalRowWeight_insert_cutoff (C : CalibrationData) (W0 W1 : ℝ→ℂ)
     (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -87,7 +85,7 @@ theorem physicalRowWeight_insert_cutoff (C : CalibrationData) (W0 W1 : ℝ→ℂ
       lowOuterCutoff (a0*a1) (max 1 (b0*b1)) (elementNorm r.2/(elementNorm C.generator*X*Y))*
         physicalRowWeight C W0 W1 X Y r := by
   by_cases hz : physicalRowWeight C W0 W1 X Y r=0
-  · simp only [hz,mul_zero]
+  · simp_all
   have h0 : W0 (elementNorm r.2/(elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))≠0 :=
     fun h=>hz (physicalRowWeight_inner_zero C W0 W1 X Y r h)
   have h1 : W1 ((Ideal.absNorm r.1.val:ℝ)/Y)≠0 :=

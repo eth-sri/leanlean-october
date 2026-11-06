@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Detector.HighDeletion
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ProbeCompleted CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open ActualEisensteinCubic ProbeCompleted
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma outside_mul (S : Finset Id) (hS : ∀P∈S,Prime P) (A B : Id) :
     (∀P∈S,¬P∣A*B) ↔ (∀P∈S,¬P∣A) ∧ (∀P∈S,¬P∣B) := by
@@ -24,13 +23,13 @@ lemma outside_mul (S : Finset Id) (hS : ∀P∈S,Prime P) (A B : Id) :
     · intro P hP hd
       exact h P hP ((hS P hP).dvd_mul.mpr (Or.inr hd))
   · rintro ⟨hA,hB⟩ P hP hd
-    exact ((hS P hP).dvd_mul.mp hd).elim (hA P hP) (hB P hP)
+    exact ((hS P hP).dvd_mul.mp hd).elim (by grind) (by grind)
 
 lemma outside_cube (S : Finset Id) (hS : ∀P∈S,Prime P) (A : Id) :
     (∀P∈S,¬P∣A^3) ↔ ∀P∈S,¬P∣A := by
   constructor
   · intro h P hP hd
-    exact h P hP (dvd_trans hd (dvd_pow_self A (by decide : (3:ℕ)≠0)))
+    exact h P hP (dvd_trans hd (by simp))
   · intro h P hP hd
     exact h P hP ((hS P hP).dvd_of_dvd_pow hd)
 
@@ -63,7 +62,7 @@ theorem highIdealMask_unmarked (S : Finset Id) (hS : ∀P∈S,Prime P) (I J K L 
 lemma highIdealMask_unmarked_one (S : Finset Id) (hS : ∀P∈S,Prime P) :
     highIdealMask S 1 1 1 1 1=1 := by
   rw [highIdealMask_unmarked S hS]
-  simp only [map_one,one_mul]
+  grind
 
 lemma highIdealMask_unmarked_mul (S : Finset Id) (hS : ∀P∈S,Prime P)
     (a b : HighIdeal) :

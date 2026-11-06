@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open Set Complex
 namespace SevenEighths.HeckeDyadic
 open HeckeFamily HeckeReciprocalGrowth
@@ -31,7 +31,7 @@ theorem scaled_reflected_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
         C*C₂*U^((a-1/2)*(1-r)+6*e*(2-r)+4*κ+η)+C*Cn*U^(2*R+2+η)/(1+V)^n := by
   obtain ⟨Cg,Cr,hCg,hCr,hbound⟩ := reflected_polynomial_bound e κ he he' hκ
   let E := HeckeReciprocalBound.bound 2
-  have hE : 0≤E := tsum_nonneg (fun _ => norm_nonneg _)
+  have hE : 0≤E := tsum_nonneg (by simp)
   let C := 1+2*Cr*Real.pi+6*Cg+E*Real.pi
   have hC : 0<C := by dsimp [C]; positivity
   refine ⟨C,hC,?_⟩
@@ -41,7 +41,7 @@ theorem scaled_reflected_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   have hH : 0≤H := by dsimp [H]; positivity
   have hU : 1≤U := (HeckeLogarithmicInput.modulus_norm_ge_one (χ j)).trans hQ
   have hUp : 0<U := lt_of_lt_of_le zero_lt_one hU
-  have hD : 1≤U^r := Real.one_le_rpow hU hr
+  have hD := Real.one_le_rpow hU hr
   have hb := hbound χ hχ T a i hT ha ha' hmax j W A B hA hWs hW
     (U^r) σ freq V C₂ Cn n hD hV hfreq hC₂ hCn hm₂ hmn
   dsimp only at hb
@@ -85,8 +85,8 @@ theorem scaled_reflected_bound (e κ : ℝ) (he : 0<e) (he' : e<1/1000)
   have heC : 6*Cg+E*Real.pi≤C := by dsimp [C]; nlinarith only [mul_pos hCr Real.pi_pos]
   calc
     _ ≤ (2*Cr*Real.pi)*C₂*U^((a-1/2)*(1-r)+6*e*(2-r)+4*κ+η)+
-        (6*Cg)*Cn*U^(2*R+2+η)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by
-      exact add_le_add (add_le_add hc hj) ht
+        (6*Cg)*Cn*U^(2*R+2+η)/(1+V)^n+(E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n :=
+      add_le_add (add_le_add hc hj) ht
     _ = (2*Cr*Real.pi)*C₂*U^((a-1/2)*(1-r)+6*e*(2-r)+4*κ+η)+
         (6*Cg+E*Real.pi)*Cn*U^(2*R+2+η)/(1+V)^n := by ring
     _ ≤ _ := by gcongr

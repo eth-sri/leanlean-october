@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonfloorMoments
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber
 open ProbeHighRowFamily
 
 lemma rawMoment_mono_constant {data : RowData} {W : ℝ→ℂ} {c κ C D : ℝ}
@@ -30,13 +30,13 @@ lemma moments_mono_constant {M : Ideal O} [NeZero M] {H : Subgroup (O ⧸ M)ˣ}
       rawMoment_mono_constant (h.inverse_raw n hn s hs t ht).2 hCD⟩
   · intro selected hsel hcap1 hcap2 n hn s hs t ht
     exact (h.inverse_marked selected hsel hcap1 hcap2 n hn s hs t ht).trans
-      (mul_le_mul_of_nonneg_right hCD (Real.rpow_nonneg hU _))
+      (mul_le_mul_of_nonneg_right hCD (by positivity))
   · intro selected hsel hcap j k hj s hs t ht
     exact (h.plain_marked selected hsel hcap j k hj s hs t ht).trans
-      (mul_le_mul_of_nonneg_right hCD (Real.rpow_nonneg hU _))
+      (mul_le_mul_of_nonneg_right hCD (by positivity))
   · intro j k hj s hs t ht
     exact (h.plain_unmarked j k hj s hs t ht).trans
-      (mul_le_mul_of_nonneg_right hCD (Real.rpow_nonneg hU _))
+      (mul_le_mul_of_nonneg_right hCD (by positivity))
 
 lemma sourceMomentsAt_mono_constant (M : Ideal O) [NeZero M]
     (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
@@ -47,7 +47,7 @@ lemma sourceMomentsAt_mono_constant (M : Ideal O) [NeZero M]
     (h : SourceMomentsAt M H hH S hS η rows ell W Z d a ε τ dmax b slotMesh binWidth i z Δ c κ C height εm) :
     SourceMomentsAt M H hH S hS η rows ell W Z d a ε τ dmax b slotMesh binWidth i z Δ c κ D height εm := by
   intro q B hrows hdata hrev hslots hwidth hprof hupp hext hmesh hbin hfam bin j J K hne
-  exact moments_mono_constant (Real.rpow_nonneg hZ _)
+  exact moments_mono_constant (by positivity)
     (h q B hrows hdata hrev hslots hwidth hprof hupp hext hmesh hbin hfam bin j J K hne) hCD
 
 end SevenEighths.ProbeFinalAssembly

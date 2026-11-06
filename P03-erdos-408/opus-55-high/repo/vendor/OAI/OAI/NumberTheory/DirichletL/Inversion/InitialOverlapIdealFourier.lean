@@ -9,25 +9,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic
+open scoped Classical
 namespace SevenEighths.InverseInitialOverlapIdealFourier
-open InverseMoment InverseInitialOverlapFourier
-local notation "Eis"=>ActualEisensteinCubic.O
+open InverseMoment
 variable {σ ι : Type*} [DecidableEq σ] [DecidableEq ι]
 
-def activeIndices (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
-    (c : Ideal Eis) : Finset ι := (I.biUnion L).filter (fun p=>primes p∣c)
+def activeIndices (primes : ι→Ideal ActualEisensteinCubic.O) (I : Finset σ) (L : σ→Finset ι)
+    (c : Ideal ActualEisensteinCubic.O) : Finset ι := (I.biUnion L).filter (fun p=>primes p∣c)
 
 omit [DecidableEq σ] in
-theorem activeIndices_mem (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
-    (c : Ideal Eis) {i : σ} (hi : i∈I) {p : ι} (hp : p∈L i) :
+theorem activeIndices_mem (primes : ι→Ideal ActualEisensteinCubic.O) (I : Finset σ) (L : σ→Finset ι)
+    (c : Ideal ActualEisensteinCubic.O) {i : σ} (hi : i∈I) {p : ι} (hp : p∈L i) :
     p∈activeIndices primes I L c ↔ primes p∣c := by
   simp only [activeIndices,Finset.mem_filter]
-  exact and_iff_right (Finset.mem_biUnion.mpr ⟨i,hi,hp⟩)
+  grind
 
-theorem indexed_mark_active (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→Finset ι)
-    (a : σ→ι→ℂ) (c : Ideal Eis) :
+theorem indexed_mark_active (primes : ι→Ideal ActualEisensteinCubic.O) (I : Finset σ) (L : σ→Finset ι)
+    (a : σ→ι→ℂ) (c : Ideal ActualEisensteinCubic.O) :
     indexedIdealMark primes I L a c=primeMark I L a (activeIndices primes I L c) := by
   unfold indexedIdealMark primeMark primeSlot
   apply Finset.prod_congr rfl
@@ -37,8 +35,8 @@ theorem indexed_mark_active (primes : ι→Ideal Eis) (I : Finset σ) (L : σ→
   simp only [activeIndices_mem primes I L c hi hp]
 
 omit [DecidableEq σ] [DecidableEq ι] in
-theorem tuple_gate_product (primes : ι→Ideal Eis) (I : Finset σ)
-    (a : σ→ι→ℂ) (p : ∀i∈I,ι) (c : Ideal Eis)
+theorem tuple_gate_product (primes : ι→Ideal ActualEisensteinCubic.O) (I : Finset σ)
+    (a : σ→ι→ℂ) (p : ∀i∈I,ι) (c : Ideal ActualEisensteinCubic.O)
     (hc : Pairwise (Function.onFun IsCoprime (fun i:I=>primes (p i.val i.property)))) :
     (∏i∈I.attach,if primes (p i.val i.property)∣c then a i.val (p i.val i.property) else 0)=
       if (∏i∈I.attach,primes (p i.val i.property))∣c then
@@ -55,7 +53,7 @@ theorem tuple_gate_product (primes : ι→Ideal Eis) (I : Finset σ)
       apply h
       exact Finset.prod_dvd_of_coprime (hc.set_pairwise _) (fun i _=>hn i)
     obtain ⟨i,hi⟩ := hn
-    exact Finset.prod_eq_zero (Finset.mem_attach _ i) (ite_eq_right hi)
+    exact Finset.prod_eq_zero (by simp) (ite_eq_right hi)
 
 end SevenEighths.InverseInitialOverlapIdealFourier
 

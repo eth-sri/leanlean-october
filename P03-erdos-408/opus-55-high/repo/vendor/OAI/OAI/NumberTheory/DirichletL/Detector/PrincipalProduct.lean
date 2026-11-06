@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Detector.NormalProduct
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss SmoothMobiusCorrection
-local notation "O" => ActualEisensteinCubic.O
+open SmoothMobiusCorrection
 
 def primeDefectBound (P : PrimeIdeal) : ℝ :=
   240 * (Ideal.absNorm P.val : ℝ) ^ (-(363/200:ℝ))
 
-def smallPrimeSet (N : ℕ) : Finset (Ideal O) :=
+def smallPrimeSet (N : ℕ) : Finset (Ideal ActualEisensteinCubic.O) :=
   (Ideal.finite_setOfPred_absNorm_le N).toFinset.filter Prime
 
 lemma mem_smallPrimeSet (N : ℕ) (P : PrimeIdeal) :

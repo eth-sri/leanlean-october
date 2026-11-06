@@ -9,7 +9,7 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 
@@ -26,7 +26,7 @@ theorem cell_kernel_sup_proof : Erdos821.Blueprint.Analytic.cell_kernel_sup_stat
   have hchar := Erdos821.S34Core.primitiveCharacterTask_proof.2
   unfold cellKernel
   split_ifs with hc
-  · have hν : 0 < cellMass G k h (cell h X) := hξ.trans_le hc.2
+  · have hν : 0 < cellMass G k h (cell h X) := by linarith
     have hs : ‖∑ χ ∈ primitiveCharacters Q, star (charValue χ D) * charValue χ X‖ ≤ (Q : ℝ) ^ 2 := by
       calc
         _ ≤ ∑ χ ∈ primitiveCharacters Q, ‖star (charValue χ D) * charValue χ X‖ := norm_sum_le _ _
@@ -34,16 +34,16 @@ theorem cell_kernel_sup_proof : Erdos821.Blueprint.Analytic.cell_kernel_sup_stat
           apply Finset.sum_le_sum
           intro χ _
           rw [norm_mul, norm_star]
-          simpa only [one_mul] using mul_le_mul (hchar Q χ D) (hchar Q χ X)
+          simpa using mul_le_mul (hchar Q χ D) (hchar Q χ X)
             (norm_nonneg _) (by norm_num : (0 : ℝ) ≤ 1)
         _ = ((primitiveCharacters Q).card : ℝ) := by simp
         _ ≤ (Q : ℝ) ^ 2 := by exact_mod_cast hcount
     rw [norm_mul, norm_inv, Complex.norm_real, Real.norm_eq_abs, abs_of_pos hν]
     calc
       _ ≤ (cellMass G k h (cell h X))⁻¹ * (Q : ℝ) ^ 2 :=
-        mul_le_mul_of_nonneg_left hs (inv_nonneg.mpr hν.le)
+        mul_le_mul_of_nonneg_left hs (by positivity)
       _ ≤ ξ⁻¹ * (Q : ℝ) ^ 2 := mul_le_mul_of_nonneg_right
-        (by simpa only [one_div] using one_div_le_one_div_of_le hξ hc.2) (sq_nonneg _)
+        (by simpa using one_div_le_one_div_of_le hξ hc.2) (sq_nonneg _)
       _ = _ := by ring
   · simp only [norm_zero]
     positivity

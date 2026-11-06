@@ -11,7 +11,6 @@ moment per block, hence `(C / Pstar) ^ rank`. -/
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
@@ -51,7 +50,7 @@ theorem prescribed_of_compatible {A : Model F P J m} {n B : ℕ} (H : MemoryHist
   refine ⟨h.1, ?_⟩
   rw [h.2]
   unfold blockTarget
-  rw [dite_eq_left hj]
+  simp_all
 
 /-- The literal high-rank expression is covered by the prescriptions of block values. -/
 theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
@@ -62,7 +61,7 @@ theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
             Prescribed B H (performedAddressSet pi) (blockTarget pi hpi values)
           then ‖H.Weight rho theta‖ else 0) := by
   unfold highRankHistoryExpression
-  rw [tsum_truncR A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
+  rw [tsum_truncR A n B _ (by grind)]
   have htr : ∀ values : PivotAssignment pi hpi, (∑' H : MemoryHistory A n,
       (if H.Valid ∧ H.Truncated B ∧
           Prescribed B H (performedAddressSet pi) (blockTarget pi hpi values)
@@ -71,7 +70,7 @@ theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
         (if (mkH d).Valid ∧ (mkH d).Truncated B ∧
             Prescribed B (mkH d) (performedAddressSet pi) (blockTarget pi hpi values)
           then ‖(mkH d).Weight rho theta‖ else 0) :=
-    fun values => tsum_truncR A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))
+    fun values => tsum_truncR A n B _ (by grind)
   rw [Finset.sum_congr rfl (fun v _ => htr v), Finset.sum_comm]
   apply Finset.sum_le_sum
   intro d _
@@ -83,14 +82,14 @@ theorem highRank_le_assign (A : Model F P J m) (n B : ℕ) (rho theta : ℝ)
     calc ‖(mkH d).Weight rho theta‖
         = (if (mkH d).Valid ∧ (mkH d).Truncated B ∧
             Prescribed B (mkH d) (performedAddressSet pi) (blockTarget pi hpi values)
-          then ‖(mkH d).Weight rho theta‖ else 0) := by rw [ite_eq_left ⟨hc.1, hc.2.1, hpre⟩]
+          then ‖(mkH d).Weight rho theta‖ else 0) := by grind
       _ ≤ _ := Finset.single_le_sum (f := fun values : PivotAssignment pi hpi =>
             if (mkH d).Valid ∧ (mkH d).Truncated B ∧
               Prescribed B (mkH d) (performedAddressSet pi) (blockTarget pi hpi values)
             then ‖(mkH d).Weight rho theta‖ else 0)
-          (fun v _ => by split_ifs <;> simp) (Finset.mem_univ values)
+          (fun v _ => by positivity) (Finset.mem_univ values)
   · rw [ite_eq_right hc]
-    exact Finset.sum_nonneg fun v _ => by split_ifs <;> simp
+    positivity
 
 theorem muHat_le_block {n B : ℕ} (pi : Finset (Finset (AddrIdx P (J + F.ell) n B)))
     (hpi : BirthCollection pi) (C : {C // C ∈ pi}) (p : P.Prime (blockPivotGroup pi hpi C).val)
@@ -106,8 +105,7 @@ theorem muHat_le_block {n B : ℕ} (pi : Finset (Finset (AddrIdx P (J + F.ell) n
       rw [dite_eq_right]
       intro hmem
       exact hg (big_groups_eq_of_common_prime _ _ p.val hmem p.property)
-    rw [h0]
-    exact (hμ _ _).le
+    grind
 
 /-- Summing the prescription products over the block values: one tilted moment per block. -/
 theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
@@ -118,12 +116,12 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
           (blockTarget pi hpi values j) ≤
       (16 / (F.vMin * Real.exp ((L x) ^ F.c))) ^ birthRank pi := by
   have hmb := tiltedMu_group_mass_bounds F P x n hP hcut
-  have hμ : ∀ (g : P.BigGroup) (q : P.Prime g.val), 0 < tiltedMu F P n g.val q :=
+  have hμ :=
     fun g q => ((hmb g).1 q).1
   set X : ℝ := 2 / (F.vMin * Real.exp ((L x) ^ F.c)) with hX
   have hX0 : 0 ≤ X := by
     rw [hX]
-    exact div_nonneg (by norm_num) (mul_nonneg F.vMin_pos.le (Real.exp_pos _).le)
+    exact div_nonneg (by norm_num) (mul_nonneg F.vMin_pos.le (by positivity))
   have hY : 16 / (F.vMin * Real.exp ((L x) ^ F.c)) = 8 * X := by rw [hX]; ring
   let H : (C : {C // C ∈ pi}) → P.Prime (blockPivotGroup pi hpi C).val → ℝ := fun C p =>
     ∏ j ∈ C.val, 2 * muHat F P n (birthAddressGroup ((Fintype.equivFin _).symm j)) p.val
@@ -133,12 +131,12 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
           (blockTarget pi hpi values j)) = ∏ C : {C // C ∈ pi}, H C (values C) := by
     intro values
     unfold performedAddressSet
-    rw [Finset.prod_biUnion (s := pi) (t := id) (by exact hpi.2), ← Finset.prod_coe_sort pi]
+    rw [Finset.prod_biUnion (s := pi) (t := id) hpi.2, ← Finset.prod_coe_sort pi]
     apply Finset.prod_congr rfl
     intro C _
     apply Finset.prod_congr rfl
     intro j hj
-    have hjU : j ∈ performedAddressSet pi := Finset.mem_biUnion.2 ⟨C.val, C.property, hj⟩
+    have hjU : j ∈ performedAddressSet pi := Finset.mem_biUnion.2 (by grind)
     have hb : blockTarget pi hpi values j = (values C).val := by
       unfold blockTarget
       rw [dite_eq_left hjU, blockContaining_eq pi hpi j hjU C.val C.property hj]
@@ -168,17 +166,17 @@ theorem assign_sum_le {n B : ℕ} (x : ℝ) (hP : P.Admissible F x)
     calc (∑ p : P.Prime (blockPivotGroup pi hpi C).val, H C p)
         ≤ ∑ p : P.Prime (blockPivotGroup pi hpi C).val,
             (2 * tiltedMu F P n (blockPivotGroup pi hpi C).val p) ^ C.val.card :=
-          Finset.sum_le_sum fun p _ => hle p
+          Finset.sum_le_sum (by grind)
       _ = 2 ^ C.val.card * ∑ p : P.Prime (blockPivotGroup pi hpi C).val,
             (tiltedMu F P n (blockPivotGroup pi hpi C).val p) ^ C.val.card := by
           rw [Finset.mul_sum]
-          exact Finset.sum_congr rfl fun p _ => mul_pow _ _ _
+          ring
       _ ≤ 2 ^ C.val.card * (2 * X ^ (C.val.card - 1)) :=
           mul_le_mul_of_nonneg_left hmom (by positivity)
       _ = 4 * (2 * X) ^ r := by rw [hr, Nat.add_sub_cancel, pow_succ, mul_pow]; ring
       _ ≤ 4 ^ r * (2 * X) ^ r := by
-          apply mul_le_mul_of_nonneg_right _ (pow_nonneg (by linarith) _)
-          calc (4 : ℝ) = 4 ^ 1 := (pow_one 4).symm
+          apply mul_le_mul_of_nonneg_right _ (by positivity)
+          calc (4 : ℝ) = 4 ^ 1 := by simp
             _ ≤ 4 ^ r := pow_le_pow_right₀ (by norm_num) hr1
       _ = (8 * X) ^ (C.val.card - 1) := by rw [hr, Nat.add_sub_cancel, ← mul_pow]; ring
   calc (∏ C : {C // C ∈ pi}, ∑ p : P.Prime (blockPivotGroup pi hpi C).val, H C p)

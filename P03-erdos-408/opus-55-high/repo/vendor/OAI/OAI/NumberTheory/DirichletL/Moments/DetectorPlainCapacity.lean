@@ -9,17 +9,15 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators ContDiff ComplexConjugate
+open scoped Classical ComplexConjugate
 namespace SevenEighths.CenteredMomentDetectorPlainCapacity
-open HeckeFamily HeckeRowClosure HeckeZeroSupremum CenteredExceptionalProfile
-open CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot HeckePrimeAnnular
-open CenteredMomentNaturalRowSource CenteredMomentSecondHeightFamily
-open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSlotProfile
-local notation "O"=>HeckeFamily.O
+open HeckeFamily
+open HeckePrimeAnnular
+open CenteredMomentDetectorDictionary
 variable {Δ:ℝ}{D:Parameters.HighData Δ}
 
 theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character)
-    (P:ℝ)(hP:0<P)(ζ:ℂ)(I:Ideal O):
+    (P:ℝ)(hP:0<P)(ζ:ℂ)(I:Ideal HeckeFamily.O):
     physicalSlotCoefficient η₀ S.W P ζ I=
       idealCoeff η₀.inverse I*annularWeight (fun x=>conj (S.W x)) P (1-ζ.re) (-ζ.im) I := by
   by_cases hI:I=0
@@ -31,9 +29,9 @@ theorem physical_annular_all (S:ProbeFinalAssembly.SourceData D)(η₀:Character
     simp [physicalSlotCoefficient,annularWeight,hw]
   · exact physicalSlotCoefficient_annular η₀ S.W P ζ I hI hP
 
-variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance:Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 include hH
 
 end SevenEighths.CenteredMomentDetectorPlainCapacity

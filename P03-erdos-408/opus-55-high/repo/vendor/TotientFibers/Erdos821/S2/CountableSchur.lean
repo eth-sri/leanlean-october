@@ -8,7 +8,6 @@ public import Mathlib.Algebra.Order.Star.Real
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -31,11 +30,11 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
   have hU : 0 ≤ U := Finset.sum_nonneg (fun a _ => mul_nonneg (hm a) (sq_nonneg _))
   have hV : 0 ≤ V := Finset.sum_nonneg (fun b _ => mul_nonneg (hm b) (sq_nonneg _))
   have hF (u : α × α) : 0 ≤ F u :=
-    mul_nonneg (div_nonneg (mul_nonneg (mul_nonneg (hm u.1) (hK u.1 u.2))
-      (hw u.2).le) (hw u.1).le) (sq_nonneg _)
+    mul_nonneg (div_nonneg (mul_nonneg (mul_nonneg (hm u.1) (by positivity))
+      (by grind)) (by grind)) (sq_nonneg _)
   have hG (u : α × α) : 0 ≤ G u :=
-    mul_nonneg (div_nonneg (mul_nonneg (mul_nonneg (hm u.1) (hK u.1 u.2))
-      (hw u.1).le) (hw u.2).le) (sq_nonneg _)
+    mul_nonneg (div_nonneg (mul_nonneg (mul_nonneg (hm u.1) (by positivity))
+      (by grind)) (by grind)) (sq_nonneg _)
   have hsq (u : α × α) : rho u ^ 2 = F u * G u := by
     dsimp only [rho, F, G]
     field_simp [ne_of_gt (hw u.1), ne_of_gt (hw u.2)]
@@ -48,19 +47,15 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
         apply Finset.sum_le_sum
         intro a _
         have ha : 0 ≤ mass a * ‖f a‖ ^ 2 / w a :=
-          div_nonneg (mul_nonneg (hm a) (sq_nonneg _)) (hw a).le
+          div_nonneg (mul_nonneg (hm a) (sq_nonneg _)) (by grind)
         calc
           _ = (mass a * ‖f a‖ ^ 2 / w a) * (∑ b ∈ t, ‖K a b‖ * w b) := by
             rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro b _
-            dsimp only [F]
-            simp only [div_eq_mul_inv]
-            ring
+            grind
           _ ≤ (mass a * ‖f a‖ ^ 2 / w a) * (R * w a) :=
             mul_le_mul_of_nonneg_left (hrowT a) ha
           _ = R * (mass a * ‖f a‖ ^ 2) := by
-            field_simp [ne_of_gt (hw a)]
+            grind
       _ = R * U := (Finset.mul_sum s (fun a => mass a * ‖f a‖ ^ 2) R).symm
   have hGs : (∑ u ∈ S, G u) ≤ C * V := by
     calc
@@ -69,19 +64,15 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
       _ ≤ ∑ b ∈ t, C * (mass b * ‖g b‖ ^ 2) := by
         apply Finset.sum_le_sum
         intro b _
-        have hb : 0 ≤ ‖g b‖ ^ 2 / w b := div_nonneg (sq_nonneg _) (hw b).le
+        have hb : 0 ≤ ‖g b‖ ^ 2 / w b := div_nonneg (sq_nonneg _) (by grind)
         calc
           _ = (‖g b‖ ^ 2 / w b) * (∑ a ∈ s, mass a * ‖K a b‖ * w a) := by
             rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro a _
-            dsimp only [G]
-            simp only [div_eq_mul_inv]
-            ring
+            grind
           _ ≤ (‖g b‖ ^ 2 / w b) * (C * mass b * w b) :=
             mul_le_mul_of_nonneg_left (hcolS b) hb
           _ = C * (mass b * ‖g b‖ ^ 2) := by
-            field_simp [ne_of_gt (hw b)]
+            grind
       _ = C * V := (Finset.mul_sum t (fun b => mass b * ‖g b‖ ^ 2) C).symm
   have hcs : (∑ u ∈ S, rho u) ^ 2 ≤ (∑ u ∈ S, F u) * (∑ u ∈ S, G u) :=
     Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul S
@@ -99,13 +90,11 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
       _ ≤ ∑ a ∈ s, ‖∑ b ∈ t, (mass a : ℂ) * star (f a) * K a b * g b‖ := norm_sum_le _ _
       _ ≤ ∑ a ∈ s, ∑ b ∈ t, ‖(mass a : ℂ) * star (f a) * K a b * g b‖ :=
         Finset.sum_le_sum (fun a _ => norm_sum_le _ _)
-      _ = ∑ a ∈ s, ∑ b ∈ t, rho (a, b) := by simp only [hnormEntry]
+      _ = ∑ a ∈ s, ∑ b ∈ t, rho (a, b) := by simp_all
       _ = ∑ u ∈ S, rho u := (Finset.sum_product s t rho).symm
-  have hpos : 0 ≤ ∑ u ∈ S, rho u := Finset.sum_nonneg (fun u _ =>
-    mul_nonneg (mul_nonneg (mul_nonneg (hm u.1) (hK u.1 u.2)) (norm_nonneg _)) (norm_nonneg _))
+  have hpos : 0 ≤ ∑ u ∈ S, rho u := Finset.sum_nonneg (by grind)
   let B : ℝ := Real.sqrt (R * C) * Real.sqrt U * Real.sqrt V
-  have hB : 0 ≤ B := mul_nonneg (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
-    (Real.sqrt_nonneg _)
+  have hB : 0 ≤ B := by positivity
   have hBsq : B ^ 2 = (R * U) * (C * V) := by
     dsimp only [B]
     simp only [mul_pow, Real.sq_sqrt (mul_nonneg hR hC), Real.sq_sqrt hU, Real.sq_sqrt hV]
@@ -116,9 +105,9 @@ theorem finite_support_schur {α : Type*} (mass w : α → ℝ) (K : α → α �
       _ ≤ (∑ u ∈ S, rho u) ^ 2 := (sq_le_sq₀ (norm_nonneg _) hpos).mpr hnorm
       _ ≤ (∑ u ∈ S, F u) * (∑ u ∈ S, G u) := hcs
       _ ≤ (R * U) * (C * V) := mul_le_mul hFs hGs
-        (Finset.sum_nonneg (fun u _ => hG u)) (mul_nonneg hR hU)
+        (Finset.sum_nonneg (fun u _ => hG u)) (by positivity)
       _ = B ^ 2 := hBsq.symm
-  exact (sq_le_sq₀ (norm_nonneg _) hB).mp hfinal
+  nlinarith
 
 /-- A countable Schur certificate also controls arbitrary local restrictions
 and phases that are dominated by the original absolute matrix entries. -/
@@ -130,19 +119,19 @@ theorem weightedBounds_domination {α : Type*} (mass w : α → ℝ)
   have hrow (a : α) (t : Finset α) : ∑ b ∈ t, ‖K a b‖ * w b ≤ C * w a := by
     calc
       _ ≤ ∑ b ∈ t, ‖H a b‖ * w b := Finset.sum_le_sum
-        (fun b _ => mul_le_mul_of_nonneg_right (hKH a b) (hw b).le)
+        (fun b _ => mul_le_mul_of_nonneg_right (by grind) (by grind))
       _ ≤ ∑' b, ‖H a b‖ * w b := (hH.1 a).1.sum_le_tsum t
-        (fun b _ => mul_nonneg (norm_nonneg _) (hw b).le)
+        (fun b _ => mul_nonneg (norm_nonneg _) (by grind))
       _ ≤ _ := (hH.1 a).2
   have hcol (b : α) (s : Finset α) : ∑ a ∈ s, mass a * ‖K a b‖ * w a ≤ C * mass b * w b := by
     calc
       _ ≤ ∑ a ∈ s, mass a * ‖H a b‖ * w a := Finset.sum_le_sum
         (fun a _ => mul_le_mul_of_nonneg_right
-          (mul_le_mul_of_nonneg_left (hKH a b) (hm a)) (hw a).le)
+          (mul_le_mul_of_nonneg_left (by grind) (hm a)) (by grind))
       _ ≤ ∑' a, mass a * ‖H a b‖ * w a := (hH.2 b).1.sum_le_tsum s
-        (fun a _ => mul_nonneg (mul_nonneg (hm a) (norm_nonneg _)) (hw a).le)
+        (fun a _ => mul_nonneg (mul_nonneg (hm a) (norm_nonneg _)) (by grind))
       _ ≤ _ := (hH.2 b).2
-  simpa only [Real.sqrt_mul_self hC] using hb hrow hcol
+  simp_all
 
 theorem normBound_add {α : Type*} (mass : α → ℝ) (K H : α → α → ℂ) (C D : ℝ)
     (hK : NormBound mass K C) (hH : NormBound mass H D) :

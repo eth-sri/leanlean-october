@@ -33,15 +33,14 @@ private lemma sum_powersetCard_succ_insert (s : Finset ι) (a : ι) (ha : a ∉ 
       ∑ I ∈ s.powersetCard (T + 1), ∏ i ∈ I, x i + x a * ∑ I ∈ s.powersetCard T, ∏ i ∈ I, x i := by
   rw [powersetCard_succ_insert ha, sum_union, sum_image, mul_sum]
   · refine congrArg _ (sum_congr rfl fun I hI => ?_)
-    rw [prod_insert fun h => ha ((mem_powersetCard.1 hI).1 h)]
+    grind
   · intro I hI J hJ h
     have hI' : a ∉ I := fun h => ha ((mem_powersetCard.1 hI).1 h)
     have hJ' : a ∉ J := fun h => ha ((mem_powersetCard.1 hJ).1 h)
     rw [← erase_insert hI', ← erase_insert hJ']
-    exact congrArg (·.erase a) h
+    simp_all
   · refine disjoint_left.2 fun I hI hI' => ?_
-    obtain ⟨J, -, rfl⟩ := mem_image.1 hI'
-    exact ha ((mem_powersetCard.1 hI).1 (mem_insert_self a J))
+    grind
 
 omit [DecidableEq ι] in
 /-- Summing over subsets of size `< T` is summing over the sizes `k < T` of the sum over subsets
@@ -53,8 +52,7 @@ private lemma sum_powerset_filter_card_lt (s : Finset ι) (f : Finset ι → ℝ
   refine sum_congr rfl fun k hk => ?_
   rw [powersetCard_eq_filter, filter_filter]
   refine sum_congr (filter_congr fun I hI => ?_) fun _ _ => rfl
-  have := mem_range.1 hk
-  omega
+  simp_all
 
 /-- The signed Bonferroni sandwich in terms of the elementary symmetric polynomials
 `e_k(x) = ∑_{|I| = k} ∏_{i ∈ I} x_i`: the error `(-1)^T (∏_i (1 - x_i) - ∑_{k < T} (-1)^k e_k)`
@@ -71,19 +69,18 @@ private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
     cases T with
     | zero => simp
     | succ T =>
-      have h : ∀ k, (∅ : Finset ι).powersetCard (k + 1) = ∅ := fun k =>
-        powersetCard_eq_empty.2 (by simp)
-      simp [sum_range_succ', powersetCard_zero, h]
+      have h : ∀ k, (∅ : Finset ι).powersetCard (k + 1) = ∅ := by simp
+      simp [sum_range_succ', h]
   | insert a s ha ih =>
-    have hx' : ∀ i ∈ s, 0 ≤ x i ∧ x i ≤ 1 := fun i hi => hx i (mem_insert_of_mem hi)
-    obtain ⟨hxa0, hxa1⟩ := hx a (mem_insert_self a s)
+    have hx' := fun i hi => hx i (mem_insert_of_mem hi)
+    obtain ⟨hxa0, hxa1⟩ := hx a (by simp)
     cases T with
     | zero =>
       obtain ⟨h0, h1⟩ := ih hx' 0
       simp only [powersetCard_zero, sum_singleton, prod_empty, range_zero, sum_empty, sub_zero,
         pow_zero, one_mul, prod_insert ha] at h0 h1 ⊢
-      exact ⟨mul_nonneg (sub_nonneg.2 hxa1) h0,
-        by simpa using mul_le_mul (by linarith) h1 h0 zero_le_one⟩
+      exact ⟨by positivity,
+        by nlinarith⟩
     | succ T =>
       obtain ⟨h1, h1'⟩ := ih hx' (T + 1)
       obtain ⟨h0, h0'⟩ := ih hx' T
@@ -96,7 +93,7 @@ private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
             ∑ k ∈ range T, (-1 : ℝ) ^ (k + 1) * ∑ I ∈ s.powersetCard (k + 1), ∏ i ∈ I, x i -
               x a * ∑ k ∈ range T, (-1 : ℝ) ^ k * ∑ I ∈ s.powersetCard k, ∏ i ∈ I, x i := by
           rw [mul_sum, ← sum_sub_distrib]
-          exact sum_congr rfl fun k _ => by ring
+          exact by grind
         rw [sum_range_succ', sum_range_succ' (fun k => (-1 : ℝ) ^ k * ∑ I ∈ s.powersetCard k,
           ∏ i ∈ I, x i)]
         simp only [sum_powersetCard_succ_insert s a ha, key, powersetCard_zero, sum_singleton,
@@ -112,7 +109,7 @@ private lemma signed_bonferroni (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
         rw [pow_succ]
         ring
       rw [hid]
-      exact ⟨add_nonneg h1 (mul_nonneg hxa0 h0),
+      exact ⟨by positivity,
         add_le_add h1' (mul_le_mul_of_nonneg_left h0' hxa0)⟩
 
 /-- **Bonferroni**: for `x_i ∈ [0, 1]`,
@@ -127,12 +124,12 @@ theorem abs_prod_one_sub_sub_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈
     rw [sum_powerset_filter_card_lt s (fun I => (-1 : ℝ) ^ #I * ∏ i ∈ I, x i)]
     refine sum_congr rfl fun k _ => ?_
     rw [mul_sum]
-    exact sum_congr rfl fun I hI => by rw [(mem_powersetCard.1 hI).2]
+    exact sum_congr rfl fun I hI => by simp_all
   obtain ⟨h0, h1⟩ := signed_bonferroni s x hx T
   rw [hS]
   calc _ = |(-1 : ℝ) ^ T * (∏ i ∈ s, (1 - x i) -
           ∑ k ∈ range T, (-1) ^ k * ∑ I ∈ s.powersetCard k, ∏ i ∈ I, x i)| := by
-        simp [abs_mul]
+        simp
     _ = _ := abs_of_nonneg h0
     _ ≤ _ := h1
 
@@ -143,18 +140,17 @@ private lemma pow_succ_add_mul_le_add_pow (σ y : ℝ) (hσ : 0 ≤ σ) (hy : 0 
   induction n with
   | zero => simp
   | succ n ih =>
-    have hσn : 0 ≤ σ ^ n := pow_nonneg hσ n
+    have hσn : 0 ≤ σ ^ n := by positivity
     calc σ ^ (n + 1 + 1) + ((n + 1 : ℕ) + 1) * σ ^ (n + 1) * y
         ≤ (σ + y) * (σ ^ (n + 1) + (n + 1) * σ ^ n * y) := by
           have : 0 ≤ (n + 1) * σ ^ n * y * y := by positivity
           have hexp : (σ + y) * (σ ^ (n + 1) + (n + 1) * σ ^ n * y) =
               σ ^ (n + 1 + 1) + (n + 1 + 1) * σ ^ (n + 1) * y + (n + 1) * σ ^ n * y * y := by
             ring
-          push_cast
-          linarith
+          simp_all
       _ ≤ (σ + y) * (σ + y) ^ (n + 1) :=
-          mul_le_mul_of_nonneg_left ih (add_nonneg hσ hy)
-      _ = (σ + y) ^ (n + 1 + 1) := (pow_succ' _ _).symm
+          mul_le_mul_of_nonneg_left ih (by positivity)
+      _ = (σ + y) ^ (n + 1 + 1) := by ring
 
 /-- The elementary symmetric polynomial is at most `(∑ x_i)^T / T!` for `x_i ≥ 0`. -/
 theorem sum_powersetCard_prod_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i ∈ s, 0 ≤ x i) (T : ℕ) :
@@ -166,12 +162,12 @@ theorem sum_powersetCard_prod_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i �
     | succ T =>
       simp [powersetCard_eq_empty.2 (show #(∅ : Finset ι) < T + 1 by simp)]
   | insert a s ha ih =>
-    have hx' : ∀ i ∈ s, 0 ≤ x i := fun i hi => hx i (mem_insert_of_mem hi)
-    have hxa : 0 ≤ x a := hx a (mem_insert_self a s)
+    have hx' := fun i hi => hx i (mem_insert_of_mem hi)
+    have hxa := hx a (mem_insert_self a s)
     have hσ : 0 ≤ ∑ i ∈ s, x i := sum_nonneg hx'
     rw [sum_insert ha, add_comm]
     cases T with
-    | zero => simp [powersetCard_zero]
+    | zero => simp
     | succ T =>
       rw [sum_powersetCard_succ_insert s a ha]
       have h1 := (le_div_iff₀ (by positivity : (0 : ℝ) < (T + 1).factorial)).1 (ih hx' (T + 1))
@@ -187,8 +183,7 @@ theorem sum_powersetCard_prod_le (s : Finset ι) (x : ι → ℝ) (hx : ∀ i �
       rw [le_div_iff₀ (by positivity)]
       calc (e1 + x a * e0) * ((T + 1).factorial : ℝ)
           = e1 * (T + 1).factorial + x a * (T + 1) * (e0 * T.factorial) := by
-            rw [hf]
-            ring
+            grind
         _ ≤ σ ^ (T + 1) + x a * (T + 1) * σ ^ T :=
             add_le_add h1 (mul_le_mul_of_nonneg_left h0 hy)
         _ = σ ^ (T + 1) + (T + 1) * σ ^ T * x a := by ring

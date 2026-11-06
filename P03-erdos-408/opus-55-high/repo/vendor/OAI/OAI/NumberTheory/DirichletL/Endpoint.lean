@@ -37,14 +37,14 @@ def balancedExponent (δ y : ℝ) : ℝ :=
 theorem denominator_bounds {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
     7 / 9 ≤ denominator y ∧ denominator y ≤ 3 := by
   dsimp [denominator]
-  constructor <;> linarith
+  grind
 
 theorem primeWeight_bounds {y : ℝ} (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
     7 / 9 ≤ primeWeight y ∧ primeWeight y ≤ 2 := by
   have hs := sq_nonneg y
   have ht := mul_nonneg hy0 (sub_nonneg.mpr hy1)
   dsimp [primeWeight]
-  constructor <;> nlinarith
+  grind
 
 theorem balanceDenominator_bounds {δ y : ℝ}
     (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 5 / 6) (hy0 : 0 ≤ y) (hy1 : y ≤ 1 / 2) :
@@ -57,7 +57,7 @@ theorem balanceDenominator_bounds {δ y : ℝ}
   have hu1 := mul_le_mul_of_nonneg_left hd1 ha
   have hu2 := mul_le_mul_of_nonneg_left (le_trans hp1 (by norm_num : (2 : ℝ) ≤ 3)) hδ0
   dsimp [balanceDenominator]
-  constructor <;> nlinarith
+  grind
 
 theorem endpoint_identity (δ y : ℝ) (hJ : balanceDenominator δ y ≠ 0) :
     10368 * certificateWeight y * balanceDenominator δ y * (-balancedExponent δ y) =
@@ -101,7 +101,7 @@ theorem balanced_endpoint_margin {δ y : ℝ}
     have hp := mul_nonpos_of_nonneg_of_nonpos (le_of_lt hJpos) hn'
     nlinarith only [hcancel, hp]
   have hup := mul_le_mul_of_nonneg_right hJhi (le_of_lt hEpos)
-  nlinarith only [hcancel, hup]
+  linarith
 
 end
 

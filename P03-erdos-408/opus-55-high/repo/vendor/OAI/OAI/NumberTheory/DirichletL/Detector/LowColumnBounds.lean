@@ -11,8 +11,7 @@ open scoped Classical
 open CompletedGauss
 namespace SevenEighths.ProbePhysical
 open CanonicalQuadraticSieve RayFourExpansion
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def lowGaussColumns (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) :
     Finset {I : Id // Supported I} :=
@@ -25,7 +24,7 @@ lemma lowGaussColumns_mem (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ
   simp only [lowGaussColumns,Set.Finite.mem_toFinset,Set.mem_preimage,Function.mem_support]
 
 lemma lowRayAmplitude_source_columns (C : CalibrationData) (W1 : ℝ→ℂ)
-    (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (m : O) :
+    (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 0<Y) (σ : RayRing) (v : ℝ) (m : ActualEisensteinCubic.O) :
     lowRayAmplitude C W1 Y σ m v=
       CenteredMomentGaussEnergy.gaussPolynomial (lowGaussColumns W1 hW1 Y hY)
         (fun s=>primaryGenerator s.val)
@@ -42,18 +41,18 @@ lemma lowRayAmplitude_source_columns (C : CalibrationData) (W1 : ℝ→ℂ)
 lemma lowGaussColumns_card (W1 : ℝ→ℂ) (hW1 : HasCompactSupport W1) (Y : ℝ) (hY : 1≤Y)
     (a b : ℝ) (hW : Function.support W1⊆Set.Icc a b) :
     ((lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)).card:ℝ)≤128*max 1 b*Y := by
-  let F := lowGaussColumns W1 hW1 Y (lt_of_lt_of_le zero_lt_one hY)
-  have hH : 1≤max 1 b*Y := one_le_mul_of_one_le_of_one_le (le_max_left _ _) hY
+  let F := lowGaussColumns W1 hW1 Y (by positivity)
+  have hH : 1≤max 1 b*Y := one_le_mul_of_one_le_of_one_le (by simp) hY
   have hh := DescentFiberCost.finite_ideal_count_real (F.image Subtype.val) (max 1 b*Y) hH
     (by intro I hI;obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI;exact s.property.1)
     (by
       intro I hI
       obtain ⟨s,hs,rfl⟩ := Finset.mem_image.mp hI
       have hw := (hW ((lowGaussColumns_mem W1 hW1 Y _ s).mp hs)).2
-      have hn : (Ideal.absNorm s.val:ℝ)≤b*Y := (div_le_iff₀ (lt_of_lt_of_le zero_lt_one hY)).mp hw
-      exact hn.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) (le_trans zero_le_one hY)))
+      have hn : (Ideal.absNorm s.val:ℝ)≤b*Y := (div_le_iff₀ (by positivity)).mp hw
+      exact hn.trans (mul_le_mul_of_nonneg_right (by simp) (by positivity)))
   rw [Finset.card_image_of_injective _ Subtype.val_injective] at hh
-  simpa only [mul_assoc,F] using hh
+  linarith
 
 lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (W1 : ℝ→ℂ) (a b B : ℝ) (ha : 0<a) (hB : 0≤B)
@@ -69,7 +68,7 @@ lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
   have hqa := (hW hzero).1
   have hp : ‖(((Ideal.absNorm s.val:ℝ)/Y:ℝ):ℂ)^(-(1/2:ℂ)+(v:ℂ)*Complex.I)‖=
       ((Ideal.absNorm s.val:ℝ)/Y)^(-(1/2:ℝ)) := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos (div_pos hq hY)]
+    rw [Complex.norm_cpow_eq_rpow_re_of_pos (by positivity)]
     congr 1
     simp
   have hr : ((Ideal.absNorm s.val:ℝ)/Y)^(-(1/2:ℝ))≤a^(-(1/2:ℝ)) :=
@@ -80,7 +79,7 @@ lemma lowGaussColumn_norm_bound (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     calc
       _ ≤ Y⁻¹*B*1*a^(-(1/2:ℝ)) := by
         gcongr
-        · exact hWB _
+        · simp_all
         · exact lowArithmeticCoefficient_source_norm S hS s
       _ = _ := by ring
   · simp only [norm_zero]
@@ -108,7 +107,7 @@ theorem lowGaussColumn_l2_bound (a b B : ℝ) (ha : 0<a) (hB : 0≤B) :
     _ ≤ (128*max 1 b*Y)*(B*a^(-(1/2:ℝ))/Y)^2 :=
       mul_le_mul_of_nonneg_right (lowGaussColumns_card W1 hW1 Y hY a b hW) (sq_nonneg _)
     _ = (128*max 1 b*(B*a^(-(1/2:ℝ)))^2)/Y := by field_simp
-    _ ≤ C/Y := div_le_div_of_nonneg_right (by dsimp only [C];linarith) hy.le
+    _ ≤ C/Y := div_le_div_of_nonneg_right (by linarith) hy.le
 
 end SevenEighths.ProbePhysical
 end

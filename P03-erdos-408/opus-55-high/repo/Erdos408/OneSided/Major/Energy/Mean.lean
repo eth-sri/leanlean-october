@@ -41,7 +41,7 @@ theorem sum_mul_sum_eq {I₁ I₂ : Finset ℕ} {N₁ N₂ : ℕ} (hI₁ : ∀ m
   · rw [mem_product] at hmn
     obtain ⟨hm₁, hm₂⟩ := hI₁ _ hmn.1
     obtain ⟨hn₁, hn₂⟩ := hI₂ _ hmn.2
-    exact mem_Icc.2 ⟨Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega)),
+    exact mem_Icc.2 ⟨Nat.one_le_iff_ne_zero.2 (by positivity),
       Nat.mul_le_mul hm₂ hn₂⟩
 
 /-- At most `τ(l)` pairs `(m, n)` with `m ≥ 1` have `mn = l ≠ 0`: `m` is a divisor of `l`,
@@ -52,7 +52,7 @@ theorem card_filter_mul_eq_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 
   · rw [mem_coe, mem_filter] at hmn
     exact Nat.mem_divisors.2 ⟨⟨mn.2, hmn.2.symm⟩, hl⟩
   · rw [mem_coe, mem_filter, mem_product] at hmn hmn'
-    have h₁ : 0 < mn.1 := hI₁ _ hmn.1.1
+    have h₁ : 0 < mn.1 := by grind
     have h₂ : mn.1 * mn.2 = mn.1 * mn'.2 := by rw [hmn.2, h, hmn'.2]
     exact Prod.ext h (Nat.eq_of_mul_eq_mul_left h₁ h₂)
 
@@ -68,8 +68,8 @@ theorem norm_mulCoeff_le {I₁ I₂ : Finset ℕ} (hI₁ : ∀ m ∈ I₁, 1 ≤
         refine sum_le_sum fun mn hmn => ?_
         rw [mem_filter, mem_product] at hmn
         rw [norm_mul]
-        exact mul_le_mul (hu _ hmn.1.1) (hv _ hmn.1.2) (norm_nonneg _) hU
-    _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by rw [sum_const, nsmul_eq_mul]
+        exact mul_le_mul (by grind) (by grind) (norm_nonneg _) hU
+    _ = #{mn ∈ I₁ ×ˢ I₂ | mn.1 * mn.2 = l} * (U * V) := by simp
     _ ≤ #l.divisors * (U * V) := by
         gcongr
         exact card_filter_mul_eq_le hI₁ hl
@@ -97,10 +97,10 @@ theorem integral_norm_sum_mul_sum_sq_le {I₁ I₂ : Finset ℕ} {N₁ N₂ : �
         refine sum_le_sum fun l hl => ?_
         have hl0 : l ≠ 0 := by rw [mem_Icc] at hl; omega
         exact pow_le_pow_left₀ (norm_nonneg _)
-          (norm_mulCoeff_le (fun m hm => (hI₁ m hm).1) hU hV hu hv hl0) 2
+          (norm_mulCoeff_le (by grind) hU hV hu hv hl0) 2
     _ = U ^ 2 * V ^ 2 * ∑ l ∈ Icc 1 (N₁ * N₂), ((#l.divisors : ℕ) : ℝ) ^ 2 := by
         rw [mul_sum]
-        exact sum_congr rfl fun l _ => by ring
+        ring
     _ ≤ U ^ 2 * V ^ 2 * ((N₁ * N₂ : ℕ) * (1 + Real.log (N₁ * N₂ : ℕ)) ^ 3) := by
         gcongr
         exact sum_card_divisors_sq_le _

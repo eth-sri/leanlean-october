@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open scoped Classical SchwartzMap
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open JointLogSeparation MeasureTheory
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-open InverseMomentFirstProfileUniform InverseAmbientProfileTower
+open InverseMomentFirstProfileUniform
 theorem actual_first_moving_family_two_energies_uniform
     (U₀ : Fin 9 → 𝓢(ℝ,ℂ)) (g₁ g₂ Φ : 𝓢(ℝ,ℂ))
     (M₀ B₀ : Fin 9 → ℝ) (m₁ m₂ bcap : ℝ)
@@ -21,12 +20,12 @@ theorem actual_first_moving_family_two_energies_uniform
     (hU : ∀ i,Function.support (U₀ i) ⊆ Set.Icc (-M₀ i) (M₀ i))
     (hg₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (Aker J : ℕ) :
-    ∃ Cprofile : ℝ,0 ≤ Cprofile ∧ ∀ {ι κ : Type*} [DecidableEq ι] (p : ι → Eis) (_hp : ∀ i,p i ≠ 0)
+    ∃ Cprofile : ℝ,0 ≤ Cprofile ∧ ∀ {ι κ : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O) (_hp : ∀ i,p i ≠ 0)
     [∀ i,(Ideal.span {p i}).IsMaximal]
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
     (source : Finset κ) (F : Finset ι) (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
     (ω₁ ω₂ : ℝ → ℂ) (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ : ℝ)
-    (A₁ A₂ C R : κ → ℝ) (K L : ℝ) (_hK : 0 < K) (d h : κ → Eis) (s : Fin 9 → ℝ)
+    (A₁ A₂ C R : κ → ℝ) (K L : ℝ) (_hK : 0 < K) (d h : κ → ActualEisensteinCubic.O) (s : Fin 9 → ℝ)
     (_hpos : ∀ x∈source,0 < A₁ x ∧ 0 < A₂ x ∧ 0 < C x ∧ 0 < R x ∧ d x ≠ 0 ∧ h x ≠ 0)
     (_hs : ∀ i,0 < s i)
     (_hρ : ∀ i,|ρ i| ≤ B₀ i) (_hc₁ : 1 ≤ c₁) (_hc₂ : 1 ≤ c₂)
@@ -63,8 +62,8 @@ theorem actual_first_moving_family_two_energies_uniform
   intro ι κ _ p hp _ hg source F selector C₁ C₂ w ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂
     A₁ A₂ C R K L hK d h s hpos hs hρ hc₁ hc₂ hc₁b hc₂b hL
     hω₁ hω₂ hcut B₁ B₂ hB₁ hB₂ hleft hright
-  have hRad : 0 < K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8) := by
-    exact div_pos (mul_pos hK (hs 6))
+  have hRad : 0 < K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8) :=
+    div_pos (mul_pos hK (hs 6))
       (mul_pos (mul_pos (mul_pos (mul_pos (hs 3) (hs 4)) (sq_pos_of_pos (hs 5))) (hs 7)) (hs 8))
   obtain ⟨b₃,hb₃⟩ := hmeasure (K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) hRad
   obtain ⟨hsep,hWeighted,hMoment⟩ := hb₃ ρ c₁ c₂ θ₁ θ₂ L hρ hc₁ hc₂ hc₁b hc₂b hL
@@ -81,22 +80,22 @@ theorem actual_first_moving_family_two_energies_uniform
       Cprofile*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *
         (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
         (1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8))^Aker := by
-    apply (le_div_iff₀ (pow_pos (by linarith : 0 < 1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8)) Aker)).mpr
+    apply (le_div_iff₀ (by positivity)).mpr
     exact (mul_comm _ _).le.trans hMoment
-  exact he.trans (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hd (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)))
+  exact he.trans (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hd (by positivity))
     (by have := firstRootScale_pos s hs; positivity))
 
 theorem first_global_retained_push_uniform (ε:ℝ)(hε:0<ε):
-    ∃ K:ℝ,0<K ∧ ∀ {ι κ:Type*} [DecidableEq ι] [DecidableEq κ] (p:ι→Eis)(hp:∀i,p i≠0)
+    ∃ K:ℝ,0<K ∧ ∀ {ι κ:Type*} [DecidableEq ι] [DecidableEq κ] (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hinj:Function.Injective (fun i=>Ideal.span {p i}))
     (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
     (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (_hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+    (_hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (F:Finset ι)(outer:Finset κ)(cube:κ→CubeCoordinates ι)(common:κ→Finset ι)
-    (Ψ₁ Ψ₂:Eis→*ℂ)(m₁ m₂:Eis)(d:κ→Eis)
-    (labels:κ→Finset (Ideal Eis))(a:κ→Ideal Eis×Eis→ℂ)(Γ Y:ℝ),
+    (Ψ₁ Ψ₂:ActualEisensteinCubic.O→*ℂ)(m₁ m₂:ActualEisensteinCubic.O)(d:κ→ActualEisensteinCubic.O)
+    (labels:κ→Finset (Ideal ActualEisensteinCubic.O))(a:κ→Ideal ActualEisensteinCubic.O×ActualEisensteinCubic.O→ℂ)(Γ Y:ℝ),
     (∀u,‖Ψ₁ u‖≤1)→(∀u,‖Ψ₂ u‖≤1)→0≤Γ→0<Y→
     (∀k∈outer,∀f∈labels k,Squarefree f)→(∀k∈outer,∀f∈labels k,f≠0)→
     (∀k∈outer,∀x∈firstRetainedSource p (labels k) (cube k) Y,‖a k x‖≤Γ)→

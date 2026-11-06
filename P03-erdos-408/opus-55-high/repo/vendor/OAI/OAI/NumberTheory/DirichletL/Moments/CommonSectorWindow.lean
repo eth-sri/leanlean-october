@@ -10,25 +10,24 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondWindowSource
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonSectorWindow
 open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 open CenteredMomentCommonRadialData CenteredMomentCommonWindowColumn CenteredMomentReflectedSource
 open CenteredMomentSecondMaskedWindow CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns
 open CenteredMomentSecondScaled CenteredMomentChildAssembly CenteredMomentRowNorm
-open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors CenteredMomentSourceRow
+open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentExceptionalAmplitudePair
 open CenteredMomentExceptionalWholeWindow CenteredMomentSmooth CenteredMomentSecondWindowSource
 open RayFourExpansion CenteredMomentLogDyadic
-local notation "O" => HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
 omit [DecidableEq ι] in
-theorem actual_sector_window (s:Input ι)(η τ:Character)(χ:RayCharacter)(A:O)
-    (C:Ideal O)(hC:Supported C)(R seed L:Ideal O)(t θ X:ℝ)(V:ℝ→ℂ)(z:O)
-    (hτ:∀I:Ideal O,Supported I → IsCoprime C I → ∀v:ℝ,
+theorem actual_sector_window (s:Input ι)(η τ:Character)(χ:RayCharacter)(A:HeckeFamily.O)
+    (C:Ideal HeckeFamily.O)(hC:Supported C)(R seed L:Ideal HeckeFamily.O)(t θ X:ℝ)(V:ℝ→ℂ)(z:HeckeFamily.O)
+    (hτ:∀I:Ideal HeckeFamily.O,Supported I → IsCoprime C I → ∀v:ℝ,
       heightCoeff τ v I=heightCoeff η v I*idealRowHom A I*rayCharacter χ (primaryGenerator I)):
     let S:=finiteColumns (Fintype.piFinset s.pools)
     let β:=finiteColumnCoefficient (Fintype.piFinset s.pools)
@@ -38,7 +37,7 @@ theorem actual_sector_window (s:Input ι)(η τ:Character)(χ:RayCharacter)(A:O)
       (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
         (movingCoefficient A (sectorElement C hC.1 S)
           (fun I:sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I)) χ I*
-        columnPhase V (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ) z=
+        columnPhase V (Real.log ((Ideal.absNorm (I:Ideal HeckeFamily.O):ℝ)/X)) θ) z=
       windowColumn s C hC R seed L τ t θ X V z:=by
   dsimp only
   simp_rw [masked_divisor_coefficient η τ χ A C hC hτ]
@@ -50,11 +49,11 @@ theorem actual_sector_window (s:Input ι)(η τ:Character)(χ:RayCharacter)(A:O)
   apply congrArg (fun c=>rowPolynomial Finset.univ (sourceGenerator (columns s C hC)) c z)
   funext I
   dsimp only [coefficient]
-  split_ifs <;> simp_all ; ring
+  grind
 
 omit [DecidableEq ι] in
-theorem window_neg (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
-    (η:Character)(t θ X:ℝ)(V:ℝ→ℂ)(z:O):
+theorem window_neg (s:Input ι)(C:Ideal HeckeFamily.O)(hC:Supported C)(R seed L:Ideal HeckeFamily.O)
+    (η:Character)(t θ X:ℝ)(V:ℝ→ℂ)(z:HeckeFamily.O):
     windowColumn s C hC R seed L η t θ X V (-z)=
       windowColumn s C hC R seed L (reflected η) t θ X V z:=by
   unfold windowColumn rowPolynomial
@@ -66,9 +65,9 @@ theorem window_neg (s:Input ι)(C:Ideal O)(hC:Supported C)(R seed L:Ideal O)
   ring
 
 omit [DecidableEq ι] in
-theorem actual_reflected_sector_window (s:Input ι)(η τ:Character)(χ:RayCharacter)(A:O)
-    (C:Ideal O)(hC:Supported C)(R seed L:Ideal O)(t θ X:ℝ)(z:O)
-    (hτ:∀I:Ideal O,Supported I → IsCoprime C I → ∀v:ℝ,
+theorem actual_reflected_sector_window (s:Input ι)(η τ:Character)(χ:RayCharacter)(A:HeckeFamily.O)
+    (C:Ideal HeckeFamily.O)(hC:Supported C)(R seed L:Ideal HeckeFamily.O)(t θ X:ℝ)(z:HeckeFamily.O)
+    (hτ:∀I:Ideal HeckeFamily.O,Supported I → IsCoprime C I → ∀v:ℝ,
       heightCoeff τ v I=heightCoeff η v I*idealRowHom A I*rayCharacter χ (primaryGenerator I)):
     let S:=finiteColumns (Fintype.piFinset s.pools)
     let β:=finiteColumnCoefficient (Fintype.piFinset s.pools)
@@ -78,7 +77,7 @@ theorem actual_reflected_sector_window (s:Input ι)(η τ:Character)(χ:RayChara
       (fun I=>divisorCoefficient L (sectorElement C hC.1 S)
         (movingCoefficient A (sectorElement C hC.1 S)
           (fun I:sectorPool C hC.1 S=>β (C*I)*heightCoeff η t I)) χ I*
-        star (columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal O):ℝ)/X)) θ)) (-z)=
+        star (columnPhase logAnnulus (Real.log ((Ideal.absNorm (I:Ideal HeckeFamily.O):ℝ)/X)) θ)) (-z)=
       windowColumn s C hC R seed L (reflected τ) t (-θ) X logAnnulus z:=by
   dsimp only
   simp only [star_logAnnulus_column]

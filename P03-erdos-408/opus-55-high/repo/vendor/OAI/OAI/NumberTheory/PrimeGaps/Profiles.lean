@@ -14,9 +14,8 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
 def coordinateSum {j : ℕ} (t : Fin j → ℝ) : ℝ := ∑ i, t i
 

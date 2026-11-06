@@ -8,9 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open CanonicalRowCompletion SecondPassArithmetic
+open CanonicalRowCompletion
 
 theorem actual_cube_bin_count (b L eps:ℝ)(hb:0≤b)(hL:0≤L)(heps:0<eps) :
     ∃C:ℝ,0<C ∧ ∀X Z:ℝ,0≤X→1≤Z→X≤Z^L→
@@ -31,7 +31,7 @@ theorem actual_cube_bin_count (b L eps:ℝ)(hb:0≤b)(hL:0≤L)(heps:0<eps) :
     field_simp
   have hbnd:=hh X (Z^((L+1)/3)) hX (Real.one_le_rpow hZ (by positivity))
     (by rw [hscale];exact hXL.trans (Real.rpow_le_rpow_of_exponent_le hZ (by linarith)))
-  simpa only [hpow] using hbnd
+  simp_all
 
 end SevenEighths.InverseMoment
 

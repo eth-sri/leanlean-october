@@ -9,11 +9,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.OriginalHeightTail
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
     (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
@@ -34,7 +33,7 @@ lemma height_slab_partial_integrable (f : HeightSpace→ℂ) (H : ℝ) (hH : 0�
       simp only [Set.indicator_apply,E,Set.mem_ofPred_eq,Set.mem_Icc,abs_le]
     rw [hfun,integral_indicator measurableSet_Icc,integral_Icc_eq_integral_Ioc,
       intervalIntegral.integral_of_le (by linarith)]
-  exact heq ▸ hj
+  simp_all
 
 lemma height_slab_integral_pair (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
     (hf : IntegrableOn f {t : HeightSpace | |t.1.1|≤H} heightMeasure) :
@@ -48,7 +47,7 @@ variable {ι : Type*} [Fintype ι]
 theorem rowIntegral_central_decomposition {K : ℕ}
     (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
     (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH0 : 0≤H) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀j,(P j).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
@@ -94,7 +93,7 @@ theorem rowIntegral_central_decomposition {K : ℕ}
     have hHT : H≤3*(i+1:ℕ)*B := by
       apply hH.trans
       have hn : (3*i+2:ℕ)≤3*(i+1) := by omega
-      exact mul_le_mul_of_nonneg_right (by exact_mod_cast hn) (by linarith)
+      exact mul_le_mul_of_nonneg_right (by grind) (by linarith)
     simpa only [k,continuedRowOnLines,Complex.ofReal_div,Complex.ofReal_ofNat,Complex.ofReal_neg] using
       source_buffered_x_rectangle S hS hmax P hPS η u ψ B a e i he he' ha haTop hfirst hbin W0 W1 X Y Z hZ
         ((((1-a-6*e):ℝ):ℂ)+q.2*I) ((17/50:ℂ)+q.1*I) (by simp) (by norm_num) 2 H (by linarith) hH0 hHT

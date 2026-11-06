@@ -7,7 +7,7 @@ public import Erdos821.S34.MajorPointwise
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -32,11 +32,7 @@ theorem finite_character_kernel_integral {α β γ : Type} [Fintype α] [Fintype
   apply Finset.sum_congr rfl
   intro c _
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro E _
-  apply Finset.sum_congr rfl
-  intro D _
-  ring
+  grind
 
 theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
     (hind : PrimitiveInductionTask) (G : PrimeGroups) (a b : Fin G.size → ℕ)
@@ -63,12 +59,12 @@ theorem rational_kernel_reproduction (hfourier : RationalFourierTask)
   let vB := fun ψ : DirichletCharacter ℂ r => ψ (product G b Y : ZMod r)
   have ha (ψ : DirichletCharacter ℂ r) : ‖A ψ - vA ψ‖ ≤ ε := by
     obtain ⟨χ, hχ, hψ⟩ := hind Q r hr hrQ ψ
-    have he (D : Tuple G a) : charValue χ (product G a D) = ψ (product G a D : ZMod r) := hψ _ (hcopA D)
+    have he (D : Tuple G a) : charValue χ (product G a D) = ψ (product G a D : ZMod r) := by grind
     have ht := hrepA χ hχ
     simpa only [cellApply, A, vA, he] using ht
   have hb (ψ : DirichletCharacter ℂ r) : ‖B ψ - vB ψ‖ ≤ ε := by
     obtain ⟨χ, hχ, hψ⟩ := hind Q r hr hrQ ψ
-    have he (E : Tuple G b) : charValue χ (product G b E) = ψ (product G b E : ZMod r) := hψ _ (hcopB E)
+    have he (E : Tuple G b) : charValue χ (product G b E) = ψ (product G b E : ZMod r) := by grind
     have ht := hrepB χ hχ
     simpa only [cellApply, B, vB, he] using ht
   have hphase (D : Tuple G a) (E : Tuple G b) :

@@ -38,14 +38,14 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
   have hD := coordD_norm_le Q hQ0 eta v x heta hv
   have hK := coordK_norm_le Q hQ1 eta x w heta
   have hW : ‖W‖≤L := (coordW_norm_le Q hQ0 v w hv).trans
-    (Real.rpow_le_rpow_of_exponent_le hQ1 (by rw [hw];linarith))
+    (Real.rpow_le_rpow_of_exponent_le hQ1 (by linarith))
   have hB : ‖B‖≤Q^x.re := by
     dsimp only [B]
     rw [norm_mul,norm_star,Complex.norm_cpow_eq_rpow_re_of_pos hQ0]
     exact mul_le_of_le_one_left (Real.rpow_nonneg hQ0.le _) heta
-  have hRh : ‖R‖≤1/2 := hR.trans (rpow_le_half Q _ hQ (by rw [hx,hz];linarith))
-  have hVh : ‖V‖≤1/2 := hV.le.trans (rpow_le_half Q _ hQ (by rw [hz];norm_num))
-  have hDh : ‖D‖≤1/2 := hD.trans (rpow_le_half Q _ hQ (by rw [hx];linarith))
+  have hRh : ‖R‖≤1/2 := hR.trans (rpow_le_half Q _ hQ (by linarith))
+  have hVh : ‖V‖≤1/2 := hV.le.trans (rpow_le_half Q _ hQ (by linarith))
+  have hDh : ‖D‖≤1/2 := hD.trans (rpow_le_half Q _ hQ (by linarith))
   have hqi : ‖(Q:ℂ)⁻¹‖≤1 := by
     rw [norm_inv,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hQ0,←one_div]
     exact (div_le_one hQ0).mpr hQ1
@@ -62,46 +62,44 @@ lemma central_unramified_error_weights (Q a e : ℝ) (A eta v x w z : ℂ)
   have hLR : L^3*‖R‖≤Q^(-(51/100:ℝ)) := by
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hR (by rw [hx,hz];linarith)
+    exact weighted _ _ _ hR (by linarith)
   have hLKV : L^2*(‖K‖*‖V‖)≤Q^(-(51/100:ℝ)) := by
     have hkv : ‖K‖*‖V‖≤Q^(1-x.re-w.re-6*z.re) := by
       calc
         _ ≤ Q^(1-x.re-w.re)*Q^(-6*z.re) := mul_le_mul hK hV.le (norm_nonneg _) (Real.rpow_nonneg hQ0.le _)
-        _ = _ := by rw [←Real.rpow_add hQ0];congr 1;ring
+        _ = _ := by rw [←Real.rpow_add hQ0];ring
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hkv (by rw [hx,hw,hz];linarith)
+    exact weighted _ _ _ hkv (by linarith)
   have hLBR : L^2*(‖B‖*‖R‖)≤Q^(-(51/100:ℝ)) := by
     have hbr : ‖B‖*‖R‖≤Q^(4-5*x.re-6*z.re) := by
       calc
         _ ≤ Q^x.re*Q^(4-6*x.re-6*z.re) := mul_le_mul hB hR (norm_nonneg _) (Real.rpow_nonneg hQ0.le _)
-        _ = _ := by rw [←Real.rpow_add hQ0];congr 1;ring
+        _ = _ := by rw [←Real.rpow_add hQ0];ring
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hbr (by rw [hx,hz];linarith)
+    exact weighted _ _ _ hbr (by linarith)
   have hLBKV : L*(‖B‖*‖K‖*‖V‖)≤Q^(-(51/100:ℝ)) := by
     have hbkv : ‖B‖*‖K‖*‖V‖≤Q^(1-w.re-6*z.re) := by
       calc
         _ ≤ Q^x.re*Q^(1-x.re-w.re)*Q^(-6*z.re) := by
           gcongr
-          exact hV.le
-        _ = _ := by rw [←Real.rpow_add hQ0,←Real.rpow_add hQ0];congr 1;ring
-    exact weighted _ _ _ hbkv (by rw [hw,hz];linarith)
+          linarith
+        _ = _ := by rw [←Real.rpow_add hQ0,←Real.rpow_add hQ0];ring
+    exact weighted _ _ _ hbkv (by linarith)
   refine ⟨?_,?_,?_,?_⟩
   · change L^2*‖V‖≤_
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hV.le (by rw [hz];linarith)
+    exact weighted _ _ _ hV.le (by linarith)
   · change L^2*‖D‖≤_
     dsimp [L]
     rw [←Real.rpow_mul_natCast hQ0.le]
-    exact weighted _ _ _ hD (by rw [hx];linarith)
+    exact weighted _ _ _ hD (by linarith)
   · have hh := mul_le_mul_of_nonneg_left hE (sq_nonneg L)
-    change L^2*‖unramifiedMarked Q A eta v x w z+D‖≤_
-    nlinarith [hLR,hLKV]
+    linarith
   · have hh := mul_le_mul_of_nonneg_left hE (mul_nonneg hL0 (norm_nonneg B))
-    change L*‖B‖*‖unramifiedMarked Q A eta v x w z+D‖≤_
-    nlinarith [hLBR,hLBKV]
+    linarith
 
 end SevenEighths.ProbeEuler
 end

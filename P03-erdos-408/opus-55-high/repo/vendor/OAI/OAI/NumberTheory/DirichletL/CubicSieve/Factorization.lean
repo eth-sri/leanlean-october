@@ -9,7 +9,7 @@ public import Lean.Elab.Tactic.Omega
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 open UniqueFactorizationMonoid
 noncomputable section
 
@@ -30,9 +30,7 @@ def cubePart (x : M) : M :=
 theorem count_mod_three (k : ℕ) :
     k = (if k % 3 = 1 then 1 else 0) +
       2 * (if k % 3 = 2 then 1 else 0) + 3 * (k / 3) := by
-  have h := Nat.mod_add_div k 3
-  have hlt := Nat.mod_lt k (by decide : 0 < 3)
-  split_ifs <;> omega
+  grind
 
 omit [Subsingleton Mˣ] in
 private theorem residual_squarefree (x : M) (r : ℕ) :
@@ -40,8 +38,8 @@ private theorem residual_squarefree (x : M) (r : ℕ) :
       (fun p => (normalizedFactors x).count p % 3 = r), p) := by
   apply Finset.squarefree_prod_of_pairwise_isCoprime
   · intro p hp q hq hpq
-    have hp' : p ∈ normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1
-    have hq' : q ∈ normalizedFactors x := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hq).1
+    have hp' := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hp).1
+    have hq' := Multiset.mem_toFinset.mp (Finset.mem_filter.mp hq).1
     apply (irreducible_of_normalized_factor p hp').isRelPrime_iff_not_dvd.mpr
     intro hd
     exact hpq (normalizedFactors_eq_of_dvd x p hp' q hq' hd)

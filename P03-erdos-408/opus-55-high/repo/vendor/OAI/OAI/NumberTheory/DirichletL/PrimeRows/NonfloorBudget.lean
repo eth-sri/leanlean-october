@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
+open HeckeFamily HeckeDetectorRawFiber HeckeDetectorBatch
 open HeckeDetectorWitnessRows HeckeDetectorClassBudget
 
 lemma eventually_all_rpow_ge {P : ℝ→Prop} (hP : ∀ᶠU in atTop,P U)
@@ -44,7 +44,7 @@ lemma source_count_frequency_eventually (n : ℕ) (dmax τ h : ℝ)
   calc
     _ ≤ (2*Real.pi+3*(n:ℝ))*Z^τ := by push_cast; nlinarith [Real.pi_pos,Real.rpow_pos_of_pos hZp τ]
     _ ≤ Z^(h-τ)*Z^τ := mul_le_mul_of_nonneg_right hC (Real.rpow_nonneg hZp.le _)
-    _ = Z^h := by rw [←Real.rpow_add hZp];congr 1;ring
+    _ = Z^h := by rw [←Real.rpow_add hZp];simp
 
 lemma source_fiberConstant_bound (C K Z heightCost momentCost : ℝ)
     (hC : 0≤C) (hZ : 1≤Z) (hh : 0≤heightCost) :
@@ -107,11 +107,10 @@ lemma source_count_prefactor_eventually {Label : Type*} [Fintype Label]
     _ ≤ (Fintype.card Label:ℝ)*(L*Z^logCost)*
         ((384*max 1 K₀)*C*Z^(heightCost+momentCost))*A := by
       gcongr
-      exact hbound d hd hd'
+      grind
     _ = K*C*Z^(logCost+heightCost+momentCost) := by
       simp only [Real.rpow_add (zero_lt_one.trans_le hZ)]
-      dsimp [K]
-      ring
+      linarith
     _ ≤ _ := by gcongr;linarith
 
 end SevenEighths.ProbeHighRowFamily

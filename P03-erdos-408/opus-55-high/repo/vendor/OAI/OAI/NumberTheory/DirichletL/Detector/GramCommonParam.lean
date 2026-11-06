@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.Moments.FullCorrelation
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation
 variable {A : Type*} [CommRing A] [IsDomain A]
@@ -44,8 +43,7 @@ lemma param_condition (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : Resid
   unfold condition
   rw [scaledResidue_congruence]
   have he : C*n₂*(b*k+n₁*t)-C*n₁*(-a*k+n₂*t)-C*k=C*k*(a*n₁+b*n₂-1) := by ring
-  rw [he,hab,sub_self,mul_zero]
-  exact dvd_zero _
+  simp_all
 
 def param (C n₁ n₂ a b k : A) (hab : a*n₁+b*n₂=1) (t : ResidueQ C) : Solutions C n₁ n₂ k :=
   ⟨(leftParam C n₁ b k t,rightParam C n₂ a k t),param_condition C n₁ n₂ a b k hab t⟩
@@ -80,7 +78,7 @@ lemma param_surjective (C n₁ n₂ a b k : A) (hC : C≠0) (hab : a*n₁+b*n₂
   · change leftParam C n₁ b k (Ideal.Quotient.mk _ (a*x+b*y))=p.val.1
     rw [leftParam_mk,←hx,Ideal.Quotient.eq]
     apply Ideal.mem_span_singleton.mpr
-    have hh : C*n₁∣n₂*x-n₁*y-k := (dvd_mul_right (C*n₁) n₂).trans hd
+    have hh := (dvd_mul_right (C*n₁) n₂).trans hd
     have he : b*k+n₁*(a*x+b*y)-x= -b*(n₂*x-n₁*y-k) := by
       linear_combination x*hab
     rw [he]

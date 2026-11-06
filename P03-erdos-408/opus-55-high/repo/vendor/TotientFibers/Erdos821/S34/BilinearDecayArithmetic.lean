@@ -40,16 +40,16 @@ theorem bilinear_scale_sqrt_bound (U V r H : ℝ)
     linarith
   have heq : Real.sqrt (2 * H / U) * Real.sqrt (2 * H / V) * Real.sqrt F =
       2 * H * Real.sqrt (F / (U * V)) := by
-    rw [← Real.sqrt_mul (by positivity : 0 ≤ 2 * H / U),
-      ← Real.sqrt_mul (by positivity : 0 ≤ (2 * H / U) * (2 * H / V))]
+    rw [← Real.sqrt_mul (by positivity),
+      ← Real.sqrt_mul (by positivity)]
     have ha : (2 * H / U) * (2 * H / V) * F = (2 * H) ^ 2 * (F / (U * V)) := by ring
-    rw [ha, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq_eq_abs, abs_of_nonneg (by positivity : 0 ≤ 2 * H)]
+    rw [ha, Real.sqrt_mul (sq_nonneg _), Real.sqrt_sq_eq_abs, abs_of_nonneg (by positivity)]
   change Real.sqrt (2 * H / U) * Real.sqrt (2 * H / V) * Real.sqrt F ≤ _
   rw [heq]
   calc
     _ ≤ 2 * H * Real.sqrt (4 * bilinearDecay U V r) :=
       mul_le_mul_of_nonneg_left (Real.sqrt_le_sqrt hB) (by positivity)
-    _ = _ := by rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 4)]; norm_num; ring
+    _ = _ := by rw [Real.sqrt_mul (by positivity)]; ring
 
 theorem bilinear_decay_minor_bound (U V r Q S Y : ℝ)
     (hU : 0 < U) (hV : 0 < V) (hr : 1 ≤ r) (hQ : 0 < Q) (hS : 0 < S)
@@ -62,9 +62,9 @@ theorem bilinear_decay_minor_bound (U V r Q S Y : ℝ)
   apply add_le_add
   · exact add_le_add (add_le_add (le_refl _) (one_div_le_one_div_of_le hQ hrQ.le))
       (div_le_div_of_nonneg_right hlog hU.le)
-  · have hnum := mul_le_mul hrS hlog hlog0 (by positivity : 0 ≤ U * V / S)
+  · have hnum := mul_le_mul hrS hlog hlog0 (by positivity)
     calc
-      _ ≤ (U * V / S) * Y / (U * V) := div_le_div_of_nonneg_right hnum (mul_pos hU hV).le
+      _ ≤ (U * V / S) * Y / (U * V) := div_le_div_of_nonneg_right hnum (by positivity)
       _ = _ := by field_simp
 
 end

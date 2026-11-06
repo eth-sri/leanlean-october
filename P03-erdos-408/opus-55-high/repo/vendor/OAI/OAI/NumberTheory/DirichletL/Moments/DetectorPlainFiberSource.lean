@@ -10,20 +10,18 @@ public import OAI.NumberTheory.DirichletL.Dictionary.InverseRawRealRadial
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ComplexConjugate
+open scoped Classical SchwartzMap ComplexConjugate
 
 namespace SevenEighths.CenteredMomentDetectorPlainFiberSource
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeRowClosure
+open HeckeFamily HeckeInverseAmplification
 open CenteredMomentDetectorDictionary CenteredMomentDetectorPlainSource
-open CenteredMomentRetainedEnergy CenteredMomentSourceRow CenteredMomentSourceMass
-open CenteredMomentUncenteredTerminal CenteredMomentHeckeColumnWindow
-open CenteredMomentSourceRectangleEnergy CenteredMomentRestrictedSource CenteredMomentRestrictedEnergy
-open CenteredMomentNaturalFixedRaySource ProbeHighRowFamily HeckeDetectorRawFiber
+open CenteredMomentSourceMass
+open CenteredMomentUncenteredTerminal
+open CenteredMomentNaturalFixedRaySource HeckeDetectorRawFiber
 open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
-open CenteredMomentPrimeSlot CanonicalQuadraticSieve CenteredMomentRowNorm
-open CenteredMomentSecondHeightFamily ConcreteTraceCRT ActualEisensteinCubic
-local notation "O"=>HeckeFamily.O
-variable {M:Ideal O}{H:Subgroup (O⧸M)ˣ}{Label Slot:Type*}
+open CenteredMomentPrimeSlot
+open CenteredMomentSecondHeightFamily
+variable {M:Ideal HeckeFamily.O}{H:Subgroup (HeckeFamily.O⧸M)ˣ}{Label Slot:Type*}
 variable {U a ε tstar T allowance:ℝ}{i:ℕ}
 
 def plainProfile (F:Fiber M H Label Slot U a ε tstar T allowance i)
@@ -40,7 +38,7 @@ def fiberPool (F:Fiber M H Label Slot U a ε tstar T allowance i)(selected:Finse
     (9/4) (9/4) (U^F.m) (U^F.m)
 
 def fiberCoefficient (F:Fiber M H Label Slot U a ε tstar T allowance i)
-    (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ):Ideal O→ℂ:=
+    (η:Character)(selected:Finset Slot)(j k:ℕ)(σ t:ℝ):Ideal HeckeFamily.O→ℂ:=
   finiteColumnCoefficient (fiberPool F selected)
     (uncenteredProfileCoefficient 1 (fun _:selected=>idealCoeff η.inverse)
       (fun s:selected=>slotWindow F s.val) (fun s:selected=>U^(F.widths s.val))
@@ -59,7 +57,7 @@ theorem detector_row_eq_source (F:Fiber M H Label Slot U a ε tstar T allowance 
     (fun s:selected=>U^(F.widths s.val)) (plainProfile F j σ t) (plainProfile F k σ t)
     (1/4) (9/4) (1/4) (9/4) (U^F.m) (U^F.m) (by norm_num) (by norm_num)
     (detector_profile_support F.reverse j σ _) (detector_profile_support F.reverse k σ _)
-    (Real.rpow_pos_of_pos hU _) (Real.rpow_pos_of_pos hU _)
+    (by positivity) (by positivity)
   rw [natural_unit_mask_positive (CenteredMomentNaturalRowSource.naturalRow η u.val u.property.1)] at he
   unfold detectorPositiveRow
   rw [rowMaskElement_eq_fixed]

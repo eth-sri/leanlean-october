@@ -7,16 +7,14 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.Norm
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
-theorem extracted_norm_product (I : Ideal O) (hI : I ≠ 0) :
+theorem extracted_norm_product (I : Ideal ActualEisensteinCubic.O) (hI : I ≠ 0) :
     (Ideal.absNorm I : ℝ) = (Ideal.absNorm (firstPart I) : ℝ) *
       (Ideal.absNorm (secondPart I) : ℝ) ^ 2 * (Ideal.absNorm (cubePart I) : ℝ) ^ 3 := by
   conv_lhs => rw [cubic_factorization I hI]
-  simp only [map_mul, map_pow, Nat.cast_mul, Nat.cast_pow]
+  simp
 
 theorem sieveNorm_mono {M N M' N' : ℝ} (hM : M ≤ M') (hN : N ≤ N') :
     sieveNorm M N ≤ sieveNorm M' N' := by

@@ -7,7 +7,6 @@ public import Erdos821.S2.GhostResources
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -21,11 +20,11 @@ theorem multiset_map_sum {α β ι : Type*} (s : Finset ι) (f : ι → Multiset
   classical
   induction s using Finset.induction_on with
   | empty => simp
-  | @insert i s hi ih => simp [hi, ih, Multiset.map_add]
+  | @insert i s hi ih => simp_all
 
 theorem activePrimes_act {M : ℕ} (π : P.Permutations M) (a : P.Labels M) (g : P.Group) :
-    activePrimes (P.act π a) g = activePrimes a g := by
-  exact Equiv.sum_comp (π g) (fun i => ({a g i} : Multiset (P.Prime g)))
+    activePrimes (P.act π a) g = activePrimes a g :=
+  Equiv.sum_comp (π g) (fun i => ({a g i} : Multiset (P.Prime g)))
 
 def groupLivePrimes {M : ℕ} (s : P.MemoryState M) (g : P.BigGroup) : Multiset (P.Prime g.val) :=
   activePrimes s.2.1 g.val + pendingPrimes (s.2.2 g)

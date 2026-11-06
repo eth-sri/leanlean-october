@@ -58,9 +58,7 @@ theorem sum_exp_tail_le {B m : ℕ} {e : ℝ} (he : 0 ≤ e) :
       ∑ k ∈ range (B + 1), g k := by
     simp only [ite_mul, one_mul, zero_mul]
     rw [← sum_filter, ← sum_image (g := fun n => n - m) (f := g) fun n hn n' hn' h => by
-      rw [mem_coe, mem_filter] at hn hn'
-      simp only at h
-      omega]
+      grind]
     refine sum_le_sum_of_subset_of_nonneg (fun k hk => ?_) fun k _ _ => hg0 k
     obtain ⟨n, hn, rfl⟩ := mem_image.1 hk
     simp only [mem_filter, mem_range] at hn ⊢
@@ -107,17 +105,15 @@ theorem sum_binom_exp_req_le {B s m : ℕ} {a b e : ℝ} (P : Prop) [Decidable P
     calc (a + b) ^ s * ∑ n ∈ range (B + 1), e ^ n / n.factorial * (if m ≤ n then 1 else 0)
         ≤ 1 * (e ^ m * Real.exp e) :=
           mul_le_mul (pow_le_one₀ (add_nonneg ha hb) hab) (sum_exp_tail_le he)
-            (sum_nonneg fun n _ => mul_nonneg (by positivity) (by split_ifs <;> norm_num))
+            (sum_nonneg fun n _ => mul_nonneg (by positivity) (by positivity))
             zero_le_one
       _ = e ^ m * Real.exp e := one_mul _
   · -- the requirement only removes terms
     have h := sum_binom_exp_le (B := B) P ha hb he hab hs hP
     simp only [hP', ↓reduceIte] at h ⊢
     refine le_trans (sum_le_sum fun d _ => sum_le_sum fun n _ => ?_) h
-    refine mul_le_of_le_one_right ?_ (by split_ifs <;> norm_num)
-    split_ifs
-    · positivity
-    · exact le_rfl
+    refine mul_le_of_le_one_right ?_ (by grind)
+    positivity
 
 variable {hit : X → Prop} [DecidablePred hit] {ν : X → ℝ} {del surv : ℝ} {cre : X → ℝ}
 
@@ -140,11 +136,11 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
   have hG0 : ∀ x d n, 0 ≤ G x d n := by
     intro x d n
     simp only [hG]
-    refine mul_nonneg ?_ (by split_ifs <;> norm_num)
+    refine mul_nonneg ?_ (by positivity)
     split_ifs
     · have := hν x
       positivity
-    · exact le_rfl
+    · simp
   -- each choice is bounded by `v₀^{size(S)} ∏_x G`
   have hterm : ∀ c ∈ multBox B ×ˢ multBox B,
       ‖ghostCoef hit ν del surv cre B S c‖ * (∏ x, if m x ≤ c.2 x then (1 : ℝ) else 0) *
@@ -160,7 +156,7 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
       have hd := hc.1 x
       have hn : hit x ∨ c.2 x = 0 := by
         by_cases hx : hit x
-        · exact Or.inl hx
+        · simp_all
         · exact Or.inr (hc.2.1 x hx)
       have hhs : hitPart hit S.1 x ≤ S.1 x := by
         unfold hitPart; split_ifs <;> omega
@@ -169,11 +165,11 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
       rw [ite_eq_left (show c.1 x ≤ hitPart hit S.1 x ∧ (hit x ∨ c.2 x = 0) from ⟨hd, hn⟩)]
       obtain ⟨r, hr⟩ : ∃ r, S.1 x = r + c.1 x := ⟨S.1 x - c.1 x, by omega⟩
       rw [hr, show r + c.1 x - c.1 x + c.2 x = r + c.2 x by omega, pow_add, pow_add]
-      have hv : v₀ ≠ 0 := hv₀.ne'
+      have hv := hv₀.ne'
       simp only [div_pow, mul_pow]
       field_simp
     · rw [ghostCoef, ite_eq_right hc, norm_zero, zero_mul, zero_mul]
-      exact mul_nonneg (pow_nonneg hv₀.le _) (prod_nonneg fun x _ => hG0 x _ _)
+      exact mul_nonneg (by positivity) (prod_nonneg fun x _ => hG0 x _ _)
   -- sum over the box, factor over particles, and bound each factor
   have hfac : ∀ x, ∑ d ∈ range (B + 1), ∑ n ∈ range (B + 1), G x d n ≤
       if hit x then (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1 := by
@@ -182,7 +178,7 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
       have := mem_memStates.1 S.2
       have := le_memSize S.1 x
       unfold hitPart; split_ifs <;> omega
-    refine sum_binom_exp_req_le (hit x) (div_nonneg (abs_nonneg _) hv₀.le) hsurv
+    refine sum_binom_exp_req_le (hit x) (by positivity) hsurv
       (by have := hν x; positivity) (by linarith) hhB fun hx => ?_
     simp [hitPart, hx]
   calc ∑ c ∈ multBox B ×ˢ multBox B,
@@ -196,20 +192,17 @@ theorem ghost_row_req (hν : ∀ x, 0 ≤ ν x) (hsurv : 0 ≤ surv) {v₀ : ℝ
           (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1) :=
         mul_le_mul_of_nonneg_left (prod_le_prod₀
           (fun x _ => sum_nonneg fun d _ => sum_nonneg fun n _ => hG0 x d n)
-          (fun x _ => hfac x)) (pow_nonneg hv₀.le _)
+          (by grind)) (by positivity)
     _ = (∏ x, if hit x then (|cre x| * ν x * v₀) ^ m x else 1) *
           (Real.exp (v₀ * ∑ x with hit x, |cre x| * ν x) * v₀ ^ memSize S.1) := by
         have hsplit : ∀ x, (if hit x then
             (|cre x| * ν x * v₀) ^ m x * Real.exp (|cre x| * ν x * v₀) else 1) =
             (if hit x then (|cre x| * ν x * v₀) ^ m x else 1) *
               (if hit x then Real.exp (|cre x| * ν x * v₀) else 1) := fun x => by
-          split_ifs <;> ring
+          grind
         simp only [hsplit, prod_mul_distrib]
         rw [prod_ite (fun x => Real.exp (|cre x| * ν x * v₀)), prod_const_one, mul_one,
           ← Real.exp_sum, mul_sum]
-        have hexp : ∑ x with hit x, |cre x| * ν x * v₀ = ∑ x with hit x, v₀ * (|cre x| * ν x) :=
-          sum_congr rfl fun x _ => by ring
-        rw [hexp]
         ring
 
 end Generic
@@ -278,14 +271,13 @@ theorem count_batchPrimes_of_valid {z : ℤ × ℤ} {S : Particle x d → ℕ}
   · obtain ⟨xp, hxp, rfl⟩ := hex
     refine Or.inr ⟨xp, hxp, rfl, ?_⟩
     rw [sum_eq_single xp]
-    · rw [ite_eq_left rfl]
+    · simp
     · intro yp _ hne
       refine ite_eq_right_iff.2 fun hp => ?_
       by_cases hyp : HitsAt x d z yp
       · exact absurd (hitsAt_eq_of_prime hyp hxp hp) hne
       · exact hc.2.1 yp hyp
-    · intro h
-      exact absurd (mem_univ _) h
+    simp
   · refine Or.inl (le_of_eq (sum_eq_zero fun yp _ => ite_eq_right_iff.2 fun hp => ?_))
     by_contra hne
     exact hex ⟨yp, by_contra fun hyp => hne (hc.2.1 yp hyp), hp⟩
@@ -331,7 +323,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
     unfold presInd at hne
     rw [hkp] at hne
     by_contra h
-    exact hne (ite_eq_right (by simp [h]))
+    exact hne (ite_eq_right (by grind))
   by_cases hall : ∀ k p, π k = some p → ∃ xp, HitsAt x d z xp ∧ xp.1.1 = p
   · -- the required multiplicities on the hitting particles
     set m : Particle x d → ℕ := fun xp =>
@@ -349,7 +341,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
       by_cases hc : GhostValid (HitsAt x d z) B t.2.2.1 c
       · by_cases hW : (∏ k : Fin B, presInd (π k) (batchPrimes x d c.2)[k.1]?) = 0
         · rw [hW, mul_zero]
-          exact mul_nonneg (norm_nonneg _) (prod_nonneg fun xp _ => by split_ifs <;> norm_num)
+          exact mul_nonneg (norm_nonneg _) (prod_nonneg fun xp _ => by positivity)
         · -- every requirement holds, and the prescriptions are at most one
           have hreq : ∀ xp, m xp ≤ c.2 xp := by
             intro xp
@@ -361,7 +353,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
               · have hxy := hitsAt_eq_of_prime hxp hyp hp.symm
                 subst hxy
                 omega
-            · exact Nat.zero_le _
+            · omega
           rw [prod_eq_one fun xp _ => ite_eq_left (hreq xp), mul_one]
           exact mul_le_of_le_one_right (norm_nonneg _)
             (prod_le_one₀ (fun k _ => presInd_nonneg _ _) fun k _ => presInd_le_one _ _)
@@ -382,8 +374,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
           · intro xp _ hne
             refine ite_eq_right fun h => absurd (hitsAt_eq_of_prime h.1 hx₀ ?_) hne
             exact (Option.some_injective _ h.2).symm
-          · intro h
-            exact absurd (mem_univ _) h
+          simp
       simp only [hk]
       rw [prod_comm]
       have he0 : ∀ xp : Particle x d, 0 ≤ |cre xp| * ν xp.1.1 * v₀ := fun xp =>
@@ -414,7 +405,7 @@ theorem sum_chainGhost_pres_le {N j : ℕ} (hν : ∀ p, 0 ≤ primeWeight q x d
     refine le_trans (le_of_eq (sum_eq_zero fun c _ => ?_)) hRHS0
     by_cases hc : GhostValid (HitsAt x d z) B t.2.2.1 c
     · by_cases hW : (∏ k : Fin B, presInd (π k) (batchPrimes x d c.2)[k.1]?) = 0
-      · rw [hW, mul_zero, zero_mul]
+      · grind
       · have h₁ := hmet c hc hW p
         have h₀ : 1 ≤ (univ.filter fun k : Fin B => π k = some p).card :=
           card_pos.2 ⟨k₀, mem_filter.2 ⟨mem_univ _, hk₀⟩⟩

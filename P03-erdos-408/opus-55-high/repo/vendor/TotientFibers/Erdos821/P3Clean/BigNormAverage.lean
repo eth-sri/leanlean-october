@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Symmetry
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -48,8 +47,7 @@ theorem normBound_averageBigKernel (mass : P.BigLabels M → ℝ)
     simp only [w, T, Fintype.card_prod, Nat.cast_mul, Complex.ofReal_inv,
       Complex.ofReal_mul, Complex.ofReal_natCast, Fintype.sum_prod_type,
       averageBigKernel, bigSymmetryFactor, pow_two, Finset.mul_sum]
-  rw [he] at h
-  exact h
+  grind
 
 
 end Erdos821.P3Clean

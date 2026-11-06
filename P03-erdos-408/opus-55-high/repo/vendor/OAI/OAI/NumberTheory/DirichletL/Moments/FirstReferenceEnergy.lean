@@ -9,32 +9,31 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalZeroRadius
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstReferenceEnergy
-open HeckeFamily CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss RayFourExpansion
+open HeckeFamily ConcretePrimeRowBridge RayFourExpansion
 open CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic
 open CenteredMomentFirstReferenceSource CenteredMomentFirstReferenceBlock
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
+open CenteredMomentFirstPhysicalSource
 open CenteredMomentFirstNonexceptionalWeightSum CenteredMomentFirstNonexceptionalLocalWeightSum
-open CenteredMomentFirstSourceReduction CenteredMomentFirstInactiveRadicalMass
-open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource CenteredMomentSourceRow
-open CenteredMomentSourceMass CenteredMomentCanonicalFirst CenteredMomentFirstSectors
-open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization CenteredMomentLogDyadic
-open CenteredMomentExceptionalAmplitudePair CenteredMomentRankinRadical
-open CenteredMomentAmplificationChildInput CenteredMomentGaussEnergy CenteredMomentChildAssembly
-open CenteredMomentCommonSupport CenteredMomentMobiusRegroup CenteredMomentFirstCanonicalFamily
+open CenteredMomentFirstSourceReduction
+open CenteredMomentSecondRetainedAggregate CenteredMomentActiveSource
+open CenteredMomentSourceMass CenteredMomentCanonicalFirst
+open CenteredMomentSecondRetainedRows CenteredMomentSectorLocalization
+open CenteredMomentExceptionalAmplitudePair
+open CenteredMomentAmplificationChildInput
+open CenteredMomentMobiusRegroup
 open CenteredMomentFirstMixedAllowance CenteredMomentSecondWindowBudget CenteredMomentSecondHeightFamily
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-abbrev supported (s:Input ι)(R seed:Ideal O)(p:Labels s R seed):=
+abbrev supported (s:Input ι)(R seed:Ideal HeckeFamily.O)(p:Labels s R seed):=
   commonLabels_supported (activeSource (finiteColumns (Fintype.piFinset s.pools))
     (CenteredMomentOriginalCommonHarmonic.coefficient s R seed)) _ _ p.property
 
-def ColumnBounds (s:Input ι)(R seed:Ideal O)(Z:ℝ)(J₁ J₂:ℕ)(EL ER:Fin 4→ℝ)
+def ColumnBounds (s:Input ι)(R seed:Ideal HeckeFamily.O)(Z:ℝ)(J₁ J₂:ℕ)(EL ER:Fin 4→ℝ)
     (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))(n:Fin 4→ℤ):Prop:=
   let C:=p.val.1; let D:=p.val.2; let h:=supported s R seed p
   let F:=fixedPair s.η C D h.1 E 1 1
@@ -72,7 +71,7 @@ lemma sourceFactor_nonneg (s:Input ι)(a₁ a₂ K:ℝ)(ha₁:0<a₁)(ha₂:0<a�
 
 theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ b₂ B ξ ε:ℝ)
     (hB:0≤B)(hξ:0≤ξ)(hε:0<ε):
-    ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,∀s:Input ι,∀R seed:Ideal O,
+    ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,∀s:Input ι,∀R seed:Ideal HeckeFamily.O,
       Squarefree seed→seed≠0→(∀i,|s.hi i|≤hi i)→|s.b₁|≤b₁→|s.b₂|≤b₂→
       ∀a₁ a₂ K:ℝ,0<a₁→0<a₂→0<K→
       (∀x,s.W₁ x≠0→a₁≤x)→(∀x,s.W₂ x≠0→a₂≤x)→
@@ -98,7 +97,7 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
     have hZpos:0<Z:=zero_lt_one.trans hblock.1
     positivity
   let A:=Cb*Z^(ε/2)*sourceFactor s a₁ a₂ K*pairedBudget J₁ J₂ s.t EL ER
-  have hA:0≤A:=mul_nonneg (mul_nonneg (mul_nonneg hCb.le (Real.rpow_nonneg (by linarith [hblock.1]) _))
+  have hA:0≤A:=mul_nonneg (mul_nonneg (mul_nonneg hCb.le (Real.rpow_nonneg (by linarith) _))
     (sourceFactor_nonneg s a₁ a₂ K ha₁ ha₂ hK)) (pairedBudget_nonneg _ _ _ _ _)
   have hcap:=CenteredMomentFirstPhysicalDyadicCount.input_radius_cap hi b₁ b₂ B Z s hhi hb₁ hb₂ hblock.1.le hfixed hV
   have hpblock (p:Labels s R seed)(E:Finset (CommonIndex p.val.1 p.val.2))
@@ -132,8 +131,7 @@ theorem actual_physical_mass (W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)(hi:ι→ℝ)(b₁ 
   calc
     _≤_:=hh
     _=_:=by
-      rw [show Z^ε=Z^(ε/2)*Z^(ε/2) by rw [←Real.rpow_add (by linarith [hblock.1]:0<Z)];congr 1;ring]
-      dsimp [A]
+      rw [show Z^ε=Z^(ε/2)*Z^(ε/2) by rw [←Real.rpow_add (by linarith:0<Z)];simp]
       ring
 
 end SevenEighths.CenteredMomentFirstReferenceEnergy

@@ -8,20 +8,18 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeRow
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
+open PNT.AnnularPrimeMass
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma pool_sum_complex (C : Set Id) (S : Finset Id) (a b x : ℝ) (f : Id→ℂ) :
     (∑P∈pool C S a b x,f P.val)=∑P∈annularPrimeIdeals C a b x\S,f P := by
   apply Finset.sum_bij (fun P _=>P.val)
-  · intro P hP;exact Finset.mem_subtype.mp hP
-  · intro P hP Q hQ he;exact Subtype.ext he
-  · intro P hP
-    have hp : Prime P := ((mem_annularPrimeIdeals C a b x P).mp (Finset.mem_sdiff.mp hP).1).2.1
-    exact ⟨⟨P,hp⟩,Finset.mem_subtype.mpr hP,rfl⟩
-  · intro P hP;rfl
+  · simp_all
+  · simp
+  · simp_all
+  simp
 
 theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
     (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (_hab : a≤b) (hD : 0<D)
@@ -34,11 +32,11 @@ theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
   have hsub : annularPrimeIdeals C a b D\S⊆
       (HeckePrimeAnnular.annulusSet b D).filter (fun P=>Prime P ∧ P∈C) := by
     intro P hP
-    have hp := (mem_annularPrimeIdeals C a b D P).mp (Finset.mem_sdiff.mp hP).1
+    have hp := (mem_annularPrimeIdeals C a b D P).mp (by grind)
     apply Finset.mem_filter.mpr
     refine ⟨?_,hp.2.1,hp.1⟩
     apply ConcretePrimeRowBridge.mem_idealsUpTo.mpr
-    refine ⟨Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hp.2.1.ne_zero),?_⟩
+    refine ⟨by omega,?_⟩
     apply hp.2.2.2.trans
     apply Nat.floor_mono
     nlinarith [le_max_right (1:ℝ) b]
@@ -53,7 +51,7 @@ theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
     constructor
     · apply (mem_annularPrimeIdeals C a b D P).mpr
       refine ⟨hp.2,hp.1,?_,?_⟩
-      · apply (Nat.floor_lt (mul_nonneg hD.le ha.le)).mpr
+      · apply (Nat.floor_lt (by positivity)).mpr
         have := (lt_div_iff₀ hD).mp hy.1
         nlinarith
       · apply Nat.le_floor
@@ -63,7 +61,7 @@ theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
       have := hS P hs
       have := (lt_div_iff₀ hD).mp hy.1
       linarith
-  simp only [hw,zero_mul]
+  simp_all
 
 theorem central_phase_eq_amplitude (M : Id) [NeZero M]
     [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)

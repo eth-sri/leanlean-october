@@ -8,8 +8,7 @@ public import OAI.NumberTheory.DirichletL.ContinuationPolynomialContour
 namespace OAI
 
 noncomputable section
-open MeasureTheory Set Filter Asymptotics Complex
-open scoped Topology
+open MeasureTheory Set Filter Complex
 namespace SevenEighths.HeckeSignalShift
 open HeckeFamily HeckeSignal Continuation
 
@@ -20,7 +19,7 @@ theorem quotient_holomorphic (χ : Character) (H : ℂ → ℂ)
   intro s hs
   exact ((hH.differentiableAt ((Complex.isOpen_re_gt (7/8)).mem_nhds
     (ha.trans_le hs.1))).mul
-    (HeckeReciprocal.reciprocal_differentiableAt χ (hβ.trans_le hs.1))).differentiableWithinAt
+    (HeckeReciprocal.reciprocal_differentiableAt χ (by grind))).differentiableWithinAt
 
 theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
     (hb : ∀ s : ℂ, 7/8<s.re → ‖H s-1‖ ≤ 1/2)
@@ -37,7 +36,7 @@ theorem quotient_polynomial_bound (χ : Character) (H : ℂ → ℂ)
   rw [norm_mul]
   calc
     _ ≤ (3/2)*(C*(1+|s.im|^n)) :=
-      mul_le_mul hnorm (hR s hs.1 hs.2) (norm_nonneg _) (by norm_num)
+      mul_le_mul hnorm (by grind) (norm_nonneg _) (by norm_num)
     _ = _ := by ring
 
 theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
@@ -60,12 +59,12 @@ theorem contour_shift_left (χ : Character) (H : ℂ → ℂ)
   intro b hb' y
   rw [norm_gaussianContourIntegrand _ _ _ _ hx0]
   have hxpow : x^(b+c) ≤ x^(2+c) :=
-    Real.rpow_le_rpow_of_exponent_le hx (by linarith [hb'.2])
+    Real.rpow_le_rpow_of_exponent_le hx (by simp_all)
   have he : Real.exp ((b-5/6)^2) ≤ Real.exp ((2-5/6 : ℝ)^2) := by
     apply Real.exp_le_exp.mpr
     nlinarith [hb'.1,hb'.2]
   have hq := quotient_polynomial_bound χ H hb n ha hC hR
-    (s := (b : ℂ)+y*I) (by simpa using hb')
+    (s := (b : ℂ)+y*I) (by simp_all)
   simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_im,
     Complex.ofReal_re, mul_one, Complex.I_re, mul_zero, add_zero, zero_add] at hq
   calc

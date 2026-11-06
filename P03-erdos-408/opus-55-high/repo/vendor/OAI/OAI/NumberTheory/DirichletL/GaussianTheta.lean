@@ -9,7 +9,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical FourierTransform
+open scoped Classical
 
 namespace SevenEighths.GaussianTheta
 
@@ -31,7 +31,7 @@ theorem coordinate_norm_sq (x y : ℝ) :
     Complex.ofReal_re, Complex.ofReal_im, omega3_re, omega3_im, zero_mul, zero_add,
     add_zero, sub_zero]
   unfold RankTwoEisShift.Q
-  nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 3)]
+  grind
 
 theorem exists_coordinate (w : ℂ) : ∃ x y : ℝ, w = coordinate x y := by
   let v := (basisEquiv omega3 omega3_im_ne_zero).symm w
@@ -49,10 +49,9 @@ theorem coordinate_dual_phase (x y : ℝ) (p : ℤ × ℤ) :
   unfold RankTwoEisShift.dualPhase
   congr 1
   have hs : (Real.sqrt 3 : ℂ) ≠ 0 := by
-    exact_mod_cast (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+    exact_mod_cast (by positivity)
   push_cast
-  field_simp
-  ring
+  grind
 
 theorem gaussian_coordinate_shift (a x y : ℝ) (p : ℤ × ℤ) :
     gaussian a (eisEmbedding (ActualEisensteinCoordinates.eval p.1 p.2) +
@@ -65,9 +64,7 @@ theorem gaussian_coordinate_shift (a x y : ℝ) (p : ℤ × ℤ) :
   rw [he]
   unfold gaussian RankTwoEisShift.shifted
   rw [← Complex.ofReal_pow, coordinate_norm_sq]
-  congr 1
-  push_cast
-  ring
+  simp
 
 theorem gaussian_dual_coordinate (a : ℝ) (p : ℤ × ℤ) :
     gaussian a (eisEmbedding (dualFrequencyEquiv p)) =
@@ -75,9 +72,7 @@ theorem gaussian_dual_coordinate (a : ℝ) (p : ℤ × ℤ) :
   unfold gaussian
   rw [← Complex.ofReal_pow, dualFrequencyEquiv_norm_sq]
   unfold RankTwoPoisson.eisQ
-  congr 1
-  push_cast
-  ring
+  simp
 
 theorem shifted_prefactor (a : ℝ) (ha : 0 < a) :
     (1 / (a : ℂ) ^ (1 / 2 : ℂ)) *
@@ -117,7 +112,7 @@ theorem shifted_lattice_poisson (a : ℝ) (ha : 0 < a) (w : ℂ) :
       apply tsum_congr
       intro p
       rw [coordinate_dual_phase, gaussian_dual_coordinate]
-      exact mul_comm _ _
+      ring
 
 theorem gaussian_mul (a : ℝ) (z w : ℂ) :
     gaussian a (z * w) = gaussian (a * ‖z‖ ^ 2) w := by
@@ -128,12 +123,12 @@ theorem gaussian_mul (a : ℝ) (z w : ℂ) :
   ring
 
 theorem gaussian_summable (a : ℝ) (ha : 0 < a) :
-    Summable (fun z : O => gaussian a (eisEmbedding z)) := by
-  exact eis_gaussian_summable ha
+    Summable (fun z : O => gaussian a (eisEmbedding z)) :=
+  eis_gaussian_summable ha
 
 theorem paperE_norm (z : ℂ) : ‖paperE z‖ = 1 := by
   rw [paperE_eq_exp, Complex.norm_exp]
-  simp [Complex.mul_re, Complex.mul_im]
+  simp
 
 theorem weighted_gaussian_summable {R : Type*} [Fintype R]
     (q : O → R) (P : R → ℂ) (a : ℝ) (ha : 0 < a) :
@@ -142,7 +137,7 @@ theorem weighted_gaussian_summable {R : Type*} [Fintype R]
   have hP (r : R) : ‖P r‖ ≤ C :=
     Finset.single_le_sum (fun r _ => norm_nonneg (P r)) (Finset.mem_univ r)
   apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun z => norm_nonneg _) _
+  apply Summable.of_nonneg_of_le (by grind) _
     ((gaussian_summable a ha).norm.mul_left C)
   intro z
   rw [norm_mul]
@@ -155,7 +150,7 @@ theorem gaussian_coset_poisson (a : ℝ) (ha : 0 < a) (c : O) (hc : c ≠ 0) (r 
           gaussian (4 / (3 * (a * ‖eisEmbedding c‖ ^ 2))) (eisEmbedding h) := by
   have hc' := eisEmbedding_ne_zero hc
   have hscale : 0 < a * ‖eisEmbedding c‖ ^ 2 :=
-    mul_pos ha (sq_pos_of_pos (norm_pos_iff.mpr hc'))
+    by positivity
   have he (z : O) : eisEmbedding (r + c * z) =
       eisEmbedding c * (eisEmbedding z + eisEmbedding r / eisEmbedding c) := by
     rw [map_add, map_mul]
@@ -163,10 +158,6 @@ theorem gaussian_coset_poisson (a : ℝ) (ha : 0 < a) (c : O) (hc : c ≠ 0) (r 
     ring
   simp_rw [he, gaussian_mul]
   rw [shifted_lattice_poisson _ hscale]
-  congr 1
-  apply tsum_congr
-  intro h
-  congr 2
   ring
 
 theorem finite_gaussian_phase_sum {R : Type*} [Fintype R]
@@ -208,8 +199,8 @@ theorem periodic_gaussian_poisson (P : O ⧸ Ideal.span {c} → ℂ)
       (GaussianShiftedPartition.representative_spec c r)
       (fun z => gaussian a (eisEmbedding z))
   simp_rw [hfiber, gaussian_coset_poisson a ha c (NeZero.ne c)]
-  have hd : 0 < 4 / (3 * (a * ‖eisEmbedding c‖ ^ 2)) := by
-    exact div_pos (by norm_num) (mul_pos (by norm_num)
+  have hd : 0 < 4 / (3 * (a * ‖eisEmbedding c‖ ^ 2)) :=
+    div_pos (by norm_num) (mul_pos (by norm_num)
       (mul_pos ha (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))))))
   have h := finite_gaussian_phase_sum (4 / (3 * (a * ‖eisEmbedding c‖ ^ 2))) hd
     (fun r => eisEmbedding (GaussianShiftedPartition.representative c r) / eisEmbedding c) P
@@ -230,9 +221,7 @@ theorem primitive_gaussian_poisson (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
   simp_rw [TraceCharacter.transform_eq c χ hχ] at hp
   rw [hp]
   simp_rw [← tsum_mul_left]
-  apply tsum_congr
-  intro h
-  ring
+  grind
 
 def parameter (t : ℝ) : ℝ := 2 * t / (Real.sqrt 3 * ‖eisEmbedding c‖)
 
@@ -242,24 +231,22 @@ def theta (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (t : ℝ) : ℂ :=
 
 theorem parameter_pos (t : ℝ) (ht : 0 < t) : 0 < parameter c t := by
   unfold parameter
-  exact div_pos (mul_pos (by norm_num) ht)
-    (mul_pos (Real.sqrt_pos.mpr (by norm_num))
+  exact div_pos (by positivity)
+    (mul_pos (by positivity)
       (norm_pos_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))))
 
 theorem parameter_dual (t : ℝ) (ht : 0 < t) :
     4 / (3 * (parameter c t * ‖eisEmbedding c‖ ^ 2)) = parameter c (1 / t) := by
   have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hs : Real.sqrt 3 ≠ 0 := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+  have hs := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
   unfold parameter
-  field_simp
-  ring_nf
-  norm_num [Real.sq_sqrt]
+  grind
 
 theorem parameter_prefactor (t : ℝ) (ht : 0 < t) :
     2 / (Real.sqrt 3 * (parameter c t * ‖eisEmbedding c‖ ^ 2)) =
       1 / (‖eisEmbedding c‖ * t) := by
   have hn : ‖eisEmbedding c‖ ≠ 0 := norm_ne_zero_iff.mpr (eisEmbedding_ne_zero (NeZero.ne c))
-  have hs : Real.sqrt 3 ≠ 0 := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
+  have hs := (Real.sqrt_pos.mpr (by norm_num : (0 : ℝ) < 3)).ne'
   unfold parameter
   field_simp
 
@@ -282,14 +269,13 @@ theorem theta_inversion (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) (t : ℝ) (ht : 0 < t) :
     theta c χ (1 / t) = (TraceCharacter.normalizedGauss c χ * (t : ℂ)) * theta c χ⁻¹ t := by
   have h := theta_functional_equation c χ hχ (1 / t) (one_div_pos.mpr ht)
-  simpa only [one_div, Complex.ofReal_inv, inv_inv, div_inv_eq_mul, one_mul] using h
+  simp_all
 
 theorem theta_root_nonzero (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hχ : FiniteFourier.IsPrimitiveOnIdeals χ) : TraceCharacter.normalizedGauss c χ ≠ 0 := by
   have h := TraceCharacter.normalizedGauss_norm c χ hχ
   intro hz
-  rw [hz, norm_zero] at h
-  exact zero_ne_one h
+  simp_all
 
 end SevenEighths.GaussianTheta
 

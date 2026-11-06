@@ -8,33 +8,23 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +33,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
 open Filter MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 
 namespace CubicEisenstein
 open CubicKubota
@@ -93,7 +74,7 @@ lemma cubicSourceResidualFunction_kernel_invariant (M : globalKubotaKernel)
   have h := cubicSourceResidualFunction_automorphy
     ⟨(M:SL(2,ActualEisensteinCubic.O)),levelThree_le_levelTwo hM⟩ w
   rw [levelTwoComplexCharacter_restrict ⟨(M:SL(2,ActualEisensteinCubic.O)),hM⟩,hchar,one_mul] at h
-  exact h
+  omega
 
 def cubicSourceQuotientFunction : KernelQuotient→ℂ :=
   Quotient.lift cubicSourceResidualFunction (by
@@ -116,7 +97,7 @@ lemma cubicSourceQuotientFunction_represents :
 end CubicEisenstein
 
 namespace CubicKubota
-open CubicEisenstein ConcreteTraceCRT
+open CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CubeLegIndex (p : ActualEisensteinCubic.O) := Option (CubeResidues p)
@@ -152,7 +133,7 @@ lemma cubeLeg_intertwines (p : ActualEisensteinCubic.O) (hp : p≠0) (i : CubeLe
   | none =>
     intro h
     change 1*integralComplexMatrix (h:SL(2,ActualEisensteinCubic.O))=integralComplexMatrix (h:SL(2,ActualEisensteinCubic.O))*1
-    simp only [one_mul,mul_one]
+    simp
   | some r => exact cubeCommon_intertwines p hp r
 
 def cubeLeg (p : ActualEisensteinCubic.O) (hp : p≠0) (i : CubeLegIndex p) :
@@ -207,7 +188,7 @@ lemma cubeDifferenceQuotientFunction_projection (p : ActualEisensteinCubic.O) (h
     (w : HyperbolicSpace) :
     cubeDifferenceQuotientFunction p hp (integralOrbitProjection (cubeCommonCover p hp) w)=
       cubeSourceDifference p hp w := by
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  let : Finite (CubeResidues p) := finite_quotient_span (by positivity)
   let : Fintype (CubeResidues p) := Fintype.ofFinite _
   simp only [cubeDifferenceQuotientFunction,tsum_fintype,Fintype.sum_option,
     cubeLegCoefficient,cubeLegQuotientFunction_projection,cubeLegMatrix,one_smul,
@@ -216,7 +197,7 @@ lemma cubeDifferenceQuotientFunction_projection (p : ActualEisensteinCubic.O) (h
 
 lemma cubeDifferenceQuotientFunction_measurable (p : ActualEisensteinCubic.O) (hp : p≠0) :
     Measurable (cubeDifferenceQuotientFunction p hp) := by
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  let : Finite (CubeResidues p) := finite_quotient_span (by positivity)
   let : Fintype (CubeResidues p) := Fintype.ofFinite _
   unfold cubeDifferenceQuotientFunction
   simp only [tsum_fintype]
@@ -225,7 +206,7 @@ lemma cubeDifferenceQuotientFunction_measurable (p : ActualEisensteinCubic.O) (h
 lemma cubeDifferenceL2_representative (p : ActualEisensteinCubic.O) (hp : p≠0) :
     cubeDifferenceL2 p hp=ᵐ[integralQuotientVolume (cubeCommonCover p hp)]
       cubeDifferenceQuotientFunction p hp := by
-  let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp)
+  let : Finite (CubeResidues p) := finite_quotient_span (by positivity)
   let : Fintype (CubeResidues p) := Fintype.ofFinite _
   unfold cubeDifferenceL2 cubeDifferenceQuotientFunction
   simp only [tsum_fintype]
@@ -241,25 +222,24 @@ lemma cubeDifferenceL2_representative (p : ActualEisensteinCubic.O) (hp : p≠0)
         cubeLeg_representative p hp i] with q hq hr
       simpa only [Pi.smul_apply,smul_eq_mul,hr] using hq
   filter_upwards [eventuallyEq_sum (fun i (_ : i∈Finset.univ)=>hh i)] with q hq
-  simpa only [Finset.sum_apply] using hq
+  simp_all
 
 end CubicKubota
 end
 
 namespace CubicEisenstein
 
-open MeasureTheory
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
+open CubicKubota EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma sourceCuspLeadingCoefficient_ramified (j:Fin 3) (hj:j≠0) :
     sourceCuspLeadingCoefficient (cuspRepresentative j)=0 := by
   unfold sourceCuspLeadingCoefficient sourceCuspConstant
   rw [sourceCuspRepresentative_average]
-  simp only [ite_eq_right hj,zero_mul,zero_div]
+  simp_all
 
 theorem sourceCuspRemainder_representatives_decay (a:ℝ) (ha:0<a) :
     ∃K:ℝ,0≤K∧∀j:Fin 3,∀z:ℂ,∀v:ℝ,∀hv:0<v,a≤v→
@@ -284,8 +264,7 @@ theorem sourceCuspRemainder_representatives_decay (a:ℝ) (ha:0<a) :
   · have he:sourceCuspRemainder (cuspRepresentative 2) z v hv=
         ramifiedSourceFunction (ramifiedCuspRoot true:Eis) (upperPoint z v hv):=by
       rw [sourceCuspRemainder,sourceCuspLeadingCoefficient_ramified 2 (by decide),zero_mul,sub_zero]
-      simp [cuspRepresentative,cuspParameter,ramifiedSourceFunction,ramifiedCuspRoot,
-        Units.val_pow_eq_pow_val,ramifiedOmegaUnit_val]
+      simp [cuspRepresentative, cuspParameter, ramifiedSourceFunction, ramifiedCuspRoot, ramifiedOmegaUnit_val]
     change ‖sourceCuspRemainder (cuspRepresentative 2) z v hv‖≤_
     rw [he]
     exact (h2 v hv z hav).trans (div_le_div_of_nonneg_right (by linarith) hD)
@@ -302,7 +281,7 @@ theorem cubeSourceDifference_cubic_decay (p:Eis) (hp:Prime p) (hprimary:lambda^2
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
+open CubicKubota EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cubeCuspTriangular_norm_sq_le {M:SL(2,Eis)} {p q:Eis}
@@ -310,9 +289,7 @@ lemma cubeCuspTriangular_norm_sq_le {M:SL(2,Eis)} {p q:Eis}
     ‖cubeCuspTriangular d hp 1 1‖^2≤‖eisEmbedding p‖^3 := by
   rw [cubeCuspTriangular_norm_sq d hp,←Real.rpow_natCast ‖eisEmbedding p‖ 3]
   apply Real.rpow_le_rpow_of_exponent_le (cubePrime_norm_ge_one p hp)
-  norm_num only [Nat.cast_ofNat]
-  have hj:0≤(d.exponent.val:ℝ):=Nat.cast_nonneg _
-  linarith
+  simp
 
 lemma cubeReducedRemainder_bound_from_height {M:SL(2,Eis)} {p q:Eis}
     (d:CubeCuspData M p q) (hp:p≠0) (a K:ℝ) (ha:0<a) (hK:0≤K)
@@ -329,11 +306,11 @@ lemma cubeReducedRemainder_bound_from_height {M:SL(2,Eis)} {p q:Eis}
     calc
       _≤(a/‖eisEmbedding p‖^3)*‖eisEmbedding p‖^3:=
         mul_le_mul_of_nonneg_left hd (by positivity)
-      _=a:=div_mul_cancel₀ a (pow_ne_zero 3 hr.ne')
+      _=a:=by grind
       _≤v:=hav
   have hb:=sourceCuspRemainder_bound_all K (a/‖eisEmbedding p‖^3) hrep
     d.matrix ((cubeCuspTriangular d hp 0 0*z+cubeCuspTriangular d hp 0 1)/cubeCuspTriangular d hp 1 1)
-    (v/D) (div_pos hv hD) hlow
+    (v/D) (by positivity) hlow
   change ‖cubeReducedRemainder d hp z v hv‖≤K/(v/D)^3 at hb
   refine hb.trans ?_
   have hd3:D^3≤‖eisEmbedding p‖^9:=by
@@ -343,14 +320,14 @@ lemma cubeReducedRemainder_bound_from_height {M:SL(2,Eis)} {p q:Eis}
   calc
     K/(v/D)^3=K*D^3/v^3:=by field_simp
     _≤K*‖eisEmbedding p‖^9/v^3:=
-      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hd3 hK) (pow_nonneg hv.le 3)
+      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hd3 hK) (by positivity)
 
 theorem cubeSourceDifference_cubic_decay_from_height (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (a:ℝ) (ha:0<a) :
     ∃C:ℝ,0≤C∧∀M:SL(2,Eis),∀z:ℂ,∀v:ℝ,∀hv:0<v,a≤v→
       ‖cubeSourceDifference p hp.ne_zero (integralComplexMatrix M • upperPoint z v hv)‖≤C/v^3 := by
   have hr:0<‖eisEmbedding p‖:=norm_pos_iff.mpr (eisEmbedding_ne_zero hp.ne_zero)
-  have hr1:1≤‖eisEmbedding p‖:=cubePrime_norm_ge_one p hp.ne_zero
+  have hr1:=cubePrime_norm_ge_one p hp.ne_zero
   obtain ⟨K,hK,hrep⟩:=sourceCuspRemainder_representatives_decay
     (a/‖eisEmbedding p‖^3) (by positivity)
   refine ⟨K*(‖eisEmbedding p‖^9+(Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹),by positivity,?_⟩
@@ -368,19 +345,16 @@ theorem cubeSourceDifference_cubic_decay_from_height (p:Eis) (hp:Prime p)
   have hrest:‖(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*sourceCuspRemainder M z v hv‖≤
       (Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹*(K/v^3):=by
     rw [norm_mul,norm_inv,Complex.norm_natCast]
-    exact mul_le_mul_of_nonneg_left hbase (inv_nonneg.mpr (Nat.cast_nonneg _))
+    exact mul_le_mul_of_nonneg_left hbase (by positivity)
   unfold cubeSourceDifference
   rw [cubeSource_difference_eq_remainders M p hp hprimary z v hv]
   refine (norm_sub_le _ _).trans ?_
-  calc
-    _≤K*‖eisEmbedding p‖^9/v^3+(Ideal.absNorm (Ideal.span {p}):ℝ)⁻¹*(K/v^3):=
-      add_le_add hsum hrest
-    _=_:=by ring
+  grind
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
+open CubicKubota EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubeInverseLeftMatrix (q:Eis) : SL(2,Eis) :=
@@ -398,7 +372,7 @@ lemma cubeAverageMatrix_inverse_factor (p:Eis) (hp:p≠0) (q:Eis) :
   simp only [Matrix.adjugate_fin_two, Matrix.mul_apply, Fin.sum_univ_two,
     integralComplexMatrix_apply, rationalEmbedding, Matrix.SpecialLinearGroup.map_apply_coe]
   fin_cases i <;> fin_cases j <;>
-    simp [cubeInverseLeftMatrix, ModularGroup.S, map_ofNat]
+    simp [cubeInverseLeftMatrix, map_ofNat]
   ring
 
 lemma cubeAverageMatrix_inverse_cusp_factor (M:SL(2,Eis)) (p q:Eis)
@@ -417,11 +391,11 @@ lemma cubeAverageMatrix_inverse_cusp_factor (M:SL(2,Eis)) (p q:Eis)
         (integralComplexMatrix d.matrix*cubeCuspTriangular d hp.ne_zero):=by
       rw [cubeCuspTriangular_factor d hp.ne_zero]
     _=integralComplexMatrix (cubeInverseLeftMatrix q*d.matrix)*cubeCuspTriangular d hp.ne_zero:=by
-      rw [map_mul,mul_assoc]
+      grind
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota EisensteinCuspModThree
+open CubicKubota EisensteinCuspModThree
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem cubeSourceDifference_inverse_cubic_decay (p:Eis) (hp:Prime p)
@@ -445,7 +419,7 @@ theorem cubeSourceDifference_inverse_cubic_decay (p:Eis) (hp:Prime p)
     calc
       _≤(‖eisEmbedding p‖^3)⁻¹*‖eisEmbedding p‖^3:=
         mul_le_mul_of_nonneg_left hDle (by positivity)
-      _=1:=inv_mul_cancel₀ (pow_ne_zero 3 hr.ne')
+      _=1:=by grind
       _≤v:=hv1
   have hfactor: (cubeAverageMatrix p hp.ne_zero q)⁻¹*integralComplexMatrix M=
       integralComplexMatrix (cubeInverseLeftMatrix q*d.matrix)*T :=
@@ -453,7 +427,7 @@ theorem cubeSourceDifference_inverse_cubic_decay (p:Eis) (hp:Prime p)
   have hact: (cubeAverageMatrix p hp.ne_zero q)⁻¹ •
       (integralComplexMatrix M • upperPoint z v hv)=
       integralComplexMatrix (cubeInverseLeftMatrix q*d.matrix) •
-        upperPoint ((T 0 0*z+T 0 1)/T 1 1) (v/D) (div_pos hv hD) := by
+        upperPoint ((T 0 0*z+T 0 1)/T 1 1) (v/D) (by positivity) := by
     rw [←mul_smul,hfactor,mul_smul,complex_upper_triangular_action T hT z v hv]
   rw [hact]
   refine (hdecay (cubeInverseLeftMatrix q*d.matrix) _ _ _ hlow).trans ?_
@@ -464,13 +438,12 @@ theorem cubeSourceDifference_inverse_cubic_decay (p:Eis) (hp:Prime p)
   calc
     K/(v/D)^3=K*D^3/v^3:=by field_simp
     _≤K*‖eisEmbedding p‖^9/v^3:=
-      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hd3 hK) (pow_nonneg hv.le 3)
+      div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left hd3 hK) (by positivity)
 
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical MatrixGroups
 
 namespace CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
@@ -480,7 +453,7 @@ lemma kernelSourcePullback_pairing_inverse (M : CubicKubota.levelTwo) (F G : Ker
   calc
     _ = inner ℂ (kernelSourcePullback M (kernelSourcePullback M⁻¹ F)) (kernelSourcePullback M G) := by
       rw [kernelSourcePullback_comp,inv_mul_cancel,kernelSourcePullback_one]
-    _ = _ := LinearIsometry.inner_map_map _ _ _
+    _ = _ := by simp
 
 lemma kernelSourcePullback_integral_cusp_decay (M : CubicKubota.levelTwo)
     (f : KernelQuotient→ℂ) (C : ℝ)
@@ -554,8 +527,7 @@ theorem commonCover_source_span_vanish {H : Subgroup (SL(2,ActualEisensteinCubic
 end CubicEisenstein
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical MatrixGroups
 
 namespace CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O

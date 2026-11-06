@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationBudget
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Filter
 namespace SevenEighths.HeckeDetectorClassBudget
 open HeckeDetectorFiberPartition HeckeDetectorWitnessRows
@@ -21,7 +21,7 @@ theorem labels_card_le (cap mesh : ℝ) (hcap : cap≤1/2) (hm : 0<mesh) :
     Int.ceil_mono (div_le_div_of_nonneg_right hcap hm.le)
   have hsub : Finset.Icc (0 : ℤ) ⌈cap/mesh⌉ ⊆ Finset.Icc (0 : ℤ) ⌈(1/2 : ℝ)/mesh⌉ := by
     intro n hn
-    exact Finset.mem_Icc.mpr ⟨(Finset.mem_Icc.mp hn).1,(Finset.mem_Icc.mp hn).2.trans hceil⟩
+    exact by grind
   have h1 := Finset.card_insert_le (0 : ℝ)
     (insert cap ((Finset.Icc (0 : ℤ) ⌈cap/mesh⌉).image (fun n : ℤ => mesh*(n : ℝ))))
   have h2 := Finset.card_insert_le cap

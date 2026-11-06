@@ -45,7 +45,7 @@ theorem compensated_phase_error_bound (V W D P B q vInv : ℂ) (T : ℝ)
   have hright : ‖(B + vInv - q) * (P + D)‖ ≤ 84 * T := by
     have hc : ‖B + vInv - q‖ ≤ ‖B‖ + 2 := by
       calc
-        _ = ‖B + (vInv - q)‖ := by congr 1; ring
+        _ = ‖B + (vInv - q)‖ := by ring
         _ ≤ ‖B‖ + ‖vInv - q‖ := norm_add_le _ _
         _ ≤ _ := by linarith
     calc

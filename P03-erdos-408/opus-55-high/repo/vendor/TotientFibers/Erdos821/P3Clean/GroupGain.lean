@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Conditioning
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -22,7 +21,7 @@ theorem small_group_gain (F : FixedData) (C : ℝ) (hC : 1 ≤ C)
     (x : ℝ) (P : PrimeGroups) (hP : P.Admissible F x) (hL : 0 < L x) :
     C ^ Fintype.card P.SmallGroup ≤ (L x) ^ (F.C₀ * Real.log C) := by
   have hCp : 0 < C := zero_lt_one.trans_le hC
-  have hlog : 0 ≤ Real.log C := Real.log_nonneg hC
+  have hlog := Real.log_nonneg hC
   have hs : (Fintype.card P.SmallGroup : ℝ) ≤ F.C₀ * T x := by
     rw [smallGroup_card]
     exact hP.2.1

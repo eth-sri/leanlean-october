@@ -44,7 +44,7 @@ theorem exists_mellin_piece (M₁ : ℕ → ℝ) :
           (∫ ξ in {ξ : ℝ | Real.log x ^ Cf < |ξ|}, ‖a ξ‖) ≤ KA * Real.log x ^ (-At) := by
   obtain ⟨Cf, K, hCf, hK, hmel⟩ := Erdos821.P5Mellin.mellinCutoffTask_proof
     Erdos821.Classical.blueprint_lem_fourier_separation 1 1 2 (fun j => max (M₁ j) 0)
-    one_pos one_pos one_lt_two (fun j => le_max_right _ _)
+    one_pos one_pos one_lt_two (by simp)
   refine ⟨Cf, K, hCf, hK, fun At hAt => ?_⟩
   obtain ⟨KA, hKA, hx⟩ := hmel At hAt
   refine ⟨KA, hKA, ?_⟩
@@ -52,8 +52,8 @@ theorem exists_mellin_piece (M₁ : ℕ → ℝ) :
   intro ψ₁ hψ hψs hψd
   obtain ⟨a, hai, ha₁, harep, hat⟩ := hx ψ₁ ⟨hψ,
     fun y hy => hψs y (Function.mem_support.1 hy),
-    fun j y => (hψd j y).trans (le_trans (le_max_left _ _) (le_mul_of_one_le_right
-      (le_max_right _ _) (Real.one_le_rpow hL (by positivity))))⟩
+    fun j y => (hψd j y).trans (le_trans (by simp) (le_mul_of_one_le_right
+      (by positivity) (Real.one_le_rpow hL (by positivity))))⟩
   -- transport along `t ↦ (fun _ => t)`
   set e := (MeasurableEquiv.funUnique (Fin 1) ℝ).symm with he
   have hmp : MeasurePreserving e volume volume := (volume_preserving_funUnique (Fin 1) ℝ).symm
@@ -103,15 +103,14 @@ theorem integral_sq_le_of_le_integral_split {a b c M E₁ E₂ R : ℝ} (hab : a
     · simp only [Function.uncurry, f, Real.norm_eq_abs]
       rw [abs_of_nonneg (mul_nonneg (hw0 _) (sq_nonneg _)), mul_comm (M ^ 2)]
       gcongr
-      · exact hw0 _
-      · exact hh0 _ _
-      · exact hhM _ _
+      · simp_all
+      · simp_all
+      simp_all
   -- pointwise Cauchy–Schwarz in `ξ`
   have hCS : ∀ τ, F τ ^ 2 ≤ c ^ 2 * W * ∫ ξ, f τ ξ := by
     intro τ
     have hM : ∀ ξ, |h ξ τ| ≤ M := fun ξ => by
-      rw [abs_of_nonneg (hh0 ξ τ)]
-      exact hhM ξ τ
+      grind
     have h₁ := OneSided.sq_integral_mul_le hw hw0
       (hh.comp (continuous_id.prodMk continuous_const)).aestronglyMeasurable hM
     calc F τ ^ 2 ≤ (c * ∫ ξ, w ξ * h ξ τ) ^ 2 := pow_le_pow_left₀ (hF0 τ) (hF τ) 2
@@ -127,9 +126,9 @@ theorem integral_sq_le_of_le_integral_split {a b c M E₁ E₂ R : ℝ} (hab : a
     simp only [f]
     rw [integral_const_mul, ← intervalIntegral.integral_of_le hab]
     by_cases hξ : R < |ξ|
-    · rw [Set.indicator_of_mem (show ξ ∈ {ξ : ℝ | R < |ξ|} from hξ)]
+    · rw [Set.indicator_of_mem (by grind)]
       nlinarith [mul_le_mul_of_nonneg_left (hE₂ ξ) (hw0 ξ), mul_nonneg hE₁0 (hw0 ξ)]
-    · rw [Set.indicator_of_notMem (show ξ ∉ {ξ : ℝ | R < |ξ|} from hξ), mul_zero, add_zero]
+    · rw [Set.indicator_of_notMem (by grind), mul_zero, add_zero]
       nlinarith [mul_le_mul_of_nonneg_left (hE₁ ξ (not_lt.1 hξ)) (hw0 ξ)]
   have hi₂ : Integrable fun ξ => E₁ * w ξ + E₂ * ({ξ : ℝ | R < |ξ|}.indicator w ξ) :=
     (hw.const_mul E₁).add ((hw.indicator hs).const_mul E₂)

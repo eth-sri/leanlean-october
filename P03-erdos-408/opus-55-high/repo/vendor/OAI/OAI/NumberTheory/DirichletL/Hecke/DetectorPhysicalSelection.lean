@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRelativePrime
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorPhysicalSelection
 open HeckeFamily HeckePrimeAmplitudeBins
 variable (M : Ideal O) [NeZero M] (H : Subgroup (O ⧸ M)ˣ)
@@ -25,11 +25,11 @@ theorem weightedMean_bounds {Slot : Type*} (slots : Finset Slot) (w g : Slot→�
     (hg : ∀ s∈slots,0≤g s ∧ g s≤δ/2) :
     0≤weightedMean slots w g ∧ weightedMean slots w g≤δ/2 := by
   constructor
-  · exact div_nonneg (Finset.sum_nonneg (fun s hs => mul_nonneg (hw s hs) (hg s hs).1)) hL.le
+  · exact div_nonneg (Finset.sum_nonneg (fun s hs => mul_nonneg (by grind) (by grind))) hL.le
   · apply (div_le_iff₀ hL).mpr
     calc
       _ ≤ ∑ s∈slots,w s*(δ/2) := Finset.sum_le_sum (fun s hs =>
-        mul_le_mul_of_nonneg_left (hg s hs).2 (hw s hs))
+        mul_le_mul_of_nonneg_left (by grind) (by grind))
       _ = _ := by rw [←Finset.sum_mul]; ring
 
 omit [NeZero M] in
@@ -49,13 +49,13 @@ theorem select_physical_product {Row Slot : Type*} (rows : Finset Row) (hne : ro
   have hg (s : Slot) (hs : s∈slots) : 0≤g s ∧ g s≤δ/2 := by
     rw [←hbins u0 hu0 s hs]
     exact amplitude_bounds _ _ _ _ (by positivity)
-  obtain ⟨hq,hqδ⟩ := weightedMean_bounds slots w g δ (fun s hs => (hw s hs).le) hL hg
+  obtain ⟨hq,hqδ⟩ := weightedMean_bounds slots w g δ (by grind) hL hg
   have hm : weightedMean slots w g*(∑ s∈slots,w s)≤∑ s∈slots,w s*g s := by
     unfold weightedMean
     rw [div_mul_cancel₀ _ hL.ne']
   obtain ⟨selected,hsub,hpositive,hlen,hspike⟩ := common_bin_selection slots w g U δ mesh binWidth
     (weightedMean slots w g) z hU hδ hmesh hbin hw hwm hg hq hqδ hz hzL hm
-  exact ⟨selected,hsub,hpositive,hlen,fun u hu => hspike _ (hbins u hu)⟩
+  grind
 
 end SevenEighths.HeckeDetectorPhysicalSelection
 

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralTargetCost
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeCentralPrimeSum
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
 open CanonicalQuadraticSieve ProbeCentralAllSlots
-local notation "O" => HeckeFamily.O
 
 theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps)
     (hc : 0<c) (hd : 0<d) (hB : 0≤B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal) :
     ∃C : ℝ,0<C ∧ ∀(u : FreeRow),u.val≠1 → ∀{ι : Type*} [Fintype ι] (η : Character) (twists : ι→Character)
       (T0 a : ℝ) (i : ℕ),2<T0 → 51/100≤a → a≤1 →
@@ -45,7 +44,7 @@ theorem actual_central_prime_sum (N : ℕ) (e eps c d B : ℝ)
     intro j l hh
     change (P j).val=(P l).val at hh
     by_contra hne
-    exact Finset.disjoint_left.mp (hdis j l hne) (P j).property (by rw [hh];exact (P l).property)
+    exact Finset.disjoint_left.mp (hdis j l hne) (P j).property (by rw [hh];simp)
   have ha' := hall S hS.prime hmax hS.bad u hu η twists T0 a i hT0 ha ha1 hbin T hs hdis hη hQ hsmall
     W Y hY hWS hW x w z hx hw hz hwi p hp hphase
   have hc' := hcost η u twists T0 a ((3*i+2:ℕ)*T0) i hT0 ha ha1 le_rfl hbin x w z hx hw hz hxi

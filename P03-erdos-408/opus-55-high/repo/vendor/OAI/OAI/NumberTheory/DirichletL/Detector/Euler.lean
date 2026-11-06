@@ -21,8 +21,7 @@ theorem unramified_marked_error (R V qInv K W D : ℂ)
       (R * ((1 - qInv) + (1 - V) * (W - D)) - K * V) /
         ((1 - R) * (1 - V)) := by
   unfold markedFactor
-  field_simp
-  ring
+  grind
 
 end SevenEighths.ProbeEuler
 end

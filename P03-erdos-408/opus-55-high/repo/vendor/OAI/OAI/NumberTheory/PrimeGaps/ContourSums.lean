@@ -10,19 +10,13 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
-open scoped Classical
 
-open scoped ContDiff
 
 noncomputable def fourierCoordinateSum (ι : Type*) [Fintype ι] : EuclideanSpace ℝ ι →L[ℝ] ℝ :=
   ∑ i, EuclideanSpace.proj i
@@ -41,7 +35,7 @@ noncomputable def fourierContour {ι : Type*} (L : ℝ) (u : EuclideanSpace ℝ 
 
 @[simp] theorem fourierContour_re {ι : Type*} (L : ℝ) (u : EuclideanSpace ℝ ι) (i : ι) :
     (fourierContour L u i).re = L⁻¹ := by
-  simp [fourierContour, Complex.div_ofReal_re]
+  simp [fourierContour]
 
 @[simp] theorem primeReciprocalPrefix_eq (y : ℕ) :
     primeReciprocalPrefix y = ∑ p∈Nat.primesLE y, (1:ℝ)/p := by

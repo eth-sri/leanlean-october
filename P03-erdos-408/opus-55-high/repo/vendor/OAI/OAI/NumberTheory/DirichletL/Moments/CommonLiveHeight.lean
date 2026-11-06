@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.Moments.CommonLiveFrozen
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonLiveHeight
 open HeckeFamily CenteredMomentCommonRadialSource CenteredMomentCommonRadialData
-open CenteredMomentCommonRadialPointwise CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
+open CenteredMomentCommonRadialPointwise CenteredMomentRadialEligibleEnergy
 open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentRestrictedSource
-open CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
+open CenteredMomentHeckeColumnWindow CenteredMomentFirstSectors
 open CenteredMomentCommonAllocationSum CanonicalQuadraticSieve
-local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _
 
@@ -23,7 +22,7 @@ open CenteredMomentCommonHeightEnvelope
 open CenteredMomentSourceLiveColumn
  theorem actual_height_envelope (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C0:ℝ,0<C0 ∧ ∀(s:Input ι),(∀i,s.lo i=lo i) → (∀i,s.hi i=hi i) →
-      ∀(r:Radial) (C:Ideal O) (hC:Supported C) (R seed L:Ideal O),seed∣C → Squarefree L →
+      ∀(r:Radial) (C:Ideal ActualEisensteinCubic.O) (hC:Supported C) (R seed L:Ideal ActualEisensteinCubic.O),seed∣C → Squarefree L →
       ∀E Z:ℝ,0≤E → 1<Z → (Ideal.absNorm C:ℝ)≤Z^B → (Ideal.absNorm L:ℝ)≤Z^B →
       ∀J:ℕ,∀(τ:Character) (v:ℝ),
       (∀b:actualAllocations s.pools C,frozenCoefficient b.val C R s.ν s.W s.P≠0 → ∀a∈(commonData (withHeight s τ v) C R b).toSource.active L,

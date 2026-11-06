@@ -9,33 +9,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,46 +30,35 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
-local notation "O" => ActualEisensteinCubic.O
 
 def residualCuspDecayRate : ℝ := Real.pi*‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹/4
 
@@ -96,7 +71,7 @@ lemma residualCuspDecayRate_pos : 0<residualCuspDecayRate := by
 end CubicEisenstein
 
 namespace ShortDraftCRT
-open scoped BigOperators Classical Matrix
+open scoped Classical Matrix
 
 section
 variable {R : Type*} [CommRing R]
@@ -104,8 +79,8 @@ variable {R : Type*} [CommRing R]
 theorem exists_frequency_lift (N p h : R) (hcop : IsCoprime N p) :
     ∃k : R, N∣k ∧ p∣k-h := by
   obtain ⟨u,v,huv⟩ := hcop
-  refine ⟨h*u*N,⟨h*u,by ring⟩,⟨-h*v,?_⟩⟩
-  linear_combination h*huv
+  refine ⟨h*u*N,by simp,⟨-h*v,?_⟩⟩
+  grind
 
 variable [IsDomain R]
 
@@ -115,12 +90,12 @@ variable {R : Type*} [CommRing R] [IsDomain R]
 
 end ShortDraftCRT
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace ShortDraftCusp
 
 section
-open ActualEisensteinCubic CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem A3_principal_global (a c0 r : Eis)
@@ -145,10 +120,7 @@ theorem A3_ramified_global (a b cprime d u : Eis)
     linear_combination hdet
   rw [symbol_reciprocity a (a-u*b) (primary_ne_zero a ha)
     (primary_ne_zero _ hA) ha hA] at h1
-  calc
-    _ = (symbol (a-u*b) a*symbol cprime a)*symbol (u*cprime-u*d) (a-u*b) := by rw [h2,one_mul]
-    _ = (symbol (a-u*b) a*symbol (u*cprime-u*d) (a-u*b))*symbol cprime a := by ring
-    _ = _ := by rw [h1]
+  grind
 
 theorem A3_ramified_global_factor (a b c0 r d u : Eis)
     (hdet : a*d-b*(u*(c0*r))=1)
@@ -179,10 +151,7 @@ theorem A3_unramified_global (a b c d : Eis)
     refine ⟨b,?_⟩
     linear_combination hdet
   rw [symbol_neg_numerator _ _ hb]
-  calc
-    symbol d (-b) = symbol d (-b)*(symbol a c*symbol d c) := by rw [hother,mul_one]
-    _ = (symbol d (-b)*symbol d c)*symbol a c := by ring
-    _ = symbol a c := by rw [hprod,one_mul]
+  grind
 
 theorem A3_unramified_global_factor (a b c0 r d : Eis)
     (hdet : a*d-b*(c0*r)=1) (hb : lambda^2∣(-b)-1)
@@ -192,7 +161,7 @@ theorem A3_unramified_global_factor (a b c0 r d : Eis)
 
 end
 
-open ActualEisensteinCubic CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem A3_ramified_fixed_factor_congr (M c0 u a a0 b b0 : Eis)
@@ -208,7 +177,7 @@ theorem A3_ramified_fixed_factor_congr (M c0 u a a0 b b0 : Eis)
     apply symbol_denominator_congr _ _ _ hA hA0 (h9M.trans hdiff)
     exact neg_dvd.mpr (huM.trans hdiff)
   have hsecond := symbol_denominator_congr c0 a a0 ha ha0 (h9M.trans hma) (hcM.trans hma)
-  rw [hfirst,hsecond]
+  simp_all
 
 theorem A3_unramified_fixed_factor_congr (M c0 a a0 : Eis)
     (hcM : c0∣M) (hma : M∣a-a0) : symbol a c0=symbol a0 c0 :=
@@ -220,7 +189,7 @@ theorem norm_embedded_cubic_symbol (x a : Eis)
   have hcube : ConcreteTraceCRT.eisEmbedding (symbol x a)^3=1 := by
     rw [←map_pow,symbol_cube_of_isCoprime x a ha hcop,map_one]
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (3:ℕ)≠0)).mp
-  simpa only [norm_pow,norm_one] using congrArg norm hcube
+  simpa using congrArg norm hcube
 
 theorem norm_A3_ramified_fixed_factor (a b c0 r d u : Eis)
     (hdet : a*d-b*(u*(c0*r))=1)
@@ -234,20 +203,20 @@ theorem norm_A3_ramified_fixed_factor (a b c0 r d u : Eis)
     apply norm_embedded_cubic_symbol _ _ ha
     refine ⟨-b*u*r,d,?_⟩
     linear_combination hdet
-  rw [map_mul,norm_mul,hfirst,hsecond,one_mul]
+  simp_all
 
 theorem norm_A3_unramified_fixed_factor (a b c0 r d : Eis)
     (hdet : a*d-b*(c0*r)=1) (hc : lambda^2∣c0-1) :
     ‖ConcreteTraceCRT.eisEmbedding (symbol a c0)‖=1 := by
   apply norm_embedded_cubic_symbol _ _ hc
   refine ⟨d,-b*r,?_⟩
-  linear_combination hdet
+  grind
 
 end ShortDraftCusp
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CubicEisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -280,7 +249,7 @@ theorem unramifiedCubicGaussSeries_summable_norm (s:ℂ) (hs:2<s.re) (h:Eis):
       cubicUnitGaussSum h (primaryGenerator I.val)‖):=by
   have hs':1<(s-1).re:=by simp only [Complex.sub_re,Complex.one_re];linarith
   apply ((unramifiedNormWeight_summable_norm (s-1) hs').subtype
-    (fun I:Ideal Eis=>primaryGenerator I≠0)).of_nonneg_of_le (fun _=>norm_nonneg _)
+    (fun I:Ideal Eis=>primaryGenerator I≠0)).of_nonneg_of_le (by grind)
   intro I
   dsimp only [Function.comp_def]
   simp only [unramifiedNormWeight_shift,norm_mul,Complex.norm_natCast,
@@ -325,8 +294,7 @@ lemma gaussPrimeFactorMap_bijective (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-
     subst m
     have hIJ:I=J:=Subtype.ext (Subtype.ext
       (mul_left_cancel₀ (pow_ne_zero n hP.ne_zero) hh))
-    subst J
-    rfl
+    simp_all
   · intro I
     obtain ⟨J,hJ,hnot⟩:=(FiniteMultiplicity.of_prime_left hP
       (primaryGenerator_ne_zero_ideal I.val I.2)).exists_eq_pow_mul_and_not_dvd
@@ -349,11 +317,11 @@ lemma primeDeleted_generator_coprime (p:Eis) (hp:Prime p) (I:PrimeDeletedIdeal p
   apply I.2
   rw [Ideal.dvd_iff_le,←(primaryGenerator_spec I.val.val I.val.2).1,
     Ideal.span_singleton_le_span_singleton]
-  exact hd
+  omega
 
 lemma primary_pow_congruence (p:Eis) (hprimary:lambda^2∣p-1) (n:ℕ):
     lambda^2∣p^n-1:=by
-  simpa only [one_pow] using hprimary.trans (sub_dvd_pow_sub_pow p 1 n)
+  simpa using hprimary.trans (sub_dvd_pow_sub_pow p 1 n)
 
 lemma gaussPrimeFactor_term (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     (s:ℂ) (h:Eis) (n:ℕ) (I:PrimeDeletedIdeal p):
@@ -371,8 +339,7 @@ lemma gaussPrimeFactor_term (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
   have he:((Ideal.absNorm (Ideal.span {p})^n:ℕ):ℂ)^(-s)=
       ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^n:=by
     rw [Nat.cast_pow,←Complex.natCast_cpow_natCast_mul,Complex.cpow_nat_mul]
-  rw [he]
-  ring
+  grind
 
 theorem unramifiedCubicGaussSeries_prime_reindex (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (s:ℂ) (hs:2<s.re) (h:Eis):

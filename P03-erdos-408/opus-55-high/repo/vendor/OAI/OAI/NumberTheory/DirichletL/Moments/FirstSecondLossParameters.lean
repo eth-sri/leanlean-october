@@ -9,7 +9,6 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentFirstSecondLossParameters
-open CenteredMomentFirstSecondCapacityLedger
 
 def depth (Mcap σ:ℝ):ℕ:=⌈2*Mcap/σ⌉₊+1
 

@@ -34,7 +34,7 @@ theorem inv_log_eq_o_one : (fun x ↦ 1 / log x) =o[atTop] (fun _ ↦ (1:ℝ)) :
 end Real
 
 section Issue1584
-open MeasureTheory Set Filter Topology
+open MeasureTheory Set Filter
 
 /-- The integrand `log v * exp (-v)` is integrable on `Ioi 0`. -/
 private lemma integrableOn_log_mul_exp_neg :
@@ -50,13 +50,13 @@ private lemma integrableOn_log_mul_exp_neg :
       exact (Real.measurable_log.mul (Real.measurable_exp.comp measurable_neg))
     · filter_upwards [self_mem_ae_restrict measurableSet_Ioc] with v hv
       rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
-      have h1 : |Real.exp (-v)| = Real.exp (-v) := abs_of_pos (Real.exp_pos _)
-      have h2 : Real.exp (-v) ≤ 1 := Real.exp_le_one_iff.mpr (by linarith [hv.1])
+      have h1 : |Real.exp (-v)| = Real.exp (-v) := by simp
+      have h2 : Real.exp (-v) ≤ 1 := Real.exp_le_one_iff.mpr (by grind)
       rw [h1]
-      nlinarith [abs_nonneg (Real.log v), Real.exp_pos (-v)]
+      nlinarith [abs_nonneg (Real.log v)]
   · -- On `Ioi 1`: dominate by `2 * exp (-v/2)`, integrable.
-    have hexp : IntegrableOn (fun v : ℝ => (2 : ℝ) * Real.exp ((-1/2) * v)) (Ioi 1) volume := by
-      exact (integrableOn_exp_mul_Ioi (by norm_num : (-1/2 : ℝ) < 0) 1).const_mul 2
+    have hexp : IntegrableOn (fun v : ℝ => (2 : ℝ) * Real.exp ((-1/2) * v)) (Ioi 1) volume :=
+      (integrableOn_exp_mul_Ioi (by linarith) 1).const_mul 2
     apply Integrable.mono' hexp
     · apply (Measurable.aestronglyMeasurable ?_)
       exact (Real.measurable_log.mul (Real.measurable_exp.comp measurable_neg))
@@ -64,24 +64,23 @@ private lemma integrableOn_log_mul_exp_neg :
       have hv1 : (1 : ℝ) ≤ v := le_of_lt hv
       have hvpos : (0 : ℝ) < v := by linarith
       rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
-      have hlogabs : |Real.log v| = Real.log v :=
+      have hlogabs :=
         abs_of_nonneg (Real.log_nonneg hv1)
-      have hexpabs : |Real.exp (-v)| = Real.exp (-v) := abs_of_pos (Real.exp_pos _)
+      have hexpabs : |Real.exp (-v)| = Real.exp (-v) := by simp
       rw [hlogabs, hexpabs]
       -- `log v ≤ v`
       have hlogv : Real.log v ≤ v := (Real.log_le_sub_one_of_pos hvpos).trans (by linarith)
       -- `v ≤ 2 * exp (v/2)`
       have hvexp : v ≤ 2 * Real.exp (v/2) := by
         have := Real.add_one_le_exp (v/2)
-        nlinarith [Real.exp_pos (v/2)]
+        nlinarith
       -- combine: log v * exp(-v) ≤ v * exp(-v) ≤ 2 exp(v/2) exp(-v) = 2 exp(-v/2)
       have hstep : Real.log v * Real.exp (-v) ≤ 2 * Real.exp (v/2) * Real.exp (-v) := by
-        apply mul_le_mul_of_nonneg_right (hlogv.trans hvexp) (le_of_lt (Real.exp_pos _))
+        apply mul_le_mul_of_nonneg_right (hlogv.trans hvexp) (by positivity)
       have heq : 2 * Real.exp (v/2) * Real.exp (-v) = 2 * Real.exp ((-1/2) * v) := by
         rw [mul_assoc, ← Real.exp_add]
         ring_nf
-      rw [heq] at hstep
-      exact hstep
+      linarith
 
 /-- Helper: `∫_0^∞ log t · e^{-t} dt = Γ'(1)` (real). -/
 private lemma integral_log_mul_exp_neg_eq_deriv_Gamma :
@@ -159,11 +158,11 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
     simp only [Set.mem_image, mem_Ioi]
     constructor
     · rintro ⟨x, hx, rfl⟩
-      have : 0 < Real.log x := Real.log_pos hx
+      have  := Real.log_pos hx
       positivity
     · intro hy
       refine ⟨Real.exp (y / (s - 1)), ?_, ?_⟩
-      · exact Real.one_lt_exp_iff.mpr (div_pos hy hs0)
+      · simp_all
       · rw [hf_def]
         simp only [Real.log_exp]
         field_simp
@@ -172,11 +171,11 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
     simp only [Set.mem_image, mem_Ici]
     constructor
     · rintro ⟨x, hx, rfl⟩
-      have : 0 ≤ Real.log x := Real.log_nonneg hx
-      rw [hf_def]; positivity
+      have  := Real.log_nonneg hx
+      positivity
     · intro hy
       refine ⟨Real.exp (y / (s - 1)), ?_, ?_⟩
-      · exact Real.one_le_exp_iff.mpr (div_nonneg hy hs0.le)
+      · exact Real.one_le_exp_iff.mpr (by positivity)
       · rw [hf_def]
         simp only [Real.log_exp]
         field_simp
@@ -186,15 +185,12 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
     apply ContinuousOn.mul
     · apply ContinuousOn.sub _ continuousOn_const
       apply Real.continuousOn_log.mono
-      intro u hu
-      simp only [mem_Ioi] at hu
-      simp only [Set.mem_compl_iff, Set.mem_singleton_iff]
-      linarith
+      simp
     · exact (Real.continuous_exp.comp continuous_neg).continuousOn
   -- IntegrableOn g (f '' Ici 1) = IntegrableOn g (Ici 0)
   have hg1 : IntegrableOn g (f '' Ici 1) := by
     rw [himg_Ici, integrableOn_Ici_iff_integrableOn_Ioi]
-    have e1 : IntegrableOn (fun u => Real.log u * Real.exp (-u)) (Ioi 0) :=
+    have e1 :=
       integrableOn_log_mul_exp_neg
     have e2 : IntegrableOn (fun u => Real.log (s - 1) * Real.exp (-u)) (Ioi 0) :=
       (integrableOn_exp_neg_Ioi 0).const_mul _
@@ -214,7 +210,7 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
       rw [heq] at hd
       exact hd.hasDerivWithinAt
     -- f injective on Ici 1.
-    have hinj : InjOn f (Ici 1) := hmono.injOn
+    have hinj := hmono.injOn
     -- transfer hg1 through the integrability change of variables.
     have hiff := integrableOn_image_iff_integrableOn_abs_deriv_smul
       (s := Ici (1:ℝ)) (f := f) (f' := f') measurableSet_Ici hff'_Ici hinj g
@@ -232,7 +228,7 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
   rw [hf1] at hcov
   -- RHS: ∫ u in Ioi 0, g u = deriv Gamma 1 - log (s-1)
   have hrhs : ∫ u in Ioi (0:ℝ), g u = deriv Real.Gamma 1 - Real.log (s - 1) := by
-    have e1 : IntegrableOn (fun u => Real.log u * Real.exp (-u)) (Ioi 0) :=
+    have e1 :=
       integrableOn_log_mul_exp_neg
     have e2 : IntegrableOn (fun u => Real.log (s - 1) * Real.exp (-u)) (Ioi 0) :=
       (integrableOn_exp_neg_Ioi 0).const_mul _
@@ -241,7 +237,7 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
       funext u; rw [hg_def]; ring
     rw [show (∫ u in Ioi (0:ℝ), g u)
         = ∫ u in Ioi (0:ℝ), (Real.log u * Real.exp (-u) - Real.log (s - 1) * Real.exp (-u))
-        from by rw [hsplit]]
+        from by simp_all]
     rw [integral_sub e1 e2, integral_log_mul_exp_neg_eq_deriv_Gamma]
     rw [integral_const_mul, integral_exp_neg_Ioi_zero, mul_one]
   -- LHS: ∫ x in Ioi 1, (g∘f) x * f' x = (s-1) * ∫ x in Ioi 1, log(log x) * x^(-s)
@@ -252,9 +248,9 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
       intro x hx
       simp only [mem_Ioi] at hx
       have hxpos : (0:ℝ) < x := by linarith
-      have hlogpos : 0 < Real.log x := Real.log_pos hx
-      have hlogne : Real.log x ≠ 0 := ne_of_gt hlogpos
-      have hs1ne : s - 1 ≠ 0 := ne_of_gt hs0
+      have hlogpos := Real.log_pos hx
+      have hlogne := ne_of_gt hlogpos
+      have hs1ne := ne_of_gt hs0
       simp only [Function.comp, hf_def, hg_def, hf'_def]
       -- log ((s-1) * log x) - log (s-1) = log (log x)
       rw [Real.log_mul hs1ne hlogne]
@@ -274,15 +270,13 @@ private theorem mul_integ_log_log_eq_aux (s : ℝ) (hs : 1 < s) :
           = Real.log (Real.log x) by ring]
       linear_combination Real.log (Real.log x) * hx1
     rw [setIntegral_congr_fun measurableSet_Ioi hpt, integral_const_mul]
-  rw [hlhs, hrhs] at hcov
-  rw [hcov]
-  ring
+  linarith
 
 end Issue1584
 
 namespace Mertens
 
-open Real Finset Filter Asymptotics Topology
+open Real Finset Filter Asymptotics
 open ArithmeticFunction hiding log
 
 lemma sum_Ioc_one_eq_sum_Ioc_zero {f : ℕ → ℝ} {x : ℕ} (hx : 1 ≤ x) (hf : f 1 = 0) :
@@ -296,7 +290,7 @@ theorem sum_log_le {x : ℝ} (hx : 1 ≤ x) :
   _ ≤ ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log x := by
     refine sum_le_sum fun n hn ↦ ?_
     simp only [mem_Ioc] at hn
-    exact log_le_log (by exact_mod_cast hn.1) (Nat.le_floor_iff (by linarith)|>.mp hn.2)
+    exact log_le_log (by simp_all) (Nat.le_floor_iff (by linarith)|>.mp hn.2)
   _ = ⌊x⌋₊ * log x := by simp
   _ ≤ _ := by
     gcongr
@@ -328,7 +322,7 @@ theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
   _ ≥ ∫ t in 1..⌊x⌋₊, log t := by
     convert MonotoneOn.integral_le_sum_Ico one_le_floor ?_|>.ge
     · norm_cast
-    · exact StrictMonoOn.monotoneOn (strictMonoOn_log.mono fun y hy ↦ (by simp_all; linarith))
+    · exact StrictMonoOn.monotoneOn (strictMonoOn_log.mono fun y hy ↦ (by grind))
   _ = (∫ t in 1..x, log t) - ∫ t in ⌊x⌋₊..x, log t := by
     nth_rw 3 [intervalIntegral.integral_symm]
     rw [sub_neg_eq_add, intervalIntegral.integral_add_adjacent_intervals] <;> exact intervalIntegral.intervalIntegrable_log'
@@ -339,13 +333,12 @@ theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
     gcongr
     · exact log_nonneg hx
     · linarith [Nat.lt_floor_add_one x]
-  _ ≥ x * log x - x - log x := by simp only [integral_log, log_one, mul_zero, sub_zero, ge_iff_le,
-    tsub_le_iff_right, sub_add_cancel, le_add_iff_nonneg_right, zero_le_one]
-  _ ≥ _ := by linarith [log_le_self (by linarith : 0 ≤ x)]
+  _ ≥ x * log x - x - log x := by simp
+  _ ≥ _ := by linarith [log_le_self (by positivity)]
 
 theorem sum_log_eq_sum_mangoldt {x : ℝ} :
     ∑ n ∈ Ioc 0 ⌊x⌋₊, log n = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * ⌊x / d⌋₊ := by
-  have : ∀ n : ℕ, log n = (Λ * zeta) n := by simp [vonMangoldt_mul_zeta]
+  have : ∀ n : ℕ, log n = (Λ * zeta) n := by simp
   simp_rw [this, sum_Ioc_mul_zeta_eq_sum, ← Nat.floor_div_natCast]
 
 noncomputable abbrev E₁Λ (x : ℝ) : ℝ := ∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ d) / d - log x
@@ -357,14 +350,14 @@ theorem E₁Λ.ge {x : ℝ} (hx : 1 ≤ x) :
     E₁Λ x  ≥ -2 := by
   unfold E₁Λ
   suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d  ≥ x * (log x - 2) by
-    linarith [le_of_mul_le_mul_left this (by linarith)]
+    nlinarith
   calc
   _ = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * (x / d) := by
     rw [Finset.mul_sum]
     ring_nf
   _ ≥ ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * ⌊x / d⌋₊ := by
     gcongr
-    exact Nat.floor_le <| div_nonneg (by linarith) (by linarith)
+    exact Nat.floor_le <| (by positivity)
   _ ≥ x * log x - 2 * x :=
     sum_log_eq_sum_mangoldt ▸ sum_log_ge hx
   _ = _ := by ring
@@ -373,7 +366,7 @@ theorem E₁Λ.le {x : ℝ} (hx : 1 ≤ x) :
     E₁Λ x ≤ log 4 + 4 := by
   unfold E₁Λ
   suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d ≤ x * (log x + log 4 + 4) by
-    linarith [le_of_mul_le_mul_left this (by linarith)]
+    nlinarith
   calc
   _ = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * (x / d) := by
     rw [Finset.mul_sum]
@@ -394,8 +387,8 @@ theorem sum_mangoldt_div_eq_log {x : ℝ} (hx : 1 ≤ x) :
     |∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ d) / d - log x| ≤ log 4 + 4 := by
   grind [E₁Λ.le hx, E₁Λ.ge hx, log_nonneg]
 
-theorem E₁Λ.bounded' : ∃ c > 0, ∀ x ≥ 1, |E₁Λ x| ≤ c := by
-  exact ⟨log 4 + 4, (by positivity), fun x hx ↦ sum_mangoldt_div_eq_log hx⟩
+theorem E₁Λ.bounded' : ∃ c > 0, ∀ x ≥ 1, |E₁Λ x| ≤ c :=
+  ⟨log 4 + 4, by positivity, fun x hx ↦ sum_mangoldt_div_eq_log hx⟩
 
 noncomputable abbrev E₁p (x : ℝ) : ℝ := ∑ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Prime, (log p) / p - log x
 
@@ -408,7 +401,6 @@ theorem E₁p.le_E₁Λ (x : ℝ) :
     gcongr with p _
     split_ifs with hp
     · simp [vonMangoldt_apply_prime hp]
-    have : 0 ≤ Λ p := vonMangoldt_nonneg
     positivity
 
 theorem E₁p.le {x : ℝ} (hx : 1 ≤ x) :
@@ -422,7 +414,7 @@ lemma E₁.summand_nonneg (p : ℕ) : 0 ≤ if p.Prime then (log p) / (p*(p-1)) 
   · refine div_nonneg (log_natCast_nonneg _) (mul_nonneg (Nat.cast_nonneg _) ?_)
     suffices 1 ≤ (p : ℝ) by linarith
     exact_mod_cast h.one_le
-  · rfl
+  simp
 
 theorem E₁.summable : Summable (fun p : ℕ ↦ if p.Prime then (log p) / (p*(p-1)) else 0) := by
   refine (Real.summable_one_div_nat_rpow.mpr (by norm_num: 1 < (3 : ℝ) / 2)|>.const_div
@@ -446,7 +438,7 @@ theorem E₁.summable : Summable (fun p : ℕ ↦ if p.Prime then (log p) / (p*(
     · apply mul_nonneg (Nat.cast_nonneg _)
       suffices 1 ≤ (n : ℝ) by linarith
       exact_mod_cast h.one_le
-  · positivity
+  positivity
 
 private lemma antitoneOn_log_div_sq :
     AntitoneOn (fun t ↦ log (t + 2) / (t + 2) ^ 2) (Set.Ici 0) := by
@@ -458,10 +450,10 @@ private lemma antitoneOn_log_div_sq :
   · refine fun t ht ↦ DifferentiableAt.differentiableWithinAt ?_
     simp at ht
     have : (t + 2) ^ 2 ≠ 0 := by simp; grind
-    fun_prop (disch := grind)
+    simp_all
   · intro t ht
     simp at ht
-    rw [deriv_fun_div (by fun_prop (disch := grind)) (by fun_prop) (by simp; grind), deriv_comp_add_const, deriv_log]
+    rw [deriv_fun_div (by fun_prop (disch := grind)) (by fun_prop) (by positivity), deriv_comp_add_const, deriv_log]
     simp
     field_simp
     simp only [mul_zero, tsub_le_iff_right, zero_add]
@@ -470,8 +462,8 @@ private lemma antitoneOn_log_div_sq :
     nlinarith [exp_one_lt_three]
 
 private lemma log_div_sq_nonneg :
-    ∀ t ∈ Set.Ioi 0, 0 ≤ log (t + 2) / (t + 2) ^ 2 := by
-  exact fun t ht ↦  div_nonneg (log_nonneg (by simp_all; linarith)) (by positivity)
+    ∀ t ∈ Set.Ioi 0, 0 ≤ log (t + 2) / (t + 2) ^ 2 :=
+  fun t ht ↦  div_nonneg (log_nonneg (by grind)) (by positivity)
 
 private lemma log_div_sq_is_deriv :
     ∀ x ∈ Set.Ici 0, HasDerivAt (fun t ↦ (-log (t + 2) - 1) / (t + 2)) (log (x + 2) / (x + 2) ^ 2) x := by
@@ -484,22 +476,22 @@ private lemma log_div_sq_is_deriv :
     convert! (hasDerivAt_log (by linarith : t + 2 ≠ 0)).neg using 1
     ring_nf
   · exact hasDerivAt_id _
-  · linarith
+  linarith
 
 private lemma tendsto_antideriv_log_div_sq :
     Tendsto (fun t ↦ (-log (t + 2) - 1) / (t + 2)) atTop (nhds 0) := by
-  have : Tendsto (fun (t : ℝ) ↦ t + 2) atTop atTop := by exact tendsto_atTop_add_const_right atTop 2 tendsto_id
+  have : Tendsto (fun (t : ℝ) ↦ t + 2) atTop atTop := tendsto_atTop_add_const_right atTop 2 tendsto_id
   apply Tendsto.comp (g := (fun t ↦ (-log t - 1) / t)) _ this
   convert! Tendsto.sub (f := (fun t ↦ -log t / t)) (a := 0) _ tendsto_inv_atTop_zero using 1
   · ring_nf
   · ring_nf
   · convert! (Real.tendsto_pow_log_div_mul_add_atTop 1 0 1 (by linarith)).neg using 1
-    · ext; ring
-    · simp
+    · ring
+    simp
 
 private lemma integrableOn_log_div_sq :
-    MeasureTheory.IntegrableOn (fun t ↦ log (t + 2) / (t + 2) ^ 2) (Set.Ioi 0) := by
-  exact MeasureTheory.integrableOn_Ioi_deriv_of_nonneg' log_div_sq_is_deriv log_div_sq_nonneg tendsto_antideriv_log_div_sq
+    MeasureTheory.IntegrableOn (fun t ↦ log (t + 2) / (t + 2) ^ 2) (Set.Ioi 0) :=
+  MeasureTheory.integrableOn_Ioi_deriv_of_nonneg' log_div_sq_is_deriv log_div_sq_nonneg tendsto_antideriv_log_div_sq
 
 private lemma integral_log_div_sq :
     ∫ t in Set.Ioi 0, log (t + 2) / (t + 2) ^ 2 = (log 2 + 1) / 2 := by
@@ -511,9 +503,7 @@ private lemma summable_log_div_sq :
   let g : ℝ → ℝ := (fun n ↦ log (n + 2) / (n + 2) ^ 2)
   suffices Summable (fun (n : ℕ) ↦ g n ) by
     convert! summable_nat_add_iff 1|>.mpr this using 2
-    unfold g
-    push_cast
-    ring_nf
+    grind
   exact antitoneOn_log_div_sq.summable_of_integrableOn_Ioi_zero integrableOn_log_div_sq log_div_sq_nonneg
 
 private lemma sum_log_div_sq_le :
@@ -521,14 +511,11 @@ private lemma sum_log_div_sq_le :
   let g : ℝ → ℝ := (fun n ↦ log (n + 2) / (n + 2) ^ 2)
   calc
   _ = ∑' (n : ℕ), g (n + 1 : ℕ):= by
-    unfold g
-    congr
-    push_cast
-    ring_nf
-  _ ≤ ∫ x in Set.Ioi 0, g x := by
-    exact antitoneOn_log_div_sq.tsum_add_one_le_integral integrableOn_log_div_sq log_div_sq_nonneg
-  _ = _ := by
-    exact integral_log_div_sq
+    grind
+  _ ≤ ∫ x in Set.Ioi 0, g x :=
+    antitoneOn_log_div_sq.tsum_add_one_le_integral integrableOn_log_div_sq log_div_sq_nonneg
+  _ = _ :=
+    integral_log_div_sq
 
 theorem E₁.le : E₁ ≤ (5 * log 2 + 3) / 4 := by
   unfold E₁
@@ -541,7 +528,7 @@ theorem E₁.le : E₁ ≤ (5 * log 2 + 3) / 4 := by
     gcongr with n
     · convert! summable_nat_add_iff 3|>.mpr E₁.summable using 4
       · norm_cast
-      · push_cast; ring
+      grind
     · exact summable_log_div_sq.mul_left _
     · split_ifs with h
       · grw [(by linarith : (n + 2 : ℝ) ≥ 2 * (n + 3) / 3)]
@@ -553,8 +540,7 @@ theorem E₁.le : E₁ ≤ (5 * log 2 + 3) / 4 := by
     rw [tsum_mul_left]
   _ ≤ _ := by
     grw [sum_log_div_sq_le]
-    ring_nf
-    rfl
+    linarith
 
 theorem E₁.nonneg : E₁ ≥ 0 :=
   tsum_nonneg E₁.summand_nonneg
@@ -567,7 +553,7 @@ theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
   calc
   _ = ∑ k ∈ Icc 1 ⌊log x / log 2⌋₊, ∑ p ∈ Ioc 0 ⌊x ^ (1 / (k : ℝ))⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     refine sum_congr rfl fun k hk ↦ sum_congr rfl fun p hp ↦ ?_
-    rw [Nat.Prime.pow_minFac (by simp_all) (by simp_all; linarith)]
+    rw [Nat.Prime.pow_minFac (by simp_all) (by grind)]
   _ ≤ ∑ k ∈ Icc 1 ⌊log x / log 2⌋₊, ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     gcongr with k hk
     apply rpow_le_self_of_one_le hx
@@ -575,12 +561,10 @@ theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
     exact div_le_one₀ (by norm_cast; linarith)|>.mpr (mod_cast hk.1)
   _ ≤ ∑ k ∈ Icc 1 (max 1 ⌊log x / log 2⌋₊), ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     apply sum_le_sum_of_subset_of_nonneg
-    · gcongr
-      exact le_max_right ..
-    · exact fun _ _ _ ↦ sum_nonneg fun _ _ ↦ (by positivity)
+    · grind
+    · exact fun _ _ _ ↦ (by positivity)
   _ = ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, (log p / p) + ∑ k ∈ Ioc 1 (max 1 ⌊log x / log 2⌋₊), ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
-    rw [← add_sum_Ioc_eq_sum_Icc (le_max_left ..)]
-    simp
+    simp [← add_sum_Ioc_eq_sum_Icc (le_max_left ..)]
   _ ≤ _ := by
     gcongr
     rw [sum_comm]
@@ -595,8 +579,7 @@ theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
       rw [(by rfl : Ioc 1 (max 1 ⌊log x / log 2⌋₊) = Ico 2 (max 1 ⌊log x / log 2⌋₊  + 1))]
       grw [geom_sum_Ico_le_of_lt_one (by simp)]
       · apply le_of_eq
-        have : (p : ℝ) ≠ 0 := by exact_mod_cast hp.1.1.ne.symm
-        field
+        grind
       · simpa using inv_lt_one_of_one_lt₀ (mod_cast hp.2.one_lt)
     _ ≤ _ := by
       rw [sum_filter]
@@ -614,8 +597,8 @@ theorem sum_log_prime_div_eq_log {x : ℝ} (hx : 1 ≤ x) :
     have : log 4 = 2 * log 2 := by rw [←Real.log_rpow (by norm_num)]; norm_num
     grind [E₁p.ge hx, E₁.le]
 
-theorem E₁p.bounded : ∃ c > 0, ∀ x ≥ 1, |E₁p x| ≤ c := by
-  exact ⟨log 4 + 4, (by positivity), fun _ hx ↦ sum_log_prime_div_eq_log  hx⟩
+theorem E₁p.bounded : ∃ c > 0, ∀ x ≥ 1, |E₁p x| ≤ c :=
+  ⟨log 4 + 4, by positivity, fun _ hx ↦ sum_log_prime_div_eq_log  hx⟩
 
 noncomputable abbrev γ : ℝ := (∫ t in Set.Ioi 2, E₁Λ t / (t * log t^2)) + 1 - log (log 2)
 
@@ -633,33 +616,27 @@ private theorem sum_div_log_eq {x : ℝ} (hx : 2 ≤ x) (f : ℕ → ℝ) :
   trans ∑ n ∈ Icc 0 ⌊ x ⌋₊, (log n)⁻¹ * g n
   · rw [← sum_Ioc_one_eq_sum_Icc_zero (Nat.le_floor (by grind)) (by simp) (by simp)]
     refine sum_congr rfl fun n hn ↦ ?_
-    have : ¬(n ≤ 1) := by simp_all
-    simp [g, this]
-    field
-  rw [sum_mul_eq_sub_integral_mul₁ g (f := (fun n ↦ (log n)⁻¹)) (by simp [g]) (by simp [g])]
+    grind
+  rw [sum_mul_eq_sub_integral_mul₁ g (f := (fun n ↦ (log n)⁻¹)) (by grind) (by grind)]
   · rw [intervalIntegral.integral_of_le hx, mul_comm, ← div_eq_mul_inv, ← sub_neg_eq_add]
     simp_rw [deriv_inv_log]
     congr 1
-    · rw [← sum_Ioc_one_eq_sum_Icc_zero (Nat.le_floor (by grind)) (by simp [g]) (by simp [g])]
+    · rw [← sum_Ioc_one_eq_sum_Icc_zero (Nat.le_floor (by grind)) (by grind) (by grind)]
       congr 1
       refine sum_congr rfl fun n hn ↦ ?_
-      simp only [mem_Ioc] at hn
-      have : ¬(n ≤ 1) := by linarith
-      simp [g, this]
+      grind
     · rw [← MeasureTheory.integral_neg]
       refine  MeasureTheory.setIntegral_congr_fun (by measurability) fun t ht ↦ ?_
       simp only [Set.mem_Ioc] at ht
-      rw [← sum_Ioc_one_eq_sum_Icc_zero (Nat.le_floor (by grind)) (by simp [g]) (by simp [g])]
+      rw [← sum_Ioc_one_eq_sum_Icc_zero (Nat.le_floor (by grind)) (by grind) (by grind)]
       field_simp
       congr 2
       refine sum_congr rfl fun n hn ↦ ?_
-      simp only [mem_Ioc] at hn
-      have : ¬(n ≤ 1) := by linarith
-      simp [g, this]
+      grind
   · intro t ht
     simp only [Set.mem_Icc] at ht
     have : log t ≠ 0 := by simp; grind
-    fun_prop (disch := grind)
+    simp_all
   · refine ContinuousOn.integrableOn_Icc fun t ht ↦ ContinuousAt.continuousWithinAt ?_
     simp only [Set.mem_Icc] at ht
     conv => arg 1; ext x; rw [deriv_inv_log]
@@ -677,7 +654,7 @@ private theorem integrable_const_div_mul_log_sq {x : ℝ} (c : ℝ) (hx : 2 ≤ 
     have : DifferentiableAt ℝ (fun t ↦ -(log t)⁻¹) t := by
       fun_prop (disch := grind)
     convert! this.hasDerivAt using 1
-    simp [deriv_inv_log]
+    simp
     field
   · intro t ht
     simp only [Set.mem_Ioi] at ht
@@ -694,7 +671,7 @@ private theorem integrable_E₁Λ_div_mul_log_sq {x : ℝ} (hx : 2 ≤ x) :
     simp only [Set.mem_Ioi] at ht
     simp only [norm_div, norm_eq_abs, norm_mul, norm_pow, sq_abs, abs_of_pos hc1]
     gcongr
-    exact hc2 t (by linarith)
+    grind
 
 private theorem integrable_E₁p_div_mul_log_sq {x : ℝ} (hx : 2 ≤ x) :
     MeasureTheory.IntegrableOn (fun x ↦ E₁p x / (x * log x ^ 2)) (Set.Ioi x) MeasureTheory.volume := by
@@ -705,7 +682,7 @@ private theorem integrable_E₁p_div_mul_log_sq {x : ℝ} (hx : 2 ≤ x) :
     simp only [Set.mem_Ioi] at ht
     simp only [norm_div, norm_eq_abs, norm_mul, norm_pow, sq_abs, abs_of_pos hc1]
     gcongr
-    exact hc2 t (by linarith)
+    grind
 
 lemma deriv_log_log {x : ℝ} (hx : 1 < x) :
     deriv (fun t ↦ log (log t)) x = 1 / (x * log x) := by
@@ -722,7 +699,7 @@ lemma integral_one_div_mul_log {x : ℝ} (hx : 2 ≤ x) :
   · intro t ht
     rw [Set.uIcc_of_le hx, Set.mem_Icc] at ht
     have : log t ≠ 0 := by simp; grind
-    fun_prop (disch := grind)
+    simp_all
   · refine ContinuousOn.intervalIntegrable ?_
     apply ContinuousOn.congr (f := (fun t ↦ 1 / (t * log t)))
     · refine fun t ht ↦ ContinuousAt.continuousWithinAt ?_
@@ -783,28 +760,26 @@ theorem E₂Λ.abs_le {x : ℝ} (hx : 2 ≤ x) :
     rw [E₂Λ.eq hx, abs_le']
     constructor
     · grw [E₁Λ.le (by linarith)]
-      have : ∫ t in Set.Ioi x, E₁Λ t / (t * log t^2) ≥ - 2 / log x := calc
+      have  := calc
         _ ≥ ∫ t in Set.Ioi x, (-2) / (t * log t^2) := by
           apply MeasureTheory.setIntegral_mono_on (integrable_const_div_mul_log_sq (-2) hx)
             (integrable_E₁Λ_div_mul_log_sq hx) (by measurability)
           intro y hy; simp at hy
           have : 1 < y := by linarith
-          have : 0 < log y := log_pos this
+          have  := log_pos this
           gcongr; exact E₁Λ.ge (by linarith)
         _ = _ := integ_div_mul_log_sq (-2) hx
-      grw [this]
       grind
     grw [E₁Λ.ge (by linarith)]
-    have : ∫ t in Set.Ioi x, E₁Λ t / (t * log t^2) ≤ (log 4 + 4) / log x := calc
+    have  := calc
         _ ≤ ∫ t in Set.Ioi x, (log 4 + 4) / (t * log t^2) := by
           apply MeasureTheory.setIntegral_mono_on (integrable_E₁Λ_div_mul_log_sq hx)
             (integrable_const_div_mul_log_sq (log 4 + 4) hx) (by measurability)
           intro y hy; simp at hy
           have : 1 < y := by linarith
-          have : 0 < log y := log_pos this
+          have  := log_pos this
           gcongr; exact E₁Λ.le (by linarith)
         _ = _ := integ_div_mul_log_sq (log 4 + 4) hx
-    grw [this]
     grind
 
 theorem E₂Λ.bound : E₂Λ =O[atTop] (fun x ↦ 1 / log x) := by
@@ -813,7 +788,7 @@ theorem E₂Λ.bound : E₂Λ =O[atTop] (fun x ↦ 1 / log x) := by
     intro x hx
     convert E₂Λ.abs_le hx using 1
     have : 0 < log x := by apply log_pos; linarith
-    grind [abs_of_pos this]
+    grind
 
 theorem E₂Λ.bound' : E₂Λ =o[atTop] (fun _ ↦ (1:ℝ)) := E₂Λ.bound.trans_isLittleO inv_log_eq_o_one
 
@@ -840,14 +815,14 @@ theorem log_zeta_eq_sum (s : ℝ) (hs : 1 < s) :
     change (p : ℝ) ^ (-s) < 1
     rw [Real.rpow_neg (by positivity), inv_lt_one_iff₀]
     right
-    exact (Real.one_lt_rpow_iff_of_pos (by positivity)).mpr (Or.inl ⟨hp1, by linarith⟩)
+    exact (Real.one_lt_rpow_iff_of_pos (by positivity)).mpr (by grind)
   -- each summand is the ofReal of a real number
   have hterm : ∀ p : Nat.Primes,
       -Complex.log (1 - (p : ℂ) ^ (-(s : ℂ))) = ((-Real.log (1 - z p) : ℝ) : ℂ) := by
     intro p
     rw [hcpow p]
     have h1z : (0 : ℝ) < 1 - z p := by have := hz_lt_one p; linarith
-    rw [show (1 : ℂ) - ((z p : ℝ) : ℂ) = (((1 - z p : ℝ)) : ℂ) by push_cast; ring]
+    rw [show (1 : ℂ) - ((z p : ℝ) : ℂ) = (((1 - z p : ℝ)) : ℂ) by simp]
     rw [← Complex.ofReal_log h1z.le]
     push_cast; ring
   -- (III) S is real: S = (Sr : ℂ) with Sr the real sum
@@ -860,10 +835,10 @@ theorem log_zeta_eq_sum (s : ℝ) (hs : 1 < s) :
   -- (IV) invert exp: log ζ = S
   have hlog_zeta : Complex.log (riemannZeta (s : ℂ)) = S := by
     rw [← hep, Complex.log_exp (by rw [hSim]; exact neg_lt_zero.mpr Real.pi_pos)
-      (by rw [hSim]; exact Real.pi_pos.le)]
+      (by rw [hSim]; positivity)]
   -- relate Real.log ζ.re to S.re = Sr
   have hkey : Real.log (riemannZeta (s : ℂ)).re = Sr := by
-    have hζim : (riemannZeta (s : ℂ)).im = 0 := riemannZeta_im_eq_zero_of_one_lt hs
+    have hζim := riemannZeta_im_eq_zero_of_one_lt hs
     have hζeq : riemannZeta (s : ℂ) = ((riemannZeta (s : ℂ)).re : ℂ) := by
       apply Complex.ext <;> simp [hζim]
     have : Real.log (riemannZeta (s : ℂ)).re
@@ -877,8 +852,7 @@ theorem log_zeta_eq_sum (s : ℝ) (hs : 1 < s) :
   have habs : ∀ p : Nat.Primes, |z p| < 1 := by
     intro p
     rw [abs_of_pos (hz_pos p)]; exact hz_lt_one p
-  have htaylor : ∀ p : Nat.Primes,
-      HasSum (fun n : ℕ => (z p) ^ (n + 1) / (n + 1)) (-Real.log (1 - z p)) :=
+  have htaylor :=
     fun p => hasSum_pow_div_log_of_abs_lt_one (habs p)
   have hSr_double : Sr = ∑' (p : Nat.Primes) (n : ℕ), (z p) ^ (n + 1) / (n + 1) := by
     rw [hSr]
@@ -904,7 +878,7 @@ theorem log_zeta_eq_sum (s : ℝ) (hs : 1 < s) :
       = (z p) ^ (n + 1) / (n + 1) := by
     intro p n
     have hp1 : (1 : ℝ) < (p : ℝ) := by exact_mod_cast p.prop.one_lt
-    have hlogp : 0 < Real.log (p : ℝ) := Real.log_pos hp1
+    have hlogp := Real.log_pos hp1
     rw [vonMangoldt_apply_pow (Nat.succ_ne_zero n), vonMangoldt_apply_prime p.prop]
     have hcast : (((p : ℕ) ^ (n + 1) : ℕ) : ℝ) = (p : ℝ) ^ (n + 1) := by push_cast; ring
     rw [hcast, Real.log_pow]
@@ -933,7 +907,7 @@ theorem log_zeta_eq_sum (s : ℝ) (hs : 1 < s) :
     apply tsum_congr
     intro pk
     rw [Nat.Primes.coe_prodNatEquiv_apply, hF]
-    exact (hpoint pk.1 pk.2).symm
+    exact by grind
   -- assemble
   rw [hSr_double, ← hsummable_g.tsum_prod' (fun p => (htaylor p).summable), hprod_eq]
   exact tsum_subtype_eq_of_support_subset hsupp
@@ -952,17 +926,12 @@ private noncomputable def f (s : ℝ) (d : ℕ) (x : ℝ) : ℝ :=
     c d * (Set.Ici (d:ℝ)).indicator (fun x => x ^ (-s)) x
 
 @[simp] private lemma c_zero : c 0 = 0 := by simp [c]
-@[simp] private lemma c_one : c 1 = 0 := by simp [c, vonMangoldt_apply_one]
+@[simp] private lemma c_one : c 1 = 0 := by simp [c]
 
 /-- `c d ≥ 0` for all `d`. -/
 private lemma c_nonneg (d : ℕ) : 0 ≤ c d := by
   unfold c
-  rcases Nat.eq_zero_or_pos d with hd | hd
-  · subst hd; simp
-  · apply div_nonneg vonMangoldt_nonneg
-    have : (0:ℝ) ≤ (d:ℝ) := Nat.cast_nonneg d
-    have hlog : 0 ≤ Real.log d := Real.log_natCast_nonneg d
-    positivity
+  positivity
 
 /-- General comparison majorant: `(log n)^a / n^s` is summable for any real `a` and `s > 1`,
 since `(log x)^a = o(x^ε)` for every `ε > 0`. All the summability conditions below reduce to
@@ -972,7 +941,7 @@ private lemma summable_log_rpow_div_rpow (a : ℝ) {s : ℝ} (hs : 1 < s) :
   have hε : (0:ℝ) < (s - 1) / 2 := by linarith
   refine summable_of_isBigO_nat (g := fun n : ℕ => (n:ℝ) ^ ((s - 1) / 2 - s)) ?_ ?_
   · rw [Real.summable_nat_rpow]; linarith
-  · have ho : (fun x : ℝ => (Real.log x) ^ a) =O[atTop] (fun x : ℝ => x ^ ((s - 1) / 2)) :=
+  · have ho :=
       (isLittleO_log_rpow_rpow_atTop a hε).isBigO
     have hmul : (fun x : ℝ => (Real.log x) ^ a / x ^ s)
         =O[atTop] (fun x : ℝ => x ^ ((s - 1) / 2) / x ^ s) := by
@@ -986,7 +955,7 @@ private lemma summable_log_rpow_div_rpow (a : ℝ) {s : ℝ} (hs : 1 < s) :
 /-- Real summability of `Λ n / n^s` for `s > 1`: dominated by `log n / n^s` via `Λ n ≤ log n`. -/
 private lemma summable_vonMangoldt_div_rpow (s : ℝ) (hs : 1 < s) :
     Summable (fun n : ℕ => (Λ n : ℝ) / (n:ℝ) ^ s) := by
-  refine Summable.of_nonneg_of_le (fun n => div_nonneg vonMangoldt_nonneg (by positivity)) ?_
+  refine Summable.of_nonneg_of_le (fun n => by positivity) ?_
     (summable_log_rpow_div_rpow 1 hs)
   intro n
   rw [Real.rpow_one]
@@ -1003,18 +972,16 @@ private lemma summable_c_term (s : ℝ) (hs : 1 < s) :
     ((summable_vonMangoldt_div_rpow s hs).mul_left (1 / (Real.log 2 * (s - 1))))
   · -- `0 ≤ c d * (d^(1-s)/(s-1))`
     refine mul_nonneg (c_nonneg d) (div_nonneg ?_ hs1.le)
-    rcases eq_or_ne (d:ℝ) 0 with hd | hd
-    · rw [hd, Real.zero_rpow (by linarith : (1 - s) ≠ 0)]
-    · positivity
+    positivity
   · -- `c d * (d^(1-s)/(s-1)) ≤ (1/(log 2·(s-1)))·(Λ d/d^s)`
     rcases lt_or_ge d 2 with hd | hd
     · have hc : c d = 0 := by interval_cases d <;> simp
       rw [hc, zero_mul]
-      exact mul_nonneg (by positivity) (div_nonneg vonMangoldt_nonneg (by positivity))
+      positivity
     · have hd2 : (2:ℝ) ≤ (d:ℝ) := by exact_mod_cast hd
       have hd0 : (0:ℝ) < (d:ℝ) := by linarith
-      have hlogge : Real.log 2 ≤ Real.log d := Real.log_le_log (by norm_num) hd2
-      have hds : (0:ℝ) < (d:ℝ) ^ s := Real.rpow_pos_of_pos hd0 s
+      have hlogge := Real.log_le_log (by norm_num) hd2
+      have hds := Real.rpow_pos_of_pos hd0 s
       have hkey : c d * ((d:ℝ) ^ (1 - s) / (s - 1)) = Λ d / ((d:ℝ) ^ s * Real.log d * (s - 1)) := by
         unfold c
         rw [show (1 - s : ℝ) = -s + 1 by ring, Real.rpow_add hd0, Real.rpow_one, Real.rpow_neg hd0.le]
@@ -1051,16 +1018,15 @@ theorem log_zeta_eq_integ_aux (s : ℝ) (hs : 1 < s) :
       simp only [Finset.mem_Ioc] at hd
       have hdx : (d:ℝ) ≤ x := by
         rw [← Nat.le_floor_iff hx0]; exact hd.2
-      rw [Set.indicator_of_mem (by simpa using hdx)]
+      simp_all
     · intro d hd
       simp only [Finset.mem_Ioc, not_and, not_le] at hd
       rcases Nat.eq_zero_or_pos d with hd0 | hd0
-      · subst hd0; simp
+      · simp_all
       · have hfloor : ⌊x⌋₊ < d := hd hd0
         have hdx : x < (d:ℝ) := by
           rw [← Nat.floor_lt hx0]; exact hfloor
-        rw [Set.indicator_of_notMem (by simpa using not_le.mpr hdx)]
-        ring
+        simp_all
   rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi hstep2]
   have hperterm : ∀ d : ℕ, ∫ x in Set.Ioi (1:ℝ), f s d x = c d * ((d:ℝ) ^ (1 - s) / (s - 1)) := by
     intro d
@@ -1109,9 +1075,9 @@ theorem log_zeta_eq_integ_aux (s : ℝ) (hs : 1 < s) :
       simp only [f]
       apply mul_nonneg (c_nonneg d)
       by_cases hxd : (d:ℝ) ≤ x
-      · rw [Set.indicator_of_mem (by simpa using hxd)]
-        exact le_of_lt (Real.rpow_pos_of_pos (by linarith) _)
-      · rw [Set.indicator_of_notMem (by simpa using hxd)]
+      · rw [Set.indicator_of_mem (by simp_all)]
+        positivity
+      · simp_all
     change ‖f s d x‖ = f s d x
     rw [Real.norm_eq_abs, abs_of_nonneg hfnn]
   have hinterchange : ∫ x in Set.Ioi (1:ℝ), ∑' d : ℕ, f s d x
@@ -1126,7 +1092,7 @@ theorem log_zeta_eq_integ_aux (s : ℝ) (hs : 1 < s) :
   apply tsum_congr
   intro d
   rcases Nat.eq_zero_or_pos d with hd0 | hd0
-  · subst hd0; simp
+  · simp_all
   · have hdR : (0:ℝ) < (d:ℝ) := by exact_mod_cast hd0
     have hsub : (d:ℝ) ^ (1 - s) = (d:ℝ) ^ (-s) * (d:ℝ) := by
       rw [show (1 - s : ℝ) = -s + 1 by ring, Real.rpow_add hdR, Real.rpow_one]
@@ -1134,8 +1100,7 @@ theorem log_zeta_eq_integ_aux (s : ℝ) (hs : 1 < s) :
     have hneg : (d:ℝ) ^ (-s) = ((d:ℝ) ^ s)⁻¹ := by
       rw [Real.rpow_neg (le_of_lt hdR)]
     unfold c
-    rw [hsub, hneg]
-    field_simp
+    grind
 
 end LogZetaInteg
 end
@@ -1164,7 +1129,7 @@ private theorem integrableOn_Ioi_mul_rpow_neg_of_abs_le
     (hbound : ∀ x ∈ Set.Ioi c, |f x| ≤ B * x ^ a) :
     MeasureTheory.IntegrableOn (fun x => f x * x ^ (-s)) (Set.Ioi c) := by
   have hg : MeasureTheory.IntegrableOn (fun x => B * x ^ (a - s)) (Set.Ioi c) :=
-    (integrableOn_Ioi_rpow_of_lt (by linarith : a - s < -1) hc).const_mul B
+    (integrableOn_Ioi_rpow_of_lt (by linarith) hc).const_mul B
   refine MeasureTheory.Integrable.mono' hg
     (hf.mul (measurable_id.pow_const (-s))).aestronglyMeasurable ?_
   filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioi] with x hx
@@ -1172,7 +1137,7 @@ private theorem integrableOn_Ioi_mul_rpow_neg_of_abs_le
   have hxs : (0:ℝ) < x ^ (-s) := Real.rpow_pos_of_pos hxpos _
   rw [norm_mul, norm_eq_abs, norm_eq_abs, abs_of_pos hxs]
   calc |f x| * x ^ (-s) ≤ B * x ^ a * x ^ (-s) :=
-        mul_le_mul_of_nonneg_right (hbound x hx) hxs.le
+        mul_le_mul_of_nonneg_right (by grind) hxs.le
     _ = B * x ^ (a - s) := by rw [mul_assoc, ← Real.rpow_add hxpos, sub_eq_add_neg]
 
 /-- `log (log x) * x ^ (-s)` is integrable on `Ioi 1` for `s > 1`
@@ -1187,46 +1152,43 @@ private theorem integrableOn_log_log_mul_rpow (s : ℝ) (hs : 1 < s) :
         apply MeromorphicOn.intervalIntegrable_log
         intro x hx
         rw [Set.uIcc_of_le (by norm_num : (1:ℝ) ≤ 2)] at hx
-        exact (analyticAt_log (by linarith [hx.1] : 0 < x)).meromorphicAt
+        exact (analyticAt_log (by grind : 0 < x)).meromorphicAt
       exact (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num)).mp h
     have hmul : MeasureTheory.IntegrableOn (fun x => x ^ (-s) * log (log x)) (Set.Ioc 1 2) := by
       apply hll.bdd_mul (c := 1)
       · fun_prop
       · filter_upwards [MeasureTheory.ae_restrict_mem measurableSet_Ioc] with x hx
-        rw [norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (by linarith [hx.1] : (0:ℝ) ≤ x) _)]
+        rw [norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (by grind : (0:ℝ) ≤ x) _)]
         calc x ^ (-s) ≤ (1:ℝ) ^ (-s) :=
               Real.rpow_le_rpow_of_nonpos (by norm_num) hx.1.le (by linarith)
           _ = 1 := Real.one_rpow _
-    simpa [mul_comm] using hmul
+    grind
   · -- Tail (`Ioi 2`): `|log (log x)| ≤ (1/ε + |log (log 2)|)·x^ε` with `ε = (s-1)/2`, `ε + 1 < s`.
     set ε := (s - 1) / 2 with hε
     have hεpos : 0 < ε := by rw [hε]; linarith
     refine integrableOn_Ioi_mul_rpow_neg_of_abs_le (a := ε) (B := 1 / ε + |log (log 2)|)
-      (by norm_num) (by rw [hε]; linarith) (Real.measurable_log.comp Real.measurable_log) ?_
+      (by norm_num) (by linarith) (Real.measurable_log.comp Real.measurable_log) ?_
     intro x hx
     simp only [Set.mem_Ioi] at hx
-    have hx1 : (1:ℝ) ≤ x ^ ε := Real.one_le_rpow (by linarith) hεpos.le
+    have hx1 := Real.one_le_rpow (by linarith) hεpos.le
     have hlogx : 0 < log x := Real.log_pos (by linarith)
     have hlog2 : 0 < log 2 := Real.log_pos (by norm_num)
     have hmono : log 2 ≤ log x := Real.log_le_log (by norm_num) (by linarith)
     have hub : log (log x) ≤ x ^ ε / ε :=
       calc log (log x) ≤ log x := (Real.log_le_sub_one_of_pos hlogx).trans (by linarith)
         _ ≤ x ^ ε / ε := Real.log_le_rpow_div (by linarith) hεpos
-    have hlb : log (log 2) ≤ log (log x) := Real.log_le_log hlog2 hmono
+    have hlb := Real.log_le_log hlog2 hmono
     have hxε : 0 ≤ x ^ ε / ε := by positivity
     calc |log (log x)| ≤ x ^ ε / ε + |log (log 2)| := by
-          rw [abs_le]
-          exact ⟨by linarith [neg_abs_le (log (log 2))],
-            by linarith [abs_nonneg (log (log 2))]⟩
+          grind
       _ ≤ (1 / ε + |log (log 2)|) * x ^ ε := by
           have h2 : |log (log 2)| ≤ |log (log 2)| * x ^ ε := le_mul_of_one_le_right (abs_nonneg _) hx1
-          have h1 : x ^ ε / ε = 1 / ε * x ^ ε := by ring
-          rw [add_mul]; linarith
+          grind
 
 /-- `γ * x ^ (-s)` is integrable on `Ioi 1` for `s > 1`. -/
 private theorem integrableOn_γ_mul_rpow (s : ℝ) (hs : 1 < s) :
-    MeasureTheory.IntegrableOn (fun x => γ * x ^ (-s)) (Set.Ioi 1) := by
-  exact (integrableOn_Ioi_rpow_of_lt (by linarith : -s < -1) one_pos).const_mul γ
+    MeasureTheory.IntegrableOn (fun x => γ * x ^ (-s)) (Set.Ioi 1) :=
+  (integrableOn_Ioi_rpow_of_lt (by linarith) one_pos).const_mul γ
 
 /-- `E₂Λ x * x ^ (-s)` is integrable on `Ioi 1` for `s > 1`
 (`E₂Λ ~ -log(log x)` near `1`, and `E₂Λ = O(1/log x)` at `∞`). -/
@@ -1235,7 +1197,7 @@ private theorem integrableOn_E₂Λ_mul_rpow (s : ℝ) (hs : 1 < s) :
   rw [← Set.Ioo_union_Ici_eq_Ioi (by norm_num : (1:ℝ) < 2)]
   apply MeasureTheory.IntegrableOn.union
   · -- Near `1`: `⌊x⌋₊ = 1`, the sum is `0`, so `E₂Λ x = -log (log x) - γ`.
-    have hsub : Set.Ioo (1:ℝ) 2 ⊆ Set.Ioi 1 := fun x hx => hx.1
+    have hsub : Set.Ioo (1:ℝ) 2 ⊆ Set.Ioi 1 := by grind
     have h1 := (integrableOn_γ_mul_rpow s hs).mono_set hsub
     have h2 := (integrableOn_log_log_mul_rpow s hs).mono_set hsub
     have hb : MeasureTheory.IntegrableOn
@@ -1246,18 +1208,16 @@ private theorem integrableOn_E₂Λ_mul_rpow (s : ℝ) (hs : 1 < s) :
     simp only [Set.mem_Ioo] at hx
     have hfloor : ⌊ x ⌋₊ = 1 := by
       rw [Nat.floor_eq_iff (by linarith)]
-      exact ⟨by push_cast; linarith [hx.1], by push_cast; linarith [hx.2]⟩
+      exact ⟨by grind, by grind⟩
     have hsum : (∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ d) / ((d:ℝ) * log d)) = 0 := by rw [hfloor]; norm_num
-    change -(log (log x) * x ^ (-s)) - γ * x ^ (-s)
-        = (∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ d) / (d * log d) - log (log x) - γ) * x ^ (-s)
-    rw [hsum]; ring
+    grind
   · -- Tail: `|E₂Λ x| ≤ (log 4 + 6)/log x ≤ (log 4 + 6)/log 2` is bounded (`a = 0`), times decay.
     rw [integrableOn_Ici_iff_integrableOn_Ioi]
     refine integrableOn_Ioi_mul_rpow_neg_of_abs_le (a := 0) (B := (log 4 + 6) / log 2)
       (by norm_num) (by linarith) (by fun_prop) ?_
     intro x hx
     simp only [Set.mem_Ioi] at hx
-    have hlog2 : 0 < log 2 := Real.log_pos (by norm_num)
+    have hlog2 : 0 < log 2 := by positivity
     have hc : 0 ≤ log 4 + 6 := by positivity
     rw [Real.rpow_zero, mul_one]
     have hb2 : (log 4 + 6) / log x ≤ (log 4 + 6) / log 2 :=
@@ -1296,7 +1256,7 @@ private lemma zeta_pole_mul_re_tendsto_one :
     · filter_upwards [self_mem_nhdsWithin] with s hs
       exact Set.mem_compl_singleton_iff.mpr (by
         norm_num
-        exact ne_of_gt (Set.mem_Ioi.mp hs))
+        grind)
   have hcomplex :
       Filter.Tendsto (fun s : ℝ => ((s : ℂ) - 1) * riemannZeta (s : ℂ))
         (nhdsWithin 1 (Set.Ioi 1)) (nhds 1) :=
@@ -1306,7 +1266,7 @@ private lemma zeta_pole_mul_re_tendsto_one :
         (fun s : ℝ => (((s : ℂ) - 1) * riemannZeta (s : ℂ)).re)
         (nhdsWithin 1 (Set.Ioi 1)) (nhds (1 : ℝ)) :=
     (Complex.continuous_re.tendsto (1 : ℂ)).comp hcomplex
-  simpa [Complex.ofReal_sub, Complex.ofReal_mul] using hreal
+  simp_all
 
 private theorem log_zeta_limit :
     Filter.Tendsto
@@ -1316,19 +1276,19 @@ private theorem log_zeta_limit :
       Filter.Tendsto
         (fun s : ℝ => Real.log ((s - 1) * (riemannZeta (s : ℂ)).re))
         (nhdsWithin 1 (Set.Ioi 1)) (nhds (Real.log 1)) :=
-    (Real.continuousAt_log (by norm_num : (1 : ℝ) ≠ 0)).tendsto.comp
+    (Real.continuousAt_log (by positivity)).tendsto.comp
       zeta_pole_mul_re_tendsto_one
   have hEq :
       (fun s : ℝ => Real.log (riemannZeta (s : ℂ)).re + Real.log (s - 1))
         =ᶠ[nhdsWithin 1 (Set.Ioi 1)]
       fun s : ℝ => Real.log ((s - 1) * (riemannZeta (s : ℂ)).re) := by
     filter_upwards [self_mem_nhdsWithin] with s hs
-    have hspos : 0 < s - 1 := sub_pos.mpr (Set.mem_Ioi.mp hs)
-    have hzpos : 0 < (riemannZeta (s : ℂ)).re :=
+    have hspos : 0 < s - 1 := by grind
+    have hzpos :=
       riemannZeta_re_pos_of_one_lt (Set.mem_Ioi.mp hs)
     rw [Real.log_mul hspos.ne' hzpos.ne']
     ring
-  simpa using hlog.congr' (hEq.mono fun s hs => hs.symm)
+  simpa using hlog.congr' (hEq.mono (by grind))
 
 -- Helpers for `deriv_gamma_add_γ_eq_zero` (#1320): take `s → 1⁺` in `log_zeta_eq`.
 section
@@ -1344,10 +1304,8 @@ private lemma E₂Λ_eq_on_Ioo {x : ℝ} (hx : x ∈ Set.Ioo (1 : ℝ) 2) :
   obtain ⟨h1, h2⟩ := hx
   have hf : ⌊x⌋₊ = 1 := by
     rw [Nat.floor_eq_iff (by linarith)]
-    exact ⟨by exact_mod_cast h1.le, by exact_mod_cast h2⟩
-  unfold E₂Λ
-  rw [hf]
-  simp
+    exact ⟨by grind, by grind⟩
+  simp_all
 
 /-- Domination of `|E₂Λ|` near `1`: for `x ∈ (1,2)`, `|E₂Λ x| ≤ |log (x-1)| + log 2 + |γ|`,
 the RHS being integrable on `(1,2)` (the `log (x-1)` is integrable across the singularity at `1`). -/
@@ -1356,7 +1314,7 @@ private lemma abs_E₂Λ_le_on_Ioo {x : ℝ} (hx : x ∈ Set.Ioo (1 : ℝ) 2) :
   obtain ⟨hx1, hx2⟩ := hx
   have hloglog : |log (log x)| ≤ |log (x - 1)| + log 2 := by
     have hxpos : (0:ℝ) < x := by linarith
-    have hlogx_pos : 0 < log x := Real.log_pos hx1
+    have hlogx_pos := Real.log_pos hx1
     have hxm1 : 0 < x - 1 := by linarith
     have hub : log x ≤ x - 1 := by have := Real.log_le_sub_one_of_pos hxpos; linarith
     have hlb2 : (x - 1) / 2 ≤ log x := by
@@ -1366,27 +1324,24 @@ private lemma abs_E₂Λ_le_on_Ioo {x : ℝ} (hx : x ∈ Set.Ioo (1 : ℝ) 2) :
       have h12 : (x - 1) / 2 ≤ 1 - 1 / x := by
         rw [← sub_nonneg]
         have e : (1 - 1 / x) - (x - 1) / 2 = (3 * x - 2 - x ^ 2) / (2 * x) := by field_simp; ring
-        rw [e]; exact div_nonneg (by nlinarith [hx1, hx2]) (by positivity)
+        rw [e]; exact div_nonneg (by nlinarith) (by positivity)
       linarith
-    have hupper : log (log x) ≤ log (x - 1) := Real.log_le_log hlogx_pos hub
+    have hupper := Real.log_le_log hlogx_pos hub
     have hlower : log (x - 1) - log 2 ≤ log (log x) := by
-      have := Real.log_le_log (show (0:ℝ) < (x - 1) / 2 by positivity) hlb2
+      have := Real.log_le_log (by positivity) hlb2
       rwa [Real.log_div (by linarith) (by norm_num)] at this
-    have h2 : (0:ℝ) ≤ log 2 := Real.log_nonneg (by norm_num)
+    have h2 : (0:ℝ) ≤ log 2 := by positivity
     rw [abs_le]
-    exact ⟨by have := neg_abs_le (log (x - 1)); linarith,
-          by have := le_abs_self (log (x - 1)); linarith⟩
-  rw [E₂Λ_eq_on_Ioo ⟨hx1, hx2⟩]
-  have htri : |(- log (log x) - γ)| ≤ |log (log x)| + |γ| := by
-    have h := abs_sub (-log (log x)) γ
-    rwa [abs_neg] at h
-  linarith
+    exact ⟨by grind,
+          by grind⟩
+  rw [E₂Λ_eq_on_Ioo (by grind)]
+  grind
 
 /-- Constant bound on `|E₂Λ|` for `2 ≤ x`, sharpening `E₂Λ.abs_le` via `log 2 ≤ log x`. -/
 private lemma abs_E₂Λ_le_const {x : ℝ} (hx : 2 ≤ x) :
     |E₂Λ x| ≤ (log 4 + 6) / log 2 :=
   (E₂Λ.abs_le hx).trans <| div_le_div_of_nonneg_left (by positivity)
-    (Real.log_pos (by norm_num)) (Real.log_le_log (by norm_num) hx)
+    (by positivity) (Real.log_le_log (by norm_num) hx)
 
 /-- The near-1 dominating function `|log (x-1)| + log 2 + |γ|` is integrable on `(1,2)`
 (it dominates `|E₂Λ|` there, handling the log-log singularity at `1`). -/
@@ -1395,15 +1350,15 @@ private lemma integrableOn_log_sub_one_bound :
   have hlog : IntegrableOn (fun x => |log (x - 1)|) (Set.Ioo 1 2) volume := by
     have h0 : IntervalIntegrable (fun x => log x) volume 0 1 :=
       intervalIntegral.intervalIntegrable_log'
-    have h1 : IntervalIntegrable (fun x => log (x - 1)) volume (0 + 1) (1 + 1) :=
+    have h1 :=
       h0.comp_sub_right 1
     norm_num at h1
     exact (h1.1.mono_set Set.Ioo_subset_Ioc_self).abs
   have hc : IntegrableOn (fun _ : ℝ => log 2 + |γ|) (Set.Ioo (1 : ℝ) 2) volume :=
-    integrableOn_const (measure_Ioo_lt_top).ne (by finiteness)
+    by simp
   have hsum : IntegrableOn (fun x => |log (x - 1)| + (log 2 + |γ|)) (Set.Ioo 1 2) volume :=
     hlog.add hc
-  exact hsum.congr_fun (fun x _ => by ring) measurableSet_Ioo
+  grind
 
 /-- `E₂Λ` is integrable on every bounded interval `(1, X)` (`X ≥ 2`): log-log singularity near
 `1` plus boundedness on `[2, X]`. -/
@@ -1412,8 +1367,8 @@ private lemma integrableOn_E₂Λ_Ioo {X : ℝ} (_hX : 2 ≤ X) :
   have hsub : Set.Ioo (1 : ℝ) X ⊆ Set.Ioo 1 2 ∪ Set.Icc 2 X := by
     intro x hx; simp only [Set.mem_Ioo, Set.mem_union, Set.mem_Icc] at *
     rcases lt_or_ge x 2 with h | h
-    · exact Or.inl ⟨hx.1, h⟩
-    · exact Or.inr ⟨h, hx.2.le⟩
+    · simp_all
+    · grind
   apply IntegrableOn.mono_set _ hsub
   apply IntegrableOn.union
   · have hg := integrableOn_log_sub_one_bound
@@ -1422,7 +1377,7 @@ private lemma integrableOn_E₂Λ_Ioo {X : ℝ} (_hX : 2 ≤ X) :
     rw [Real.norm_eq_abs]; exact abs_E₂Λ_le_on_Ioo hx
   · refine Integrable.mono' (g := fun _ => (log 4 + 6) / log 2) ?_
       measurable_E₂Λ.aestronglyMeasurable ?_
-    · exact integrableOn_const (by rw [Real.volume_Icc]; exact ENNReal.ofReal_ne_top) (by finiteness)
+    · simp
     · filter_upwards [self_mem_ae_restrict measurableSet_Icc] with x hx
       rw [Real.norm_eq_abs]; exact abs_E₂Λ_le_const hx.1
 
@@ -1435,14 +1390,13 @@ private lemma sub_one_mul_integral_E₂Λ_tendsto :
   -- Choose `X ≥ 2` so that `|E₂Λ x| ≤ ε/2` for `x ≥ X` (from `E₂Λ =o(1)`).
   obtain ⟨X₀, hX₀⟩ : ∃ X, ∀ x ≥ X, |E₂Λ x| ≤ ε / 2 := by
     have := E₂Λ.bound'.def (by positivity : (0:ℝ) < ε / 2)
-    simp only [Real.norm_eq_abs, abs_one, mul_one] at this
-    rw [Filter.eventually_atTop] at this; exact this
+    simp_all
   set X := max X₀ 2 with hXdef
   have hX2 : 2 ≤ X := le_max_right _ _
-  have hXge : ∀ x ≥ X, |E₂Λ x| ≤ ε / 2 := fun x hx => hX₀ x (le_trans (le_max_left _ _) hx)
+  have hXge : ∀ x ≥ X, |E₂Λ x| ≤ ε / 2 := by grind
   -- `B` is the (finite) mass of `|E₂Λ|` on `(1, X)`.
   set B := ∫ x in Set.Ioo 1 X, |E₂Λ x| with hBdef
-  have hB0 : 0 ≤ B := setIntegral_nonneg measurableSet_Ioo (fun x _ => abs_nonneg _)
+  have hB0 : 0 ≤ B := by positivity
   refine ⟨min 1 (ε / 2 / (B + 1)), by positivity, ?_⟩
   intro s hs hdist
   simp only [Set.mem_Ioi] at hs
@@ -1461,15 +1415,15 @@ private lemma sub_one_mul_integral_E₂Λ_tendsto :
   have hintAbsIoc : IntegrableOn (fun x => |E₂Λ x| * x ^ (-s)) (Set.Ioc 1 X) volume :=
     hintAbs.mono_set Set.Ioc_subset_Ioi_self
   have hintAbsIoiX : IntegrableOn (fun x => |E₂Λ x| * x ^ (-s)) (Set.Ioi X) volume :=
-    hintAbs.mono_set (Set.Ioi_subset_Ioi (by linarith))
+    hintAbs.mono_set (by grind)
   -- Split `∫_{(1,∞)} = ∫_{(1,X]} + ∫_{(X,∞)}`.
   have hsplit : ∫ x in Set.Ioi 1, |E₂Λ x| * x ^ (-s) =
       (∫ x in Set.Ioc 1 X, |E₂Λ x| * x ^ (-s)) + ∫ x in Set.Ioi X, |E₂Λ x| * x ^ (-s) := by
     have hu : Set.Ioi (1:ℝ) = Set.Ioc 1 X ∪ Set.Ioi X :=
-      (Set.Ioc_union_Ioi_eq_Ioi (by linarith)).symm
+      by grind
     rw [hu, setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
-      (hintAbs.mono_set (by rw [hu]; exact Set.subset_union_left))
-      (hintAbs.mono_set (by rw [hu]; exact Set.subset_union_right))]
+      (hintAbs.mono_set (by grind))
+      (hintAbs.mono_set (by grind))]
   -- Piece 1: on `(1,X]`, `x^(-s) ≤ 1`, so the integral is `≤ B`.
   have hp1 : ∫ x in Set.Ioc 1 X, |E₂Λ x| * x ^ (-s) ≤ B := by
     rw [hBdef]
@@ -1486,9 +1440,9 @@ private lemma sub_one_mul_integral_E₂Λ_tendsto :
   -- Piece 2: on `(X,∞)`, `|E₂Λ| ≤ ε/2`, and `∫_{(X,∞)} x^(-s) = X^(1-s)/(s-1)`.
   have hp2 : ∫ x in Set.Ioi X, |E₂Λ x| * x ^ (-s) ≤ (ε / 2) * (X ^ (1 - s) / (s - 1)) := by
     have hrpow_int : IntegrableOn (fun x : ℝ => x ^ (-s)) (Set.Ioi X) volume :=
-      integrableOn_Ioi_rpow_of_lt (by linarith) (by linarith : (0:ℝ) < X)
+      integrableOn_Ioi_rpow_of_lt (by linarith) (by positivity)
     have hval : ∫ x in Set.Ioi X, x ^ (-s) = X ^ (1 - s) / (s - 1) := by
-      rw [integral_Ioi_rpow_of_lt (by linarith) (by linarith : (0:ℝ) < X),
+      rw [integral_Ioi_rpow_of_lt (by linarith) (by positivity),
         show -s + 1 = 1 - s by ring, show (1:ℝ) - s = -(s - 1) by ring]
       rw [div_neg, neg_div, neg_neg]
     rw [← hval, ← integral_const_mul]
@@ -1496,7 +1450,7 @@ private lemma sub_one_mul_integral_E₂Λ_tendsto :
     intro x hx
     have hxpos : (0:ℝ) < x := by simp only [Set.mem_Ioi] at hx; linarith
     have hnn : 0 ≤ x ^ (-s) := Real.rpow_nonneg hxpos.le _
-    have hb : |E₂Λ x| ≤ ε / 2 := hXge x (by simp only [Set.mem_Ioi] at hx; linarith)
+    have hb := hXge x (by grind)
     gcongr
   have hXpow : X ^ (1 - s) ≤ 1 :=
     Real.rpow_le_one_of_one_le_of_nonpos (by linarith) (by linarith)
@@ -1508,8 +1462,7 @@ private lemma sub_one_mul_integral_E₂Λ_tendsto :
           ≤ (s - 1) * ((ε / 2) * (X ^ (1 - s) / (s - 1))) :=
             mul_le_mul_of_nonneg_left hp2 hsm1.le
         _ = (ε / 2) * X ^ (1 - s) := by
-              have hne : s - 1 ≠ 0 := by linarith
-              field_simp
+              grind
         _ ≤ (ε / 2) * 1 := by gcongr
         _ = ε / 2 := mul_one _
     have ht1 : (s - 1) * ∫ x in Set.Ioc 1 X, |E₂Λ x| * x ^ (-s) ≤ (s - 1) * B :=
@@ -1529,16 +1482,13 @@ private lemma sub_one_mul_integral_E₂Λ_tendsto :
   rw [Real.dist_eq, sub_zero]
   -- `(s-1)·B + ε/2 < ε` since `s - 1 < ε/2/(B+1)`.
   have hfin : (s - 1) * B + ε / 2 < ε := by
-    have hlt : s - 1 < ε / 2 / (B + 1) := lt_of_lt_of_le hs1 (min_le_right _ _)
+    have hlt : s - 1 < ε / 2 / (B + 1) := by grind
     have hBp : 0 < B + 1 := by linarith
     have h1 : (s - 1) * B ≤ (s - 1) * (B + 1) := by nlinarith
     have h2 : (s - 1) * (B + 1) < (ε / 2 / (B + 1)) * (B + 1) := mul_lt_mul_of_pos_right hlt hBp
     have h3 : (ε / 2 / (B + 1)) * (B + 1) = ε / 2 := by field_simp
     linarith
-  calc |(s - 1) * ∫ x in Set.Ioi 1, E₂Λ x * x ^ (-s)|
-      ≤ (s - 1) * ∫ x in Set.Ioi 1, |E₂Λ x| * x ^ (-s) := habs_le
-    _ ≤ (s - 1) * B + ε / 2 := hbound
-    _ < ε := hfin
+  linarith
 
 end
 
@@ -1557,7 +1507,7 @@ theorem deriv_gamma_add_γ_eq_zero : deriv Gamma 1 + γ = 0 := by
       (nhdsWithin 1 (Set.Ioi 1)) (nhds (deriv Gamma 1 + γ)) := by
     refine Filter.Tendsto.congr' ?_ tendsto_const_nhds
     filter_upwards [self_mem_nhdsWithin] with s hs
-    exact (key s hs).symm
+    exact by grind
   -- But the same function tends to `0 - 0` by the two limit lemmas.
   have hlim := log_zeta_limit.sub sub_one_mul_integral_E₂Λ_tendsto
   rw [sub_zero] at hlim
@@ -1609,28 +1559,26 @@ theorem E₂p.abs_le {x : ℝ} (hx : 2 ≤ x) :
     rw [E₂p.eq hx, abs_le']
     constructor
     · grw [E₁p.le (by linarith)]
-      have : ∫ t in Set.Ioi x, E₁p t / (t * log t^2) ≥ (- 2 - E₁) / log x := calc
+      have  := calc
         _ ≥ ∫ t in Set.Ioi x, (-2 - E₁) / (t * log t^2) := by
           apply MeasureTheory.setIntegral_mono_on (integrable_const_div_mul_log_sq (-2 - E₁) hx)
             (integrable_E₁p_div_mul_log_sq hx) (by measurability)
           intro y hy; simp at hy
           have : 1 < y := by linarith
-          have : 0 < log y := log_pos this
+          have  := log_pos this
           gcongr; exact E₁p.ge (by linarith)
         _ = _ := integ_div_mul_log_sq (-2 - E₁) hx
-      grw [this]
       grind
     grw [E₁p.ge (by linarith)]
-    have : ∫ t in Set.Ioi x, E₁p t / (t * log t^2) ≤ (log 4 + 4) / log x := calc
+    have  := calc
         _ ≤ ∫ t in Set.Ioi x, (log 4 + 4) / (t * log t^2) := by
           apply MeasureTheory.setIntegral_mono_on (integrable_E₁p_div_mul_log_sq hx)
             (integrable_const_div_mul_log_sq (log 4 + 4) hx) (by measurability)
           intro y hy; simp at hy
           have : 1 < y := by linarith
-          have : 0 < log y := log_pos this
+          have  := log_pos this
           gcongr; exact E₁p.le (by linarith)
         _ = _ := integ_div_mul_log_sq (log 4 + 4) hx
-    grw [this]
     grind
 
 theorem E₂p.bound : E₂p =O[atTop] (fun x ↦ 1 / log x) := by
@@ -1639,7 +1587,7 @@ theorem E₂p.bound : E₂p =O[atTop] (fun x ↦ 1 / log x) := by
     intro x hx
     convert E₂p.abs_le hx using 1
     have : 0 < log x := by apply log_pos; linarith
-    grind [abs_of_pos this]
+    grind
 
 theorem E₂p.bound' : E₂p =o[atTop] (fun _ ↦ (1:ℝ)) := E₂p.bound.trans_isLittleO inv_log_eq_o_one
 
@@ -1667,8 +1615,8 @@ lemma HasSum_log_one_sub_one_div_prime {p : ℕ} (hp : p.Prime) :
     exact inv_lt_one_of_one_lt₀ (mod_cast hp.one_lt)
 
 lemma E₂Λ_sub_E₂p_tendsto :
-    Tendsto (E₂Λ - E₂p) atTop (nhds 0) := by
-  exact isLittleO_one_iff ℝ|>.mp <| E₂Λ.bound'.sub E₂p.bound'
+    Tendsto (E₂Λ - E₂p) atTop (nhds 0) :=
+  isLittleO_one_iff ℝ|>.mp <| E₂Λ.bound'.sub E₂p.bound'
 
 /-- Function used in the proof of `M.eq`, `Λ n / n * log n` restricted to not primes. -/
 noncomputable abbrev M_eq_f (n : ℕ) :=
@@ -1686,7 +1634,7 @@ lemma E₂Λ_sub_E₂p_eq (x : ℝ) :
     · rw [vonMangoldt_apply_prime hn]
       have : log n ≠ 0 := by simp; grind [hn.two_le]
       field
-    · ring
+    simp
 
 lemma M_eq_f.sum_tendsto :
     Tendsto (fun (x : ℝ) ↦ ∑ n ∈ Ioc 0 ⌊x⌋₊, M_eq_f n) atTop (nhds (γ - M)) := by
@@ -1707,10 +1655,7 @@ lemma M_eq_f.sum_tendsto' :
 lemma M_eq_f.HasSum :
     HasSum M_eq_f (γ - M) := by
   refine hasSum_iff_tendsto_nat_of_nonneg (fun n ↦ ?_) _|>.mpr M_eq_f.sum_tendsto'
-  unfold M_eq_f
-  split_ifs with hn
-  · rfl
-  · exact div_nonneg vonMangoldt_nonneg (by positivity)
+  positivity
 
 lemma M_eq_f.sum_primes :
     ∑' (p : Nat.Primes), M_eq_f p = 0 := by
@@ -1737,17 +1682,14 @@ lemma tsum_M_eq_f_eq_tsum :
     trans -∑' (k : ℕ), (1 : ℝ) / ((k + 2) * n ^ (k + 2))
     · congr
       ext k
-      have : ¬(Nat.Prime (n ^ (k + 2))) := by exact Nat.Prime.not_prime_pow (by grind)
+      have : ¬(Nat.Prime (n ^ (k + 2))) := Nat.Prime.not_prime_pow (by grind)
       simp only [this, ↓reduceIte, one_div, mul_inv_rev]
       rw [vonMangoldt_apply_pow (by grind), vonMangoldt_apply_prime hn]
       have : log n ≠ 0 := by simp; grind [hn.two_le]
       field
     · rw [← tsum_neg]
-      ring_nf
-      congr
-      ext
-      ring_nf
-  · ring
+      grind
+  simp
 
 theorem M.eq : M = γ + ∑' p : ℕ, if p.Prime then log (1 - 1 / p) + 1 / p else 0 := by
   rw [← tsum_M_eq_f_eq_tsum, M_eq_f.HasSum.tsum_eq]
@@ -1758,12 +1700,12 @@ noncomputable def E₃ (x : ℝ) : ℝ := ∑ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Pr
 theorem prod_one_minus_div_prime_eq {x : ℝ} (hx : 1 < x) :
     ∏ p ∈ Ioc 0 ⌊x⌋₊ with p.Prime, (1 - (1 : ℝ) / p) =
       exp (-eulerMascheroniConstant) * exp (E₃ x) / log x := by
-  have hlog : 0 < log x := log_pos hx
+  have hlog := log_pos hx
   have hpos : ∀ {p : ℕ}, p.Prime → (0 : ℝ) < 1 - 1 / p := fun {p} hp ↦ by
     have : (2 : ℝ) ≤ p := mod_cast hp.two_le
     grind [one_div_le_one_div_of_le two_pos this]
   rw [E₃, exp_add, exp_add, exp_sum, exp_log hlog, exp_neg,
-    prod_congr rfl fun p hp ↦ exp_log (hpos (mem_filter.mp hp).2)]
+    prod_congr rfl fun p hp ↦ exp_log (by grind)]
   field_simp
 
 noncomputable abbrev M_eq_summand (p : ℕ) := if p.Prime then log (1 - 1 / p) + 1 / p else 0
@@ -1774,10 +1716,8 @@ lemma M_eq_summand_bound (n : ℕ) :
   split_ifs with h
   · trans 1 / n ^ 2 / (1 - 1 / n)
     · convert abs_log_sub_add_sum_range_le (x := 1 / n) _ 1 using 1
-      · rw [add_comm]
-        simp
-      · rw [abs_of_nonneg (by simp)]
-        ring
+      · simp [add_comm]
+      · simp
       · simpa using inv_lt_one_of_one_lt₀ (mod_cast h.one_lt)
     rw [(by ring : (2 : ℝ) / n ^ 2 = 1 / n ^ 2 / (1 / 2))]
     gcongr
@@ -1804,16 +1744,15 @@ lemma sum_one_div_sq_le {N : ℝ} (hN : 1 ≤ N) :
       convert! HasDerivAt.fun_div (d' := (1 : ℝ)) (hasDerivAt_const ..) _ _ using 1
       · ring
       · simpa using hasDerivAt_id' t
-      · simp at ht
-        linarith
-    have lim : Tendsto (fun t ↦ -1 / (t + N)) atTop (nhds 0) := by
-      exact (tendsto_atTop_add_const_right atTop N tendsto_id).const_div_atTop _
+      · grind
+    have lim : Tendsto (fun t ↦ -1 / (t + N)) atTop (nhds 0) :=
+      (tendsto_atTop_add_const_right atTop N tendsto_id).const_div_atTop _
     rw [MeasureTheory.integral_Ioi_of_hasDerivAt_of_nonneg' hd (fun _ _ ↦ (by positivity)) lim]
     ring_nf
     rw [mul_two]
     gcongr
     field_simp
-    exact hN
+    omega
   · unfold AntitoneOn
     intro a ha b hb h
     beta_reduce
@@ -1835,8 +1774,7 @@ lemma sum_M_eq_summand_le {N : ℕ} (hN : 0 < N) :
     rw [tsum_mul_left]
     push_cast
     grw [sum_one_div_sq_le (mod_cast hN)]
-    ring_nf
-    rfl
+    grind
   · exact (summable_nat_add_iff N|>.mpr (summable_one_div_nat_pow.mpr one_lt_two))|>.const_div _
 
 lemma sum_M_eq_summand_le' {x : ℝ} (hx : 2 ≤ x) :
@@ -1869,7 +1807,6 @@ theorem E₃.abs_le : ∃ C, ∀ x, 2 ≤ x → |E₃ x| ≤ C / log x := by
       gcongr
       · exact log_pos (by linarith)
       · exact log_le_self (by linarith)
-    grw [this]
-    rw [← add_div]
+    grind
 
 end Mertens

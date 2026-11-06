@@ -7,61 +7,56 @@ public import OAI.NumberTheory.DirichletL.Energy.CanonicalChildBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalLiveBound
 open HeckeFamily ConcreteTraceCRT
 open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
 open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
+open CenteredMomentDivisorAllocation
 open CenteredMomentRadialEligibleEnergy
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-def LiveChild (η:Character)(r:Radial)(D:Ideal O)
+def LiveChild (η:Character)(r:Radial)(D:Ideal HeckeFamily.O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2)))(V₁ V₂:Plain)
-    (pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)
-    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal O))(J:Finset α):Prop:=
-  ∃z:O,r.keep z ∧ (r.profile (‖eisEmbedding z‖^2/r.scale)).re≠0 ∧
+    (pool:α→Finset (Ideal HeckeFamily.O))(β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)
+    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal HeckeFamily.O))(J:Finset α):Prop:=
+  ∃z:HeckeFamily.O,r.keep z ∧ (r.profile (‖eisEmbedding z‖^2/r.scale)).re≠0 ∧
     child (naturalCharacter η z) D a V₁ V₂ pool β P t X₁ X₂ hX₁ hX₂ F₁ F₂ J≠0
 
-theorem energy_zero_of_not_live (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠0)(D:Ideal O)
+theorem energy_zero_of_not_live (η:Character)(r:Radial)(hz:∀z,r.keep z→z≠0)(D:Ideal HeckeFamily.O)
     (a:Allocation D (Finset.univ:Finset (α⊕Fin 2)))(V₁ V₂:Plain)
-    (pool:α→Finset (Ideal O))(β:α→Ideal O→ℂ)(P:α→ℝ)(hP:∀i,0<P i)
-    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal O))(J:Finset α)
+    (pool:α→Finset (Ideal HeckeFamily.O))(β:α→Ideal HeckeFamily.O→ℂ)(P:α→ℝ)(hP:∀i,0<P i)
+    (t X₁ X₂:ℝ)(hX₁:0<X₁)(hX₂:0<X₂)(F₁ F₂:Finset (Ideal HeckeFamily.O))(J:Finset α)
     (hF₁:∀I∈F₁,I≠0)(hF₂:∀I∈F₂,I≠0)
     (hn:¬LiveChild η r D a V₁ V₂ pool β P t X₁ X₂ hX₁ hX₂ F₁ F₂ J):
     allocatedEnergy η r D a V₁ V₂ pool β P t X₁ X₂ hX₁ hX₂ F₁ F₂ J=0:=by
   rw [←child_radial_eq_energy η r hz D a V₁ V₂ pool β P hP t X₁ X₂ hX₁ hX₂ F₁ F₂ J hF₁ hF₂]
   unfold radialEnergy
-  apply (tsum_congr (g:=fun _ : O=>(0:ℝ)) ?_).trans (tsum_zero)
+  apply (tsum_congr (g:=fun _ : HeckeFamily.O=>(0:ℝ)) ?_).trans (tsum_zero)
   intro z
   by_cases hk:r.keep z
   · rw [ite_eq_left hk]
     by_cases hφ:(r.profile (‖eisEmbedding z‖^2/r.scale)).re=0
-    · rw [hφ,mul_zero]
+    · simp_all
     · have hc:child (naturalCharacter η z) D a V₁ V₂ pool β P t X₁ X₂ hX₁ hX₂ F₁ F₂ J=0:=by
         by_contra hh
         exact hn ⟨z,hk,hφ,hh⟩
-      simp only [hc,norm_zero,zero_pow (by decide:2≠0),zero_mul]
-  · rw [ite_eq_right hk]
+      simp_all
+  simp_all
 
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
+open CenteredMomentEnergyAllocatedClipped
+open CenteredMomentSecondNonexceptionalChosenBlock
+open CenteredMomentEnergyBands
+open CenteredMomentFiniteProfileExceptional
 open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
 open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
 open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
 
 open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
     (a b:ℝ)(haPlain:0<a)(L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
@@ -70,7 +65,7 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∀θ:α→RayQuotient.Characters M H,
     ∃Z₀:ℝ,1<Z₀ ∧ ∀Z:ℝ,Z₀≤Z →
-    ∀εchild:ℝ,∀(Q:Ideal O),Q≤M →
+    ∀εchild:ℝ,∀(Q:Ideal HeckeFamily.O),Q≤M →
     ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
@@ -79,14 +74,14 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
     ∀src:Input α,Matches M H hH src η₀ θ w σ freq W bslot Z →
-    ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
+    ∀(C R:Ideal HeckeFamily.O)(B:actualAllocations src.pools C)(D:Ideal HeckeFamily.O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
       (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)),
     ∀(τ:Character)(dyad:Fin 4→ℤ),∀_hn:1≤CenteredMomentSectorLocalization.dyadicScale (dyad 1),
     Real.logb Z (CenteredMomentSectorLocalization.dyadicScale (dyad 1))+
       Real.logb Z (τ.modulus.absNorm:ℝ)≤Mcap →
     ∀p:Profiles a b,∀X₁ X₂:ℝ,∀hX₁:0<X₁,∀hX₂:0<X₂,X₁≤Z^L → X₂≤Z^L →
-    ∀F₁ F₂:Finset (Ideal O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
+    ∀F₁ F₂:Finset (Ideal HeckeFamily.O),(∀I∈F₁,I≠0) → (∀I∈F₂,I≠0) →
     let d:=commonData (withHeight src τ v) C R B
     ∀Mnom cost:ℝ,
     (LiveChild τ (canonicalRadial τ (internalQ Q η₀) dyad) D alloc
@@ -116,7 +111,7 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     src hmatch C R B D alloc J τ dyad hn hwidth p X₁ X₂ hX₁ hX₂ hc₁ hc₂ F₁ F₂ hF₁ hF₂
   dsimp only
   intro Mnom cost hcost
-  have hz:1<Z:=hZ₀.trans_le hZ
+  have hz:1<Z:=by linarith
   have hz0:0<Z:=zero_lt_one.trans hz
   let d:=commonData (withHeight src τ v) C R B
   let rad:=canonicalRadial τ (internalQ Q η₀) dyad
@@ -138,7 +133,6 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
     rw [←hpower,mul_assoc,←Real.rpow_add hz0]
     apply mul_le_mul_of_nonneg_left _ (by
       have hd:0≤diagonalControl rad.profile:=by unfold diagonalControl;positivity
-      have hp:=p.control_nonneg T
       positivity)
     apply Real.rpow_le_rpow_of_exponent_le hz.le
     have hh:=hcost hne
@@ -149,7 +143,6 @@ theorem actual_live_canonical_child_bands (W:ℝ→ℂ)(aslot bslot Mcap Lslot �
       v X₁ X₂ hX₁ hX₂ F₁ F₂ J≤_
     rw [he]
     have hd:0≤diagonalControl rad.profile:=by unfold diagonalControl;positivity
-    have hp:=p.control_nonneg T
     positivity
 
 end SevenEighths.CenteredMomentEnergyCanonicalLiveBound

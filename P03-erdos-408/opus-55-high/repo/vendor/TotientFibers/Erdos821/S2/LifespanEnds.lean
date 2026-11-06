@@ -8,7 +8,6 @@ public import Mathlib.Data.Fintype.BigOperators
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -75,7 +74,7 @@ theorem active_span_sum (p n : ℕ) [NeZero p] (eta : Fin n → ℝ) (h : Fin n 
       (p : ℝ)⁻¹ * prefixChoice a f birth * mid * suffixChoice z f stop) =
         (p : ℝ)⁻¹ * ∏ i ∈ Finset.univ.filter (fun i => i ∉ active), (1 - f i)
     rw [hs, prefixChoice_sum, suffixChoice_sum]
-    simpa only [mid, mul_assoc] using congrArg (fun v => (p : ℝ)⁻¹ * v) he.symm
+    grind
   · simp only [activeSpanTerm, ite_eq_right hc, Finset.sum_const_zero, mul_zero]
 
 

@@ -6,7 +6,6 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Powerset
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -33,11 +32,7 @@ lemma productAverage_sum {β : Type*} (w : ∀ i, α i → ℝ) (S : Finset ι)
   unfold productAverage
   simp_rw [Finset.mul_sum]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro v _
-  apply Finset.sum_congr rfl
-  intro y _
-  ring
+  grind
 
 def productFull (w : ∀ i, α i → ℝ) (I : Finset ι)
     (f : ProductSample α → ℂ) (x : ProductSample α) : ℂ :=
@@ -63,12 +58,11 @@ lemma productFull_insert (w : ∀ i, α i → ℝ) (hsum : ∀ i, ∑ a, w i a =
     rw [← Finset.sum_neg_distrib]
     apply Finset.sum_congr rfl
     intro U hU
-    have hiU : i ∉ U := fun h => hi (Finset.mem_powerset.mp hU h)
+    have hiU : i ∉ U := by grind
     rw [Finset.card_insert_of_notMem hiU,
       productAverage_union w hsum {i} U, Finset.singleton_union, pow_succ]
     ring
-  rw [ht]
-  ring
+  grind
 
 lemma productFull_average_commute (w : ∀ i, α i → ℝ)
     (hsum : ∀ i, ∑ a, w i a = 1) (I S : Finset ι) (f : ProductSample α → ℂ) :

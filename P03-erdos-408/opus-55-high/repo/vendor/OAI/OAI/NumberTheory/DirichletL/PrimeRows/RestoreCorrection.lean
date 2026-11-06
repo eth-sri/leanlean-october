@@ -9,10 +9,9 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.MarkedExclusions
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve CompletedGauss
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 
 def supportedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   if hs : Supported P.val then
@@ -20,11 +19,11 @@ def supportedCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (x w z :
     else idealUnramifiedCorrection η u P x w z
   else 1
 
-def excludedCorrection (S : Finset (Ideal O)) (η : Character) (u : FreeRow)
+def excludedCorrection (S : Finset (Ideal HeckeFamily.O)) (η : Character) (u : FreeRow)
     (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   if P.val∈S then 1 else supportedCorrection η u P x w z
 
-theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
+theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal HeckeFamily.O))
     (hS : SourceExclusions S) (htail : FirstTail eps S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
     (hx : (51/100:ℝ)≤x.re) (hz : (17/50:ℝ)≤z.re)
@@ -40,7 +39,7 @@ theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
       have hs := outside_prime_supported S hS.bad P.val P.property
       simp only [excludedCorrection,ite_eq_right P.property,supportedCorrection,dite_eq_left hs,
         ramifiedFactor,unramifiedFactor]
-      split_ifs <;> simp
+      simp_all
     · rfl
   exact (Subtype.val_injective.hasProd_iff (fun P hP=>by
     have hm : P.val∈S := by
@@ -48,7 +47,7 @@ theorem continuedCorrection_first_hasProd (eps : ℝ) (S : Finset (Ideal O))
       exact hP ⟨⟨P,hn⟩,rfl⟩
     simp [excludedCorrection,hm])).mp hsub
 
-theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
+theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal HeckeFamily.O))
     (hS : SourceExclusions S) (htail : FirstTail eps S)
     (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
     (η : Character) (u : FreeRow) (x w z : ℂ)
@@ -65,15 +64,13 @@ theorem continuedCorrection_restore (eps : ℝ) (S : Finset (Ideal O))
       (∏P∈T,supportedCorrection η u P x w z) := by
     have hh := hasProd_prod_of_ne_finset_one (s:=T)
       (f:=fun P : PrimeIdeal=>if P∈T then supportedCorrection η u P x w z else 1)
-      (L:=SummationFilter.unconditional PrimeIdeal) (fun P hP=>ite_eq_right hP)
+      (L:=SummationFilter.unconditional PrimeIdeal) (by grind)
     simpa only [Finset.prod_ite_mem,Finset.inter_self] using hh
   apply hlarge.unique
   convert hsmall.mul hfinite using 1
   funext P
   simp only [excludedCorrection,mem_markExclusions]
-  by_cases hp : P∈T
-  · simp [hp,hT P hp]
-  · simp [hp]
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 end

@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Reflection.SurvivingEnergy
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open InverseReflectedNormalization InverseKernelSourceUniform
+open InverseKernelSourceUniform
 noncomputable section
 variable {φ : Type*} [Fintype φ]
 
@@ -15,7 +15,7 @@ lemma reciprocal_annulus_normalization (r Qn Qb kn kb : ℝ)
     (hr : 0<r) (hn : 0<Qn) (hb : 0<Qb) (hkn : 0<kn) (hkb : 0<kb) :
     1/(r*Real.sqrt Qn*Qb) = Real.sqrt kn*kb/(r*Real.sqrt (kn*Qn)*(kb*Qb)) := by
   rw [Real.sqrt_mul hkn.le]
-  have hs : Real.sqrt kn≠0 := (Real.sqrt_pos.mpr hkn).ne'
+  have hs := (Real.sqrt_pos.mpr hkn).ne'
   field_simp
 
 theorem physical_scalar_extracted (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
@@ -30,9 +30,7 @@ theorem physical_scalar_extracted (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ�
   unfold extractedOutsideScalar
   rw [mul_div_cancel₀ _ (hp 1),mul_div_cancel₀ _ (hp 2)]
   have h := reciprocal_annulus_normalization r Qn Qb kn kb hr hn hb hkn hkb
-  calc
-    _ = A*(1/(r*Real.sqrt Qn*Qb))*smallScalar R := by ring
-    _ = _ := by rw [h]; ring
+  grind
 
 theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
     (hT : 0<T) (htau : 0<tau) (hC : 0<C) (hr : 0<r)
@@ -52,8 +50,8 @@ theorem annular_kernel_threshold (Z T tau C r QK QP Qn Qb kn kb D1 D2 : ℝ)
     unfold kernelCenter
     field_simp
   rw [← heq,Real.logb_div (by positivity) hR.ne',
-    Real.logb_mul (by positivity) (pow_ne_zero _ hr.ne'),
-    Real.logb_mul hv.ne' (pow_ne_zero _ hl.ne'),Real.logb_pow,Real.logb_pow]
+    Real.logb_mul (by positivity) (by positivity),
+    Real.logb_mul hv.ne' (by positivity),Real.logb_pow,Real.logb_pow]
   norm_num
 
 end

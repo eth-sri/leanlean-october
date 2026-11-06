@@ -8,9 +8,9 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open SecondPassArithmetic
 open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
 open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
 open SevenEighths.InverseInitialEnergyCallerModes
@@ -52,7 +52,7 @@ theorem rectangles_disjoint (F : Finset ι) {x y : Source (ι:=ι) 0} (hne : x�
   obtain ⟨b,hb,heb⟩ := Finset.mem_image.mp hz₂
   have he := congrArg erasePoint (hea.trans heb.symm)
   simp only [erase_sourcePoint] at he
-  exact hne he
+  simp_all
 
 theorem pointSource_sum {A : Type*} [AddCommMonoid A]
     (F : Finset ι) (S : Finset (Source (ι:=ι) 0)) (f : Point ι→A) :
@@ -73,9 +73,9 @@ theorem pointSource_valid (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
   have hd (U : Finset ι) (hU : U∈(F\x.overlap).powerset) : Disjoint x.overlap U := by
     apply Finset.disjoint_left.mpr
     intro i hi hiU
-    exact (Finset.mem_sdiff.mp (Finset.mem_powerset.mp hU hiU)).2 hi
-  exact ⟨hdiv x hx,hd N (Finset.mem_product.mp hNM).1,
-    hd M (Finset.mem_product.mp hNM).2,hfreq x hx⟩
+    exact by grind
+  exact ⟨hdiv x hx,hd N (by grind),
+    hd M (by grind),hfreq x hx⟩
 
 variable {σ : Type*} [DecidableEq σ]
   (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
@@ -128,7 +128,7 @@ theorem canonicalBlock_rows
       apply Finset.sum_congr rfl
       intro ρ hρ
       simp_rw [←Finset.mul_sum]
-      rw [canonicalPairMode_rectangle p hp hcop hg hpr x (hE x hx) F Ψ j
+      rw [canonicalPairMode_rectangle p hp hcop hg hpr x (by grind) F Ψ j
         slots lists a ω₁ ω₂ Z D B v θ H ρ z]
       rfl
 

@@ -14,7 +14,7 @@ vanishes unless `λμ ≤ κx + 1`, in which case `mn ≤ 4(κx + 1)`.
 
 namespace Erdos408.TypeII
 
-open Finset Real
+open Finset
 
 /-- A cutoff in the class is Lipschitz with constant `M₁ T^{C_Φ}`. -/
 theorem abs_sub_le_of_isCutoff {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ}
@@ -27,7 +27,7 @@ theorem abs_sub_le_of_isCutoff {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → 
       have := hder 1 y
       rwa [iteratedDeriv_one, ← Real.norm_eq_abs] at this) convex_univ
     (Set.mem_univ b) (Set.mem_univ a)
-  simpa [Real.norm_eq_abs] using h
+  simp_all
 
 /-- The derivative bound of a cutoff is nonnegative. -/
 theorem cutoff_deriv_bound_nonneg {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → ℝ}
@@ -52,19 +52,13 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
   · rw [hz.1, hz.2, sub_zero, abs_zero]
     have h1 := cutoff_deriv_bound_nonneg hΦ 1
     push_cast at h1
-    split_ifs
-    · have : 0 ≤ (3 * δ * (κ * x + 1) + 1) / x := by
-        have : 0 ≤ κ * x := by positivity
-        positivity
-      positivity
-    · exact le_rfl
+    positivity
   · -- `λμ ≤ κx + 1`
     have hlm : lam * mu ≤ κ * x + 1 := by
       rcases not_and_or.1 hz with h | h
       · have := (hsupp _ h).2
         rw [div_le_iff₀ hx] at this
-        push_cast at this
-        linarith
+        grind
       · have := (hsupp _ h).2
         rw [div_le_iff₀ hx] at this
         linarith
@@ -89,6 +83,6 @@ theorem abs_cutoff_freeze_le {κ CΦ x : ℝ} {M : ℕ → ℝ} {Φ : ℝ → �
       linarith
     have h4 : 3 * δ * (lam * mu) ≤ 3 * δ * (κ * x + 1) :=
       mul_le_mul_of_nonneg_left hlm (by positivity)
-    constructor <;> linarith
+    grind
 
 end Erdos408.TypeII

@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLivePartit
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
+open FirstPassCubeLabels SecondPassArithmetic
+open InverseSecondSourceBlocks InverseMomentFirstChildWindows
 open InverseMomentFirstOriginalProfile
 open ConcreteTraceCRT (eisEmbedding)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 
 include hp in
 theorem first_dyadic_original_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))
@@ -33,7 +32,7 @@ theorem first_dyadic_original_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))
 
 include hp in
 theorem first_live_cell_radius_cap (pool:Finset ι)(Q:Finset (ι→₀ℕ))
-    (labels:Finset (Ideal O))(Y:ℝ)(term:OriginalIndex ι→FirstCommonIndex ι→ℂ)
+    (labels:Finset (Ideal ActualEisensteinCubic.O))(Y:ℝ)(term:OriginalIndex ι→FirstCommonIndex ι→ℂ)
     (Z M r ell V eta tau Fmax:ℝ)(hZ:1<Z)(hbin:2≤Z^eta)(hM:0≤M)
     (hF:r+3*ell+V≤Fmax)
     (hQ:∀v∈Q,‖eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta))

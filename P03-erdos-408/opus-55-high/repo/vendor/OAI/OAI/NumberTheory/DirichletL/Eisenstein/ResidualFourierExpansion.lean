@@ -11,33 +11,20 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -46,44 +33,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
 section
 local notation "O" => ActualEisensteinCubic.O
@@ -99,7 +76,7 @@ lemma cubicResidualFullMode_density_integrable (a b : ℝ) (ha : 0<a) (h : Actua
       apply ContinuousOn.integrableOn_Icc
       intro v hv
       exact (continuousAt_const.mul (Complex.continuousAt_ofReal_cpow_const v
-        (-(7/3:ℂ)) (Or.inr (ha.trans_le hv.1).ne'))).continuousWithinAt
+        (-(7/3:ℂ)) (by grind))).continuousWithinAt
     apply hi.congr
     filter_upwards [ae_restrict_mem measurableSet_Icc] with v hv
     exact (cubicResidualFullModeAmplitude_zero_density v (ha.trans_le hv.1)).symm
@@ -117,8 +94,7 @@ lemma cubicEisensteinResidue_slice_coefficient_ae (a b : ℝ) (ha : 0<a) (h : Ac
   intro ρ
   rw [←kernelCuspHeightFourier_eq_slice_integral a b ha ρ h cubicEisensteinResidue,
     kernelCuspHeightFourier_residue_full a b ha ρ h,←integral_const_mul]
-  apply integral_congr_ae
-  exact Eventually.of_forall (fun v => by ring)
+  ring
 
 lemma cubicEisensteinResidue_all_slice_coefficients_ae (a b : ℝ) (ha : 0<a) :
     ∀ᵐv ∂volume.restrict (Set.Icc a b), ∀h : ActualEisensteinCubic.O,
@@ -136,11 +112,10 @@ lemma cubicEisensteinResidue_all_fourier_integrals_ae (a b : ℝ) (ha : 0<a) :
   filter_upwards [cubicEisensteinResidue_all_slice_coefficients_ae a b ha,
     ae_restrict_mem measurableSet_Icc] with v hv hvmem
   intro h
-  have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (ha.trans_le hvmem.1).ne'
+  have hv0 := Complex.ofReal_ne_zero.mpr (ha.trans_le hvmem.1).ne'
   have he := hv h
   unfold kernelCuspSliceCoefficient at he
-  rw [←mul_div_assoc] at he
-  exact (div_left_inj' (pow_ne_zero 3 hv0)).mp he
+  grind
 
 end
 
@@ -174,7 +149,7 @@ lemma cubicResidualFunction_height_memLp (v : ℝ) (hv : 0<v) :
   apply (hn.continuousOn.integrableOn_compact
     (isCompact_closedBall (0:ℂ) (∑i,‖periodBasis i‖))).mono_set
   intro z hz
-  simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz
+  simpa using norm_mem_periodDomain z hz
 
 theorem cubicEisensteinResidue_cell_slices_ae (a b : ℝ) (ha : 0<a) :
     ∀ᵐv ∂volume.restrict (Set.Icc a b),
@@ -197,10 +172,9 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal Pointwise MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Pointwise MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
+open CubicKubota
 
 lemma periodDomain_memLp_of_continuous (f : ℂ→ℂ) (hf : Continuous f) :
     MemLp f 2 (volume.restrict periodDomain) := by
@@ -208,12 +182,12 @@ lemma periodDomain_memLp_of_continuous (f : ℂ→ℂ) (hf : Continuous f) :
   apply (((hf.norm.pow 2).continuousOn).integrableOn_compact
     (isCompact_closedBall (0:ℂ) (∑i,‖periodBasis i‖))).mono_set
   intro z hz
-  simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz
+  simpa using norm_mem_periodDomain z hz
 
 lemma upperTranslation_mem_kernel (n : ActualEisensteinCubic.O) :
-    (upperTranslation n : SL(2,ActualEisensteinCubic.O))∈globalKubotaKernel := by
-  exact (globalKubotaKernel_mem _).mpr
-    ⟨(upperTranslation n).property,complexCharacter_upperTranslation n⟩
+    (upperTranslation n : SL(2,ActualEisensteinCubic.O))∈globalKubotaKernel :=
+  (globalKubotaKernel_mem _).mpr
+    ⟨by simp,complexCharacter_upperTranslation n⟩
 
 lemma kernelProjection_upper_period (v : ℝ) (hv : 0<v) (z : ℂ) (n : ActualEisensteinCubic.O) :
     integralOrbitProjection globalKubotaKernel (upperPoint (z+3*eisEmbedding n) v hv)=
@@ -234,7 +208,7 @@ lemma ae_eq_of_periodDomain_eq (f g : ℂ→ℂ)
     obtain ⟨n,rfl⟩ := periodEquiv.surjective p
     change f (3*eisEmbedding n+z)=f z ∧ g (3*eisEmbedding n+z)=g z
     rw [add_comm]
-    exact ⟨hf n z,hg n z⟩
+    exact by grind
   have hi : ∀p : periodLattice,p+ᵥ{z : ℂ | f z≠g z}={z : ℂ | f z≠g z} := by
     intro p
     ext z
@@ -260,8 +234,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
 lemma positive_height_interval_cover :
     Set.Ioi (0:ℝ) = ⋃n : ℕ,Set.Icc (1/((n:ℝ)+1)) ((n:ℝ)+1) := by
@@ -277,10 +250,10 @@ lemma positive_height_interval_cover :
       apply (div_le_iff₀ hN).mpr
       have hh := (div_le_iff₀ hvp).mp hinv
       nlinarith
-    exact Set.mem_iUnion.mpr ⟨n,hlow,hvN⟩
+    exact Set.mem_iUnion.mpr (by grind)
   · intro hv
     obtain ⟨n,hn⟩ := Set.mem_iUnion.mp hv
-    exact lt_of_lt_of_le (by positivity : 0<(1:ℝ)/((n:ℝ)+1)) hn.1
+    exact lt_of_lt_of_le (by positivity) hn.1
 
 lemma hyperbolic_ae_of_coordinate_ae (f g : HyperbolicSpace→ℂ)
     (hf : Measurable f) (hg : Measurable g)
@@ -338,8 +311,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical
 
 theorem cubicEisensteinResidue_continuous_representative :
     (fun w => cubicEisensteinResidue (integralOrbitProjection globalKubotaKernel w))
@@ -356,8 +328,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical MatrixGroups Pointwise
 
 lemma kernelProjection_quasiMeasurePreserving :
     Measure.QuasiMeasurePreserving (integralOrbitProjection globalKubotaKernel)
@@ -399,7 +370,7 @@ lemma kernelLevel_character_ae_on_hyperbolic (F : KernelQuotientL2)
     rw [hchar] at hq
     exact hq.symm.trans hs
   have hl := kernelProjection_quasiMeasurePreserving.ae_eq_comp he
-  simpa only [Function.comp_def,kernelLevelAction_mk] using hl
+  simpa
 
 lemma kernelLevel_character_continuous_representative (F : KernelQuotientL2)
     (f : HyperbolicSpace→ℂ) (hf : Continuous f)
@@ -424,8 +395,7 @@ end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical MatrixGroups
 
 theorem cubicResidualFunction_automorphy (M : CubicKubota.levelThree) (w : HyperbolicSpace) :
     cubicResidualFunction (complexMatrix M • w)=
@@ -453,8 +423,7 @@ lemma sourceProjection_congr_ae (f g : HyperbolicSpace→ℂ)
     (measurePreserving_smul _ hyperbolicVolume).quasiMeasurePreserving.ae_eq_comp h
   filter_upwards [ae_all_iff.mpr htrans] with w hw
   unfold sourceProjection
-  congr 1
-  exact Finset.sum_congr rfl (fun q _ => hw q)
+  simp_all
 
 lemma kernelSourceProjection_hyperbolic_representative (F : KernelQuotientL2)
     (f : HyperbolicSpace→ℂ)
@@ -496,9 +465,9 @@ theorem cubicSourceResidualFunction_represents_projection :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups
+open scoped Classical MatrixGroups
 
-open CubicKubota ActualEisensteinCubic ConcreteTraceCRT
+open CubicKubota
 local notation "O" => ActualEisensteinCubic.O
 
 def rationalUnipotent (t : ℤ) : SL(2,ℤ) :=
@@ -511,7 +480,7 @@ lemma rationalUnipotent_add (a b : ℤ) :
     (!![1,a;0,1] : Matrix (Fin 2) (Fin 2) ℤ) * !![1,b;0,1]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply,Fin.sum_univ_two,add_comm]
+    simp [add_comm]
 
 lemma rationalUnipotent_zero : rationalUnipotent 0=1 := by
   apply Matrix.SpecialLinearGroup.ext
@@ -537,7 +506,7 @@ lemma row_unipotent_conjugate (t : ℤ) (M : levelThree) :
   simp only [Matrix.SpecialLinearGroup.coe_mul, Matrix.SpecialLinearGroup.coe_inv,
     hmap, Matrix.adjugate_fin_two]
   funext j
-  fin_cases j <;> simp [Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_two]
+  fin_cases j <;> simp [Matrix.mul_apply, Matrix.vecMul, dotProduct]
 
 def cuspUnipotentTranslate (t : ℤ) : CuspCosets→CuspCosets :=
   Quotient.map (fun M => levelThreeConjugate (rationalEmbedding (rationalUnipotent (-t))) M) (by

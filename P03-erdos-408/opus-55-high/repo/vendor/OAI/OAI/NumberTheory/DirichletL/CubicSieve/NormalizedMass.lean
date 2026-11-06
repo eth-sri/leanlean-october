@@ -8,33 +8,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,42 +31,33 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -92,7 +71,6 @@ end
 end
 section
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -101,35 +79,29 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct cubeActiveSupport)
 open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CompletedGauss
 
 section
-open ActualEisensteinCubic LocalReflectionBrackets
+open LocalReflectionBrackets
 
 theorem bracket_one_eq_quadratic (P : Ideal O) [P.IsMaximal]
     (hg : lambda∉P) (z : O) :
     bracket (actualSextic P hg) 1 (Ideal.Quotient.mk P z)=
       (actualSextic P hg (Ideal.Quotient.mk P z))^3 := by
   simp only [bracket,show (1:ℕ)≠4 by decide,show (1:ℕ)≠0 by decide,↓reduceIte]
-  rw [show (1:ℕ)+2=3 by rfl,MulChar.inv_apply_eq_inv',MulChar.pow_apply' _ (by decide : (3:ℕ)≠0)]
+  rw [show (1:ℕ)+2=3 by rfl,MulChar.inv_apply_eq_inv',MulChar.pow_apply' _ (by positivity)]
   by_cases hz : z∈P
   · have he : Ideal.Quotient.mk P z=0 := Ideal.Quotient.eq_zero_iff_mem.mpr hz
-    simp [he]
+    simp_all
   · have h6 := canonicalSextic_sixth_power_mask P hg z
-    change actualSextic P hg (Ideal.Quotient.mk P (z^6))=_ at h6
-    simp only [map_pow,ite_eq_right hz] at h6
-    apply inv_eq_of_mul_eq_one_right
-    calc
-      _ = (actualSextic P hg (Ideal.Quotient.mk P z))^6 := by ring
-      _ = 1 := h6
+    grind
 
 theorem quadratic_value_cube (P : Ideal O) [P.IsMaximal]
     (hg : lambda∉P) (b : O) :
@@ -138,14 +110,9 @@ theorem quadratic_value_cube (P : Ideal O) [P.IsMaximal]
   simp only [map_pow]
   by_cases hb : b∈P
   · have he : Ideal.Quotient.mk P b=0 := Ideal.Quotient.eq_zero_iff_mem.mpr hb
-    simp [he]
+    simp_all
   · have h6 := canonicalSextic_sixth_power_mask P hg b
-    change actualSextic P hg (Ideal.Quotient.mk P (b^6))=_ at h6
-    simp only [map_pow,ite_eq_right hb] at h6
-    calc
-      _ = (actualSextic P hg (Ideal.Quotient.mk P b))^3 *
-          (actualSextic P hg (Ideal.Quotient.mk P b))^6 := by ring
-      _ = _ := by rw [h6,mul_one]
+    grind
 
 theorem residual_bracket_cube (P : Ideal O) [P.IsMaximal]
     (hg : lambda∉P) (z n b : O) :
@@ -160,11 +127,9 @@ theorem residual_bracket_cube (P : Ideal O) [P.IsMaximal]
 end
 
 section
-open ActualEisensteinCubic CanonicalQuadraticSieve QuadraticSquarefreeKernel
 
 end
 
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 theorem prime_square_dvd_powerful (I P : Ideal O) (hI : PowerfulIdeal I)
     (hP : Prime P) (hd : P∣I) : P^2∣I := by
@@ -176,7 +141,7 @@ theorem prime_square_dvd_powerful (I P : Ideal O) (hI : PowerfulIdeal I)
   by_cases hQP : Q=P
   · subst Q
     simpa using hI.2 P hm
-  · simp [hQP]
+  simp_all
 
 theorem nonresidual_prime_square_dvd (I Q P : Ideal O) (hI : I≠0) (hP : Prime P)
     (hd : P∣I) (hr : ¬P∣rowResidualPart I Q) :
@@ -213,14 +178,13 @@ theorem nonresidual_gain_product_dvd {ι : Type*} [Fintype ι]
       · rw [ite_eq_right hj]
         exact hcop hij
   · intro i
-    have hp : Prime (P i) := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
+    have hp := Ideal.prime_of_isPrime (NeZero.ne (P i)) inferInstance
     by_cases hi : P i∣I
     · rw [nonresidualGain,ite_eq_left hi]
       exact dvd_mul_of_dvd_left (nonresidual_prime_square_dvd I Q (P i) hI hp hi (hres i)) Q
     · rw [nonresidualGain,ite_eq_right hi]
       exact dvd_mul_of_dvd_right ((hp.dvd_mul.mp (hpool i)).resolve_left hi) _
 
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 def completedLocalExponent (I F P : Ideal O) : ℕ :=
   ((normalizedFactors I).count P+4*(if P∣F then 1 else 0))%6
@@ -264,7 +228,7 @@ theorem reflectionConductorCost_eq_prod {ι : Type*} [Fintype ι]
 theorem reflectionLocalCost_nonneg (q : ℝ) (hq : 0≤q) (j : ℕ) (e : Fin 3) :
     0≤reflectionLocalCost q j e := by
   unfold reflectionLocalCost
-  split_ifs <;> positivity
+  positivity
 
 theorem reflectionLocalCost_le_square (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 3) :
     reflectionLocalCost q j e≤q^2 := by
@@ -275,7 +239,7 @@ theorem reflectionLocalCost_le_square (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 
   · exact (div_le_one (by positivity)).mpr hq2 |>.trans hq2
   · nlinarith
   · nlinarith
-  · rfl
+  simp
 
 theorem reflectionLocalCost_le_single (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 3)
     (hj : j=0 ∨ j=4) : reflectionLocalCost q j e≤q := by
@@ -285,7 +249,7 @@ theorem reflectionLocalCost_le_single (q : ℝ) (hq : 1≤q) (j : ℕ) (e : Fin 
   · simp only [reflectionLocalCost,ite_true]
     split_ifs
     · exact ((div_le_one (by positivity)).mpr (one_le_pow₀ hq)).trans hq
-    · rfl
+    simp
 
 theorem completedLocalExponent_of_not_dvd (I F P : Ideal O) (hI : I≠0) (_hP : Prime P)
     (hn : ¬P∣I) : completedLocalExponent I F P=0 ∨ completedLocalExponent I F P=4 := by
@@ -293,7 +257,7 @@ theorem completedLocalExponent_of_not_dvd (I F P : Ideal O) (hI : I≠0) (_hP : 
     intro h
     exact hn ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mp h).2
   simp only [completedLocalExponent,Multiset.count_eq_zero.mpr hm,zero_add]
-  split_ifs <;> norm_num
+  grind
 
 theorem reflectionLocalCost_le_gain (I F P : Ideal O) (hI : I≠0) (hP : Prime P) (e : Fin 3) :
     reflectionLocalCost (Ideal.absNorm P:ℝ) (completedLocalExponent I F P) e≤
@@ -330,7 +294,7 @@ theorem reflectionConductorCost_bound {ι : Type*} [Fintype ι]
   have hb := Nat.le_of_dvd hN (map_dvd Ideal.absNorm hd)
   have hr : (Ideal.absNorm (∏i,nonresidualGain I (P i)):ℝ)≤
       (Ideal.absNorm (rowPowerfulPart I*(rowMaskPart I Q)^2*Q):ℝ) := by exact_mod_cast hb
-  simpa only [map_mul,map_pow,Nat.cast_mul,Nat.cast_pow] using hr
+  simpa using hr
 
 end CompletedGauss
 

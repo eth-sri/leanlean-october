@@ -60,25 +60,25 @@ theorem graphTransference : GraphTransference := by
     (max E 1) (lt_max_of_lt_right one_pos)
   obtain ⟨m, J₀', C₁, qexp, hexp, ξexp, -, hhexp, -, hIC⟩ :=
     idealConstruction (fixedData q₀ c₀ C₀ vlo vhi hq₀ hq₁ hc₀ hvlo) Eid (max C₄ 0) hEid
-      (le_max_right _ _)
+      (by positivity)
   obtain ⟨J₀, hJ₀⟩ := hTP m C₁
-  obtain ⟨K, hK, hev⟩ := hJ₀ (max J₀ J₀') (le_max_left _ _) (1 / 2) 1 C₃ 0 (by norm_num)
+  obtain ⟨K, hK, hev⟩ := hJ₀ (max J₀ J₀') (by omega) (1 / 2) 1 C₃ 0 (by norm_num)
     one_pos
   refine ⟨m, max J₀ J₀', C₁ + 2 * ξexp + 4 * qexp, K, ?_⟩
-  filter_upwards [hev, hIC (max J₀ J₀') (le_max_right _ _), eventually_ge_atTop (Real.exp 1)]
+  filter_upwards [hev, hIC (max J₀ J₀') (by omega), eventually_ge_atTop (Real.exp 1)]
     with x hTPx hICx hx
   intro ι _ _ P big hdisj hs₁ hs₂ hb₁ hb₂ hV hsmall hbig hint
   show FamilyBound q₀ m (max J₀ J₀') (C₁ + 2 * ξexp + 4 * qexp) K E C₃ C₄ x P big
   refine FamilyBound.reindex (Fintype.equivFin ι) ?_
   -- the scales
   have hx₀ : 0 < x := (Real.exp_pos 1).trans_le hx
-  have hL : 1 ≤ Real.log x := (Real.le_log_iff_exp_le hx₀).mpr hx
+  have hL := (Real.le_log_iff_exp_le hx₀).mpr hx
   have hL₀ : 0 < Real.log x := one_pos.trans_le hL
-  have hT : 0 ≤ Real.log (Real.log x) := Real.log_nonneg hL
+  have hT := Real.log_nonneg hL
   -- the reindexed groups
   set e := Fintype.equivFin ι
   have hmem : ∀ k, k ∈ big.map e.toEmbedding ↔ e.symm k ∈ big := fun k => by
-    rw [Finset.mem_map_equiv]
+    simp
   have hcard : (big.map e.toEmbedding).card = big.card := Finset.card_map _
   have hcard' : (Finset.univ \ big.map e.toEmbedding).card = (Finset.univ \ big).card := by
     rw [Finset.card_univ_sdiff, Finset.card_univ_sdiff, hcard, Fintype.card_fin]
@@ -103,8 +103,8 @@ theorem graphTransference : GraphTransference := by
   set Q := ⌊Real.log x ^ qexp⌋₊
   set w := Real.log x ^ (-hexp)
   set ξ := Real.log x ^ (-ξexp) with hξdef
-  have hξ : 0 < ξ := Real.rpow_pos_of_pos hL₀ _
-  have hw₀ : 0 < w := Real.rpow_pos_of_pos hL₀ _
+  have hξ : 0 < ξ := by positivity
+  have hw₀ : 0 < w := by positivity
   have hw₁ : w ≤ 1 := Real.rpow_le_one_of_one_le_of_nonpos hL (neg_nonpos.mpr hhexp.le)
   have hcoef := fun v hv => (hcomp v hv).2.2
   have hne : ∀ v, v ≠ raw → ∃ g, ((B.pattern v).changed g).Nonempty := fun v hv => by
@@ -181,15 +181,15 @@ theorem graphTransference : GraphTransference := by
     have hbound := hTPx G (B.model 1 ζ) X (targets (B.model 1 ζ) S') (extend S f)
       (fun z => g z.1.toNat) hadm hmass (by simp [Family.model])
       (by simp [Family.model, Erdos821.Blueprint.Graph.L, hL])
-      (fun θ => hnorm θ ζ (hζ.trans (Real.rpow_le_rpow_of_exponent_le hL (le_max_left _ _))))
-      (by rwa [← Real.sqrt_eq_rpow]) (by norm_num; exact_mod_cast hX₂) (fun n _ => ?_) ?_ ?_
+      (fun θ => hnorm θ ζ (hζ.trans (Real.rpow_le_rpow_of_exponent_le hL (by simp))))
+      (by rwa [← Real.sqrt_eq_rpow]) (by norm_num; omega) (fun n _ => ?_) ?_ ?_
     · rw [pairing_eq_family B raw block Q hξ hraw hraw' hcoef hGV ζ X S S' f g hS hg] at hbound
       refine hbound.trans (mul_le_mul_of_nonneg_left ?_ (by positivity))
       exact Real.rpow_le_rpow_of_exponent_le hL (by linarith [le_max_left E 1])
     · unfold extend
       split_ifs
       · simpa using hf _
-      · simp
+      simp
     · unfold Erdos821.Blueprint.Graph.L
       rw [normOn_extend _ X S f hS, ← sqrt_rpow_two_mul hL₀.le, ← Real.sqrt_mul hX]
       exact Real.sqrt_le_sqrt hnf

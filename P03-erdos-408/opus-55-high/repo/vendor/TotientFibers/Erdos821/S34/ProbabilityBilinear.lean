@@ -6,7 +6,7 @@ public import Erdos821.S34.FrameBridge
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -24,10 +24,7 @@ theorem sum_product_fibers {α β : Type} [Fintype α] [DecidableEq β]
       ∑ x, a x * F (P x) := by
   simp_rw [Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro x _
-  have hp : P x ∈ Finset.univ.image P := Finset.mem_image_of_mem P (Finset.mem_univ x)
-  simp [ite_mul, hp]
+  simp
 
 /-- Collapse arbitrary ordered tests to finite integer-product coefficients;
 normalization is not needed for this reduction. -/
@@ -81,7 +78,7 @@ theorem weighted_bilinear_reduction {α β : Type} [Fintype α] [Fintype β]
         change a n * (∑ t ∈ Finset.univ.image R, b t * e (θ * n * t)) = _
         rw [show (∑ t ∈ Finset.univ.image R, b t * e (θ * n * t)) =
           ∑ y, (v y : ℂ) * g y * e (θ * n * R y) from ht]
-        simp only [Finset.mul_sum, mul_assoc]
+        simp only [Finset.mul_sum]
       _ = ∑ y, ∑ x, ((w x : ℂ) * f x) *
           (((v y : ℂ) * g y) * e (θ * P x * R y)) := by
         rw [Finset.sum_comm]
@@ -94,8 +91,6 @@ theorem weighted_bilinear_reduction {α β : Type} [Fintype α] [Fintype β]
         rw [Finset.sum_comm]
         apply Finset.sum_congr rfl
         intro x _
-        apply Finset.sum_congr rfl
-        intro y _
         ring
   rw [hsum]
   have hp' : ∀ n ∈ Finset.univ.image P, N ≤ (n : ℝ) ∧ (n : ℝ) ≤ N + 4 * U := by
@@ -116,7 +111,7 @@ theorem weighted_bilinear_reduction {α β : Type} [Fintype α] [Fintype β]
       (Real.sqrt_nonneg _)
     exact mul_nonneg hK.le (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
   have ht := hb.trans (mul_le_mul_of_nonneg_right hn (Real.sqrt_nonneg _))
-  convert ht using 1; ring
+  linarith
 
 end
 end Erdos821.S34Core

@@ -12,7 +12,6 @@ public import Mathlib.Algebra.Ring.IsFormallyReal
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Adj
@@ -36,13 +35,7 @@ lemma birth_batch_zero {b : ℕ} (p : Fin b → P.Prime g.val)
   intro hmem
   unfold zeroBirthBatch at hmem
   rw [Multiset.mem_coe] at hmem
-  rw [List.mem_ofFn'] at hmem
-  obtain ⟨k, hk⟩ := hmem
-  cases v with
-  | mk q r =>
-    have h1 : p k = q := congrArg Sigma.fst hk
-    subst h1
-    exact hv (eq_of_heq (Sigma.mk.inj_iff.mp hk).2).symm
+  grind
 
 /-- Deletion along zero indices preserves nonzero counts. -/
 lemma delete_preserves_nonzero (s : P.Memory g.val) (A : Finset (Fin s.card))
@@ -62,9 +55,9 @@ lemma delete_preserves_nonzero (s : P.Memory g.val) (A : Finset (Fin s.card))
       rw [Finset.disjoint_left] at hdisj
       exact hdisj hkS
     exact hnot hkZ
-  have hdisjA : Disjoint (Sv (P := P) (g := g) s v) A :=
+  have hdisjA :=
     hdisj.mono_right hA
-  have hsdiff : ((Sv (P := P) (g := g) s v) \ A) = Sv (P := P) (g := g) s v :=
+  have hsdiff :=
     Finset.sdiff_eq_self_of_disjoint hdisjA
   rw [hsdiff, Sv_card s v]
 
@@ -75,13 +68,12 @@ lemma singleValid_preserves_nonzero {A : Finset (Fin s0.card)} {b : Fin (t0.card
     (v : P.Particle g.val) (hv : ¬ isZeroParticle (P := P) (g := g) v) :
     s0.count v = t0.count v := by
   obtain ⟨hsub, heq⟩ := hvalid
-  have hdel : (deleteMemoryIndices s0 A).count v = s0.count v :=
+  have hdel :=
     delete_preserves_nonzero s0 A hsub v hv
   have hbirth : (zeroBirthBatch (P := P) (g := g.val) p).count v = 0 := by
     unfold isZeroParticle at hv
     exact birth_batch_zero p v hv
-  have hcount : (deleteMemoryIndices s0 A + zeroBirthBatch (P := P) (g := g.val) p).count v =
-      t0.count v := congrArg (fun m => Multiset.count v m) heq
+  have hcount := congrArg (fun m => Multiset.count v m) heq
   have hadd : (deleteMemoryIndices s0 A + zeroBirthBatch (P := P) (g := g.val) p).count v =
       (deleteMemoryIndices s0 A).count v + (zeroBirthBatch (P := P) (g := g.val) p).count v :=
     Multiset.count_add _ _ _
@@ -128,11 +120,7 @@ lemma prodMu_batch_eq {b : ℕ} (p : Fin b → P.Prime g.val)
 
 /-- Cancellation for multiset addition via counts. -/
 lemma add_cancel_left (u a b : P.Memory g.val) (h : u + a = u + b) : a = b := by
-  apply Multiset.ext.mpr
-  intro v
-  have hc := congrArg (fun m => Multiset.count v m) h
-  simp only [Multiset.count_add] at hc
-  omega
+  simp_all
 
 /-- Surviving plus birth equals target iff birth is the difference. -/
 lemma birth_eq_diff_iff (u t m : P.Memory g.val) (hle : u ≤ t) (hmd : m = t - u)
@@ -142,10 +130,9 @@ lemma birth_eq_diff_iff (u t m : P.Memory g.val) (hle : u ≤ t) (hmd : m = t - 
     exact Multiset.add_sub_cancel hle
   constructor
   · intro h
-    have heq : u + birth = u + m := h.trans h2.symm
+    have heq := h.trans h2.symm
     exact add_cancel_left u birth m heq
-  · intro h
-    rw [h, h2]
+  simp_all
 
 /-- Sum over birth batches for fixed deletion and birth size, assuming deletion is
 zero-contained and survivor lies below target. -/
@@ -174,7 +161,7 @@ lemma sum_p_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
     intro p
     constructor
     · intro h
-      have h2 : deleteMemoryIndices s0 A + zeroBirthBatch (P := P) (g := g.val) p = t0 := h.2
+      have h2 := h.2
       exact (birth_eq_diff_iff _ t0 _ hle_t rfl _).mp h2
     · intro h
       have hbase_eq : deleteMemoryIndices s0 A + (t0 - deleteMemoryIndices s0 A) = t0 := by
@@ -184,14 +171,7 @@ lemma sum_p_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
         rw [h]
         exact hbase_eq
       exact ⟨hA_sub, h2⟩
-  have habs : ∀ p : Fin b.val → P.Prime g.val,
-      |singleWeight F n rho i g s0 t0 A b p| =
-      (eta F n i / rho) ^ A.card *
-      (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-        ((zeroMemoryIndices s0).card - A.card) *
-      ((b.val.factorial : ℝ)⁻¹) *
-      (eta F n i * P.V g.val / rho) ^ b.val *
-      ∏ h : Fin b.val, tiltedMu F P n g.val (p h) :=
+  have habs :=
     fun p => abs_singleWeight_eq F n rho hrho i g s0 t0 A b p hV hbase
   have hterm : ∀ p : Fin b.val → P.Prime g.val,
       (if singleValid (P := P) (g := g) s0 t0 A b p then
@@ -207,12 +187,8 @@ lemma sum_p_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
       else 0) := by
     intro p
     by_cases h : zeroBirthBatch (P := P) (g := g.val) p = (t0 - deleteMemoryIndices s0 A)
-    · have hv : singleValid (P := P) (g := g) s0 t0 A b p := (hvalid_iff p).mpr h
-      simp only [ite_eq_left hv, ite_eq_left h, habs p]
-      ring
-    · have hv : ¬ singleValid (P := P) (g := g) s0 t0 A b p := fun hvv => h ((hvalid_iff p).mp hvv)
-      simp only [ite_eq_right hv, ite_eq_right h]
-      ring
+    · grind
+    · grind
   have hconst : ∀ p : Fin b.val → P.Prime g.val,
       (if zeroBirthBatch (P := P) (g := g.val) p = (t0 - deleteMemoryIndices s0 A) then
         ∏ h : Fin b.val, tiltedMu F P n g.val (p h)
@@ -224,7 +200,7 @@ lemma sum_p_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
     by_cases h : zeroBirthBatch (P := P) (g := g.val) p = (t0 - deleteMemoryIndices s0 A)
     · simp only [ite_eq_left h]
       exact prodMu_batch_eq (F := F) (n := n) p _ h
-    · simp only [ite_eq_right h]
+    · grind
   have hsum_congr : (∑ p : Fin b.val → P.Prime g.val,
       (if zeroBirthBatch (P := P) (g := g.val) p = (t0 - deleteMemoryIndices s0 A) then
         ∏ h : Fin b.val, tiltedMu F P n g.val (p h)
@@ -233,7 +209,7 @@ lemma sum_p_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
       (if zeroBirthBatch (P := P) (g := g.val) p = (t0 - deleteMemoryIndices s0 A) then
         ((t0 - deleteMemoryIndices s0 A).map (fun w => tiltedMu F P n g.val w.1)).prod
       else 0)) :=
-    Finset.sum_congr rfl (fun p _ => hconst p)
+    by grind
   have hsum : (∑ p : Fin b.val → P.Prime g.val,
       (if zeroBirthBatch (P := P) (g := g.val) p = (t0 - deleteMemoryIndices s0 A) then
         ((t0 - deleteMemoryIndices s0 A).map (fun w => tiltedMu F P n g.val w.1)).prod
@@ -271,63 +247,58 @@ lemma sum_p_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
         ((((fiberP (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val).card : ℝ)) *
           (((t0 - deleteMemoryIndices s0 A).map
             (fun w => tiltedMu F P n g.val w.1)).prod))) := by
-        rw [hsum_congr, hsum]
-        ring
+        grind
 
 /-- Factorial product for birth multiset is positive. -/
 lemma birthDenom_pos (m : P.Memory g.val) :
     0 < ∏ v : P.Particle g.val, ((m.count v).factorial : ℝ) :=
-  Finset.prod_pos fun _ _ => Nat.cast_pos.mpr (Nat.factorial_pos _)
+  by positivity
 
 lemma birthDenom_ne_zero (m : P.Memory g.val) :
     (∏ v : P.Particle g.val, ((m.count v).factorial : ℝ)) ≠ 0 :=
-  ne_of_gt (birthDenom_pos m)
+  by positivity
 
 /-- Multinomial divisibility for a valid birth multiset. -/
 lemma birth_dvd (m : P.Memory g.val) (b : ℕ)
     (hvalid : birthValid (P := P) (g := g) m b) :
     (∏ v : P.Particle g.val, (m.count v).factorial) ∣ b.factorial := by
   have hsum : ∑ v ∈ (Finset.univ : Finset (P.Particle g.val)), m.count v = b := by
-    rw [Multiset.sum_count_eq_card (fun a _ => Finset.mem_univ a)]
+    rw [Multiset.sum_count_eq_card (by simp)]
     exact hvalid.1
   have h1 := Nat.prod_factorial_dvd_factorial_sum (Finset.univ : Finset (P.Particle g.val))
     (fun v => m.count v)
-  rwa [hsum] at h1
+  grind
 
 /-- Real form of the birth fiber cancellation. -/
 lemma birth_fiber_real (m : P.Memory g.val) (b : ℕ)
     (hvalid : birthValid (P := P) (g := g) m b) :
     (((b.factorial : ℝ))⁻¹) * (((fiberP (P := P) (g := g) m b).card : ℝ)) =
       (((∏ v : P.Particle g.val, ((m.count v).factorial : ℝ)))⁻¹) := by
-  have hcard_eq : (fiberP (P := P) (g := g) m b).card =
-      (if birthValid (P := P) (g := g) m b then
-        b.factorial / ∏ v : P.Particle g.val, (m.count v).factorial
-      else 0) := fiberP_card (P := P) (g := g) (b := b) m
+  have hcard_eq := fiberP_card (P := P) (g := g) (b := b) m
   rw [ite_eq_left hvalid] at hcard_eq
   have hdvd := birth_dvd m b hvalid
   have hDpos : 0 < (∏ v : P.Particle g.val, (m.count v).factorial : ℕ) :=
-    Finset.prod_pos fun v _ => Nat.factorial_pos _
-  have hDne : ((∏ v : P.Particle g.val, ((m.count v).factorial : ℝ))) ≠ 0 :=
+    by positivity
+  have hDne :=
     birthDenom_ne_zero m
   have hbpos : (0 : ℝ) < (b.factorial : ℝ) :=
-    Nat.cast_pos.mpr (Nat.factorial_pos b)
-  have hbne : (b.factorial : ℝ) ≠ 0 := ne_of_gt hbpos
+    by positivity
+  have hbne := ne_of_gt hbpos
   have hcast : ((((b.factorial / ∏ v : P.Particle g.val, (m.count v).factorial) : ℕ) : ℝ)) =
       (b.factorial : ℝ) / (((∏ v : P.Particle g.val, (m.count v).factorial) : ℕ) : ℝ) :=
-    Nat.cast_div hdvd (by exact_mod_cast ne_of_gt hDpos)
+    Nat.cast_div hdvd (by positivity)
   have hprod : ((((∏ v : P.Particle g.val, (m.count v).factorial) : ℕ) : ℝ)) =
       (∏ v : P.Particle g.val, ((m.count v).factorial : ℝ)) := by
     push_cast
     ring
-  rw [hcard_eq, hcast, hprod]
-  field_simp
+  grind
 
 /-- Card of birth difference is bounded by target. -/
 lemma birthDiff_card_le (s0 t0 : P.Memory g.val) (A : Finset (Fin s0.card))
  :
     (t0 - deleteMemoryIndices s0 A).card ≤ t0.card := by
   have hle : (t0 - deleteMemoryIndices s0 A) ≤ t0 :=
-    Multiset.sub_le_self t0 (deleteMemoryIndices s0 A)
+    by simp
   exact Multiset.card_le_card hle
 
 /-- Deletion card determines removed card. -/
@@ -336,12 +307,7 @@ lemma delete_card_eq (s : P.Memory g.val) (A : Finset (Fin s.card)) :
   rw [delete_card s A]
   have huniv : (Finset.univ : Finset (Fin s.card)).card = s.card := by
     rw [Finset.card_univ, Fintype.card_fin]
-  have h1 : (A ∩ (Finset.univ : Finset (Fin s.card))).card = A.card := by
-    rw [Finset.inter_univ]
-  have hsdiff : ((Finset.univ : Finset (Fin s.card)) \ A).card =
-      (Finset.univ : Finset (Fin s.card)).card - (A ∩ (Finset.univ : Finset (Fin s.card))).card :=
-    Finset.card_sdiff
-  rw [hsdiff, h1, huniv]
+  grind
 
 /-- Removed card from survivor card. -/
 lemma removed_card_eq (s : P.Memory g.val) (A : Finset (Fin s.card)) :
@@ -383,9 +349,9 @@ lemma sum_p_eq_zero_of_not_le (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (
   intro p _
   rw [ite_eq_right]
   intro hvalid
-  have h2 : deleteMemoryIndices s0 A + zeroBirthBatch (P := P) (g := g.val) p = t0 :=
+  have h2 :=
     hvalid.2
-  exact hle_t (by rw [← h2]; exact Multiset.le_add_right _ _)
+  exact hle_t (by rw [← h2]; simp)
 
 /-- Vanishing when deletion not zero-contained. -/
 lemma sum_p_eq_zero_of_not_sub (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -424,7 +390,7 @@ lemma sum_b_valid (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
         (fun w => tiltedMu F P n g.val w.1)).prod *
         (((∏ v : P.Particle g.val,
           (((t0 - deleteMemoryIndices s0 A).count v).factorial : ℝ)))⁻¹))) := by
-  have hmcard_le : (t0 - deleteMemoryIndices s0 A).card ≤ t0.card :=
+  have hmcard_le :=
     birthDiff_card_le s0 t0 A
   let b0 : Fin (t0.card + 1) :=
     ⟨(t0 - deleteMemoryIndices s0 A).card, Nat.lt_succ_of_le hmcard_le⟩
@@ -463,25 +429,7 @@ lemma sum_b_valid (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
     by_cases hvalid : birthValid (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val
     · have hfib := birth_fiber_real (P := P) (g := g)
         (t0 - deleteMemoryIndices s0 A) b.val hvalid
-      simp only [ite_eq_left hvalid]
-      calc ((((b.val.factorial : ℝ)⁻¹) *
-            ((eta F n i * P.V g.val / rho) ^ b.val * d ^ b.val)) *
-            ((((fiberP (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val).card : ℝ)) *
-              (((t0 - deleteMemoryIndices s0 A).map
-                (fun w => tiltedMu F P n g.val w.1)).prod)))
-          = (((t0 - deleteMemoryIndices s0 A).map
-              (fun w => tiltedMu F P n g.val w.1)).prod) *
-            ((((b.val.factorial : ℝ)⁻¹) *
-              (((fiberP (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val).card : ℝ))) *
-              (((eta F n i * P.V g.val / rho) ^ b.val * d ^ b.val))) := by
-              ring
-        _ = (((t0 - deleteMemoryIndices s0 A).map
-              (fun w => tiltedMu F P n g.val w.1)).prod) *
-            (((((∏ v : P.Particle g.val,
-              (((t0 - deleteMemoryIndices s0 A).count v).factorial : ℝ)))⁻¹)) *
-              (((eta F n i * P.V g.val / rho) ^ b.val * d ^ b.val))) := by
-              rw [hfib]
-        _ = _ := by ring
+      grind
     · have hcard0 : (fiberP (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val).card = 0 := by
         have hcard_eq : (fiberP (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val).card =
             (if birthValid (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b.val then
@@ -519,7 +467,7 @@ lemma sum_b_valid (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
         d ^ (t0 - deleteMemoryIndices s0 A).card) *
         (((∏ v : P.Particle g.val,
           (((t0 - deleteMemoryIndices s0 A).count v).factorial : ℝ)))⁻¹) := by
-    have hb0_mem : b0 ∈ (Finset.univ : Finset (Fin (t0.card + 1))) :=
+    have hb0_mem :=
       Finset.mem_univ b0
     have hvalid_b0 : birthValid (P := P) (g := g) (t0 - deleteMemoryIndices s0 A) b0.val := by
       rw [hb0_val]
@@ -569,9 +517,7 @@ lemma sum_b_valid (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
             (((∏ v : P.Particle g.val,
               (((t0 - deleteMemoryIndices s0 A).count v).factorial : ℝ)))⁻¹)
         else 0))) := by
-        apply Finset.sum_congr rfl
-        intro b _
-        exact hS_eq b
+        grind
     _ = (((eta F n i / rho) ^ A.card *
           (visitQ F.q n i / rho ^ (2 : ℕ)) ^
             ((zeroMemoryIndices s0).card - A.card)) *
@@ -585,8 +531,7 @@ lemma sum_b_valid (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
           else 0)) := by
         rw [Finset.mul_sum]
     _ = _ := by
-        rw [hsum_T]
-        ring
+        grind
 
 /-- Sum over birth sizes vanishes for invalid birth difference. -/
 lemma sum_b_invalid (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -634,7 +579,7 @@ lemma sum_A_eq_perU (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
   · by_cases hvalid0 : birthValid (P := P) (g := g)
         (t0 - deleteMemoryIndices s0 A) (t0 - deleteMemoryIndices s0 A).card
     · have hsum := sum_b_valid F n rho d i g s0 t0 A hA_sub hrho hV hbase hle_t hvalid0
-      have hcardA : A.card = s0.card - (deleteMemoryIndices s0 A).card :=
+      have hcardA :=
         removed_card_eq s0 A
       have hperU : perU_term F n rho d i g s0 t0 (deleteMemoryIndices s0 A) =
           ((eta F n i / rho) ^ A.card *
@@ -648,14 +593,12 @@ lemma sum_A_eq_perU (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
                 (((t0 - deleteMemoryIndices s0 A).count v).factorial : ℝ)))⁻¹))) := by
         unfold perU_term
         rw [dite_eq_left hle_t, dite_eq_left hvalid0, hcardA]
-      rw [hperU]
-      exact hsum
+      linarith
     · have hsum0 := sum_b_invalid F n rho d i g s0 t0 A hA_sub hrho hV hbase hle_t hvalid0
       have hperU0 : perU_term F n rho d i g s0 t0 (deleteMemoryIndices s0 A) = 0 := by
         unfold perU_term
         rw [dite_eq_left hle_t, dite_eq_right hvalid0]
-      rw [hperU0]
-      exact hsum0
+      linarith
   · have hsum0 : (∑ b : Fin (t0.card + 1), ∑ p : Fin b.val → P.Prime g.val,
         if singleValid (P := P) (g := g) s0 t0 A b p then
           |singleWeight F n rho i g s0 t0 A b p| * d ^ b.val
@@ -666,8 +609,7 @@ lemma sum_A_eq_perU (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
     have hperU0 : perU_term F n rho d i g s0 t0 (deleteMemoryIndices s0 A) = 0 := by
       unfold perU_term
       rw [dite_eq_right hle_t]
-    rw [hperU0]
-    exact hsum0
+    linarith
 
 /-- Sum over deletions vanishes outside zero-contained sets. -/
 lemma sum_A_zero_of_not_sub (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -694,20 +636,18 @@ lemma zeroCard_eq_sum (s : P.Memory g.val) :
     simp only [Finset.mem_biUnion, Finset.mem_filter, Finset.mem_univ, true_and]
     constructor
     · intro hk
-      have hk_mem : k ∈ Sv (P := P) (g := g) s (memoryEntry s k) :=
+      have hk_mem :=
         mem_Sv_self s k
       have hz : (memoryEntry s k).2 = 0 := by
         unfold zeroMemoryIndices at hk
         simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hk
-      exact ⟨memoryEntry s k, hz, hk_mem⟩
+      grind
     · rintro ⟨v, hv_zero, hkv⟩
       have hv_eq : memoryEntry s k = v := by
         unfold Sv at hkv
         simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hkv
       unfold zeroMemoryIndices
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      rw [hv_eq]
-      exact hv_zero
+      grind
   rw [hzero_eq]
   rw [Finset.card_biUnion (by
     intro v hv w hw hvw
@@ -722,7 +662,7 @@ lemma card_sub_zero_eq_sum_nonzero (s : P.Memory g.val) :
       ∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 ≠ 0),
         s.count v := by
   have hsum_all : ∑ v ∈ (Finset.univ : Finset (P.Particle g.val)), s.count v = s.card := by
-    rw [Multiset.sum_count_eq_card (fun a _ => Finset.mem_univ a)]
+    rw [Multiset.sum_count_eq_card (by simp)]
   have hpart : (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0)) ∪
       (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)) =
       (Finset.univ : Finset (P.Particle g.val)) :=
@@ -742,13 +682,7 @@ lemma card_sub_zero_eq_sum_nonzero (s : P.Memory g.val) :
     rw [hpart] at h1
     exact h1
   have hZs := zeroCard_eq_sum s
-  have hne_eq : (Finset.univ.filter (fun v : P.Particle g.val => v.2 ≠ 0)) =
-      (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)) := by
-    apply Finset.filter_congr
-    intro v _
-    simp only [ne_eq]
-  rw [hne_eq]
-  omega
+  grind
 
 /-- Nonzero totals agree when memories agree on nonzero counts. -/
 lemma nonzero_totals_eq (s0 t0 : P.Memory g.val)
@@ -764,7 +698,7 @@ lemma nonzero_totals_eq (s0 t0 : P.Memory g.val)
   have hnz : ¬ isZeroParticle (P := P) (g := g) v := by
     unfold isZeroParticle
     exact hv
-  exact hagree v hnz
+  grind
 
 /-- Single kernel as image sum over survivors. -/
 lemma singleKernel_eq_image_sum (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -803,9 +737,7 @@ lemma singleKernel_eq_image_sum (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin
     rfl
   rw [hker]
   rw [← Finset.sum_subset hs (fun x _ hx => by
-    have hns : ¬ x ⊆ zeroMemoryIndices s0 := by
-      simpa only [Finset.mem_filter, Finset.mem_univ, true_and, not_and] using hx
-    rw [hS_eq x, ite_eq_right hns])]
+    grind)]
   -- Now sum over s = univ.filter subset, grouped by delete
   have hmaps : ∀ A ∈ Finset.univ.filter (fun A : Finset (Fin s0.card) => A ⊆ zeroMemoryIndices s0),
       (fun A : Finset (Fin s0.card) => deleteMemoryIndices s0 A) A ∈
@@ -833,10 +765,7 @@ lemma singleKernel_eq_image_sum (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin
     rw [hfilter_eq, Finset.sum_const, nsmul_eq_mul]
   rw [← hsum_s]
   apply Finset.sum_congr rfl
-  intro A hA
-  have hsub : A ⊆ zeroMemoryIndices s0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using hA
-  rw [hS_eq A, ite_eq_left hsub]
+  grind
 
 /-- Real form of deletion fiber. -/
 lemma fiberA_real (s u : P.Memory g.val)
@@ -855,15 +784,15 @@ lemma fiberA_real (s u : P.Memory g.val)
         ((s.count v).factorial : ℝ) /
         (((u.count v).factorial : ℝ) * (((s.count v - u.count v).factorial : ℝ))) := by
     intro v
-    have hle : u.count v ≤ s.count v :=
+    have hle :=
       Multiset.count_le_of_le v hvalid.2
     have hmul := Nat.choose_mul_factorial_mul_factorial hle
     have hUpos : (0 : ℝ) < ((u.count v).factorial : ℝ) :=
-      Nat.cast_pos.mpr (Nat.factorial_pos _)
+      by positivity
     have hDpos : (0 : ℝ) < (((s.count v - u.count v).factorial : ℝ)) :=
-      Nat.cast_pos.mpr (Nat.factorial_pos _)
+      by positivity
     have hDne : (((u.count v).factorial : ℝ) * (((s.count v - u.count v).factorial : ℝ))) ≠ 0 :=
-      ne_of_gt (mul_pos hUpos hDpos)
+      by positivity
     have hcast : ((((Nat.choose (s.count v) (u.count v)) : ℕ)) : ℝ) *
         ((((u.count v).factorial : ℝ)) * (((s.count v - u.count v).factorial : ℝ))) =
         (((s.count v).factorial : ℝ)) := by
@@ -882,7 +811,7 @@ lemma fiberA_real (s u : P.Memory g.val)
     ring
   rw [hcard, hcast_prod]
   rw [Finset.prod_congr rfl (fun v _ => hchoose v)]
-  rw [Finset.prod_div_distrib]
+  simp
 
 /-- Damping exponents agree on valid survivors. -/
 lemma Q_exp_eq (s0 t0 u : P.Memory g.val)
@@ -903,190 +832,12 @@ lemma Q_exp_eq (s0 t0 u : P.Memory g.val)
     have huniv : (Finset.univ : Finset (Fin t0.card)).card = t0.card := by
       rw [Finset.card_univ, Fintype.card_fin]
     exact le_trans (Finset.card_le_card hsub) (le_of_eq huniv)
-  have hu_s_card : u.card ≤ s0.card := Multiset.card_le_card hu_s
-  have hu_t_card : u.card ≤ t0.card := Multiset.card_le_card hu_t
-  have hN_eq : s0.card - (zeroMemoryIndices s0).card =
-      t0.card - (zeroMemoryIndices t0).card :=
+  have hu_s_card := Multiset.card_le_card hu_s
+  have hu_t_card := Multiset.card_le_card hu_t
+  have hN_eq :=
     nonzero_totals_eq s0 t0 hagree_st
   -- D = s0 - u and M = t0 - u cards are s-u and t-u
-  have hD_card : (s0 - u).card = s0.card - u.card := by
-    have hadd : u.card + (s0 - u).card = s0.card := by
-      have h : u + (s0 - u) = s0 := by
-        rw [add_comm]
-        exact Multiset.add_sub_cancel hu_s
-      have hc := congrArg Multiset.card h
-      simpa only [Multiset.card_add] using hc
-    omega
-  have hM_card : (t0 - u).card = t0.card - u.card := by
-    have hadd : u.card + (t0 - u).card = t0.card := by
-      have h : u + (t0 - u) = t0 := by
-        rw [add_comm]
-        exact Multiset.add_sub_cancel hu_t
-      have hc := congrArg Multiset.card h
-      simpa only [Multiset.card_add] using hc
-    omega
-  -- D and M are zero-only from agreement
-  have hD_zero : ∀ v : P.Particle g.val, v.2 ≠ 0 → (s0 - u).count v = 0 := by
-    intro v hv
-    have hnz : ¬ isZeroParticle (P := P) (g := g) v := by
-      unfold isZeroParticle
-      exact hv
-    have hs_eq := hagree_st v hnz
-    have hu_eq := hagree_u v hnz
-    have hcount : (s0 - u).count v = s0.count v - u.count v :=
-      Multiset.count_sub v s0 u
-    rw [hcount, hu_eq, hs_eq]
-    -- s0.count - s0.count = 0? Since hu_eq : u.count = s0.count, hs_eq : s0.count = t0.count? Actually hu_eq : u.count = s0.count, so s0.count - u.count = 0
-    omega
-  have hM_zero : ∀ v : P.Particle g.val, v.2 ≠ 0 → (t0 - u).count v = 0 := by
-    intro v hv
-    have hnz : ¬ isZeroParticle (P := P) (g := g) v := by
-      unfold isZeroParticle
-      exact hv
-    have hs_eq := hagree_st v hnz
-    have hu_eq := hagree_u v hnz
-    -- u.count = s0.count, s0.count = t0.count, so u.count = t0.count
-    have hu_t_eq : u.count v = t0.count v := hu_eq.trans hs_eq
-    have hcount : (t0 - u).count v = t0.count v - u.count v :=
-      Multiset.count_sub v t0 u
-    rw [hcount, hu_t_eq]
-    omega
-  -- D.card ≤ Zs and M.card ≤ Zt via zero sums
-  have hD_le : (s0 - u).card ≤ (zeroMemoryIndices s0).card := by
-    have hD_eq : (s0 - u).card =
-        ∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0),
-          (s0 - u).count v := by
-      have hsum_all : ∑ v ∈ (Finset.univ : Finset (P.Particle g.val)), (s0 - u).count v =
-          (s0 - u).card := by
-        rw [Multiset.sum_count_eq_card (fun a _ => Finset.mem_univ a)]
-      have hsplit : (∑ v ∈ (Finset.univ : Finset (P.Particle g.val)), (s0 - u).count v) =
-          (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0), (s0 - u).count v) +
-          (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0), (s0 - u).count v) := by
-        have hpart : (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0)) ∪
-            (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)) =
-            (Finset.univ : Finset (P.Particle g.val)) :=
-          Finset.filter_union_filter_not_eq _ _
-        have hdisj : Disjoint
-            (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0))
-            (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)) :=
-          Finset.disjoint_filter_filter_not _ _ _
-        have h1 : (∑ v ∈ (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0)) ∪
-            (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)), (s0 - u).count v) =
-            (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0), (s0 - u).count v) +
-            (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0), (s0 - u).count v) :=
-          Finset.sum_union hdisj
-        rw [hpart] at h1
-        exact h1
-      have hnonzero_zero : (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0),
-          (s0 - u).count v) = 0 := by
-        apply Finset.sum_eq_zero
-        intro v hv
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
-        exact hD_zero v hv
-      rw [hsum_all] at hsplit
-      omega
-    have hZs_eq := zeroCard_eq_sum (P := P) (g := g) s0
-    rw [hD_eq, hZs_eq]
-    apply Finset.sum_le_sum
-    intro v _
-    exact Multiset.count_le_of_le v (Multiset.sub_le_self s0 u)
-  have hM_le : (t0 - u).card ≤ (zeroMemoryIndices t0).card := by
-    have hM_eq : (t0 - u).card =
-        ∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0),
-          (t0 - u).count v := by
-      have hsum_all : ∑ v ∈ (Finset.univ : Finset (P.Particle g.val)), (t0 - u).count v =
-          (t0 - u).card := by
-        rw [Multiset.sum_count_eq_card (fun a _ => Finset.mem_univ a)]
-      have hsplit : (∑ v ∈ (Finset.univ : Finset (P.Particle g.val)), (t0 - u).count v) =
-          (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0), (t0 - u).count v) +
-          (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0), (t0 - u).count v) := by
-        have hpart : (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0)) ∪
-            (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)) =
-            (Finset.univ : Finset (P.Particle g.val)) :=
-          Finset.filter_union_filter_not_eq _ _
-        have hdisj : Disjoint
-            (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0))
-            (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)) :=
-          Finset.disjoint_filter_filter_not _ _ _
-        have h1 : (∑ v ∈ (Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0)) ∪
-            (Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0)), (t0 - u).count v) =
-            (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => v.2 = 0), (t0 - u).count v) +
-            (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0), (t0 - u).count v) :=
-          Finset.sum_union hdisj
-        rw [hpart] at h1
-        exact h1
-      have hnonzero_zero : (∑ v ∈ Finset.univ.filter (fun v : P.Particle g.val => ¬ v.2 = 0),
-          (t0 - u).count v) = 0 := by
-        apply Finset.sum_eq_zero
-        intro v hv
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
-        have hv2 : v.2 ≠ 0 := hv
-        exact hM_zero v hv2
-      rw [hsum_all] at hsplit
-      omega
-    have hZt_eq := zeroCard_eq_sum (P := P) (g := g) t0
-    rw [hM_eq, hZt_eq]
-    apply Finset.sum_le_sum
-    intro v _
-    exact Multiset.count_le_of_le v (Multiset.sub_le_self t0 u)
-  -- Integer arithmetic: Zs-(s-u) = Zt-(t-u) from s-Zs = t-Zt
-  have hN : s0.card - (zeroMemoryIndices s0).card =
-      t0.card - (zeroMemoryIndices t0).card :=
-    nonzero_totals_eq s0 t0 hagree_st
-  have hDs : (s0 - u).card = s0.card - u.card := hD_card
-  have hMt : (t0 - u).card = t0.card - u.card := hM_card
-  -- Convert to integers
-  have hint : ((zeroMemoryIndices s0).card : ℤ) - ((s0.card - u.card : ℕ) : ℤ) =
-      ((zeroMemoryIndices t0).card : ℤ) - ((t0.card - u.card : ℕ) : ℤ) := by
-    have h1 : (((s0.card - (zeroMemoryIndices s0).card : ℕ)) : ℤ) =
-        (((t0.card - (zeroMemoryIndices t0).card : ℕ)) : ℤ) := by
-      rw [hN]
-    have hs_sub : (((s0.card - (zeroMemoryIndices s0).card : ℕ)) : ℤ) =
-        (s0.card : ℤ) - ((zeroMemoryIndices s0).card : ℤ) := by
-      apply Nat.cast_sub hZs_le
-    have ht_sub : (((t0.card - (zeroMemoryIndices t0).card : ℕ)) : ℤ) =
-        (t0.card : ℤ) - ((zeroMemoryIndices t0).card : ℤ) := by
-      apply Nat.cast_sub hZt_le
-    have hs_u : (((s0.card - u.card : ℕ)) : ℤ) = (s0.card : ℤ) - (u.card : ℤ) := by
-      apply Nat.cast_sub hu_s_card
-    have ht_u : (((t0.card - u.card : ℕ)) : ℤ) = (t0.card : ℤ) - (u.card : ℤ) := by
-      apply Nat.cast_sub hu_t_card
-    rw [hs_sub, ht_sub] at h1
-    -- h1 : s - Zs = t - Zt as integers, want Zs-(s-u) = Zt-(t-u)
-    have hDs_int : ((((s0 - u).card : ℕ)) : ℤ) = ((s0.card - u.card : ℕ) : ℤ) := by
-      rw [hDs]
-    have hMt_int : ((((t0 - u).card : ℕ)) : ℤ) = ((t0.card - u.card : ℕ) : ℤ) := by
-      rw [hMt]
-    -- Zs-(s-u) = Zs-s+u, Zt-(t-u) = Zt-t+u, and Zs-s = Zt-t from h1
-    have hZs_s : ((zeroMemoryIndices s0).card : ℤ) - (s0.card : ℤ) =
-        ((zeroMemoryIndices t0).card : ℤ) - (t0.card : ℤ) := by
-      linarith
-    calc ((zeroMemoryIndices s0).card : ℤ) - ((s0.card - u.card : ℕ) : ℤ)
-          = (((zeroMemoryIndices s0).card : ℤ) - (s0.card : ℤ)) + (u.card : ℤ) := by
-            rw [hs_u]
-            ring
-        _ = (((zeroMemoryIndices t0).card : ℤ) - (t0.card : ℤ)) + (u.card : ℤ) := by
-            rw [hZs_s]
-        _ = ((zeroMemoryIndices t0).card : ℤ) - ((t0.card - u.card : ℕ) : ℤ) := by
-            rw [ht_u]
-            ring
-  -- Nat equality from integer equality, using true differences (D≤Zs, M≤Zt)
-  have hZs_D : (s0.card - u.card) ≤ (zeroMemoryIndices s0).card := by
-    rw [← hD_card]
-    exact hD_le
-  have hZt_M : (t0.card - u.card) ≤ (zeroMemoryIndices t0).card := by
-    rw [← hM_card]
-    exact hM_le
-  have hcast_s : ((((zeroMemoryIndices s0).card - (s0.card - u.card) : ℕ)) : ℤ) =
-      ((zeroMemoryIndices s0).card : ℤ) - ((s0.card - u.card : ℕ) : ℤ) := by
-    apply Nat.cast_sub hZs_D
-  have hcast_t : ((((zeroMemoryIndices t0).card - (t0.card - u.card) : ℕ)) : ℤ) =
-      ((zeroMemoryIndices t0).card : ℤ) - ((t0.card - u.card : ℕ) : ℤ) := by
-    apply Nat.cast_sub hZt_M
-  have h_eq_int : ((((zeroMemoryIndices s0).card - (s0.card - u.card) : ℕ)) : ℤ) =
-      ((((zeroMemoryIndices t0).card - (t0.card - u.card) : ℕ)) : ℤ) := by
-    rw [hcast_s, hcast_t, hint]
-  exact Nat.cast_injective h_eq_int
+  omega
 
 /-- Numerator products agree on valid survivors. -/
 lemma num_eq (F : FixedData) (n : ℕ) (g : P.BigGroup)
@@ -1098,9 +849,9 @@ lemma num_eq (F : FixedData) (n : ℕ) (g : P.BigGroup)
   have hmult : s0 + (t0 - u) = t0 + (s0 - u) := by
     apply Multiset.ext.mpr
     intro v
-    have hu_s_le : u.count v ≤ s0.count v :=
+    have hu_s_le :=
       Multiset.count_le_of_le v hu_s
-    have hu_t_le : u.count v ≤ t0.count v :=
+    have hu_t_le :=
       Multiset.count_le_of_le v hu_t
     simp only [Multiset.count_add, Multiset.count_sub]
     omega
@@ -1108,7 +859,7 @@ lemma num_eq (F : FixedData) (n : ℕ) (g : P.BigGroup)
       ((t0 + (s0 - u)).map (fun w => tiltedMu F P n g.val w.1)).prod := by
     rw [hmult]
   rw [Multiset.map_add, Multiset.map_add, Multiset.prod_add, Multiset.prod_add] at hmap
-  exact hmap
+  omega
 
 /-- Group mass denominator over univ equals over toFinset. -/
 lemma mass_denom_eq_univ (g : P.Group) (z : P.Memory g) :
@@ -1121,14 +872,14 @@ lemma mass_denom_eq_univ (g : P.Group) (z : P.Memory g) :
     intro v _ hv
     have hmem : v ∉ z := by
       intro hm
-      exact hv (Multiset.mem_toFinset.mpr hm)
-    have hcount : z.count v = 0 :=
+      exact by grind
+    have hcount :=
       Multiset.count_eq_zero_of_notMem hmem
     rw [hcount]
     simp
-  have h := Finset.prod_subset hsub (fun v _ hv => hzero v (Finset.mem_univ v) hv)
+  have h := Finset.prod_subset hsub (by omega)
   -- h : ∏ u ∈ toFinset, ... = ∏ v ∈ univ, ...? Actually prod_subset gives ∏ s = ∏ t when ...? Let's check direction: prod_subset (h : s ⊆ t) (hf : ∀ x ∈ t, x ∉ s → f x = 1) : ∏ x ∈ s, f x = ∏ x ∈ t, f x? Or opposite? Need to check: Finset.prod_subset : s ⊆ t → (∀ x ∈ t, x ∉ s → f x = 1) → ∏ x ∈ s, f x = ∏ x ∈ t, f x? Actually prod over smaller equals prod over larger when extra factors 1. Good. So h gives ∏ toFinset = ∏ univ. Good, which is exactly goal (LHS toFinset, RHS univ). Good.
-  exact h
+  omega
 
 /-- Denominator products agree (up to commutativity). -/
 lemma denom_eq (s0 t0 u : P.Memory g.val) :
@@ -1139,9 +890,7 @@ lemma denom_eq (s0 t0 u : P.Memory g.val) :
         (((u.count v).factorial : ℝ) * (((t0.count v - u.count v).factorial : ℝ)))) *
       (∏ v : P.Particle g.val, (((s0.count v - u.count v).factorial : ℝ))) := by
   rw [← Finset.prod_mul_distrib, ← Finset.prod_mul_distrib]
-  apply Finset.prod_congr rfl
-  intro v _
-  ring
+  grind
 
 /-- Symmetric factor (skeleton). -/
 lemma Sym_eq_skeleton (F : FixedData) (n : ℕ) (g : P.BigGroup)
@@ -1164,43 +913,43 @@ lemma Sym_eq_skeleton (F : FixedData) (n : ℕ) (g : P.BigGroup)
   have hMs_ne : (∏ v : P.Particle g.val, (((s0.count v).factorial : ℝ))) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro v _
-    exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+    exact by positivity
   have hMt_ne : (∏ v : P.Particle g.val, (((t0.count v).factorial : ℝ))) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro v _
-    exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+    exact by positivity
   have hU_D_ne : (∏ v : P.Particle g.val,
       (((u.count v).factorial : ℝ) * (((s0.count v - u.count v).factorial : ℝ)))) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro v _
     apply mul_ne_zero
-    · exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
-    · exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+    · positivity
+    · positivity
   have hU_M_ne : (∏ v : P.Particle g.val,
       (((u.count v).factorial : ℝ) * (((t0.count v - u.count v).factorial : ℝ)))) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro v _
     apply mul_ne_zero
-    · exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
-    · exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+    · positivity
+    · positivity
   have hD_m0_ne : (∏ v : P.Particle g.val, (((t0 - u).count v).factorial : ℝ)) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro v _
-    exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+    exact by positivity
   have hD_D_ne : (∏ v : P.Particle g.val, (((s0 - u).count v).factorial : ℝ)) ≠ 0 := by
     apply Finset.prod_ne_zero_iff.mpr
     intro v _
-    exact Nat.cast_ne_zero.mpr (Nat.factorial_ne_zero _)
+    exact by positivity
   have hcount_D : ∀ v : P.Particle g.val, (s0 - u).count v = s0.count v - u.count v :=
-    fun v => Multiset.count_sub v s0 u
+    by simp
   have hcount_M : ∀ v : P.Particle g.val, (t0 - u).count v = t0.count v - u.count v :=
-    fun v => Multiset.count_sub v t0 u
+    by simp
   have hD_S_eq : (∏ v : P.Particle g.val, (((s0 - u).count v).factorial : ℝ)) =
       ∏ v : P.Particle g.val, (((s0.count v - u.count v).factorial : ℝ)) :=
-    Finset.prod_congr rfl (fun v _ => by rw [hcount_D v])
+    Finset.prod_congr rfl (fun v _ => by simp)
   have hD_T_eq : (∏ v : P.Particle g.val, (((t0 - u).count v).factorial : ℝ)) =
       ∏ v : P.Particle g.val, (((t0.count v - u.count v).factorial : ℝ)) :=
-    Finset.prod_congr rfl (fun v _ => by rw [hcount_M v])
+    Finset.prod_congr rfl (fun v _ => by simp)
   rw [hD_S_eq, hD_T_eq]
   have e1 : ((s0.map (fun w => tiltedMu F P n g.val w.1)).prod /
       (∏ v : P.Particle g.val, (((s0.count v).factorial : ℝ))) *
@@ -1221,21 +970,10 @@ lemma Sym_eq_skeleton (F : FixedData) (n : ℕ) (g : P.BigGroup)
           (((u.count v).factorial : ℝ) * (((t0.count v - u.count v).factorial : ℝ)))) := by
     field_simp
   rw [e1, e2, div_mul_div_comm, div_mul_div_comm]
-  have hDen : (∏ v : P.Particle g.val,
-          (((u.count v).factorial : ℝ) * (((s0.count v - u.count v).factorial : ℝ)))) *
-        (∏ v : P.Particle g.val, (((t0.count v - u.count v).factorial : ℝ))) =
-      (∏ v : P.Particle g.val,
-          (((u.count v).factorial : ℝ) * (((t0.count v - u.count v).factorial : ℝ)))) *
-        (∏ v : P.Particle g.val, (((s0.count v - u.count v).factorial : ℝ))) :=
+  have hDen :=
     denom_eq s0 t0 u
   -- Rewrite to common denominator form
-  have hDen' : ((∏ v : P.Particle g.val,
-          (((u.count v).factorial : ℝ) * (((s0.count v - u.count v).factorial : ℝ)))) *
-        (∏ v : P.Particle g.val, (((t0.count v - u.count v).factorial : ℝ)))) =
-      ((∏ v : P.Particle g.val,
-          (((u.count v).factorial : ℝ) * (((t0.count v - u.count v).factorial : ℝ)))) *
-        (∏ v : P.Particle g.val, (((s0.count v - u.count v).factorial : ℝ)))) := hDen
-  rw [hDen', hnum]
+  grind
 /-- Coefficient ratio (skeleton). -/
 lemma coeff_eq_skeleton (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
     (g : P.BigGroup) (s0 t0 u : P.Memory g.val)
@@ -1254,8 +992,8 @@ lemma coeff_eq_skeleton (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1)
           ((zeroMemoryIndices t0).card - (t0.card - u.card))) *
         (((eta F n i * P.V g.val / rho) ^ (s0 - u).card *
           d ^ (s0 - u).card))) := by
-  have hu_s_card : u.card ≤ s0.card := Multiset.card_le_card hu_s
-  have hu_t_card : u.card ≤ t0.card := Multiset.card_le_card hu_t
+  have hu_s_card := Multiset.card_le_card hu_s
+  have hu_t_card := Multiset.card_le_card hu_t
   have hDs : (s0 - u).card = s0.card - u.card := by
     have hadd : u.card + (s0 - u).card = s0.card := by
       have h : u + (s0 - u) = s0 := by
@@ -1274,11 +1012,11 @@ lemma coeff_eq_skeleton (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1)
     omega
   rw [hDs, hMt, hQeq]
   have hDV_pos : 0 < d * P.V g.val := mul_pos hd hV
-  have hDV_ne : (d * P.V g.val) ≠ 0 := ne_of_gt hDV_pos
+  have hDV_ne := ne_of_gt hDV_pos
   have hDV_s_ne : ((d * P.V g.val) ^ s0.card) ≠ 0 := pow_ne_zero _ hDV_ne
-  have hs_eq : u.card + (s0.card - u.card) = s0.card :=
+  have hs_eq :=
     Nat.add_sub_cancel' hu_s_card
-  have ht_eq : u.card + (t0.card - u.card) = t0.card :=
+  have ht_eq :=
     Nat.add_sub_cancel' hu_t_card
   have hDV_s : (d * P.V g.val) ^ s0.card =
       (d * P.V g.val) ^ u.card * (d * P.V g.val) ^ (s0.card - u.card) := by
@@ -1306,44 +1044,7 @@ lemma coeff_eq_skeleton (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1)
     rw [hBd_s, hBd_t, mul_pow, mul_pow]
     ring
   -- Multiply by common Q power via linear combination
-  have hMainQ : ((eta F n i / rho) ^ (s0.card - u.card) *
-        (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-          ((zeroMemoryIndices t0).card - (t0.card - u.card)) *
-        ((eta F n i * P.V g.val / rho) ^ (t0.card - u.card) * d ^ (t0.card - u.card))) *
-        (d * P.V g.val) ^ s0.card =
-      (d * P.V g.val) ^ t0.card *
-        ((eta F n i / rho) ^ (t0.card - u.card) *
-          (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-            ((zeroMemoryIndices t0).card - (t0.card - u.card)) *
-          ((eta F n i * P.V g.val / rho) ^ (s0.card - u.card) * d ^ (s0.card - u.card))) := by
-    linear_combination
-      (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-        ((zeroMemoryIndices t0).card - (t0.card - u.card)) * hMain
-  have hdiv : ((d * P.V g.val) ^ t0.card / ((d * P.V g.val) ^ s0.card)) *
-        (((eta F n i / rho) ^ (t0.card - u.card) *
-          (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-            ((zeroMemoryIndices t0).card - (t0.card - u.card))) *
-          (((eta F n i * P.V g.val / rho) ^ (s0.card - u.card) *
-            d ^ (s0.card - u.card)))) =
-      ((d * P.V g.val) ^ t0.card *
-        ((eta F n i / rho) ^ (t0.card - u.card) *
-          (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-            ((zeroMemoryIndices t0).card - (t0.card - u.card)) *
-          ((eta F n i * P.V g.val / rho) ^ (s0.card - u.card) * d ^ (s0.card - u.card)))) /
-        ((d * P.V g.val) ^ s0.card) := by
-    ring
-  have hlhs : ((eta F n i / rho) ^ (s0.card - u.card) *
-        (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-          ((zeroMemoryIndices t0).card - (t0.card - u.card))) *
-        (((eta F n i * P.V g.val / rho) ^ (t0.card - u.card) *
-          d ^ (t0.card - u.card))) =
-      (eta F n i / rho) ^ (s0.card - u.card) *
-        (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-          ((zeroMemoryIndices t0).card - (t0.card - u.card)) *
-        ((eta F n i * P.V g.val / rho) ^ (t0.card - u.card) * d ^ (t0.card - u.card)) := by
-    ring
-  rw [hlhs, hdiv, eq_div_iff hDV_s_ne]
-  linear_combination hMainQ
+  grind
 
 /-- Per-survivor mass identity. -/
 lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
@@ -1361,11 +1062,11 @@ lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
     · by_cases hagree_u : nonzeroPreserved (P := P) (g := g) s0 u
       · -- Valid case: agreement + ≤both, both sides given by formulas
         have hagree_tu : nonzeroPreserved (P := P) (g := g) t0 u := fun v hv =>
-          (hagree_u v hv).trans (hagree_st v hv)
+          (hagree_u v hv).trans (by grind)
         have hvalid_s : nonzeroPreserved (P := P) (g := g) s0 u ∧ u ≤ s0 :=
-          ⟨hagree_u, hu_s⟩
+          by grind
         have hvalid_t : nonzeroPreserved (P := P) (g := g) t0 u ∧ u ≤ t0 :=
-          ⟨hagree_tu, hu_t⟩
+          by grind
         have hfib_s := fiberA_real s0 u hvalid_s
         have hfib_t := fiberA_real t0 u hvalid_t
         have hfib_s' : ((fiberA (P := P) (g := g) s0 u).card : ℝ) =
@@ -1387,8 +1088,8 @@ lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
               exact hv
             have hu_eq := hagree_u v hnz
             have hcount : (s0 - u).count v = s0.count v - u.count v :=
-              Multiset.count_sub v s0 u
-            rw [hcount, hu_eq, Nat.sub_self]
+              by simp
+            omega
         have hbirth_Mt : birthValid (P := P) (g := g) (t0 - u) (t0 - u).card := by
           constructor
           · rfl
@@ -1398,8 +1099,8 @@ lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
               exact hv
             have hu_eq := hagree_tu v hnz
             have hcount : (t0 - u).count v = t0.count v - u.count v :=
-              Multiset.count_sub v t0 u
-            rw [hcount, hu_eq, Nat.sub_self]
+              by simp
+            omega
         have hperU_fwd : perU_term F n rho d i g s0 t0 u =
             ((eta F n i / rho) ^ (s0.card - u.card) *
               (visitQ F.q n i / rho ^ (2 : ℕ)) ^
@@ -1431,7 +1132,7 @@ lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
               (∏ v : P.Particle g.val, (((t0.count v).factorial : ℝ))) := by
           unfold PrimeGroups.groupMemoryMass
           rw [mass_denom_eq_univ _ _]
-        have hDV_ne : (d * P.V g.val) ≠ 0 := ne_of_gt (mul_pos hd hV)
+        have hDV_ne : (d * P.V g.val) ≠ 0 := by positivity
         have hRev : singleReversal P d g s0 t0 =
             (d * P.V g.val) ^ t0.card / ((d * P.V g.val) ^ s0.card) := by
           unfold singleReversal
@@ -1439,57 +1140,7 @@ lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
         have hSym := Sym_eq_skeleton F n g s0 t0 u hu_s hu_t
         simp only [Finset.prod_mul_distrib] at hSym
         have hCoeff := coeff_eq_skeleton F n rho d i g s0 t0 u hV hd hu_s hu_t hQeq
-        rw [hmass_s, hmass_t, hfib_s', hfib_t', hperU_fwd, hperU_rev, hRev]
-        have hLHS_factor :
-            (s0.map (fun w => tiltedMu F P n g.val w.1)).prod /
-              (∏ v : P.Particle g.val, (((s0.count v).factorial : ℝ))) *
-              ((∏ v : P.Particle g.val, (((s0.count v).factorial : ℝ))) /
-                ((∏ v : P.Particle g.val, (((u.count v).factorial : ℝ))) *
-                  (∏ v : P.Particle g.val, (((s0.count v - u.count v).factorial : ℝ))))) *
-              (((eta F n i / rho) ^ (s0.card - u.card) *
-                (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-                  ((zeroMemoryIndices s0).card - (s0.card - u.card))) *
-                (((eta F n i * P.V g.val / rho) ^ (t0 - u).card * d ^ (t0 - u).card) *
-                  (((t0 - u).map (fun w => tiltedMu F P n g.val w.1)).prod *
-                    ((∏ v : P.Particle g.val, (((t0 - u).count v).factorial : ℝ)))⁻¹))) =
-            (((s0.map (fun w => tiltedMu F P n g.val w.1)).prod /
-              (∏ v : P.Particle g.val, (((s0.count v).factorial : ℝ))) *
-              (((∏ v : P.Particle g.val, (((s0.count v).factorial : ℝ))) /
-                (((∏ v : P.Particle g.val, (((u.count v).factorial : ℝ))) *
-                  (∏ v : P.Particle g.val, (((s0.count v - u.count v).factorial : ℝ))))))) *
-              ((((t0 - u).map (fun w => tiltedMu F P n g.val w.1)).prod) /
-                (∏ v : P.Particle g.val, (((t0 - u).count v).factorial : ℝ)))) *
-            (((eta F n i / rho) ^ (s0.card - u.card) *
-              (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-                ((zeroMemoryIndices s0).card - (s0.card - u.card))) *
-              (((eta F n i * P.V g.val / rho) ^ (t0 - u).card * d ^ (t0 - u).card)))) := by
-          ring
-        have hRHS_factor :
-            (t0.map (fun w => tiltedMu F P n g.val w.1)).prod /
-              (∏ v : P.Particle g.val, (((t0.count v).factorial : ℝ))) *
-              ((∏ v : P.Particle g.val, (((t0.count v).factorial : ℝ))) /
-                ((∏ v : P.Particle g.val, (((u.count v).factorial : ℝ))) *
-                  (∏ v : P.Particle g.val, (((t0.count v - u.count v).factorial : ℝ))))) *
-              (((eta F n i / rho) ^ (t0.card - u.card) *
-                (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-                  ((zeroMemoryIndices t0).card - (t0.card - u.card))) *
-                (((eta F n i * P.V g.val / rho) ^ (s0 - u).card * d ^ (s0 - u).card) *
-                  (((s0 - u).map (fun w => tiltedMu F P n g.val w.1)).prod *
-                    ((∏ v : P.Particle g.val, (((s0 - u).count v).factorial : ℝ)))⁻¹))) =
-            (((t0.map (fun w => tiltedMu F P n g.val w.1)).prod /
-              (∏ v : P.Particle g.val, (((t0.count v).factorial : ℝ))) *
-              (((∏ v : P.Particle g.val, (((t0.count v).factorial : ℝ))) /
-                (((∏ v : P.Particle g.val, (((u.count v).factorial : ℝ))) *
-                  (∏ v : P.Particle g.val, (((t0.count v - u.count v).factorial : ℝ))))))) *
-              ((((s0 - u).map (fun w => tiltedMu F P n g.val w.1)).prod) /
-                (∏ v : P.Particle g.val, (((s0 - u).count v).factorial : ℝ)))) *
-            (((eta F n i / rho) ^ (t0.card - u.card) *
-              (visitQ F.q n i / rho ^ (2 : ℕ)) ^
-                ((zeroMemoryIndices t0).card - (t0.card - u.card))) *
-              (((eta F n i * P.V g.val / rho) ^ (s0 - u).card * d ^ (s0 - u).card)))) := by
-          ring
-        rw [hLHS_factor, hRHS_factor, hSym, hCoeff]
-        ring
+        grind
       · -- Invalid: u disagrees, both fiberAs zero
         have hnpres_t : ¬ nonzeroPreserved (P := P) (g := g) t0 u := by
           intro ht
@@ -1499,51 +1150,39 @@ lemma perU_mass_eq (F : FixedData) (n : ℕ) (rho d : ℝ) (i : Fin (n + 1))
           have ht_eq := ht v hv
           exact ht_eq.trans hs_eq.symm
         have hnvalid_s : ¬ (nonzeroPreserved (P := P) (g := g) s0 u ∧ u ≤ s0) :=
-          fun h => hagree_u h.1
+          by grind
         have hnvalid_t : ¬ (nonzeroPreserved (P := P) (g := g) t0 u ∧ u ≤ t0) :=
-          fun h => hnpres_t h.1
+          by grind
         have hfib_s0 : (fiberA (P := P) (g := g) s0 u).card = 0 := by
-          have hcard : (fiberA (P := P) (g := g) s0 u).card =
-              (if nonzeroPreserved (P := P) (g := g) s0 u ∧ u ≤ s0 then
-                ∏ v : P.Particle g.val, Nat.choose (s0.count v) (u.count v)
-              else 0) := fiberA_card (P := P) (g := g) s0 u
+          have hcard := fiberA_card (P := P) (g := g) s0 u
           rw [ite_eq_right hnvalid_s] at hcard
           exact hcard
         have hfib_t0 : (fiberA (P := P) (g := g) t0 u).card = 0 := by
-          have hcard : (fiberA (P := P) (g := g) t0 u).card =
-              (if nonzeroPreserved (P := P) (g := g) t0 u ∧ u ≤ t0 then
-                ∏ v : P.Particle g.val, Nat.choose (t0.count v) (u.count v)
-              else 0) := fiberA_card (P := P) (g := g) t0 u
+          have hcard := fiberA_card (P := P) (g := g) t0 u
           rw [ite_eq_right hnvalid_t] at hcard
           exact hcard
-        simp only [hfib_s0, hfib_t0, Nat.cast_zero, mul_zero, zero_mul]
+        simp_all
     · -- Invalid: ¬(u≤t0), forward perU=0, reverse fiberA=0
       have hperU_fwd0 : perU_term F n rho d i g s0 t0 u = 0 := by
         unfold perU_term
         rw [dite_eq_right hu_t]
       have hnvalid_t : ¬ (nonzeroPreserved (P := P) (g := g) t0 u ∧ u ≤ t0) :=
-        fun h => hu_t h.2
+        by grind
       have hfib_t0 : (fiberA (P := P) (g := g) t0 u).card = 0 := by
-        have hcard : (fiberA (P := P) (g := g) t0 u).card =
-            (if nonzeroPreserved (P := P) (g := g) t0 u ∧ u ≤ t0 then
-              ∏ v : P.Particle g.val, Nat.choose (t0.count v) (u.count v)
-            else 0) := fiberA_card (P := P) (g := g) t0 u
+        have hcard := fiberA_card (P := P) (g := g) t0 u
         rw [ite_eq_right hnvalid_t] at hcard
         exact hcard
-      simp only [hperU_fwd0, hfib_t0, Nat.cast_zero, mul_zero, zero_mul]
+      simp_all
   · -- Invalid: ¬(u≤s0), forward fiberA=0, reverse perU=0
     have hnvalid_s : ¬ (nonzeroPreserved (P := P) (g := g) s0 u ∧ u ≤ s0) :=
-      fun h => hu_s h.2
+      by grind
     have hfib_s0 : (fiberA (P := P) (g := g) s0 u).card = 0 := by
-      have hcard : (fiberA (P := P) (g := g) s0 u).card =
-          (if nonzeroPreserved (P := P) (g := g) s0 u ∧ u ≤ s0 then
-            ∏ v : P.Particle g.val, Nat.choose (s0.count v) (u.count v)
-          else 0) := fiberA_card (P := P) (g := g) s0 u
+      have hcard := fiberA_card (P := P) (g := g) s0 u
       rw [ite_eq_right hnvalid_s] at hcard
       exact hcard
     have hperU_rev0 : perU_term F n rho d i g t0 s0 u = 0 := by
       unfold perU_term
       rw [dite_eq_right hu_s]
-    simp only [hfib_s0, hperU_rev0, Nat.cast_zero, mul_zero, zero_mul]
+    simp_all
 
 end Erdos821.P3Adj

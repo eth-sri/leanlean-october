@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Energy.Reindex
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyBandSubtypeTransport
-open HeckeFamily CenteredMomentEnergyBands CenteredMomentEnergyState
+open HeckeFamily CenteredMomentEnergyBands
 open CenteredMomentNaturalFixedRaySource CenteredMomentInductionEnergy
 open CenteredMomentPrimeSlot CenteredMomentEnergyReindex
-local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
 omit [Fintype α] [Fintype β] in
 theorem positiveAt_embedding (e : β↪α)
     (W : ℝ→ℂ) (bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z : ℝ)
-    (η₀ : Character) (Q : Ideal O) (degree : ℕ) (S : Finset (ℕ×ℕ)) (C : ℝ)
+    (η₀ : Character) (Q : Ideal HeckeFamily.O) (degree : ℕ) (S : Finset (ℕ×ℕ)) (C : ℝ)
     (h : PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
       η₀ Q degree S C) :
     PositiveAt (α:=β) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
@@ -37,10 +36,10 @@ theorem positiveAt_embedding (e : β↪α)
   let v' : T.map e→ℝ := v∘E.symm
   have hsum : (∑i:T.map e,w' i)=∑i:T,w i := E.symm.sum_comp w
   have hh := h (T.map e) θ' w' σ' v' t height
-    (fun i=>hw (E.symm i)) (fun i=>hwL (E.symm i))
-    (fun i=>hσlo (E.symm i)) (fun i=>hσhi (E.symm i))
-    hheight (fun i=>hv (E.symm i)) s hQ hs p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂
-    (by rw [hsum];exact hcapacity)
+    (by grind) (by grind)
+    (by grind) (by grind)
+    hheight (by grind) s hQ hs p X₁ X₂ hX₁ hX₂ hcap₁ hcap₂
+    (by grind)
   have he := energy_reindex E s.character s.mask 1 (p.profile 0) (p.profile 1)
     (fun i:T.map e=>primePool M H bslot (Z^(w' i)))
     (fun (i:T.map e) I=>idealCoeff (relativeCharacter M H hH η₀ (θ' i)) I*
@@ -57,12 +56,12 @@ theorem positiveAt_embedding (e : β↪α)
         HeckePrimeAnnular.annularWeight W (Z^(w' i)) (σ' i) (v' i) I)
       (fun i:T.map e=>Z^(w' i)) X₁ X₂ s.radial.keep s.radial.profile s.radial.scale := by
     simpa only [Function.comp_def,θ',w',σ',v',Equiv.symm_apply_apply] using he
-  exact he'.le.trans hh
+  linarith
 
 omit [Fintype α] in
 theorem positiveAt_subtype (T : Finset α)
     (W : ℝ→ℂ) (bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z : ℝ)
-    (η₀ : Character) (Q : Ideal O) (degree : ℕ) (S : Finset (ℕ×ℕ)) (C : ℝ)
+    (η₀ : Character) (Q : Ideal HeckeFamily.O) (degree : ℕ) (S : Finset (ℕ×ℕ)) (C : ℝ)
     (h : PositiveAt (α:=α) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z
       η₀ Q degree S C) :
     PositiveAt (α:=T) M H hH W bslot a b bΦ Bmask L Lslot lo hi Mcap ε κ Z

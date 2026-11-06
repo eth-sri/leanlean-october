@@ -78,7 +78,7 @@ lemma eventually_harmonicMass_le : ∀ᶠ x : ℝ in atTop,
     (tendsto_rpow_atTop (by norm_num)).comp tendsto_log_atTop
   filter_upwards [hL.eventually_ge_atTop Y₀, eventually_le_log 1] with x hY hx g hg
   obtain ⟨y, rfl, h1, -⟩ := exists_scale_of_mem_candidateGroups hx hg
-  exact hY₀ y (hY.trans h1)
+  grind
 
 /-- A doubling family has at least `(b - a) T / log 2 - 1` groups, given that all its groups
 are nonempty. -/
@@ -113,13 +113,13 @@ lemma card_doublingGroups_ge {x : ℝ} (hx : 1 ≤ Real.log x) {a b : ℝ} (hab 
       ((range ⌊z⌋₊).filter (fun i => 2 ^ (i + 1) * Real.log x ^ a ≤ Real.log x ^ b)) := by
     intro i hi i' hi' h
     by_contra hii'
-    have hLa : 0 < Real.log x ^ a := Real.rpow_pos_of_pos hL0 a
+    have hLa := Real.rpow_pos_of_pos hL0 a
     have key : ∀ i i' : ℕ, i < i' → 2 * (2 ^ i * Real.log x ^ a) ≤ 2 ^ i' * Real.log x ^ a := by
       intro i i' hlt
       rw [← mul_assoc, ← pow_succ']
       gcongr
       · norm_num
-      · exact hlt
+      · omega
     have hdisj : Disjoint (dyadicGroup (2 ^ i * Real.log x ^ a))
         (dyadicGroup (2 ^ i' * Real.log x ^ a)) := by
       rcases lt_or_gt_of_ne hii' with hlt | hlt
@@ -149,7 +149,7 @@ lemma eventually_card_families_ge : ∀ᶠ x : ℝ in atTop,
   have hne : ∀ a : ℝ, 28 / 100 ≤ a → ∀ i : ℕ, (dyadicGroup (2 ^ i * Real.log x ^ a)).Nonempty := by
     intro a ha i
     have h1 : Real.log x ^ (28 / 100 : ℝ) ≤ 2 ^ i * Real.log x ^ a := by
-      have : Real.log x ^ (28 / 100 : ℝ) ≤ Real.log x ^ a := Real.rpow_le_rpow_of_exponent_le hx ha
+      have  := Real.rpow_le_rpow_of_exponent_le hx ha
       have h2 : (1 : ℝ) ≤ 2 ^ i := one_le_pow₀ (by norm_num)
       nlinarith [Real.rpow_pos_of_pos hL0 a]
     have hm := (hY₀ _ (hY.trans h1)).1

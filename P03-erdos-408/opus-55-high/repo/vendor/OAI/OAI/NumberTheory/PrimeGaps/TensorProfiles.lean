@@ -10,23 +10,17 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 open scoped Classical
 
-open scoped ContDiff
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 noncomputable def appendMeasurableEquiv (n m : ℕ) :
     ((Fin n → ℝ) × (Fin m → ℝ)) ≃ᵐ (Fin (n+m) → ℝ) :=
@@ -66,7 +60,7 @@ noncomputable def tensorProfile {n m : ℕ} (f : (Fin n → ℝ) → ℝ)
 @[simp] theorem fiberRay_apply {ι α : Type*} [Fintype ι]
     (b : ι → α) (r : α) (i : ι) : fiberRay b r i=if b i=r then 1 else 0 := by
   classical
-  simp [fiberRay,WithLp.ofLp_sum,Finset.sum_apply]
+  simp [fiberRay]
 
 @[simp] theorem append_self_addNat {n : ℕ} {α : Type*} (y z : Fin n → α) (i : Fin n) :
     Fin.append y z (i.addNat n)=z i := by

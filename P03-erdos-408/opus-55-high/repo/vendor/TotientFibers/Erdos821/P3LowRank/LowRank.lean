@@ -14,7 +14,6 @@ support keep the unmodified signed kernel; at most `2 * rank` edges are affected
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Lowrank
@@ -143,11 +142,11 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
   have h1 : (∏ j ∈ U.filter (fun j => addrLoc (addrIdx P (J + F.ell) n B j) = .inl default),
       w j (j ∈ H.performedFin B) (H.valueFin B j)) = initF n B w U (H.before 0) := by
     unfold initF
-    apply Finset.prod_congr (Finset.filter_congr (fun _ _ => Iff.rfl))
+    apply Finset.prod_congr (by simp)
     intro j hj
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_init H B _ hl
-    have hp : (j ∈ H.performedFin B) = True :=
+    have hp :=
       propext ⟨fun _ => trivial, fun _ => (mem_performedFin A n B H j).mpr hloc.1⟩
     rw [hp]
     exact congrArg _ hloc.2
@@ -157,11 +156,11 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
         ghostF n B w U i (H.before i) (H.after i) (H.ghost i) := by
     intro i
     unfold ghostF
-    apply Finset.prod_congr (Finset.filter_congr (fun _ _ => Iff.rfl))
+    apply Finset.prod_congr (by simp)
     intro j hj
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_ghost H B _ i hl
-    have hp : (j ∈ H.performedFin B) = ghostPerf (addrIdx P (J + F.ell) n B j) (H.ghost i) :=
+    have hp :=
       propext ((mem_performedFin A n B H j).trans hloc.1)
     rw [hp]
     exact congrArg _ hloc.2
@@ -171,11 +170,11 @@ theorem phi_factor (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)) → 
         edgeF A n B w U i (H.after i.castSucc) (H.before i.succ) (H.edge i) := by
     intro i
     unfold edgeF
-    apply Finset.prod_congr (Finset.filter_congr (fun _ _ => Iff.rfl))
+    apply Finset.prod_congr (by simp)
     intro j hj
     have hl := (Finset.mem_filter.mp hj).2
     have hloc := loc_edge H B _ i hl
-    have hp : (j ∈ H.performedFin B) = edgePerf A (addrIdx P (J + F.ell) n B j) (H.edge i) :=
+    have hp :=
       propext ((mem_performedFin A n B H j).trans hloc.1)
     rw [hp]
     exact congrArg _ hloc.2
@@ -191,9 +190,7 @@ theorem addressValue_lt (H : MemoryHistory A n) (x : BirthAddress P (J + F.ell) 
   · exact hp _ _
   · exact hp _ _
   · simp only [MemoryHistory.addressValue]
-    split_ifs
-    · exact hp _ _
-    · omega
+    grind
 
 /-- Edges carrying a fresh address of the support. -/
 def affected (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) : Finset (Fin n) :=
@@ -202,9 +199,9 @@ def affected (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) 
 theorem card_affected_le (U : Finset (Fin (Fintype.card (BirthAddress P (J + F.ell) n B)))) :
     (affected (F := F) (J := J) n B U).card ≤ U.card := by
   let emb : Fin n ↪ Unit ⊕ (Fin n ⊕ Fin (n + 1)) :=
-    ⟨fun i => .inr (.inl i), fun a b h => by simpa using h⟩
+    ⟨fun i => .inr (.inl i), fun a b h => by simp_all⟩
   calc (affected (F := F) (J := J) n B U).card
-      = ((affected (F := F) (J := J) n B U).map emb).card := (Finset.card_map _).symm
+      = ((affected (F := F) (J := J) n B U).map emb).card := by simp
     _ ≤ (U.image (fun j => addrLoc (addrIdx P (J + F.ell) n B j))).card := by
         apply Finset.card_le_card
         intro x hx
@@ -221,12 +218,12 @@ theorem edgeF_unaffected (w : Fin (Fintype.card (BirthAddress P (J + F.ell) n B)
   unfold edgeF
   rw [Finset.filter_eq_empty_iff.mpr, Finset.prod_empty]
   intro j hj hl
-  exact hi (Finset.mem_filter.mpr ⟨Finset.mem_univ _, j, hj, hl⟩)
+  exact hi (Finset.mem_filter.mpr (by grind))
 
 theorem norm_prod_le_one {ι : Type*} (S : Finset ι) (f : ι → ℂ) (hf : ∀ i ∈ S, ‖f i‖ ≤ 1) :
     ‖∏ i ∈ S, f i‖ ≤ 1 := by
   rw [norm_prod]
-  exact Finset.prod_le_one₀ (fun i _ => norm_nonneg _) hf
+  exact Finset.prod_le_one₀ (by simp) hf
 
 end Erdos821.P3Lowrank
 
@@ -247,7 +244,7 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
       (Fintype.card Ξ : ℂ)⁻¹ * ∑ ξ, ∑ d : BoundedHistoryData A n B,
         (if (mkH d).Valid then (mkH d).Weight rho theta * LF ξ (mkH d) else 0) := by
     unfold lowRankHistoryExpression
-    rw [tsum_trunc A n B _ (fun H hH => ite_eq_right (fun h => hH h.2.1))]
+    rw [tsum_trunc A n B _ (by grind)]
     rw [Finset.sum_comm, Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro d _
@@ -268,17 +265,13 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
             (mkH d).Weight rho theta else 0)
           = (mkH d).Weight rho theta *
               (if birthEvent ((mkH d).performedFin B) ((mkH d).valueFin B) pi then 1 else 0) := by
-            by_cases hev : birthEvent ((mkH d).performedFin B) ((mkH d).valueFin B) pi
-            · rw [ite_eq_left ⟨hV, hT, hev⟩, ite_eq_left hev, mul_one]
-            · rw [ite_eq_right (fun h => hev h.2.2), ite_eq_right hev, mul_zero]
+            grind
         _ = (mkH d).Weight rho theta * ((Fintype.card Ξ : ℂ)⁻¹ * ∑ ξ, LF ξ (mkH d)) := by
-            rw [key]
+            grind
         _ = _ := by
             rw [Finset.mul_sum, Finset.mul_sum, Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro ξ _
             ring
-    · rw [ite_eq_right (fun h => hV h.1)]
+    · rw [ite_eq_right (by grind)]
       simp only [ite_eq_right hV, Finset.sum_const_zero, mul_zero]
   -- Step 2: each local-multiplier sum is a finite kernel chain.
   have hc : ∀ i, 0 ≤ c i := by
@@ -291,17 +284,17 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
     intro ξ
     apply local_history_bound A n B rho theta CG c _ _ _ hmass hCG hc
     · intro s
-      exact norm_prod_le_one _ _ fun j _ => hnorm _ _ _ _
+      exact norm_prod_le_one _ _ (by grind)
     · intro i
-      exact hG i _ (fun s t c' => norm_prod_le_one _ _ fun j _ => hnorm _ _ _ _)
+      exact hG i _ (fun s t c' => norm_prod_le_one _ _ (by grind))
     · intro i
       by_cases hi : i ∈ Aff
       · have hci : c i = CA := ite_eq_left hi
         rw [hci]
-        exact hEA i _ (fun s t c' => norm_prod_le_one _ _ fun j _ => hnorm _ _ _ _)
+        exact hEA i _ (fun s t c' => norm_prod_le_one _ _ (by grind))
       · have hci : c i = CE := ite_eq_right hi
         rw [hci, edgeF_unaffected A n B (mm ξ) U i hi]
-        exact hE i
+        grind
   -- Step 3: the affected-edge count.
   have hk : Aff.card ≤ 2 * birthRank pi :=
     (card_affected_le n B U).trans (birth_support_le pi hpi)
@@ -317,22 +310,22 @@ theorem Erdos821.S2Core.LowRankMemoryTask_proof : Erdos821.S2Core.LowRankMemoryT
     rw [Finset.prod_mul_distrib, Finset.prod_const, Finset.card_univ, Fintype.card_fin,
       prod_ite_mem_univ, Finset.prod_const]
   have hM : 0 ≤ initialMemoryBoundaryMass A n :=
-    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg fun _ _ => abs_nonneg _
+    Finset.sum_nonneg fun _ _ => Finset.sum_nonneg (by grind)
   have hfinal : initialMemoryBoundaryMass A n * CG ^ (n + 1) * ∏ i, c i ≤
       initialMemoryBoundaryMass A n * CG ^ (n + 1) * CE ^ n * (CA / CE) ^ (2 * birthRank pi) := by
     rw [hprod, ← mul_assoc]
     apply mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hratio hk)
-    exact mul_nonneg (mul_nonneg hM (pow_nonneg hCG _)) (pow_nonneg hCE.le _)
+    exact by positivity
   rw [hexpr]
   calc ‖(Fintype.card Ξ : ℂ)⁻¹ * ∑ ξ, ∑ d : BoundedHistoryData A n B,
         (if (mkH d).Valid then (mkH d).Weight rho theta * LF ξ (mkH d) else 0)‖
       ≤ (Fintype.card Ξ : ℝ)⁻¹ * ∑ ξ : Ξ,
           (initialMemoryBoundaryMass A n * CG ^ (n + 1) * ∏ i, c i) := by
         rw [norm_mul, norm_inv, Complex.norm_natCast]
-        apply mul_le_mul_of_nonneg_left _ (inv_nonneg.mpr (Nat.cast_nonneg _))
+        apply mul_le_mul_of_nonneg_left _ (by positivity)
         exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun ξ _ => hloc ξ)
     _ = initialMemoryBoundaryMass A n * CG ^ (n + 1) * ∏ i, c i := by
         rw [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, ← mul_assoc,
-          inv_mul_cancel₀ (by exact_mod_cast hcard.ne'), one_mul]
+          inv_mul_cancel₀ (by positivity), one_mul]
     _ ≤ _ := hfinal
 

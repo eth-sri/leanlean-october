@@ -9,34 +9,33 @@ public import OAI.NumberTheory.DirichletL.Reflection.SourceBudget
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve CanonicalRowCompletion InverseTerminalWidths InverseMoment
+open scoped Classical ContDiff
+open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseTerminalWidths
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe v
-variable {Nlevel : Eis}
+variable {Nlevel : ActualEisensteinCubic.O}
 
 theorem low_original_frozen_energy
-    {γ : Type*} [Fintype γ] (a c₀ : γ→Eis) (mode : γ→Bool)
-    [Fintype (Eis⧸Ideal.span {Nlevel^2})]
+    {γ : Type*} [Fintype γ] (a c₀ : γ→ActualEisensteinCubic.O) (mode : γ→Bool)
+    [Fintype (ActualEisensteinCubic.O⧸Ideal.span {Nlevel^2})]
     (lo hi : ℝ) (hlo : 0<lo)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W)
     (s : ∀ i,FixedCuspShape (ControlledStratumArithmetic.fixedCusp (a i) (c₀ i) (mode i))) (hc₀ : ∀ i,c₀ i≠0)
-    (hNlevel : ∀ i,(9:Eis)*c₀ i∣Nlevel)
+    (hNlevel : ∀ i,(9:ActualEisensteinCubic.O)*c₀ i∣Nlevel)
     (hbase : ∀ i,if mode i then ConcretePrimeRowBridge.goodLambda^2∣a i-1 else ConcretePrimeRowBridge.goodLambda^2∣c₀ i-1)
     (hac : ∀ i,IsCoprime (a i) (c₀ i))
-    (Q : Ideal Eis) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) (rmax : ℕ) :
+    (Q : Ideal ActualEisensteinCubic.O) (hQ : Q≠0) (Ck η : ℝ) (hCk : 0<Ck) (hη : 0<η) (hη1 : η≤1) (rmax : ℕ) :
     ∃ (degree : ℕ) (C Z₀ : ℝ),0<C ∧ 1<Z₀ ∧
-    ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal Eis)
+    ∀ {σ : Type v} [Fintype σ] [DecidableEq σ],∀ (J F Q₀ : Ideal ActualEisensteinCubic.O)
       (_hJ : J≠0) (_hF : F≠0),
     ∀ (Z d ell0 shift O₀ : ℝ),
       Z₀≤Z → 0≤d → d≤1/6 → 0≤ell0 → ell0≤1/6-d+η → |shift|≤η →
       O₀=normWidth Z (rowPowerfulPart J) → (Ideal.absNorm J:ℝ)≤Ck*Z^(5/6-2*d) →
-    ∀ (parents rows : Finset (Ideal Eis)),
+    ∀ (parents rows : Finset (Ideal ActualEisensteinCubic.O)),
       (∀ I∈parents,I≠0 ∧ (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d)) →
       rows⊆originalResidualRows parents J Q →
       (∀ P∈fixedBadPrimes,P∣Q) →
-    Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal Eis)) (H : σ→ℝ)
+    Fintype.card σ≤rmax → ∀ (lists : σ→Finset (Ideal ActualEisensteinCubic.O)) (H : σ→ℝ)
       (_hdis : Pairwise (fun i j => Disjoint (lists i) (lists j)))
       (hmax : ∀ i,∀ P∈lists i,P.IsMaximal)
       (hgood : ∀ i,∀ P∈lists i,ConcretePrimeRowBridge.goodLambda∉P)
@@ -44,10 +43,10 @@ theorem low_original_frozen_energy
       (hrows : ∀ K∈rows,Admissible K),
       (∀ i,1≤H i) → (∀ i,∀ P∈lists i,(Ideal.absNorm P:ℝ)≤H i) → (∏ i,H i)≤Z^ell0 →
       (∀ f,IsCoprime (Ideal.span {Nlevel}) ((poolPrimeFamily J Q Q₀).ideal f)) →
-      (∀ f,ringChar (Eis⧸(poolPrimeFamily J Q Q₀).ideal f)≠2) →
+      (∀ f,ringChar (ActualEisensteinCubic.O⧸(poolPrimeFamily J Q Q₀).ideal f)≠2) →
       (∀ K∈rows,(∀ f,IsCoprime ((poolPrimeFamily J Q Q₀).ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
       (∀ i,∀ P∈lists i,IsCoprime (Ideal.span {Nlevel}) P) →
-      (∀ i,∀ P∈lists i,ringChar (Eis⧸P)≠2) →
+      (∀ i,∀ P∈lists i,ringChar (ActualEisensteinCubic.O⧸P)≠2) →
     ∃ D : ∀ g : γ,∀ A : Finset (FreeReflection.pool J Q Q₀),∀ T : Finset σ,
       OriginalSplitCompletion (N:=Nlevel) (a:=a g) (c:=c₀ g) (mode:=mode g)
         ((poolPrimeFamily J Q Q₀).restrict A) (poolPrimeFamily J Q Q₀).ideal
@@ -73,7 +72,7 @@ theorem low_original_frozen_energy
     parents rows hparents hsub hbad
     hcard lists H hdis hmax hgood hprime hrows hH1 hH hprod hGN hGchar hrowcop hLN hLchar
   have hz1 : Z₁≤Z := (le_max_left _ _).trans hZ
-  have hz : 1<Z := lt_of_lt_of_le hZ₁ hz1
+  have hz : 1<Z := by linarith
   have hzp : 0<Z := lt_trans zero_lt_one hz
   let FF := (poolPrimeFamily J Q Q₀).ideal
   have hall := fun (g : γ) (A : Finset (FreeReflection.pool J Q Q₀)) (T : Finset σ) =>
@@ -94,9 +93,9 @@ theorem low_original_frozen_energy
   have hs (g : γ) (A : Finset (FreeReflection.pool J Q Q₀)) (T : Finset σ) :
       (∑ K : rows,‖source g A T K‖^2)≤harm*energy := by
     apply (hD g A T θ w hw).trans
-    apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
+    apply mul_le_mul_of_nonneg_right _ (by positivity)
     apply pow_le_pow_left₀ (by positivity)
-    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by have hn : (0:ℝ)≤columnDyadicLength (H i) := Nat.cast_nonneg _; linarith)
+    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by linarith)
   let Labels := γ×(Finset (FreeReflection.pool J Q Q₀)×Finset σ)
   let f := fun (b : Labels) (K : rows) => (scalar b.1 K*frozenInactiveWeight J F Q Q₀ b.2.1)*source b.1 b.2.1 b.2.2 K
   have hf (b : Labels) : (∑ K : rows,‖f b K‖^2)≤harm*energy := by
@@ -124,13 +123,13 @@ theorem low_original_frozen_energy
   have hJcap : (Ideal.absNorm J:ℝ)≤Z^(2:ℝ) := by
     apply hJn.trans
     calc
-      Ck*Z^(5/6-2*d) ≤ Z*Z^(5/6-2*d) := mul_le_mul_of_nonneg_right hCkZ (Real.rpow_nonneg hzp.le _)
+      Ck*Z^(5/6-2*d) ≤ Z*Z^(5/6-2*d) := mul_le_mul_of_nonneg_right hCkZ (by positivity)
       _ = Z^(1+(5/6-2*d)) := by rw [Real.rpow_add hzp,Real.rpow_one]
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le hz.le (by linarith)
   have hpool : (Ideal.absNorm (J*Q):ℝ)≤Z^(3:ℝ) := by
     rw [map_mul,Nat.cast_mul]
     calc
-      _ ≤ Z^(2:ℝ)*Z := mul_le_mul hJcap hQn (Nat.cast_nonneg _) (Real.rpow_nonneg hzp.le _)
+      _ ≤ Z^(2:ℝ)*Z := mul_le_mul hJcap hQn (Nat.cast_nonneg _) (by positivity)
       _ = _ := by norm_num;ring
   have hslot : (∏ i,H i)≤Z^(2:ℝ) := hprod.trans
     (Real.rpow_le_rpow_of_exponent_le hz.le (by linarith))
@@ -138,8 +137,8 @@ theorem low_original_frozen_energy
   calc
     _ = ‖thetaDerivativeScalar⁻¹‖^2*((Fintype.card Labels:ℝ)^2*harm)*energy := by ring
     _ ≤ (‖thetaDerivativeScalar⁻¹‖^2+1)*(Cb*Z^(η))*energy := by
-      apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
-      exact mul_le_mul (by linarith) hcst (by dsimp [harm];positivity) (by positivity)
+      apply mul_le_mul_of_nonneg_right _ (by positivity)
+      exact mul_le_mul (by linarith) hcst (by positivity) (by positivity)
     _ = ((‖thetaDerivativeScalar⁻¹‖^2+1)*Cb*C)*(1+‖θ‖)^degree*
         Z^(η+((5/6-2*d)+505*η-O₀/2)) := by
       dsimp only [energy]

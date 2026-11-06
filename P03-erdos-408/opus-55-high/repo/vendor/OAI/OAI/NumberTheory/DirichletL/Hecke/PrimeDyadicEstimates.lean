@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DyadicPointwise
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 open MeasureTheory Set Complex
 namespace SevenEighths.HeckePrimeDyadic
 open HeckeFamily HeckeDyadic
@@ -20,19 +20,18 @@ theorem absolute_tail_bound (χ : Character) (W : ℝ → ℂ)
     ‖∫ t : ℝ in (Icc (-T) T)ᶜ, integrand χ W D σ freq ((r : ℂ)+t*I)‖ ≤
       (C*D^(r+σ-1/2)*eulerBound (r+σ))/(1+T)^n*Real.pi := by
   apply rapid_tail_bound _ _ T n
-  · exact mul_nonneg (mul_nonneg hC (Real.rpow_nonneg hD.le _))
+  · exact mul_nonneg (by positivity)
       (tsum_nonneg (fun I => mul_nonneg (IdealMangoldt.value_nonneg _) (Real.rpow_nonneg (norm_pos I).le _)))
-  · exact hT
+  · omega
   · intro t
     rw [integrand_norm χ W D σ freq hD]
     have hb := series_norm_le χ hr (s := (r : ℂ)+t*I+shift σ freq) (by simp)
-    simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, I_im, zero_mul,
-      sub_self, add_zero]
+    simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, zero_mul, sub_self, add_zero]
     calc
       _ = ((1+|t|)^(n+2)*‖mellin W ((r : ℂ)+t*I)‖)*D^(r+σ-1/2)*
         ‖series χ ((r : ℂ)+t*I+shift σ freq)‖ := by ring
-      _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_right (hm t) (Real.rpow_nonneg hD.le _))
-        hb (norm_nonneg _) (mul_nonneg hC (Real.rpow_nonneg hD.le _))
+      _ ≤ _ := mul_le_mul (mul_le_mul_of_nonneg_right (hm t) (by positivity))
+        hb (norm_nonneg _) (by positivity)
 
 theorem central_segment_bound (χ : Character) (W : ℝ → ℂ)
     (D l σ freq C K T : ℝ) (hD : 0<D) (hC : 0≤C) (hK : 0≤K) (hT : 0≤T)
@@ -40,7 +39,7 @@ theorem central_segment_bound (χ : Character) (W : ℝ → ℂ)
     (hs : ∀ t ∈ Icc (-T) T, ‖series χ ((l : ℂ)+t*I+shift σ freq)‖≤K) :
     ‖∫ t : ℝ in -T..T, integrand χ W D σ freq ((l : ℂ)+t*I)‖ ≤
       C*D^(l+σ-1/2)*K*Real.pi := by
-  rw [intervalIntegral.integral_of_le (by linarith : -T≤T)]
+  rw [intervalIntegral.integral_of_le (by linarith)]
   have hint := integrable_inv_one_add_sq.const_mul (C*D^(l+σ-1/2)*K)
   calc
     _ ≤ ∫ t : ℝ in Ioc (-T) T, (C*D^(l+σ-1/2)*K)*(1+t^2)⁻¹ := by
@@ -48,12 +47,11 @@ theorem central_segment_bound (χ : Character) (W : ℝ → ℂ)
       filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
       rw [integrand_norm χ W D σ freq hD]
       have hb := CubicReflectionKernel.weighted_two_to_cauchy (norm_nonneg _) t (hm t)
-      simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, I_im, zero_mul,
-        sub_self, add_zero]
+      simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, zero_mul, sub_self, add_zero]
       calc
         _ ≤ (C/(1+t^2))*D^(l+σ-1/2)*K :=
-          mul_le_mul (mul_le_mul_of_nonneg_right hb (Real.rpow_nonneg hD.le _))
-            (hs t ⟨ht.1.le,ht.2⟩) (norm_nonneg _) (by positivity)
+          mul_le_mul (mul_le_mul_of_nonneg_right hb (by positivity))
+            (by grind) (norm_nonneg _) (by positivity)
         _ = _ := by ring
     _ ≤ ∫ t : ℝ, (C*D^(l+σ-1/2)*K)*(1+t^2)⁻¹ :=
       integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
@@ -70,17 +68,16 @@ theorem horizontal_join_bound (χ : Character) (W : ℝ → ℂ)
   intro x hx
   have hx' : x ∈ Icc l r := by simpa [uIcc_of_le hlr] using uIoc_subset_uIcc hx
   have hb : ‖mellin W ((x : ℂ)+y*I)‖≤C/(1+|y|)^n := by
-    apply (le_div_iff₀ (by positivity : 0<(1+|y|)^n)).mpr
+    apply (le_div_iff₀ (by positivity)).mpr
     simpa [mul_comm] using hm x hx'
   have hpow : D^(x+σ-1/2)≤D^(r+σ-1/2) :=
-    Real.rpow_le_rpow_of_exponent_le hD (by linarith [hx'.2])
+    Real.rpow_le_rpow_of_exponent_le hD (by simp_all)
   rw [integrand_norm χ W D σ freq (by linarith)]
-  simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, I_im, zero_mul,
-    sub_self, add_zero]
+  simp only [add_re, ofReal_re, mul_re, ofReal_im, I_re, mul_zero, zero_mul, sub_self, add_zero]
   calc
     _ ≤ (C/(1+|y|)^n)*D^(r+σ-1/2)*K :=
       mul_le_mul (mul_le_mul hb hpow (by positivity) (by positivity))
-        (hs x hx') (norm_nonneg _) (by positivity)
+        (by grind) (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
 theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
@@ -110,7 +107,7 @@ theorem polynomial_bound_of_rectangle (χ : Character) (hχ : χ.residue≠1)
       (1+|t|)^n*‖mellin W ((x : ℂ)+t*I)‖≤Cn := by
     apply le_trans _ (hmn x hx t)
     gcongr
-    · exact le_add_of_nonneg_right (abs_nonneg t)
+    · simp
     · omega
   have hbottom := horizontal_join_bound χ W D σ freq l r (-T) Cn K n hD hlr hCn hK
     (fun x hx => hm x hx (-T)) (fun x hx => hs _ (hmem x (-T) hx ⟨le_rfl,by linarith⟩))

@@ -55,7 +55,7 @@ theorem integral_norm_add_sq_le {f g : ℝ → ℂ} (hf : Continuous f) (hg : Co
     ∫ t in a..b, ‖f t + g t‖ ^ 2 ≤
       2 * (∫ t in a..b, ‖f t‖ ^ 2) + 2 * ∫ t in a..b, ‖g t‖ ^ 2 := by
   have h := integral_norm_sum_sq_le (Finset.univ : Finset (Fin 2)) (fun _ => 1)
-    (fun _ _ => norm_one.le) ![f, g] (fun i _ => by fin_cases i <;> simpa) hab
+    (by simp) ![f, g] (fun i _ => by fin_cases i <;> simpa) hab
   simpa [Fin.sum_univ_two, mul_add] using h
 
 /-- The twist `e(hm/k)` depends only on `m mod k`. -/
@@ -63,7 +63,7 @@ theorem exp_twist_eq_mod (h : ℤ) {k : ℕ} (hk : k ≠ 0) (m : ℕ) :
     Complex.exp (2 * Real.pi * Complex.I * (h * m / k : ℝ)) =
       Complex.exp (2 * Real.pi * Complex.I * (h * (m % k : ℕ) / k : ℝ)) := by
   have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
-  obtain ⟨q, hq⟩ : ∃ q, q = m / k := ⟨_, rfl⟩
+  obtain ⟨q, hq⟩ : ∃ q, q = m / k := by simp
   have hm : (m : ℝ) = (m % k : ℕ) + k * q := by
     rw [hq]
     exact_mod_cast (Nat.mod_add_div m k).symm
@@ -75,7 +75,7 @@ theorem exp_twist_eq_mod (h : ℤ) {k : ℕ} (hk : k ≠ 0) (m : ℕ) :
   have h1 : Complex.exp (2 * Real.pi * Complex.I * ((h * q : ℤ) : ℂ)) = 1 := by
     rw [mul_comm]
     exact Complex.exp_int_mul_two_pi_mul_I _
-  rw [h1, mul_one]
+  simp_all
 
 /-- The twist `e(hm/k)` at congruent `m ≡ m' (mod k)`. -/
 theorem exp_twist_eq_of_modEq (h : ℤ) {k : ℕ} (hk : k ≠ 0) {m m' : ℕ} (hm : m ≡ m' [MOD k]) :
@@ -100,7 +100,7 @@ theorem norm_sub_le_of_iteratedDeriv_one {ψ : ℝ → ℂ}
   have hd : Differentiable ℝ ψ := hψ.differentiable (by simp)
   have h := convex_univ.norm_image_sub_le_of_norm_deriv_le (fun w _ => hd w)
     (fun w _ => by rw [← iteratedDeriv_one]; exact hM w) (Set.mem_univ z) (Set.mem_univ y)
-  simpa [Real.norm_eq_abs] using h
+  omega
 
 /-- `∫_a^b t^{-2} ≤ 2/c` when `|t| ≥ c > 0` on `[a, b]`. -/
 theorem integral_inv_sq_le {a b c : ℝ} (hab : a ≤ b) (hc : 0 < c)
@@ -128,7 +128,6 @@ theorem integral_inv_sq_le {a b c : ℝ} (hab : a ≤ b) (hc : 0 < c)
   have hib : |b⁻¹| ≤ 1 / c := by
     rw [abs_inv, ← one_div]
     exact one_div_le_one_div_of_le hc hb
-  calc -b⁻¹ - -a⁻¹ ≤ |b⁻¹| + |a⁻¹| := by linarith [neg_abs_le b⁻¹, le_abs_self a⁻¹]
-    _ ≤ 2 / c := by rw [show 2 / c = 1 / c + 1 / c by ring]; linarith
+  grind
 
 end Erdos408.TwoSided.ConstHigh

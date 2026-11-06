@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.Probability
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -19,7 +18,7 @@ lemma weighted_pair_le {β : Type*} [Fintype β]
     ‖∑ z, (w z : ℂ) * star (f z) * g z * multiplier z‖ ≤
       Real.sqrt (∑ z, w z * ‖f z‖ ^ 2) * Real.sqrt (∑ z, w z * ‖g z‖ ^ 2) := by
   have hcs := weighted_sqrt_cauchy w (fun z => ‖f z‖ ^ 2) (fun z => ‖g z‖ ^ 2)
-    hw (fun _ => sq_nonneg _) (fun _ => sq_nonneg _)
+    hw (by simp) (by simp)
   have hc : (∑ z, w z * ‖f z‖ * ‖g z‖) ≤
       Real.sqrt (∑ z, w z * ‖f z‖ ^ 2) * Real.sqrt (∑ z, w z * ‖g z‖ ^ 2) := by
     simpa only [Real.sqrt_sq_eq_abs, abs_of_nonneg (norm_nonneg _)] using hcs
@@ -30,7 +29,7 @@ lemma weighted_pair_le {β : Type*} [Fintype β]
       intro z _
       simp only [norm_mul, norm_star, Complex.norm_real, Real.norm_eq_abs,
         abs_of_nonneg (hw z)]
-      simpa only [mul_one] using mul_le_mul_of_nonneg_left (hm z)
+      simpa using mul_le_mul_of_nonneg_left (hm z)
         (mul_nonneg (mul_nonneg (hw z) (norm_nonneg _)) (norm_nonneg _))
     _ ≤ _ := hc
 
@@ -56,8 +55,7 @@ lemma normBound_of_full_pair {β : Type*} [Fintype β] (w : β → ℝ)
       ∑ a ∈ s, ∑ b ∈ t, (w a : ℂ) * star (f a) * K a b * g b := by
     simp only [finiteRestrict, apply_ite, star_zero, ite_mul, mul_zero, zero_mul]
     simp
-  rw [hp] at h
-  exact h
+  grind
 
 end
 end Erdos821.P4Probe

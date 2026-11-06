@@ -51,10 +51,10 @@ lemma square_neg (p : ℂ) (c : ℝ) : Square p (-c) = Square p c := by
   simpa [Square] using! Rectangle.symm
 
 theorem Set.left_not_mem_uIoo {a b : ℝ} : a ∉ Set.uIoo a b :=
-  fun ⟨h1, h2⟩ ↦ (left_lt_sup.mp h2) (le_of_not_ge (inf_lt_left.mp h1))
+  by simp
 
 theorem Set.right_not_mem_uIoo {a b : ℝ} : b ∉ Set.uIoo a b :=
-  fun ⟨h1, h2⟩ ↦ (right_lt_sup.mp h2) (le_of_not_ge (inf_lt_right.mp h1))
+  by simp
 
 theorem Set.ne_left_of_mem_uIoo {a b c : ℝ} (hc : c ∈ Set.uIoo a b) : c ≠ a :=
   fun h ↦ Set.left_not_mem_uIoo (h ▸ hc)
@@ -73,12 +73,10 @@ lemma rect_subset_iff {z w z' w' : ℂ} :
     ⟨⟨hw're_ge, hw're_le⟩, ⟨hw'im_ge, hw'im_le⟩⟩⟩ x
     ⟨⟨hxre_ge, hxre_le⟩, ⟨hxim_ge, hxim_le⟩⟩
   refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
-  · exact (le_inf hz're_ge hw're_ge).trans hxre_ge
-  · exact (le_sup_iff.mp hxre_le).casesOn (fun h ↦ h.trans hz're_le)
-      (fun h ↦ h.trans hw're_le)
-  · exact (le_inf hz'im_ge hw'im_ge).trans hxim_ge
-  · exact (le_sup_iff.mp hxim_le).casesOn (fun h ↦ h.trans hz'im_le)
-      (fun h ↦ h.trans hw'im_le)
+  · grind
+  · grind
+  · grind
+  grind
 
 set_option linter.style.multiGoal false in
 lemma RectSubRect {x₀ x₁ x₂ x₃ y₀ y₁ y₂ y₃ : ℝ} (x₀_le_x₁ : x₀ ≤ x₁)
@@ -183,7 +181,7 @@ theorem Complex.nhds_hasBasis_square (p : ℂ) : (𝓝 p).HasBasis (0 < ·) (Squ
     by simpa only [← nhds_prod_eq, Homeomorph.map_nhds_eq, Homeomorph.image_preimage]
       using! this.map equivRealProdCLM.symm.toHomeomorph
   apply ((nhds_basis_Icc_pos p.re).prod_same_index_mono (nhds_basis_Icc_pos p.im) ?_ ?_).congr
-  · intro; rfl
+  · simp
   · intros
     rw [← uIcc_of_lt (by linarith), ← uIcc_of_lt (by linarith)]
     simpa [Square, Rectangle] using by ring_nf
@@ -193,7 +191,7 @@ lemma square_mem_nhds (p : ℂ) {c : ℝ} (hc : c ≠ 0) :
     Square p c ∈ 𝓝 p := by
   wlog hc_pos : 0 < c generalizing c with h
   · rw [← square_neg]
-    exact h (neg_ne_zero.mpr hc) <| neg_pos.mpr <| hc.lt_of_le <| not_lt.mp hc_pos
+    grind
   exact (nhds_hasBasis_square p).mem_of_mem hc_pos
 
 lemma square_subset_square {p : ℂ} {c₁ c₂ : ℝ} (hc₁ : 0 < c₁) (hc : c₁ ≤ c₂) :

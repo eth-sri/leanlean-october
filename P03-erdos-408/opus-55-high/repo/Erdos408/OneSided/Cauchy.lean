@@ -44,12 +44,12 @@ theorem lt_of_dyadicBump_ne_zero {y : ℝ} (h : dyadicBump y ≠ 0) : 1 < y ∧ 
     rw [not_lt] at hy
     rw [smoothTransition.zero_of_nonpos (by linarith),
       smoothTransition.zero_of_nonpos (by linarith), sub_zero] at h
-    exact h rfl
+    simp_all
   · by_contra hy
     rw [not_lt] at hy
     rw [smoothTransition.one_of_one_le (by linarith),
       smoothTransition.one_of_one_le (by linarith), sub_self] at h
-    exact h rfl
+    simp_all
 
 /-- The dyadic partition telescopes: `∑_{j < J} η(b / 2^j) = s(b) - s(b / 2^J)`. -/
 theorem sum_dyadicBump (b : ℝ) (J : ℕ) :
@@ -67,7 +67,7 @@ theorem sum_dyadicBump_eq_one {b : ℝ} {J : ℕ} (hb : 2 ≤ b) (hbJ : b ≤ 2 
   rw [sum_dyadicBump, smoothTransition.one_of_one_le (by linarith),
     smoothTransition.zero_of_nonpos, sub_zero]
   rw [sub_nonpos, div_le_one (by positivity)]
-  exact hbJ
+  omega
 
 /-! ### The label expansion of the marked weight -/
 
@@ -97,7 +97,7 @@ theorem markedWeight_eq_sum_labels (q x : ℝ) (d : Data K) (N : ℕ) :
 theorem F_labelProd_mul {C CX alo ahi g x : ℝ} {d : Data K}
     (hd : Admissible C CX alo ahi g x d) {p : Fin K → ℕ} (hp : p ∈ d.labels x) (h : ℕ) :
     d.F ((∏ i, p i) * h) = d.F h := by
-  have hp' : ∀ i, p i ∈ band x (d.a i) := Fintype.mem_piFinset.1 hp
+  have hp' := Fintype.mem_piFinset.1 hp
   -- peel the primes one at a time
   have key : ∀ s : Finset (Fin K), d.F ((∏ i ∈ s, p i) * h) = d.F h := by
     intro s
@@ -105,7 +105,7 @@ theorem F_labelProd_mul {C CX alo ahi g x : ℝ} {d : Data K}
     | empty => simp
     | insert i s hi ih =>
       rw [prod_insert hi, mul_assoc, hd.F_inv i _ (p i) (hp' i), ih]
-  exact key univ
+  simp_all
 
 /-- With disjoint bands, if no label prime divides `h`, then
 `ω(∏_i p_i · h) = ω(h) + K`. -/
@@ -113,8 +113,8 @@ theorem bandCount_labelProd_mul {x : ℝ} {d : Data K}
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     {p : Fin K → ℕ} (hp : p ∈ d.labels x) {h : ℕ} (hnd : ∀ i, ¬ p i ∣ h) :
     bandCount x d ((∏ j, p j) * h) = bandCount x d h + K := by
-  have hp' : ∀ i, p i ∈ band x (d.a i) := Fintype.mem_piFinset.1 hp
-  have hprime : ∀ i, (p i).Prime := fun i => (mem_filter.1 (hp' i)).2
+  have hp' := Fintype.mem_piFinset.1 hp
+  have hprime := fun i => (mem_filter.1 (hp' i)).2
   -- in band `i`, the primes dividing `∏_j p_j · h` are those dividing `h`, and `p i`
   have hband : ∀ i, primeCount (band x (d.a i)) ((∏ j, p j) * h) =
       primeCount (band x (d.a i)) h + 1 := by
@@ -126,20 +126,20 @@ theorem bandCount_labelProd_mul {x : ℝ} {d : Data K}
       simp only [mem_filter, mem_insert]
       constructor
       · rintro ⟨hr, hdvd⟩
-        have hrp : r.Prime := (mem_filter.1 hr).2
+        have hrp := (mem_filter.1 hr).2
         rcases (Nat.Prime.dvd_mul hrp).1 hdvd with hdp | hdh
         · obtain ⟨j, -, hj⟩ := (Prime.dvd_finsetProd_iff hrp.prime _).1 hdp
-          have hrj : r = p j := (Nat.prime_dvd_prime_iff_eq hrp (hprime j)).1 hj
+          have hrj := (Nat.prime_dvd_prime_iff_eq hrp (hprime j)).1 hj
           by_cases hij : i = j
-          · exact Or.inl (hrj.trans (by rw [hij]))
+          · simp_all
           · exact absurd (hrj ▸ hp' j) (disjoint_left.1 (hdisj i j hij) hr)
-        · exact Or.inr ⟨hr, hdh⟩
+        simp_all
       · rintro (rfl | ⟨hr, hdh⟩)
         · exact ⟨hp' i, Dvd.dvd.mul_right (dvd_prod_of_mem _ (mem_univ i)) _⟩
-        · exact ⟨hr, Dvd.dvd.mul_left hdh _⟩
+        grind
     rw [hset, card_insert_of_notMem]
     simp only [mem_filter, not_and]
-    exact fun _ => hnd i
+    exact by grind
   simp only [bandCount, hband, sum_add_distrib, sum_const, card_univ, Fintype.card_fin,
     smul_eq_mul, mul_one]
 
@@ -149,8 +149,8 @@ theorem bandCount_labelProd_mul_le {x : ℝ} {d : Data K}
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     {p : Fin K → ℕ} (hp : p ∈ d.labels x) (h : ℕ) :
     bandCount x d ((∏ j, p j) * h) ≤ bandCount x d h + K := by
-  have hp' : ∀ i, p i ∈ band x (d.a i) := Fintype.mem_piFinset.1 hp
-  have hprime : ∀ i, (p i).Prime := fun i => (mem_filter.1 (hp' i)).2
+  have hp' := Fintype.mem_piFinset.1 hp
+  have hprime := fun i => (mem_filter.1 (hp' i)).2
   have hband : ∀ i, primeCount (band x (d.a i)) ((∏ j, p j) * h) ≤
       primeCount (band x (d.a i)) h + 1 := by
     intro i
@@ -160,17 +160,17 @@ theorem bandCount_labelProd_mul_le {x : ℝ} {d : Data K}
       intro r hr
       rw [mem_filter] at hr
       rw [mem_insert, mem_filter]
-      have hrp : r.Prime := (mem_filter.1 hr.1).2
+      have hrp := (mem_filter.1 hr.1).2
       rcases (Nat.Prime.dvd_mul hrp).1 hr.2 with hdp | hdh
       · obtain ⟨j, -, hj⟩ := (Prime.dvd_finsetProd_iff hrp.prime _).1 hdp
-        have hrj : r = p j := (Nat.prime_dvd_prime_iff_eq hrp (hprime j)).1 hj
+        have hrj := (Nat.prime_dvd_prime_iff_eq hrp (hprime j)).1 hj
         by_cases hij : i = j
-        · exact Or.inl (hrj.trans (by rw [hij]))
+        · simp_all
         · exact absurd (hrj ▸ hp' j) (disjoint_left.1 (hdisj i j hij) hr.1)
-      · exact Or.inr ⟨hr.1, hdh⟩
-    exact (card_le_card hsub).trans (card_insert_le _ _)
+      · simp_all
+    exact (card_le_card hsub).trans (by grind)
   calc bandCount x d ((∏ j, p j) * h) ≤ ∑ i, (primeCount (band x (d.a i)) h + 1) :=
-        sum_le_sum fun i _ => hband i
+        sum_le_sum (by grind)
     _ = bandCount x d h + K := by
         simp [bandCount, sum_add_distrib]
 
@@ -180,8 +180,8 @@ theorem prod_ite_dvd_eq {x : ℝ} {d : Data K}
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j)))
     {p : Fin K → ℕ} (hp : p ∈ d.labels x) (N : ℕ) :
     ∏ i, (if p i ∣ N then (1 : ℝ) else 0) = if (∏ i, p i) ∣ N then 1 else 0 := by
-  have hp' : ∀ i, p i ∈ band x (d.a i) := Fintype.mem_piFinset.1 hp
-  have hprime : ∀ i, (p i).Prime := fun i => (mem_filter.1 (hp' i)).2
+  have hp' := Fintype.mem_piFinset.1 hp
+  have hprime := fun i => (mem_filter.1 (hp' i)).2
   by_cases hall : ∀ i, p i ∣ N
   · rw [prod_eq_one fun i _ => ite_eq_left (hall i), ite_eq_left]
     -- the labels are distinct primes
@@ -195,8 +195,7 @@ theorem prod_ite_dvd_eq {x : ℝ} {d : Data K}
     refine Finset.prod_primes_dvd N (fun r hr => ?_) fun r hr => ?_
     · obtain ⟨i, -, rfl⟩ := mem_image.1 hr
       exact (hprime i).prime
-    · obtain ⟨i, -, rfl⟩ := mem_image.1 hr
-      exact hall i
+    grind
   · push Not at hall
     obtain ⟨i, hi⟩ := hall
     rw [prod_eq_zero (mem_univ i) (ite_eq_right hi), ite_eq_right]
@@ -229,9 +228,9 @@ theorem card_filter_dvd_mul_sub_one_le {k m A B : ℕ} (hk : 0 < k) (hm : 0 < m)
     simp only [S, mem_filter, mem_Icc] at hn hn'
     have h1 : 1 ≤ m * n := Nat.mul_pos hm (by omega)
     have h1' : 1 ≤ m * n' := Nat.mul_pos hm (by omega)
-    have e₁ : 1 ≡ m * n [MOD k] := (Nat.modEq_iff_dvd' h1).2 hn.2
-    have e₂ : 1 ≡ m * n' [MOD k] := (Nat.modEq_iff_dvd' h1').2 hn'.2
-    have hcop : Nat.Coprime k m := (Nat.coprime_of_mul_modEq_one n e₁.symm).symm
+    have e₁ := (Nat.modEq_iff_dvd' h1).2 hn.2
+    have e₂ := (Nat.modEq_iff_dvd' h1').2 hn'.2
+    have hcop := (Nat.coprime_of_mul_modEq_one n e₁.symm).symm
     have := Nat.ModEq.cancel_left_div_gcd hk (e₁.symm.trans e₂)
     rwa [Nat.Coprime.gcd_eq_one hcop, Nat.div_one] at this
   -- inject the solutions into `{0, …, (B - A)/k}` by `n ↦ (n - A)/k`
@@ -244,7 +243,7 @@ theorem card_filter_dvd_mul_sub_one_le {k m A B : ℕ} (hk : 0 < k) (hm : 0 < m)
     have hA2 : A ≤ n' := (mem_Icc.1 (mem_filter.1 hn').1).1
     have hc : (n - A) % k = (n' - A) % k :=
       Nat.ModEq.add_right_cancel' A (by
-        rw [Nat.sub_add_cancel hA1, Nat.sub_add_cancel hA2]; exact hcong n hn n' hn')
+        simp_all)
     simp only at heq
     have : n - A = n' - A := by
       rw [← Nat.div_add_mod (n - A) k, ← Nat.div_add_mod (n' - A) k, heq, hc]
@@ -287,21 +286,17 @@ theorem sum_ite_ite_eq {a b M m n r s : ℕ} (ha : 0 < a) (hmn : m * n ≤ M) :
       have : h₀ ≤ a * h₀ := Nat.le_mul_of_pos_left _ ha
       omega
     rw [sum_eq_single h₀]
-    · simp [h₀a, h₀b]
+    · simp_all
     · intro h _ hne
       have : m * n - 1 ≠ a * h := by
         rw [h₀a]
         intro heq
         exact hne (Nat.eq_of_mul_eq_mul_left ha heq).symm
-      simp [this]
-    · intro hnot
-      exact absurd (mem_Icc.2 ⟨h₀1, hle⟩) hnot
+      simp_all
+    simp_all
   · rw [ite_eq_right hex]
     refine sum_eq_zero fun h hh => ?_
-    by_cases h₁ : m * n - 1 = a * h
-    · have h₂ : ¬ r * s - 1 = b * h := fun h₂ => hex ⟨h, (mem_Icc.1 hh).1, h₁, h₂⟩
-      simp [h₂]
-    · simp [h₁]
+    grind
 
 open scoped Classical in
 /-- The Cauchy square is `∑_h |T_h|²`, over `1 ≤ h ≤ ⌊2H_m⌋ ⌊2H_n⌋`. -/
@@ -358,7 +353,7 @@ theorem cauchySquare_eq_sum {x : ℝ} {d : Data K} (Y : ℝ)
   refine sum_congr rfl fun r _ => ?_
   conv_rhs => rw [sum_comm]
   refine sum_congr rfl fun s _ => ?_
-  rw [← Finset.sum_mul, sum_ite_ite_eq (hpos p hp)
+  rw [← Finset.sum_mul, sum_ite_ite_eq (by grind)
     (Nat.mul_le_mul (mem_Icc.1 hm).2 (mem_Icc.1 hn).2)]
 
 /-- `T_h` vanishes unless `h ≤ 4X/Y`: a nonzero term has `η(∏ p_i / Y) ≠ 0`, so
@@ -387,11 +382,10 @@ theorem le_of_cauchyInner_ne_zero {x : ℝ} {d : Data K} {Y : ℝ} (hY : 0 < Y)
       exact_mod_cast this
     have hmn : (m : ℝ) * n ≤ 4 * d.X := by
       unfold Data.X
-      nlinarith [Nat.cast_nonneg (α := ℝ) m, Nat.cast_nonneg (α := ℝ) n]
+      nlinarith
     rw [le_div_iff₀ hY]
-    nlinarith [Nat.cast_nonneg (α := ℝ) h]
-  · rw [ite_eq_right heq] at hn'
-    exact absurd rfl hn'
+    nlinarith
+  simp_all
 
 /-- **The Cauchy step.** For coefficients `|u_h| ≤ 1`,
 `|∑_h u_h T_h|² ≤ (4X/Y) Q_Y`. -/
@@ -406,13 +400,13 @@ theorem norm_sum_mul_cauchyInner_sq_le {x : ℝ} {d : Data K} {Y : ℝ} (hY : 0 
   -- `‖Q_Y‖ = ∑_h |T_h|²`
   have hQ : ‖cauchySquare x d Y‖ = ∑ h ∈ H, ‖cauchyInner x d Y h‖ ^ 2 := by
     rw [cauchySquare_eq_sum Y hpos, ← Complex.ofReal_sum, Complex.norm_real, Real.norm_eq_abs,
-      abs_of_nonneg (sum_nonneg fun h _ => sq_nonneg _)]
+      abs_of_nonneg (by positivity)]
   -- only `h ≤ 4X/Y` contribute
   have hcard : (H'.card : ℝ) ≤ 4 * d.X / Y := by
     have hsub : H' ⊆ Icc 1 ⌊4 * d.X / Y⌋₊ := by
       intro h hh
       rw [mem_filter] at hh
-      exact mem_Icc.2 ⟨(mem_Icc.1 hh.1).1,
+      exact mem_Icc.2 ⟨by grind,
         Nat.le_floor (le_of_cauchyInner_ne_zero hY hHm hHn hh.2)⟩
     calc (H'.card : ℝ) ≤ (Icc 1 ⌊4 * d.X / Y⌋₊).card := by exact_mod_cast card_le_card hsub
       _ = ⌊4 * d.X / Y⌋₊ := by simp
@@ -432,8 +426,8 @@ theorem norm_sum_mul_cauchyInner_sq_le {x : ℝ} {d : Data K} {Y : ℝ} (hY : 0 
     _ ≤ H'.card * ∑ h ∈ H', ‖cauchyInner x d Y h‖ ^ 2 := sq_sum_le_card_mul_sum_sq
     _ ≤ 4 * d.X / Y * ∑ h ∈ H, ‖cauchyInner x d Y h‖ ^ 2 := by
         gcongr
-        exact filter_subset _ _
-    _ = 4 * d.X / Y * ‖cauchySquare x d Y‖ := by rw [hQ]
+        grind
+    _ = 4 * d.X / Y * ‖cauchySquare x d Y‖ := by simp_all
 
 /-! ### The decomposition into dyadic pieces -/
 
@@ -463,17 +457,17 @@ theorem sum_mul_cauchyInner {x : ℝ} {d : Data K} (Y : ℝ)
     have h₀1 : 1 ≤ h₀ := by
       rcases Nat.eq_zero_or_pos h₀ with rfl | h
       · omega
-      · exact h
+      · omega
     have h₀M : h₀ ≤ ⌊2 * d.Hm⌋₊ * ⌊2 * d.Hn⌋₊ := by
       have : h₀ ≤ (∏ i, p i) * h₀ := Nat.le_mul_of_pos_left _ ha
       have := Nat.mul_le_mul (mem_Icc.1 hm).2 (mem_Icc.1 hn).2
       omega
     rw [sum_eq_single h₀]
-    · rw [ite_eq_left rfl, mul_comm]
+    · grind
     · intro h _ hne
       rw [ite_eq_right, mul_zero]
       exact fun heq => hne (Nat.eq_of_mul_eq_mul_left ha heq).symm
-    · exact fun hnot => absurd (mem_Icc.2 ⟨h₀1, h₀M⟩) hnot
+    simp_all
   · rw [ite_eq_right hdvd]
     refine sum_eq_zero fun h _ => ?_
     rw [ite_eq_right, mul_zero]
@@ -504,12 +498,12 @@ theorem typeIISum_eq_labels {q C CX alo ahi g x : ℝ} {d : Data K}
         exact absurd h0 (by
           rw [prod_eq_zero_iff]; push Not
           exact fun i _ => (mem_filter.1 (Fintype.mem_piFinset.1 hp i)).2.ne_zero)
-      · exact h0
+      · omega
     rw [hh, Nat.mul_div_cancel_left _ hpos, F_labelProd_mul hd hp]
     unfold bandCount
     push_cast
     ring
-  · simp
+  simp
 
 /-- The dyadic main terms: with `u(h) = F(h) q^{ω(h)}`, summing `∑_h u(h) T_h` over the
 dyadic `Y = 2^j`, `j < J`, gives `∑_{m,n,p} ∏V⁻¹ q^{ω(N/∏ p_i)} [∏ p_i ∣ N] α_m β_n F(N/∏ p_i)`
@@ -542,7 +536,7 @@ theorem sum_dyadic_eq {q x : ℝ} {d : Data K} {J : ℕ}
       rw [← Finset.sum_mul, ← Finset.sum_mul]
       simp_rw [Complex.ofReal_mul]
       rw [← Finset.mul_sum, ← Complex.ofReal_sum,
-        sum_dyadicBump_eq_one (by exact_mod_cast (hJ p hp).1) (hJ p hp).2]
+        sum_dyadicBump_eq_one (by exact_mod_cast (by grind)) (by grind)]
       push_cast
       ring
     · simp
@@ -554,7 +548,7 @@ theorem sum_dyadic_eq {q x : ℝ} {d : Data K} {J : ℕ}
         rw [sum_comm]
         refine sum_congr rfl fun m _ => ?_
         rw [sum_comm]
-        exact sum_congr rfl fun n _ => hinner p hp m n
+        grind
     _ = _ := by
         rw [sum_comm]
         refine sum_congr rfl fun m _ => ?_
@@ -577,28 +571,28 @@ theorem norm_squareful_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1
         ∑ i, ∑ r ∈ band x (d.a i), if r ^ 2 ∣ m * n - 1 then (1 : ℝ) else 0) := by
   set N := m * n - 1
   have hVpos : 0 < (d.bandMass x)⁻¹ :=
-    inv_pos.2 (prod_pos fun i _ => by linarith [hV i])
+    inv_pos.2 (prod_pos fun i _ => by grind)
   -- the indicator that some band prime has its square dividing `N`
   set sN : ℝ := if ∃ i, ∃ r ∈ band x (d.a i), r ^ 2 ∣ N then 1 else 0
   have hsN : sN ≤ ∑ i, ∑ r ∈ band x (d.a i), if r ^ 2 ∣ N then (1 : ℝ) else 0 := by
     simp only [sN]
     split_ifs with hex
     · obtain ⟨i, r, hr, hr2⟩ := hex
-      calc (1 : ℝ) = if r ^ 2 ∣ N then 1 else 0 := by rw [ite_eq_left hr2]
+      calc (1 : ℝ) = if r ^ 2 ∣ N then 1 else 0 := by simp_all
         _ ≤ ∑ r ∈ band x (d.a i), if r ^ 2 ∣ N then (1 : ℝ) else 0 :=
             single_le_sum (f := fun r => if r ^ 2 ∣ N then (1 : ℝ) else 0)
               (fun r _ => by positivity) hr
         _ ≤ _ := single_le_sum (f := fun i => ∑ r ∈ band x (d.a i),
               if r ^ 2 ∣ N then (1 : ℝ) else 0) (fun i _ => sum_nonneg fun r _ => by positivity)
               (mem_univ i)
-    · exact sum_nonneg fun i _ => sum_nonneg fun r _ => by positivity
+    · positivity
   -- per label tuple: the change in damping is at most `q^{ω(N) - K} sN`
   have hdiff : ∀ p ∈ d.labels x, (∏ i, p i) ∣ N →
       |q ^ ((bandCount x d N : ℤ) - K) - q ^ bandCount x d (N / ∏ i, p i)| ≤
         q ^ ((bandCount x d N : ℤ) - K) * sN := by
     intro p hp hdvd
     obtain ⟨h, hh⟩ := hdvd
-    have hp' : ∀ i, p i ∈ band x (d.a i) := Fintype.mem_piFinset.1 hp
+    have hp' := Fintype.mem_piFinset.1 hp
     have hpos : 0 < ∏ i, p i :=
       prod_pos fun i _ => (mem_filter.1 (hp' i)).2.pos
     rw [hh, Nat.mul_div_cancel_left _ hpos]
@@ -606,7 +600,7 @@ theorem norm_squareful_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1
     · rw [bandCount_labelProd_mul hdisj hp hnd]
       push_cast
       rw [add_sub_cancel_right, zpow_natCast, sub_self, abs_zero]
-      exact mul_nonneg (pow_nonneg hq.le _) (by simp only [sN]; split_ifs <;> norm_num)
+      positivity
     · push Not at hnd
       obtain ⟨i, hi⟩ := hnd
       have hs : sN = 1 := by
@@ -641,7 +635,7 @@ theorem norm_squareful_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1
               ≤ (d.bandMass x)⁻¹ * (q ^ ((bandCount x d N : ℤ) - K) * sN) *
                   (‖d.α m‖ * ‖d.β n‖ * 1) := by gcongr
             _ = _ := by ring
-        · simp
+        simp
     _ = ‖d.α m‖ * ‖d.β n‖ * sN * markedWeight Finset.univ q (fun i => band x (d.a i)) N := by
         rw [markedWeight_eq_sum_labels, Finset.mul_sum, Finset.mul_sum]
         refine sum_congr rfl fun p _ => ?_
@@ -695,7 +689,7 @@ theorem norm_error_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1) {d
         (8 * Real.exp (-Real.log x ^ alo) + 2 * Real.exp (2 * Real.log x ^ ahi) / d.Hn) := by
   set L := Real.log x
   set CW : ℝ := (2 / (1 - q)) ^ K
-  have hCW : 0 ≤ CW := pow_nonneg (div_nonneg zero_le_two (by linarith)) _
+  have hCW : 0 ≤ CW := by positivity
   -- coefficient bounds on the ranges
   have hα : ∀ m, ‖d.α m‖ ≤ L ^ C := fun m => by
     by_cases h : d.α m = 0
@@ -713,8 +707,7 @@ theorem norm_error_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1) {d
     have h2 := Nat.le_ceil d.Hm
     rcases le_or_gt ⌈d.Hm⌉₊ (⌊2 * d.Hm⌋₊ + 1) with h | h
     · rw [Nat.cast_sub h]
-      push_cast
-      linarith
+      grind
     · rw [Nat.sub_eq_zero_of_le h.le, Nat.cast_zero]
       linarith
   have hnR : ((⌊2 * d.Hn⌋₊ + 1 - ⌈d.Hn⌉₊ : ℕ) : ℝ) ≤ 2 * d.Hn := by
@@ -722,15 +715,14 @@ theorem norm_error_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1) {d
     have h2 := Nat.le_ceil d.Hn
     rcases le_or_gt ⌈d.Hn⌉₊ (⌊2 * d.Hn⌋₊ + 1) with h | h
     · rw [Nat.cast_sub h]
-      push_cast
-      linarith
+      grind
     · rw [Nat.sub_eq_zero_of_le h.le, Nat.cast_zero]
       linarith
   -- pairs with `r² ∣ mn - 1`, for a band prime `r`
   have hpairs : ∀ i, ∀ r ∈ band x (d.a i), ∑ m ∈ d.mRange, ∑ n ∈ d.nRange,
       (if r ^ 2 ∣ m * n - 1 then (1 : ℝ) else 0) ≤ 2 * d.Hm * (2 * d.Hn / r ^ 2 + 1) := by
     intro i r hr
-    have hrpos : 0 < r := (mem_filter.1 hr).2.pos
+    have hrpos := (mem_filter.1 hr).2.pos
     calc ∑ m ∈ d.mRange, ∑ n ∈ d.nRange, (if r ^ 2 ∣ m * n - 1 then (1 : ℝ) else 0)
         ≤ ∑ _m ∈ d.mRange, (2 * d.Hn / r ^ 2 + 1) := by
           refine sum_le_sum fun m hm => ?_
@@ -757,7 +749,7 @@ theorem norm_error_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1) {d
     have h1 : ∑ r ∈ band x (d.a i), 2 * d.Hn / (r : ℝ) ^ 2 ≤ 4 * d.Hn * Real.exp (-L ^ alo) := by
       calc ∑ r ∈ band x (d.a i), 2 * d.Hn / (r : ℝ) ^ 2
           = 2 * d.Hn * ∑ r ∈ band x (d.a i), 1 / (r : ℝ) ^ 2 := by
-            rw [Finset.mul_sum]; exact sum_congr rfl fun r _ => by ring
+            rw [Finset.mul_sum]; ring
         _ ≤ 2 * d.Hn * (2 * Real.exp (-L ^ d.a i)) := by
             gcongr; exact sum_band_inv_sq_le x (d.a i)
         _ ≤ 4 * d.Hn * Real.exp (-L ^ alo) := by
@@ -778,33 +770,31 @@ theorem norm_error_le {q C CX alo ahi g x : ℝ} (hq : 0 < q) (hq₁ : q < 1) {d
         ∑ i, ∑ r ∈ band x (d.a i), if r ^ 2 ∣ m * n - 1 then (1 : ℝ) else 0) := by
         refine sum_le_sum fun m _ => sum_le_sum fun n _ => ?_
         have : 0 ≤ CW * ∑ i, ∑ r ∈ band x (d.a i), if r ^ 2 ∣ m * n - 1 then (1 : ℝ) else 0 :=
-          mul_nonneg hCW (sum_nonneg fun i _ => sum_nonneg fun r _ => by positivity)
+          by positivity
         gcongr
-        · exact hα m
-        · exact hβ n
+        · grind
+        grind
     _ = L ^ C * L ^ C * CW * ∑ i, ∑ r ∈ band x (d.a i),
           ∑ m ∈ d.mRange, ∑ n ∈ d.nRange, (if r ^ 2 ∣ m * n - 1 then (1 : ℝ) else 0) := by
         simp_rw [Finset.mul_sum]
         rw [sum_comm₄]
-        exact sum_congr rfl fun i _ => sum_congr rfl fun r _ => sum_congr rfl fun m _ =>
-          sum_congr rfl fun n _ => by ring
+        ring
     _ ≤ L ^ C * L ^ C * CW * ∑ i, ∑ r ∈ band x (d.a i),
           2 * d.Hm * (2 * d.Hn / (r : ℝ) ^ 2 + 1) := by
         gcongr with i _ r hr
-        exact hpairs i r hr
+        grind
     _ ≤ L ^ C * L ^ C * CW * ∑ _i : Fin K,
           2 * d.Hm * (4 * d.Hn * Real.exp (-L ^ alo) + Real.exp (2 * L ^ ahi)) := by
         gcongr with i
         rw [← Finset.mul_sum]
         gcongr
-        exact hband i
+        grind
     _ = CW * K * L ^ (2 * C) * d.X *
           (8 * Real.exp (-L ^ alo) + 2 * Real.exp (2 * L ^ ahi) / d.Hn) := by
         rw [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul,
           show 2 * C = C + C by ring, Real.rpow_add (by linarith)]
         unfold Data.X
-        field_simp
-        ring
+        grind
 
 /-- Interface 1: a bound `Q_Y ≤ C' X Y L^{-D₁}` for every dyadic `Y` bounds the one-sided
 Type II sum by `C₁ X L^{-D_*}`. At least one band is needed: with none, every `Q_Y`
@@ -825,7 +815,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
       (2 * K / Real.log 2 + 1), hlog.eventually_ge_atTop 1] with x hx hL
     have h45 : 2 * K / Real.log 2 + 1 ≤ Real.log x ^ (4 / 5 : ℝ) := hx
     have h15 : 1 ≤ Real.log x ^ (1 / 5 : ℝ) := Real.one_le_rpow hL (by norm_num)
-    have hah : Real.log x ^ ahi ≤ Real.log x ^ (1 / 5 : ℝ) :=
+    have hah :=
       Real.rpow_le_rpow_of_exponent_le hL hahi.le
     have hsplit : Real.log x = Real.log x ^ (1 / 5 : ℝ) * Real.log x ^ (4 / 5 : ℝ) := by
       rw [← Real.rpow_add (by linarith)]; norm_num
@@ -868,7 +858,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
       rw [div_le_iff₀ (Real.exp_pos _), mul_assoc, ← Real.exp_add]
       gcongr
       -- `2 L^{a₊} + L^{1/10} ≤ L^{0.99}`
-      have hah : Real.log x ^ ahi ≤ Real.log x ^ (1 / 5 : ℝ) :=
+      have hah :=
         Real.rpow_le_rpow_of_exponent_le hL hahi.le
       have hu15 : u ≤ Real.log x ^ (1 / 5 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le hL (by norm_num)
@@ -891,7 +881,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
         ≤ CW * K * Real.log x ^ (2 * C) * (8 * Real.exp (-u) + 2 * Real.exp (-u)) *
             Real.log x ^ Dstar := by gcongr
       _ = 10 * CW * K * Real.log x ^ (2 * C + Dstar) * Real.exp (-u) := by
-          rw [← hLD]; ring
+          grind
       _ ≤ Real.exp u * Real.exp (-u) := by gcongr
       _ = 1 := by rw [← Real.exp_add]; simp
   -- (E3) `exp(L^{0.99}) ≥ 2`
@@ -912,7 +902,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
     rcases lt_or_gt_of_ne hij with h | h
     · exact hE1 _ _ (hd.gap i j h)
     · exact (hE1 _ _ (hd.gap j i h)).symm
-  have hV : ∀ i, 1 / 2 ≤ harmonicMass (band x (d.a i)) := fun i => (hE2 _ (hd.window i).1).1
+  have hV := fun i => (hE2 _ (hd.window i).1).1
   -- the scales are at least `exp(L^{0.99}) ≥ 2`
   have hγx : Real.exp (L ^ (99 / 100 : ℝ)) ≤ x ^ d.γ := by
     rw [Real.rpow_def_of_pos (show (0 : ℝ) < x by linarith) d.γ, Real.exp_le_exp]
@@ -926,8 +916,8 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
   set J := ⌈2 * K * L ^ ahi / Real.log 2⌉₊
   have hlabel : ∀ p ∈ d.labels x, 2 ≤ ∏ i, p i ∧ ((∏ i, p i : ℕ) : ℝ) ≤ 2 ^ J := by
     intro p hp
-    have hp' : ∀ i, p i ∈ band x (d.a i) := Fintype.mem_piFinset.1 hp
-    have hprime : ∀ i, (p i).Prime := fun i => (mem_filter.1 (hp' i)).2
+    have hp' := Fintype.mem_piFinset.1 hp
+    have hprime := fun i => (mem_filter.1 (hp' i)).2
     constructor
     · calc 2 ≤ p ⟨0, hK⟩ := (hprime _).two_le
         _ ≤ ∏ i, p i := Finset.single_le_prod (fun i _ => (hprime i).one_lt.le) (mem_univ _)
@@ -943,7 +933,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
             rw [div_le_iff₀ (Real.log_pos one_lt_two)] at this
             linarith
         _ = 2 ^ J := by rw [← Real.rpow_natCast, Real.rpow_def_of_pos two_pos, mul_comm]
-  have hpos : ∀ p ∈ d.labels x, 0 < ∏ i, p i := fun p hp => by linarith [(hlabel p hp).1]
+  have hpos : ∀ p ∈ d.labels x, 0 < ∏ i, p i := fun p hp => by grind
   have hmn : ∀ m ∈ d.mRange, ∀ n ∈ d.nRange, 2 ≤ m * n := by
     intro m hm n hn
     have h1 : 2 ≤ m := by
@@ -1002,7 +992,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
     calc _ ≤ 4 * d.X / 2 ^ j * ‖cauchySquare x d (2 ^ j)‖ := h₁
       _ ≤ 4 * d.X / 2 ^ j * (|C'| * d.X * 2 ^ j * L ^ (-squarePrec Dstar)) := by
           gcongr
-          exact h₂.trans (by gcongr; exact le_abs_self _)
+          exact h₂.trans (by gcongr; grind)
       _ = (2 * Real.sqrt |C'| * d.X * L ^ (-(Dstar + 1))) ^ 2 := by
           have hL2 : (L ^ (-(Dstar + 1))) ^ 2 = L ^ (-squarePrec Dstar) := by
             rw [← Real.rpow_natCast, ← Real.rpow_mul hL0.le, squarePrec]
@@ -1023,7 +1013,7 @@ theorem cauchy_reduction {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (hq₁ : q 
       _ = 2 * Real.sqrt |C'| * d.X * L ^ (-Dstar) := by
           rw [show -Dstar = 1 + -(Dstar + 1) by ring, Real.rpow_add hL0, Real.rpow_one]
           ring
-  calc ‖typeIISum q x d‖ = ‖S + E‖ := by rw [hdecomp]
+  calc ‖typeIISum q x d‖ = ‖S + E‖ := by grind
     _ ≤ ‖S‖ + ‖E‖ := norm_add_le _ _
     _ ≤ 2 * Real.sqrt |C'| * d.X * L ^ (-Dstar) + d.X * L ^ (-Dstar) := add_le_add hS hE
     _ = (2 * Real.sqrt |C'| + 1) * d.X * L ^ (-Dstar) := by ring

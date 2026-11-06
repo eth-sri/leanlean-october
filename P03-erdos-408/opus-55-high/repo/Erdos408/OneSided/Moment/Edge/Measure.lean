@@ -21,7 +21,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -54,15 +54,14 @@ private theorem primeWeight_nonneg {N : ℕ} (hb : ∀ p ∈ bandPrimes x d, 0 �
   have hV : 0 ≤ primeMass x d p :=
     sum_nonneg fun i _ => by
       split_ifs
-      · exact sum_nonneg fun p _ => by positivity
-      · exact le_rfl
+      · exact sum_nonneg (by simp)
+      simp
   unfold primeWeight
   by_cases hp : p ∈ bandPrimes x d
-  · exact one_div_nonneg.2 (mul_nonneg (mul_nonneg hV (by positivity)) (hb p hp))
+  · exact one_div_nonneg.2 (mul_nonneg (by positivity) (by grind))
   · have h0 : primeMass x d p = 0 :=
-      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 ⟨i, mem_univ i, hpi⟩)
-    rw [h0]
-    simp
+      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 (by grind))
+    simp_all
 
 /-- Eventually every band prime exceeds `N = 2R`: band primes exceed `L`, and
 `2R < L^{1/2} + 2 ≤ L`. -/
@@ -99,8 +98,8 @@ theorem eventually_chainMeasure_nonneg {C CX alo ahi g : ℝ} (hq : 0 < q)
         0 ≤ chainMeasure q x d Y d₀ u v r B (2 * momentPower x) s := by
   filter_upwards [eventually_two_mul_momentPower_lt halo] with x hbig d hd Y d₀ u v r B s
   have hν := primeWeight_nonneg fun p hp => baseline_nonneg hq (hbig d hd p hp)
-  exact mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun h _ => hν _)
-    (memWeight_nonneg (fun xp => hν _) _)
+  exact mul_nonneg (prod_nonneg fun i _ => prod_nonneg (by grind))
+    (memWeight_nonneg (by grind) _)
 
 end Measure
 

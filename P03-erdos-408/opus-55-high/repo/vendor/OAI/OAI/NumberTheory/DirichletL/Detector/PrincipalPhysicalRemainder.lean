@@ -8,11 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalRemainderBounds
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open Complex MeasureTheory
+open scoped Classical
+open MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
 open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
+open PrincipalMellinResidues PrincipalSignalComparison
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem physical_principal_residue_remainder {K : ℕ}
@@ -38,17 +38,17 @@ theorem physical_principal_residue_remainder {K : ℕ}
       C/e*Z^(HeckeZeroSupremum.beta-11/16-17/48000) := by
   let : NeZero (∏p∈S,p) := ⟨fixedPrimeProduct_ne_zero S hS.prime⟩
   obtain ⟨C,hC,hbound⟩ := ProbePrincipalRemainderBounds.source_remainders_strict_saving η S hS
-    (Finset.univ : Finset (Fin K)) c d B hc hd hB W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 e he hehi ⟨ha.le,ha2⟩
+    (Finset.univ : Finset (Fin K)) c d B hc hd hB W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 e he hehi (by grind)
   refine ⟨2*C,by positivity,?_⟩
   intro ell hell W hW hsupp T hT hdis Z hZ hthreshold hmod
   have hZ0 : 0<Z := by linarith
-  have hb := hbound ell hell W (fun j _=>hW j) (fun j _=>hsupp j) T (fun j _ p hp=>hT j p hp)
-    Z hZ (fun j _=>hthreshold j) (fun j _=>hmod j)
+  have hb := hbound ell hell W (by grind) (by grind) T (by grind)
+    Z hZ (by grind) (by grind)
   dsimp only at hb
   have heq := principal_physical_pool_ordered η S hS T hT hdis
     (fun j p=>(W j ((Ideal.absNorm p.val:ℝ)/Z^(ell j)):ℂ)) W0 W1 a0 b0 a1 b1
     ha0 ha1 hW0 hW1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z (HeckeZeroSupremum.beta+e) e
-    (Real.rpow_pos_of_pos hZ0 _) (Real.rpow_pos_of_pos hZ0 _) hZ0 ha (by linarith) (by linarith) he (by linarith)
+    (by positivity) (by positivity) hZ0 ha (by linarith) (by linarith) he (by linarith)
   dsimp only at heq
   have hres (F : ℂ→ℂ) :
       (HeckeReciprocal.regularizedL (fixedSourcePrincipal S hS.prime) 1)^2/6*

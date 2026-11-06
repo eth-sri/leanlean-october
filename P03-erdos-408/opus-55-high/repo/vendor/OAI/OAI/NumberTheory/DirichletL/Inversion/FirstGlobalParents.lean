@@ -8,15 +8,14 @@ public import OAI.NumberTheory.DirichletL.Descent.GlobalParentEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.InverseFirstGlobalParents
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open FirstCauchyArithmetic RayFourExpansion InverseMoment
-open InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InversePrioritySecondSource
+open SecondPassArithmetic
+open InverseMoment
+open InverseFirstPriorityParents
+open InversePrioritySecondSource
 open InverseInitialArithmetic (sourceIdeal)
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
 def ofOriginal (k : FirstOriginalOuter ι) : Source ι 0 where
@@ -71,11 +70,11 @@ theorem mem_originalParentSource (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     originalOuterSource,Finset.mem_image,Finset.mem_filter]
   constructor
   · rintro ⟨y,⟨k,hk,rfl⟩,D,⟨hD,hs⟩,he⟩
-    exact ⟨k,hk,D,hD,by simpa using hs,he⟩
+    exact ⟨k,hk,D,hD,by positivity,he⟩
   · rintro ⟨k,hk,D,hD,hs,he⟩
-    exact ⟨ofOriginal k,⟨k,hk,rfl⟩,D,⟨hD,by simpa using hs⟩,he⟩
+    exact ⟨ofOriginal k,by grind,D,⟨hD,by positivity⟩,he⟩
 
-theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
+theorem original_fill_valid (p : ι→ActualEisensteinCubic.O) (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (k : FirstOriginalOuter ι) (hk : k∈firstOriginalOuter pool Q) (D : Finset ι) :
     SourceValid p (fillFirstQuotient (ofOriginal k) D) := by
   obtain ⟨hb,hC,hE⟩:=(mem_firstOriginalOuter pool Q k).mp hk
@@ -84,9 +83,9 @@ theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→�
       (Finset.mem_sdiff.mp (Finset.mem_powerset.mp hC hi)).2 hiB)
   · exact (Finset.mem_powerset.mp hE).trans
       (Finset.union_subset_union_right (Finset.filter_subset _ _))
-  · exact fun i=>Fin.elim0 i
+  simp
 
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→ActualEisensteinCubic.O) [∀i,(Ideal.span {p i}).IsMaximal]
 
 variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 

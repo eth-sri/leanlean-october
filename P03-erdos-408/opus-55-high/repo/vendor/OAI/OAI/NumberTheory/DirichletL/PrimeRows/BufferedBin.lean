@@ -7,28 +7,27 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.DetectorBins
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
-def sourceDetectorFamily (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+def sourceDetectorFamily (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (ψ : ι→Character) : Sum Bool ι→Character :=
   Sum.elim (fun b=>if b then rowCharacter S hS u else (targetRow η u).excludePrimes S hS) ψ
 
 omit [Fintype ι] in
-@[simp] lemma sourceDetectorFamily_denominator (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+@[simp] lemma sourceDetectorFamily_denominator (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (ψ : ι→Character) :
     sourceDetectorFamily S hS η u ψ (Sum.inl false)=(targetRow η u).excludePrimes S hS := rfl
 
 omit [Fintype ι] in
-@[simp] lemma sourceDetectorFamily_numerator (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+@[simp] lemma sourceDetectorFamily_numerator (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (ψ : ι→Character) :
     sourceDetectorFamily S hS η u ψ (Sum.inl true)=rowCharacter S hS u := rfl
 
-lemma source_bin_denominator_nonzero (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+lemma source_bin_denominator_nonzero (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (η : Character) (u : FreeRow) (ψ : ι→Character) (T a e : ℝ) (i : ℕ) (he : 0<e)
     (hmax : detectorMaximum (sourceDetectorFamily S hS η u ψ) (3*(i+1:ℕ)*T)<a+2*e)
     (x : ℂ) (hx : a+16*e≤x.re) (ht : |x.im|≤3*(i+1:ℕ)*T)
@@ -38,7 +37,7 @@ lemma source_bin_denominator_nonzero (S : Finset (Ideal O)) (hS : ∀P∈S,Prime
     (by linarith) ht hpole
 
 theorem source_buffered_x_rectangle {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmaxS : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmaxS : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀j,(P j).val∉S) (η : Character) (u : FreeRow) (ψ : ι→Character)
     (T a e : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
     (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (hfirst : FirstTail (4*e) S)
@@ -52,8 +51,8 @@ theorem source_buffered_x_rectangle {K : ℕ}
         I*((∫v : ℝ in (a+16*e)..r,F ((v:ℂ)+(-H)*I))-
           (∫v : ℝ in (a+16*e)..r,F ((v:ℂ)+H*I))) := by
   apply buffered_x_rectangle (8*e) (by positivity) S hS
-    (by convert hfirst using 1 ; ring) hmaxS P hPS η u W0 W1 X Y Z hZ w z (a+16*e) r H
-    (by linarith) (by linarith) (by rw [hw];linarith) hz (by rw [hw];linarith) (by rw [hw];linarith)
+    (by grind) hmaxS P hPS η u W0 W1 X Y Z hZ w z (a+16*e) r H
+    (by linarith) (by linarith) (by linarith) hz (by linarith) (by linarith)
   intro x hx hpole
   have hxr : a+16*e≤x.re := by simpa only [min_eq_left hr] using hx.1.1
   have hxi : |x.im|≤H := by

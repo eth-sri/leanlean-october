@@ -9,16 +9,15 @@ public import OAI.NumberTheory.DirichletL.Detector.GramJointProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
 open ConcretePrimeRowBridge UniqueFactorizationMonoid ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma jointProfile_physicalPoint (W : ℝ→ℂ) (U : SchwartzMap ℝ ℂ)
     (a b : ℝ) (ha : 0<a) (hab : a<b) (hs : Function.support W⊆Set.Icc a b)
-    (hW : ContDiff ℝ ∞ W) (v T : ℝ) (hT : 0≤T) (N : ℝ) (hN : 0<N) (m : O×O) :
+    (hW : ContDiff ℝ ∞ W) (v T : ℝ) (hT : 0≤T) (N : ℝ) (hN : 0<N) (m : ActualEisensteinCubic.O×ActualEisensteinCubic.O) :
     ProbeGramJointConstruction.jointProfile W U a b ha hab hs hW v T hT
       (ProbeGramLatticeDecay.physicalPoint N m)=
       shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N) := by
@@ -36,17 +35,17 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
       ∀(W : ℝ→ℂ)(_hs : Function.support W⊆Set.Icc a₀ b₀)(_hW : ContDiff ℝ ∞ W),
       ∃K : ℝ,0<K ∧
       ∀{ι : Type*}[Fintype ι],∀(S : Finset Id)(hS : ∀p∈S,p.IsMaximal)(σ : RayRing)
-      (C k : O)(_hC : C≠0)(_hk0 : k≠0)(u : Oˣ)(a b : ℕ)(r : O)
-      (hr : Supported (Ideal.span {r})),k=u.val*goodLambda^a*(2:O)^b*r→
+      (C k : ActualEisensteinCubic.O)(_hC : C≠0)(_hk0 : k≠0)(u : ActualEisensteinCubic.Oˣ)(a b : ℕ)(r : ActualEisensteinCubic.O)
+      (hr : Supported (Ideal.span {r})),k=u.val*goodLambda^a*(2:ActualEisensteinCubic.O)^b*r→
       ∀(P : ι→Id)[_hmax : ∀i,(P i).IsMaximal](hg : ∀i,goodLambda∉P i)(c : ι→ℕ),
       (∀i,1≤c i)→Ideal.span {C}=∏i,P i^c i→
       ∀(p : Id)[_hpmax : p.IsMaximal],p≠0→∀_hgp : goodLambda∉p,
-      ringChar (O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
+      ringChar (ActualEisensteinCubic.O⧸p)≠2→(¬p∣jointFixedModulus S hS)→(¬p∣∏i,P i)→
       (¬6∣(normalizedFactors (Ideal.span {k})).count p)→
-      ∀(U : SchwartzMap ℝ ℂ)(v T : ℝ),0≤T→∀(d : O)(N : ℝ),0<N→
-      Summable (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+      ∀(U : SchwartzMap ℝ ℂ)(v T : ℝ),0≤T→∀(d : ActualEisensteinCubic.O)(N : ℝ),0<N→
+      Summable (fun m : ActualEisensteinCubic.O×ActualEisensteinCubic.O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N)) ∧
-      ‖∑'m : O×O,jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+      ‖∑'m : ActualEisensteinCubic.O×ActualEisensteinCubic.O,jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N)‖≤
         K*H.sup (schwartzSeminormFamily ℝ ℝ ℂ) U*(1+|v|)^J/(1+T)^B*
           (Ideal.absNorm (Ideal.span {C}):ℝ)*N^2*
@@ -62,9 +61,9 @@ theorem literal_nonexceptional_source (A B : ℕ) (hA : 2<A) (a₀ b₀ : ℝ)
   let V := ProbeGramJointConstruction.jointProfile W U a₀ b₀ ha₀ hab hs hW v T hT
   have hv := ProbeGramJointConstruction.jointProfile_annularSupport W U a₀ b₀ ha₀ hab hs hW v T hT
   have hb := hblock S hS σ C k hC hk0 u a b r hr hk P hg c hc hfac p hp0 hgp hchar hfixed hcommon he V hv d N hN
-  have hfun : (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+  have hfun : (fun m : ActualEisensteinCubic.O×ActualEisensteinCubic.O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
       V (ProbeGramLatticeDecay.physicalPoint N m))=
-      (fun m : O×O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
+      (fun m : ActualEisensteinCubic.O×ActualEisensteinCubic.O=>jointExtension S hS σ C k u a b r hr P hg c (d*m.1) (d*m.2)*
         shellProfile W v U T (‖eisEmbedding m.1‖^2/N) (‖eisEmbedding m.2‖^2/N)) := by
     funext m
     rw [jointProfile_physicalPoint W U a₀ b₀ ha₀ hab hs hW v T hT N hN m]

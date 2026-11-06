@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialExcludedPolynomial
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseInitialExcludedEnergy
 open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial
 open IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O"=>HeckeFamily.O
 
-def deletionWeight (χ:Character)(j:Ideal O):ℂ:=
+def deletionWeight (χ:Character)(j:Ideal HeckeFamily.O):ℂ:=
   (moebius j:ℂ)*idealCoeff χ j*(j.absNorm:ℂ)^(-(1/2:ℂ))
 
-theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
+theorem deletionWeight_norm_le_one (χ:Character){j:Ideal HeckeFamily.O}(hj:j≠0):
     ‖deletionWeight χ j‖≤1 := by
   have hn:1≤(j.absNorm:ℝ):=by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hj)
@@ -29,12 +28,12 @@ theorem deletionWeight_norm_le_one (χ:Character){j:Ideal O}(hj:j≠0):
   rw [norm_mul,norm_mul]
   calc
     _≤1*1:=mul_le_mul
-      (by simpa only [one_mul] using (mul_le_mul (CubicEisenstein.norm_ideal_moebius_le_one j)
+      (by simpa using (mul_le_mul (CubicEisenstein.norm_ideal_moebius_le_one j)
         (idealCoeff_norm_le_one χ j) (norm_nonneg _) zero_le_one)) hw
       (norm_nonneg _) (by positivity)
     _=1:=one_mul _
 
-theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
+theorem marked_pointwise (χ:Character)(S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)
     (W:ℝ→ℂ)(X σ t b:ℝ)(hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ℂ):
     ‖polynomial χ true W X σ t*mark‖^2≤
     ((idealDivisors (∏P∈S,P)).card:ℝ)*
@@ -57,11 +56,11 @@ theorem marked_pointwise (χ:Character)(S:Finset (Ideal O))(hS:∀P∈S,Prime P)
   have hh:=Finset.sum_mul_sq_le_sq_mul_sq (idealDivisors (∏P∈S,P))
     (fun _=>(1:ℝ)) (fun j=>‖polynomial (χ.excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t*mark‖)
   simp only [one_mul,one_pow,Finset.sum_const,nsmul_eq_mul,mul_one] at hh
-  exact (sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg (fun _ _=>norm_nonneg _))).mpr hn |>.trans
+  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr hn |>.trans
     hh
 
 theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
-    (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(W:ℝ→ℂ)(X σ t b:ℝ)
+    (S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)(W:ℝ→ℂ)(X σ t b:ℝ)
     (hX:0<X)(hW:∀x,W x≠0→x≤b)(mark:ι→ℂ)(weight:ι→ℝ)
     (hw:∀u∈rows,0≤weight u):
     (∑u∈rows,weight u*‖polynomial (χ u) true W X σ t*mark u‖^2)≤
@@ -74,15 +73,11 @@ theorem marked_family {ι:Type*}(rows:Finset ι)(χ:ι→Character)
         ‖polynomial ((χ u).excludePrimes S hS) true W (X/(j.absNorm:ℝ)) σ t*mark u‖^2):=by
       apply Finset.sum_le_sum
       intro u hu
-      exact mul_le_mul_of_nonneg_left (marked_pointwise (χ u) S hS W X σ t b hX hW (mark u)) (hw u hu)
+      exact mul_le_mul_of_nonneg_left (marked_pointwise (χ u) S hS W X σ t b hX hW (mark u)) (by grind)
     _=_:=by
       simp only [Finset.mul_sum]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro j hj
-      apply Finset.sum_congr rfl
-      intro u hu
-      ring
+      grind
 
 end SevenEighths.InverseInitialExcludedEnergy
 

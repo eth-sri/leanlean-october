@@ -8,17 +8,16 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeScale
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbeRayCharacterFamily
+open HeckeFamily HeckeInverseAmplification
 open HeckePrimeAmplitudeBins ProbeRaySlots
-local notation "O" => HeckeFamily.O
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+variable (M : Ideal HeckeFamily.O) [NeZero M]
+local instance : Finite (HeckeFamily.O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-theorem actual_phase_bins_on_cube (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
+theorem actual_phase_bins_on_cube (S : Finset (Ideal HeckeFamily.O)) (hS : ∀P∈S,Prime P)
     (hbad : CanonicalQuadraticSieve.fixedBadPrimes⊆S) (hmax : ∀P∈S,P.IsMaximal)
     (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A) (hAB : A≤B)
     (hWs : Function.support W⊆Ioo A B) (hW : ContDiff ℝ ∞ W)
@@ -60,7 +59,7 @@ theorem actual_phase_bins_on_cube (S : Finset (Ideal O)) (hS : ∀P∈S,Prime P)
   have hb' := hb d hd hd' hU hT η u hu hs (hc u d hrow) a i ha ha' hbin r
     ((17/50:ℂ)+t.1.2*Complex.I) hr hr'
     (by norm_num) (by norm_num) (by simpa using hfreq) (hh i hi d hd)
-  exact hb'
+  omega
 
 end SevenEighths.ProbeHighRowFamily
 

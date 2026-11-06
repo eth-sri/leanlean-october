@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CentralFiniteError
 
 namespace OAI
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
+open HeckeFamily HeckeInverseAmplification ProbePhysical
 variable {ι : Type*} [Fintype ι]
 
-def finiteCentralCubeRows {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def finiteCentralCubeRows {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (η : Character) (R : Finset FreeRow)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i → P.val∉S)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ)
@@ -26,12 +25,12 @@ def finiteCentralCubeRows {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusion
 theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
     (hτ : 0<τ) (hb : 0<b) (hζ : ζ≤1/48) (hA : 0≤A)
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) :
     ∃C : ℝ,0≤C ∧ ∀(η : Character) (Z : ℝ),1≤Z → ∀R : Finset FreeRow,
-      (∀u∈R,u.val≠1 ∧ ((Ideal.span {u.val}:Ideal O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ)) →
+      (∀u∈R,u.val≠1 ∧ ((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤Z^((13/16:ℝ)+ζ)) →
       ∀(T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i → P.val∉S),
       (∀P:(∀i,T i),Function.Injective (fun i=>(P i).val)) →
       ∀length : Fin K→ℝ,(∑j,length j)=(1/6:ℝ) →
@@ -50,7 +49,7 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
   have hZ0 : 0<Z := lt_of_lt_of_le zero_lt_one hZ
   have hrange : Z^((13/16:ℝ)+ζ)≤Z := by
     simpa using Real.rpow_le_rpow_of_exponent_le hZ (show (13/16:ℝ)+ζ≤1 by linarith)
-  have hcR : (R.card:ℝ)≤128*Z := freeRow_count R Z hZ (by
+  have hcR := freeRow_count R Z hZ (by
     intro u hu
     exact (hR u hu).2.trans hrange)
   have hcT : (Fintype.card (∀j,T j):ℝ)≤(128*b)^K*Z :=
@@ -61,16 +60,16 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
   have herr (u : FreeRow) (hu : u∈R) (P : ∀j,T j) :
       ‖rowIntegral η S (calibrationForSet S hmax) (fun j=>CompletedGauss.primaryGenerator (P j).val.val)
           W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z u-
-        centralCubeIntegral S hS hmax (fun j=>(P j).val) (fun j=>hT j _ (P j).property)
+        centralCubeIntegral S hS hmax (fun j=>(P j).val) (fun j=>hT j _ (by simp))
           η u W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z (a u) e (H u)‖≤E := by
     rcases hbin u hu with ⟨ha,ha',hB,hHlo,hH,hzero⟩
-    exact hrow η u (hR u hu).1 (fun j=>(P j).val) (hdis P) (fun j=>hT j _ (P j).property)
-      (ψ u) Z hZ (hR u hu).2 length hl (fun j=>hp j _ (P j).property)
+    exact hrow η u (hR u hu).1 (fun j=>(P j).val) (hdis P) (fun j=>hT j _ (by simp))
+      (ψ u) Z hZ (hR u hu).2 length hl (fun j=>hp j _ (by simp))
       (a u) (B u) (H u) (idx u) ha ha' hB hHlo hH hzero
   have hw (P : ∀j,T j) : ‖∏j,W j (((P j).val.val.absNorm:ℝ)/Z^(length j))‖≤A^K := by
     rw [norm_prod]
     calc
-      _ ≤ ∏j : Fin K,A := Finset.prod_le_prod₀ (fun j _=>norm_nonneg _) (fun j _=>hW j _)
+      _ ≤ ∏j : Fin K,A := Finset.prod_le_prod₀ (by simp) (fun j _=>hW j _)
       _ = _ := by simp
   unfold finitePhysicalRows finiteCentralCubeRows
   rw [←Finset.sum_sub_distrib]
@@ -78,7 +77,7 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
     _ ≤ ∑u∈R,‖(∑P:(∀j,T j),(∏j,W j (((P j).val.val.absNorm:ℝ)/Z^(length j)))*
         rowIntegral η S (calibrationForSet S hmax) (fun j=>CompletedGauss.primaryGenerator (P j).val.val) W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z u)-
       ∑P:(∀j,T j),(∏j,W j (((P j).val.val.absNorm:ℝ)/Z^(length j)))*
-        centralCubeIntegral S hS hmax (fun j=>(P j).val) (fun j=>hT j _ (P j).property)
+        centralCubeIntegral S hS hmax (fun j=>(P j).val) (fun j=>hT j _ (by simp))
           η u W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z (a u) e (H u)‖ := norm_sum_le _ _
     _ ≤ ∑_u∈R,∑_P:(∀j,T j),A^K*E := by
       apply Finset.sum_le_sum
@@ -88,10 +87,10 @@ theorem finite_cube_arbitrary_saving (K : ℕ) (τ saving b ζ A : ℝ)
       apply Finset.sum_le_sum
       intro P hP
       rw [←mul_sub,norm_mul]
-      exact mul_le_mul (hw P) (herr u hu P) (norm_nonneg _) (pow_nonneg hA _)
+      exact mul_le_mul (hw P) (herr u hu P) (norm_nonneg _) (by positivity)
     _ = (R.card:ℝ)*(Fintype.card (∀j,T j):ℝ)*(A^K*E) := by simp;ring
-    _ ≤ (128*Z)*((128*b)^K*Z)*(A^K*E) := by
-      exact mul_le_mul_of_nonneg_right (mul_le_mul hcR hcT (Nat.cast_nonneg _) (by positivity)) (mul_nonneg (pow_nonneg hA _) hE)
+    _ ≤ (128*Z)*((128*b)^K*Z)*(A^K*E) :=
+      mul_le_mul_of_nonneg_right (mul_le_mul hcR hcT (Nat.cast_nonneg _) (by positivity)) (by positivity)
     _ = _ := by
       have hz : Z^2*Z^(-(saving+2))=Z^(-saving) := by
         rw [←Real.rpow_two,←Real.rpow_add hZ0]

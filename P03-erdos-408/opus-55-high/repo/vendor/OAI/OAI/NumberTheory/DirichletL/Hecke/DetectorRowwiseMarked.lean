@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwiseChain
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open Set Complex
 namespace SevenEighths.HeckeDetectorRowwiseMarked
 open HeckeFamily HeckeDyadic HeckeDetectorRowwise HeckeDetectorRowwisePolynomial
@@ -34,7 +34,7 @@ theorem marked_rowwise {ι : Type*} (rows : Finset ι) (χ : ι→Character)
   have cm (n : ℕ) (i : ι) (hn : n≤2) : Continuous (Function.uncurry (M n i)) := by
     interval_cases n
     all_goals
-      dsimp [M,Function.uncurry]
+      dsimp [M]
       apply Continuous.mul_const
     · exact polynomial_continuous (χ i) inv W D hD S hc
     · exact polynomial_continuous (χ i) inv (logProfile W) D hD S hc1

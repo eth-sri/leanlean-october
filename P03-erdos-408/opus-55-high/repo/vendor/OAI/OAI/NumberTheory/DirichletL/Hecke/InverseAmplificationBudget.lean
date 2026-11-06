@@ -18,17 +18,12 @@ theorem amplificationPower_nonneg (c r : ℝ) : 0≤amplificationPower c r := le
 theorem amplificationPower_upper (c r R : ℝ) (hc : c≤1) (hr : 0≤r)
     (hrR : r≤R) : amplificationPower c r≤R/3 := by
   apply max_le (by linarith)
-  have hh := mul_le_mul_of_nonneg_right hc hr
   nlinarith
 
 theorem amplified_exponent (c r : ℝ) :
     1+5*amplificationPower c r=max 1 ((1+5*(1+c)*r)/6) := by
   unfold amplificationPower
-  by_cases h : 0≤((1+c)*r-1)/6
-  · rw [max_eq_right h,max_eq_right (by linarith)]
-    ring
-  · rw [max_eq_left (le_of_not_ge h),max_eq_left (by linarith)]
-    ring
+  grind
 
 theorem amplified_exponent_le (c r R : ℝ) (hc : 0≤c) (hrR : r≤R)
     (hR : 0≤R) : 1+5*amplificationPower c r≤sourceExponent r+5*c*R/6 := by
@@ -36,7 +31,7 @@ theorem amplified_exponent_le (c r R : ℝ) (hc : 0≤c) (hrR : r≤R)
   apply max_le
   · have hh := le_max_left 1 ((1+5*r)/6)
     unfold sourceExponent
-    nlinarith [mul_nonneg hc hR]
+    nlinarith
   · have hh := le_max_right 1 ((1+5*r)/6)
     have hh' := mul_le_mul_of_nonneg_left hrR hc
     unfold sourceExponent
@@ -49,18 +44,15 @@ theorem exists_amplification_budget (R ε : ℝ) (hR : 0≤R) (hε : 0<ε) :
         sourceExponent r+ε/2 := by
   let c := min 1 (ε/(4*(R+1)))
   let κ := ε/(4*(1+3*R))
-  have hc : 0<c := lt_min zero_lt_one (div_pos hε (by positivity))
-  have hκ : 0<κ := div_pos hε (by positivity)
+  have hc : 0<c := by positivity
+  have hκ : 0<κ := by positivity
   have hc1 : c≤1 := min_le_left _ _
-  have hcb : c*(4*(R+1))≤ε := (le_div_iff₀ (by positivity)).mp (min_le_right _ _)
+  have hcb : c*(4*(R+1))≤ε := (le_div_iff₀ (by positivity)).mp (by grind)
   have hκb : κ*(4*(1+3*R))=ε := by dsimp [κ]; field_simp
   refine ⟨c,κ,hc,hc1,hκ,?_⟩
   intro r hr hrR
   have hp := amplificationPower_upper c r R hc1 hr hrR
   have he := amplified_exponent_le c r R hc.le hrR hR
-  have hraw : κ*(1+6*amplificationPower c r+r)≤κ*(1+3*R) := by
-    apply mul_le_mul_of_nonneg_left _ hκ.le
-    linarith
   nlinarith
 
 theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
@@ -68,8 +60,8 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
     ∃ K : ℝ, 0≤K ∧ ∀ᶠ U : ℝ in atTop, ∀ p : ℝ, 0≤p → p≤P →
       (1+2*Real.log (b*(A*U^p)))*Real.log (A*U^p)≤K*U^η := by
   let K := (1+2*Real.log (b*A)+2*P)*(Real.log A+P)
-  have hLA : 0≤Real.log A := Real.log_nonneg hA
-  have hLB : 0≤Real.log (b*A) := Real.log_nonneg hbA
+  have hLA := Real.log_nonneg hA
+  have hLB := Real.log_nonneg hbA
   have hK : 0≤K := mul_nonneg (by positivity) (by positivity)
   have hlog := (isLittleO_log_rpow_rpow_atTop (2 : ℝ) hη).bound (by norm_num : (0 : ℝ)<1)
   refine ⟨K,hK,?_⟩
@@ -98,7 +90,7 @@ theorem logarithmic_cost_eventually (A b P η : ℝ) (hA : 1≤A)
   calc
     _ ≤ ((1+2*Real.log (b*A)+2*P)*Real.log U)*((Real.log A+P)*Real.log U) :=
       mul_le_mul hfirst hsecond (Real.log_nonneg hx) (by positivity)
-    _ = K*(Real.log U)^2 := by dsimp [K]; ring
+    _ = K*(Real.log U)^2 := by linarith
     _ ≤ _ := mul_le_mul_of_nonneg_left hsq hK
 
 end SevenEighths.HeckeInverseAmplification

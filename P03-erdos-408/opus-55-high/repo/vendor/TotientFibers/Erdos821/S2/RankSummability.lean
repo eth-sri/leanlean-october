@@ -7,7 +7,6 @@ public import Erdos821.S2.HighRankTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -23,15 +22,11 @@ theorem rankHistory_hasFiniteSupport {β : Type*} [Zero β]
     Function.HasFiniteSupport (fun H : MemoryHistory A n =>
       if H.Valid ∧ H.Truncated B ∧ birthEvent (H.performedFin B) (H.valueFin B) pi then
         f H else 0) := by
-  have hf : Set.Finite {H : MemoryHistory A n | H.Truncated B} :=
+  have hf :=
     @Set.toFinite (MemoryHistory A n) {H | H.Truncated B}
       (truncated_history_finite A n B)
   apply hf.subset
-  intro H hH
-  change (if H.Valid ∧ H.Truncated B ∧ birthEvent (H.performedFin B) (H.valueFin B) pi then
-    f H else 0) ≠ 0 at hH
-  by_contra hn
-  exact hH (ite_eq_right (fun hp => hn hp.2.1))
+  simp_all
 
 theorem highRankHistoryExpression_summable (A : Model F P J m) (n B : ℕ)
     (rho theta : ℝ)

@@ -10,11 +10,8 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FourierBridge
-open SecondPassIntegration CompletedHeight InversePrincipalEnergy RayFourExpansion
-open InverseSecondPrincipalCaller
 local notation "Eis" => ActualEisensteinCubic.O
 
 end SevenEighths.InverseMoment

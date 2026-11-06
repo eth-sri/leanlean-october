@@ -8,22 +8,21 @@ public import OAI.NumberTheory.DirichletL.Moments.AmplificationChildSourceCaps
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
 open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstAmplificationChoice CenteredMomentCommonAllocationSum
+open CenteredMomentAmplificationChildInput
+open CenteredMomentCommonAllocationSum
 open CenteredMomentSourceLiveColumn CenteredMomentFirstCommonSourceBudget
-local notation "O"=>ActualEisensteinCubic.O
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
 theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<ε):
     ∃Cbound:ℝ,0<Cbound ∧ ∀{ι:Type*}[Fintype ι],∀s:Input ι,
     Fintype.card ι≤N → a≤s.lower → s.upper≤b →
-    ∀(C R seed:Ideal O)(hC:Supported C),seed∣C →
-    ∀(τ:Character)(t:ℝ)(L:Ideal O)(W:𝓢(ℝ,ℂ))(K:ℝ),0<K →
-    (∀z:O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
+    ∀(C R seed:Ideal ActualEisensteinCubic.O)(hC:Supported C),seed∣C →
+    ∀(τ:Character)(t:ℝ)(L:Ideal ActualEisensteinCubic.O)(W:𝓢(ℝ,ℂ))(K:ℝ),0<K →
+    (∀z:ActualEisensteinCubic.O,0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re)→
     ∀(n:ℕ)(E α:Fin n→ℝ),(∀j,0≤E j)→(∀j,0≤α j)→
     (∀B:actualAllocations s.pools C,frozenCoefficient B.val C R s.ν s.W s.P≠0 →
       childNormalizedGaussSource s C R L B τ t W K≤
@@ -40,7 +39,7 @@ theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<�
   have hv:=CenteredMomentAmplificationChildInput.volume_pos s
   have hn:=CenteredMomentFirstScale.norm_pos C hC.1
   apply hbound s hcard haS hbS C R seed hC hseed τ t L W K _ hK
-    (Finset.sum_nonneg (fun j _=>mul_nonneg (hE j) (Real.rpow_nonneg (by positivity) _))) hW
+    (Finset.sum_nonneg (fun j _=>mul_nonneg (hE j) (by positivity))) hW
   intro B hB
   apply (hchild B hB).trans
   apply mul_le_mul_of_nonneg_right _ (sq_nonneg _)
@@ -48,7 +47,7 @@ theorem common_energy_power_budget (N:ℕ)(a b ε:ℝ)(ha:0<a)(hb:1≤b)(hε:0<�
   intro j hj
   apply mul_le_mul_of_nonneg_left _ (hE j)
   exact Real.rpow_le_rpow (CenteredMomentAmplificationChildInput.volume_pos _).le
-    (CenteredMomentAmplificationChildSourceCaps.common_volume_le N b hb s hcard hbS C R B τ t hB) (hα j)
+    (CenteredMomentAmplificationChildSourceCaps.common_volume_le N b hb s hcard hbS C R B τ t hB) (by grind)
 
 end SevenEighths.CenteredMomentFirstCommonSourcePowerBudget
 

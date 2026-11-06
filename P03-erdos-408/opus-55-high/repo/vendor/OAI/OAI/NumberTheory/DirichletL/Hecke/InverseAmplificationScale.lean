@@ -8,10 +8,10 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowwisePlain
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ContDiff Topology
-open MeasureTheory Set Complex
+open scoped Classical ContDiff
+open Set Complex
 namespace SevenEighths.HeckeInverseAmplification
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeDetectorRowwise
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge
 
 def scaleProfile (W : ℝ→ℂ) (y : ℝ) : ℂ := -W y/2-(y : ℂ)*deriv W y
 
@@ -59,7 +59,6 @@ theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
         coefficient χ true J*(((J.absNorm : ℝ)*(Real.exp (-l)*(-1))) •
           deriv W ((J.absNorm : ℝ)*Real.exp (-l)))
       rw [Complex.real_smul]
-      push_cast
       ring
   convert hE.mul (HasDerivAt.sum (u:=S) hd) using 1
   · ext t
@@ -75,9 +74,8 @@ theorem scaleSum_deriv (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))
 
 theorem scale_normalization (l : ℝ) :
     ((Real.exp l : ℝ) : ℂ)^(-(1/2 : ℂ))=Complex.exp (-(l : ℂ)/2) := by
-  rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr (Real.exp_pos l).ne'),
-    ←Complex.ofReal_log (Real.exp_pos l).le,Real.log_exp]
-  congr 1
+  rw [Complex.cpow_def_of_ne_zero (by simp),
+    ←Complex.ofReal_log (by positivity),Real.log_exp]
   ring
 
 theorem scaleSum_eq_polynomial (χ : Character) (W : ℝ→ℂ) (S : Finset (Ideal O))

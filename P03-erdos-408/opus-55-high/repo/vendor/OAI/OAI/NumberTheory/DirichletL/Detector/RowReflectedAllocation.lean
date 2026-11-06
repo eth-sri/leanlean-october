@@ -12,13 +12,12 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.Valuation
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ComplexConjugate
+open scoped Classical ComplexConjugate
 open Set Complex
 namespace SevenEighths.ProbeRowReflectedAllocation
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
 open HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds
 open ProbeRowRadicalConductor
-local notation "O" => HeckeFamily.O
 
 lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)
     (hq : ∀ i ∈ T, 0 ≤ q i) (A : ℝ) :
@@ -27,16 +26,16 @@ lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)
   | empty => simp
   | @insert i T hi ih =>
     rw [Finset.prod_insert hi, Finset.prod_insert hi,
-      Real.mul_rpow (hq i (Finset.mem_insert_self i T))
-        (Finset.prod_nonneg (fun j hj => hq j (Finset.mem_insert_of_mem hj))),
-      ih (fun j hj => hq j (Finset.mem_insert_of_mem hj))]
+      Real.mul_rpow (by grind)
+        (Finset.prod_nonneg (by grind)),
+      ih (by grind)]
 
 lemma selected_exponent_allocation {a e : ℝ} (ha : 51/100 ≤ a)
     (he : 0 < e) {j : ℕ} (hj : 2 ≤ j) :
     -(1-a-6*e) ≤ (j-1 : ℕ)*(a-1/2+6*e)-1/2 := by
   have hA : 0 ≤ a-1/2+6*e := by linarith
-  have hj' : (1 : ℝ) ≤ (j-1 : ℕ) := by exact_mod_cast (show 1 ≤ j-1 by omega)
-  nlinarith [mul_le_mul_of_nonneg_right hj' hA]
+  have hj' : (1 : ℝ) ≤ (j-1 : ℕ) := by exact_mod_cast (by omega)
+  nlinarith
 
 theorem allocation_of_deficit {k : ℕ} (q : Fin k → ℝ)
     (hq : ∀ i, 1 ≤ q i) (j : Fin k → ℕ) (hj : ∀ i, 2 ≤ j i)
@@ -46,10 +45,10 @@ theorem allocation_of_deficit {k : ℕ} (q : Fin k → ℝ)
       D ^ (a-1/2+6*e) * ∏ i, q i ^ (-(1/2 : ℝ)) := by
   let A := a-1/2+6*e
   have hA : 0 ≤ A := by dsimp [A]; linarith
-  have hq0 (i) : 0 ≤ q i := (by linarith [hq i])
+  have hq0 (i) : 0 ≤ q i := (by grind)
   have hlocal (i) : q i ^ (-(1-a-6*e)) ≤
       (q i ^ (j i-1)) ^ A * q i ^ (-(1/2 : ℝ)) := by
-    rw [← Real.rpow_natCast_mul (hq0 i), ← Real.rpow_add (by linarith [hq i])]
+    rw [← Real.rpow_natCast_mul (hq0 i), ← Real.rpow_add (by grind)]
     apply Real.rpow_le_rpow_of_exponent_le (hq i)
     exact selected_exponent_allocation ha he (hj i)
   have hprod := Finset.prod_le_prod₀ (s := Finset.univ) (fun i _ => Real.rpow_nonneg (hq0 i) _)
@@ -59,51 +58,51 @@ theorem allocation_of_deficit {k : ℕ} (q : Fin k → ℝ)
   have hD0 : 0 ≤ ∏ i, q i ^ (j i-1) := Finset.prod_nonneg (fun i _ => pow_nonneg (hq0 i) _)
   calc
     _ ≤ N ^ A * ((∏ i, q i ^ (j i-1)) ^ A * ∏ i, q i ^ (-(1/2 : ℝ))) :=
-      mul_le_mul_of_nonneg_left hprod (Real.rpow_nonneg hN _)
+      mul_le_mul_of_nonneg_left hprod (by positivity)
     _ = (N * ∏ i, q i ^ (j i-1)) ^ A * ∏ i, q i ^ (-(1/2 : ℝ)) := by
       rw [Real.mul_rpow hN hD0]; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right
-      (Real.rpow_le_rpow (mul_nonneg hN hD0) hdef hA)
+      (Real.rpow_le_rpow (by positivity) hdef hA)
       (Finset.prod_nonneg (fun i _ => Real.rpow_nonneg (hq0 i) _))
 
-lemma prime_norm_ge_one (P : Ideal O) (hP : Prime P) : (1 : ℝ) ≤ P.absNorm := by
+lemma prime_norm_ge_one (P : Ideal HeckeFamily.O) (hP : Prime P) : (1 : ℝ) ≤ P.absNorm := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)
 
-lemma original_row_conductor_le (S : Finset (Ideal O))
+lemma original_row_conductor_le (S : Finset (Ideal HeckeFamily.O))
     (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
     ((rowCharacter S hS u).modulus.absNorm : ℝ) ≤
-      (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm := by
+      (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal HeckeFamily.O).absNorm := by
   exact_mod_cast (by simpa only [fixedConductorConstant, mul_assoc, mul_comm, mul_left_comm]
     using rowCharacter_conductor S hS u)
 
-lemma original_row_deletion_radical_le (S : Finset (Ideal O))
+lemma original_row_deletion_radical_le (S : Finset (Ideal HeckeFamily.O))
     (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
     ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ≤
-      (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm :=
+      (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal HeckeFamily.O).absNorm :=
   by
     let χ := rowCharacter S hS u
     have hd : radical χ.modulus ∣ χ.modulus := by
       unfold radical SmoothMobiusCorrection.primeProduct
-      rw [SmoothMobiusCorrection.prod_primeSet χ.modulus (fun J : Ideal O => J)]
+      rw [SmoothMobiusCorrection.prod_primeSet χ.modulus (fun J : Ideal HeckeFamily.O => J)]
       exact IdealMobiusDivisorSum.support_product_dvd χ.modulus_ne_bot (Finset.Subset.refl _)
     have hn : ((radical χ.modulus).absNorm : ℝ) ≤ χ.modulus.absNorm := by
       exact_mod_cast Nat.le_of_dvd (Nat.pos_iff_ne_zero.mpr
         (Ideal.absNorm_eq_zero_iff.not.mpr χ.modulus_ne_bot)) (map_dvd Ideal.absNorm hd)
     exact hn.trans (original_row_conductor_le S hS u)
 
-theorem row_same_primitive_allocation (S : Finset (Ideal O))
+theorem row_same_primitive_allocation (S : Finset (Ideal HeckeFamily.O))
     (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
     ∃ ψ : Character, (rowCharacter S hS u).modulus ≤ ψ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
-      (∀ I : Ideal O, idealCoeff (rowCharacter S hS u) I =
+      (∀ I : Ideal HeckeFamily.O, idealCoeff (rowCharacter S hS u) I =
         if IsCoprime I (rowCharacter S hS u).modulus then idealCoeff ψ I else 0) ∧
-      ∀ (k : ℕ) (P : Fin k → Ideal O), (∀ i, Prime (P i)) → Function.Injective P →
+      ∀ (k : ℕ) (P : Fin k → Ideal HeckeFamily.O), (∀ i, Prime (P i)) → Function.Injective P →
         ∀ (j : Fin k → ℕ), (∀ i, 2 ≤ j i) →
           (∀ i, P i ^ j i ∣ Ideal.span {u.val}) →
           ∀ a e : ℝ, 51/100 ≤ a → 0 < e →
           (ψ.modulus.absNorm : ℝ) ^ (a-1/2+6*e) *
               ∏ i, ((P i).absNorm : ℝ) ^ (-(1-a-6*e)) ≤
-            ((fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm) ^
+            ((fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal HeckeFamily.O).absNorm) ^
               (a-1/2+6*e) * ∏ i, ((P i).absNorm : ℝ) ^ (-(1/2 : ℝ)) := by
   obtain ⟨ψ, hle, hp, hm, hdef⟩ := rowCharacter_primitive_selected_deficit S hS u
   refine ⟨ψ, hle, hp, hm, ?_⟩
@@ -112,12 +111,12 @@ theorem row_same_primitive_allocation (S : Finset (Ideal O))
     _ _ a e (by positivity) ha he
   exact_mod_cast hdef k P hP hdis j hj hdiv
 
-lemma actual_multiplicity_divisor (u : FreeRow) (p : O) (hp : Prime p) :
-    (Ideal.span {p} : Ideal O) ^ multiplicity p u.val ∣ Ideal.span {u.val} ∧
+lemma actual_multiplicity_divisor (u : FreeRow) (p : HeckeFamily.O) (hp : Prime p) :
+    (Ideal.span {p} : Ideal HeckeFamily.O) ^ multiplicity p u.val ∣ Ideal.span {u.val} ∧
       multiplicity p u.val < 6 := by
   refine ⟨⟨Ideal.span {unitPart u p hp}, ?_⟩, multiplicity_lt_six u p hp⟩
   rw [Ideal.span_singleton_pow, Ideal.span_singleton_mul_span_singleton]
-  exact congrArg (fun x : O => (Ideal.span {x} : Ideal O)) (unitPart_spec u p hp).1
+  exact congrArg (fun x : HeckeFamily.O => (Ideal.span {x} : Ideal HeckeFamily.O)) (unitPart_spec u p hp).1
 
 theorem buffered_reflected_right_bound (e ε : ℝ)
     (he : 0 < e) (he' : e < 1/1000) (hε : 0 < ε) :
@@ -143,13 +142,13 @@ theorem buffered_reflected_right_bound (e ε : ℝ)
     linarith
   have h := hb χ B a i hB ha ha1 hmax j w.im hwi (1-conj w) hz
   rw [HeckeLogarithmicInput.regular_eq_nonprincipal _ hχ] at h
-  have hH : 0 ≤ (3*i+2 : ℕ)*B := (abs_nonneg _).trans hwi
+  have hH : 0 ≤ (3*i+2 : ℕ)*B := by positivity
   have hc : presentationComplexity (χ j) w.im ≤
       presentationComplexity (χ j) ((3*i+2 : ℕ)*B) := by
     unfold presentationComplexity HeckeLogarithmic.complexity
     rw [abs_of_nonneg hH]
     gcongr
-  apply (le_trans (le_add_of_nonneg_right (norm_nonneg _)) h).trans
+  apply (le_trans (by simp) h).trans
   exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow (by
     unfold presentationComplexity HeckeLogarithmic.complexity; positivity) hc hε.le) hC.le
 
@@ -170,11 +169,11 @@ theorem central_deletion_bound (ε : ℝ) (hε : 0 < ε) :
     apply (hl χ.modulus ψ w).trans
     apply mul_le_mul_of_nonneg_left _ hCl.le
     apply Real.rpow_le_rpow_of_exponent_le hR
-    have hm : max (-w.re) 0 ≤ 6*e := max_le (by rw [hw]; linarith) (by positivity)
+    have hm : max (-w.re) 0 ≤ 6*e := max_le (by linarith) (by positivity)
     linarith
   have hright : ‖(factors χ.modulus ψ (1-conj w))⁻¹‖ ≤
-      Cr * ((radical χ.modulus).absNorm : ℝ) ^ ε := by
-    exact (le_add_of_nonneg_left (norm_nonneg _)).trans
+      Cr * ((radical χ.modulus).absNorm : ℝ) ^ ε :=
+    (le_add_of_nonneg_left (norm_nonneg _)).trans
       (hr χ.modulus ψ (1-conj w) (by simp; linarith))
   calc
     _ ≤ (Cl * ((radical χ.modulus).absNorm : ℝ) ^ (6*e+ε)) *
@@ -182,7 +181,6 @@ theorem central_deletion_bound (ε : ℝ) (hε : 0 < ε) :
       mul_le_mul hleft hright (norm_nonneg _) (by positivity)
     _ = _ := by
       rw [mul_mul_mul_comm, ← Real.rpow_add hR0]
-      congr 2
       ring
 
 theorem buffered_same_primitive_reflected (e ε : ℝ)
@@ -204,7 +202,7 @@ theorem buffered_same_primitive_reflected (e ε : ℝ)
   obtain ⟨Cd, hCd, hd⟩ := central_deletion_bound ε hε
   refine ⟨Cg*Cb*Cd, by positivity, ?_⟩
   intro ι _ χ B a i hB ha ha1 hmax j ψ hp hχ hm w hw hwi
-  have hr := hg (χ j) ψ hp hχ hm w (by rw [hw]; linarith) (by rw [hw]; linarith)
+  have hr := hg (χ j) ψ hp hχ hm w (by linarith) (by linarith)
   have hexp : 1/2-w.re = a-1/2+6*e := by rw [hw]; ring
   rw [hexp] at hr
   have hright := hb χ B a i hB ha ha1 hmax j hχ w hw hwi
@@ -224,20 +222,20 @@ theorem buffered_same_primitive_reflected (e ε : ℝ)
 
 theorem source_calibrated_reflected_allocation (e ε : ℝ)
     (he : 0 < e) (he' : e < 1/1000) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P)
+    ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal HeckeFamily.O)) (hS : ∀ P ∈ S, Prime P)
       (hmaxS : ∀ P ∈ S, P.IsMaximal)
       (_hbad : CanonicalQuadraticSieve.fixedBadPrimes ⊆ S)
       (u : FreeRow), u.val ≠ 1 →
       ∃ ψ : Character, (rowCharacter S hS u).modulus ≤ ψ.modulus ∧
         FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
-        (∀ I : Ideal O, idealCoeff (rowCharacter S hS u) I =
+        (∀ I : Ideal HeckeFamily.O, idealCoeff (rowCharacter S hS u) I =
           if IsCoprime I (rowCharacter S hS u).modulus then idealCoeff ψ I else 0) ∧
         (((ProbePhysical.calibrationForSet S hmaxS).residueMonoid u.val ≠ 0) →
           (rowCharacter S hS u).residue ≠ 1 ∧ ψ.residue ≠ 1) ∧
         ∀ {ι : Type*} [Fintype ι] (η : Character) (twists : ι → Character)
           (B a : ℝ) (i : ℕ), 2 < B → 51/100 ≤ a → a ≤ 1 →
           detectorMaximum (sourceDetectorFamily S hS η u twists) (3*(i+1 : ℕ)*B) < a+2*e →
-          ∀ (k : ℕ) (P : Fin k → Ideal O), (∀ j, Prime (P j)) → Function.Injective P →
+          ∀ (k : ℕ) (P : Fin k → Ideal HeckeFamily.O), (∀ j, Prime (P j)) → Function.Injective P →
           ∀ (v : Fin k → ℕ), (∀ j, 2 ≤ v j) →
             (∀ j, P j ^ v j ∣ Ideal.span {u.val}) →
             ∀ w : ℂ, w.re = 1-a-6*e → |w.im| ≤ (3*i+2 : ℕ)*B →
@@ -245,7 +243,7 @@ theorem source_calibrated_reflected_allocation (e ε : ℝ)
                 HeckeOrigin.continued (rowCharacter S hS u) w‖ *
                 ∏ j, ((P j).absNorm : ℝ) ^ (-w.re) ≤
               C * (((fixedConductorConstant S : ℝ) *
-                (Ideal.span {u.val} : Ideal O).absNorm) ^ (a-1/2+6*e) *
+                (Ideal.span {u.val} : Ideal HeckeFamily.O).absNorm) ^ (a-1/2+6*e) *
                 ∏ j, ((P j).absNorm : ℝ) ^ (-(1/2 : ℝ))) *
                 ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ^ (6*e+2*ε) *
                 (3+(3*i+2 : ℕ)*B)^2 *
@@ -280,7 +278,7 @@ theorem source_calibrated_reflected_allocation (e ε : ℝ)
     have hal := hall k P hP hdis v hv hdiv a e ha he
     rw [← hw] at hal
     have hprod0 : 0 ≤ ∏ j, ((P j).absNorm : ℝ) ^ (-w.re) :=
-      Finset.prod_nonneg (fun j _ => Real.rpow_nonneg (by positivity) _)
+      by positivity
     calc
       _ ≤ (C * (ψ.modulus.absNorm : ℝ) ^ (a-1/2+6*e) *
           ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ^ (6*e+2*ε) *
@@ -296,7 +294,7 @@ theorem source_calibrated_reflected_allocation (e ε : ℝ)
       _ ≤ (C * ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ^ (6*e+2*ε) *
           (3+(3*i+2 : ℕ)*B)^2 *
           (presentationComplexity (rowCharacter S hS u) ((3*i+2 : ℕ)*B)) ^ ε) *
-          ((((fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm) ^
+          ((((fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal HeckeFamily.O).absNorm) ^
             (a-1/2+6*e)) * ∏ j, ((P j).absNorm : ℝ) ^ (-(1/2 : ℝ))) :=
         mul_le_mul_of_nonneg_left hal (by positivity)
       _ = _ := by ring

@@ -41,12 +41,12 @@ def atomCost (c : ℝ) (ν : ℕ → ℝ) (π : Option ℕ) : ℝ := π.elim 1 f
 /-- The prescription indicator is nonnegative. -/
 theorem presInd_nonneg (π o : Option ℕ) : 0 ≤ presInd π o := by
   unfold presInd
-  split_ifs <;> norm_num
+  positivity
 
 /-- The prescription indicator is at most one. -/
 theorem presInd_le_one (π o : Option ℕ) : presInd π o ≤ 1 := by
   unfold presInd
-  split_ifs <;> norm_num
+  grind
 
 /-- With nothing prescribed the indicator is one. -/
 theorem presInd_none (o : Option ℕ) : presInd none o = 1 :=
@@ -63,14 +63,14 @@ theorem atomCost_nonneg {c : ℝ} {ν : ℕ → ℝ} (hc : 0 ≤ c) (hν : ∀ p
     0 ≤ atomCost c ν π := by
   cases π with
   | none => exact zero_le_one
-  | some p => exact mul_nonneg hc (hν p)
+  | some p => exact mul_nonneg hc (by grind)
 
 /-- The atom cost is monotone in the constant. -/
 theorem atomCost_mono {c c' : ℝ} {ν : ℕ → ℝ} (hcc : c ≤ c') (hν : ∀ p, 0 ≤ ν p)
     (π : Option ℕ) : atomCost c ν π ≤ atomCost c' ν π := by
   cases π with
   | none => exact le_rfl
-  | some p => exact mul_le_mul_of_nonneg_right hcc (hν p)
+  | some p => exact mul_le_mul_of_nonneg_right hcc (by grind)
 
 /-! ### Row iteration over histories -/
 
@@ -89,16 +89,14 @@ private theorem chainVisit_cons_succ {N : ℕ} (s : ChainState x d Y d₀ u v r 
   | zero => rfl
   | succ j ih =>
     simp only [chainVisit] at ih ⊢
-    rw [Fin.induction_succ, Fin.induction_succ, ← Fin.succ_castSucc, ih]
-    simp
+    simp_all
 
 /-- The end of a history is the end of its tail from the state after its first edge. -/
 private theorem chainEnd_cons {N : ℕ} (s : ChainState x d Y d₀ u v r B)
     (c : GhostChoice x d) (e : EdgeChoice x d Y d₀ u v r) (h : History x d Y d₀ u v r N) :
     chainEnd (N := N + 1) s (Fin.cons c h.1, Fin.cons e h.2) =
       chainEnd (chainEdgeOut x d Y d₀ u v r B (chainGhostOut x d Y d₀ u v r B s c) e) h := by
-  rw [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
-  rfl
+  simp [chainEnd, ← Fin.succ_last, chainVisit_cons_succ]
 
 /-- A history with no edges is a single ghost choice. -/
 private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℝ) :
@@ -107,17 +105,16 @@ private theorem sum_histories_zero (F : History x d Y d₀ u v r 0 → ℝ) :
   refine sum_nbij' (fun h => h.1 0) (fun c => (fun _ => c, Fin.elim0)) ?_ ?_ ?_ ?_ ?_
   · intro h hh
     simp only [histories, mem_product, Fintype.mem_piFinset] at hh ⊢
-    exact hh.1 0
+    simp_all
   · intro c hc
     simp only [histories, mem_product, Fintype.mem_piFinset] at hc ⊢
-    exact ⟨fun _ => hc, fun i => i.elim0⟩
+    simp_all
   · intro h _
-    exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
-  · intro c _
-    rfl
+    exact Prod.ext (funext (by simp)) (Subsingleton.elim _ _)
+  · simp
   · intro h _
     congr 1
-    exact Prod.ext (funext fun k => by rw [Fin.fin_one_eq_zero k]) (Subsingleton.elim _ _)
+    exact Prod.ext (funext (by simp)) (Subsingleton.elim _ _)
 
 /-- A history with `N + 1` edges is a first ghost choice, a first edge choice, and a history
 with `N` edges. -/
@@ -134,12 +131,9 @@ private theorem sum_histories_succ {N : ℕ} (F : History x d Y d₀ u v r (N + 
   · intro t ht
     simp only [histories, mem_product, Fintype.mem_piFinset] at ht ⊢
     exact ⟨fun i => Fin.cases ht.1 ht.2.2.1 i, fun i => Fin.cases ht.2.1 ht.2.2.2 i⟩
-  · intro h _
-    simp
-  · intro t _
-    simp
-  · intro h _
-    simp
+  · simp
+  · simp
+  simp
 
 /-- **The row iteration**: for nonnegative ghost coefficients `G j` and edge coefficients
 `E j` whose weighted row sums against `h` are at most `a_j h` and `b_j h`, and for `f ≤ h`,
@@ -168,7 +162,7 @@ theorem sum_history_le_of_rows {h f : ChainState x d Y d₀ u v r B → ℝ} (hf
     -- one ghost choice, then `f ≤ h`
     calc ∑ c ∈ multBox B ×ˢ multBox B, G 0 s c * f (chainGhostOut x d Y d₀ u v r B s c)
         ≤ ∑ c ∈ multBox B ×ˢ multBox B, G 0 s c * h (chainGhostOut x d Y d₀ u v r B s c) :=
-          sum_le_sum fun c _ => mul_le_mul_of_nonneg_left (hf _) (hG0 _ _ _)
+          sum_le_sum fun c _ => mul_le_mul_of_nonneg_left (hf _) (by grind)
       _ ≤ a 0 * h s := hG 0 s
   | succ N ih =>
     intro G E a b hG0 hE0 ha hb hG hE s

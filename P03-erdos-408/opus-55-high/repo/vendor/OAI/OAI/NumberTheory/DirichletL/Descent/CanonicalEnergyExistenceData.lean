@@ -8,11 +8,10 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CanonicalRowCompletion
 
 def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Prop :=
   ∃degree:ℕ,∃B:ℝ,1≤B ∧
@@ -25,7 +24,7 @@ def CanonicalEnergyExists (Mcap Fcap c eps L:ℝ)(K:ℕ)(W:𝓢(ℝ,ℂ)):Prop :
       (∀i∈slots,1≤H i)→(∀i∈slots,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i)→
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1)→
     ∀z:ℝ,0≤z→(∏i∈slots,H i)≤Z^z→
-    ∀base:O→*ℂ,(∀u,‖base u‖≤1)→
+    ∀base:ActualEisensteinCubic.O→*ℂ,(∀u,‖base u‖≤1)→
       CanonicalCoefficientClass.FactorsModulo (CanonicalCoefficientClass.fixedBaseConductor q) base→
       CompletePoolRankMoments q D slots lists a base W Z Mcap Fcap z c eps C K degree
 
@@ -44,7 +43,7 @@ theorem canonical_energy_of_rank (n:ℕ)(L cstar cutoff eta Mcap Fcap c eps:ℝ)
   dsimp only [CompletePoolRankMoments] at hmom ⊢
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D
   have hFa:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
+  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by grind
   apply canonical_rank_loss_le (poolPrimary F) (poolPrimary_ne_zero F hFa) (poolPrimary_coprime F hFa)
     (poolPrimary_good F hFa) Finset.univ base slots lists a W Z Mcap Fcap z c (rankLoss n eta) eps C K degree
     (by linarith) hC.le he

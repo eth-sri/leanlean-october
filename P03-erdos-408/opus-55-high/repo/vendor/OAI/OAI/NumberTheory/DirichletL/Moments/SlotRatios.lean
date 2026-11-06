@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorBoundary
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
 
 def logWindow (a b : ℝ) : ℝ := max |Real.log a| |Real.log b|
 
 theorem logWindow_nonneg (a b : ℝ) : 0 ≤ logWindow a b :=
   (abs_nonneg _).trans (le_max_left _ _)
 
-theorem slot_log_ratio_bound (W : ℝ → ℂ) (a b P Z : ℝ) (I : Ideal O)
+theorem slot_log_ratio_bound (W : ℝ → ℂ) (a b P Z : ℝ) (I : Ideal ActualEisensteinCubic.O)
     (ha : 0 < a) (hZ : 1 < Z)
     (hs : Function.support W ⊆ Set.Icc a b)
     (hW : W ((Ideal.absNorm I:ℝ)/P) ≠ 0) :
@@ -40,7 +39,7 @@ variable {ι : Type*} [DecidableEq ι]
 
 omit [DecidableEq ι] in
 theorem frozen_subset_ratio_bound (entrance frozen : Finset ι) (hsub : frozen ⊆ entrance)
-    (W : ι → ℝ → ℂ) (a b P : ι → ℝ) (v : ι → Ideal O) (Z : ℝ) (hZ : 1 < Z)
+    (W : ι → ℝ → ℂ) (a b P : ι → ℝ) (v : ι → Ideal ActualEisensteinCubic.O) (Z : ℝ) (hZ : 1 < Z)
     (ha : ∀ i ∈ entrance,0 < a i)
     (hs : ∀ i ∈ entrance,Function.support (W i) ⊆ Set.Icc (a i) (b i))
     (hW : ∀ i ∈ frozen,W i ((Ideal.absNorm (v i):ℝ)/P i) ≠ 0) :
@@ -50,7 +49,7 @@ theorem frozen_subset_ratio_bound (entrance frozen : Finset ι) (hsub : frozen �
     _ ≤ ∑ i ∈ frozen,|Real.logb Z ((Ideal.absNorm (v i):ℝ)/P i)| := Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ i ∈ frozen,logWindow (a i) (b i)/Real.log Z :=
       Finset.sum_le_sum (fun i hi => slot_log_ratio_bound (W i) (a i) (b i) (P i) Z (v i)
-        (ha i (hsub hi)) hZ (hs i (hsub hi)) (hW i hi))
+        (by grind) hZ (by grind) (by grind))
     _ = (∑ i ∈ frozen,logWindow (a i) (b i))/Real.log Z := (Finset.sum_div _ _ _).symm
     _ ≤ _ := div_le_div_of_nonneg_right (Finset.sum_le_sum_of_subset_of_nonneg hsub
       (fun i _ _ => logWindow_nonneg (a i) (b i))) (Real.log_pos hZ).le

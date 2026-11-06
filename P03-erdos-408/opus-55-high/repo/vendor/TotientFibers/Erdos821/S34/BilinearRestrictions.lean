@@ -5,7 +5,7 @@ public import Erdos821.S34.ProbabilityBilinear
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -26,10 +26,7 @@ theorem restricted_fiber_mass_le {α β : Type} [Fintype α] [DecidableEq β]
       ∑ x, if P x = n then w x else 0 := by
   rw [Finset.sum_coe_sort s (fun x => if P x = n then w x else 0)]
   apply Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-  intro x _ _
-  split_ifs
-  · exact hw x
-  · exact le_rfl
+  grind
 
 theorem bilinear_reduction_restricted {α β : Type} [Fintype α] [Fintype β]
     (w : α → ℝ) (v : β → ℝ) (hw : ∀ x, 0 ≤ w x) (hv : ∀ y, 0 ≤ v y)

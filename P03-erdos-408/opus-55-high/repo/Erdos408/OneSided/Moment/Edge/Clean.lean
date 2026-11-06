@@ -94,8 +94,8 @@ theorem joinList_mem_lists {P : Fin K → Fin J → ℕ} {b : Fin K → ℕ} (hP
   refine mem_filter.2 ⟨Fintype.mem_piFinset.2 fun i => Fintype.mem_piFinset.2 fun h => ?_,
     fun i => ?_⟩
   · induction h using Fin.lastCases with
-    | last => rw [joinList_last]; exact (mem_filter.1 (hb i)).1
-    | cast h => rw [joinList_castSucc]; exact Fintype.mem_piFinset.1 (hP.1 i) h
+    | last => rw [joinList_last]; simp_all
+    | cast h => rw [joinList_castSucc]; simp_all
   · intro h h' hh
     induction h using Fin.lastCases with
     | last =>
@@ -103,23 +103,22 @@ theorem joinList_mem_lists {P : Fin K → Fin J → ℕ} {b : Fin K → ℕ} (hP
       | last => rfl
       | cast h' =>
         rw [joinList_last, joinList_castSucc] at hh
-        exact ((mem_filter.1 (hb i)).2 h' hh.symm).elim
+        grind
     | cast h =>
       induction h' using Fin.lastCases with
       | last =>
         rw [joinList_last, joinList_castSucc] at hh
-        exact ((mem_filter.1 (hb i)).2 h hh).elim
+        simp_all
       | cast h' =>
         rw [joinList_castSucc, joinList_castSucc] at hh
-        rw [hP.2 i hh]
+        grind
 
 /-- Reordering the slots keeps a list a list. -/
 theorem permute_mem_lists {L : Lists K J} (hL : L ∈ lists x d J)
     (τ : Fin K → Equiv.Perm (Fin (J + 1))) : (fun i => L i ∘ τ i) ∈ lists x d J := by
   classical
   obtain ⟨hband, hinj⟩ := mem_filter.1 hL
-  refine mem_filter.2 ⟨Fintype.mem_piFinset.2 fun i => Fintype.mem_piFinset.2 fun h =>
-    Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hband i) (τ i h), fun i =>
+  refine mem_filter.2 ⟨by grind, fun i =>
       (hinj i).comp (τ i).injective⟩
 
 /-- **Splitting the lists**: a sum over lists is a sum over pads `P` and last labels `b`, of the
@@ -140,13 +139,12 @@ theorem sum_lists_eq {M : Type*} [AddCommMonoid M] (τ : Fin K → Equiv.Perm (F
     ?_ ?_ ?_ ?_ ?_
   · intro L hL
     obtain ⟨hband, hinj⟩ := mem_filter.1 (mem_coe.1 hL)
-    have hb : ∀ i h, L i h ∈ band x (d.a i) := fun i h =>
+    have hb := fun i h =>
       Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hband i) h
-    refine mem_coe.2 (mem_sigma.2 ⟨mem_filter.2 ⟨Fintype.mem_piFinset.2 fun i =>
-      Fintype.mem_piFinset.2 fun h => hb i _, fun i h h' hh => ?_⟩,
+    refine mem_coe.2 (mem_sigma.2 ⟨mem_filter.2 ⟨by grind, fun i h h' hh => ?_⟩,
       Fintype.mem_piFinset.2 fun i => mem_filter.2 ⟨hb i _, fun h hh => ?_⟩⟩)
-    · exact Fin.castSucc_injective _ ((τ i).symm.injective (hinj i hh))
-    · exact (Fin.castSucc_lt_last h).ne ((τ i).symm.injective (hinj i hh))
+    · exact Fin.castSucc_injective _ ((τ i).symm.injective (by grind))
+    · exact (Fin.castSucc_lt_last h).ne ((τ i).symm.injective (by grind))
   · intro pb hpb
     obtain ⟨hP, hb⟩ := mem_sigma.1 (mem_coe.1 hpb)
     exact mem_coe.2 (permute_mem_lists x d (joinList_mem_lists x d hP hb) τ)
@@ -160,7 +158,7 @@ theorem sum_lists_eq {M : Type*} [AddCommMonoid M] (τ : Fin K → Equiv.Perm (F
       induction k using Fin.lastCases with
       | last => rw [joinList_last]
       | cast k => rw [joinList_castSucc]
-    rw [key, Equiv.symm_apply_apply]
+    simp_all
   · intro pb _
     ext i h
     · simp [joinList_castSucc]
@@ -175,7 +173,7 @@ theorem sum_lists_eq {M : Type*} [AddCommMonoid M] (τ : Fin K → Equiv.Perm (F
       induction k using Fin.lastCases with
       | last => rw [joinList_last]
       | cast k => rw [joinList_castSucc]
-    rw [key, Equiv.symm_apply_apply]
+    simp_all
 
 omit d in
 /-- The product of a weight over a reordered `joinList P b` is the pad product times the
@@ -312,11 +310,11 @@ theorem edgeValid_block_iff (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a 
   have hjb := joinList_mem_lists x d hP hb
   have hja := joinList_mem_lists x d hP ha
   -- the entries of the source lists
-  have hsrc : ∀ i k, srcList x σ P b i k ∈ band x (d.a i) := fun i k =>
+  have hsrc := fun i k =>
     Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 (mem_filter.1 h).1 i) k
-  have haP : ∀ i k, P i k ≠ a i := fun i k =>
+  have haP := fun i k =>
     (mem_filter.1 (Fintype.mem_piFinset.1 ha i)).2 k
-  have hab : ∀ i, a i ∈ band x (d.a i) := fun i => (mem_filter.1 (Fintype.mem_piFinset.1 ha i)).1
+  have hab := fun i => (mem_filter.1 (Fintype.mem_piFinset.1 ha i)).1
   -- the ban is `a i ≠ b i`
   have hban : (∀ i i' k, a i ≠ srcList x σ P b i' k) ↔ ∀ i, a i ≠ b i := by
     constructor
@@ -347,7 +345,7 @@ theorem edgeValid_block_iff (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a 
     exact ⟨hban.1 hban', h1, h2, h3, hgs.1 hgs', hgt.1 hgt'⟩
   · rintro ⟨hban', h1, h2, h3, hgs', hgt'⟩
     exact ⟨permute_mem_lists x d hja σ', hban.2 hban', h1, h2, h3, hgs.2 hgs', hgt.2 hgt',
-      fun i hi => absurd hi (by simp), fun i hi => absurd hi (Finset.notMem_empty i), S.2⟩
+      by simp, by simp, S.2⟩
 
 /-- The source lists of a block lie in `lists`. -/
 theorem srcList_mem_lists {σ : Fin K → Equiv.Perm (Fin (padCount x + 1))}
@@ -393,7 +391,7 @@ theorem cleanBlockKer_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i))
     simp only [eq_true hv', eq_true hv, ↓reduceIte]
     simp only [edgeSrc_block h, edgePad_block h, edgeMem_block h, joinList_last,
       Bool.false_eq_true, ↓reduceIte]
-    have ht : ∀ t b a : ℤ, (t = b - a) ↔ (t - b + a = 0) := fun t b a => by omega
+    have ht : ∀ t b a : ℤ, (t = b - a) ↔ (t - b + a = 0) := by omega
     simp only [ht, cleanLabelWeight]
     rfl
   · have hv' : ¬ EdgeValid x d Y d₀ u v r B (z, ⟨srcList x σ P b, h⟩, S)
@@ -405,37 +403,34 @@ theorem cleanBlockKer_eq (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i))
 private theorem sqrt_wnormSq_add_le {ι : Type*} [Fintype ι] {μ : ι → ℝ} (hμ : ∀ i, 0 ≤ μ i)
     (g h : ι → ℂ) : Real.sqrt (wnormSq μ (g + h)) ≤
       Real.sqrt (wnormSq μ g) + Real.sqrt (wnormSq μ h) := by
-  have hg0 : 0 ≤ wnormSq μ g := sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)
-  have hh0 : 0 ≤ wnormSq μ h := sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)
+  have hg0 : 0 ≤ wnormSq μ g := sum_nonneg fun i _ => mul_nonneg (by grind) (sq_nonneg _)
+  have hh0 : 0 ≤ wnormSq μ h := sum_nonneg fun i _ => mul_nonneg (by grind) (sq_nonneg _)
   have hS0 : 0 ≤ Real.sqrt (wnormSq μ g) + Real.sqrt (wnormSq μ h) :=
-    add_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
+    by positivity
   -- `∑ μ |g| |h| ≤ ‖g‖ ‖h‖`
   have hcs : ∑ i, μ i * (‖g i‖ * ‖h i‖) ≤ Real.sqrt (wnormSq μ g) * Real.sqrt (wnormSq μ h) := by
     have hsq : ∀ (k : ι → ℂ), ∑ i, (Real.sqrt (μ i) * ‖k i‖) ^ 2 = wnormSq μ k := fun k => by
       unfold wnormSq
-      exact sum_congr rfl fun i _ => by rw [mul_pow, Real.sq_sqrt (hμ i)]
+      grind
     calc ∑ i, μ i * (‖g i‖ * ‖h i‖) = ∑ i, (Real.sqrt (μ i) * ‖g i‖) * (Real.sqrt (μ i) * ‖h i‖) :=
           sum_congr rfl fun i _ => by
-            rw [show Real.sqrt (μ i) * ‖g i‖ * (Real.sqrt (μ i) * ‖h i‖) =
-              (Real.sqrt (μ i) * Real.sqrt (μ i)) * (‖g i‖ * ‖h i‖) by ring,
-              Real.mul_self_sqrt (hμ i)]
+            grind
       _ ≤ Real.sqrt (∑ i, (Real.sqrt (μ i) * ‖g i‖) ^ 2) *
             Real.sqrt (∑ i, (Real.sqrt (μ i) * ‖h i‖) ^ 2) :=
           Real.sum_mul_le_sqrt_mul_sqrt _ _ _
-      _ = _ := by rw [hsq, hsq]
+      _ = _ := by simp_all
   have H : wnormSq μ (g + h) ≤ (Real.sqrt (wnormSq μ g) + Real.sqrt (wnormSq μ h)) ^ 2 :=
     calc wnormSq μ (g + h) ≤ ∑ i, μ i * (‖g i‖ + ‖h i‖) ^ 2 :=
           sum_le_sum fun i _ => mul_le_mul_of_nonneg_left
-            (pow_le_pow_left₀ (norm_nonneg _) (norm_add_le _ _) 2) (hμ i)
+            (pow_le_pow_left₀ (norm_nonneg _) (norm_add_le _ _) 2) (by grind)
       _ = wnormSq μ g + 2 * ∑ i, μ i * (‖g i‖ * ‖h i‖) + wnormSq μ h := by
           unfold wnormSq
           rw [mul_sum, ← sum_add_distrib, ← sum_add_distrib]
-          exact sum_congr rfl fun i _ => by ring
+          ring
       _ ≤ wnormSq μ g + 2 * (Real.sqrt (wnormSq μ g) * Real.sqrt (wnormSq μ h)) + wnormSq μ h := by
           linarith
       _ = (Real.sqrt (wnormSq μ g) + Real.sqrt (wnormSq μ h)) ^ 2 := by
-          rw [add_sq, Real.sq_sqrt hg0, Real.sq_sqrt hh0]
-          ring
+          grind
   calc Real.sqrt (wnormSq μ (g + h))
       ≤ Real.sqrt ((Real.sqrt (wnormSq μ g) + Real.sqrt (wnormSq μ h)) ^ 2) := Real.sqrt_le_sqrt H
     _ = _ := Real.sqrt_sq hS0
@@ -464,8 +459,7 @@ private theorem normLe_finset_sum {ι κ γ : Type*} [Fintype ι] [Fintype κ] {
         rfl
       rw [e, sum_insert hks, add_mul]
       refine (sqrt_wnormSq_add_le hμ _ _).trans (add_le_add (hk k (mem_insert_self k s)) ?_)
-      exact ih (fun k' hk' => hc k' (mem_insert_of_mem hk'))
-        (fun k' hk' => hT k' (mem_insert_of_mem hk')) (fun k' hk' => hk k' (mem_insert_of_mem hk'))
+      simp_all
   have h0 : 0 ≤ wnormSq μ (fun i => ∑ k ∈ s, T k f i) :=
     sum_nonneg fun i _ => mul_nonneg (hμ i) (sq_nonneg _)
   have hc0 : 0 ≤ ∑ k ∈ s, c k := sum_nonneg hc
@@ -524,7 +518,7 @@ theorem mem_lastSet_of_joinList_mem {P : Fin K → Fin (padCount x) → ℕ} {a 
     rwa [joinList_last] at this
   · have hk' : joinList P a i k.castSucc = joinList P a i (Fin.last _) := by
       rw [joinList_castSucc, joinList_last, hk]
-    exact (Fin.castSucc_lt_last k).ne (hinj i hk')
+    grind
 
 /-- **The clean edge as an average over the symmetrizations**: the clean choices are the
 symmetrizations `σ, σ'`, the target `z'` and the fresh labels `a`. -/
@@ -547,16 +541,14 @@ theorem choiceOp_cleanChoices_eq (N : ℕ) (f : ChainState x d Y d₀ u v r B �
     rw [cleanChoices, mem_filter] at hc
     obtain ⟨hc₁, -, -⟩ := hc
     simp only [edgeChoices, mem_product, mem_univ, true_and, Fintype.mem_piFinset] at hc₁
-    simp only [mem_product, mem_univ, true_and, Fintype.mem_piFinset]
-    exact fun i => (hc₁.1 i).1
+    simp_all
   · intro t ht
     simp only [mem_product, mem_univ, true_and, Fintype.mem_piFinset] at ht
     rw [cleanChoices, mem_filter]
     refine ⟨?_, rfl, ?_⟩
     · simp only [edgeChoices, mem_product, mem_univ, true_and, Fintype.mem_piFinset, and_true]
-      exact fun i => ht i
-    · ext i
-      simp
+      omega
+    simp
   · intro c hc
     rw [cleanChoices, mem_filter] at hc
     obtain ⟨-, hS, hI⟩ := hc
@@ -571,9 +563,8 @@ theorem choiceOp_cleanChoices_eq (N : ℕ) (f : ChainState x d Y d₀ u v r B �
     subst hS
     congr
     funext i
-    exact Prod.ext rfl (hfalse i).symm
-  · intro t _
-    rfl
+    grind
+  · simp
   · intro c hc
     rw [cleanChoices, mem_filter] at hc
     obtain ⟨-, hS, hI⟩ := hc
@@ -586,8 +577,8 @@ theorem choiceOp_cleanChoices_eq (N : ℕ) (f : ChainState x d Y d₀ u v r B �
     obtain ⟨σ, S₀, z', lab, σ'⟩ := c
     simp only at hS hfalse ⊢
     subst hS
-    have : (fun i => ((lab i).1, false)) = lab := funext fun i => Prod.ext rfl (hfalse i).symm
-    rw [this]
+    have : (fun i => ((lab i).1, false)) = lab := funext (by grind)
+    simp_all
 
 open scoped Classical in
 /-- **The clean edge on a block**: at a source of the block `(S, P)`, the clean edge with fixed
@@ -633,7 +624,7 @@ theorem symEdge_block_eq (N : ℕ) (σ σ' : Fin K → Equiv.Perm (Fin (padCount
           (σ, ∅, z', fun i => (a i, false), σ') = 0 := by
         unfold chainEdgeCoef
         simp only [hv, ↓reduceIte]
-      rw [h0, zero_mul, zero_mul]
+      simp_all
   · -- a fresh label among the pads breaks the target list
     have hv : ¬ EdgeValid x d Y d₀ u v r B (z, ⟨srcList x σ P b, hsrc⟩, S)
         ((σ, ∅, z', fun i => (a i, false), σ') : EdgeChoice x d Y d₀ u v r) := by
@@ -647,7 +638,7 @@ theorem symEdge_block_eq (N : ℕ) (σ σ' : Fin K → Equiv.Perm (Fin (padCount
       rw [e] at h2
       exact ha (mem_lastSet_of_joinList_mem h2)
     unfold chainEdgeCoef
-    simp only [hv, ↓reduceIte, zero_mul]
+    simp_all
 
 /-- **The block reduction**: if every block kernel has weighted norm at most `M!^{-2K} E` for the
 label weights `ν`, then the clean edge has norm at most `E` for the chain measure. -/
@@ -667,8 +658,8 @@ theorem normLe_cleanOp_of_blocks (N : ℕ) {E : ℝ} (hE : 0 ≤ E)
   set Mf : ℝ := (((padCount x + 1).factorial ^ K : ℕ) : ℝ)⁻¹ ^ 2 with hMf
   have hMf0 : 0 ≤ Mf := by positivity
   have hμ : ∀ s : ChainState x d Y d₀ u v r B, 0 ≤ chainMeasure q x d Y d₀ u v r B N s :=
-    fun s => mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun h _ => hν _)
-      (memWeight_nonneg (fun xp => hν _) _)
+    fun s => mul_nonneg (prod_nonneg fun i _ => prod_nonneg (by grind))
+      (memWeight_nonneg (by grind) _)
   -- the edge for fixed symmetrizations
   set T : (Fin K → Equiv.Perm (Fin (padCount x + 1))) →
       (Fin K → Equiv.Perm (Fin (padCount x + 1))) →
@@ -682,8 +673,8 @@ theorem normLe_cleanOp_of_blocks (N : ℕ) {E : ℝ} (hE : 0 ≤ E)
     (∏ i, ∏ k, primeWeight q x d N (P i k)) *
       memWeight (fun xp : Particle x d => primeWeight q x d N xp.1.1) S.1 with hμ₀
   have hμ₀0 : ∀ S P, 0 ≤ μ₀ S P := fun S P =>
-    mul_nonneg (prod_nonneg fun i _ => prod_nonneg fun k _ => hν _)
-      (memWeight_nonneg (fun xp => hν _) _)
+    mul_nonneg (prod_nonneg fun i _ => prod_nonneg (by grind))
+      (memWeight_nonneg (by grind) _)
   have hμblk : ∀ (τ : Fin K → Equiv.Perm (Fin (padCount x + 1))) (z : ↥(rootPositions
       (d₀ * Y * d.Hm) d.Hn u v r)) (S : MemState (Particle x d) B) (P : Fin K → Fin (padCount x) → ℕ)
       (b : Fin K → ℕ) (h : (fun i => joinList P b i ∘ τ i) ∈ lists x d (padCount x)),
@@ -776,7 +767,7 @@ theorem normLe_cleanOp_of_blocks (N : ℕ) {E : ℝ} (hE : 0 ≤ E)
     exact choiceOp_cleanChoices_eq N f s
   rw [e]
   have := hsum f
-  rwa [hcount] at this
+  grind
 
 end Blocks
 
@@ -786,16 +777,15 @@ theorem primeWeight_nonneg_of_baseline {q x : ℝ} {d : Data K} {N : ℕ}
   have hV : 0 ≤ primeMass x d p :=
     sum_nonneg fun i _ => by
       split_ifs
-      · exact sum_nonneg fun p _ => by positivity
-      · exact le_rfl
+      · exact sum_nonneg (by simp)
+      simp
   unfold primeWeight
   by_cases hp : p ∈ bandPrimes x d
   · have := hb p hp
-    exact one_div_nonneg.2 (mul_nonneg (mul_nonneg hV (by positivity)) (by linarith))
+    positivity
   · have h0 : primeMass x d p = 0 :=
-      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 ⟨i, mem_univ i, hpi⟩)
-    rw [h0]
-    simp
+      sum_eq_zero fun i _ => ite_eq_right fun hpi => hp (mem_biUnion.2 (by grind))
+    simp_all
 
 /-! ### The block bound -/
 
@@ -809,26 +799,24 @@ theorem primeWeight_pos_le_of_mem
     (hbase : ∀ p ∈ bandPrimes x d, 1 / 2 ≤ baseline q N p) {i : Fin K} {p : ℕ}
     (hp : p ∈ band x (d.a i)) :
     0 < primeWeight q x d N p ∧ primeWeight q x d N p ≤ 4 * (1 / p) := by
-  have hmem : p ∈ bandPrimes x d := mem_biUnion.2 ⟨i, mem_univ i, hp⟩
+  have hmem : p ∈ bandPrimes x d := mem_biUnion.2 (by grind)
   have hV₁ : 1 / 2 ≤ primeMass x d p :=
-    calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := (hV i).1
-      _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := by simp [hp]
+    calc 1 / 2 ≤ harmonicMass (band x (d.a i)) := by grind
+      _ = if p ∈ band x (d.a i) then harmonicMass (band x (d.a i)) else 0 := by simp_all
       _ ≤ primeMass x d p :=
           single_le_sum (f := fun i => if p ∈ band x (d.a i) then harmonicMass (band x (d.a i))
             else 0) (fun j _ => by
-              split_ifs
-              · exact sum_nonneg fun p _ => by positivity
-              · exact le_rfl) (mem_univ i)
+              grind) (mem_univ i)
   have hb₁ := hbase p hmem
   have hp0 : (0 : ℝ) < p := by exact_mod_cast (TypeII.band_prime hp).pos
   unfold primeWeight
-  refine ⟨one_div_pos.2 (mul_pos (mul_pos (by linarith) (by positivity)) (by linarith)), ?_⟩
+  refine ⟨by positivity, ?_⟩
   calc 1 / (primeMass x d p * ((p : ℝ) + 1) * baseline q N p)
       ≤ 1 / (1 / 2 * p * (1 / 2)) :=
         one_div_le_one_div_of_le (by positivity)
           (mul_le_mul (mul_le_mul hV₁ (by linarith) hp0.le (by linarith)) hb₁ (by norm_num)
-            (mul_nonneg (by linarith) (by linarith)))
-    _ = 4 * (1 / p) := by field_simp; norm_num
+            (by positivity))
+    _ = 4 * (1 / p) := by ring
 
 /-- The birth weights of a band sum to at most `4`. -/
 theorem sum_primeWeight_subset_band_le
@@ -838,9 +826,9 @@ theorem sum_primeWeight_subset_band_le
   calc ∑ p ∈ F, primeWeight q x d N p ≤ ∑ p ∈ F, 4 * (1 / (p : ℝ)) :=
         sum_le_sum fun p hp => (primeWeight_pos_le_of_mem hV hbase (hF hp)).2
     _ ≤ ∑ p ∈ band x (d.a i), 4 * (1 / (p : ℝ)) :=
-        sum_le_sum_of_subset_of_nonneg hF fun p _ _ => by positivity
+        sum_le_sum_of_subset_of_nonneg hF (by simp)
     _ = 4 * harmonicMass (band x (d.a i)) := (mul_sum _ _ _).symm
-    _ ≤ 4 := by linarith [(hV i).2]
+    _ ≤ 4 := by simp_all
 
 /-- Completing labels have positive weight `ν(b) ≤ 4^K / ∏ b`. -/
 theorem labelWeight_pos_le
@@ -882,7 +870,7 @@ theorem sum_labelWeight_coinc_le {alo : ℝ}
       exact inv_anti₀ (Real.exp_pos _) (hbig i p hp)
     rw [hνm]
     linarith
-  have hν0 : ∀ p, 0 ≤ primeWeight q x d N p := fun p =>
+  have hν0 := fun p =>
     primeWeight_nonneg_of_baseline hbase p
   -- one group at a time
   have key : ∀ i, ∑ a ∈ lastSet x d P, (if a i = b i then cleanLabelWeight q x d N a else 0) ≤
@@ -897,40 +885,32 @@ theorem sum_labelWeight_coinc_le {alo : ℝ}
       refine sum_congr rfl fun a _ => ?_
       by_cases ha : a i = b i
       · simp only [ha, ↓reduceIte, cleanLabelWeight]
-        refine prod_congr rfl fun j _ => ?_
-        by_cases hj : j = i
-        · subst hj
-          simp [hg, ha]
-        · simp [hg, hj]
+        grind
       · simp only [ha, ↓reduceIte]
         symm
         refine prod_eq_zero (mem_univ i) ?_
-        simp [hg, ha]
+        simp_all
     rw [e, ← mul_prod_erase _ _ (mem_univ i)]
     have hci : ∑ p ∈ F i, g i p ≤ νm := by
       simp only [hg, ↓reduceIte]
       rw [sum_ite_eq']
       split_ifs with hbi
-      · exact hνp i (b i) (hFsub i hbi)
-      · exact hνm0
+      · grind
+      · omega
     have hcj : ∏ j ∈ univ.erase i, ∑ p ∈ F j, g j p ≤ 4 ^ K := by
       calc ∏ j ∈ univ.erase i, ∑ p ∈ F j, g j p ≤ ∏ _j ∈ univ.erase i, (4 : ℝ) := by
             refine prod_le_prod₀ (fun j _ => sum_nonneg fun p _ => ?_) fun j hj => ?_
-            · simp only [hg]
-              split_ifs <;> simp [hν0]
-            · have hji : j ≠ i := ne_of_mem_erase hj
+            · grind
+            · have hji := ne_of_mem_erase hj
               simp only [hg, hji, ↓reduceIte]
               exact sum_primeWeight_subset_band_le hV hbase j (hFsub j)
-        _ = 4 ^ (K - 1) := by rw [prod_const, card_erase_of_mem (mem_univ i), card_univ,
-            Fintype.card_fin]
+        _ = 4 ^ (K - 1) := by simp
         _ ≤ 4 ^ K := pow_le_pow_right₀ (by norm_num) (Nat.sub_le K 1)
     have hci0 : 0 ≤ ∑ p ∈ F i, g i p := sum_nonneg fun p _ => by
-      simp only [hg]
-      split_ifs <;> simp [hν0]
+      grind
     calc (∑ p ∈ F i, g i p) * ∏ j ∈ univ.erase i, ∑ p ∈ F j, g j p ≤ νm * 4 ^ K :=
           mul_le_mul hci hcj (prod_nonneg fun j _ => sum_nonneg fun p _ => by
-            simp only [hg]
-            split_ifs <;> simp [hν0]) hνm0
+            grind) hνm0
       _ = 4 ^ K * νm := by ring
   -- union over the groups
   calc ∑ a ∈ lastSet x d P, (if ∃ i, a i = b i then cleanLabelWeight q x d N a else 0)
@@ -939,12 +919,12 @@ theorem sum_labelWeight_coinc_le {alo : ℝ}
         split_ifs with h
         · obtain ⟨i, hi⟩ := h
           calc cleanLabelWeight q x d N a = if a i = b i then cleanLabelWeight q x d N a else 0 := by
-                simp only [hi, ↓reduceIte]
+                simp_all
             _ ≤ ∑ i, (if a i = b i then cleanLabelWeight q x d N a else 0) :=
                 single_le_sum (f := fun i => if a i = b i then cleanLabelWeight q x d N a else 0)
                   (fun j _ => by split_ifs; exacts [prod_nonneg fun k _ => hν0 _, le_rfl])
                   (mem_univ i)
-        · exact sum_nonneg fun i _ => by split_ifs; exacts [prod_nonneg fun k _ => hν0 _, le_rfl]
+        simp_all
     _ = ∑ i, ∑ a ∈ lastSet x d P, (if a i = b i then cleanLabelWeight q x d N a else 0) := sum_comm
     _ ≤ ∑ _i : Fin K, 4 ^ K * νm := sum_le_sum fun i _ => key i
     _ = K * 4 ^ K * νm := by simp; ring
@@ -960,18 +940,18 @@ theorem injOn_labelProd {x : ℝ} {d : Data K}
   have he' : ∏ i, b i = ∏ i, b' i := by
     have : ((∏ i, b i : ℕ) : ℤ) = ((∏ i, b' i : ℕ) : ℤ) := he
     exact_mod_cast this
-  have hbb : ∀ i, b i ∈ band x (d.a i) := fun i =>
+  have hbb := fun i =>
     (mem_filter.1 (Fintype.mem_piFinset.1 (mem_coe.1 hb) i)).1
-  have hbb' : ∀ i, b' i ∈ band x (d.a i) := fun i =>
+  have hbb' := fun i =>
     (mem_filter.1 (Fintype.mem_piFinset.1 (mem_coe.1 hb') i)).1
   funext i
   -- `b i` divides `∏ b'`, hence some `b' j`, and then `j = i`
   have hdvd : b i ∣ ∏ j, b' j := he' ▸ dvd_prod_of_mem _ (mem_univ i)
   obtain ⟨j, -, hj⟩ := (Nat.Prime.prime (TypeII.band_prime (hbb i))).dvd_finsetProd_iff _ |>.1 hdvd
-  have heq : b i = b' j :=
+  have heq :=
     (Nat.prime_dvd_prime_iff_eq (TypeII.band_prime (hbb i)) (TypeII.band_prime (hbb' j))).1 hj
   by_cases hij : i = j
-  · rw [heq, hij]
+  · simp_all
   · exact ((disjoint_left.1 (hdisj i j hij) (hbb i)) (heq ▸ hbb' j)).elim
 
 /-- The pad product of a pad list is squarefree. -/
@@ -979,20 +959,16 @@ theorem squarefree_padProd {x : ℝ} {d : Data K}
     (hdisj : ∀ i j, i ≠ j → Disjoint (band x (d.a i)) (band x (d.a j))) {J : ℕ}
     {P : Fin K → Fin J → ℕ} (hP : P ∈ padLists x d J) : Squarefree (∏ i, ∏ k, P i k) := by
   have hP' := mem_filter.1 hP
-  have hband : ∀ i k, P i k ∈ band x (d.a i) := fun i k =>
+  have hband := fun i k =>
     Fintype.mem_piFinset.1 (Fintype.mem_piFinset.1 hP'.1 i) k
   rw [← prod_product' (f := fun i k => P i k)]
   refine Finset.squarefree_prod_of_pairwise_isCoprime (fun ik _ jl _ hne => ?_)
     fun ik _ => (TypeII.band_prime (hband ik.1 ik.2)).prime.squarefree
-  simp only [Function.onFun, ← Nat.coprime_iff_isRelPrime]
+  simp only [← Nat.coprime_iff_isRelPrime]
   refine (Nat.coprime_primes (TypeII.band_prime (hband _ _)) (TypeII.band_prime (hband _ _))).2
     fun he => hne ?_
   by_cases hij : ik.1 = jl.1
-  · have : ik.2 = jl.2 := by
-      have := he
-      rw [hij] at this
-      exact hP'.2 jl.1 this
-    exact Prod.ext hij this
+  · grind
   · exact ((disjoint_left.1 (hdisj _ _ hij) (hband ik.1 ik.2)) (he ▸ hband jl.1 jl.2)).elim
 
 /-- Test (i) at the omission of the last slots gives the pad part `GoodPad`. -/
@@ -1009,11 +985,11 @@ theorem goodPad_of_posGood {x : ℝ} {d : Data K} {Y d₀ r : ℝ}
       ext k
       induction k using Fin.lastCases with
       | last => simp
-      | cast k => simp [(Fin.castSucc_lt_last k).ne]
+      | cast k => simp
     rw [hset, prod_map]
     exact prod_congr rfl fun k _ => joinList_castSucc P b i k
   intro l hl hlY
-  have := h.1 (fun _ => Fin.last _) (by rw [homit]; exact hD₁) (by rw [homit]; exact hD₂) l hl hlY
+  have := h.1 (fun _ => Fin.last _) (by grind) (by grind) l hl hlY
   rw [homit] at this
   exact this
 
@@ -1066,12 +1042,12 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
   set Λ := 1 + Real.log (4 * Y) with hΛ
   set ε := (L ^ A₀)⁻¹ + Y ^ (-(1 / 10 : ℝ)) with hε
   set c₁ : ℝ := Mf * (d₀ / D) with hc₁
-  have hD0 : (0 : ℝ) < D := hd₀.trans_le hD₁
+  have hD0 : (0 : ℝ) < D := by linarith
   have hDpos : 0 < D := by exact_mod_cast hD0
   have hY0 : 0 < Y := by linarith
   have hMf0 : 0 ≤ Mf := by positivity
   have hdD : d₀ / D ≤ 1 := (div_le_one hD0).2 hD₁
-  have hc₁0 : 0 ≤ c₁ := mul_nonneg hMf0 (div_nonneg hd₀.le hD0.le)
+  have hc₁0 : 0 ≤ c₁ := by positivity
   have hc₁M : c₁ ≤ Mf := mul_le_of_le_one_right hMf0 hdD
   have hbX : ∀ b ∈ X, ∀ i, b i ∈ band x (d.a i) := fun b hb i =>
     (mem_filter.1 (Fintype.mem_piFinset.1 hb i)).1
@@ -1096,9 +1072,9 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
         (p.1.1, p.2)) (Zs ×ˢ X : Finset _) := fun p _ p' _ he => by
       simp only [Prod.mk.injEq] at he
       exact Prod.ext (Subtype.ext he.1) he.2
-    have h' := h.comp_embed hinj hinj (fun p hp => mem_product.2 ⟨p.1.2, (mem_product.1 hp).2⟩)
-      (fun p hp => mem_product.2 ⟨p.1.2, (mem_product.1 hp).2⟩)
-    exact h'.congr fun p _ p' _ => rfl
+    have h' := h.comp_embed hinj hinj (by simp)
+      (by simp)
+    exact by omega
   -- the endpoint multiplier
   set φ : ↥(rootPositions (d₀ * Y * d.Hm) d.Hn u v r) × (Fin K → ℕ) → ℝ := fun p =>
     if PosGood x d Y d₀ r p.1.1 (joinList P p.2) then
@@ -1169,7 +1145,7 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
     dsimp only
     by_cases h0 : φ p = 0
     · rw [h0, mul_zero, abs_zero]
-      exact zero_le_one
+      simp
     · have hYb := hφY p h0
       have hbp := hbX p.2 (mem_product.1 hp).2
       obtain ⟨hνp, hνle⟩ := labelWeight_pos_le hV hbase hbp
@@ -1183,7 +1159,7 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
       have hs : Real.sqrt (Y / 4 ^ K) * Real.sqrt (ν p.2) ≤ 1 := by
         rw [← Real.sqrt_mul (by positivity)]
         exact Real.sqrt_le_one.2 hprodle
-      rw [abs_mul, abs_of_nonneg (by positivity : 0 ≤ Real.sqrt (Y / 4 ^ K) * Real.sqrt (ν p.2))]
+      rw [abs_mul, abs_of_nonneg (by positivity)]
       exact (mul_le_mul hs (hφ1 p) (abs_nonneg _) zero_le_one).trans_eq (one_mul 1)
   have hmain : KerLe (Zs ×ˢ X) (Zs ×ˢ X)
       (fun p p' => (Real.sqrt (ν p.2) : ℂ) * Km p p' / (Real.sqrt (ν p'.2) : ℂ))
@@ -1195,9 +1171,9 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
       field_simp
     rw [hnorm] at h
     refine h.congr fun p hp p' hp' => ?_
-    have hνa : (0 : ℝ) < ν p'.2 := hνpos p' hp'
-    have hsa : Real.sqrt (ν p'.2) ≠ 0 := (Real.sqrt_pos.2 hνa).ne'
-    have hsa' : Real.sqrt (ν p'.2) * Real.sqrt (ν p'.2) = ν p'.2 := Real.mul_self_sqrt hνa.le
+    have hνa := hνpos p' hp'
+    have hsa := (Real.sqrt_pos.2 hνa).ne'
+    have hsa' := Real.mul_self_sqrt hνa.le
     have hY4 : Real.sqrt (Y / 4 ^ K) * Real.sqrt (Y / 4 ^ K) = Y / 4 ^ K :=
       Real.mul_self_sqrt (by positivity)
     have hreal : c₁ * 4 ^ K / Y * (ψs p * ψs p') =
@@ -1213,7 +1189,7 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
       calc c₁ * 4 ^ K / Y * (Y / 4 ^ K * (Real.sqrt (ν p.2) * Real.sqrt (ν p'.2) * φ p * φ p'))
           = c₁ * Real.sqrt (ν p.2) * φ p * φ p' * Real.sqrt (ν p'.2) := by
             field_simp
-        _ = c₁ * Real.sqrt (ν p.2) * φ p * φ p' * (ν p'.2 / Real.sqrt (ν p'.2)) := by rw [e2]
+        _ = c₁ * Real.sqrt (ν p.2) * φ p * φ p' * (ν p'.2 / Real.sqrt (ν p'.2)) := by simp
         _ = _ := by ring
     have hL' : ((c₁ * 4 ^ K / Y : ℝ) : ℂ) * (((ψs p : ℝ) : ℂ) * core p p' * ((ψs p' : ℝ) : ℂ)) =
         ((c₁ * 4 ^ K / Y * (ψs p * ψs p') : ℝ) : ℂ) * core p p' := by
@@ -1255,18 +1231,18 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
         · simp only [hc.1, hc.2, and_self, ↓reduceIte, crudeTerm]
           rw [norm_mul, Complex.norm_real,
             Real.norm_of_nonneg (show 0 ≤ plateau _ from smoothTransition.nonneg _)]
-          have ht : ∀ t b a : ℤ, (t - b + a = 0) ↔ (t = b - a) := fun t b a => by omega
+          have ht : ∀ t b a : ℤ, (t - b + a = 0) ↔ (t = b - a) := by omega
           simp only [hβ, ht]
-          exact le_rfl
+          simp
         · simp only [hc, ↓reduceIte, norm_zero]
           split_ifs
           · exact crudeTerm_nonneg _ _ _ _ _ _
-          · exact le_rfl
+          simp
       calc |c₁ * φ p * ν p'.2 * φ p'| * ‖core p p'‖
           ≤ (c₁ * ν p'.2) * crudeKernel A₀ x Y D (∏ i, p.2 i) (∏ i, p'.2 i) (zdet p.1.1 p'.1.1) :=
             mul_le_mul h1 h2 (norm_nonneg _) (by positivity)
         _ = _ := by ring
-    · rw [norm_zero]
+    · simp
   have hcrude0 : ∀ b a n, 0 ≤ crudeKernel A₀ x Y D b a n := fun b a n =>
     crudeKernel_nonneg _ _ _ _ _ _ _
   have hrow : ∀ p ∈ Zs ×ˢ X, ∑ p' ∈ Zs ×ˢ X, ‖Kc p p'‖ ≤ c₁ * Rc := by
@@ -1287,17 +1263,17 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
           gcongr with a ha
           · split_ifs
             · exact prod_nonneg fun i _ => primeWeight_nonneg_of_baseline hbase _
-            · exact le_rfl
+            simp
           · exact sum_crudeKernel_le A₀ hLpos hY hU0 p.1.2 hDpos _ _
       _ = c₁ * (16 * (1 + 52 * L ^ (3 * A₀)) *
             ∑ a ∈ X, (if ∃ i, a i = p.2 i then ν a else 0)) := by rw [← sum_mul]; ring
       _ ≤ c₁ * (16 * (1 + 52 * L ^ (3 * A₀)) * (K * 4 ^ K * (4 * Real.exp (-L ^ alo)))) := by
           gcongr
           exact sum_labelWeight_coinc_le hV hbase hbig P p.2
-      _ = c₁ * Rc := by rw [hRc]
+      _ = c₁ * Rc := by linarith
   have hcol : ∀ p' ∈ Zs ×ˢ X, ∑ p ∈ Zs ×ˢ X, ν p.2 * ‖Kc p p'‖ ≤ c₁ * Rc * ν p'.2 := by
     intro p' hp'
-    have hν' : 0 ≤ ν p'.2 := hν0 p' hp'
+    have hν' := hν0 p' hp'
     calc ∑ p ∈ Zs ×ˢ X, ν p.2 * ‖Kc p p'‖
         ≤ ∑ p ∈ Zs ×ˢ X, ν p.2 * (if ∃ i, p'.2 i = p.2 i then
             c₁ * ν p'.2 * crudeKernel A₀ x Y D (∏ i, p.2 i) (∏ i, p'.2 i) (zdet p.1.1 p'.1.1)
@@ -1318,21 +1294,20 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
           gcongr with b hb
           · split_ifs
             · exact prod_nonneg fun i _ => primeWeight_nonneg_of_baseline hbase _
-            · exact le_rfl
+            simp
           · exact sum_crudeKernel_le' A₀ hLpos hY hU0 p'.1.2 hDpos _ _
       _ = c₁ * ν p'.2 * (16 * (1 + 52 * L ^ (3 * A₀)) *
             ∑ b ∈ X, (if ∃ i, b i = p'.2 i then ν b else 0)) := by rw [← sum_mul]; ring
       _ ≤ c₁ * ν p'.2 * (16 * (1 + 52 * L ^ (3 * A₀)) * (K * 4 ^ K * (4 * Real.exp (-L ^ alo)))) := by
           gcongr
           exact sum_labelWeight_coinc_le hV hbase hbig P p'.2
-      _ = c₁ * Rc * ν p'.2 := by rw [hRc]; ring
-  have hcoW : WKerLe (Zs ×ˢ X) (Zs ×ˢ X) (fun p => ν p.2) (fun p => ν p.2) Kc
-      (Real.sqrt ((c₁ * Rc) * (c₁ * Rc))) :=
+      _ = c₁ * Rc * ν p'.2 := by linarith
+  have hcoW :=
     wkerLe_of_schur (S := Zs ×ˢ X) (S' := Zs ×ˢ X) (μ := fun p => ν p.2)
       (ν := fun p => ν p.2) (k := Kc) (R := c₁ * Rc) (C := c₁ * Rc)
-      (mul_nonneg hc₁0 hRc0) (mul_nonneg hc₁0 hRc0) hν0 hrow hcol
+      (by positivity) (by positivity) hν0 hrow hcol
   have hsq : Real.sqrt ((c₁ * Rc) * (c₁ * Rc)) = c₁ * Rc :=
-    Real.sqrt_mul_self (mul_nonneg hc₁0 hRc0)
+    Real.sqrt_mul_self (by positivity)
   have hcoK : KerLe (Zs ×ˢ X) (Zs ×ˢ X)
       (fun p p' => (Real.sqrt (ν p.2) : ℂ) * Kc p p' / (Real.sqrt (ν p'.2) : ℂ)) (c₁ * Rc) := by
     have h := kerLe_of_wkerLe (S := Zs ×ˢ X) (S' := Zs ×ˢ X) (μ := fun p => ν p.2)
@@ -1343,17 +1318,16 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
     have : 0 ≤ Real.log (4 * Y) := Real.log_nonneg (by linarith)
     rw [hΛ]
     linarith
-  have hε0 : 0 ≤ ε := add_nonneg (inv_nonneg.2 (Real.rpow_nonneg hLpos.le _))
-    (Real.rpow_nonneg hY0.le _)
+  have hε0 : 0 ≤ ε := by positivity
   have hm0 : 0 ≤ c₁ * 4 ^ K * (C₀ * Λ * ε) :=
-    mul_nonneg (mul_nonneg hc₁0 (by positivity)) (mul_nonneg (mul_nonneg hC₀.le hΛ0) hε0)
+    by positivity
   -- the block kernel after conjugation
   have htot : KerLe (Zs ×ˢ X) (Zs ×ˢ X)
       (fun p p' => (Real.sqrt (ν p.2) : ℂ) *
         cleanBlockKer q A₀ x d Y d₀ u v r B N σ σ' S P p p' / (Real.sqrt (ν p'.2) : ℂ))
       (c₁ * 4 ^ K * (C₀ * Λ * ε) + ‖(-1 : ℂ)‖ * (c₁ * Rc)) := by
     refine (hmain.add (hcoK.const_mul (-1)) hm0
-      (mul_nonneg (norm_nonneg _) (mul_nonneg hc₁0 hRc0))).congr fun p hp p' hp' => ?_
+      (by positivity)).congr fun p hp p' hp' => ?_
     rw [hsplit p hp p' hp']
     ring
   have hfin : c₁ * 4 ^ K * (C₀ * Λ * ε) + ‖(-1 : ℂ)‖ * (c₁ * Rc) ≤ Mf * E := by
@@ -1369,7 +1343,7 @@ theorem wkerLe_cleanBlockKer_main {C₀ : ℝ} (hC₀ : 0 < C₀)
       _ ≤ c₁ * E := mul_le_mul_of_nonneg_left hEb hc₁0
       _ ≤ Mf * E := mul_le_mul_of_nonneg_right hc₁M hE
   exact wkerLe_of_kerLe hν0 hνpos (htot.mono (add_nonneg hm0
-    (mul_nonneg (norm_nonneg _) (mul_nonneg hc₁0 hRc0))) hfin)
+    (by positivity)) hfin)
 
 open scoped Classical in
 /-- **The clean block bound** (PD `mem:clean-kernel`, `mem:product-mass`). With the constant `C₀`
@@ -1439,7 +1413,7 @@ theorem wkerLe_cleanBlockKer {C₀ : ℝ} (hC₀ : 0 < C₀)
     rw [hη p.2 (mem_product.1 hp).2]
     simp
   obtain ⟨b₀, hb₀, hη₀⟩ := hη
-  obtain ⟨hP2, hY8, hYc, hEb⟩ := hsize b₀ (hbX b₀ hb₀) hη₀
+  obtain ⟨hP2, hY8, hYc, hEb⟩ := hsize b₀ (by grind) hη₀
   exact wkerLe_cleanBlockKer_main hC₀ hcore hq hq₁ hL hY hd₀ hHm hu hu' hdisj hV hbase hbig hE hP2
     hY8 hYc hEb σ σ' S hP hDr.1 hDr.2
 
@@ -1485,8 +1459,8 @@ theorem eventually_clean_facts {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq₁ : q 
     have hp1 : (0 : ℝ) < p + 1 := by positivity
     have hNp' : 2 * ((N : ℝ) + 1) ≤ p + 1 := by
       exact_mod_cast (show 2 * (N + 1) ≤ p + 1 by omega)
-    have hs : Real.sqrt q ≤ 1 := Real.sqrt_le_one.2 hq₁.le
-    have hsum : ∑ j ∈ range (N + 1), dampDefect q N j ≤ (N : ℝ) + 1 :=
+    have hs := Real.sqrt_le_one.2 hq₁.le
+    have hsum :=
       calc ∑ j ∈ range (N + 1), dampDefect q N j ≤ ∑ _j ∈ range (N + 1), (1 : ℝ) :=
             sum_le_sum fun j _ => by
               unfold dampDefect
@@ -1510,7 +1484,7 @@ private theorem eventually_mul_rpow_le_exp {a : ℝ} (ha : 0 < a) (B M : ℝ) :
   simp only [Function.comp] at hW
   rw [← Real.rpow_mul hW0.le, mul_div_cancel₀ _ ha.ne', le_div_iff₀ (by positivity)] at hW
   have hWB : 0 < W ^ B := by positivity
-  calc M * W ^ B ≤ max M 1 * W ^ B := mul_le_mul_of_nonneg_right (le_max_left _ _) hWB.le
+  calc M * W ^ B ≤ max M 1 * W ^ B := mul_le_mul_of_nonneg_right (by simp) hWB.le
     _ ≤ Real.exp (W ^ a) := hW
 
 /-- The size conditions of the clean edge, for large `x`: whenever a label product `b` has
@@ -1557,7 +1531,7 @@ theorem eventually_clean_size {C₀ C CX alo ahi Dstar g : ℝ} (hC₀ : 0 < C�
     · subst h
       simp at hy1
       linarith
-    · exact h
+    · omega
   have hsum_lo : W ^ alo ≤ ∑ i, W ^ d.a i := by
     have i0 : Fin K := ⟨0, hK⟩
     calc W ^ alo ≤ W ^ d.a i0 := Real.rpow_le_rpow_of_exponent_le hW1 (hd.window i0).1
@@ -1594,7 +1568,6 @@ theorem eventually_clean_size {C₀ C CX alo ahi Dstar g : ℝ} (hC₀ : 0 < C�
     have : (W ^ A₀) ^ 3 = W ^ (3 * A₀) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hW0.le]
       ring_nf
-    rw [this]
     linarith
   · -- `Y ≥ (8 c₀)^{10}`
     have h1 : (8 * latConst) ^ 10 ≤ Y := by
@@ -1606,8 +1579,7 @@ theorem eventually_clean_size {C₀ C CX alo ahi Dstar g : ℝ} (hC₀ : 0 < C�
           norm_num
       _ ≤ Y ^ (1 / 10 : ℝ) := by
           refine Real.rpow_le_rpow (by unfold latConst; positivity) ?_ (by norm_num)
-          rw [show (10 : ℝ) = ((10 : ℕ) : ℝ) by norm_num, Real.rpow_natCast]
-          exact h1
+          simp_all
   · -- the two terms of `cleanBound`
     have hY10 : Y ^ (-(1 / 10 : ℝ)) ≤ W ^ (-A₀) := by
       have h1 : W ^ (10 * A₀) ≤ Y := by linarith
@@ -1642,7 +1614,7 @@ theorem eventually_clean_size {C₀ C CX alo ahi Dstar g : ℝ} (hC₀ : 0 < C�
       have h7 : 0 ≤ W ^ (-(G + 1 / 2)) := by positivity
       calc _ ≤ _ := h3
         _ = M₁ / 2 * (W ^ ahi * W ^ (-A₀)) := h4
-        _ = W ^ (-(G + 1 / 2)) * (M₁ * W ^ (-(1 / 2 - ahi))) / 2 := by rw [h5]; ring
+        _ = W ^ (-(G + 1 / 2)) * (M₁ * W ^ (-(1 / 2 - ahi))) / 2 := by grind
         _ ≤ W ^ (-(G + 1 / 2)) * 1 / 2 := by gcongr
         _ = W ^ (-(G + 1 / 2)) / 2 := by ring
     -- second term: `1024 K 4^K (1 + 52 W^{3A₀}) e^{-W^{a₋}} ≤ W^{-G-1/2}/2`
@@ -1650,7 +1622,7 @@ theorem eventually_clean_size {C₀ C CX alo ahi Dstar g : ℝ} (hC₀ : 0 < C�
         W ^ (-(G + 1 / 2)) / 2 := by
       have hW3 : 1 ≤ W ^ (3 * A₀) := Real.one_le_rpow hW1 (by linarith)
       have h1 : 1 + 52 * W ^ (3 * A₀) ≤ 53 * W ^ (3 * A₀) := by linarith
-      have h2 : M₂ * W ^ (3 * A₀ + G + 1 / 2) ≤ Real.exp (W ^ alo) := hE6
+      have h2 := hE6
       have h3 : W ^ (3 * A₀ + G + 1 / 2) = W ^ (3 * A₀) * W ^ (G + 1 / 2) := by
         rw [← Real.rpow_add hW0]
         ring_nf
@@ -1701,10 +1673,10 @@ theorem eventually_cleanOp_normLe {q C CX alo ahi Dstar g : ℝ} (hq : 0 < q) (h
   subst hN
   obtain ⟨hdisj, hV, hbase, hbig⟩ := hfacts d hd
   have hHm : 0 < d.Hm := (Real.rpow_pos_of_pos hx _).trans_le hd.Hm_ge
-  refine normLe_cleanOp_of_blocks _ (Real.rpow_nonneg (by linarith) _)
+  refine normLe_cleanOp_of_blocks _ (by positivity)
     (primeWeight_nonneg_of_baseline hbase) fun σ σ' S P hP => ?_
   exact wkerLe_cleanBlockKer hC₀ hcore hq hq₁ hL (one_le_pow₀ (by norm_num)) (by positivity) hHm
-    hu hu' hdisj hV hbase hbig (Real.rpow_nonneg (by linarith) _)
+    hu hu' hdisj hV hbase hbig (by positivity)
     (fun b hb hη => hsize d hd (2 ^ j) (one_le_pow₀ (by norm_num)) b hb hη) σ σ' S hP
 
 end Erdos408.OneSided

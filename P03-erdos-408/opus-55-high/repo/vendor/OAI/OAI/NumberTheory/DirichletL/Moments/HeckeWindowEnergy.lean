@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Moments.HeckeColumnWindow
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeWindowEnergy
 open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
 open HeckeFamily FourierBridge
-local notation "O" => ActualEisensteinCubic.O
 
 theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
     (b : ℝ → ℂ) (φ : κ → ℝ → ℂ) (w : ℝ → ℝ) (hw : ∀ t,0<w t)
@@ -21,7 +20,7 @@ theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
     (hφ : ∀ k,Integrable (fun t => b t*φ k t))
     (hbound : ∀ t,(∑ k,‖φ k t‖^2)≤E*(w t)^2) :
     (∑ k,‖∫ t : ℝ,b t*φ k t‖^2)≤E*(∫ t : ℝ,w t*‖b t‖)^2 := by
-  have hn (t : ℝ) : (w t:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (hw t).ne'
+  have hn (t : ℝ) : (w t:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (by grind)
   have hnorm (t : ℝ) : ‖(w t:ℂ)‖=w t := by
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_pos (hw t)]
   have he (k : κ) (t : ℝ) : ((w t:ℂ)*b t)*(φ k t/(w t:ℂ))=b t*φ k t := by
@@ -29,15 +28,15 @@ theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]
   have hh := CompletedGauss.finite_integral_energy_bound
     (fun t => (w t:ℂ)*b t) (fun k t => φ k t/(w t:ℂ)) E hE
     (by simpa only [norm_mul,hnorm] using hb)
-    (fun k => by simpa only [he] using hφ k) (fun t => by
+    (fun k => by simp_all) (fun t => by
       simp only [norm_div,hnorm,div_pow,← Finset.sum_div]
       exact (div_le_iff₀ (sq_pos_of_pos (hw t))).mpr (hbound t))
   simpa only [he,norm_mul,hnorm] using hh
 
-theorem gauss_column_integrable {α : Type*} (S : Finset α) (a : α → O)
+theorem gauss_column_integrable {α : Type*} (S : Finset α) (a : α → ActualEisensteinCubic.O)
     (ha : ∀ i,Supported (Ideal.span {a i}))
     (β : α → ℂ) (τ : Character) (t θ X : ℝ) (hX : 0<X)
-    (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : O) :
+    (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (z : ActualEisensteinCubic.O) :
     Integrable (fun w : ℝ => columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
       gaussPolynomial S a ha (fun i => β i*heightCoeff τ (t+2*Real.pi*(w-θ)) (Ideal.span {a i})) z) := by
   have hi (i : α) := ((height_column_integrable V hVc hVs τ _ (ha i).1 t θ X hX).const_mul (β i)).mul_const
@@ -45,8 +44,6 @@ theorem gauss_column_integrable {α : Type*} (S : Finset α) (a : α → O)
   convert integrable_finsetSum S (fun i _ => hi i) using 1
   funext w
   simp only [gaussPolynomial,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i hi
   ring
 
 def heightCost (t θ : ℝ) : ℝ := (1+‖t‖+2*Real.pi*‖θ‖)*(1+2*Real.pi)
@@ -71,8 +68,8 @@ theorem norm_height_shift (t θ w : ℝ) :
     _ ≤ _ := by
       unfold heightCost
       rw [mul_assoc (1+‖t‖+2*Real.pi*‖θ‖) (1+2*Real.pi) (1+‖w‖)]
-      apply mul_le_mul_of_nonneg_left _ (le_trans zero_le_one hb)
-      nlinarith [norm_nonneg w,Real.pi_pos]
+      apply mul_le_mul_of_nonneg_left _ (by positivity)
+      nlinarith [Real.pi_pos]
 
 end SevenEighths.CenteredMomentHeckeWindowEnergy
 

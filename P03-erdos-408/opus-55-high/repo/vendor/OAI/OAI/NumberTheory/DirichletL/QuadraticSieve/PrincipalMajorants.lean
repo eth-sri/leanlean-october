@@ -11,33 +11,23 @@ noncomputable section
 
 namespace CanonicalQuadraticSieve
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -46,43 +36,36 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open ConcretePrimeRowBridge
 open IdealMobiusDivisorSum
 
 def smallPrincipalMajorant {n p : Type} [Fintype n] [Fintype p]
@@ -178,42 +161,40 @@ theorem HasSieveExponent.small_principal_sector {α : ℝ} (hexp : HasSieveExpon
     let good := fun i => goodSquarefreePart (rows i)
     let a' := fun j => a j*quadraticRow (left j) (idealGenerator (sectorBadIdeal E))
     let b' := fun k => b k*quadraticRow (right k) (idealGenerator (sectorBadIdeal E))
-    have hQnz := sectorBadIdeal_ne_zero_of_row (rows i₀) (hrows i₀).1 E (hE i₀)
+    have hQnz := sectorBadIdeal_ne_zero_of_row (rows i₀) (by grind) E (by grind)
     have hQ : 1 ≤ Q := by
       dsimp only [Q]
       exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (fun h => hQnz (Ideal.absNorm_eq_zero_iff.mp h)))
     have hQp : 0 < Q := by linarith
     have hn (i : m) : (Ideal.absNorm (rows i):ℝ) = Q*(Ideal.absNorm (good i):ℝ) := by
       have hi := congrArg (fun I : Ideal O => (Ideal.absNorm I:ℝ))
-        (sector_bad_good_product (rows i) (hrows i).1 E (hE i))
+        (sector_bad_good_product (rows i) (by grind) E (hE i))
       simpa only [map_mul,Nat.cast_mul] using hi.symm
     have hgr : Function.Injective good := by
       intro i k h
-      exact hr (goodSquarefreePart_injective_on_sector _ _ (hrows i).1 (hrows k).1
-        ((hE i).trans (hE k).symm) h)
+      exact hr (goodSquarefreePart_injective_on_sector _ _ (by grind) (by grind)
+        (by grind) h)
     have hg (i : m) : Admissible (good i) ∧ (B/Q)/2 ≤ (Ideal.absNorm (good i):ℝ) ∧
         (Ideal.absNorm (good i):ℝ) ≤ B/Q := by
       refine ⟨goodSquarefreePart_admissible _, ?_, ?_⟩
       · rw [show B/Q/2 = (B/2)/Q by ring]
         apply (div_le_iff₀ hQp).2
-        have hx := (hrows i).2.1
-        rw [hn i] at hx
-        nlinarith
-      · exact (le_div_iff₀ hQp).2 (by simpa only [mul_comm] using (hn i).symm.trans_le (hrows i).2.2)
+        grind
+      · exact (le_div_iff₀ hQp).2 (by grind)
     have hBQ : 1 ≤ B/Q := by
       have hh : 1 ≤ (Ideal.absNorm (good i₀):ℝ) := by
         exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (fun h => (hg i₀).1.1 (Ideal.absNorm_eq_zero_iff.mp h)))
-      exact hh.trans (hg i₀).2.2
+      exact by grind
     have hPg (d : Ideal O) (i : m) (hp : P d i) : (Ideal.absNorm d:ℝ) ≤
         U*(N*Real.sqrt (F/(M*(Ideal.absNorm (good i):ℝ)))) := by
       apply (hP d i hp).trans
       have hgoodpos : 0 < (Ideal.absNorm (good i):ℝ) := by
         exact_mod_cast Nat.pos_iff_ne_zero.mpr (fun h => (hg i).1.1 (Ideal.absNorm_eq_zero_iff.mp h))
       have hng : (Ideal.absNorm (good i):ℝ) ≤ (Ideal.absNorm (rows i):ℝ) :=
-        Nat.cast_le.mpr (goodSquarefreePart_norm_le (rows i) (hrows i).1)
+        Nat.cast_le.mpr (goodSquarefreePart_norm_le (rows i) (by grind))
       gcongr
     rw [unrestrictedSmallPrincipalSum_sector rows left right a b M F P
-      (fun i => (hrows i).1) (fun j => (hleft j).1) (fun k => (hright k).1) hray E hE]
+      (by grind) (by grind) (by grind) hray E hE]
     have hbnd := hexp.small_principal_divisor_sum deltaLoss hδ ε hε (B/Q) N M F U hBQ hN hM hF hU
       good left right hgr hl hri hg hleft hright a' b' P hPg
     change ‖signedProductDivisorSum good left right a' b' P _‖ ≤
@@ -253,9 +234,9 @@ theorem HasSieveExponent.unrestricted_small_principal_sum {α : ℝ} (hexp : Has
         left right a b M F (fun d i => P d i.val)‖ ≤
       smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F U a b :=
     hexp.small_principal_sector hα deltaLoss hδ ε hε B N M F U hB hN hM hF hU
-      (fun i : {i // σ i = E} => rows i.val) left right (fun i k h => Subtype.ext (hr h)) hl hri
-      (fun i => hrows i.val) hleft hright hray a b (fun d i => P d i.val) (fun d i => hP d i.val)
-      E (fun i => i.property)
+      (fun i : {i // σ i = E} => rows i.val) left right (fun i k h => by grind) hl hri
+      (by grind) hleft hright hray a b (fun d i => P d i.val) (by grind)
+      E (by grind)
   rw [hs]
   apply (norm_sum_le _ _).trans
   calc
@@ -268,7 +249,7 @@ theorem HasSieveExponent.unrestricted_small_principal_sum {α : ℝ} (hexp : Has
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge
 open TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem weightedDivisorCorrection_coprime_mask (G C : Ideal O)
@@ -295,15 +276,11 @@ theorem weightedDivisorCorrection_coprime_mask (G C : Ideal O)
     constructor
     · intro hz
       apply (div_lt_iff₀ hNq).mpr
-      simpa only [mul_comm] using hz
+      linarith
     · intro hz
       simpa only [mul_comm] using (div_lt_iff₀ hNq).mp hz
   simp only [map_mul,Nat.cast_mul,hlow,(hGC.mono hqG hdC).isRelPrime.moebius_mul,Int.cast_mul]
-  by_cases hp : Z/(Ideal.absNorm q:ℝ) < (Ideal.absNorm d:ℝ)
-  · simp only [hp,ite_true]
-    push_cast
-    ring
-  · simp only [hp,ite_false,mul_zero]
+  grind
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
   [DecidableEq m] [DecidableEq n] [DecidableEq p]
@@ -359,8 +336,7 @@ theorem maskedPrincipalDivisorCorrection_eq
   apply Finset.sum_congr rfl
   intro j _
   apply Finset.sum_congr rfl
-  intro k _
-  ring_nf
+  grind
 
 theorem HasSieveExponent.masked_source_large_principal_sum {α : ℝ} (hexp : HasSieveExponent α)
     (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε) (G : Ideal O) (hG : G ≠ 0)
@@ -411,12 +387,12 @@ theorem HasSieveExponent.masked_source_large_principal_sum {α : ℝ} (hexp : Ha
       apply Finset.sum_le_sum
       intro q hq
       rw [norm_mul]
-      exact (mul_le_of_le_one_left (norm_nonneg _) (QuadraticInitialBound.norm_ideal_moebius_le_one q)).trans (hqbound q hq)
+      exact (mul_le_of_le_one_left (norm_nonneg _) (QuadraticInitialBound.norm_ideal_moebius_le_one q)).trans (by grind)
     _ = _ := by simp only [Finset.sum_const,nsmul_eq_mul,V]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
+open ConcretePrimeRowBridge
 open IdealMobiusDivisorSum
 
 lemma smallPrincipalMajorant_bad_scale {n p : Type} [Fintype n] [Fintype p]
@@ -445,8 +421,8 @@ lemma smallPrincipalMajorant_bad_scale {n p : Type} [Fintype n] [Fintype p]
 lemma sqrt_sector_scale (M F Q b : ℝ) (hM : 0 < M) (hF : 0 < F) (hQ : 0 < Q) (hb : 0 < b) :
     Real.sqrt ((M/F)/(Q*b)) = (1/Q)*Real.sqrt (((M*Q)/F)/b) := by
   apply (sq_eq_sq₀ (Real.sqrt_nonneg _) (by positivity)).mp
-  rw [mul_pow,Real.sq_sqrt (show 0 ≤ (M/F)/(Q*b) by positivity),
-    Real.sq_sqrt (show 0 ≤ ((M*Q)/F)/b by positivity)]
+  rw [mul_pow,Real.sq_sqrt (by positivity),
+    Real.sq_sqrt (by positivity)]
   field_simp
 
 variable {m n p : Type} [Fintype m] [Fintype n] [Fintype p]
@@ -500,7 +476,7 @@ lemma unrestrictedLargePrincipalSum_sector
   by_cases hd : Z i < (Ideal.absNorm d:ℝ)
   · simp only [hd,ite_true,Complex.ofReal_div,Complex.ofReal_mul]
     ring
-  · simp only [hd,ite_false,mul_zero]
+  grind
 
 theorem HasSieveExponent.large_principal_sector {α : ℝ} (hexp : HasSieveExponent α)
     (hα : 1/2 ≤ α) (deltaLoss : ℝ) (hδ : 0 < deltaLoss) (ε : ℝ) (hε : 0 < ε)
@@ -530,32 +506,30 @@ theorem HasSieveExponent.large_principal_sector {α : ℝ} (hexp : HasSieveExpon
     let good := fun i => goodSquarefreePart (rows i)
     let a' := fun j => a j*quadraticRow (left j) (idealGenerator (sectorBadIdeal E))
     let b' := fun k => b k*quadraticRow (right k) (idealGenerator (sectorBadIdeal E))
-    have hQnz := sectorBadIdeal_ne_zero_of_row (rows i₀) (hrows i₀).1 E (hE i₀)
+    have hQnz := sectorBadIdeal_ne_zero_of_row (rows i₀) (by grind) E (by grind)
     have hQ : 1 ≤ Q := by
       dsimp only [Q]
       exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (fun h => hQnz (Ideal.absNorm_eq_zero_iff.mp h)))
     have hQp : 0 < Q := by linarith
     have hn (i : m) : (Ideal.absNorm (rows i):ℝ) = Q*(Ideal.absNorm (good i):ℝ) := by
       have hi := congrArg (fun I : Ideal O => (Ideal.absNorm I:ℝ))
-        (sector_bad_good_product (rows i) (hrows i).1 E (hE i))
+        (sector_bad_good_product (rows i) (by grind) E (hE i))
       simpa only [map_mul,Nat.cast_mul] using hi.symm
     have hgr : Function.Injective good := by
       intro i k h
-      exact hr (goodSquarefreePart_injective_on_sector _ _ (hrows i).1 (hrows k).1
-        ((hE i).trans (hE k).symm) h)
+      exact hr (goodSquarefreePart_injective_on_sector _ _ (by grind) (by grind)
+        (by grind) h)
     have hg (i : m) : Admissible (good i) ∧ (B/Q)/2 ≤ (Ideal.absNorm (good i):ℝ) ∧
         (Ideal.absNorm (good i):ℝ) ≤ B/Q := by
       refine ⟨goodSquarefreePart_admissible _, ?_, ?_⟩
       · rw [show B/Q/2 = (B/2)/Q by ring]
         apply (div_le_iff₀ hQp).2
-        have hx := (hrows i).2.1
-        rw [hn i] at hx
-        nlinarith
-      · exact (le_div_iff₀ hQp).2 (by simpa only [mul_comm] using (hn i).symm.trans_le (hrows i).2.2)
+        grind
+      · exact (le_div_iff₀ hQp).2 (by grind)
     have hBQ : 1 ≤ B/Q := by
       have hh : 1 ≤ (Ideal.absNorm (good i₀):ℝ) := by
         exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (fun h => (hg i₀).1.1 (Ideal.absNorm_eq_zero_iff.mp h)))
-      exact hh.trans (hg i₀).2.2
+      exact by grind
     have hZg (i : m) : T*(N*Real.sqrt (F/((M*Q)*(Ideal.absNorm (good i):ℝ)))) ≤ Z i := by
       simpa only [hn i,mul_assoc] using hZ i
     have hbnd := hexp.dual_large_principal_sum deltaLoss hδ ε hε (B/Q) N (M*Q) F T hBQ hN
@@ -564,7 +538,7 @@ theorem HasSieveExponent.large_principal_sector {α : ℝ} (hexp : HasSieveExpon
         (fun d i => Z i < (Ideal.absNorm d:ℝ))‖ ≤
       smallPrincipalMajorant hexp deltaLoss hδ ε hε (B/Q) N (M*Q) F (1/2) a' b' := by
       apply hbnd.trans
-      have ht : 4/T ≤ 1 := (div_le_one (by linarith : 0<T)).mpr hT
+      have ht : 4/T ≤ 1 := (div_le_one (by positivity)).mpr hT
       have hlead : 4*(M*Q)/(F*T) ≤ (M*Q)/F := by
         calc
           _ = ((M*Q)/F)*(4/T) := by ring
@@ -572,14 +546,14 @@ theorem HasSieveExponent.large_principal_sector {α : ℝ} (hexp : HasSieveExpon
       have he := divisorEnergyFactor_nonneg ε hε N a' b'
       have hc := (divisorExponentConstant_pos hexp deltaLoss hδ).le
       unfold smallPrincipalMajorant
-      norm_num only [show (2:ℝ)*(1/2)=1 by norm_num,one_mul]
+      norm_num only [one_mul]
       gcongr
     have htr := unrestrictedLargePrincipalSum_sector rows left right a b M F Z hM hF
-      (fun i => (hrows i).1) (fun j => (hleft j).1) (fun k => (hright k).1) hray E hE hQnz
+      (by grind) (by grind) (by grind) hray E hE hQnz
     change unrestrictedLargePrincipalSum rows left right a b M F Z =
       ((1/Q:ℝ):ℂ)*principalDivisorCorrection good left right a' b' ((M*Q)/F)
         (fun d i => Z i < (Ideal.absNorm d:ℝ)) at htr
-    rw [htr,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by positivity : 0≤1/Q)]
+    rw [htr,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (by positivity)]
     apply (mul_le_mul_of_nonneg_left hmajor (by positivity)).trans
     apply smallPrincipalMajorant_bad_scale hexp hα deltaLoss hδ ε hε B N M F (1/2) Q a a' b b'
       (by linarith) (by linarith) hM hF (by norm_num) hQ
@@ -615,9 +589,9 @@ theorem HasSieveExponent.unrestricted_large_principal_sum {α : ℝ} (hexp : Has
         left right a b M F (fun i => Z i.val)‖ ≤
       smallPrincipalMajorant hexp deltaLoss hδ ε hε B N M F (1/2) a b :=
     hexp.large_principal_sector hα deltaLoss hδ ε hε B N M F T hB hN hM hF hT
-      (fun i : {i // σ i = E} => rows i.val) left right (fun i k h => Subtype.ext (hr h)) hl hri
-      (fun i => hrows i.val) hleft hright hray a b (fun i => Z i.val) (fun i => hZ i.val)
-      E (fun i => i.property)
+      (fun i : {i // σ i = E} => rows i.val) left right (fun i k h => by grind) hl hri
+      (by grind) hleft hright hray a b (fun i => Z i.val) (by grind)
+      E (by grind)
   rw [hs]
   apply (norm_sum_le _ _).trans
   calc
@@ -629,9 +603,9 @@ theorem HasSieveExponent.unrestricted_large_principal_sum {α : ℝ} (hexp : Has
 
 end
 
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open scoped Classical SchwartzMap
+open ConcretePrimeRowBridge
+open TruncatedPrincipalPoisson
 
 lemma unrestrictedPairTerm_norm_le {m n p : Type}
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -657,7 +631,7 @@ theorem unrestricted_pair_error_energy {m n : Type} [Fintype m] [Fintype n]
       Fintype.card m * Fintype.card n * E * ∑ j, ‖a j‖ ^ 2 := by
   classical
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => (1 : ℝ))
-  simp only [mul_one, one_pow, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at hcs
+  simp only [one_pow, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at hcs
   have hs : (∑ j, ∑ k, ‖a j‖ * ‖a k‖ * E) = (∑ j, ‖a j‖) ^ 2 * E := by
     simp only [pow_two, Finset.sum_mul, Finset.mul_sum, mul_assoc]
     apply Finset.sum_congr rfl
@@ -680,10 +654,10 @@ theorem unrestricted_pair_error_energy {m n : Type} [Fintype m] [Fintype n]
       apply Finset.sum_le_sum
       intro k hk
       rw [norm_mul]
-      exact mul_le_mul (unrestrictedPairTerm_norm_le rows cols cols a a i j k) (herr i j k)
+      exact mul_le_mul (unrestrictedPairTerm_norm_le rows cols cols a a i j k) (by grind)
         (norm_nonneg _) (by positivity)
     _ = (Fintype.card m : ℝ) * ((∑ j, ‖a j‖) ^ 2 * E) := by
-      simp only [hs, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+      simp_all
     _ ≤ (Fintype.card m : ℝ) * (((∑ j, ‖a j‖ ^ 2) * Fintype.card n) * E) := by gcongr
     _ = _ := by ring
 
@@ -696,8 +670,8 @@ theorem unrestricted_pair_error_ideal_bound {m n : Type} [Fintype m] [Fintype n]
     (herr : ∀ i j k, ‖error i j k‖ ≤ E) :
     ‖∑ i, ∑ j, ∑ k, unrestrictedPairTerm rows cols cols a a i j k * error i j k‖ ≤
       16384 * B * N * E * ∑ j, ‖a j‖ ^ 2 := by
-  have hrc := finite_ideal_family_card_bound rows hr B hB (fun i => (hrows i).1) (fun i => (hrows i).2)
-  have hcc := finite_ideal_family_card_bound cols hc N hN (fun j => (hcols j).1) (fun j => (hcols j).2)
+  have hrc := finite_ideal_family_card_bound rows hr B hB (by grind) (by grind)
+  have hcc := finite_ideal_family_card_bound cols hc N hN (by grind) (by grind)
   apply (unrestricted_pair_error_energy rows cols a E hE error herr).trans
   calc
     _ ≤ (128 * B) * (128 * N) * E * ∑ j, ‖a j‖ ^ 2 := by gcongr

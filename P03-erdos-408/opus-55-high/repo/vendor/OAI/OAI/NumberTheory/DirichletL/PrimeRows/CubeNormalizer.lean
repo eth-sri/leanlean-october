@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Detector.PrincipalNormalized
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology ContDiff
+open scoped Classical ContDiff
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily ProbePhysical ProbeRaySlots PrincipalSignalComparison
 open PrincipalMellinResidues ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
 
 theorem actual_ray_normalizer_inverse {K : ℕ}
-    (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
-    (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    (M : Ideal HeckeFamily.O) [NeZero M] [Finite (HeckeFamily.O ⧸ M)]
+    (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (c b : ℝ) (hc : 0<c) (hcb : c≤b)
     (ell : Fin K→ℝ) (hell : ∀j,0<ell j) (hellsum : ∑j,ell j=1/6)
     (W : Fin K→ℝ→ℝ) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hcompact : ∀j,HasCompactSupport (W j))
@@ -55,7 +54,7 @@ theorem actual_ray_normalizer_inverse {K : ℕ}
     rw [mul_inv_rev,norm_mul,←Complex.ofReal_inv,Complex.norm_real]
     simpa only [hellsum,Real.norm_eq_abs,mul_comm] using
       mul_le_mul_of_nonneg_left hmass.2 (norm_nonneg cs⁻¹)
-  exact hb.trans (mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg hZ.le _))
+  exact hb.trans (mul_le_mul_of_nonneg_right (by linarith) (by positivity))
 
 end SevenEighths.ProbeHighRowFamily
 

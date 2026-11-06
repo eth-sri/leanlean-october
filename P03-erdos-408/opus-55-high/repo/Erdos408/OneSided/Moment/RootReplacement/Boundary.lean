@@ -32,7 +32,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Finset Real
+open Filter Finset
 
 variable {K : ℕ}
 
@@ -52,7 +52,7 @@ theorem inCube_of_mem_cubeRoots {U V : ℝ} {n : ℕ} {i : ℕ × ℕ × ℕ} {P
   unfold cubeRoots boxRoots at hP₀
   obtain ⟨hmem, -, h₂, h₄, h₅, h₆⟩ := mem_filter.1 hP₀
   obtain ⟨h₁, h₃⟩ := mem_product.1 hmem
-  exact ⟨Nat.ceil_le.1 (mem_Icc.1 h₁).1, h₂, Nat.ceil_le.1 (mem_Icc.1 h₃).1, h₄, h₅, h₆⟩
+  exact ⟨Nat.ceil_le.1 (by grind), h₂, Nat.ceil_le.1 (by grind), h₄, h₅, h₆⟩
 
 /-- The lower corner of a cube lies in the real cube. -/
 theorem inCube_corner {U V : ℝ} (hU : 0 < U) (hV : 0 < V) {n : ℕ} (hn : 1 ≤ n)
@@ -60,11 +60,11 @@ theorem inCube_corner {U V : ℝ} (hU : 0 < U) (hV : 0 < V) {n : ℕ} (hn : 1 �
     InCube U V n i (U * (1 + i.1 / n)) (V * (1 + i.2.1 / n)) (i.2.2 / n) := by
   have hn' : (0 : ℝ) < n := by exact_mod_cast hn
   have h : ∀ a : ℝ, a / n < (a + 1) / n := fun a => div_lt_div_of_pos_right (by linarith) hn'
-  refine ⟨by rw [mul_comm], ?_, by rw [mul_comm], ?_, le_rfl, h _⟩
+  refine ⟨by linarith, ?_, by linarith, ?_, le_rfl, h _⟩
   · rw [mul_comm]
-    exact mul_lt_mul_of_pos_right (by linarith [h i.1]) hU
+    simp_all
   · rw [mul_comm]
-    exact mul_lt_mul_of_pos_right (by linarith [h i.2.1]) hV
+    simp_all
 
 open scoped Classical in
 /-- A bad cube is made bad by some visit: the indicator of one visit differs between a root
@@ -82,7 +82,7 @@ theorem badCubes_subset (x : ℝ) (d : Data K) {Y d₀ : ℝ} (hU : 0 < d₀ * Y
         (ω j) := by
     by_contra h
     push Not at h
-    exact hne (prod_congr rfl fun j _ => h j)
+    exact hne (prod_congr rfl (by grind))
   have hiff := fun h => hj (by unfold visitInd; exact if_congr h rfl rfl)
   obtain ⟨hi₁, hi₂, hi₃⟩ : i.1 < 15 * n ∧ i.2.1 < n ∧ i.2.2 < n := by
     simp only [cubeIndices, mem_product, mem_range] at hi
@@ -139,7 +139,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
   have hY : (2 : ℝ) ^ j ≤ Λ ^ (K * (padCount x + 1)) := hYle.le.trans hM
   have hd₀ : (2 : ℝ) ^ k ≤ Λ ^ (K * (padCount x + 1)) := hd₀le.trans hM
   have hMS : Λ ^ (K * (padCount x + 1)) ≤ Λ ^ (K * (padCount x + 2)) :=
-    pow_le_pow_right₀ (by linarith) (by gcongr; omega)
+    pow_le_pow_right₀ (by linarith) (by linarith)
   have hN : (1 : ℝ) ≤ ((2 * momentPower x : ℕ) : ℝ) := by
     have : 1 ≤ 2 * momentPower x := by omega
     exact_mod_cast this
@@ -149,7 +149,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
     have ht := (tube_of_live (by positivity) (by positivity) (by linarith) hR hc hω j').1
     have hdY : (2 : ℝ) ^ k * 2 ^ j ≤ (Λ ^ (K * (padCount x + 2))) ^ 2 := by
       rw [sq]
-      exact mul_le_mul (hd₀.trans hMS) (hY.trans hMS) (by positivity) (by positivity)
+      exact mul_le_mul (by linarith) (hY.trans hMS) (by positivity) (by positivity)
     push_cast
     calc |((ω j').1.1.1.2 : ℝ)| ≤ 2560 * (2 * momentPower x) * (2 ^ k * 2 ^ j) := ht
       _ ≤ 2560 * (2 * momentPower x) * (Λ ^ (K * (padCount x + 2))) ^ 2 := by gcongr
@@ -173,8 +173,7 @@ theorem eventually_card_badCubes_le {C CX alo ahi g : ℝ} (hahi : ahi < 1 / 5) 
     _ = (n : ℝ) ^ 2 * ((((2 * momentPower x : ℕ) : ℝ) + 1) * (10 ^ 7 *
           ((2 * momentPower x : ℕ) : ℝ) * (Λ ^ (K * (padCount x + 2))) ^ 9)) := by
         rw [sum_const, card_univ, Fintype.card_fin, nsmul_eq_mul]
-        push_cast
-        ring
+        grind
     _ ≤ (n : ℝ) ^ 2 * Real.exp (Real.log x ^ (1 / 2 : ℝ)) :=
         mul_le_mul_of_nonneg_left hvis (by positivity)
 

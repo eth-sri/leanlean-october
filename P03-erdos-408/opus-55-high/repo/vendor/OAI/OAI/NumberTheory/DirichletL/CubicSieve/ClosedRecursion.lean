@@ -9,31 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
-open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -53,53 +44,43 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end
 
-open ActualEisensteinCubic FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 
-open ActualEisensteinCubic FirstPassCubeLabels
 open ConcreteTraceCRT (eisEmbedding)
 open JointLogSeparation (frequencyTwist)
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CompletedGauss
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 theorem nonresidual_count_eq_on_fiber (I J Q P : Ideal ActualEisensteinCubic.O)
     (hI : I≠0) (hP : Prime P)
@@ -119,15 +100,11 @@ theorem nonresidual_count_eq_on_fiber (I J Q P : Ideal ActualEisensteinCubic.O)
   simp only [rowResidualPart,normalizedFactors_squarefreeResidualPart,
     normalizedFactors_rowSimplePart,Multiset.count_filter] at hr0
   by_cases hpq : P∣Q
-  · simp only [hpq,ite_true] at ht
-    by_cases hi : 2≤(normalizedFactors I).count P <;>
-      by_cases hj : 2≤(normalizedFactors J).count P <;> simp only [hi,hj,ite_true,ite_false,not_true_eq_false,not_false_eq_true] at ha ht <;> omega
+  · grind
   · have hpi : P∣I := (hP.dvd_mul.mp hpool).resolve_right hpq
-    have hci : 0<(normalizedFactors I).count P :=
+    have hci :=
       Multiset.count_pos.mpr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mpr ⟨hP,hpi⟩)
-    simp only [hpq,not_false_eq_true,ite_true] at hr0
-    by_cases hi : 2≤(normalizedFactors I).count P <;>
-      by_cases hj : 2≤(normalizedFactors J).count P <;> simp only [hi,hj,ite_true,ite_false,not_true_eq_false,not_false_eq_true] at ha hr0 <;> omega
+    grind
 
 theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
     (hI : I≠0) (hJ : J≠0) (hP : Prime P)
@@ -139,7 +116,7 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
   have hpoolJ : P∣J*Q := by
     rcases hP.dvd_mul.mp hpool with hi|hq
     · have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff hI).mpr ⟨hP,hi⟩
-      have hcj : 0<(normalizedFactors J).count P := hc ▸ Multiset.count_pos.mpr hm
+      have hcj := hc ▸ Multiset.count_pos.mpr hm
       exact dvd_mul_of_dvd_left ((UniqueFactorizationMonoid.mem_normalizedFactors_iff hJ).mp (Multiset.count_pos.mp hcj)).2 Q
     · exact dvd_mul_of_dvd_right hq J
   have hrc : (normalizedFactors (rowResidualPart I Q)).count P=
@@ -149,7 +126,7 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
   refine ⟨hpoolJ,?_,?_⟩
   · intro hd
     have hm := (UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero (rowSimplePart J) Q)).mpr ⟨hP,hd⟩
-    have hp : 0<(normalizedFactors (rowResidualPart I Q)).count P := hrc.symm ▸ Multiset.count_pos.mpr hm
+    have hp := hrc.symm ▸ Multiset.count_pos.mpr hm
     exact hr ((UniqueFactorizationMonoid.mem_normalizedFactors_iff (squarefreeResidualPart_ne_zero (rowSimplePart I) Q)).mp
       (Multiset.count_pos.mp hp)).2
   · simp only [completedLocalExponent,hc]
@@ -157,7 +134,7 @@ theorem nonresidual_prime_transport (I J F Q P : Ideal ActualEisensteinCubic.O)
 end CompletedGauss
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology
+open scoped Classical Topology
 
 namespace CubicEisenstein
 
@@ -170,23 +147,23 @@ lemma compact_estimate_prod_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G) (A
     (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
     ∃D : NNReal,AntilipschitzWith D (T.prod K) := by
   let R := max A 0+max B 0
-  have hR : 0≤R := add_nonneg (le_max_right _ _) (le_max_right _ _)
+  have hR : 0≤R := by positivity
   refine ⟨⟨Real.sqrt R,Real.sqrt_nonneg _⟩,(T.prod K).antilipschitz_of_bound (fun u => ?_)⟩
   have hT : ‖T u‖^2≤‖(T.prod K) u‖^2 :=
-    (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr (norm_fst_le (T u,K u))
+    (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr (by simp)
   have hK : ‖K u‖^2≤‖(T.prod K) u‖^2 :=
-    (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr (norm_snd_le (T u,K u))
+    (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr (by simp)
   have hh : ‖u‖^2≤R*‖(T.prod K) u‖^2 := calc
     _ ≤A*‖T u‖^2+B*‖K u‖^2 := hest u
     _ ≤max A 0*‖T u‖^2+max B 0*‖K u‖^2 :=
-      add_le_add (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
-        (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
+      add_le_add (mul_le_mul_of_nonneg_right (by simp) (sq_nonneg _))
+        (mul_le_mul_of_nonneg_right (by simp) (sq_nonneg _))
     _ ≤max A 0*‖(T.prod K) u‖^2+max B 0*‖(T.prod K) u‖^2 :=
-      add_le_add (mul_le_mul_of_nonneg_left hT (le_max_right _ _))
-        (mul_le_mul_of_nonneg_left hK (le_max_right _ _))
-    _ = _ := by dsimp only [R]; ring
+      add_le_add (mul_le_mul_of_nonneg_left hT (by positivity))
+        (mul_le_mul_of_nonneg_left hK (by positivity))
+    _ = _ := by linarith
   change ‖u‖≤Real.sqrt R*‖(T.prod K) u‖
-  apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
+  apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
   simpa only [mul_pow,Real.sq_sqrt hR] using hh
 
 lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
@@ -200,11 +177,11 @@ lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ
     refine ⟨Real.sqrt (max B 0),fun u => ?_⟩
     have ht : T (u:E)=0 := u.2
     have hh := hest (u:E)
-    rw [ht,norm_zero,zero_pow (by decide : 2≠0),mul_zero,zero_add] at hh
+    rw [ht,norm_zero,zero_pow (by positivity),mul_zero,zero_add] at hh
     have hh' : ‖u‖^2≤max B 0*‖K (u:E)‖^2 :=
-      hh.trans (mul_le_mul_of_nonneg_right (le_max_left _ _) (sq_nonneg _))
+      hh.trans (mul_le_mul_of_nonneg_right (by simp) (sq_nonneg _))
     change ‖u‖≤Real.sqrt (max B 0)*‖K (u:E)‖
-    apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
+    apply (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp
     simpa only [mul_pow,Real.sq_sqrt (le_max_right B 0)] using hh'
   exact FiniteDimensional.of_isCompactOperator_id hid
 
@@ -216,24 +193,24 @@ lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[�
   have hex (ε : ℝ) (hε : 0<ε) : ∃u : E,‖u‖=1 ∧ ‖T u‖<ε := by
     by_contra! hn
     apply hanti
-    refine ⟨⟨ε⁻¹,inv_nonneg.mpr hε.le⟩,antilipschitz_of_bound_of_norm_one T (fun u hu => ?_)⟩
+    refine ⟨⟨ε⁻¹,by positivity⟩,antilipschitz_of_bound_of_norm_one T (fun u hu => ?_)⟩
     change 1≤ε⁻¹*‖T u‖
     have hh := mul_le_mul_of_nonneg_left (hn u hu) (inv_nonneg.mpr hε.le)
     simpa only [inv_mul_cancel₀ hε.ne'] using hh
   obtain ⟨eps,hepsAnti,hepsPos,heps⟩ := exists_seq_strictAnti_tendsto (0:ℝ)
   choose u hunorm huT using fun n : ℕ => hex (eps n) (hepsPos n)
   have huTlim : Tendsto (fun n => T (u n)) atTop (𝓝 0) :=
-    squeeze_zero_norm (fun n => (huT n).le) heps
+    squeeze_zero_norm (by grind) heps
   obtain ⟨S,hS,hsub⟩ := hK.image_closedBall_subset_compact 1
   obtain ⟨k,hk,seq,hseq,hklim⟩ := hS.tendsto_subseq
-    (fun n => hsub ⟨u n,by simp only [Metric.mem_closedBall,dist_zero_right,hunorm,le_refl],rfl⟩)
+    (fun n => hsub ⟨u n,by simp_all,rfl⟩)
   let P := T.prod K
   obtain ⟨D,hD⟩ := compact_estimate_prod_antilipschitz T K A B hest
   have hlim : Tendsto (fun n => P (u (seq n))) atTop (𝓝 (0,k)) :=
     (huTlim.comp hseq.tendsto_atTop).prodMk_nhds hklim
   have hmem : (0,k)∈Set.range P :=
     (hD.isClosed_range P.uniformContinuous).mem_of_tendsto hlim
-      (Eventually.of_forall (fun n => ⟨u (seq n),rfl⟩))
+      (Eventually.of_forall (by grind))
   obtain ⟨v,hv⟩ := hmem
   have hvlim : Tendsto (fun n => u (seq n)) atTop (𝓝 v) := by
     apply (hD.isInducing P.continuous).tendsto_nhds_iff.mpr
@@ -243,10 +220,9 @@ lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[�
   have hvzero : v=0 := hT (by
     have hh := congrArg Prod.fst hv
     change T v=0 at hh
-    simpa only [map_zero] using hh)
-  have hnorm : ‖v‖=1 := tendsto_nhds_unique hvlim.norm (by simpa only [hunorm] using tendsto_const_nhds)
-  rw [hvzero,norm_zero] at hnorm
-  norm_num at hnorm
+    simp_all)
+  have hnorm : ‖v‖=1 := tendsto_nhds_unique hvlim.norm (by simp_all)
+  simp_all
 
 end CubicEisenstein
 

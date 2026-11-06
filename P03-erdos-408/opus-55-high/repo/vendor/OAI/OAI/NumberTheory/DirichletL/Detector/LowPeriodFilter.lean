@@ -9,15 +9,14 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
     (T : ι→Finset α) (good : ι→α→Prop) [∀i,DecidablePred (good i)]
     (c : ι→α→ℂ) (hc : ∀i a,a∈T i→¬good i a→c i a=0) (F : (ι→α)→ℂ) :
     (∑p : ∀i,T i,(∏i,c i (p i).val)*F (fun i=>(p i).val))=
       ∑p : ∀i,(T i).filter (good i),(∏i,c i (p i).val)*F (fun i=>(p i).val) := by
-  let forget : (∀i,(T i).filter (good i))→(∀i,T i) := fun p i=>⟨(p i).val,(Finset.mem_filter.mp (p i).property).1⟩
+  let forget : (∀i,(T i).filter (good i))→(∀i,T i) := fun p i=>⟨(p i).val,by grind⟩
   have hinj : Function.Injective forget := by
     intro p q h
     funext i
@@ -30,8 +29,8 @@ lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
       by_contra hbad
       have hc0 := hc i (p i).val (p i).property hbad
       have hprod : (∏j,c j (p j).val)=0 := Finset.prod_eq_zero (Finset.mem_univ i) hc0
-      exact hh (by dsimp [H];rw [hprod,zero_mul])
-    let q : ∀i,(T i).filter (good i) := fun i=>⟨(p i).val,Finset.mem_filter.mpr ⟨(p i).property,hn i⟩⟩
+      exact hh (by grind)
+    let q : ∀i,(T i).filter (good i) := fun i=>⟨(p i).val,by grind⟩
     exact hp (Finset.mem_image.mpr ⟨q,Finset.mem_univ _,rfl⟩)
   have he := Finset.sum_subset (Finset.subset_univ (Finset.univ.image forget))
     (fun p hp hnot=>hz p hnot)
@@ -40,7 +39,7 @@ lemma sum_tuple_filter_zero {ι α : Type*} [Fintype ι] [DecidableEq α]
 
 def lowPeriodIdeal (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) : Id :=
   lowBaseModulus η (calibrationForSet S hS) (calibrationForSet S hS).generator
-    (calibrationLowData S hS)*Ideal.span {(72:O)}
+    (calibrationLowData S hS)*Ideal.span {(72:ActualEisensteinCubic.O)}
 
 lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (P : PrimeIdeal) (hP : CanonicalQuadraticSieve.Supported P.val) (hout : P.val∉S) :
@@ -49,8 +48,8 @@ lemma canonical_prime_calibration_coprime (S : Finset Id) (hS : ∀P∈S,P.IsMax
   intro Q hQ hdiv
   rw [span_primaryGenerator_of_supported P.val hP] at hdiv
   have hpmax := (Ideal.isPrime_of_prime P.property).isMaximal P.property.ne_zero
-  have he : P.val=Q := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
-  exact hout (he.symm ▸ hQ)
+  have he := Ideal.IsMaximal.eq_of_le hpmax (hS Q hQ).ne_top (Ideal.dvd_iff_le.mp hdiv)
+  simp_all
 
 def lowPeriodPrimeList (η : HeckeFamily.Character) (S : Finset Id)
     (hS : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) : Finset PrimeIdeal :=
@@ -80,9 +79,9 @@ theorem low_canonical_polynomial_period_filter {ι : Type*} [Fintype ι]
     (fun i P=>lowSingleSlotWeight η (W i) (Y i) t (CompletedGauss.primaryGenerator P.val)) _ F
   intro i P hP hnot
   apply lowSingleSlotWeight_zero_of_period η S hS hbad (W i) (Y i) t _
-    (canonical_prime_calibration_coprime S hS P (hT i P hP) (hout i P hP))
+    (canonical_prime_calibration_coprime S hS P (by grind) (by grind))
   change ¬IsCoprime (Ideal.span {CompletedGauss.primaryGenerator P.val}) (lowPeriodIdeal η S hS)
-  rwa [span_primaryGenerator_of_supported P.val (hT i P hP)]
+  rwa [span_primaryGenerator_of_supported P.val (by grind)]
 
 end SevenEighths.ProbePhysical
 end

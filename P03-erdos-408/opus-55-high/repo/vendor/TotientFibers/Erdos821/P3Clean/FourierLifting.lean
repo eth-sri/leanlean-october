@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.FiniteFourier
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -55,10 +54,6 @@ theorem weighted_fourier_form (mass : α → ℝ) (H : α → α → G → ℂ)
       rw [finiteFourier_convolution_form]
     _ = _ := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro r _
-      apply Finset.sum_congr rfl
-      intro d _
       ring
 
 theorem translationLift_form (mass : α → ℝ) (H : α → α → G → ℂ)
@@ -78,7 +73,6 @@ theorem translationLift_form (mass : α → ℝ) (H : α → α → G → ℂ)
   intro r _
   symm
   apply Fintype.sum_equiv (Equiv.addLeft r)
-  intro d
   simp
 
 theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → ℂ) (C : ℝ)
@@ -95,7 +89,7 @@ theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → �
   simp only [norm_mul, Complex.norm_natCast] at h
   have hn : 0 < (Fintype.card G : ℝ) := by exact_mod_cast Fintype.card_pos
   rw [Real.sqrt_mul hn.le, Real.sqrt_mul hn.le] at h
-  have hr : (Real.sqrt (Fintype.card G : ℝ)) ^ 2 = (Fintype.card G : ℝ) :=
+  have hr :=
     Real.sq_sqrt hn.le
   have heq (U V : ℝ) : C * (Real.sqrt (Fintype.card G : ℝ) * Real.sqrt U) *
       (Real.sqrt (Fintype.card G : ℝ) * Real.sqrt V) =
@@ -103,7 +97,7 @@ theorem normBound_translationLift (mass : α → ℝ) (H : α → α → G → �
     calc
       _ = (Real.sqrt (Fintype.card G : ℝ)) ^ 2 *
           (C * Real.sqrt U * Real.sqrt V) := by ring
-      _ = _ := by rw [hr]
+      _ = _ := by simp
   rw [heq] at h
   have hh := le_of_mul_le_mul_left h hn
   rw [translationLift_form]

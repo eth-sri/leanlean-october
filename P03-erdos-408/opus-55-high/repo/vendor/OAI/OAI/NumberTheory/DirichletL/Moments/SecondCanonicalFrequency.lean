@@ -7,58 +7,57 @@ public import OAI.NumberTheory.DirichletL.Moments.SecondCanonical
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalFrequency
 open CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
 open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondLedger
 open CenteredMomentPartition CenteredMomentSupport CenteredMomentSupportedCorrelation
-open CenteredMomentCorrelation CenteredMomentUnequal
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentCorrelation
 
-theorem commonFrequencyGenerator_ne_zero (C D : Ideal O) (hC : Supported C) :
+theorem commonFrequencyGenerator_ne_zero (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) :
     commonFrequencyGenerator C D≠0 := by
   apply Finset.prod_ne_zero_iff.mpr
   intro P hP
   exact pow_ne_zero _ (supported_element_ne_zero _ (commonPrime_supported C D hC P))
 
-theorem commonFrequencyGenerator_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem commonFrequencyGenerator_dvd (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) :
     commonFrequencyGenerator C D∣primaryGenerator C ∧
     commonFrequencyGenerator C D∣primaryGenerator D := by
   rw [←left_generator_product C D hC hCD,←right_generator_product C D hC hD hCD]
   constructor
-  · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (min_le_left _ _))
-  · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (min_le_right _ _))
+  · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (by omega))
+  · exact Finset.prod_dvd_prod_of_dvd _ _ (fun P _=>pow_dvd_pow _ (by omega))
 
-theorem idealCorrelation_zero_outside_common (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem idealCorrelation_zero_outside_common (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (j : O) (hj : ¬commonFrequencyGenerator C D∣j) : idealCorrelation C D hC hD j=0 := by
+    (j : ActualEisensteinCubic.O) (hj : ¬commonFrequencyGenerator C D∣j) : idealCorrelation C D hC hD j=0 := by
   have hd := commonFrequencyGenerator_dvd C D hC hD hCD
   let := finite_quotient_span (supported_primaryGenerator_ne_zero C hC)
   let := finite_quotient_span (supported_primaryGenerator_ne_zero D hD)
-  let : Fintype (O⧸Ideal.span {primaryGenerator C}) := Fintype.ofFinite _
-  let : Fintype (O⧸Ideal.span {primaryGenerator D}) := Fintype.ofFinite _
+  let : Fintype (ActualEisensteinCubic.O⧸Ideal.span {primaryGenerator C}) := Fintype.ofFinite _
+  let : Fintype (ActualEisensteinCubic.O⧸Ideal.span {primaryGenerator D}) := Fintype.ofFinite _
   unfold idealCorrelation actualCorrelation
   exact fullModulusCorrelation_eq_zero_of_common_not_dvd _ _ _ _ _ _ hd.1 hd.2 hj
 
-def canonicalPartition (C D : Ideal O) (U : Finset (CommonIndex C D)) (w : O) : Prop :=
+def canonicalPartition (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) (w : ActualEisensteinCubic.O) : Prop :=
   actualUnitSet (commonPrime C D) (leftExponent C D) (rightExponent C D) w=U
 
-def canonicalPartitionScalar (C D : Ideal O) (U : Finset (CommonIndex C D)) (w : O) : ℂ :=
+def canonicalPartitionScalar (C D : Ideal ActualEisensteinCubic.O) (U : Finset (CommonIndex C D)) (w : ActualEisensteinCubic.O) : ℂ :=
   if canonicalPartition C D U w then
     (partitionNormalizer (commonPrime C D) (leftExponent C D) (rightExponent C D) U:ℂ)⁻¹ else 0
 
-theorem actual_ideal_partition_scalar (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem actual_ideal_partition_scalar (C D : Ideal ActualEisensteinCubic.O) (hC : Supported C) (hD : Supported D)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O) :
+    (U : Finset (CommonIndex C D)) (w : ActualEisensteinCubic.O) :
     ‖canonicalPartitionScalar C D U w*
       idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)‖≤1 := by
   let (P : CommonIndex C D) : (Ideal.span {commonPrime C D P}).IsMaximal := by
     rw [commonPrime_span C D hC P];infer_instance
   have hg (P : CommonIndex C D) : goodLambda∉Ideal.span {commonPrime C D P} := by
     rw [commonPrime_span C D hC P];exact common_good C D hC P
-  have hc (P : CommonIndex C D) : ringChar (O⧸Ideal.span {commonPrime C D P})≠2 := by
+  have hc (P : CommonIndex C D) : ringChar (ActualEisensteinCubic.O⧸Ideal.span {commonPrime C D P})≠2 := by
     rw [commonPrime_span C D hC P];exact common_odd C D hC P
   have hp : canonicalPartition C D U w→∀ i∈U,
       leftExponent C D i=rightExponent C D i ∧ ¬6∣leftExponent C D i ∧

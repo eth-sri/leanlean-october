@@ -7,10 +7,10 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.RowPartition
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
+open HeckeInverseAmplification
 
 def smallDyadicIndices (L : ℝ) : Finset ℕ :=
   (Finset.range (Nat.find (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))).filter (fun n=>(2:ℝ)^n≤L)
@@ -18,12 +18,12 @@ def smallDyadicIndices (L : ℝ) : Finset ℕ :=
 @[simp] lemma mem_smallDyadicIndices {L : ℝ} {n : ℕ} : n∈smallDyadicIndices L ↔ (2:ℝ)^n≤L := by
   simp only [smallDyadicIndices,Finset.mem_filter,Finset.mem_range]
   constructor
-  · exact And.right
+  · simp
   · intro hn
     refine ⟨?_,hn⟩
     by_contra h
     have hp := pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (not_lt.mp h)
-    exact not_lt_of_ge (hp.trans hn) (Nat.find_spec (pow_unbounded_of_one_lt L (by norm_num : (1:ℝ)<2)))
+    grind
 
 def smallDyadicRows (L : ℝ) (n : ℕ) : Finset FreeRow := (dyadicRows 1 n).filter (fun u=>rowNorm u<L)
 
@@ -46,10 +46,10 @@ lemma small_rows_biUnion (L : ℝ) :
   · intro hu
     have hh := mem_rowBand.mp hu
     obtain ⟨n,hn⟩ := exists_dyadicRows 1 (by norm_num) u hh.1 hh.2.1
-    refine Finset.mem_biUnion.mpr ⟨n,?_,mem_smallDyadicRows.mpr ⟨hn,hh.2.2⟩⟩
+    refine Finset.mem_biUnion.mpr ⟨n,?_,mem_smallDyadicRows.mpr (by grind)⟩
     rw [mem_smallDyadicIndices]
     have hlo := (mem_dyadicRows.mp hn).2.1
-    simpa only [one_mul] using hlo.trans hh.2.2.le
+    linarith
 
 lemma sum_small_dyadicRows (L : ℝ) (f : FreeRow→ℂ) :
     (∑u∈rowBand 1 L,f u)=∑n∈smallDyadicIndices L,∑u∈smallDyadicRows L n,f u := by

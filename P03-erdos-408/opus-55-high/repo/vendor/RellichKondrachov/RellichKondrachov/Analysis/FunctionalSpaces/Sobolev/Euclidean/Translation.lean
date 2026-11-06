@@ -36,7 +36,7 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
+open scoped MeasureTheory
 open MeasureTheory
 
 section Topology

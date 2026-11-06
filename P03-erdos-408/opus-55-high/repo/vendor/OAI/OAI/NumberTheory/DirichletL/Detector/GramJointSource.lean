@@ -10,22 +10,20 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss RayFourExpansion
-open CenteredMomentSupportedCorrelation CenteredMomentCorrelation
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
+open CenteredMomentSupportedCorrelation
+local notation "Id" => Ideal ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 
 theorem jointExtension_source (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C k : O) (hC : Supported (Ideal.span {C}))
-    (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (hpr : λ₀^2∣r-1) (hk : k=u.val*λ₀^a*(2:O)^b*r)
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+    (C k : ActualEisensteinCubic.O) (hC : Supported (Ideal.span {C}))
+    (u : ActualEisensteinCubic.Oˣ) (a b : ℕ) (r : ActualEisensteinCubic.O) (hr : Supported (Ideal.span {r}))
+    (hpr : ConcretePrimeRowBridge.goodLambda^2∣r-1) (hk : k=u.val*ConcretePrimeRowBridge.goodLambda^a*(2:ActualEisensteinCubic.O)^b*r)
+    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉P i) (c : ι→ℕ)
     (hc : ∀i,1≤c i) (hcop : Pairwise (Function.onFun IsCoprime P))
     (he : Ideal.span {C}=∏i,P i^c i)
-    [Fintype (O⧸∏i,P i^c i)] [∀i,Fintype (O⧸P i^c i)]
-    (n₁ n₂ : O) (h₁ : Supported (Ideal.span {n₁})) (h₂ : Supported (Ideal.span {n₂}))
-    (hp₁ : λ₀^2∣n₁-1) (hp₂ : λ₀^2∣n₂-1) (hn : IsCoprime n₁ n₂) :
+    [Fintype (ActualEisensteinCubic.O⧸∏i,P i^c i)] [∀i,Fintype (ActualEisensteinCubic.O⧸P i^c i)]
+    (n₁ n₂ : ActualEisensteinCubic.O) (h₁ : Supported (Ideal.span {n₁})) (h₂ : Supported (Ideal.span {n₂}))
+    (hp₁ : ConcretePrimeRowBridge.goodLambda^2∣n₁-1) (hp₂ : ConcretePrimeRowBridge.goodLambda^2∣n₂-1) (hn : IsCoprime n₁ n₂) :
     jointExtension S hS σ C k u a b r hr P hg c n₁ n₂=
       primaryCoefficient S hS σ (C*n₁)*star (primaryCoefficient S hS σ (C*n₂))*
         actualCorrelation (C*n₁) (C*n₂) (supported_mul_elements C n₁ hC h₁)
@@ -42,7 +40,7 @@ lemma lowGramCoefficient_eq_primary (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (s : {I : Id // Supported I}) :
     lowGramCoefficient (calibrationForSet S hS) σ s=
       primaryCoefficient S hS σ (primaryGenerator s.val) := by
-  have hp : λ₀^2∣primaryGenerator s.val-1 := (primaryGenerator_spec s.val
+  have hp : ConcretePrimeRowBridge.goodLambda^2∣primaryGenerator s.val-1 := (primaryGenerator_spec s.val
     (supported_primaryGenerator_ne_zero s.val s.property)).2
   rw [primaryCoefficient,ite_eq_left hp]
   exact lowGramCoefficient_eq_extension S hS hbad σ s

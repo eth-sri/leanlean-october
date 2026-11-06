@@ -65,7 +65,7 @@ lemma log_bounds_of_mem {x u v : ℝ} (hx : 1 < x) {q : ℕ} (hq : q ∈ primesI
   have hq0 : (0 : ℝ) < q := by exact_mod_cast hp.pos
   constructor
   · rw [← Real.log_rpow hx0]
-    exact Real.log_lt_log (Real.rpow_pos_of_pos hx0 u) hlt
+    exact Real.log_lt_log (by positivity) hlt
   · rw [← Real.log_rpow hx0]
     exact Real.log_le_log hq0 hle
 
@@ -82,9 +82,7 @@ lemma gridCell_disjoint {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) {i j : ℕ} (h
     have := Real.rpow_le_rpow_of_exponent_le hx.le
       (show b + ((i : ℝ) + 1) * m ≤ b + j * m by nlinarith)
     linarith
-  rcases lt_or_gt_of_ne hij with h | h
-  · exact key i j h
-  · exact (key j i h).symm
+  grind
 
 /-- The first `J` grid cells lie in `(x^b, x^{b + J m}]`. -/
 lemma biUnion_gridCell_subset {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ) :
@@ -94,7 +92,7 @@ lemma biUnion_gridCell_subset {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ
   obtain ⟨hp, hlo, hhi⟩ := mem_primesIoc.1 hq
   have hj' : ((j : ℝ) + 1) ≤ J := by exact_mod_cast mem_range.1 hj
   refine mem_primesIoc.2 ⟨hp, lt_of_le_of_lt ?_ hlo, hhi.trans ?_⟩
-  · exact Real.rpow_le_rpow_of_exponent_le hx.le (by nlinarith [(j.cast_nonneg : (0:ℝ) ≤ j)])
+  · exact Real.rpow_le_rpow_of_exponent_le hx.le (by nlinarith)
   · exact Real.rpow_le_rpow_of_exponent_le hx.le (by nlinarith)
 
 /-- A nonnegative sum over the first `J` grid cells is at most the sum over
@@ -104,7 +102,7 @@ lemma sum_gridCell_le {x b m : ℝ} (hx : 1 < x) (hm : 0 ≤ m) (J : ℕ) {f : �
     ∑ j ∈ range J, ∑ q ∈ gridCell x b m j, f q ≤
       ∑ q ∈ primesIoc (x ^ b) (x ^ (b + J * m)), f q := by
   rw [← sum_biUnion fun i _ j _ hij => gridCell_disjoint hx hm hij]
-  exact sum_le_sum_of_subset_of_nonneg (biUnion_gridCell_subset hx hm J) fun q _ _ => hf q
+  exact sum_le_sum_of_subset_of_nonneg (biUnion_gridCell_subset hx hm J) (by grind)
 
 /-- Elements of `primesIoc` are prime. -/
 lemma prime_of_mem_primesIoc {y z : ℝ} {q : ℕ} (hq : q ∈ primesIoc y z) : q.Prime :=
@@ -128,7 +126,7 @@ lemma mertens_second_rpow : ∃ E : ℝ, 0 ≤ E ∧ ∀ x u v : ℝ, 1 < x → 
   obtain ⟨E, hE, h⟩ := mertens_second
   refine ⟨E, hE, fun x u v hx hu huv h2 => ?_⟩
   have hx0 : 0 < x := by linarith
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have := h (x ^ u) (x ^ v) h2 (Real.rpow_le_rpow_of_exponent_le hx.le huv)
   rwa [Real.log_rpow hx0, Real.log_rpow hx0, mul_div_mul_right _ _ hL.ne'] at this
 
@@ -141,7 +139,7 @@ lemma abs_mul_sum_inv_sub_le {E : ℝ}
       E / Real.log x + m * ∑ r ∈ primesIoc (x ^ v) (x ^ (v + m)), (1 : ℝ) / r := by
   set S := primesIoc (x ^ v) (x ^ (v + m))
   set H := ∑ r ∈ S, (1 : ℝ) / r
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hG := hE x v (v + m) hx hv (by linarith)
   rw [add_sub_cancel_left] at hG
   have hpos : ∀ r ∈ S, (0 : ℝ) < r := fun r hr => by
@@ -151,25 +149,25 @@ lemma abs_mul_sum_inv_sub_le {E : ℝ}
     rw [mul_sum]
     refine sum_le_sum fun r hr => ?_
     rw [mul_one_div]
-    exact div_le_div_of_nonneg_right (log_bounds_of_mem hx hr).1.le (hpos r hr).le
+    exact div_le_div_of_nonneg_right (log_bounds_of_mem hx hr).1.le (by positivity)
   have hhi : ∑ r ∈ S, Real.log r / r ≤ (v + m) * Real.log x * H := by
     rw [mul_sum]
     refine sum_le_sum fun r hr => ?_
     rw [mul_one_div]
-    exact div_le_div_of_nonneg_right (log_bounds_of_mem hx hr).2 (hpos r hr).le
-  have hH : 0 ≤ H := sum_nonneg fun r hr => (one_div_pos.2 (hpos r hr)).le
+    exact div_le_div_of_nonneg_right (log_bounds_of_mem hx hr).2 (by positivity)
+  have hH : 0 ≤ H := by positivity
   set G := ∑ r ∈ S, Real.log r / r
   rw [abs_le] at hG
   have h1 : (v * H - m) * Real.log x ≤ E / Real.log x * Real.log x := by
     rw [div_mul_cancel₀ _ hL.ne']
-    nlinarith [hG.2]
+    nlinarith
   have h2 : (m - v * H - m * H) * Real.log x ≤ E / Real.log x * Real.log x := by
     rw [div_mul_cancel₀ _ hL.ne']
-    nlinarith [hG.1]
+    nlinarith
   have h1' := le_of_mul_le_mul_right h1 hL
   have h2' := le_of_mul_le_mul_right h2 hL
   rw [abs_le]
-  constructor <;> nlinarith [mul_nonneg hm hH]
+  constructor <;> nlinarith
 
 /-! ### The spare coordinate -/
 
@@ -211,11 +209,10 @@ def Admissible (x s : ℝ) (X : Finset ℕ) : Prop :=
 lemma log_two_mul_div {x : ℝ} (hx : 1 < x) {V : ℕ} (hV : 0 < V) :
     Real.log (2 * x / V) =
       (1 - Real.log V / Real.log x + Real.log 2 / Real.log x) * Real.log x := by
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hV' : (0 : ℝ) < V := by exact_mod_cast hV
   rw [Real.log_div (by positivity) hV'.ne', Real.log_mul two_ne_zero (by positivity)]
-  field_simp
-  ring
+  grind
 
 /-- The spare weight is `(δ + j m) / (1 - log V / L + log 2 / L)`. -/
 lemma spareWeight_eq {c x : ℝ} (hx : 1 < x) {V : ℕ} (hV : 0 < V) (j : ℕ) :
@@ -326,7 +323,7 @@ lemma abs_one_sub_spareModel_le : ∃ E₁ E₂ : ℝ, 0 ≤ E₁ ∧ 0 ≤ E₂
     refine ⟨sum_nonneg fun j hj => mul_nonneg (hvj j hj).1 (hH' j).1, ?_⟩
     calc G' ≤ ∑ j ∈ range J, 1 * (2 / x ^ a) :=
           sum_le_sum fun j hj => mul_le_mul (hvj j hj).2 (hH' j).2 (hH' j).1 zero_le_one
-      _ = J * (2 / x ^ a) := by rw [sum_const, card_range, nsmul_eq_mul, one_mul]
+      _ = J * (2 / x ^ a) := by simp
       _ ≤ 1 / m * (2 / x ^ a) := by gcongr
       _ = 2 / (m * x ^ a) := by field_simp
   rw [hA, show 1 - (G - G') / D = (D - G + G') / D by field_simp; ring,
@@ -346,7 +343,7 @@ lemma spareWeight_mem_Icc {c x s : ℝ} {X : Finset ℕ} (hx : 1 < x) (hm : 0 < 
     (hadm : Admissible x s X) {j : ℕ} (hj : j < spareCount c x s) :
     0 ≤ spareWeight c x (∏ q ∈ X, q) j ∧ spareWeight c x (∏ q ∈ X, q) j ≤ 1 := by
   obtain ⟨hs0, hs1, -, hX, -, hthi⟩ := hadm
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hV : 0 < ∏ q ∈ X, q := prod_pos fun q hq => (hX q hq).1.pos
   have h2 := div_nonneg (Real.log_nonneg one_le_two) hL.le
   have hy : 0 ≤ (1 - 2 * spareOffset c x - s) / mesh x := div_nonneg (by linarith) hm.le
@@ -365,7 +362,7 @@ lemma prod_mul_dvd_iff {X : Finset ℕ} (hX : ∀ q ∈ X, q.Prime) {r : ℕ} (h
   refine ⟨fun h => ⟨(dvd_mul_right _ _).trans h, (dvd_mul_left _ _).trans h⟩,
     fun ⟨h₁, h₂⟩ => Nat.Coprime.mul_dvd_of_dvd_of_dvd ?_ h₁ h₂⟩
   exact Nat.Coprime.prod_left fun q hq =>
-    (Nat.coprime_primes (hX q hq) hr).2 fun h => hrX (h ▸ hq)
+    (Nat.coprime_primes (by grind) hr).2 (by grind)
 
 /-- `0 ≤ Z_X(n) ≤ 1` exactly when `∏ X ∣ n < 2x`: the spare primes are distinct prime
 factors of `n / ∏ X` with `(δ + j m) L < log r`. -/
@@ -376,7 +373,7 @@ lemma spareKernel_mem_Icc {c x s : ℝ} (hx : 1 < x) (hδ : 0 ≤ spareOffset c 
   set V := ∏ q ∈ X, q
   set J := spareCount c x s
   have hx0 : 0 < x := by linarith
-  have hL : 0 < Real.log x := Real.log_pos hx
+  have hL := Real.log_pos hx
   have hV : 0 < V := prod_pos fun q hq => (hX q hq).pos
   have hV' : (0 : ℝ) < V := by exact_mod_cast hV
   have hVn : (V : ℝ) ≤ n := by exact_mod_cast Nat.le_of_dvd hn0 hXn
@@ -384,7 +381,7 @@ lemma spareKernel_mem_Icc {c x s : ℝ} (hx : 1 < x) (hδ : 0 ≤ spareOffset c 
     Real.log_pos ((one_lt_div hV').2 (hVn.trans_lt hn))
   set F : ℕ → Finset ℕ := fun j => (spareCell c x j).filter fun r => r ∉ X ∧ r ∣ n
   refine ⟨sum_nonneg fun j _ => sum_nonneg fun r _ =>
-    div_nonneg (mul_nonneg (by positivity) hL.le) hℓ.le, ?_⟩
+    div_nonneg (by positivity) hℓ.le, ?_⟩
   -- termwise `w_j ≤ log r / log(2x / V)`
   have hterm : ∀ j, ∀ r ∈ F j, spareWeight c x V j ≤ Real.log r / Real.log (2 * x / V) := by
     intro j r hr
@@ -395,21 +392,20 @@ lemma spareKernel_mem_Icc {c x s : ℝ} (hx : 1 < x) (hδ : 0 ≤ spareOffset c 
   have hdisj : (↑(range J) : Set ℕ).PairwiseDisjoint F := fun i _ j _ hij =>
     (gridCell_disjoint hx hm hij).mono (filter_subset _ _) (filter_subset _ _)
   have hRX : Disjoint R X := disjoint_left.2 fun r hr hrX => by
-    obtain ⟨j, _, hr⟩ := mem_biUnion.1 hr
-    exact (mem_filter.1 hr).2.1 hrX
+    grind
   have hR : ∀ r ∈ R, r.Prime ∧ r ∣ n := fun r hr => by
     obtain ⟨j, _, hr⟩ := mem_biUnion.1 hr
-    exact ⟨prime_of_mem_primesIoc (mem_filter.1 hr).1, (mem_filter.1 hr).2.2⟩
+    exact ⟨prime_of_mem_primesIoc (mem_filter.1 hr).1, by grind⟩
   have hdvd : (∏ r ∈ R ∪ X, r) ∣ n := by
     refine prod_primes_dvd n (fun r hr => ?_) fun r hr => ?_
     · rcases mem_union.1 hr with hr | hr
       exacts [(hR r hr).1.prime, (hX r hr).prime]
     · rcases mem_union.1 hr with hr | hr
-      exacts [(hR r hr).2, (dvd_prod_of_mem _ hr).trans hXn]
+      exacts [(by grind), (dvd_prod_of_mem _ hr).trans hXn]
   rw [prod_union hRX] at hdvd
   have hRpos : 0 < ∏ r ∈ R, r := prod_pos fun r hr => (hR r hr).1.pos
   have hlog : Real.log (∏ r ∈ R, r : ℕ) ≤ Real.log (2 * x / V) := by
-    refine Real.log_le_log (by exact_mod_cast hRpos) ?_
+    refine Real.log_le_log (by positivity) ?_
     rw [le_div_iff₀ hV']
     have : ((∏ r ∈ R, r : ℕ) : ℝ) * V ≤ n := by exact_mod_cast Nat.le_of_dvd hn0 hdvd
     linarith
@@ -448,7 +444,7 @@ lemma abs_sum_sub_le_of_kernel {β : Type*} (P : Finset ℕ) (D : Finset β)
       ∑ p ∈ P, ∑ Q ∈ D with dv p Q, B Q * Z p Q +
         ∑ p ∈ P, ∑ Q ∈ D with dv p Q, B Q * (1 - Z p Q) := by
     rw [← sum_add_distrib]
-    exact sum_congr rfl fun p _ => by rw [← sum_add_distrib]; exact sum_congr rfl fun Q _ => by ring
+    exact sum_congr rfl fun p _ => by rw [← sum_add_distrib]; ring
   -- `|∑ B (1 - Z)| ≤ ∑ (1 - Z) = ∑ 1 - ∑ Z`
   have hrest : |∑ p ∈ P, ∑ Q ∈ D with dv p Q, B Q * (1 - Z p Q)| ≤
       ∑ p ∈ P, ∑ Q ∈ D with dv p Q, (1 : ℝ) - ∑ p ∈ P, ∑ Q ∈ D with dv p Q, Z p Q := by
@@ -497,11 +493,11 @@ lemma sum_mul_spareKernel {α : Type*} {c x s : ℝ} (box : Finset α) (X : α �
   · rw [spareKernel, mul_sum]
     refine sum_congr rfl fun j _ => ?_
     rw [mul_sum]
-    refine sum_congr (filter_congr fun r hr => ?_) fun _ _ => rfl
+    refine sum_congr (filter_congr fun r hr => ?_) (by simp)
     have hr := prime_of_mem_primesIoc hr
     constructor
-    · exact fun ⟨hrX, hrn⟩ => ⟨hrX, (prod_mul_dvd_iff (hX Q hQ) hr hrX).2 ⟨h, hrn⟩⟩
-    · exact fun ⟨hrX, hrn⟩ => ⟨hrX, ((prod_mul_dvd_iff (hX Q hQ) hr hrX).1 hrn).2⟩
+    · exact fun ⟨hrX, hrn⟩ => ⟨hrX, (prod_mul_dvd_iff (by grind) hr hrX).2 (by omega)⟩
+    · exact fun ⟨hrX, hrn⟩ => ⟨hrX, ((prod_mul_dvd_iff (by grind) hr hrX).1 hrn).2⟩
   · refine (sum_eq_zero fun j _ => sum_eq_zero fun r hr => ?_).symm
     exact absurd ((dvd_mul_right _ _).trans (mem_filter.1 hr).2.2) h
 
@@ -517,8 +513,7 @@ lemma sum_mul_spareModel {α : Type*} {c x s : ℝ} (box : Finset α) (X : α �
   rw [spareModel, mul_sum, sum_div]
   refine sum_congr rfl fun j _ => ?_
   rw [mul_sum, mul_sum, sum_div]
-  refine sum_congr rfl fun r _ => ?_
-  ring
+  grind
 
 /-- The spare-slot removal over a family of boxes: if the rectangle statistic holds on
 every box times every admissible spare cell with coefficients on the box, and holds
@@ -545,7 +540,7 @@ lemma abs_sum_sigma_sub_le {ι α : Type*} [DecidableEq α] {c x ε₁ ε₂ M J
         P.card * ∑ z ∈ boxes.sigma box, B z.2 / (∏ q ∈ X z.2, q : ℕ)| ≤
       P.card * (2 * (boxes.card * Jmax * ε₁) + boxes.card * ε₁ + 2 * (M * ε₂)) := by
   have hN : (0 : ℝ) ≤ P.card := P.card.cast_nonneg
-  have hX : ∀ β ∈ boxes, ∀ Q ∈ box β, ∀ q ∈ X Q, q.Prime := fun β hβ Q hQ q hq =>
+  have hX := fun β hβ Q hQ q hq =>
     ((hadm β hβ Q hQ).2.2.2.1 q hq).1
   have hV : ∀ z ∈ boxes.sigma box, (0 : ℝ) < (∏ q ∈ X z.2, q : ℕ) := fun z hz => by
     obtain ⟨hβ, hQ⟩ := mem_sigma.1 hz
@@ -583,7 +578,7 @@ lemma abs_sum_sigma_sub_le {ι α : Type*} [DecidableEq α] {c x ε₁ ε₂ M J
               (fun Q => B' ⟨β, Q⟩) (p - 1)).trans ?_
             refine sum_congr rfl fun j _ => sum_congr rfl fun Q hQ =>
               sum_congr rfl fun r _ => ?_
-            simp only [hbdef, hQ, ↓reduceIte]
+            grind
         _ = _ := by
             rw [sum_comm]
             exact sum_congr rfl fun β _ => sum_comm
@@ -609,7 +604,7 @@ lemma abs_sum_sigma_sub_le {ι α : Type*} [DecidableEq α] {c x ε₁ ε₂ M J
       _ ≤ ∑ β ∈ boxes, Jmax * (P.card * ε₁) := sum_le_sum fun β hβ => by
           rw [sum_const, card_range, nsmul_eq_mul]
           gcongr
-          exact hJ β hβ
+          grind
       _ = _ := by rw [sum_const, nsmul_eq_mul]; ring
   have h₁' := hw (fun _ => 1) fun _ => by simp
   simp only [one_mul] at h₁'
@@ -633,7 +628,7 @@ lemma abs_sum_sigma_sub_le {ι α : Type*} [DecidableEq α] {c x ε₁ ε₂ M J
             exact div_le_div_of_nonneg_right (hA _ hβ _ hQ) (hV z hz).le
       _ = ε₂ * ∑ β ∈ boxes, ∑ Q ∈ box β, (1 : ℝ) / (∏ q ∈ X Q, q : ℕ) := by
           rw [← mul_sum, sum_sigma]
-      _ ≤ M * ε₂ := by rw [mul_comm]; exact mul_le_mul_of_nonneg_right hmass hε₂
+      _ ≤ M * ε₂ := by nlinarith
   exact abs_sum_sub_le_of_kernel P (boxes.sigma box) (fun p z => (∏ q ∈ X z.2, q) ∣ p - 1)
     (fun z => B z.2) (fun z => spareModel c x (s z.1) (X z.2))
     (fun z => ((∏ q ∈ X z.2, q : ℕ) : ℝ)) (fun p z => spareKernel c x (s z.1) (X z.2) (p - 1))
@@ -661,17 +656,15 @@ lemma mem_slotTuples {x : ℝ} (hx : 0 ≤ x) {k : ℕ} (u v : Fin k → ℝ) (Q
 lemma sum_slotTuples_one {x : ℝ} (hx : 0 ≤ x) (u v : Fin 1 → ℝ) (F : (Fin 1 → ℕ) → ℝ) :
     ∑ Q ∈ slotTuples x u v, F Q = ∑ q ∈ primesIoc (x ^ u 0) (x ^ v 0), F ![q] := by
   refine sum_nbij' (fun Q => Q 0) (fun q => ![q]) (fun Q hQ => ?_) (fun q hq => ?_)
-    (fun Q _ => ?_) (fun q _ => rfl) (fun Q _ => ?_)
+    (fun Q _ => ?_) (by simp) (fun Q _ => ?_)
   · exact ((mem_slotTuples hx u v Q).1 hQ).1 0
   · refine (mem_slotTuples hx u v _).2 ⟨fun i => ?_, Function.injective_of_subsingleton _⟩
     rwa [Fin.fin_one_eq_zero i]
   · funext i
-    rw [Fin.fin_one_eq_zero i]
-    rfl
+    simp [Fin.fin_one_eq_zero i]
   · congr 1
     funext i
-    rw [Fin.fin_one_eq_zero i]
-    rfl
+    simp [Fin.fin_one_eq_zero i]
 
 /-- `slotTuples` with two slots. -/
 lemma sum_slotTuples_two {x : ℝ} (hx : 0 ≤ x) (u v : Fin 2 → ℝ) (F : (Fin 2 → ℕ) → ℝ) :
@@ -684,15 +677,15 @@ lemma sum_slotTuples_two {x : ℝ} (hx : 0 ≤ x) (u v : Fin 2 → ℝ) (F : (Fi
     simp only [sum_filter, sum_product]
   rw [this]
   refine sum_nbij' (fun Q => (Q 0, Q 1)) (fun y => ![y.1, y.2]) (fun Q hQ => ?_)
-    (fun y hy => ?_) (fun Q _ => ?_) (fun y _ => rfl) (fun Q _ => ?_)
+    (fun y hy => ?_) (fun Q _ => ?_) (by simp) (fun Q _ => ?_)
   · obtain ⟨h, hinj⟩ := (mem_slotTuples hx u v Q).1 hQ
-    exact mem_filter.2 ⟨mem_product.2 ⟨h 0, h 1⟩, fun h => absurd (hinj h) (by decide)⟩
+    grind
   · obtain ⟨hy, hne⟩ := mem_filter.1 hy
     obtain ⟨h0, h1⟩ := mem_product.1 hy
     refine (mem_slotTuples hx u v _).2 ⟨fun i => ?_, fun i j h => ?_⟩
     · fin_cases i
       exacts [h0, h1]
-    · fin_cases i <;> fin_cases j <;> simp_all [eq_comm]
+    · fin_cases i <;> fin_cases j <;> simp_all
   · funext i
     fin_cases i <;> rfl
   · congr 1
@@ -716,15 +709,12 @@ lemma sum_slotTuples_three {x : ℝ} (hx : 0 ≤ x) (u v : Fin 3 → ℝ) (F : (
     refine sum_congr rfl fun _ _ => sum_congr rfl fun _ _ => ?_
     split_ifs
     · rfl
-    · exact sum_const_zero.symm
+    · simp
   rw [this]
   refine sum_nbij' (fun Q => ((Q 0, Q 1), Q 2)) (fun w => ![w.1.1, w.1.2, w.2])
     (fun Q hQ => ?_) (fun w hw => ?_) (fun Q _ => ?_) (fun w _ => rfl) (fun Q _ => ?_)
   · obtain ⟨h, hinj⟩ := (mem_slotTuples hx u v Q).1 hQ
-    refine mem_filter.2 ⟨mem_product.2 ⟨mem_product.2 ⟨h 0, h 1⟩, h 2⟩,
-      fun h => absurd (hinj h) (by decide), ?_⟩
-    simp only [mem_insert, mem_singleton, not_or]
-    exact ⟨fun h => absurd (hinj h) (by decide), fun h => absurd (hinj h) (by decide)⟩
+    grind
   · obtain ⟨hw, hne, hX⟩ := mem_filter.1 hw
     obtain ⟨hw, h2⟩ := mem_product.1 hw
     obtain ⟨h0, h1⟩ := mem_product.1 hw
@@ -759,7 +749,7 @@ def RectangleAt (c C x : ℝ) : Prop :=
 lemma abs_sub_mul_le_of_div {S M ε N : ℝ} (hN : 0 < N) (h : |S / N - M| ≤ ε) :
     |S - N * M| ≤ N * ε := by
   rw [show S - N * M = N * (S / N - M) by field_simp, abs_mul, abs_of_pos hN]
-  exact mul_le_mul_of_nonneg_left h hN.le
+  simp_all
 
 /-- The rectangle statistic with one unweighted slot. -/
 lemma stat_zero {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
@@ -768,8 +758,8 @@ lemma stat_zero {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
     |∑ p ∈ dyadicPrimes x, ∑ q ∈ primesIoc (x ^ u) (x ^ v) with q ∣ p - 1, (1 : ℝ) -
         (dyadicPrimes x).card * ∑ q ∈ primesIoc (x ^ u) (x ^ v), (1 : ℝ) / q| ≤
       (dyadicPrimes x).card * (C / Real.log (Real.log x) ^ 300) := by
-  have h := hR 0 (by norm_num) ![u] ![v] (fun i => by fin_cases i; exact hu)
-    (by simpa using hv) (fun _ => 1) fun _ => by simp
+  have h := hR 0 (by norm_num) ![u] ![v] (fun i => by simp_all)
+    (by simp_all) (fun _ => 1) (by simp)
   have e₁ : ∀ n, ∑ Q ∈ slotTuples x ![u] ![v] with ∏ i, Q i ∣ n, (1 : ℝ) =
       ∑ q ∈ primesIoc (x ^ u) (x ^ v) with q ∣ n, (1 : ℝ) := fun n => by
     rw [sum_filter, sum_slotTuples_one hx, sum_filter]
@@ -779,7 +769,7 @@ lemma stat_zero {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
     rw [sum_slotTuples_one hx]
     simp
   simp only [e₁, e₂] at h
-  exact abs_sub_mul_le_of_div (by exact_mod_cast hP) h
+  exact abs_sub_mul_le_of_div (by positivity) h
 
 /-- The rectangle statistic with two slots and a coefficient on the first. -/
 lemma stat_one {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
@@ -792,7 +782,7 @@ lemma stat_one {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
           ∑ r ∈ primesIoc (x ^ u₁) (x ^ v₁) with r ≠ q, b q / (q * r)| ≤
       (dyadicPrimes x).card * (C / Real.log (Real.log x) ^ 300) := by
   have h := hR 1 (by norm_num) ![u₀, u₁] ![v₀, v₁] (fun i => by fin_cases i <;> assumption)
-    (by simpa using hv) (fun Q => b (Q 0)) fun _ => hb _
+    (by simp_all) (fun Q => b (Q 0)) (by grind)
   have e₁ : ∀ n, ∑ Q ∈ slotTuples x ![u₀, u₁] ![v₀, v₁] with ∏ i, Q i ∣ n, b (Fin.init Q 0) =
       ∑ q ∈ primesIoc (x ^ u₀) (x ^ v₀),
         ∑ r ∈ primesIoc (x ^ u₁) (x ^ v₁) with r ≠ q ∧ q * r ∣ n, b q := fun n => by
@@ -808,7 +798,7 @@ lemma stat_one {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
     rw [sum_slotTuples_two hx]
     simp [Fin.init]
   simp only [e₁, e₂] at h
-  exact abs_sub_mul_le_of_div (by exact_mod_cast hP) h
+  exact abs_sub_mul_le_of_div (by positivity) h
 
 /-- The rectangle statistic with three slots and a joint coefficient on the first two. -/
 lemma stat_two {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
@@ -828,7 +818,7 @@ lemma stat_two {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
       (dyadicPrimes x).card * (C / Real.log (Real.log x) ^ 300) := by
   have h := hR 2 le_rfl ![u₀, u₁, u₂] ![v₀, v₁, v₂]
     (fun i => by fin_cases i <;> assumption) (by simpa [Fin.sum_univ_three] using hv)
-    (fun Q => b (Q 0, Q 1)) fun _ => hb _
+    (fun Q => b (Q 0, Q 1)) (by grind)
   have e₁ : ∀ n, ∑ Q ∈ slotTuples x ![u₀, u₁, u₂] ![v₀, v₁, v₂] with ∏ i, Q i ∣ n,
       b (Fin.init Q 0, Fin.init Q 1) =
         ∑ y ∈ primesIoc (x ^ u₀) (x ^ v₀) ×ˢ primesIoc (x ^ u₁) (x ^ v₁) with y.1 ≠ y.2,
@@ -849,7 +839,7 @@ lemma stat_two {c C x : ℝ} (hR : RectangleAt c C x) (hx : 0 ≤ x)
     refine sum_congr rfl fun y _ => sum_congr rfl fun r _ => ?_
     simp [Fin.init, Fin.prod_univ_three]
   simp only [e₁, e₂] at h
-  exact abs_sub_mul_le_of_div (by exact_mod_cast hP) h
+  exact abs_sub_mul_le_of_div (by positivity) h
 
 /-! ### Asymptotics of the scales -/
 
@@ -899,7 +889,7 @@ lemma consts : 12 * c ≤ T ∧ 6 * |Real.log c| ≤ T ∧ 200 ≤ T ∧ 12 * E�
   have := div_nonneg h.E₂_nonneg h.pos.le
   have := one_div_pos.2 h.pos
   unfold scaleConst at *
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> linarith
+  grind
 
 /-- `1 ≤ T`. -/
 lemma one_le : 1 ≤ T := by linarith [h.consts.2.2.1]
@@ -916,7 +906,7 @@ lemma pow_le_36 {n : ℕ} (hn : n ≤ 36) : T ^ n ≤ T ^ 36 := pow_le_pow_right
 /-- `K' T³⁶ ≤ L` for each `K' ≤ K`. -/
 lemma mul_le_L {K' : ℝ} (hK' : K' ≤ scaleConst c E₁ E₂) :
     K' * T ^ 36 ≤ L :=
-  le_trans (mul_le_mul_of_nonneg_right hK' (by have := h.pos_T; positivity)) h.le_L
+  le_trans (mul_le_mul_of_nonneg_right hK' (by positivity)) h.le_L
 
 /-- `0 < L`. -/
 lemma pos_L : 0 < L := by
@@ -953,7 +943,7 @@ lemma T_le_L_mul_margin : T ≤ L * (1 / T ^ 6) := by
   have := h.mul_le_L (K' := 24) h.consts.2.2.2.2.2.2.2
   calc T * T ^ 6 = T ^ 7 := by ring
     _ ≤ T ^ 36 := h.pow_le_36 (by norm_num)
-    _ ≤ 24 * T ^ 36 := by nlinarith [pow_pos h.pos_T 36]
+    _ ≤ 24 * T ^ 36 := by simp_all
     _ ≤ L := this
 
 /-- `2δ ≤ a`. -/
@@ -962,7 +952,7 @@ lemma two_mul_offset_le : 2 * (c / T ^ 20) ≤ 1 / T ^ 6 := by
   rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by positivity)]
   have := h.le_pow (n := 14) (by norm_num)
   calc 2 * c * T ^ 6 ≤ T ^ 14 * T ^ 6 := by
-        gcongr; linarith [h.consts.1, h.pos]
+        gcongr; linarith [h.consts.1]
     _ = 1 * T ^ 20 := by ring
 
 /-- `a ≤ 1 / 4`. -/
@@ -991,15 +981,13 @@ lemma defect_le {X : ℝ} (hX : L ≤ X) :
   have t₁ : 2 * (c / T ^ 20) ≤ u := by
     rw [mul_div_assoc', div_le_div_iff₀ (by positivity) h16]
     calc 2 * c * (6 * T ^ 16) = 12 * c * T ^ 16 := by ring
-      _ ≤ T ^ 4 * T ^ 16 := by gcongr; linarith
+      _ ≤ T ^ 4 * T ^ 16 := by nlinarith
       _ = 1 * T ^ 20 := by ring
   have t₂ : 3 * m ≤ u := by
     calc 3 * m ≤ 3 * (1 / T ^ 20) := by gcongr; exact h.mesh_le
       _ ≤ u := by
         rw [mul_one_div, div_le_div_iff₀ (by positivity) h16]
-        calc 3 * (6 * T ^ 16) = 18 * T ^ 16 := by ring
-          _ ≤ T ^ 4 * T ^ 16 := by gcongr; linarith
-          _ = 1 * T ^ 20 := by ring
+        nlinarith
   have t₃ : Real.log 2 / L ≤ u := by
     have := h.mul_le_L (K' := 24) hK₈
     calc Real.log 2 / L ≤ 1 / L :=
@@ -1053,7 +1041,7 @@ lemma defect_le {X : ℝ} (hX : L ≤ X) :
         rw [div_le_div_iff₀ hL0 h16]
         nlinarith
   calc _ ≤ (6 * u) / (1 / T ^ 6) := by gcongr; linarith
-    _ = 1 / T ^ 10 := by simp only [u]; field_simp
+    _ = 1 / T ^ 10 := by grind
 
 end ScaleHyp
 
@@ -1094,7 +1082,7 @@ lemma pred_of_mem_dyadicPrimes {x : ℝ} {p : ℕ} (hp : p ∈ dyadicPrimes x) :
       omega
     have := (Nat.le_floor_iff h0).1 this
     linarith
-  have : ((p - 1 : ℕ) : ℝ) < p := by exact_mod_cast (by omega : p - 1 < p)
+  have : ((p - 1 : ℕ) : ℝ) < p := by exact_mod_cast (by omega)
   linarith
 
 /-- `J ≤ 1 / m` spare cells. -/
@@ -1114,8 +1102,7 @@ lemma add_le_of_lt_spareCount {c x s : ℝ} (hm : 0 < mesh x) {j : ℕ}
   have h : ((j + 1 : ℕ) : ℝ) ≤ (1 - 2 * spareOffset c x - s) / mesh x :=
     (Nat.le_floor_iff' (Nat.succ_ne_zero j)).1 hj
   rw [le_div_iff₀ hm] at h
-  push_cast at h
-  linarith
+  grind
 
 /-- The harmonic mass of the first `J` cells is at most `log(1 / a) + 1 ≤ 7T`. -/
 lemma sum_cell_inv_le {E : ℝ}
@@ -1136,8 +1123,7 @@ lemma sum_cell_inv_le {E : ℝ}
           Real.log_le_log (by positivity) (div_le_div_of_nonneg_right hJ ha.le)
       _ = 6 * Real.log (Real.log (Real.log x)) := by
           rw [margin, one_div_one_div, Real.log_pow]
-          push_cast
-          ring
+          simp
       _ ≤ 6 * Real.log (Real.log x) := by
           have := Real.log_le_sub_one_of_pos (by linarith : 0 < Real.log (Real.log x))
           linarith
@@ -1157,7 +1143,7 @@ lemma total_error_le {T C nb M : ℝ} (hT : 1 ≤ T) (hnb : nb ≤ 4 * T ^ 40)
   have h₁ : nb * (2 * T ^ 20) * (|C| / T ^ 300) ≤ 8 * |C| / T ^ 7 := by
     calc nb * (2 * T ^ 20) * (|C| / T ^ 300) ≤ 4 * T ^ 40 * (2 * T ^ 20) * (|C| / T ^ 300) := by
           gcongr
-      _ = 8 * |C| / T ^ 240 := by field_simp; ring
+      _ = 8 * |C| / T ^ 240 := by grind
       _ ≤ 8 * |C| / T ^ 7 := by gcongr; norm_num
   have h₂ : nb * (|C| / T ^ 300) ≤ 4 * |C| / T ^ 7 := by
     calc nb * (|C| / T ^ 300) ≤ 4 * T ^ 40 * (|C| / T ^ 300) := by gcongr
@@ -1167,8 +1153,7 @@ lemma total_error_le {T C nb M : ℝ} (hT : 1 ≤ T) (hnb : nb ≤ 4 * T ^ 40)
     calc M * (1 / T ^ 10) ≤ 49 * T ^ 2 * (1 / T ^ 10) := by gcongr
       _ = 49 / T ^ 8 := by field_simp
       _ ≤ 49 / T ^ 7 := by gcongr; norm_num
-  calc _ ≤ 2 * (8 * |C| / T ^ 7) + 4 * |C| / T ^ 7 + 2 * (49 / T ^ 7) := by gcongr
-    _ = (20 * |C| + 98) / T ^ 7 := by ring
+  grind
 
 /-- A sum over a disjoint union as a sum over `Finset.sigma`. -/
 lemma sum_biUnion_eq_sum_sigma {ι α : Type*} [DecidableEq α] (s : Finset ι) (t : ι → Finset α)
@@ -1258,8 +1243,7 @@ lemma sum_pairs_filter (A B : Finset ℕ) (P : ℕ → ℕ → Prop) [∀ q r, D
   rw [filter_filter, sum_filter, sum_product]
   refine sum_congr rfl fun q _ => ?_
   rw [sum_filter]
-  exact sum_congr rfl fun r _ =>
-    if_congr ⟨fun h => ⟨Ne.symm h.1, h.2⟩, fun h => ⟨Ne.symm h.1, h.2⟩⟩ rfl rfl
+  grind
 
 /-- A sum over the off-diagonal pairs as an iterated sum. -/
 lemma sum_pairs (A B : Finset ℕ) (f : ℕ → ℕ → ℝ) :
@@ -1268,7 +1252,7 @@ lemma sum_pairs (A B : Finset ℕ) (f : ℕ → ℕ → ℝ) :
   rw [sum_filter, sum_product]
   refine sum_congr rfl fun q _ => ?_
   rw [sum_filter]
-  exact sum_congr rfl fun r _ => if_congr ⟨Ne.symm, Ne.symm⟩ rfl rfl
+  grind
 
 end SpareSlot
 
@@ -1293,20 +1277,20 @@ theorem spare_slot_one (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   set J₁ := cellCount₁ x
   set s : ℕ → ℝ := fun j => margin x + (j + 1) * mesh x
   have hx0 : 0 < x := by linarith
-  have hP : 0 < (dyadicPrimes x).card := dyadicPrimes_card_pos hx.le
+  have hP := dyadicPrimes_card_pos hx.le
   have hm := hS.pos_mesh
   have hT0 := hS.pos_T
-  have hδ : 0 < spareOffset c x := div_pos hc (pow_pos hT0 20)
+  have hδ : 0 < spareOffset c x := div_pos hc (by positivity)
   have hδa : 2 * spareOffset c x ≤ margin x := hS.two_mul_offset_le
   have ha : 0 < margin x := by linarith
   have hcδ : c / T ^ 20 ≤ margin x := by change spareOffset c x ≤ _; linarith
   have hLa : T ≤ Real.log x * margin x := hS.T_le_L_mul_margin
   have ha4 : margin x ≤ 1 / 4 := hS.margin_le
-  have hxa : Real.log x ≤ x ^ margin x := log_le_rpow hx hLa
+  have hxa := log_le_rpow hx hLa
   have h2a : 2 ≤ x ^ margin x := two_le_rpow hx (by linarith [hS.one_le])
   have h2δ : 2 ≤ x ^ spareOffset c x := two_le_rpow hx hS.le_L_mul_offset
   have hEa : E / (margin x * Real.log x) ≤ 1 := by
-    rw [div_le_one (mul_pos ha hS.pos_L), mul_comm]
+    rw [div_le_one (by linarith), mul_comm]
     exact hET.trans hLa
   have hJ₁ : (J₁ : ℝ) * mesh x ≤ 1 - 2 * margin x :=
     (le_div_iff₀ hm).1 (Nat.floor_le (div_nonneg (by linarith) hm.le))
@@ -1314,7 +1298,7 @@ theorem spare_slot_one (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   have hadm : ∀ j ∈ range J₁, ∀ q ∈ cell x j, Admissible x (s j) {q} := fun j hj q hq =>
     admissible_cell hx hm ha.le (mem_range.1 hj) hq
   have hA : ∀ j ∈ range J₁, ∀ q ∈ cell x j, |1 - spareModel c x (s j) {q}| ≤ 1 / T ^ 10 :=
-    fun j hj q hq => (hdef c x _ _ hx hm hδ h2δ hδa (hadm j hj q hq)).trans (hS.defect_le hxa)
+    fun j hj q hq => (hdef c x _ _ hx hm hδ h2δ hδa (by grind)).trans (hS.defect_le hxa)
   have hJ : ∀ j ∈ range J₁, (spareCount c x (s j) : ℝ) ≤ 2 * T ^ 20 := fun j _ =>
     (spareCount_le hm hδ.le (by positivity)).trans hS.inv_mesh_le
   have hmass : ∑ j ∈ range J₁, ∑ q ∈ cell x j, (1 : ℝ) / (∏ q' ∈ {q}, q' : ℕ) ≤ 7 * T := by
@@ -1397,20 +1381,20 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
   set T := Real.log (Real.log x)
   set J₂ := cellCount₂ x
   have hx0 : 0 < x := by linarith
-  have hP : 0 < (dyadicPrimes x).card := dyadicPrimes_card_pos hx.le
+  have hP := dyadicPrimes_card_pos hx.le
   have hm := hS.pos_mesh
   have hT0 := hS.pos_T
-  have hδ : 0 < spareOffset c x := div_pos hc (pow_pos hT0 20)
+  have hδ : 0 < spareOffset c x := div_pos hc (by positivity)
   have hδa : 2 * spareOffset c x ≤ margin x := hS.two_mul_offset_le
   have ha : 0 < margin x := by linarith
   have hcδ : c / T ^ 20 ≤ margin x := by change spareOffset c x ≤ _; linarith
   have hLa : T ≤ Real.log x * margin x := hS.T_le_L_mul_margin
   have ha4 : margin x ≤ 1 / 4 := hS.margin_le
-  have hxa : Real.log x ≤ x ^ margin x := log_le_rpow hx hLa
+  have hxa := log_le_rpow hx hLa
   have h2a : 2 ≤ x ^ margin x := two_le_rpow hx (by linarith [hS.one_le])
   have h2δ : 2 ≤ x ^ spareOffset c x := two_le_rpow hx hS.le_L_mul_offset
   have hEa : E / (margin x * Real.log x) ≤ 1 := by
-    rw [div_le_one (mul_pos ha hS.pos_L), mul_comm]
+    rw [div_le_one (by linarith), mul_comm]
     exact hET.trans hLa
   have hJ₂ : (J₂ : ℝ) * mesh x ≤ 1 - 3 * margin x :=
     (le_div_iff₀ hm).1 (Nat.floor_le (div_nonneg (by linarith) hm.le))
@@ -1422,14 +1406,14 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
     fun _ hj _ hQ => admissible_pairBox hx hm ha.le hj hQ
   have hA : ∀ j ∈ cellPairs₂ x, ∀ Q ∈ pairBox x j,
       |1 - spareModel c x (pairTop x j) {Q.1, Q.2}| ≤ 1 / T ^ 10 := fun j hj Q hQ =>
-    (hdef c x _ _ hx hm hδ h2δ hδa (hadm j hj Q hQ)).trans (hS.defect_le hxa)
+    (hdef c x _ _ hx hm hδ h2δ hδa (by grind)).trans (hS.defect_le hxa)
   have hJ : ∀ j ∈ cellPairs₂ x, (spareCount c x (pairTop x j) : ℝ) ≤ 2 * T ^ 20 := fun j _ =>
     (spareCount_le hm hδ.le (by unfold pairTop; positivity)).trans hS.inv_mesh_le
   have hmass : ∑ j ∈ cellPairs₂ x, ∑ Q ∈ pairBox x j,
       (1 : ℝ) / (∏ q ∈ ({Q.1, Q.2} : Finset ℕ), q : ℕ) ≤ 49 * T ^ 2 := by
     have h7 := sum_cell_inv_le hmert hx hS.one_le hm h2a hEa (J := J₂) (by linarith)
     have h0 : 0 ≤ ∑ j ∈ range J₂, ∑ q ∈ cell x j, (1 : ℝ) / q :=
-      sum_nonneg fun _ _ => sum_nonneg fun _ _ => by positivity
+      by positivity
     calc _ = ∑ j ∈ cellPairs₂ x, ∑ Q ∈ pairBox x j, (1 : ℝ) / (Q.1 * Q.2) :=
           sum_congr rfl fun j hj => sum_congr rfl fun Q hQ => by
             rw [hprod j hj Q hQ, Nat.cast_mul]
@@ -1438,12 +1422,12 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
             fun _ _ _ => by positivity
       _ ≤ ∑ j ∈ range J₂ ×ˢ range J₂, ∑ Q ∈ cell x j.1 ×ˢ cell x j.2, (1 : ℝ) / (Q.1 * Q.2) :=
           sum_le_sum_of_subset_of_nonneg (fun j hj => (mem_filter.1 hj).1)
-            fun _ _ _ => sum_nonneg fun _ _ => by positivity
+            fun _ _ _ => by positivity
       _ = (∑ j ∈ range J₂, ∑ q ∈ cell x j, (1 : ℝ) / q) ^ 2 := by
           rw [sq, sum_mul_sum, sum_product]
           refine sum_congr rfl fun j₁ _ => sum_congr rfl fun j₂ _ => ?_
           rw [sum_mul_sum, sum_product]
-          exact sum_congr rfl fun q _ => sum_congr rfl fun r _ => (one_div_mul_one_div _ _).symm
+          ring
       _ ≤ 49 * T ^ 2 := by nlinarith
   have h₁ : ∀ j ∈ cellPairs₂ x, ∀ j' < spareCount c x (pairTop x j), ∀ b : ℕ × ℕ → ℝ,
       (∀ Q, |b Q| ≤ 1) →
@@ -1490,7 +1474,7 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
     have e₁ : ∀ p, ∑ Q ∈ pairBox x j with (∏ q ∈ ({Q.1, Q.2} : Finset ℕ), q) ∣ p - 1,
         (1 : ℝ) = ∑ q ∈ cell x j.1, ∑ r ∈ cell x j.2 with r ≠ q ∧ q * r ∣ p - 1, (1 : ℝ) :=
       fun p => Eq.trans (sum_congr (filter_congr fun Q hQ => by rw [hprod j hj Q hQ])
-        fun _ _ => rfl) (sum_pairs_filter _ _ (fun q r => q * r ∣ p - 1) fun _ _ => 1)
+        (by simp)) (sum_pairs_filter _ _ (fun q r => q * r ∣ p - 1) fun _ _ => 1)
     have e₂ : ∑ Q ∈ pairBox x j, (1 : ℝ) / (∏ q ∈ ({Q.1, Q.2} : Finset ℕ), q : ℕ) =
         ∑ q ∈ cell x j.1, ∑ r ∈ cell x j.2 with r ≠ q, (1 : ℝ) / (q * r) :=
       Eq.trans (sum_congr rfl fun Q hQ => by rw [hprod j hj Q hQ, Nat.cast_mul])
@@ -1503,7 +1487,7 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
     refine (stat_one hRx hx0.le hP (u₀ := margin x + j.1 * mesh x)
       (v₀ := margin x + (j.1 + 1) * mesh x) (u₁ := margin x + j.2 * mesh x)
       (v₁ := margin x + (j.2 + 1) * mesh x) (by linarith) (by linarith) (by linarith)
-      (fun _ => 1) fun _ => by simp).trans ?_
+      (fun _ => 1) (by simp)).trans ?_
     gcongr
     exact le_abs_self C
   have hcore := abs_sum_sigma_sub_le (c := c) (x := x) (ε₁ := |C| / T ^ 300)
@@ -1525,7 +1509,7 @@ theorem spare_slot_two (hR : RectangleInput) : ∃ K : ℝ, ∀ᶠ x : ℝ in Fi
         (∏ q ∈ ({z.2.1, z.2.2} : Finset ℕ), q) ∣ p - 1, B z.2.1 z.2.2 := fun p =>
     (sum_biUnion_eq_sum_sigma _ _ hdisj (fun Q => Q.1 * Q.2 ∣ p - 1)
       fun Q => B Q.1 Q.2).trans
-      (sum_congr (filter_congr fun z hz => by rw [hsig z hz]) fun _ _ => rfl)
+      (sum_congr (filter_congr fun z hz => by rw [hsig z hz]) (by simp))
   have e₂ : ∑ Q ∈ region₂ x, B Q.1 Q.2 / (Q.1 * Q.2) =
       ∑ z ∈ (cellPairs₂ x).sigma (pairBox x),
         B z.2.1 z.2.2 / (∏ q ∈ ({z.2.1, z.2.2} : Finset ℕ), q : ℕ) := by

@@ -8,21 +8,20 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstPass
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
   (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
 theorem first_fresh_real_energy
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i})≠2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i})≠2)
     (F D B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis→*ℂ) (m : Eis)
-    (H : Finset ι→ℂ) (ω : ℝ→ℂ) (X : ℝ) (c d : Eis)
+    (negative : Bool) (χ : RayCharacter) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
+    (H : Finset ι→ℂ) (ω : ℝ→ℂ) (X : ℝ) (c d : ActualEisensteinCubic.O)
     (core : FirstCoreIndex) (height Y : ℝ) (hY : 0<Y) :
     (firstFreshSecondPoisson p hp hg hinj F D B v ε₁ ε₂ negative χ Ψ m H ω X c d core height Y).re =
     ∑ z∈rowMajorantBall Y,(rowMajorant (‖eisEmbedding z‖^2/Y)).re *
@@ -46,11 +45,11 @@ lemma priority_norm_sum_sq {α : Type*} (s : Finset α) (f : α→ℂ) :
 
 theorem first_fresh_priority_energy
     (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i})≠2)
+    (hc : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i})≠2)
     (F D B A : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
-    (negative : Bool) (χ : RayCharacter) (Ψ : Eis→*ℂ) (m : Eis)
+    (negative : Bool) (χ : RayCharacter) (Ψ : ActualEisensteinCubic.O→*ℂ) (m : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
-    (H : Finset ι→ℂ) (ω : ℝ→ℂ) (X : ℝ) (c d : Eis)
+    (H : Finset ι→ℂ) (ω : ℝ→ℂ) (X : ℝ) (c d : ActualEisensteinCubic.O)
     (core : FirstCoreIndex) (height Y : ℝ) (hY : 0<Y) :
     (firstFreshSecondPoisson p hp hg hinj F D B v ε₁ ε₂ negative χ Ψ m
       (fun U=>primeMark slots lists a (A∪U)*H U) ω X c d core height Y).re ≤
@@ -73,11 +72,7 @@ theorem first_fresh_priority_energy
       simp_rw [first_fresh_real_energy p hp hg hinj hc F D B v ε₁ ε₂ negative χ Ψ m _ ω X c d core height Y hY]
       simp only [Finset.card_powerset,Nat.cast_pow,Nat.cast_ofNat,Finset.mul_sum,norm_mul,mul_pow]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro J hJ
-      apply Finset.sum_congr rfl
-      intro z hz
-      ring
+      grind
 
 end
 end SevenEighths.InverseMoment

@@ -16,7 +16,7 @@ def stageLoss (M B ε:ℝ)(k:ℕ):ℝ:=ε/1000+loss M B ε k
 
 lemma stageLoss_pos (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε:0<ε)(k:ℕ):
     0<stageLoss M B ε k:=by
-  have hr:0<reserve M B ε:=(bounds M B κ ε hM hB hκ hε).2.2.2.1
+  have hr:=(bounds M B κ ε hM hB hκ hε).2.2.2.1
   unfold stageLoss loss
   positivity
 
@@ -43,7 +43,7 @@ lemma one_time_with_new_cost (M B κ ε:ℝ)(hM:0≤M)(hB:0≤B)(hκ:0≤κ)(hε
     (k:ℕ)(sourceLoss extra:ℝ)(hsource:sourceLoss≤ε/1000)
     (hextra:extra≤50*reserve M B ε):
     sourceLoss+extra≤stageLoss M B ε (k+1):=by
-  have hr:0<reserve M B ε:=(bounds M B κ ε hM hB hκ hε).2.2.2.1
+  have hr:=(bounds M B κ ε hM hB hκ hε).2.2.2.1
   have hk:0≤(k:ℝ):=Nat.cast_nonneg _
   simp only [stageLoss,loss,Nat.cast_add,Nat.cast_one]
   nlinarith

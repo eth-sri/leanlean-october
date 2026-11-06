@@ -9,17 +9,16 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePrimePower
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss ConcretePrimeRowBridge CubicEisenstein
 
-theorem actualSextic_pow_eq_one_iff (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hc : ringChar (O ⧸ P) ≠ 2) (n : ℕ) :
+theorem actualSextic_pow_eq_one_iff (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : goodLambda ∉ P) (hc : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2) (n : ℕ) :
     actualSextic P hg ^ n = 1 ↔ 6 ∣ n := by
   rw [← orderOf_dvd_iff_pow_eq_one, CenteredMomentCanonical.actualSextic_order_six P hg hc]
 
-theorem actualSextic_primePowerGauss_at_pow (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem actualSextic_primePowerGauss_at_pow (p : ActualEisensteinCubic.O) (hp : Prime p)
+    [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal]
+    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
     (r n j : ℕ) :
     primePowerGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg ^ r) n (p ^ j) =
       if 6 ∣ r then

@@ -8,8 +8,8 @@ public import Mathlib.Analysis.MellinInversion
 namespace OAI
 
 noncomputable section
-open MeasureTheory Set Filter Asymptotics
-open scoped Topology FourierTransform
+open MeasureTheory Set
+open scoped FourierTransform
 namespace SevenEighths.Continuation
 
 theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
@@ -35,13 +35,13 @@ theorem integrable_logProfile {f : ℝ → ℂ} {σ : ℝ}
         (Real.exp (-σ * u) : ℂ) * f (Real.exp (-u))
     rw [← mul_assoc]
     congr 1
-    rw [show (σ : ℂ) - 1 = ((σ - 1 : ℝ) : ℂ) by push_cast; rfl,
-      ← Complex.ofReal_cpow (Real.exp_pos (-u)).le]
+    rw [show (σ : ℂ) - 1 = ((σ - 1 : ℝ) : ℂ) by simp,
+      ← Complex.ofReal_cpow (by positivity)]
     norm_cast
-    rw [Real.rpow_def_of_pos (Real.exp_pos (-u)), Real.log_exp, ← Real.exp_add]
+    rw [Real.rpow_def_of_pos (by positivity), Real.log_exp, ← Real.exp_add]
     congr 1
     ring
-  simpa only [Function.comp_apply, integrableOn_univ, heq] using hf
+  simp_all
 
 theorem mellin_mellinInv_eq (σ : ℝ) (F : ℂ → ℂ) (f : ℝ → ℂ)
     (hf : MellinConvergent f (σ : ℂ))
@@ -61,9 +61,9 @@ theorem mellin_mellinInv_eq (σ : ℝ) (F : ℂ → ℂ) (f : ℝ → ℂ)
     change (Real.exp (-σ * u) : ℂ) *
       ((Real.exp (-u) : ℂ) ^ (-(σ : ℂ)) * 𝓕⁻ A u) = 𝓕⁻ A u
     rw [← mul_assoc, ← Complex.ofReal_neg,
-      ← Complex.ofReal_cpow (Real.exp_pos (-u)).le]
+      ← Complex.ofReal_cpow (by positivity)]
     have hc : Real.exp (-σ * u) * Real.exp (-u) ^ (-σ) = 1 := by
-      rw [Real.rpow_def_of_pos (Real.exp_pos (-u)), Real.log_exp, ← Real.exp_add]
+      rw [Real.rpow_def_of_pos (by positivity), Real.log_exp, ← Real.exp_add]
       rw [show -σ * u + -u * -σ = 0 by ring, Real.exp_zero]
     rw [← Complex.ofReal_mul, hc, Complex.ofReal_one, one_mul]
   have hfourier : Integrable (𝓕 A) := by
@@ -86,7 +86,6 @@ theorem mellin_normalizedSignal (f : ℝ → ℂ) (c : ℝ) (s : ℂ) :
     mellin (normalizedSignal f c) (-s) = signalMellin f c s := by
   unfold normalizedSignal signalMellin
   rw [mellin_cpow_smul]
-  congr 1
   ring
 
 theorem signalMellin_eq_on_line (f : ℝ → ℂ) (A : ℂ → ℂ) (c d : ℝ)
@@ -113,7 +112,7 @@ theorem signalMellin_eq_on_line (f : ℝ → ℂ) (A : ℂ → ℂ) (c d : ℝ)
     (normalizedSignal f c) hf' hA' hcont' hrep y
   rw [harg] at hid
   rw [← mellin_normalizedSignal]
-  convert hid using 1; congr 1; push_cast; ring
+  grind
 
 end SevenEighths.Continuation
 

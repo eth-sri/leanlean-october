@@ -10,25 +10,24 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceDivisors
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyZeroReflectionSupport
 open HeckeFamily Filter CenteredMomentNaturalPrimitive EisensteinSchwartzPoisson
-open CenteredMomentReflectionMass CenteredMomentNaturalRowSource CenteredMomentAllocatedNaturalRadial
-open CenteredMomentReflectionDeletion CenteredMomentReflectionWeightedEnergy
+open CenteredMomentReflectionMass
+open CenteredMomentReflectionDeletion
 open CenteredMomentReflectedChoiceEnergy CenteredMomentReflectedTruncation
 open CenteredMomentOriginalReflectionApproximation CenteredMomentUniformReflectionApproximation
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState
-open CenteredMomentEnergyReferenceDivisors CenteredMomentEnergyReferenceLowWindow
+open CenteredMomentEnergyBands
+open CenteredMomentEnergyReferenceLowWindow
 open CenteredMomentEnergyReferenceLowBranchGeometry
-local notation "O" => HeckeFamily.O
 
 def naturalDualScale (χ ψ : Character) (X : ℝ)
-    (D : Finset (Ideal O)) (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus)) : ℝ :=
+    (D : Finset (Ideal HeckeFamily.O)) (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus)) : ℝ :=
   (ψ.modulus.absNorm:ℝ)*(Ideal.absNorm (∏P∈D,P):ℝ)/(X*norm H.val)
 
 lemma naturalDualScale_pos (χ ψ : Character) (X : ℝ) (hX : 0<X)
-    (D : Finset (Ideal O)) (hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
+    (D : Finset (Ideal HeckeFamily.O)) (hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
     (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus)) :
     0<naturalDualScale χ ψ X D H := by
   have hQ : 0<(ψ.modulus.absNorm:ℝ) := by
@@ -43,7 +42,7 @@ theorem eventually_natural_choice_range (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm →
       (χ.modulus.absNorm:ℝ)≤C*Z^M →
-      ∀(D : Finset (Ideal O))(_hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
+      ∀(D : Finset (Ideal HeckeFamily.O))(_hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
         (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus))
         (hY : 0<naturalDualScale χ ψ (Z^a) D H)(n : ℤ),
       n∈retainedAnnuli (Z^(xi/4)) (naturalDualScale χ ψ (Z^a) D H) hY → 0≤M-a+xi := by
@@ -52,18 +51,17 @@ theorem eventually_natural_choice_range (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
   intro χ ψ M a hcap hmod D hD H hY n hn
   have h := hZ.2 χ ψ M a hcap hmod ((⟨D,hD⟩,H),n) hY hn
   have hz := Real.log_pos hZ.1
-  have hm : 0≤(M-a+xi)*Real.log Z := h.2.1.trans h.2.2
   nlinarith
 
 theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     ∀ᶠ Z : ℝ in atTop,1<Z ∧ ∀(χ ψ : Character)(M a : ℝ),
       ψ.modulus.absNorm*(redundantIdeal χ.modulus ψ.modulus).absNorm≤χ.modulus.absNorm →
       (χ.modulus.absNorm:ℝ)≤C*Z^M → M+xi<a →
-      (∀(D : Finset (Ideal O))(_hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
+      (∀(D : Finset (Ideal HeckeFamily.O))(_hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
         (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus))
         (hY : 0<naturalDualScale χ ψ (Z^a) D H),
         retainedAnnuli (Z^(xi/4)) (naturalDualScale χ ψ (Z^a) D H) hY=∅) ∧
-      (∀(D : Finset (Ideal O)),D∈(redundantSet χ.modulus ψ.modulus).powerset →
+      (∀(D : Finset (Ideal HeckeFamily.O)),D∈(redundantSet χ.modulus ψ.modulus).powerset →
         ∀(H : SmoothIdeal (redundantSet χ.modulus ψ.modulus))(η : Character)(F : ℝ→ℂ),
         finiteAnnularColumn η F (Z^(xi/4)) (naturalDualScale χ ψ (Z^a) D H)=0) ∧
       (∀(W : ℝ→ℂ)(t : ℝ),retainedOriginal χ ψ W (Z^a) (Z^(xi/4)) t=0) ∧
@@ -71,7 +69,7 @@ theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
   filter_upwards [eventually_natural_choice_range C xi hC hxi] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro χ ψ M a hcap hmod hfar
-  have hempty (D : Finset (Ideal O)) (hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
+  have hempty (D : Finset (Ideal HeckeFamily.O)) (hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
       (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus))
       (hY : 0<naturalDualScale χ ψ (Z^a) D H) :
       retainedAnnuli (Z^(xi/4)) (naturalDualScale χ ψ (Z^a) D H) hY=∅ := by
@@ -79,7 +77,7 @@ theorem eventually_natural_source_zero (C xi : ℝ) (hC : 0<C) (hxi : 0<xi) :
     intro n hn
     have h := hZ.2 χ ψ M a hcap hmod D hD H hY n hn
     linarith
-  have hcol (D : Finset (Ideal O)) (hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
+  have hcol (D : Finset (Ideal HeckeFamily.O)) (hD : D∈(redundantSet χ.modulus ψ.modulus).powerset)
       (H : SmoothIdeal (redundantSet χ.modulus ψ.modulus)) (η : Character)(F : ℝ→ℂ) :
       finiteAnnularColumn η F (Z^(xi/4)) (naturalDualScale χ ψ (Z^a) D H)=0 := by
     have hy := naturalDualScale_pos χ ψ (Z^a) (Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _) D hD H
@@ -128,15 +126,15 @@ lemma deleted_short_length (Z b Xshort Xlong Nshort : ℝ)
   have hx : 0<Xlong := hshort.trans_le hlong
   have hn : 0<Nshort := zero_lt_one.trans_le hN
   have hd : Xshort/Nshort≤Xlong := (div_le_self hshort.le hN).trans hlong
-  have hlog := Real.logb_le_logb_of_le hZ (div_pos hshort hn) hd
+  have hlog := Real.logb_le_logb_of_le hZ (by positivity) hd
   have hprod : 1≤max 1 b*Xlong := hsupport.trans
-    (mul_le_mul_of_nonneg_right (le_max_right _ _) hx.le)
+    (mul_le_mul_of_nonneg_right (by simp) hx.le)
   have hzero := Real.logb_nonneg hZ hprod
-  rw [Real.logb_mul (ne_of_gt (zero_lt_one.trans_le (le_max_left 1 b))) hx.ne'] at hzero
-  rw [length_eq_max_log Z _ hZ (div_pos hshort hn)]
+  rw [Real.logb_mul (by positivity) hx.ne'] at hzero
+  rw [length_eq_max_log Z _ hZ (by positivity)]
   apply max_le
   · linarith
-  · exact hlog.trans (le_add_of_nonneg_right (Real.logb_nonneg hZ (le_max_left _ _)))
+  · exact hlog.trans (le_add_of_nonneg_right (Real.logb_nonneg hZ (by simp)))
 
 theorem live_deleted_growth (Z b M xi Xshort Xlong Nshort Nlong : ℝ)
     (hZ : 1<Z)(hb : 0<b)(_hM : 0≤M)(hshort : 0<Xshort)(hlong : Xshort≤Xlong)
@@ -147,7 +145,7 @@ theorem live_deleted_growth (Z b M xi Xshort Xlong Nshort Nlong : ℝ)
       M+Real.logb Z Nlong+Real.logb Z (max 1 b)+xi := by
   have hxlong : 0<Xlong := hshort.trans_le hlong
   have hnlong : 0<Nlong := zero_lt_one.trans_le hNl
-  have hwindow := (reflection_window_length Z _ x hZ (le_max_left _ _) hx).1
+  have hwindow := (reflection_window_length Z _ x hZ (by positivity) hx).1
   rw [max_eq_right hlive,Real.logb_div hxlong.ne' hnlong.ne'] at hwindow
   have hshortbound := deleted_short_length Z b Xshort Xlong Nshort hZ hb hshort hlong hNs hsupport
   linarith

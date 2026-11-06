@@ -7,17 +7,16 @@ public import OAI.NumberTheory.DirichletL.Moments.RadialPointwiseEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentRadialPointwiseUniform
 open CenteredMomentEligibleEnergy CenteredMomentRadialEligibleEnergy
 open CenteredMomentRadialPointwiseEnergy CenteredMomentUniformDivisorShell
 open CenteredMomentSlotRatios
-local notation "O" => ActualEisensteinCubic.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
 def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
-  ∀(s:Data ι) (r:Radial) (D:Ideal O),Squarefree D →
+  ∀(s:Data ι) (r:Radial) (D:Ideal ActualEisensteinCubic.O),Squarefree D →
     ∀E Z:ℝ,0≤E → 1<Z → (∀a∈s.toSource.active D,childEnergy s r D a≤E) →
     energy s r D≤C*(Ideal.absNorm D:ℝ)^(2*ε)*Z^(s.toSource.allowance Z)*
       (s.profileFactor*E)/(Ideal.absNorm D:ℝ)
@@ -41,7 +40,7 @@ def Bound (ι:Type*) [Fintype ι] [DecidableEq ι] (C ε:ℝ) : Prop :=
 
  theorem actual_uniform_divisor (lo hi:ι→ℝ) (B δ:ℝ) (hB:0≤B) (hδ:0<δ) :
     ∃C:ℝ,0<C ∧ ∀(J:Finset ι) (s:Data J),(∀i:J,s.lo i=lo i) → (∀i:J,s.hi i=hi i) →
-      ∀(r:Radial) (D:Ideal O),Squarefree D → ∀E Z:ℝ,0≤E → 1<Z →
+      ∀(r:Radial) (D:Ideal ActualEisensteinCubic.O),Squarefree D → ∀E Z:ℝ,0≤E → 1<Z →
       (Ideal.absNorm D:ℝ)≤Z^B → (∀a∈s.toSource.active D,childEnergy s r D a≤E) →
       energy s r D≤C*Z^δ*(s.profileFactor*E)/(Ideal.absNorm D:ℝ) := by
   let ε:ℝ:=δ/(2*(B+1))

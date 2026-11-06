@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical ContDiff
+open scoped ContDiff
 open Set
 namespace SevenEighths.HeckeDetectorDyadicActual
 open HeckeFamily HeckeDyadic HeckeDetectorDyadicProfiles HeckeDetectorProfiles
@@ -45,12 +45,12 @@ theorem simultaneous_upper (R dmax τ ε e κ η : ℝ)
           C*(Z^d)^((2*a-1)*min m (1-m)+ε) := by
   obtain ⟨Cp,hCp,hplain,hinverse⟩ := actual_profile_bounds
   obtain ⟨n,C,hC,hbound⟩ := source_dyadic_bounds R dmax τ ε e κ η
-    hR hdmax hτ hε he he' hκ hκ' hη hbudget Cp (fun k => (hCp k).le)
+    hR hdmax hτ hε he he' hκ hκ' hη hbudget Cp (by grind)
   refine ⟨C,hC,?_⟩
   intro Z d hZ hd hdmax' hT ι _ χ hχ a i ha ha' hmax j Dstar r m σ freq
     hQ hDs hr hrR hm hmR hratio hσ hσ' hfreq hheight
-  have hU : 1≤Z^d := Real.one_le_rpow hZ hd
-  have hD : 0<(Z^d)^r := Real.rpow_pos_of_pos (by linarith) _
+  have hU := Real.one_le_rpow hZ hd
+  have hD : 0<(Z^d)^r := by positivity
   have hstrip : Icc (1-a-6*e-σ) (2-σ)⊆Icc (-2 : ℝ) 2 := by
     intro x hx
     constructor <;> linarith [hx.1,hx.2]
@@ -65,7 +65,7 @@ theorem simultaneous_upper (R dmax τ ε e κ η : ℝ)
     m σ freq hQ hm hmR hfreq hheight
     (fun x hx t => hplain 2 x (hstrip hx) t)
     (fun x hx t => hplain (n+2) x (hstrip hx) t)
-  exact ⟨hInv.1,hPlain.2⟩
+  grind
 
 end SevenEighths.HeckeDetectorDyadicActual
 

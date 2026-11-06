@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Cauchy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentExceptionalKernel
@@ -20,7 +20,7 @@ theorem paired_row_triangle {κ : Type*} (rows : Finset κ)
   intro k hk
   rw [norm_mul,norm_mul]
   exact mul_le_mul_of_nonneg_right
-    (mul_le_of_le_one_left (norm_nonneg _) (hw k hk)) (norm_nonneg _)
+    (mul_le_of_le_one_left (norm_nonneg _) (by grind)) (norm_nonneg _)
 
 theorem common_density_pair {κ α β : Type*}
     (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -38,15 +38,15 @@ theorem common_density_pair {κ α β : Type*}
       E * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖ := by
   have hrow (k : κ) (hk : k ∈ rows) (t : ℝ) : ‖η k * rowPhase V (ρ k) (x k) t‖ ≤ 1 := by
     rw [norm_mul, rowPhase, norm_mul, norm_mul, norm_mul, logPhase_norm, logPhase_norm, mul_one, mul_one]
-    exact (mul_le_of_le_one_left (by positivity) (hη k hk)).trans
-      ((mul_le_of_le_one_left (norm_nonneg _) (hV₀ k hk)).trans (hV₁ k hk))
+    exact (mul_le_of_le_one_left (by positivity) (by grind)).trans
+      ((mul_le_of_le_one_left (norm_nonneg _) (by grind)).trans (by grind))
   have hpoint (t : ℝ) :
       ‖∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
         leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t)‖ ≤
         E * ((1 + ‖t‖) ^ J * ‖b t‖) := by
     have hs := paired_row_triangle rows (fun k => η k * rowPhase V (ρ k) (x k) t)
       (fun k => leftColumn S (c k) (V 2) u t) (fun k => rightColumn T (d k) (V 3) v t)
-      (fun k hk => hrow k hk t)
+      (by grind)
     have he : (∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
         leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t)) =
         (∑ k ∈ rows, (η k * rowPhase V (ρ k) (x k) t) *
@@ -57,7 +57,7 @@ theorem common_density_pair {κ α β : Type*}
       ring
     rw [he, norm_mul]
     exact (mul_le_mul_of_nonneg_right (hs.trans (henergy t)) (norm_nonneg _)).trans_eq (by ring)
-  have hi : Integrable (fun t : ℝ => (1 + ‖t‖) ^ J * ‖b t‖) :=
+  have hi :=
     JointLogSeparation.weighted_schwartz_integrable b J
   calc
     _ = ‖∫ t : ℝ, ∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *

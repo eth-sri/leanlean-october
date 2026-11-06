@@ -10,7 +10,7 @@ public import Mathlib.RingTheory.Ideal.Quotient.Nilpotent
 
 namespace OAI
 
-open scoped BigOperators Classical
+open scoped Classical
 open NumberField
 namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section
@@ -35,9 +35,9 @@ theorem primePowerReduction_multiplicity (P : Ideal (𝓞 K)) {c : ℕ} (hc : 1 
   refine reductionMultiplicity_eq_pow _ (primePowerReduction_surjective P hc)
       (P := Ideal.absNorm P) ?_ hc ?_ ?_
   · rw [← hcard P]
-    exact Fintype.card_pos
-  · rw [hcard, map_pow]
-  · exact hcard P
+    positivity
+  · simp_all
+  simp_all
 
 def primePowerCharacter (P : Ideal (𝓞 K)) {c : ℕ} (hc : 1 ≤ c)
     (χ : MulChar (𝓞 K ⧸ P) ℂ) : MulChar (𝓞 K ⧸ P ^ c) ℂ where

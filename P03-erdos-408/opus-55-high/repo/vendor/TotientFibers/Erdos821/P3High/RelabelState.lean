@@ -10,7 +10,6 @@ public import Erdos821.P3High.Relabel
 set_option autoImplicit false
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3High
@@ -56,9 +55,9 @@ theorem relabelLabels_of_ne {M : ℕ} (a : P.Labels M) (g : P.BigGroup) (h : Fin
     relabelLabels a g h p g'.val i = a g'.val i := by
   by_cases hg : g' = g
   · subst hg
-    have hi : i ≠ h := fun hi => hx (by rw [hi])
+    have hi : i ≠ h := fun hi => hx (by simp_all)
     exact relabelLabels_ne_slot a g' h p i hi
-  · have hg' : g'.val ≠ g.val := fun he => hg (Subtype.ext he)
+  · have hg' : g'.val ≠ g.val := by grind
     rw [relabelLabels_ne_group a g h p g'.val hg']
 
 theorem relabelLabels_relabel {M : ℕ} (a : P.Labels M) (g : P.BigGroup) (h : Fin M)

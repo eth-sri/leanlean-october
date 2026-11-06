@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.InverseInitialProfileBounds
 open InverseInitialProfile InverseMoment FourierBridge
 
@@ -16,7 +16,7 @@ theorem clipped_norm (W:ℝ→ℂ)(c θ x:ℝ):‖clippedSource W c θ x‖=‖W
   simp only [clippedSource,norm_mul,logPhase_norm,one_mul]
 
 theorem clipped_bound (W:ℝ→ℂ)(B:ℝ)(hW:∀x,‖W x‖≤B)(c θ x:ℝ):
-    ‖clippedSource W c θ x‖≤B:=by rw [clipped_norm];exact hW _
+    ‖clippedSource W c θ x‖≤B:=by rw [clipped_norm];simp_all
 
 theorem clipped_support (W:ℝ→ℂ)(a b c cmax θ:ℝ)(ha:0<a)(hc:1≤c)(hcm:c≤cmax)
     (hW:Function.support W⊆Set.Icc a b):
@@ -30,7 +30,7 @@ theorem clipped_support (W:ℝ→ℂ)(a b c cmax θ:ℝ)(ha:0<a)(hc:1≤c)(hcm:c
   · apply (div_le_iff₀ (hcp.trans_le hcm)).mpr
     exact hs.1.trans (by nlinarith)
   · have hxc:x≤c*x:=le_mul_of_one_le_left hxpos.le hc
-    exact hxc.trans hs.2
+    grind
 
 theorem clipped_support_upper (W:ℝ→ℂ)(a b c θ:ℝ)(ha:0<a)(hc:1≤c)
     (hW:Function.support W⊆Set.Icc a b):Function.support (clippedSource W c θ)⊆Set.Iic b:=

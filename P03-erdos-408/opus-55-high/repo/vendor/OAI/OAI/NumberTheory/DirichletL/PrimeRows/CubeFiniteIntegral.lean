@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFiniteError
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
-open MeasureTheory Set Complex
+open scoped Classical
+open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι]
 
-def cubeWeightedRow {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
+def cubeWeightedRow {K : ℕ} (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z a e H : ℝ) : HeightSpace→ℂ :=
@@ -24,7 +23,7 @@ def cubeWeightedRow {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S)
 theorem cubeWeightedRow_integrable {K : ℕ}
     (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
     (ha : (51/100:ℝ)≤a) (haTop : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (P : Fin K→PrimeIdeal) (hPS : ∀j,(P j).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
     (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e)
@@ -47,10 +46,10 @@ theorem cubeWeightedRow_integrable {K : ℕ}
     funext t
     exact weightedRowOnLines_eq ..
   rw [heq]
-  exact (hi.mono_set (fun t ht=>ht.1.1)).const_mul _
+  exact (hi.mono_set (by grind)).const_mul _
 
 lemma cubeWeightedRow_integral {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀j,(P j).val∉S) (η : Character) (u : FreeRow)
     (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z a e H : ℝ) :
     ((1/(2*Real.pi):ℝ):ℂ)^3*(∫t,cubeWeightedRow S hS hmax P hPS η u W Yp W0 W1 X Y Z a e H t ∂heightMeasure)=
@@ -68,7 +67,7 @@ lemma cubeWeightedRow_integral {K : ℕ}
 
 theorem finiteCentralCubeRows_eq_integral {K : ℕ}
     (e : ℝ) (he : 0<e) (he' : e<1/1000)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (4*e) S) (η : Character) (R : Finset FreeRow) (hR : ∀u∈R,u.val≠1)
     (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i → P.val∉S)
     (a B H : FreeRow→ℝ) (idx : FreeRow→ℕ) (ψ : FreeRow→ι→Character)
@@ -85,11 +84,11 @@ theorem finiteCentralCubeRows_eq_integral {K : ℕ}
       finiteCentralCubeRows S hS hmax η R T hT W Yp W0 W1 X Y Z e a H=
         ((1/(2*Real.pi):ℝ):ℂ)^3*(∫t,F t ∂heightMeasure) := by
   let f (u : FreeRow) (P : ∀i,T i) := cubeWeightedRow S hS hmax
-    (fun i=>(P i).val) (fun i=>hT i _ (P i).property) η u W Yp W0 W1 X Y Z (a u) e (H u)
+    (fun i=>(P i).val) (by grind) η u W Yp W0 W1 X Y Z (a u) e (H u)
   have hi (u : FreeRow) (hu : u∈R) (P : ∀i,T i) : Integrable (f u P) heightMeasure := by
     rcases hbin u hu with ⟨ha,ha',hB,hH,hzero⟩
     exact cubeWeightedRow_integrable e (a u) (B u) (H u) (idx u) he he' ha ha' hB hH
-      S hS hmax hfirst _ _ η u (hR u hu) (ψ u) hzero W Yp W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+      S hS hmax hfirst _ _ η u (by grind) (ψ u) hzero W Yp W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
       X Y Z hX hY hZ
   have hiu (u : FreeRow) (hu : u∈R) : Integrable (fun t=>∑P:(∀i,T i),f u P t) heightMeasure :=
     integrable_finsetSum _ (fun P _=>hi u hu P)
@@ -109,11 +108,7 @@ lemma cube_buffered_heights (t : HeightSpace) (H B : ℝ) (i : ℕ)
     (hbuffer : H+B/2≤(3*i+2:ℕ)*B) :
     |t.1.1|≤(3*i+2:ℕ)*B ∧ |t.2|≤(3*i+2:ℕ)*B ∧
       |t.1.2|+B/2≤(3*i+2:ℕ)*B := by
-  constructor
-  · linarith [ht.1.1]
-  constructor
-  · linarith [ht.1.2]
-  · linarith [ht.2]
+  grind
 
 end SevenEighths.ProbeHighRowFamily
 

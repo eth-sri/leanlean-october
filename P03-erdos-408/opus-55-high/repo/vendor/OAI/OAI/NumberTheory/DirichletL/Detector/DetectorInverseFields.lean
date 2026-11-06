@@ -9,15 +9,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical
 namespace SevenEighths.ProbeDetectorInverseFields
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorCoefficientTransfer
+open HeckeFamily HeckeDyadic HeckeInverseAmplification
+open HeckeDetectorBatch HeckeDetectorCoefficientTransfer
 open ProbeHighRowFamily ProbeFinalAssembly Filter
-local notation "O"=>HeckeFamily.O
-variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance:Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
 private lemma raw_mono (data:RowData)(W:ℝ→ℂ)(c κ A B:ℝ)
@@ -69,13 +68,13 @@ theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
   have hraw:Cr*(1+height)^Jr≤(Cr+Cm)*(1+height)^(Jr+Jm) := by
     apply mul_le_mul
     · linarith
-    · exact pow_le_pow_right₀ hscale (Nat.le_add_right _ _)
+    · exact pow_le_pow_right₀ hscale (by omega)
     · positivity
     · positivity
   have hmarked:Cm*(1+height)^Jm≤(Cr+Cm)*(1+height)^(Jr+Jm) := by
     apply mul_le_mul
     · linarith
-    · exact pow_le_pow_right₀ hscale (Nat.le_add_left _ _)
+    · exact pow_le_pow_right₀ hscale (by omega)
     · positivity
     · positivity
   constructor
@@ -85,7 +84,7 @@ theorem source_batch_inverse_fields {Δ:ℝ}{D:Parameters.HighData Δ}
   · intro selected hselected hfirst hsecond n hn s hs t ht
     have hh:=hZ.2 d hd a ε tstar T allowance i B hdata hprofile hupper hwidths hex
       bin label left right hne height hheight selected hselected hfirst hsecond n hn s hs t ht
-    exact hh.trans (mul_le_mul_of_nonneg_right hmarked (Real.rpow_nonneg hU.le _))
+    exact hh.trans (mul_le_mul_of_nonneg_right hmarked (by positivity))
 
 end SevenEighths.ProbeDetectorInverseFields
 

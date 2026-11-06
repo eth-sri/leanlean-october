@@ -8,16 +8,15 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped ContDiff
 open Filter
 namespace SevenEighths.ProbePhysical
 open ProbeRaySlots PrincipalSignalComparison PrincipalMellinResidues ProbePrincipalResidueActual
-local notation "O" => HeckeFamily.O
 
 theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
-    (M : Ideal O) [NeZero M] [Finite (O ⧸ M)]
-    (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (M : Ideal HeckeFamily.O) [NeZero M] [Finite (HeckeFamily.O ⧸ M)]
+    (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (a b B loss : ℝ) (ha : 0<a) (hab : a≤b) (hloss : 0<loss)
     (ell : Fin K→ℝ) (hell : ∀j,0<ell j) (hinj : Function.Injective ell) (hsum : ∑j,ell j=1/6)
     (W : Fin K→ℝ→ℝ) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hcompact : ∀j,HasCompactSupport (W j))
@@ -44,13 +43,13 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
     intro y hy
     apply Set.Ioo_subset_Icc_self (hsupp j _)
     intro hz
-    exact hy (by dsimp [WC];rw [hz];simp)
+    exact hy (by dsimp [WC];simp_all)
   have hWCB (j : Fin K) (y : ℝ) : ‖WC j y‖≤B := by
     simpa only [WC,Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hWB j y).1] using (hWB j y).2
   have hW1' : Function.support W1⊆Set.Icc a1 (max b1 (a1+1)) := by
     intro y hy
-    exact ⟨(hW1 hy).1,(hW1 hy).2.trans (le_max_left _ _)⟩
-  have hab1 : a1<max b1 (a1+1) := lt_of_lt_of_le (by linarith) (le_max_right _ _)
+    exact ⟨(hW1 hy).1,(hW1 hy).2.trans (by simp)⟩
+  have hab1 : a1<max b1 (a1+1) := by simp
   obtain ⟨Cn,hCn,hnorm⟩ := ProbeHighRowFamily.actual_ray_normalizer_inverse M H hH S hS a b ha hab
     ell hell hsum W hW hcompact hsupp (fun j y=>(hWB j y).1) hne W0 W1 a0 b0 a1 b1 ha0 ha1
     hW0 hW1 hr0 hr1 hp0 hp1 hn0 hn1 (loss/2) (by positivity)
@@ -71,7 +70,6 @@ theorem original_normalized_compensatedPhysicalProbe_low {K : ℕ}
       mul_le_mul hp hn.2 (norm_nonneg _) (by positivity)
     _=(Cp*Cn)*Z^(3/16+loss) := by
       rw [mul_mul_mul_comm,←Real.rpow_add hZ]
-      congr 2
       ring
 
 end SevenEighths.ProbePhysical

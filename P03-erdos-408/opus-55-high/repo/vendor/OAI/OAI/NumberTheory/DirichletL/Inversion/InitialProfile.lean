@@ -9,7 +9,7 @@ public import OAI.NumberTheory.DirichletL.Descent.ProfileIntegral
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
 open SevenEighths.InverseMoment
 
@@ -58,7 +58,7 @@ theorem clipped_log_source (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
       clippedSource W c θ (Real.exp y) := by
   simp only [clippedTwist_apply, CubicReflectionKernel.logSchwartz_apply,
     clippedSource, Real.log_exp, Real.exp_add, Real.exp_log hc]
-  rw [mul_comm (Real.exp y) c]
+  ring
 
 def rootExponent (y : Fin 6 → ℝ) : ℝ := -y 1-y 2-(y 4+y 5)/2
 
@@ -149,7 +149,7 @@ theorem family_common_measure
   obtain ⟨C₂, hC₂, h₂⟩ := sourceDensity_moment_uniform g₂ J
   let D : ℝ := ∏ i, ∫ u : ℝ, (1+‖u‖)^J *
     ‖(𝓕 (secondRootSchwartz V hV hS i)) u‖
-  have hD : 0 ≤ D := Finset.prod_nonneg (fun i _ => integral_nonneg (fun u => by positivity))
+  have hD : 0 ≤ D := by positivity
   refine ⟨C₁*C₂*C₃*D, by positivity, ?_⟩
   intro R hR
   obtain ⟨b₃, he, _, hm, _⟩ := hsep R hR
@@ -181,8 +181,8 @@ theorem family_common_measure
   · rw [familyDensity_weighted_integral]
     have h1 := (h₁ c₁ θ₁).2
     have h2 := (h₂ c₂ θ₂).2
-    have h12 := mul_le_mul h1 h2 (integral_nonneg (fun _ => by positivity))
-      (mul_nonneg hC₁ (by positivity))
+    have h12 := mul_le_mul h1 h2 (by positivity)
+      (by positivity)
     have hm0 : 0 ≤ (1+R)^A * ∫ t : ℝ, (1+‖t‖)^J * ‖b₃ t‖ := by positivity
     have h123 := mul_le_mul h12 hm hm0 (by positivity)
     have h123D := mul_le_mul_of_nonneg_right h123 hD
@@ -196,7 +196,7 @@ theorem family_common_measure
         ((1+R)^A * ∫ t : ℝ, (1+‖t‖)^J * ‖b₃ t‖) * D) := by ring
     change (1+R)^A * (_ * _ * _ * _ * D) ≤ _
     rw [heq]
-    exact (mul_le_mul_of_nonneg_left h123D (Real.exp_pos _).le).trans
+    exact (mul_le_mul_of_nonneg_left h123D (by positivity)).trans
       ((mul_le_of_le_one_left (by positivity) hnorm).trans_eq (by ring))
 
 theorem clippedSource_conjugate (W : ℝ → ℂ) (c θ x : ℝ) :
@@ -241,8 +241,7 @@ theorem initial_normalization_scalar {Z : ℝ} (hZ : 0 < Z) (κ η : ℝ) :
     congr 1
     ring
   rw [he, ← Real.rpow_add hZ]
-  congr 1
-  ring
+  simp
 
 def physicalKernel (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (Z D m : ℝ) (q : Fin 6 → ℝ) : ℂ :=
@@ -257,7 +256,7 @@ theorem physicalKernel_eq_secondNorm (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, �
         secondNormProfile (fun x => W₁ (x/Z^D)) (fun x => W₂ (x/Z^D))
           Φ (fun _ _ => 1) (Z^m) q := by
   unfold physicalKernel secondNormProfile
-  rw [Real.sqrt_mul (hq 4).le]
+  rw [Real.sqrt_mul (by grind)]
   simp only [Finset.prod_const_one, one_mul, Complex.ofReal_div, Complex.ofReal_mul]
   ring
 
@@ -270,9 +269,9 @@ theorem physicalKernel_nominal (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
           (secondRelativeNorm q (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v))) := by
   have hn := secondNormProfile_nominal W₁ W₂ Φ
     (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v)) (Z^m)
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
-    (Real.rpow_pos_of_pos hZ _) q hq
+    (by positivity) (by positivity)
+    (by positivity) (by positivity)
+    (by positivity) q hq
   rw [original_column_scale hZ D B v, initial_radial_scale hZ D B v m θ H] at hn
   rw [physicalKernel_eq_secondNorm W₁ W₂ Φ Z D m q hq, hn]
   change ((Z^(-D)*Z^m : ℝ) : ℂ) *
@@ -308,8 +307,8 @@ theorem fresh_profile_restore (W₁ W₂ w₁ w₂ : ℝ → ℂ) (Φ : 𝓢(ℝ
   · simp only [secondNormProfile, h1, mul_zero, zero_mul, zero_div]
   by_cases h2 : W₂ (x 0*x 2*x 5) = 0
   · simp only [secondNormProfile, h2, mul_zero, zero_mul, zero_div]
-  have hv := hV (by rw [hw₁ h1]; exact one_ne_zero) (by rw [hw₂ h2]; exact one_ne_zero)
-  simp only [secondNormProfile, hv, hw₁ h1, hw₂ h2, Finset.prod_const_one, one_mul]
+  have hv := hV (by simp_all) (by simp_all)
+  simp only [secondNormProfile, hv, hw₁ h1, hw₂ h2, one_mul]
 
 def relativeNorm (q : Fin 6 → ℝ) (Z D B v θ H : ℝ) : Fin 6 → ℝ :=
   secondRelativeNorm q (Z^B) (Z^θ) (Z^v) (Z^H) (Z^(columnCenter D B v))
@@ -321,9 +320,9 @@ theorem relativeNorm_pos (q : Fin 6 → ℝ) (hq : ∀ i, 0 < q i)
     {Z : ℝ} (hZ : 0 < Z) (D B v θ H : ℝ) :
     ∀ i, 0 < relativeNorm q Z D B v θ H i :=
   secondRelativeNorm_pos q hq _ _ _ _ _
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
-    (Real.rpow_pos_of_pos hZ _)
+    (by positivity) (by positivity)
+    (by positivity) (by positivity)
+    (by positivity)
 
 theorem initial_kernel_restore (W₁ W₂ w₁ w₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (V : Fin 6 → ℝ → ℂ) {Z : ℝ} (hZ : 0 < Z) (D B v m θ H η : ℝ)
@@ -401,7 +400,7 @@ theorem initial_physical_family_common_measure
     Φ V M hV hS hM hbox A J
   refine ⟨C, hC, ?_⟩
   intro Z D B v m θ H η hZ hL
-  obtain ⟨b₃, hb₃⟩ := hsep (Z^(radialCenter m H θ D B)) (Real.rpow_pos_of_pos hZ _)
+  obtain ⟨b₃, hb₃⟩ := hsep (Z^(radialCenter m H θ D B)) (by positivity)
   refine ⟨b₃, ?_⟩
   intro c₁ c₂ θ₁ θ₂ hc₁ hc₂
   obtain ⟨he, hi, hbound⟩ := hb₃ c₁ c₂ θ₁ θ₂ (η*Real.log Z) hL
@@ -413,8 +412,7 @@ theorem initial_physical_family_common_measure
 theorem clipped_column_ratio {Z : ℝ} (hZ : 0 < Z) (N q : ℝ) :
     q / Z^N = Z^(max 0 N-N) * (q / Z^(max 0 N)) := by
   rw [Real.rpow_sub hZ]
-  field_simp [ne_of_gt (Real.rpow_pos_of_pos hZ N),
-    ne_of_gt (Real.rpow_pos_of_pos hZ (max 0 N))]
+  field_simp
 
 theorem clipped_column_source_identity (w : ℝ → ℂ) {Z q : ℝ}
     (hZ : 0 < Z) (hq : 0 < q) (N θ : ℝ) :
@@ -422,8 +420,8 @@ theorem clipped_column_source_identity (w : ℝ → ℂ) {Z q : ℝ}
       logPhase θ (Real.log (Z^(max 0 N-N))) *
         clippedSource w (Z^(max 0 N-N)) θ (q/Z^(max 0 N)) := by
   rw [clipped_column_ratio hZ N q]
-  rw [Real.log_mul (ne_of_gt (Real.rpow_pos_of_pos hZ _))
-    (ne_of_gt (div_pos hq (Real.rpow_pos_of_pos hZ _))), logPhase_add]
+  rw [Real.log_mul (by positivity)
+    (by positivity), logPhase_add]
   unfold clippedSource
   ring
 

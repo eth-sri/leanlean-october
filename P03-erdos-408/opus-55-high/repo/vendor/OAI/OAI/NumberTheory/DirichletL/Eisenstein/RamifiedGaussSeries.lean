@@ -10,33 +10,21 @@ noncomputable section
 
 namespace CubicEisenstein
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -45,46 +33,37 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 section
 
-open scoped BigOperators Classical
+open scoped Classical
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramifiedElement_ne_zero (u : Eisˣ) (n : ℕ) : u.val*lambda^n≠0 := by
@@ -92,7 +71,7 @@ lemma ramifiedElement_ne_zero (u : Eisˣ) (n : ℕ) : u.val*lambda^n≠0 := by
     intro hh
     apply CompletedGauss.embedding_lambda_ne_zero
     rw [hh,map_zero]
-  exact mul_ne_zero u.ne_zero (pow_ne_zero _ hl)
+  simp_all
 
 lemma ramifiedElement_level (u : Eisˣ) (n : ℕ) (hn : 2≤n) :
     (3:Eis)∣u.val*lambda^n :=
@@ -101,7 +80,7 @@ lemma ramifiedElement_level (u : Eisˣ) (n : ℕ) (hn : 2≤n) :
 lemma ramified_denominator_condition (u : Eisˣ) (n : ℕ) (d : Eis)
     (hd : (3:Eis)∣d-1) : denominatorCondition (u.val*lambda^n) d := by
   have hu : IsCoprime u.val d:=⟨u.inv,0,by simp⟩
-  have hl3 : lambda∣(3:Eis):=(dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans lambda_sq_dvd_three
+  have hl3 : lambda∣(3:Eis):=(dvd_pow_self lambda (by positivity)).trans lambda_sq_dvd_three
   have hld : IsCoprime lambda d:=coprime_of_dvd_sub_one lambda d (hl3.trans hd)
   exact ⟨hu.mul_left hld.pow_left,hd⟩
 
@@ -134,7 +113,7 @@ lemma ramifiedResidueAdd_injective (u : Eisˣ) (n : ℕ) (w : Eis) :
   change Ideal.Quotient.mk (Ideal.span {3*(u.val*lambda^n)}) (denominatorRep _ r.1+9*w)=
     Ideal.Quotient.mk (Ideal.span {3*(u.val*lambda^n)}) (denominatorRep _ q.1+9*w) at hh
   simp only [map_add,denominatorRep_spec] at hh
-  exact Subtype.ext (add_right_cancel hh)
+  grind
 
 def ramifiedResidueAddEquiv (u : Eisˣ) (n : ℕ) (w : Eis) :
     AdmissibleResidue (u.val*lambda^n) ≃ AdmissibleResidue (u.val*lambda^n) := by
@@ -175,11 +154,10 @@ theorem ramified_arithmetic_additive_eigen (h : Eis) (u : Eisˣ) (n : ℕ)
       have hdp:(3:Eis)∣d+9*w-1:=primary_add_nine d w r.2.2
       have hchar : symbol c (denominatorRep c (ramifiedResidueAdd u n w r).1)=symbol c d := by
         rw [row_symbol_congr_modulus c _ (d+9*w) hlevel hdp hrep]
-        exact ramified_symbol_congr_mod_nine u n (d+9*w) d hdp r.2.2 ⟨w,by ring⟩
+        exact ramified_symbol_congr_mod_nine u n (d+9*w) d hdp r.2.2 (by simp)
       change _=eisEmbedding (symbol c (denominatorRep c (ramifiedResidueAdd u n w r).1))*
         residueAdditive h c (denominatorRep c (ramifiedResidueAdd u n w r).1)
       rw [hchar,residueAdditive_congr h c _ (d+9*w) hc hrep,residueAdditive_add]
-      dsimp only [d]
       ring
     _ = _ := heq
 
@@ -206,21 +184,19 @@ theorem ramified_arithmetic_support (h : Eis) (u : Eisˣ) (n : ℕ)
   convert hp w using 1
   unfold residueAdditive cuspFrequency
   simp only [map_mul,map_ofNat]
-  congr 1
-  field_simp
-  ; ring
+  ring
 
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramified_primary_coprime (u : Eisˣ) (n : ℕ) (b : Eis)
     (hb : lambda^2∣b-1) : IsCoprime (3*(u.val*lambda^n)) b := by
   have h3:IsCoprime (3:Eis) b:=(primary_coprime_three b hb).symm
   have hl:IsCoprime lambda b:=coprime_of_dvd_sub_one lambda b
-    ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hb)
+    ((dvd_pow_self lambda (by positivity)).trans hb)
   have hu:IsCoprime u.val b:=⟨u.inv,0,by simp⟩
   exact h3.mul_left (hu.mul_left hl.pow_left)
 
@@ -260,7 +236,7 @@ theorem ramified_arithmetic_norm_bound (h : Eis) (hh : h≠0) (u : Eisˣ)
   calc
     9*Ideal.absNorm (Ideal.span {h})=Ideal.absNorm (Ideal.span {(3:Eis)*h}):=by
       rw [←Ideal.span_singleton_mul_span_singleton,map_mul,three_absNorm]
-    _=Ideal.absNorm (Ideal.span {(u.val*lambda^n)*v}):=by rw [hv]
+    _=Ideal.absNorm (Ideal.span {(u.val*lambda^n)*v}):=by simp_all
     _=3^n*Ideal.absNorm (Ideal.span {v}):=by
       rw [←Ideal.span_singleton_mul_span_singleton,map_mul,ramifiedElement_absNorm]
 
@@ -289,7 +265,7 @@ theorem arithmeticDirichletTerm_ramified_vanish (s : ℂ) (h : Eis) (hh : h≠0)
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -328,8 +304,7 @@ lemma ramifiedLowerMap_injective : Function.Injective ramifiedLowerMap := by
     apply Units.ext
     apply mul_right_cancel₀ (mul_ne_zero (pow_ne_zero _ PrimaryIdealUnitReindex.lambda_prime_actual.ne_zero) I.2)
     simpa only [ramifiedLower,mul_assoc] using hc
-  subst v
-  rfl
+  simp_all
 
 lemma ramifiedLowerMap_surjective : Function.Surjective ramifiedLowerMap := by
   intro c
@@ -347,13 +322,13 @@ lemma ramifiedLowerMap_surjective : Function.Surjective ramifiedLowerMap := by
     have hnot:=((goodIdeal_iff_not_ramified I.1).mp I.2)
     rcases hcases with rfl|rfl
     · simp only [pow_zero,one_mul] at hp2
-      exact hnot ((dvd_pow_self ramifiedIdeal (by decide : (2:ℕ)≠0)).trans hp2)
+      exact hnot ((dvd_pow_self ramifiedIdeal (by positivity)).trans hp2)
     · rw [pow_one,pow_two] at hp2
       exact hnot ((mul_dvd_mul_iff_left ramifiedIdeal_prime.ne_zero).mp hp2)
   obtain ⟨n,hn⟩:=Nat.exists_eq_add_of_le hk
   have hk':k=n+2:=by omega
   subst k
-  have hspan : Ideal.span {lambda^(n+2)*primaryGenerator I.1}=Ideal.span {c.1.1}:=
+  have hspan:=
     (lambdaFactor_generator_span (n+2) I).trans (by simpa only [Nat.add_comm] using hfact)
   obtain ⟨u,hu⟩:=Ideal.span_singleton_eq_span_singleton.mp hspan
   refine ⟨(u,n,I),Subtype.ext (Subtype.ext ?_)⟩
@@ -405,7 +380,7 @@ theorem arithmeticDirichletSeries_finite_ramified (s : ℂ) (hs : 2<s.re)
   have hzero (I:GoodIdeal) : arithmeticDirichletTerm s h (ramifiedLowerMap (u,n,I)).1=0 :=
     arithmeticDirichletTerm_ramified_vanish s h hh u (n+2) (by omega)
       (primaryGenerator I.1) (primaryGenerator_spec I.1 I.2).2 hout
-  simp only [hzero,tsum_zero]
+  simp_all
 
 theorem arithmeticDirichletSeries_gauss_expansion (s : ℂ) (hs : 2<s.re)
     (h : Eis) (hh : h≠0) :
@@ -422,7 +397,7 @@ theorem arithmeticDirichletSeries_gauss_expansion (s : ℂ) (hs : 2<s.re)
   intro n hn
   apply tsum_congr
   intro I
-  rw [arithmeticDirichletTerm, ite_eq_right (ramifiedLowerMap (u,n,I)).2]
+  rw [arithmeticDirichletTerm, ite_eq_right (by grind)]
   dsimp only [ramifiedLowerMap]
   congr 1
   exact arithmeticResidueSum_ramified_split h u (n+2) (by omega)
@@ -430,7 +405,7 @@ theorem arithmeticDirichletSeries_gauss_expansion (s : ℂ) (hs : 2<s.re)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -450,18 +425,13 @@ theorem cubicUnitGaussSum_phase_shift (h a b : Eis) (hb : b≠0)
           _=symbol (a*(3*a)) b*symbol (9*a) b:=
             symbol_mul_numerator _ _ b hbprimary
           _=_:=by rw [symbol_mul_numerator a (3*a) b hbprimary]
-      _=symbol ((3*a)^3) b:=by congr 1; ring
+      _=symbol ((3*a)^3) b:=by ring
       _=(symbol (3*a) b)^3:=symbol_pow_numerator _ _ hbprimary 3
       _=1:=symbol_cube_of_isCoprime _ _ hbprimary hab
   have he : eisEmbedding (symbol a b)*eisEmbedding (symbol (3*a) b)*
       eisEmbedding (symbol (9*a) b)=1:=by
     simpa only [map_mul,map_one] using congrArg eisEmbedding hs
-  calc
-    _=(eisEmbedding (symbol a b)*eisEmbedding (symbol (3*a) b))*
-        (eisEmbedding (symbol (9*a) b)*cubicUnitGaussSum (h*(9*a)) b):=by rw [heig]
-    _=(eisEmbedding (symbol a b)*eisEmbedding (symbol (3*a) b)*
-        eisEmbedding (symbol (9*a) b))*cubicUnitGaussSum (h*(9*a)) b:=by ring
-    _=_:=by rw [he,one_mul]
+  grind
 
 def unramifiedCubicGaussSeries (s : ℂ) (h : Eis) : ℂ:=
   ∑'I:GoodIdeal,(Ideal.absNorm I.1:ℂ)^(-s)*cubicUnitGaussSum h (primaryGenerator I.1)
@@ -482,7 +452,7 @@ theorem arithmeticDirichletSeries_unramified_gauss (s : ℂ) (hs : 2<s.re)
   intro I
   rw [eisEmbedding_norm_sq_eq_absNorm_span,Complex.ofReal_natCast,ramifiedLower_span,
     map_mul,map_pow,ramifiedIdeal_absNorm,Nat.cast_mul,Complex.natCast_mul_natCast_cpow]
-  have hp:lambda^2∣primaryGenerator I.1-1:=(primaryGenerator_spec I.1 I.2).2
+  have hp:=(primaryGenerator_spec I.1 I.2).2
   rw [←cubicUnitGaussSum_phase_shift h (u.val*lambda^(n+2)) (primaryGenerator I.1)
     I.2 hp (ramified_primary_coprime u (n+2) _ hp)]
   ring
@@ -498,8 +468,8 @@ theorem scatteringCoefficient_unramified_gauss (s : ℂ) (hs : 2<s.re)
 
 end
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
+open scoped Classical
+open CubicJacobiGlobal CompletedGauss
 open PrimaryIdealUnitReindex (GoodIdeal)
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -510,7 +480,7 @@ theorem cubicUnitGaussSum_cube_shift (h b t : Eis) (hb : b≠0)
   have hs : symbol (t^3) b=1:=by
     rw [symbol_pow_numerator t b hbprimary 3]
     exact symbol_cube_of_isCoprime t b hbprimary hbt.symm
-  simpa only [hs,map_one,one_mul] using heig
+  simp_all
 
 theorem unramifiedCubicGaussSeries_neg (s : ℂ) (h : Eis) :
     unramifiedCubicGaussSeries s (-h)=unramifiedCubicGaussSeries s h := by
@@ -527,9 +497,9 @@ theorem unramifiedCubicGaussSeries_lambda_pow (s : ℂ) (h : Eis) (n : ℕ) :
   apply tsum_congr
   intro I
   congr 1
-  have hp:lambda^2∣primaryGenerator I.1-1:=(primaryGenerator_spec I.1 I.2).2
+  have hp:=(primaryGenerator_spec I.1 I.2).2
   have hl:IsCoprime lambda (primaryGenerator I.1):=
-    coprime_of_dvd_sub_one lambda _ ((show lambda∣lambda^2 from ⟨lambda,by ring⟩).trans hp)
+    coprime_of_dvd_sub_one lambda _ ((show lambda∣lambda^2 from by simp).trans hp)
   have he:lambda^n=lambda^(n%3)*(lambda^(n/3))^3:=by
     rw [←pow_mul,←pow_add]
     congr 1
@@ -546,12 +516,12 @@ theorem unit_eq_sign_omega (u : Eisˣ) :
     IsCyclotomicExtension.Rat.Three.Units.mem ζ u
   simp only [List.mem_cons,List.mem_nil_iff,or_false] at hlist
   rcases hlist with h|h|h|h|h|h
-  · exact ⟨0,Or.inl (by simp [h])⟩
-  · exact ⟨0,Or.inr (by simp [h])⟩
-  · exact ⟨1,Or.inl (by simp [h,hη])⟩
-  · exact ⟨1,Or.inr (by simp [h,hη])⟩
-  · exact ⟨2,Or.inl (by simp only [h,Units.val_pow_eq_pow_val,hη];rfl)⟩
-  · exact ⟨2,Or.inr (by simp only [h,Units.val_neg,Units.val_pow_eq_pow_val,hη];rfl)⟩
+  · exact ⟨0,Or.inl (by simp_all)⟩
+  · exact ⟨0,Or.inr (by simp_all)⟩
+  · exact ⟨1,Or.inl (by simp_all)⟩
+  · exact ⟨1,Or.inr (by simp_all)⟩
+  · exact ⟨2,Or.inl (by simp_all)⟩
+  · exact ⟨2,Or.inr (by simp_all)⟩
 
 theorem unramifiedCubicGaussSeries_nine_family (h : Eis) (u : Eisˣ) (n : ℕ) :
     ∃j k:Fin 3,∀s:ℂ,
@@ -562,28 +532,28 @@ theorem unramifiedCubicGaussSeries_nine_family (h : Eis) (u : Eisˣ) (n : ℕ) :
       have h3:omega^3=1:=omega_primitive.pow_eq_one
       have h1:omega≠1:=omega_primitive.ne_one (by decide)
       have hp:(omega-1)*(omega^2+omega+1)=0:=by linear_combination h3
-      have hz:omega^2+omega+1=0:=(mul_eq_zero.mp hp).resolve_left (sub_ne_zero.mpr h1)
+      have hz:=(mul_eq_zero.mp hp).resolve_left (sub_ne_zero.mpr h1)
       linear_combination hz
     change (omega-1)^2=-3*omega
     linear_combination hw
   have h9:(9:Eis)=omega*lambda^4:=by
     calc
-      _=9*omega^3:=by rw [omega_primitive.pow_eq_one];ring
+      _=9*omega^3:=by simp [omega_primitive.pow_eq_one]
       _=omega*((-3*omega)^2):=by ring
-      _=omega*((lambda^2)^2):=by rw [hl]
+      _=omega*((lambda^2)^2):=by simp_all
       _=omega*lambda^4:=by ring
   let ζ:=IsCyclotomicExtension.zeta_spec 3 ℚ K
   let η:Eisˣ:=(ζ.toInteger_isPrimitiveRoot.isUnit (by decide)).unit
   have hη:(η:Eis)=omega:=rfl
   obtain ⟨j,hj⟩:=unit_eq_sign_omega (η*u)
-  refine ⟨j,⟨(n+4)%3,Nat.mod_lt _ (by decide)⟩,?_⟩
+  refine ⟨j,⟨(n+4)%3,by omega⟩,?_⟩
   intro s
   have he:h*(9*((u:Eis)*lambda^n))=(h*((η*u:Eisˣ):Eis))*lambda^(n+4):=by
     rw [h9,Units.val_mul,hη,pow_add]
     ring
   rw [he,unramifiedCubicGaussSeries_lambda_pow]
   rcases hj with hj|hj
-  · rw [hj]
+  · simp_all
   · rw [hj]
     simpa only [mul_neg,neg_mul] using
       unramifiedCubicGaussSeries_neg s (h*omega^j.val*lambda^((n+4)%3))

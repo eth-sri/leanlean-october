@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 
 namespace ShortDraftHeckeBridge
@@ -46,12 +33,12 @@ namespace FiniteSFactor
 
 abbrev O := NumberField.RingOfIntegers (CyclotomicField 3 ℚ)
 
-noncomputable def outsideWeight (S : Finset (Ideal O))
+def outsideWeight (S : Finset (Ideal O))
     (w : Ideal O → ℂ) (I : Ideal O) : ℂ := by
   classical
   exact if ∀ P ∈ S, ¬ P ∣ I then w I else 0
 
-noncomputable def fiber (n : ℕ) : Finset (Ideal O) :=
+def fiber (n : ℕ) : Finset (Ideal O) :=
   (Ideal.finite_setOfPred_absNorm_eq (S := O) n).toFinset
 
 theorem mem_fiber {n : ℕ} {I : Ideal O} : I ∈ fiber n ↔ Ideal.absNorm I = n := by
@@ -61,7 +48,7 @@ open scoped Classical
 
 open scoped Classical
 
-noncomputable def outsideCoeff (S : Finset (Ideal O))
+def outsideCoeff (S : Finset (Ideal O))
     (w : Ideal O → ℂ) (n : ℕ) : ℂ :=
   ∑ I ∈ fiber n, outsideWeight S w I
 
@@ -72,7 +59,7 @@ end ShortDraftHeckeBridge
 
 namespace DyadicTransfer
 
-noncomputable def annularCutoff (φ : ℝ → ℂ) (y : ℝ) : ℂ :=
+def annularCutoff (φ : ℝ → ℂ) (y : ℝ) : ℂ :=
   φ y - φ (2 * y)
 
 theorem annularCutoff_eq_zero_of_le_half (φ : ℝ → ℂ)
@@ -98,11 +85,6 @@ theorem partial_partition (φ : ℝ → ℂ) (x : ℝ) (K : ℕ) :
   | succ K ih =>
       rw [Finset.sum_range_succ, ih]
       unfold annularCutoff
-      have hpow : (2 : ℝ) ^ (K + 1) ≠ 0 := by positivity
-      have hshift : 2 * (x / (2 : ℝ) ^ (K + 1)) = x / (2 : ℝ) ^ K := by
-        rw [pow_succ]
-        field_simp
-      rw [hshift]
       ring
 
 end DyadicTransfer

@@ -8,25 +8,24 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStep
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialClippedColumns InverseSecondFibers InverseSecondSourceBlocks
-open CanonicalCoefficientClass InverseMomentFirstLabelCell InverseMomentFirstChildWindows InverseFirstGlobalCaps
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialClippedColumns
+open CanonicalCoefficientClass InverseMomentFirstLabelCell InverseMomentFirstChildWindows
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
+variable (p:ι→ActualEisensteinCubic.O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
 variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 
-def CanonicalRankMoments (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
+def CanonicalRankMoments (pool:Finset ι)(base:ActualEisensteinCubic.O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (W:𝓢(ℝ,ℂ))(Z Mmax Fcap z c eps A:ℝ)(K degree:ℕ):Prop :=
-  ∀(Ψ:O→*ℂ),IsBaseRayTwist base Ψ→∀(m:O),m≠0→∀N V M Qwidth:ℝ,
+  ∀(Ψ:ActualEisensteinCubic.O→*ℂ),IsBaseRayTwist base Ψ→∀(m:ActualEisensteinCubic.O),m≠0→∀N V M Qwidth:ℝ,
     0≤N→0≤V→0≤M→0≤Qwidth→M≤Mmax→N+V≤Fcap→
     CanonicalMargins (N+V) M Qwidth z c→
     ‖ConcreteTraceCRT.eisEmbedding m‖^2=Z^Qwidth→
-    ∀(subslots:Finset σ),subslots⊆slots→∀labels:Finset (Ideal O),
+    ∀(subslots:Finset σ),subslots⊆slots→∀labels:Finset (Ideal ActualEisensteinCubic.O),
       (∀I∈labels,Admissible I ∧ (Ideal.absNorm I:ℝ)≤Z^V)→∀s:ℝ,
     normalizedColumnEnergy p hp hcop hg pool Ψ m subslots lists a labels
       (nonzeroChildFrequencyBall 1 (Z^M)) (secondLabelWeight K) (childLogTest W s) (Z^N) Z (N+V)≤
@@ -34,17 +33,17 @@ def CanonicalRankMoments (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:
 
 include hp in
 theorem canonical_rank_moments_children
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
     (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(k:SourceIndex)(l j:ℕ)(negative:Bool)
-    (base Ψ:O→*ℂ)(hΨ:IsBaseRayTwist base Ψ)(m:O)(hm:m≠0)
+    (base Ψ:ActualEisensteinCubic.O→*ℂ)(hΨ:IsBaseRayTwist base Ψ)(m:ActualEisensteinCubic.O)(hm:m≠0)
     (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(ω₁ ω₂:𝓢(ℝ,ℂ))
     (Z M r ell V eta tau window b cutoff Qwidth z c eps A:ℝ)(K degree:ℕ)
     (hZ:1<Z)(heta:0≤eta)(hbin:2≤Z^eta)(hell:0≤ell)(hV:0≤V)
     (hb:1≤b)(hbt:b≤Z^(6*eta))(hwindow:Real.exp window≤Z^(4*eta))
     (_hd:0<cutoff)(hterminal:cutoff≤ell+V)(hsmall:eta≤cutoff/16)
     (hparent:CanonicalMargins (r+3*ell+V) M Qwidth z c)
-    (hpuncture:(Ideal.absNorm (Ideal.span {m}:Ideal O).radical:ℝ)≤Z^Qwidth)
+    (hpuncture:(Ideal.absNorm (Ideal.span {m}:Ideal ActualEisensteinCubic.O).radical:ℝ)≤Z^Qwidth)
     (hQ:∀v∈Q,‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2≤Z^(ell+eta))
     (h₁:CanonicalRankMoments p hp hcop hg pool base slots lists a ω₁ Z (M-3*cutoff/2) (r+3*ell+V+15*eta) z (c-7*eta) eps A K degree)
     (h₂:CanonicalRankMoments p hp hcop hg pool base slots lists a ω₂ Z (M-3*cutoff/2) (r+3*ell+V+15*eta) z (c-7*eta) eps A K degree):
@@ -67,7 +66,7 @@ theorem canonical_rank_moments_children
       (max 0 (secondCellColumnExponent Z (columnScale Z r k l negative) d))
       (actualCellLabelExponent Z (exponent Z (k 2)) (exponent Z j) eta d)
       (actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d)
-      (actualSecondPunctureWidth Z m γ) st.1 st.2.1 st.2.2.2.1 mg.2.1 (by linarith [st.2.2.2.2]) st.2.2.1 mg.2.2.2 mg.2.2.1
+      (actualSecondPunctureWidth Z m γ) st.1 st.2.1 st.2.2.2.1 mg.2.1 (by linarith) st.2.2.1 mg.2.2.2 mg.2.2.1
       ((slots\assigned)\J) (Finset.sdiff_subset.trans Finset.sdiff_subset)
       ((actualCellLabels p S d).filter Squarefree) ?_ s
     intro I hI
@@ -79,7 +78,7 @@ theorem canonical_rank_moments_children
       (max 0 (secondCellColumnExponent Z (columnScale Z r k l negative) d))
       (actualCellLabelExponent Z (exponent Z (k 2)) (exponent Z j) eta d)
       (actualCellRowExponent Z M ell (columnA Z k negative) (exponent Z l) V (exponent Z j) eta d)
-      (actualSecondPunctureWidth Z m γ) st.1 st.2.1 st.2.2.2.1 mg.2.1 (by linarith [st.2.2.2.2]) st.2.2.1 mg.2.2.2 mg.2.2.1
+      (actualSecondPunctureWidth Z m γ) st.1 st.2.1 st.2.2.2.1 mg.2.1 (by linarith) st.2.2.1 mg.2.2.2 mg.2.2.1
       ((slots\assigned)\J) (Finset.sdiff_subset.trans Finset.sdiff_subset)
       ((actualCellLabels p S d).filter Squarefree) ?_ s
     intro I hI

@@ -7,7 +7,6 @@ public import Erdos821.S2.GroupWeights
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -66,7 +65,7 @@ theorem reconstructedScalarWeight_factorial (hGhost : SpanGhostWeightTask)
       Q.scalarPathPrefactor y *
         ∏ g : P.BigGroup, ∏ p : P.Prime g.val, Q.spanWeight g p (S g p) := by
   have hG := Q.ghost_weight_factorial_product hGhost S hS hV y
-  have hM := Q.all_big_group_weights hMark S hQ hS hk (fun g => hV g.val)
+  have hM := Q.all_big_group_weights hMark S hQ hS hk (by grind)
   have hStart := Q.reconstructed_initial_mass S y hy
   unfold reconstructedScalarWeight
   rw [hStart]

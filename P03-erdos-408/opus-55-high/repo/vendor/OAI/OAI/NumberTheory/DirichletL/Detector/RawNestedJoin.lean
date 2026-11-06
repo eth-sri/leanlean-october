@@ -11,17 +11,16 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
+open CubicEisenstein
 
 def rawNestedPhysicalProbe (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ υ : ℝ) : ℂ :=
+    (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ υ : ℝ) : ℂ :=
   ∑'K : SourceOuter C.excluded,verticalIntegral υ (fun w=>verticalIntegral 4 (fun t=>
     ∑'IJ : CompletedPair,verticalIntegral ξ (fun z=>∑'H : NonzeroFrequency,
       rawPhysicalMellinTerm η C C.excluded D IJ.1 IJ.2 K.val K.property.1 W0 W1 X Y Z H.val t w z)))
 
 theorem nestedMellinPhysicalProbe_eq_raw (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Ideal O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ υ : ℝ) :
+    (D : Ideal ActualEisensteinCubic.O) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z ξ υ : ℝ) :
     nestedMellinPhysicalProbe η C D W0 W1 X Y Z ξ υ=
       rawNestedPhysicalProbe η C D W0 W1 X Y Z ξ υ := by
   unfold nestedMellinPhysicalProbe rawNestedPhysicalProbe
@@ -37,12 +36,7 @@ theorem nestedMellinPhysicalProbe_eq_raw (η : HeckeFamily.Character) (C : Calib
   unfold verticalIntegral
   simp_rw [mul_assoc,integral_const_mul]
   simp only [Complex.ofReal_natCast]
-  ring_nf
-  congr 1
-  apply integral_congr_ae
-  apply Filter.Eventually.of_forall
-  intro a
-  ring_nf
+  ring
 
 end SevenEighths.ProbePhysical
 end

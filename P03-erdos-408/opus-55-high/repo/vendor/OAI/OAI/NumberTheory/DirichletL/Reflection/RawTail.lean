@@ -7,10 +7,9 @@ public import OAI.NumberTheory.DirichletL.Reflection.KernelBaseline
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff SchwartzMap
+open scoped Classical
 open ActualEisensteinCubic CubicEisenstein CompletedGauss
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 abbrev RawTailIndex := ℕ×NonzeroDualIdeal×NonzeroDualIdeal
 
@@ -34,15 +33,15 @@ lemma rawTailWeight_summable (q : ℝ) (hq : 1<q) : Summable (rawTailWeight q) :
 lemma tail_power_gain (A : ℕ) (T x : ℝ) (hT : 0<T) (hTx : T≤x) :
     x^(-((A+2:ℕ):ℝ))≤T^(-(A:ℝ))*(x^2)⁻¹ := by
   have hx : 0<x := lt_of_lt_of_le hT hTx
-  rw [show -((A+2:ℕ):ℝ)=-(A:ℝ)+(-2) by push_cast; ring,Real.rpow_add hx]
-  rw [show x^(-2:ℝ)=(x^2)⁻¹ by rw [Real.rpow_neg hx.le,Real.rpow_two]]
+  rw [show -((A+2:ℕ):ℝ)=-(A:ℝ)+(-2) by grind,Real.rpow_add hx]
+  rw [show x^(-2:ℝ)=(x^2)⁻¹ by simp]
   exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_nonpos hT hTx (neg_nonpos.mpr (Nat.cast_nonneg A))) (by positivity)
 
 theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
     ∃ (S : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a b →
     ∀ (scale ρ B T : ℝ), 0<scale → 0<ρ → 0≤B → 0<T →
-    ∀ (β : ℕ→Ideal Eis→Ideal Eis→ℂ),
+    ∀ (β : ℕ→Ideal ActualEisensteinCubic.O→Ideal ActualEisensteinCubic.O→ℂ),
       (∀ m, ∀ I J : NonzeroDualIdeal, ‖β m I.val J.val‖≤B) →
     ∀ cut : RawTailIndex→Prop,
       (∀ x, cut x → T≤scale*(ρ*q^x.1)^3*(Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3) →
@@ -85,8 +84,8 @@ theorem raw_kernel_tail (a b q : ℝ) (ha : 0<a) (hq : 1<q) (A : ℕ) :
     _ ≤ ∑' x, ‖if cut x then rawDualKernelTerm V scale ρ q β x else 0‖ := norm_tsum_le_tsum_norm hn
     _ ≤ ∑' x, M*rawTailWeight q x := hn.tsum_le_tsum hmajor (hsum.mul_left M)
     _ = M*(∑' x,rawTailWeight q x) := tsum_mul_left
-    _ ≤ M*D := mul_le_mul_of_nonneg_left (by dsimp only [D]; linarith) hM
-    _ = _ := by dsimp only [M]; ring
+    _ ≤ M*D := mul_le_mul_of_nonneg_left (by linarith) hM
+    _ = _ := by linarith
 end
 end SevenEighths.InverseReflectedPhase
 

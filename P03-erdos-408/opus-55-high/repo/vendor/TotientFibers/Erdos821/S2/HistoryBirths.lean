@@ -8,7 +8,6 @@ public import Erdos821.S2.BlueprintBirths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -21,16 +20,14 @@ theorem sum_fin_dite {M : Type*} [AddCommMonoid M] (b B : ℕ) (hb : b ≤ B) (f
     (∑ h : Fin B, if hh : h.val < b then f ⟨h.val, hh⟩ else 0) = ∑ h : Fin b, f h := by
   induction B, hb using Nat.le_induction with
   | base =>
-      apply Finset.sum_congr rfl
-      intro h _
       simp
   | succ B hb ih =>
       rw [Fin.sum_univ_castSucc]
-      simpa only [Fin.val_castSucc, Fin.val_last, dite_eq_right (Nat.not_lt.mpr hb), add_zero] using ih
+      grind
 
 theorem sum_singletons_eq_map {α β : Type*} (s : Finset α) (f : α → β) :
     (∑ a ∈ s, ({f a} : Multiset β)) = s.val.map f := by
-  simpa only [Finset.sum_eq_multiset_sum, Multiset.map_map, Function.comp_def] using Multiset.sum_map_singleton (s.val.map f)
+  simpa using Multiset.sum_map_singleton (s.val.map f)
 
 namespace MemoryHistory
 
@@ -39,7 +36,7 @@ variable {A : Model F P J m} {n : ℕ} (H : MemoryHistory A n)
 theorem birthValues_eq_addresses (B : ℕ) (hH : H.Truncated B) :
     H.birthValues = ∑ a : BirthAddress P (J + F.ell) n B,
       if H.addressPerformed B a then ({H.addressValue B a} : Multiset ℕ) else 0 := by
-  simp only [BirthAddress, Fintype.sum_sum_type, Fintype.sum_prod_type]
+  simp only [Fintype.sum_sum_type, Fintype.sum_prod_type]
   have hin (g : P.BigGroup) (h : Fin (J + F.ell)) :
       (if H.addressPerformed B (.inl (g, h)) then
         ({H.addressValue B (.inl (g, h))} : Multiset ℕ) else 0) =
@@ -116,10 +113,10 @@ theorem distinct_birth_expansion_history (B : ℕ) (hH : H.Truncated B) :
   have he := distinct_birth_expansion_proof _ (H.performedFin B) (H.valueFin B)
   by_cases hd : H.DistinctBirths
   · have hf := (H.distinctBirths_iff_fin B hH).mp hd
-    simpa only [ite_eq_left hd, ite_eq_left hf] using he
+    grind
   · have hf : ¬ Set.InjOn (H.valueFin B) (H.performedFin B) :=
       fun hf => hd ((H.distinctBirths_iff_fin B hH).mpr hf)
-    simpa only [ite_eq_right hd, ite_eq_right hf] using he
+    grind
 
 end MemoryHistory
 

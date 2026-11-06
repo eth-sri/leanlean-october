@@ -8,7 +8,6 @@ public import Mathlib.Topology.Separation.CompletelyRegular
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -36,8 +35,8 @@ private theorem piProdTsum {ι : Type u} [Fintype ι]
     let : Fintype α := Fintype.ofEquiv γ e.symm
     let αfam : α → Type v := fun a => γfam (e a)
     let g' : (a : α) → αfam a → ℝ := fun a x => g (e a) x
-    have hα := h αfam g' (by intro a x; exact hg0 (e a) x)
-      (by intro a; exact hgs (e a))
+    have hα := h αfam g' (by grind)
+      (by grind)
     let E : ((b : γ) → γfam b) ≃ ((a : α) → αfam a) :=
       Equiv.piCongrLeft' γfam e.symm
     have hcomp : Summable (fun x : (b : γ) → γfam b =>
@@ -46,7 +45,7 @@ private theorem piProdTsum {ι : Type u} [Fintype ι]
         (∏ a : α, g' a (E x a)) = ∏ b : γ, g b (x b) := by
       apply Fintype.prod_equiv e
       intro a
-      simp [g', E, Equiv.piCongrLeft']
+      simp [g', E]
     constructor
     · convert hcomp using 1
       funext x
@@ -62,27 +61,24 @@ private theorem piProdTsum {ι : Type u} [Fintype ι]
         _ = ∏ a : α, ∑' x : αfam a, g' a x := hα.2
         _ = ∏ b : γ, ∑' x : γfam b, g b x := by
               apply Fintype.prod_equiv e
-              intro a
-              rfl
+              grind
   · intro β f h0 hs
     have hfin : Summable (fun x : (i : PEmpty) → β i => ∏ i, f i (x i)) :=
       summable_of_hasFiniteSupport (Set.finite_univ.subset (Set.subset_univ _))
-    constructor
-    · exact hfin
-    · simp [tsum_fintype]
+    simp_all
   · intro α _ ih β f h0 hs
     let β' : α → Type v := fun a => β (some a)
     let f' : (a : α) → β' a → ℝ := fun a x => f (some a) x
-    have hrest := ih β' f' (by intro a x; exact h0 (some a) x)
-      (by intro a; exact hs (some a))
+    have hrest := ih β' f' (by grind)
+      (by grind)
     let rest : ((a : α) → β (some a)) → ℝ := fun y => ∏ a, f' a (y a)
     let E : ((o : Option α) → β o) ≃ β none × ((a : α) → β (some a)) :=
       Equiv.piOptionEquivProd
     have hnonneg : ∀ p : β none × ((a : α) → β (some a)),
         0 ≤ f none p.1 * rest p.2 := by
       intro p
-      exact mul_nonneg (h0 none p.1)
-        (Finset.prod_nonneg fun a _ => h0 (some a) (p.2 a))
+      exact mul_nonneg (by grind)
+        (Finset.prod_nonneg (by grind))
     have hrows : ∀ x : β none, Summable (fun y : (a : α) → β (some a) => f none x * rest y) := by
       intro x
       exact hrest.1.mul_left (f none x)
@@ -93,9 +89,8 @@ private theorem piProdTsum {ι : Type u} [Fintype ι]
         hrest.1.tsum_mul_left (f none x)
       simpa only [heq] using
         (hs none).mul_right (∑' y : (a : α) → β (some a), rest y)
-    have hprod : Summable (fun p : β none × ((a : α) → β (some a)) =>
-        f none p.1 * rest p.2) :=
-      (summable_prod_of_nonneg hnonneg).2 ⟨hrows, houter⟩
+    have hprod :=
+      (summable_prod_of_nonneg hnonneg).2 (by grind)
     have hcomp : Summable (fun x : (o : Option α) → β o =>
         f none (x none) * rest (fun a => x (some a))) := (E.summable_iff).2 hprod
     have hterm (x : (o : Option α) → β o) :
@@ -109,8 +104,7 @@ private theorem piProdTsum {ι : Type u} [Fintype ι]
         (∑' x : (o : Option α) → β o, ∏ o, f o (x o)) =
             ∑' x : (o : Option α) → β o, f none (x none) * rest (fun a => x (some a)) := by
               apply tsum_congr
-              intro x
-              exact hterm x
+              omega
         _ = ∑' p : β none × ((a : α) → β (some a)), f none p.1 * rest p.2 :=
               E.tsum_eq (fun p : β none × ((a : α) → β (some a)) => f none p.1 * rest p.2)
         _ = ∑' x : β none, ∑' y : (a : α) → β (some a), f none x * rest y :=
@@ -127,8 +121,7 @@ private theorem piProdTsum {ι : Type u} [Fintype ι]
                   (∑' y : (a : α) → β (some a), rest y) =
                     ∏ a : α, ∑' y : β (some a), f (some a) y := by
                 simpa [rest, f'] using hrest.2
-              rw [hrest']
-              simp
+              simp [hrest']
 
 private theorem ghostBirthSeries_bound {α : Type*} [Fintype α]
     (μ : α → ℝ) (hμ : ∀ a, 0 ≤ μ a) (hμsum : (∑ a, μ a) ≤ 2)
@@ -143,12 +136,12 @@ private theorem ghostBirthSeries_bound {α : Type*} [Fintype α]
   have hf0 : ∀ c, 0 ≤ f c := by
     intro c
     apply mul_nonneg
-    · exact div_nonneg (pow_nonneg hx _) (Nat.cast_nonneg _)
-    · exact Finset.prod_nonneg fun i _ => hμ (c.2 i)
+    · positivity
+    · exact Finset.prod_nonneg (by grind)
   have hfiber (b : ℕ) : Summable (fun p : Fin b → α => f ⟨b, p⟩) :=
     summable_of_hasFiniteSupport (Set.finite_univ.subset (Set.subset_univ _))
   let S : ℝ := ∑ a, μ a
-  have hS0 : 0 ≤ S := Finset.sum_nonneg fun a _ => hμ a
+  have hS0 : 0 ≤ S := Finset.sum_nonneg (by grind)
   have hS : S ≤ 2 := hμsum
   have hsum (b : ℕ) :
       (∑' p : Fin b → α, f ⟨b, p⟩) = (x * S) ^ b / (b.factorial : ℝ) := by
@@ -160,12 +153,11 @@ private theorem ghostBirthSeries_bound {α : Type*} [Fintype α]
             rw [Finset.mul_sum]
       _ = (x * S) ^ b / (b.factorial : ℝ) := by
             rw [← Fintype.sum_pow μ b]
-            dsimp [S]
             ring
   have houter : Summable (fun b : ℕ => ∑' p : Fin b → α, f ⟨b, p⟩) := by
     simpa only [hsum] using Real.summable_pow_div_factorial (x * S)
-  have hsumma : Summable f :=
-    (summable_sigma_of_nonneg hf0).2 ⟨hfiber, houter⟩
+  have hsumma :=
+    (summable_sigma_of_nonneg hf0).2 (by grind)
   have htotal :
       (∑' c : Σ b : ℕ, Fin b → α, f c) = Real.exp (x * S) := by
     calc
@@ -174,16 +166,14 @@ private theorem ghostBirthSeries_bound {α : Type*} [Fintype α]
             Summable.tsum_sigma' hfiber hsumma
       _ = ∑' b : ℕ, (x * S) ^ b / (b.factorial : ℝ) := by
             apply tsum_congr
-            exact hsum
+            omega
       _ = Real.exp (x * S) := by
             rw [Real.exp_eq_exp_ℝ]
             exact (congrFun (NormedSpace.exp_eq_tsum_div (𝔸 := ℝ)) (x * S)).symm
   refine ⟨hsumma, ?_⟩
   rw [htotal]
   apply Real.exp_le_exp.mpr
-  calc
-    x * S ≤ x * 2 := mul_le_mul_of_nonneg_left hS hx
-    _ = 2 * x := by ring
+  nlinarith
 
 private theorem ghostDeletedPowerSum {α : Type*} [Fintype α] [DecidableEq α]
     (Z : Finset α) (a b : ℝ) :
@@ -191,7 +181,7 @@ private theorem ghostDeletedPowerSum {α : Type*} [Fintype α] [DecidableEq α]
       b ^ A.1.card * a ^ (Z.card - A.1.card)) = (a + b) ^ Z.card := by
   classical
   let e : {A : Finset α // A ⊆ Z} ≃ {A : Finset α // A ∈ Z.powerset} :=
-    Equiv.subtypeEquivRight (fun A => (Finset.mem_powerset (s := A) (t := Z)).symm)
+    Equiv.subtypeEquivRight (by simp)
 
   calc
     _ = ∑ A : {A : Finset α // A ∈ Z.powerset},
@@ -237,20 +227,14 @@ private theorem ghostDeletionFactor_bound {α : Type*} [Fintype α] [DecidableEq
             | zero => simp
             | succ n ih =>
                 rw [pow_succ]
-                calc
-                  (a + b / v) ^ n * (a + b / v) ≤
-                      (a + b / v) ^ n * 1 :=
-                        mul_le_mul_of_nonneg_left hx1 (pow_nonneg hx0 n)
-                  _ ≤ 1 := by simpa using ih
-          exact mul_le_mul_of_nonneg_left (hpown Z.card) (pow_nonneg hv.le N)
+                nlinarith
+          simp_all
     _ = v ^ N := by ring
 
 lemma visitQ_eq_q_or_sqrt (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
     visitQ F.q n i = F.q ∨ visitQ F.q n i = Real.sqrt F.q := by
   unfold visitQ
-  split_ifs with h
-  · exact Or.inr rfl
-  · exact Or.inl rfl
+  grind
 
 lemma visitQ_pos (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
     0 < visitQ F.q n i := by
@@ -288,8 +272,7 @@ lemma rowsDeleteMemoryIndices_card {P : PrimeGroups} {g : P.Group}
   classical
   unfold deleteMemoryIndices
   rw [Multiset.coe_card, List.length_map, Finset.length_toList]
-  rw [Finset.card_sdiff_of_subset (Finset.subset_univ A)]
-  simp
+  simp [Finset.card_sdiff_of_subset (Finset.subset_univ A)]
 
 lemma rowsZeroBirthBatch_card {P : PrimeGroups} {g : P.Group} {b : ℕ}
     (p : Fin b → P.Prime g) : (zeroBirthBatch p).card = b := by
@@ -326,8 +309,7 @@ lemma ghostTransitionTarget_card {M : ℕ} (s : P.MemoryState M)
     ((ghostTransitionTarget s c).2.2 g).card =
       (s.2.2 g).card - (ghostTransitionDeleted c g).card +
         (ghostTransitionBirths c g).1 := by
-  simp [ghostTransitionTarget, ghostTransitionDeleted, ghostTransitionBirths,
-    rowsDeleteMemoryIndices_card, rowsZeroBirthBatch_card, Multiset.card_add]
+  simp [ghostTransitionTarget, rowsDeleteMemoryIndices_card, rowsZeroBirthBatch_card]
 
 def ghostTransitionAsChoice {M : ℕ} (s : P.MemoryState M)
     (c : GhostTransition s) : GhostChoice s (ghostTransitionTarget s c) := by
@@ -390,7 +372,7 @@ private theorem ghostGroupRowFactor_summable_bound
     α ^ (Z.card - A.1.card) * δ ^ A.1.card * r.v ^ ((s.2.2 g).card - A.1.card)
   let B : GhostBirthBatch g → ℝ := fun b =>
     X ^ b.1 / (b.1.factorial : ℝ) * ∏ j : Fin b.1, tiltedMu F P n g.val (b.2 j)
-  have hEta : 0 < eta F n i := eta_pos F n i
+  have hEta := eta_pos F n i
   have hEta1 : eta F n i ≤ 1 := by
     unfold eta
     linarith [visitQ_pos F n i]
@@ -414,8 +396,8 @@ private theorem ghostGroupRowFactor_summable_bound
     intro b
     dsimp [B]
     apply mul_nonneg
-    · exact div_nonneg (pow_nonneg hXpos.le _) (Nat.cast_nonneg _)
-    · exact Finset.prod_nonneg fun j _ => hmu0 (b.2 j)
+    · positivity
+    · exact Finset.prod_nonneg (by grind)
   have hnonneg : ∀ c : GhostGroupTransition s g, 0 ≤ D c.1 * B c.2 := by
     intro c
     exact mul_nonneg (hD_nonneg c.1) (hB_nonneg c.2)
@@ -427,7 +409,7 @@ private theorem ghostGroupRowFactor_summable_bound
       ∑' b : GhostBirthBatch g, D A * B b) :=
     summable_of_hasFiniteSupport (Set.finite_univ.subset (Set.subset_univ _))
   have hlocal : Summable (fun c : GhostGroupTransition s g => D c.1 * B c.2) :=
-    (summable_prod_of_nonneg hnonneg).2 ⟨hrows, houter⟩
+    (summable_prod_of_nonneg hnonneg).2 (by grind)
   have hlocal_eq :
       (∑' c : GhostGroupTransition s g, D c.1 * B c.2) =
         (∑' A : GhostDeletedChoice s g, D A) *
@@ -467,21 +449,20 @@ private theorem ghostGroupRowFactor_summable_bound
             mul_le_mul_of_nonneg_right hfactor (by positivity [hEta, r.rho_pos, r.v_gt])
           _ = 2 * max 1 F.vMax * eta F n i / (r.rho * r.v) := by ring
       have hdam := visitQ_memory_damping F r n i
-      dsimp [α, δ] at *
-      nlinarith
+      linarith
   have hrv : 0 < r.v := by linarith [r.v_gt]
   have hdel := ghostDeletionFactor_bound Z (s.2.2 g).card hZle α δ r.v
     hrv hdelrate.1 hdelrate.2
   have hdel_nonneg : 0 ≤ ∑' A : GhostDeletedChoice s g, D A := by
     apply tsum_nonneg
     exact hD_nonneg
-  have hBtsum : (∑' b : GhostBirthBatch g, B b) ≤ Real.exp (2 * X) := by
-    exact hbirth.2
+  have hBtsum : (∑' b : GhostBirthBatch g, B b) ≤ Real.exp (2 * X) :=
+    hbirth.2
   have hBnonneg : 0 ≤ ∑' b : GhostBirthBatch g, B b := by
     apply tsum_nonneg
     exact hB_nonneg
   have hVmax : P.V g.val ≤ max 1 F.vMax :=
-    hV.2.trans (le_max_right 1 F.vMax)
+    by grind
   have hsmall : d * eta F n i * P.V g.val ≤ 2 * max 1 F.vMax := by
     calc
       d * eta F n i * P.V g.val ≤ d * P.V g.val := by
@@ -492,20 +473,20 @@ private theorem ghostGroupRowFactor_summable_bound
         exact mul_le_mul_of_nonneg_right hde hV.1.le
       _ ≤ 2 * P.V g.val := mul_le_mul_of_nonneg_right hdle hV.1.le
       _ ≤ 2 * max 1 F.vMax := by
-        exact mul_le_mul_of_nonneg_left hVmax (by norm_num)
+        linarith
   have hXle : X ≤ 2 * max 1 F.vMax * r.v / r.rho := by
     dsimp [X]
     calc
       d * eta F n i * P.V g.val * r.v / r.rho ≤
           (2 * max 1 F.vMax) * r.v / r.rho := by
             apply div_le_div_of_nonneg_right _ r.rho_pos.le
-            exact mul_le_mul_of_nonneg_right hsmall (le_trans (by norm_num) r.v_gt.le)
+            exact mul_le_mul_of_nonneg_right hsmall (by positivity)
       _ = 2 * max 1 F.vMax * r.v / r.rho := by ring
   have hExp : Real.exp (2 * X) ≤ Real.exp (4 * max 1 F.vMax * r.v / r.rho) := by
     apply Real.exp_le_exp.mpr
     calc
       2 * X ≤ 2 * (2 * max 1 F.vMax * r.v / r.rho) :=
-        mul_le_mul_of_nonneg_left hXle (by norm_num)
+        by linarith
       _ = 4 * max 1 F.vMax * r.v / r.rho := by ring
   have hbound : (∑' c : GhostGroupTransition s g, D c.1 * B c.2) ≤
       r.v ^ (s.2.2 g).card * Real.exp (4 * max 1 F.vMax * r.v / r.rho) := by
@@ -518,10 +499,10 @@ private theorem ghostGroupRowFactor_summable_bound
             _ ≤ r.v ^ (s.2.2 g).card * (∑' b : GhostBirthBatch g, B b) :=
               mul_le_mul_of_nonneg_right hdel hBnonneg
             _ ≤ _ := mul_le_mul_of_nonneg_left hBtsum
-              (pow_nonneg (le_trans (by norm_num) r.v_gt.le) _)
+              (by positivity)
       _ ≤ r.v ^ (s.2.2 g).card * Real.exp (4 * max 1 F.vMax * r.v / r.rho) :=
           mul_le_mul_of_nonneg_left hExp
-            (pow_nonneg (le_trans (by norm_num) r.v_gt.le) _)
+            (by positivity)
   refine ⟨?_, hbound⟩
   simpa [ghostGroupRowFactor, D, B, X, δ, α] using hlocal
 
@@ -546,7 +527,7 @@ private theorem ghostGroupRevFactor_summable_bound
     α ^ (Z.card - A.1.card) * δ ^ A.1.card * r.v ^ ((s.2.2 g).card - A.1.card)
   let B : GhostBirthBatch g → ℝ := fun b =>
     X ^ b.1 / (b.1.factorial : ℝ) * ∏ j : Fin b.1, tiltedMu F P n g.val (b.2 j)
-  have hEta : 0 < eta F n i := eta_pos F n i
+  have hEta := eta_pos F n i
   have hEta1 : eta F n i ≤ 1 := by
     unfold eta
     linarith [visitQ_pos F n i]
@@ -570,8 +551,8 @@ private theorem ghostGroupRevFactor_summable_bound
     intro b
     dsimp [B]
     apply mul_nonneg
-    · exact div_nonneg (pow_nonneg hXpos.le _) (Nat.cast_nonneg _)
-    · exact Finset.prod_nonneg fun j _ => hmu0 (b.2 j)
+    · positivity
+    · exact Finset.prod_nonneg (by grind)
   have hnonneg : ∀ c : GhostGroupTransition s g, 0 ≤ D c.1 * B c.2 := by
     intro c
     exact mul_nonneg (hD_nonneg c.1) (hB_nonneg c.2)
@@ -583,7 +564,7 @@ private theorem ghostGroupRevFactor_summable_bound
       ∑' b : GhostBirthBatch g, D A * B b) :=
     summable_of_hasFiniteSupport (Set.finite_univ.subset (Set.subset_univ _))
   have hlocal : Summable (fun c : GhostGroupTransition s g => D c.1 * B c.2) :=
-    (summable_prod_of_nonneg hnonneg).2 ⟨hrows, houter⟩
+    (summable_prod_of_nonneg hnonneg).2 (by grind)
   have hlocal_eq :
       (∑' c : GhostGroupTransition s g, D c.1 * B c.2) =
         (∑' A : GhostDeletedChoice s g, D A) *
@@ -620,7 +601,7 @@ private theorem ghostGroupRevFactor_summable_bound
         calc
           d * P.V g.val ≤ 2 * P.V g.val := mul_le_mul_of_nonneg_right hdle hV.1.le
           _ ≤ 2 * max 1 F.vMax :=
-            mul_le_mul_of_nonneg_left (hV.2.trans (le_max_right 1 F.vMax)) (by norm_num)
+            by grind
       have hle : (d * P.V g.val) * (eta F n i / (r.rho * r.v)) ≤
           2 * max 1 F.vMax * eta F n i / (r.rho * r.v) := by
         calc
@@ -629,8 +610,7 @@ private theorem ghostGroupRevFactor_summable_bound
             mul_le_mul_of_nonneg_right hDV (by positivity [hEta, r.rho_pos, hrv])
           _ = 2 * max 1 F.vMax * eta F n i / (r.rho * r.v) := by ring
       have hdam := visitQ_memory_damping F r n i
-      dsimp [α, δ] at *
-      nlinarith
+      linarith
   have hdel := ghostDeletionFactor_bound Z (s.2.2 g).card hZle α δ r.v
     hrv hdelrate.1 hdelrate.2
   have hBtsum : (∑' b : GhostBirthBatch g, B b) ≤ Real.exp (2 * X) := hbirth.2
@@ -651,17 +631,9 @@ private theorem ghostGroupRevFactor_summable_bound
     apply Real.exp_le_exp.mpr
     calc
       2 * X ≤ 2 * (max 1 F.vMax * r.v / r.rho) :=
-        mul_le_mul_of_nonneg_left hXle (by norm_num)
+        by linarith
       _ ≤ 4 * max 1 F.vMax * r.v / r.rho := by
-        let K := max 1 F.vMax
-        have hcoef : 2 * K ≤ 4 * K := by
-          have hK : 0 ≤ K := le_max_of_le_left (by norm_num)
-          nlinarith [hK]
-        have hvR : 0 ≤ r.v / r.rho := div_nonneg hrv.le r.rho_pos.le
-        calc
-          2 * (K * r.v / r.rho) = (2 * K) * (r.v / r.rho) := by ring
-          _ ≤ (4 * K) * (r.v / r.rho) := mul_le_mul_of_nonneg_right hcoef hvR
-          _ = 4 * max 1 F.vMax * r.v / r.rho := by dsimp [K]; ring
+        grind
   have hbound : (∑' c : GhostGroupTransition s g, D c.1 * B c.2) ≤
       r.v ^ (s.2.2 g).card * Real.exp (4 * max 1 F.vMax * r.v / r.rho) := by
     rw [hlocal_eq]
@@ -673,10 +645,10 @@ private theorem ghostGroupRevFactor_summable_bound
             _ ≤ r.v ^ (s.2.2 g).card * (∑' b : GhostBirthBatch g, B b) :=
               mul_le_mul_of_nonneg_right hdel hBnonneg
             _ ≤ _ := mul_le_mul_of_nonneg_left hBtsum
-              (pow_nonneg (le_trans (by norm_num) r.v_gt.le) _)
+              (by positivity)
       _ ≤ r.v ^ (s.2.2 g).card * Real.exp (4 * max 1 F.vMax * r.v / r.rho) :=
           mul_le_mul_of_nonneg_left hExp
-            (pow_nonneg (le_trans (by norm_num) r.v_gt.le) _)
+            (by positivity)
   have heq (c : GhostGroupTransition s g) :
       ghostGroupRevFactor F n r.rho d r.v i s g c = D c.1 * B c.2 := by
     dsimp [ghostGroupRevFactor, D, B, X, δ, α, Z]
@@ -685,10 +657,7 @@ private theorem ghostGroupRevFactor_summable_bound
   have hfun : (fun c : GhostGroupTransition s g =>
       ghostGroupRevFactor F n r.rho d r.v i s g c) = (fun c => D c.1 * B c.2) :=
     funext heq
-  constructor
-  · simpa only [hfun] using hlocal
-  · rw [hfun]
-    exact hbound
+  grind
 
 def ghostTransitionRowFactor (F : FixedData) (n : ℕ) (rho d v : ℝ)
     (i : Fin (n + 1)) {M : ℕ} (s : P.MemoryState M)
@@ -730,22 +699,21 @@ private theorem ghostTransitionGroupRawWeight_abs
     intro p
     have hp : 0 < (p.val : ℝ) := Nat.cast_pos.mpr (Nat.Prime.pos (P.prime g.val p.val p.property))
     unfold tiltedMu
-    exact le_of_lt (inv_pos.mpr (mul_pos (mul_pos hV hp) (hbase p)))
+    exact le_of_lt (inv_pos.mpr (mul_pos (by positivity) (hbase p)))
   have heta : 0 ≤ eta F n i / r.rho := div_nonneg (eta_pos F n i).le r.rho_pos.le
   have hq : 0 ≤ visitQ F.q n i / r.rho ^ (2 : ℕ) :=
-    div_nonneg (visitQ_pos F n i).le (pow_nonneg r.rho_pos.le _)
+    div_nonneg (visitQ_pos F n i).le (by positivity)
   have hb : 0 ≤ eta F n i * P.V g.val / r.rho :=
     div_nonneg (mul_nonneg (eta_pos F n i).le hV.le) r.rho_pos.le
   have hf : 0 ≤ ((c.2.1.factorial : ℝ)⁻¹) := by positivity
   have hμp : 0 ≤ ∏ j : Fin c.2.1, tiltedMu F P n g.val (c.2.2 j) :=
-    Finset.prod_nonneg fun j _ => hμ _
+    Finset.prod_nonneg (by grind)
   have hnegA : |(-(eta F n i / r.rho))| = eta F n i / r.rho := by
     rw [abs_neg, abs_of_nonneg heta]
   have hnegB : |(-(eta F n i * P.V g.val / r.rho))| =
       eta F n i * P.V g.val / r.rho := by
     rw [abs_neg, abs_of_nonneg hb]
-  simp [ghostTransitionGroupRawWeight, abs_mul, abs_pow, hnegA, hnegB,
-    abs_of_nonneg hq, abs_of_nonneg hf, abs_of_nonneg hμp]
+  simp [ghostTransitionGroupRawWeight, hnegA, hnegB, abs_of_nonneg hq, abs_of_nonneg hμp]
 
 private theorem ghostChoiceWeight_transition_eq_prod
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (rho : ℝ)
@@ -796,7 +764,7 @@ private theorem ghostTransitionRowFactor_eq_kernelWeight
     rw [hbpow]
     ring_nf
   have hBcount : ghostBirthCount ch = ∑ g : P.BigGroup, (ghostTransitionBirths c g).1 := by
-    simp [ghostBirthCount, ch, ghostTransitionAsChoice, ghostTransitionBirths]
+    simp [ghostBirthCount, ch, ghostTransitionAsChoice]
   have hdPow : d ^ ghostBirthCount ch =
       ∏ g : P.BigGroup, d ^ (ghostTransitionBirths c g).1 := by
     rw [hBcount]
@@ -813,14 +781,14 @@ private theorem ghostTransitionRowFactor_eq_kernelWeight
           (|ghostTransitionGroupRawWeight F n r.rho i s g (c g)| *
             d ^ (ghostTransitionBirths c g).1 * r.v ^ (t.2.2 g).card) := by
           unfold ghostTransitionRowFactor
-          exact Finset.prod_congr rfl (fun g _ => hgroup g)
+          exact Finset.prod_congr rfl (by grind)
     _ = (∏ g : P.BigGroup, |ghostTransitionGroupRawWeight F n r.rho i s g (c g)|) *
           (∏ g : P.BigGroup, d ^ (ghostTransitionBirths c g).1) *
           (∏ g : P.BigGroup, r.v ^ (t.2.2 g).card) := by
             rw [Finset.prod_mul_distrib, Finset.prod_mul_distrib]
     _ = |ghostChoiceWeight F n r.rho i ch| * d ^ ghostBirthCount ch *
           P.memoryWeight r.v t := by
-            rw [← habs, ← hdPow, ← hvPow]
+            grind
 
 private theorem ghostGroupRevFactor_eq_reversal_mul_row
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -840,8 +808,7 @@ private theorem ghostGroupRevFactor_eq_reversal_mul_row
   have hDV : 0 < d * V := mul_pos hdpos hV
   have htarget : ((ghostTransitionTarget s c).2.2 g).card =
       (s.2.2 g).card - a + b := by
-    simp [ghostTransitionTarget, ghostTransitionDeleted, ghostTransitionBirths, a, b,
-      rowsDeleteMemoryIndices_card, rowsZeroBirthBatch_card, Multiset.card_add]
+    simp [ghostTransitionTarget, ghostTransitionDeleted, ghostTransitionBirths, a, b, rowsDeleteMemoryIndices_card, rowsZeroBirthBatch_card]
   have hExp : ((s.2.2 g).card : ℤ) -
       (((ghostTransitionTarget s c).2.2 g).card : ℤ) = (a : ℤ) - (b : ℤ) := by
     rw [htarget]
@@ -850,7 +817,7 @@ private theorem ghostGroupRevFactor_eq_reversal_mul_row
         (Finset.subset_univ (zeroMemoryIndices (s.2.2 g)))
     have hdel : a ≤ (s.2.2 g).card := by
       dsimp [a]
-      exact (Finset.card_le_card (c g).1.2).trans hZle
+      exact (Finset.card_le_card (by grind)).trans hZle
     omega
   have hpow :
       (d * V) ^ (((s.2.2 g).card : ℤ) -
@@ -858,11 +825,11 @@ private theorem ghostGroupRevFactor_eq_reversal_mul_row
         (d * V) ^ b = (d * V) ^ a := by
     rw [hExp, zpow_sub₀ (ne_of_gt hDV)]
     simp only [zpow_natCast]
-    field_simp [ne_of_gt hDV]
+    field_simp
   have hbirth : d * eta F n i * V * r.v / r.rho =
       (d * V) * (eta F n i * r.v / r.rho) := by ring
   have hbirthpow : ((d * V) * (eta F n i * r.v / r.rho)) ^ b =
-      (d * V) ^ b * (eta F n i * r.v / r.rho) ^ b := mul_pow _ _ _
+      (d * V) ^ b * (eta F n i * r.v / r.rho) ^ b := by ring
   let hμprod : ℝ := ∏ j : Fin b, tiltedMu F P n g.val ((c g).2.2 j)
   have hrowFac :
       ghostGroupRowFactor F n r.rho d r.v i s g (c g) =
@@ -879,37 +846,7 @@ private theorem ghostGroupRevFactor_eq_reversal_mul_row
               ((eta F n i * r.v / r.rho) ^ b /
                 (b.factorial : ℝ) * hμprod) := by
     simp [ghostGroupRevFactor, a, b, V, qpart, hμprod]
-  have hbirthEq :
-      (d * eta F n i * V * r.v / r.rho) ^ b / (b.factorial : ℝ) * hμprod =
-        (d * V) ^ b *
-          ((eta F n i * r.v / r.rho) ^ b / (b.factorial : ℝ) * hμprod) := by
-    rw [hbirth, hbirthpow]
-    ring
-  have hrowToRev :
-      ghostGroupRowFactor F n r.rho d r.v i s g (c g) =
-        qpart ^ ((zeroMemoryIndices (s.2.2 g)).card - a) *
-          (eta F n i / r.rho) ^ a * r.v ^ ((s.2.2 g).card - a) *
-            ((d * V) ^ b *
-              ((eta F n i * r.v / r.rho) ^ b / (b.factorial : ℝ) * hμprod)) := by
-    rw [hrowFac, hbirthEq]
-  calc
-    ghostGroupRevFactor F n r.rho d r.v i s g (c g) =
-        qpart ^ ((zeroMemoryIndices (s.2.2 g)).card - a) *
-          (eta F n i / r.rho) ^ a * (d * V) ^ a *
-            r.v ^ ((s.2.2 g).card - a) *
-              ((eta F n i * r.v / r.rho) ^ b / (b.factorial : ℝ) * hμprod) := hrevFac
-    _ = (d * V) ^ (((s.2.2 g).card : ℤ) -
-          (((ghostTransitionTarget s c).2.2 g).card : ℤ)) *
-        (qpart ^ ((zeroMemoryIndices (s.2.2 g)).card - a) *
-          (eta F n i / r.rho) ^ a * r.v ^ ((s.2.2 g).card - a) *
-            ((d * V) ^ b *
-              ((eta F n i * r.v / r.rho) ^ b / (b.factorial : ℝ) * hμprod))) := by
-          rw [← hpow]
-          ring
-    _ = (d * V) ^ (((s.2.2 g).card : ℤ) -
-          (((ghostTransitionTarget s c).2.2 g).card : ℤ)) *
-          ghostGroupRowFactor F n r.rho d r.v i s g (c g) := by
-            rw [hrowToRev]
+  grind
 
 private theorem ghostTransitionRevFactor_eq_reversal_kernelWeight
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -946,8 +883,8 @@ private theorem ghostTransitionRevFactor_eq_reversal_kernelWeight
     _ = ghostReversalFactor d s (ghostTransitionTarget s c) *
           (|ghostChoiceWeight F n r.rho i (ghostTransitionAsChoice s c)| *
             d ^ ghostBirthCount (ghostTransitionAsChoice s c) *
-            P.memoryWeight r.v (ghostTransitionTarget s c)) := by
-          exact congrArg (fun x : ℝ => ghostReversalFactor d s
+            P.memoryWeight r.v (ghostTransitionTarget s c)) :=
+          congrArg (fun x : ℝ => ghostReversalFactor d s
             (ghostTransitionTarget s c) * x)
             (ghostTransitionRowFactor_eq_kernelWeight F P n r d i s hV hbase c)
     _ = ghostReversalFactor d s (ghostTransitionTarget s c) *
@@ -993,8 +930,7 @@ private theorem ghostBirthCount_ofChoice
     ghostBirthCount c = ghostBirthCount
       (ghostTransitionAsChoice s (ghostTransitionOfChoice s t c hc)) := by
   classical
-  simp [ghostBirthCount, ghostTransitionAsChoice, ghostTransitionOfChoice,
-    ghostTransitionDeleted, ghostTransitionBirths]
+  simp [ghostBirthCount, ghostTransitionAsChoice, ghostTransitionOfChoice, ghostTransitionBirths]
 
 structure GhostSupportedChoice {M : ℕ} (s : P.MemoryState M) where
   target : P.MemoryState M
@@ -1021,7 +957,7 @@ private theorem sum_ite_eq_subtype_sum {α : Type*} [Fintype α]
           symm
           rw [Finset.sum_filter]
     _ = ∑ x : {x // p x}, f x.1 :=
-      Finset.sum_subtype (Finset.univ.filter p) (by intro x; simp) f
+      Finset.sum_subtype (Finset.univ.filter p) (by simp) f
 
 lemma ghostRowTerm_eq_supportedChoiceSum
     (F : FixedData) (P : PrimeGroups) (J n : ℕ) (r : MemoryParameters F)
@@ -1063,7 +999,7 @@ lemma ghostRowTerm_eq_supportedChoiceSum
       _ = ∑ c : GhostSupportedChoiceAt s t,
           ghostRowsChoiceTerm F n r.rho d r.v i s t c.1 := by
           let e : {c : GhostChoice s t // ghostChoiceValid c} ≃ GhostSupportedChoiceAt s t :=
-            Equiv.subtypeEquivRight (fun c => by simp [hside])
+            Equiv.subtypeEquivRight (fun c => by grind)
           simpa [e, GhostSupportedChoiceAt, ghostRowsChoiceTerm] using
             (Fintype.sum_equiv e
               (fun c : {c : GhostChoice s t // ghostChoiceValid c} =>
@@ -1073,9 +1009,9 @@ lemma ghostRowTerm_eq_supportedChoiceSum
                 ghostRowsChoiceTerm F n r.rho d r.v i s t c.1)
               (by intro c; rfl))
   · have hempty : IsEmpty (GhostSupportedChoiceAt s t) :=
-      ⟨fun c => hside c.2.2⟩
+      ⟨by grind⟩
     let := hempty
-    simp [absoluteScaledMemoryGhostKernel, hside, ghostRowsChoiceTerm]
+    simp [absoluteScaledMemoryGhostKernel, hside]
 
 def ghostSupportedChoiceTransition {M : ℕ} {s : P.MemoryState M}
     (e : GhostSupportedChoice s) : GhostTransition s :=
@@ -1110,7 +1046,7 @@ private theorem ghostRowsChoiceTerm_eq_transitionRowFactor
       (ghostTransitionOfChoice s t c.1 hc)
   rw [ghostTransitionRowFactor_eq_kernelWeight F P n r d i s hV hbase]
   unfold ghostRowsChoiceTerm
-  rw [← hweight, ← hcount, htarget]
+  simp_all
 
 private theorem ghostRowsPartial_eq_transitionPartial
     (F : FixedData) (P : PrimeGroups) (J n : ℕ) (r : MemoryParameters F)
@@ -1176,9 +1112,8 @@ private theorem ghostReverseSupportedChoiceTerm_eq_transitionRevFactor
     ghostTransitionRevFactor F n r.rho d r.v i s
       (ghostTransitionOfChoice s t c.1 hc)
   rw [ghostTransitionRevFactor_eq_reversal_kernelWeight F P n r d hd i s
-    (fun g => hV g) hbase (ghostTransitionOfChoice s t c.1 hc)]
-  rw [← hweight, ← hcount, htarget]
-  ring
+    (by omega) hbase (ghostTransitionOfChoice s t c.1 hc)]
+  grind
 
 private theorem ghostTransitionOfChoice_injective_on_fixed_target
     {M : ℕ} (s t : P.MemoryState M)
@@ -1200,23 +1135,21 @@ private theorem ghostTransitionOfChoice_injective_on_fixed_target
   have hpoint (g : P.BigGroup) := congrFun hfun g
   have hdel : del₁ = del₂ := by
     funext g
-    exact congrArg (fun q : GhostGroupTransition s g => q.1.1) (hpoint g)
+    exact by grind
   have hbatch (g : P.BigGroup) :
       (⟨(b₁ g).val, p₁ g⟩ : GhostBirthBatch g) =
-        (⟨(b₂ g).val, p₂ g⟩ : GhostBirthBatch g) := by
-    exact congrArg (fun q : GhostGroupTransition s g => q.2) (hpoint g)
+        (⟨(b₂ g).val, p₂ g⟩ : GhostBirthBatch g) :=
+    by grind
   have hb : b₁ = b₂ := by
     funext g
     apply Fin.ext
-    exact congrArg Sigma.fst (hbatch g)
+    exact by grind
   cases hb
   have hp : p₁ = p₂ := by
     funext g j
     have hseq := (Sigma.mk.inj_iff.mp (hbatch g)).2
-    exact congrFun (eq_of_heq hseq) j
-  cases hdel
-  cases hp
-  rfl
+    exact by grind
+  simp_all
 
 private theorem ghostSupportedChoiceAtTransition_injective_on_sigma
     {M : ℕ} (S : Finset (P.MemoryState M)) (s : P.MemoryState M) :
@@ -1232,17 +1165,15 @@ private theorem ghostSupportedChoiceAtTransition_injective_on_sigma
     exact (ghostTransitionOfChoice_target s tx.val cx.2.2 cx.1 cx.2.1).symm
   have hty : ghostTransitionTarget s (ghostSupportedChoiceAtTransition cy) = ty.val :=
     ghostTransitionOfChoice_target s ty.val cy.2.2 cy.1 cy.2.1
-  have hval : tx.val = ty.val := htx.trans ((congrArg (ghostTransitionTarget s) h).trans hty)
-  have hsub : tx = ty := Subtype.ext hval
+  have hval := htx.trans ((congrArg (ghostTransitionTarget s) h).trans hty)
+  have hsub := Subtype.ext hval
   cases hsub
   have hchoice : cx.1 = cy.1 := by
     apply ghostTransitionOfChoice_injective_on_fixed_target s tx.val cx.1 cy.1
       cx.2.1 cy.2.1
     simpa [ghostSupportedChoiceAtTransition, ghostSupportedChoiceAtPackage,
       ghostSupportedChoiceTransition] using h
-  have hcx : cx = cy := Subtype.ext hchoice
-  cases hcx
-  rfl
+  grind
 
 private theorem ghostGroupRowFactor_nonneg
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -1254,7 +1185,7 @@ private theorem ghostGroupRowFactor_nonneg
       0 ≤ ghostGroupRowFactor F n r.rho d r.v i s g c := by
   classical
   intro c
-  have hEta : 0 < eta F n i := eta_pos F n i
+  have hEta := eta_pos F n i
   have hμ : ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P n g.val p := by
     intro p
     have hp : 0 < (p.val : ℝ) := Nat.cast_pos.mpr (Nat.Prime.pos (P.prime g.val p.val p.property))
@@ -1268,7 +1199,7 @@ private theorem ghostGroupRowFactor_nonneg
   · apply mul_nonneg
     · exact div_nonneg (pow_nonneg (by positivity [eta_pos F n i, hV.1, hdpos, r.v_gt, r.rho_pos]) _)
         (Nat.cast_nonneg _)
-    · exact Finset.prod_nonneg fun j _ => hμ _
+    · exact Finset.prod_nonneg (by grind)
 
 private theorem ghostGroupRevFactor_nonneg
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -1280,7 +1211,7 @@ private theorem ghostGroupRevFactor_nonneg
       0 ≤ ghostGroupRevFactor F n r.rho d r.v i s g c := by
   classical
   intro c
-  have hEta : 0 < eta F n i := eta_pos F n i
+  have hEta := eta_pos F n i
   have hμ : ∀ p : P.Prime g.val, 0 ≤ tiltedMu F P n g.val p := by
     intro p
     have hp : 0 < (p.val : ℝ) := Nat.cast_pos.mpr (Nat.Prime.pos (P.prime g.val p.val p.property))
@@ -1294,7 +1225,7 @@ private theorem ghostGroupRevFactor_nonneg
   · apply mul_nonneg
     · exact div_nonneg (pow_nonneg (by positivity [eta_pos F n i, r.v_gt, r.rho_pos]) _)
         (Nat.cast_nonneg _)
-    · exact Finset.prod_nonneg fun j _ => hμ _
+    · exact Finset.prod_nonneg (by grind)
 
 private theorem ghostTransitionRowFactor_summable_bound
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -1337,9 +1268,8 @@ private theorem ghostTransitionRowFactor_summable_bound
     apply Finset.prod_le_prod₀
     · intro g hg
       apply tsum_nonneg
-      exact hnonneg g
-    · intro g hg
-      exact hlocalBound g
+      grind
+    · grind
   have hcard : Fintype.card P.BigGroup = P.bigGroups.card := by
     let e : P.BigGroup ≃ (↑P.bigGroups : Type) :=
       Equiv.subtypeEquivRight (fun g : P.Group => by
@@ -1356,8 +1286,7 @@ private theorem ghostTransitionRowFactor_summable_bound
             (∏ g : P.BigGroup, E) := Finset.prod_mul_distrib
       _ = r.v ^ (∑ g : P.BigGroup, (s.2.2 g).card) *
             E ^ Fintype.card P.BigGroup := by
-              rw [Finset.prod_pow_eq_pow_sum]
-              simp
+              simp [Finset.prod_pow_eq_pow_sum]
       _ = E ^ P.bigGroups.card * P.memoryWeight r.v s := by
               rw [hcard]
               simp [PrimeGroups.memoryWeight, PrimeGroups.memorySize]
@@ -1369,8 +1298,7 @@ private theorem ghostTransitionRowFactor_summable_bound
           ∏ g : P.BigGroup, ∑' c : GhostGroupTransition s g,
             ghostGroupRowFactor F n r.rho d r.v i s g c := by
       simpa [ghostTransitionRowFactor] using hPi.2
-    rw [hsum]
-    exact hprod.trans hprodEq.le
+    linarith
 
 private theorem ghostTransitionRevFactor_summable_bound
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -1413,9 +1341,8 @@ private theorem ghostTransitionRevFactor_summable_bound
     apply Finset.prod_le_prod₀
     · intro g hg
       apply tsum_nonneg
-      exact hnonneg g
-    · intro g hg
-      exact hlocalBound g
+      grind
+    · grind
   have hcard : Fintype.card P.BigGroup = P.bigGroups.card := by
     let e : P.BigGroup ≃ (↑P.bigGroups : Type) :=
       Equiv.subtypeEquivRight (fun g : P.Group => by
@@ -1432,8 +1359,7 @@ private theorem ghostTransitionRevFactor_summable_bound
             (∏ g : P.BigGroup, E) := Finset.prod_mul_distrib
       _ = r.v ^ (∑ g : P.BigGroup, (s.2.2 g).card) *
             E ^ Fintype.card P.BigGroup := by
-              rw [Finset.prod_pow_eq_pow_sum]
-              simp
+              simp [Finset.prod_pow_eq_pow_sum]
       _ = E ^ P.bigGroups.card * P.memoryWeight r.v s := by
               rw [hcard]
               simp [PrimeGroups.memoryWeight, PrimeGroups.memorySize]
@@ -1445,8 +1371,7 @@ private theorem ghostTransitionRevFactor_summable_bound
           ∏ g : P.BigGroup, ∑' c : GhostGroupTransition s g,
             ghostGroupRevFactor F n r.rho d r.v i s g c := by
       simpa [ghostTransitionRevFactor] using hPi.2
-    rw [hsum]
-    exact hprod.trans hprodEq.le
+    linarith
 
 private theorem ghostTransitionRowFactor_nonneg
     (F : FixedData) (P : PrimeGroups) (n : ℕ) (r : MemoryParameters F)
@@ -1488,11 +1413,7 @@ private theorem ghostRows_forward_bound
     by_cases hsides : s.1 = t.1 ∧ s.2.1 = t.2.1
     · simp only [absoluteScaledMemoryGhostKernel, ite_eq_left hsides]
       apply mul_nonneg
-      · apply Finset.sum_nonneg
-        intro c hc
-        split_ifs with hvalid
-        · exact mul_nonneg (abs_nonneg _) (pow_nonneg hdpos.le _)
-        · simp
+      · positivity
       · exact pow_nonneg (le_trans (by norm_num) r.v_gt.le) _
     · simp [absoluteScaledMemoryGhostKernel, hsides]
   have hpartial : ∀ S : Finset (P.MemoryState (J + F.ell)),
@@ -1514,7 +1435,7 @@ private theorem ghostRows_forward_bound
         ∑ x ∈ U, ghostTransitionRowFactor F n r.rho d r.v i s (mapRaw x) := by
       simpa [U, τ, mapRaw, mapU] using
         ghostRowsPartial_eq_transitionPartial F P J n r d i s S
-          (fun g => (hV g).1) (fun g p => hbase g p)
+          (by grind) (by omega)
     have hinjRaw := ghostSupportedChoiceAtTransition_injective_on_sigma S s
     have hinjU : Function.Injective mapU := by
       intro x y h
@@ -1525,9 +1446,9 @@ private theorem ghostRows_forward_bound
       summable_of_hasFiniteSupport (Set.finite_univ.subset (Set.subset_univ _))
     have hle :
         (∑' x : U, ghostTransitionRowFactor F n r.rho d r.v i s (mapU x)) ≤
-          ∑' c : GhostTransition s, ghostTransitionRowFactor F n r.rho d r.v i s c := by
-      exact hsource.tsum_le_tsum_of_inj (fun x : U => mapU x) hinjU
-        (fun c hc => htrans0 c) (fun x => le_rfl) hglobal.1
+          ∑' c : GhostTransition s, ghostTransitionRowFactor F n r.rho d r.v i s c :=
+      hsource.tsum_le_tsum_of_inj (fun x : U => mapU x) hinjU
+        (by grind) (by simp) hglobal.1
     calc
       (∑ t ∈ S, absoluteScaledMemoryGhostKernel F J n r.rho d i s t *
           P.memoryWeight r.v t) =
@@ -1571,11 +1492,7 @@ private theorem ghostRows_reversed_bound
     by_cases hsides : s.1 = t.1 ∧ s.2.1 = t.2.1
     · simp only [absoluteScaledMemoryGhostKernel, ite_eq_left hsides]
       apply mul_nonneg
-      · apply Finset.sum_nonneg
-        intro c hc
-        split_ifs with hvalid
-        · exact mul_nonneg (abs_nonneg _) (pow_nonneg hdpos.le _)
-        · simp
+      · positivity
       · exact pow_nonneg (le_trans (by norm_num) r.v_gt.le) _
     · simp [absoluteScaledMemoryGhostKernel, hsides]
   have hrow0 : ∀ t : P.MemoryState (J + F.ell),
@@ -1586,7 +1503,7 @@ private theorem ghostRows_reversed_bound
       unfold ghostReversalFactor
       apply Finset.prod_nonneg
       intro g hg
-      have hbasePos : 0 < d * P.V g.val := mul_pos hdpos (hV g.val).1
+      have hbasePos : 0 < d * P.V g.val := mul_pos hdpos (by grind)
       exact zpow_nonneg hbasePos.le _
     calc
       0 ≤ ghostReversalFactor d s t *
@@ -1615,8 +1532,6 @@ private theorem ghostRows_reversed_bound
             absoluteScaledMemoryGhostKernel F J n r.rho d i s t * P.memoryWeight r.v t) =
             ∑ t ∈ S, ghostReversalFactor d s t *
               (absoluteScaledMemoryGhostKernel F J n r.rho d i s t * P.memoryWeight r.v t) := by
-                apply Finset.sum_congr rfl
-                intro t ht
                 ring
         _ = ∑ t ∈ S, ∑ c : GhostSupportedChoiceAt s t,
               ghostReversalFactor d s t *
@@ -1630,8 +1545,8 @@ private theorem ghostRows_reversed_bound
                   (ghostReversalFactor d s t)
         _ = ∑ t ∈ S.attach, ∑ c : GhostSupportedChoiceAt s t.val,
               ghostReversalFactor d s t.val *
-                ghostRowsChoiceTerm F n r.rho d r.v i s t.val c.1 := by
-                exact (Finset.sum_attach S (fun t =>
+                ghostRowsChoiceTerm F n r.rho d r.v i s t.val c.1 :=
+                (Finset.sum_attach S (fun t =>
                   ∑ c : GhostSupportedChoiceAt s t,
                     ghostReversalFactor d s t *
                       ghostRowsChoiceTerm F n r.rho d r.v i s t c.1)).symm
@@ -1645,7 +1560,7 @@ private theorem ghostRows_reversed_bound
                 apply Finset.sum_congr rfl
                 intro x hx
                 exact (ghostReverseSupportedChoiceTerm_eq_transitionRevFactor
-                  F P n r d hd i s x.1.val (fun g : P.Group => (hV g).1) hbase x.2)
+                  F P n r d hd i s x.1.val (by grind) hbase x.2)
     have hinjRaw := ghostSupportedChoiceAtTransition_injective_on_sigma S s
     have hinjU : Function.Injective mapU := by
       intro x y h
@@ -1656,9 +1571,9 @@ private theorem ghostRows_reversed_bound
       summable_of_hasFiniteSupport (Set.finite_univ.subset (Set.subset_univ _))
     have hle :
         (∑' x : U, ghostTransitionRevFactor F n r.rho d r.v i s (mapU x)) ≤
-          ∑' c : GhostTransition s, ghostTransitionRevFactor F n r.rho d r.v i s c := by
-      exact hsource.tsum_le_tsum_of_inj (fun x : U => mapU x) hinjU
-        (fun c hc => htrans0 c) (fun x => le_rfl) hglobal.1
+          ∑' c : GhostTransition s, ghostTransitionRevFactor F n r.rho d r.v i s c :=
+      hsource.tsum_le_tsum_of_inj (fun x : U => mapU x) hinjU
+        (by grind) (by simp) hglobal.1
     calc
       (∑ t ∈ S, ghostReversalFactor d s t *
           absoluteScaledMemoryGhostKernel F J n r.rho d i s t * P.memoryWeight r.v t) =
@@ -1675,7 +1590,7 @@ theorem GhostRowsTask_proof : GhostRowsTask := by
   intro F P J n r hV hbase hmu d hd i s
   have hforward := ghostRows_forward_bound F P J n r hV hbase hmu d hd i s
   have hreverse := ghostRows_reversed_bound F P J n r hV hbase hmu d hd i s
-  exact ⟨hforward.1, hforward.2, hreverse.1, hreverse.2⟩
+  grind
 
 instance ghostGroupTransition_countable {M : ℕ} (s : P.MemoryState M)
     (g : P.BigGroup) : Countable (GhostGroupTransition s g) := by

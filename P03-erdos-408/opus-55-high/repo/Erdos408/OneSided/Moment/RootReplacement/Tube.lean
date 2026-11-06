@@ -23,7 +23,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -61,7 +61,7 @@ theorem PosModel.symOp_ne_zero_imp (M : PosModel) {x : ℝ} {d : Data K} {s s' :
     s.1.1 = s'.1.1 ∧
       ∃ σ : Fin K → Equiv.Perm (Fin (padCount x + 1)), ∀ i, s'.1.2 i = s.1.2 i ∘ σ i := by
   unfold PosModel.symOp at h
-  exact (ite_ne_right_iff.1 h).1
+  simp_all
 
 /-- A nonzero entry of the row operation has pad product `D ≥ d₀`, determinant below
 `10 d₀ Y` (as `D < 2 d₀` divides it and the plateau forces `|det / D| < 5 Y`), and last-slot
@@ -83,16 +83,14 @@ theorem PosModel.rowOp_ne_zero_imp (M : PosModel) {q A₀ x : ℝ} {d : Data K} 
   have hk := abs_lt_of_plateau_ne_zero hpl
   rw [abs_div, abs_of_pos hY, div_lt_iff₀ hY] at hk
   set D := padProd s.1.2
-  have hDpos : (0 : ℝ) < D := hd₀.trans_le hD₀
+  have hDpos : (0 : ℝ) < D := by linarith
   obtain ⟨k, hkD⟩ := hdvd
   have hk' : M.det s.1.1 s'.1.1 / (D : ℤ) = k := by
     rw [hkD, Int.mul_ediv_cancel_left _ (by exact_mod_cast hDpos.ne')]
   rw [hk'] at hk
   refine ⟨hD₀, ?_, hlast⟩
   rw [hkD, Int.cast_mul, abs_mul, Int.cast_natCast, abs_of_pos hDpos]
-  calc (D : ℝ) * |(k : ℝ)| ≤ D * (5 * Y) := by gcongr
-    _ < 2 * d₀ * (5 * Y) := by gcongr
-    _ = 10 * d₀ * Y := by ring
+  nlinarith
 
 /-- A nonzero entry of `𝒮 𝒯 𝒮` passes through a nonzero entry of each factor. -/
 theorem exists_of_confKernel_ne_zero {A₀ x : ℝ} {d : Data K} {Y d₀ : ℝ}
@@ -124,7 +122,7 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
       |B ⟨n, hn⟩ / A ⟨n, hn⟩ - B 0 / A 0| ≤ n * (10 * H / U ^ 2) := by
     intro n
     induction n with
-    | zero => intro hn; simp
+    | zero => simp
     | succ n ih =>
       intro hn
       have ha := hApos ⟨n, by omega⟩
@@ -141,17 +139,9 @@ theorem abs_det_le_of_consecutive {N : ℕ} {U H : ℝ} (hU : 0 < U) (hH : 0 ≤
         calc |B ⟨n + 1, hn⟩ * A ⟨n, by omega⟩ - A ⟨n + 1, hn⟩ * B ⟨n, by omega⟩| * U ^ 2
             ≤ 10 * H * U ^ 2 := by
               gcongr
-              calc |B ⟨n + 1, hn⟩ * A ⟨n, by omega⟩ - A ⟨n + 1, hn⟩ * B ⟨n, by omega⟩|
-                  = |A ⟨n, by omega⟩ * B ⟨n + 1, hn⟩ - B ⟨n, by omega⟩ * A ⟨n + 1, hn⟩| := by
-                    congr 1
-                    ring
-                _ ≤ 10 * H := hd
+              grind
           _ ≤ 10 * H * (A ⟨n + 1, hn⟩ * A ⟨n, by omega⟩) := by gcongr
-      calc |B ⟨n + 1, hn⟩ / A ⟨n + 1, hn⟩ - B 0 / A 0|
-          ≤ |B ⟨n + 1, hn⟩ / A ⟨n + 1, hn⟩ - B ⟨n, by omega⟩ / A ⟨n, by omega⟩| +
-            |B ⟨n, by omega⟩ / A ⟨n, by omega⟩ - B 0 / A 0| := abs_sub_le _ _ _
-        _ ≤ 10 * H / U ^ 2 + n * (10 * H / U ^ 2) := add_le_add hstep (ih (by omega))
-        _ = ((n + 1 : ℕ) : ℝ) * (10 * H / U ^ 2) := by push_cast; ring
+      grind
   -- step: `det(P₀, P_j) = A₀ A_j (s_j - s₀)`
   have hj : (j : ℝ) ≤ N := by exact_mod_cast Nat.lt_succ_iff.1 j.isLt
   have h0 := hApos 0

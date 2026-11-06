@@ -55,7 +55,7 @@ theorem eventually_exp_card_exceptional_le (K : ℝ) :
       _ ≤ L ^ (0.73 : ℝ) * L ^ (0.22 : ℝ) := mul_le_mul_of_nonneg_left h₁ h73
       _ = L ^ (0.95 : ℝ) := h95
   rw [← Real.exp_add, ← Real.exp_zero]
-  exact Real.exp_le_exp.2 (by linarith)
+  simp_all
 
 /-- `L^{-a}` squared is `L^{-2a}`. -/
 theorem rpow_neg_sq {L a : ℝ} (hL : 0 ≤ L) : (L ^ (-a)) ^ 2 = L ^ (-(2 * a)) := by
@@ -82,9 +82,7 @@ theorem rpow_neg_add_one_lt {L A m z : ℝ} (hL : 0 < L) (hm : 0 < m) (hmL : 1 �
     rw [neg_add, Real.rpow_add hL, Real.rpow_neg_one, div_eq_mul_inv]
   rw [hsplit, div_lt_iff₀ hL]
   have hθ0 : 0 < L ^ (-A) := by positivity
-  calc L ^ (-A) ≤ L ^ (-A) * (m * L) := le_mul_of_one_le_right hθ0.le hmL
-    _ < z * (m * L) := mul_lt_mul_of_pos_right hz (by positivity)
-    _ = m * z * L := by ring
+  nlinarith
 
 /-- A nonnegative continuous `f` on `(τ₁, τ₂] \ S`, covered by the unit intervals
 `[j, j + 1)`, `j ∈ 𝒥`, on each of which `f ≤ b_j`: `∫ f ≤ ∑_{j ∈ 𝒥} b_j`. -/
@@ -96,31 +94,31 @@ theorem integral_sdiff_le_of_cover {f : ℝ → ℝ} (hf : Continuous f) (hf0 : 
   have hint : IntegrableOn f (Set.Ioc τ₁ τ₂) :=
     hf.integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
   have hmeasA : ∀ j ∈ 𝒥, MeasurableSet (Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1)) :=
-    fun j _ => measurableSet_Ioc.inter measurableSet_Ico
+    by simp
   have hdisj : Set.Pairwise (↑𝒥 : Set ℤ)
       (Function.onFun Disjoint fun j : ℤ => Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1)) := by
     intro j _ j' _ hjj'
     refine Set.disjoint_left.2 fun t ht ht' => hjj' ?_
-    have h₁ : ⌊t⌋ = j := Int.floor_eq_iff.2 ⟨ht.2.1, ht.2.2⟩
-    have h₂ : ⌊t⌋ = j' := Int.floor_eq_iff.2 ⟨ht'.2.1, ht'.2.2⟩
+    have h₁ := Int.floor_eq_iff.2 ⟨ht.2.1, ht.2.2⟩
+    have h₂ := Int.floor_eq_iff.2 ⟨ht'.2.1, ht'.2.2⟩
     rw [← h₁, ← h₂]
   have hunion : ⋃ j ∈ 𝒥, Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1) ⊆ Set.Ioc τ₁ τ₂ :=
-    Set.iUnion₂_subset fun j _ => Set.inter_subset_left
+    by simp
   have hpiece : ∀ j ∈ 𝒥, ∫ t in Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1), f t ≤ b j := by
     intro j hj
     calc ∫ t in Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1), f t
         ≤ ∫ _t in Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1), b j :=
           setIntegral_mono_on (hint.mono_set Set.inter_subset_left)
             (integrableOn_const (measure_ne_top_of_subset Set.inter_subset_right
-              measure_Ico_lt_top.ne)) (hmeasA j hj) (hpt j hj)
+              measure_Ico_lt_top.ne)) (by simp) (by grind)
       _ = volume.real (Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1)) * b j := by
-          rw [setIntegral_const, smul_eq_mul]
+          simp
       _ ≤ 1 * b j := by
-          refine mul_le_mul_of_nonneg_right ?_ (hb0 j hj)
+          refine mul_le_mul_of_nonneg_right ?_ (by grind)
           calc volume.real (Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1))
               ≤ volume.real (Set.Ico (j : ℝ) (j + 1)) :=
                 measureReal_mono Set.inter_subset_right measure_Ico_lt_top.ne
-            _ = 1 := by rw [Real.volume_real_Ico_of_le (by linarith)]; ring
+            _ = 1 := by simp
       _ = b j := one_mul _
   calc ∫ t in Set.Ioc τ₁ τ₂ \ S, f t
       ≤ ∫ t in ⋃ j ∈ 𝒥, Set.Ioc τ₁ τ₂ ∩ Set.Ico (j : ℝ) (j + 1), f t :=
@@ -148,7 +146,7 @@ theorem norm_boxPoly_sq_le_of_twist {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR :
     (hR : ‖(R : ℂ)⁻¹ * ∑ u ∈ uR, c u * (u : ℂ) ^ ((t : ℂ) * Complex.I)‖ ^ 2 ≤ s) :
     ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c t‖ ^ 2 ≤
       (2 / vlo) ^ 2 * 4 * (4 * κ' * Real.log x ^ (-A')) ^ 2 * s := by
-  have hP1 : 1 ≤ P := one_le_of_exp_div_two_le hL hd.hP₁
+  have hP1 := one_le_of_exp_div_two_le hL hd.hP₁
   have hP0 : 0 < P := by linarith
   have hY0 : 0 < Y := lt_of_lt_of_le (by positivity) hd.hY₁
   have hN0 : 0 < N := lt_of_lt_of_le (Real.exp_pos _) hd.hN₁
@@ -229,7 +227,7 @@ theorem integral_exceptional_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Fin
   have hcont := (continuous_boxPoly (Y := Y) (P := P) (V := V)
     (spN := (Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) (fun p hp => (hd.hsP p hp).1.pos)
     (fun p hp => (mem_filter.1 hp).2.pos)
-    (fun u hu => by have := hd.huR hu; rw [mem_Ioc] at this; omega) χ c).norm.pow 2
+    (fun u hu => by have := hd.huR hu; grind) χ c).norm.pow 2
   refine (integral_sdiff_le_of_cover hcont (fun t => pow_nonneg (norm_nonneg _) 2) 𝒥
     (fun j hj => mul_nonneg hC0 (hs0 j hj)) ?_ ?_).trans ?_
   · intro t ht
@@ -242,7 +240,7 @@ theorem integral_exceptional_le {x Cm CU vlo Y P N R V lo hi : ℝ} {sP uR : Fin
     exact norm_boxPoly_sq_le_of_twist hvlo hd hx hL χ hAP1 htE htx
       (hs₁ j hj t ⟨ht.2.1, ht.2.2.le⟩)
   · rw [← mul_sum]
-    exact mul_le_mul_of_nonneg_left hs₂ hC0
+    nlinarith
 
 /-- `P⁻¹ ∑_{p ∈ s} (m/V) p^{it} = m P_s(t)`. -/
 theorem smallPoly_rescale (P V m : ℝ) (hP : P ≠ 0) (sP : Finset ℕ) (t : ℝ) :
@@ -283,7 +281,7 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
   have hP0 : 0 < P := lt_of_lt_of_le (by positivity) hd.hP₁
   have hV0 : 0 < V := lt_of_lt_of_le hvlo hd.hV
   have hrange' : ∀ τ ∈ Set.Icc τ₁ τ₂, Real.log x ^ E ≤ |τ| ∧ |τ| ≤ x ^ 3 := fun τ hτ =>
-    ⟨(hrange τ hτ).1, by linarith [(hrange τ hτ).2]⟩
+    ⟨(hrange τ hτ).1, by grind⟩
   have hlen : τ₂ - τ₁ ≤ 4 * (x * Real.log x ^ (Cm + 2)) := by
     have h₁ := (hrange τ₁ ⟨le_rfl, h₁₂⟩).2
     have h₂ := (hrange τ₂ ⟨h₁₂, le_rfl⟩).2
@@ -295,7 +293,7 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
   have hint : IntegrableOn (fun τ =>
       ‖boxPoly Y P V sP ((Ioc ⌊lo⌋₊ ⌊hi⌋₊).filter Nat.Prime) uR χ c τ‖ ^ 2) (Set.Ioc τ₁ τ₂) :=
     ((continuous_boxPoly (fun p hp => (hd.hsP p hp).1.pos) (fun p hp => (mem_filter.1 hp).2.pos)
-      (fun u hu => by have := hd.huR hu; rw [mem_Ioc] at this; omega) χ c).norm.pow
+      (fun u hu => by have := hd.huR hu; grind) χ c).norm.pow
         2).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
   have hPsm : Measurable fun τ => ‖Ps τ‖ := (measurable_dirichletSum sP _).norm
   rw [intervalIntegral.integral_of_le h₁₂, ← integral_inter_add_sdiff
@@ -325,7 +323,7 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
       linarith [hd.hY₁]
     have hTY : Tmax ≤ Y := by
       have h4 := (boxScales_of hCm hd hs).2.1
-      have hP1 : 1 ≤ P := one_le_of_exp_div_two_le (by linarith) hd.hP₁
+      have hP1 := one_le_of_exp_div_two_le (by linarith) hd.hP₁
       have : x * Real.log x ^ (Cm + 2) ≤ x * Real.log x ^ (Cm + 2) * P :=
         le_mul_of_one_le_right (by linarith) hP1
       linarith
@@ -365,7 +363,7 @@ theorem eventually_integral_boxPoly_le_of_twist (Cm CU vlo As : ℝ) (hvlo : 0 <
       simp only [ite_mul, zero_mul]
       rw [sum_ite_mem, inter_eq_right.2 hd.huR]
     refine integral_exceptional_le hvlo hd hx0 (by linarith) χ hAP1 hrange' 𝒥 ?_ s
-      (fun j hj t ht => by rw [← hRr t]; exact hs₁ j hj t ht) hs₂
+      (fun j hj t ht => by rw [← hRr t]; grind) hs₂
     intro t ht htθ
     obtain ⟨-, htT⟩ := hrange t (Set.Ioc_subset_Icc_self ht)
     have htT' : |t| ≤ Tmax := by linarith

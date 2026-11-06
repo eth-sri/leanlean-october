@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramWindowGcd
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT RayFourExpansion
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT RayFourExpansion
 open CenteredMomentSupportedCorrelation EisensteinSchwartzPoisson CenteredMomentGaussEnergy
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma gcdCommon_product_coprime (C I J : SupportedIdeal) (h : IsCoprime I.val J.val) :
     gcdCommon (supportedIdealProduct C I) (supportedIdealProduct C J)=C := by
@@ -44,16 +43,16 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
     if IsCoprime I.val J.val then
       originalPairWeight S hS σ W Y v (supportedIdealProduct C I) (supportedIdealProduct C J)*
       actualCorrelation (primaryGenerator (supportedIdealProduct C I).val) (primaryGenerator (supportedIdealProduct C J).val)
-        ((supported_span_primaryGenerator_iff _).mpr (supportedIdealProduct C I).property)
-        ((supported_span_primaryGenerator_iff _).mpr (supportedIdealProduct C J).property) (primaryGenerator C.val*k.val)*
+        ((supported_span_primaryGenerator_iff _).mpr (by grind))
+        ((supported_span_primaryGenerator_iff _).mpr (by grind)) (primaryGenerator C.val*k.val)*
       paperRadialFourier U (Q*‖eisEmbedding (primaryGenerator C.val*k.val)‖^2/
         ‖eisEmbedding (primaryGenerator (supportedIdealProduct C I).val*primaryGenerator (supportedIdealProduct C J).val)‖^2) else 0
   have hf (I J : SupportedIdeal) : Summable (f I J) := by
     by_cases hij : IsCoprime I.val J.val
     · have hh := ((actual_correlation_radial_summable (supportedIdealProduct C I) (supportedIdealProduct C J)
-        (primaryGenerator C.val) (supported_primaryGenerator_ne_zero _ C.property) U Q hQ).subtype (fun k : O=>k≠0)).mul_left
+        (primaryGenerator C.val) (supported_primaryGenerator_ne_zero _ C.property) U Q hQ).subtype (fun k : ActualEisensteinCubic.O=>k≠0)).mul_left
           (originalPairWeight S hS σ W Y v (supportedIdealProduct C I) (supportedIdealProduct C J))
-      simpa only [f,hij,ite_true,Function.comp_def,mul_assoc] using hh
+      grind
     · simpa only [f,hij,ite_false] using (summable_zero : Summable (fun _ : GramFrequency=>(0:ℂ)))
   have hr : (∑'k : GramFrequency,originalCommonBlock S hS σ C k W hW Y Q hY U v)=
       ∑I∈F,∑J∈F,∑'k : GramFrequency,f I J k := by
@@ -70,9 +69,7 @@ theorem original_nonzero_common_sum (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) 
   by_cases hij : IsCoprime I.val J.val
   · simp only [hij,ite_true,f,gcdCommon_product_coprime C I J hij]
     rw [←tsum_mul_left]
-    apply tsum_congr
-    intro k
-    ring
+    grind
   · simp only [hij,ite_false,f,tsum_zero]
 
 theorem original_energy_common_blocks (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (σ : RayRing)

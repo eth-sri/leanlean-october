@@ -9,35 +9,34 @@ public import OAI.NumberTheory.DirichletL.Moments.CRT
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
-local notation "O" => ActualEisensteinCubic.O
+open scoped Classical
 namespace SevenEighths.CenteredMomentCanonical
 open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
 open CenteredMomentCorrelation
 
-theorem actualSextic_order_six (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) :
+theorem actualSextic_order_six (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : goodLambda ∉ P) (hchar : ringChar (ActualEisensteinCubic.O ⧸ P) ≠ 2) :
     orderOf (actualSextic P hg) = 6 := by
-  let Φ : MulChar (O ⧸ P) O →* MulChar (O ⧸ P) ℂ :=
+  let Φ : MulChar (ActualEisensteinCubic.O ⧸ P) ActualEisensteinCubic.O →* MulChar (ActualEisensteinCubic.O ⧸ P) ℂ :=
     MulChar.ringHomCompHom eisEmbedding
   have hΦ : Function.Injective Φ := by
     intro x y h
     apply MulChar.ext
     intro t
     apply eisEmbedding_injective
-    exact congrArg (fun f : MulChar (O ⧸ P) ℂ => f t) h
+    exact congrArg (fun f : MulChar (ActualEisensteinCubic.O ⧸ P) ℂ => f t) h
   exact (orderOf_injective Φ hΦ _).trans (sexticChar_order P hg hchar)
 
-def primePowerRow (P : Ideal O) [P.IsMaximal] (hg : goodLambda ∉ P)
-    {c : ℕ} (hc : 1 ≤ c) (x : O ⧸ P ^ c) : ℂ :=
+def primePowerRow (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal] (hg : goodLambda ∉ P)
+    {c : ℕ} (hc : 1 ≤ c) (x : ActualEisensteinCubic.O ⧸ P ^ c) : ℂ :=
   (actualSextic P hg ^ c) (primePowerReduction P hc x)
 
-def canonicalPrimePowerCharacter (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) {c : ℕ} (hc : 1 ≤ c) : MulChar (O ⧸ P ^ c) ℂ :=
+def canonicalPrimePowerCharacter (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : goodLambda ∉ P) {c : ℕ} (hc : 1 ≤ c) : MulChar (ActualEisensteinCubic.O ⧸ P ^ c) ℂ :=
   primePowerCharacter P hc (actualSextic P hg ^ c)
 
-theorem canonicalPrimePowerCharacter_mk (P : Ideal O) [P.IsMaximal]
-    (hg : goodLambda ∉ P) {c : ℕ} (hc : 1 ≤ c) (x : O) :
+theorem canonicalPrimePowerCharacter_mk (P : Ideal ActualEisensteinCubic.O) [P.IsMaximal]
+    (hg : goodLambda ∉ P) {c : ℕ} (hc : 1 ≤ c) (x : ActualEisensteinCubic.O) :
     canonicalPrimePowerCharacter P hg hc (Ideal.Quotient.mk (P ^ c) x) =
       CanonicalRowCompletion.idealRowHom x (P ^ c) := by
   change (actualSextic P hg ^ c) (Ideal.Quotient.mk P x) = _
@@ -45,36 +44,36 @@ theorem canonicalPrimePowerCharacter_mk (P : Ideal O) [P.IsMaximal]
     CanonicalRowCompletion.idealRowHom_prime x P hg]
 
 theorem pairwise_isCoprime_pow {ι : Type*}
-    (P : ι → Ideal O) (c : ι → ℕ)
+    (P : ι → Ideal ActualEisensteinCubic.O) (c : ι → ℕ)
     (hcop : Pairwise (Function.onFun IsCoprime P)) :
     Pairwise (Function.onFun IsCoprime (fun i => P i ^ c i)) := by
   intro i j hij
   exact (hcop hij).pow
 
 def canonicalCRTCharacter {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
     (hcop : Pairwise (Function.onFun IsCoprime P)) :
-    MulChar (O ⧸ ∏ i, P i ^ c i) ℂ :=
+    MulChar (ActualEisensteinCubic.O ⧸ ∏ i, P i ^ c i) ℂ :=
   crtCharacter (IdealGaussCRT.quotientProdEquivPi (fun i => P i ^ c i)
     (pairwise_isCoprime_pow P c hcop))
     (fun i => canonicalPrimePowerCharacter (P i) (hg i) (hc i))
 
 theorem canonicalCRTCharacter_mk {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
-    (hcop : Pairwise (Function.onFun IsCoprime P)) (x : O) :
+    (hcop : Pairwise (Function.onFun IsCoprime P)) (x : ActualEisensteinCubic.O) :
     canonicalCRTCharacter P hg c hc hcop (Ideal.Quotient.mk (∏ i, P i ^ c i) x) =
       CanonicalRowCompletion.idealRowHom x (∏ i, P i ^ c i) := by
   simp only [canonicalCRTCharacter, crtCharacter_apply,
     IdealGaussCRT.quotientProdEquivPi_mk, canonicalPrimePowerCharacter_mk, map_prod]
 
 theorem canonicalCRTCorrelation {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i, (P i).IsMaximal]
     (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
     (hcop : Pairwise (Function.onFun IsCoprime P))
-    [Fintype (O ⧸ ∏ i, P i ^ c i)] [∀ i, Fintype (O ⧸ P i ^ c i)]
-    (u v k : O ⧸ ∏ i, P i ^ c i) :
+    [Fintype (ActualEisensteinCubic.O ⧸ ∏ i, P i ^ c i)] [∀ i, Fintype (ActualEisensteinCubic.O ⧸ P i ^ c i)]
+    (u v k : ActualEisensteinCubic.O ⧸ ∏ i, P i ^ c i) :
     let e := IdealGaussCRT.quotientProdEquivPi (fun i => P i ^ c i)
       (pairwise_isCoprime_pow P c hcop)
     fullCorrelation (fun x => v * x) (fun y => u * y)

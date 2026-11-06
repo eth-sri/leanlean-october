@@ -30,9 +30,9 @@ lemma source_compensated_scale_admissible (q Z L : ℝ) (hq : 1≤q) (hZ : 1≤Z
   have hl : 0<L := lt_of_lt_of_le zero_lt_one hL
   constructor
   · apply (le_div_iff₀ hl).mpr
-    simpa using hLl.trans (Real.rpow_le_rpow_of_exponent_le hZ (show (11/48:ℝ)≤23/48 by norm_num))
+    simpa using hLl.trans (Real.rpow_le_rpow_of_exponent_le hZ (by linarith))
   constructor
-  · apply (le_div_iff₀ (Real.rpow_pos_of_pos hz (17/48))).mp
+  · apply (le_div_iff₀ (by positivity)).mp
     rwa [source_scale_ratio Z hz]
   · calc
       _≤Z^(11/48:ℝ)*Z^(23/48:ℝ) := mul_le_mul_of_nonneg_right hLl (by positivity)
@@ -57,7 +57,7 @@ lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
     rw [←source_scale_ratio Z hz]
     exact div_le_div_of_nonneg_left (by positivity) (by positivity)
       (le_mul_of_one_le_left (by positivity) hq)
-  have hp := Real.rpow_le_rpow (by positivity : 0≤Z^(23/48:ℝ)/(q*Z^(17/48:ℝ))) hratio (show 0≤(1/6:ℝ) by norm_num)
+  have hp := Real.rpow_le_rpow (by positivity) hratio (by positivity)
   calc
     _≤3*(q*Z^(17/48:ℝ)/L)*(Z^(1/8:ℝ))^(1/6:ℝ)*(Z^(23/48:ℝ))^δ := by gcongr
     _=(3*q/L)*(Z^(17/48:ℝ)*(Z^(1/8:ℝ))^(1/6:ℝ)*(Z^(23/48:ℝ))^δ) := by ring
@@ -71,7 +71,7 @@ lemma source_compensated_gram_sqrt (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
       (Z^(23/48:ℝ)/L)^δ) ≤
         Real.sqrt (3*q/L)*Z^(3/16+(23/96)*δ:ℝ) := by
   apply (Real.sqrt_le_sqrt (source_compensated_gram_scale q Z L δ hq hZ hL hql hLl hδ)).trans_eq
-  rw [Real.sqrt_mul (by positivity),source_gram_sqrt_power Z δ (lt_of_lt_of_le zero_lt_one hZ)]
+  rw [Real.sqrt_mul (by positivity),source_gram_sqrt_power Z δ (by positivity)]
 
 lemma lowGramFactor_source_bound (C : CalibrationData) (Z L δ : ℝ) (hZ : 1≤Z)
     (hL : 1≤L) (hql : elementNorm C.generator≤Z^(1/8:ℝ))
@@ -104,7 +104,7 @@ lemma eventually_compensated_source_scales (C : CalibrationData) (B : ℝ) :
   refine ⟨hy,?_,fun δ hδ=>lowGramFactor_source_bound C Z L δ hZ hL hq hLl hδ⟩
   rw [lowPhysicalScale,compensated_gram_ratio _ _ _ _ (calibration_elementNorm_pos C)
     (by positivity) (by positivity) hl]
-  exact (le_div_iff₀ (mul_pos (calibration_elementNorm_pos C) (by positivity))).mpr (by simpa using hp)
+  exact (le_div_iff₀ (mul_pos (calibration_elementNorm_pos C) (by positivity))).mpr (by linarith)
 
 end SevenEighths.ProbePhysical
 end

@@ -30,7 +30,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Finset Real
+open Finset
 
 variable {K : ℕ}
 
@@ -45,16 +45,12 @@ theorem dvd_det_of_lineOf_eq {p : ℕ} (hp : p.Prime) {z z' : ℤ × ℤ}
   push_cast
   unfold lineOf at h
   by_cases h₁ : (z.1 : ZMod p) = 0 <;> by_cases h₂ : (z'.1 : ZMod p) = 0
-  · rw [h₁, h₂]
-    ring
-  · simp only [h₁, h₂, ↓reduceIte] at h
-    exact absurd h (ZMod.val_lt _).ne'
-  · simp only [h₁, h₂, ↓reduceIte] at h
-    exact absurd h (ZMod.val_lt _).ne
+  · simp_all
+  · grind
+  · grind
   · simp only [h₁, h₂, ↓reduceIte] at h
     have h' := ZMod.val_injective p h
-    field_simp at h'
-    linear_combination -h'
+    grind
 
 /-- **The anchor separation** (PD `mem:anchor-congruence`, pairwise): let `z, z_1, z_2` lie in
 the root box, with `z` primitive. If `det(z, z_k) = P - p n_k` for a prime `p ∤ P`, and
@@ -94,7 +90,7 @@ theorem circleDist_le_of_anchor {U V u v r : ℝ} (hU : 0 < U) (hu : 0 < u) {z z
         rw [hpl, h₁, h₂]
         ring
       rw [this]
-      exact dvd_add hdvd (dvd_mul_right _ _)
+      exact dvd_add hdvd (by simp)
     exact ((Nat.prime_iff_prime_int.mp hp).dvd_or_dvd hPα).resolve_left hP
   obtain ⟨m, hm⟩ := hpα
   -- `τ(z_k) = α_k τ(z) + det(z, z_k) τ(w)`
@@ -148,7 +144,7 @@ theorem eq_of_prod_eq_of_band {x : ℝ} {d : Data K}
     (h : ∏ i, f i = ∏ i, g i) : f = g := by
   funext i
   rcases hfg i with ⟨hf, hg⟩ | ⟨hf, -⟩
-  · rw [hf, hg]
+  · omega
   · have hfp := TypeII.band_prime hf
     have hdvd : f i ∣ ∏ j, g j := h ▸ dvd_prod_of_mem f (mem_univ i)
     obtain ⟨j, -, hj⟩ := (Prime.dvd_finsetProd_iff hfp.prime g).1 hdvd
@@ -159,7 +155,7 @@ theorem eq_of_prod_eq_of_band {x : ℝ} {d : Data K}
       have hij : i = j := by
         by_contra hij
         exact disjoint_left.1 (hdisj i j hij) hf (hfj ▸ hgj)
-      rw [hfj, hij]
+      simp_all
 
 /-- The omission product times the omitted labels is the full product. -/
 theorem omitProd_mul_prod {J : ℕ} (p : Lists K J) (o : Fin K → Fin (J + 1)) :
@@ -186,7 +182,7 @@ theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
     rcases Nat.eq_zero_or_pos (omitProd p o) with h0 | h0
     · rw [h0, zero_mul] at h₁
       exact absurd h₁.symm (listProd_pos_of_mem_lists hp).ne'
-    · exact h0
+    · omega
   have hb' : ∏ i, p i (o i) = ∏ i, p i (o' i) := by
     rw [h] at h₁
     exact Nat.eq_of_mul_eq_mul_left (h ▸ hD) (h₁.trans h₂.symm)
@@ -200,12 +196,11 @@ theorem omitProd_injective {x : ℝ} {d : Data K} {J : ℕ}
 theorem eq_of_mul_eq_of_coprime {D₁ D₂ Z₁ Z₂ P : ℕ} (h : D₁ * Z₁ = D₂ * Z₂) (hD₁ : D₁ ∣ P)
     (hD₂ : D₂ ∣ P) (hZ₁ : Nat.Coprime Z₁ P) (hZ₂ : Nat.Coprime Z₂ P) (hpos : 0 < D₁) :
     D₁ = D₂ ∧ Z₁ = Z₂ := by
-  have h₁ : D₁ ∣ D₂ := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
+  have h₁ := (hZ₂.coprime_dvd_right hD₁).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
   have h₂ : D₂ ∣ D₁ := (hZ₁.coprime_dvd_right hD₂).symm.dvd_of_dvd_mul_right (h ▸ dvd_mul_right _ _)
   have hD := Nat.dvd_antisymm h₁ h₂
   refine ⟨hD, ?_⟩
-  rw [hD] at h
-  exact Nat.eq_of_mul_eq_mul_left (hD ▸ hpos) h
+  nlinarith
 
 /-! ### Uniqueness of the omission tuple -/
 
@@ -233,7 +228,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
     (hdet₂ : z.1 * z₂.2 - z.2 * z₂.1 =
       (omitProd p o₂ : ℤ) * ((∏ i, p i (o₂ i) : ℕ) - (ps * (∏ j, Z₂ j) * ∏ j, T j : ℕ))) :
     o₁ = o₂ ∧ Z₁ = Z₂ := by
-  have hprime : ∀ i h, (p i h).Prime := fun i h =>
+  have hprime := fun i h =>
     TypeII.band_prime (mem_band_of_mem_lists hp i h)
   have hpsp := TypeII.band_prime hps
   set P := listProd p with hPdef
@@ -243,7 +238,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
     intro hdvd
     obtain ⟨i, -, hi⟩ := (Prime.dvd_finsetProd_iff hpsp.prime _).1 hdvd
     obtain ⟨h, -, hh⟩ := (Prime.dvd_finsetProd_iff hpsp.prime _).1 hi
-    exact hpsban i h ((Nat.prime_dvd_prime_iff_eq hpsp (hprime i h)).1 hh)
+    exact hpsban i h ((Nat.prime_dvd_prime_iff_eq hpsp (by grind)).1 hh)
   -- `det(z, z_k) = P - p_* (D_k Z_k T)`
   have hform : ∀ (o : Fin K → Fin (J + 1)) (Z : Fin K → ℕ) (y : ℤ × ℤ),
       z.1 * y.2 - z.2 * y.1 =
@@ -286,9 +281,9 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
       Nat.Coprime.prod_right fun h _ => ?_
     have hZj := Fintype.mem_piFinset.1 hZ j
     split_ifs at hZj with hj
-    · exact (Nat.coprime_primes (TypeII.band_prime hZj) (hprime i h)).2 (hban j i h)
+    · exact (Nat.coprime_primes (TypeII.band_prime hZj) (by grind)).2 (by grind)
     · rw [mem_singleton.1 hZj]
-      exact Nat.coprime_one_left _
+      simp
   have hDpos : 0 < omitProd p o₁ := prod_pos fun i _ => prod_pos fun h _ => (hprime i h).pos
   obtain ⟨hD, hZ⟩ := eq_of_mul_eq_of_coprime hDZ (Dvd.intro _ (omitProd_mul_prod p o₁))
     (Dvd.intro _ (omitProd_mul_prod p o₂)) (hcop Z₁ hZ₁ hZban₁) (hcop Z₂ hZ₂ hZban₂) hDpos
@@ -296,7 +291,7 @@ theorem anchor_unique {x d₀ U V u v r : ℝ} {d : Data K} {J : ℕ} (hU : 0 < 
   have h₁ := Fintype.mem_piFinset.1 hZ₁ j
   have h₂ := Fintype.mem_piFinset.1 hZ₂ j
   split_ifs at h₁ h₂
-  · exact Or.inr ⟨h₁, h₂⟩
-  · exact Or.inl ⟨mem_singleton.1 h₁, mem_singleton.1 h₂⟩
+  · grind
+  grind
 
 end Erdos408.OneSided

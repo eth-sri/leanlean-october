@@ -8,7 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.SmoothTransition
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology ContDiff
+open scoped Classical ContDiff
 namespace SevenEighths.ProbePhysical
 open DyadicTransfer
 
@@ -30,7 +30,7 @@ lemma gaussianAnnulus_contDiff : ContDiff ℝ ∞ gaussianAnnulus := by
 
 lemma gaussianAnnulus_nonneg (y : ℝ) : 0≤(gaussianAnnulus y).re := by
   by_cases hy : y≤1/2
-  · rw [gaussianAnnulus_small y hy]; simp
+  · simp [gaussianAnnulus_small y hy]
   · change 0≤Real.smoothTransition (2-y)-Real.smoothTransition (2-2*y)
     exact sub_nonneg.mpr (Real.smoothTransition.monotone (by linarith))
 lemma gaussianAnnulus_norm (y : ℝ) : ‖gaussianAnnulus y‖=(gaussianAnnulus y).re := by
@@ -54,7 +54,6 @@ lemma gaussianAnnulus_support_scales (x : ℝ) (K : ℕ)
     apply (div_le_iff₀ hp).mpr
     have h := pow_le_pow_right₀ (by norm_num : (1:ℝ)≤2) (show K+2≤j by omega)
     have he : (2:ℝ)^(K+2)=2*((2:ℝ)^(K+1)) := by rw [pow_succ]; ring
-    rw [he] at h
     linarith
 
 lemma gaussianAnnulus_partition (x : ℝ) (hx : 1≤x) :
@@ -64,15 +63,14 @@ lemma gaussianAnnulus_partition (x : ℝ) (hx : 1≤x) :
       (∑j∈({K,K+1}:Finset ℕ),gaussianAnnulus (x/(2:ℝ)^j)) :=
     hasSum_sum_of_ne_finset_zero (gaussianAnnulus_support_scales x K hlo hhi)
   convert h using 1
-  rw [Finset.sum_pair (by omega : K≠K+1)]
+  rw [Finset.sum_pair (by omega)]
   unfold gaussianAnnulus annularCutoff
   have he : 2*(x/(2:ℝ)^(K+1))=x/(2:ℝ)^K := by rw [pow_succ]; field_simp
   have hh : 2≤2*(x/(2:ℝ)^K) := by
     have hq : 1≤x/(2:ℝ)^K := (one_le_div (by positivity)).mpr hlo
     linarith
-  rw [he,gaussianCutoff_small _ ((div_le_one (by positivity)).mpr hhi.le),
+  simp [he,gaussianCutoff_small _ ((div_le_one (by positivity)).mpr hhi.le),
     gaussianCutoff_large _ hh]
-  ring
 
 lemma gaussianAnnulus_partition_norm (x : ℝ) (hx : 1≤x) :
     HasSum (fun j : ℕ=>‖gaussianAnnulus (x/(2:ℝ)^j)‖) 1 := by

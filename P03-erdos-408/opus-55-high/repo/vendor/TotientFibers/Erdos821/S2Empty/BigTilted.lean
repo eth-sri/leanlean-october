@@ -5,7 +5,6 @@ public import Erdos821.S2Empty.SmallMassBound
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -22,15 +21,15 @@ theorem eta_unit_bounds (F : FixedData) (n : ℕ) (i : Fin (n + 1)) :
   have hv0 : 0 ≤ visitQ F.q n i := by
     unfold visitQ
     split_ifs
-    · exact Real.sqrt_nonneg _
+    · simp
     · exact le_of_lt F.q_pos
   have hv1 : visitQ F.q n i ≤ 1 := by
     unfold visitQ
     split_ifs
-    · exact hs
-    · exact le_of_lt F.q_lt
+    · omega
+    · simp_all
   unfold eta
-  constructor <;> linarith
+  simp_all
 
 theorem baseline_prime_floor_of_admissible (F : FixedData) (P : PrimeGroups) (x : ℝ)
     (hP : P.Admissible F x) :
@@ -65,10 +64,8 @@ theorem baseline_prime_floor_of_admissible (F : FixedData) (P : PrimeGroups) (x 
       _ ≤ (Real.exp ((L x) ^ F.c))⁻¹ * ((N x : ℝ) + 1) :=
         mul_le_mul_of_nonneg_left hsum_le (by positivity)
       _ = epsilon := by
-        dsimp [epsilon]
         ring
   unfold baselinePrime
-  dsimp [epsilon] at hmass ⊢
   linarith
 
 

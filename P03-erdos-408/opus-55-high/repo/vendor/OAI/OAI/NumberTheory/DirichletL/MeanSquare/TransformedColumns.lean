@@ -9,33 +9,19 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,40 +30,31 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace InitialMeanSquare
-open ActualEisensteinCubic SecondPassArithmetic
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open MixedCrossSeparation (columnCoefficient)
 
@@ -92,7 +69,7 @@ namespace CubicEisenstein
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise ENNReal
+open scoped Classical MatrixGroups Pointwise
 
 instance fullSLContinuousAction : ContinuousConstSMul (SL(2,ℂ)) HyperbolicSpace :=
   ⟨continuous_hyperbolic_action⟩
@@ -146,23 +123,20 @@ instance kernelQuotientVolume_fullSupport :
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Matrix Pointwise ENNReal
+open scoped Classical MatrixGroups Matrix Pointwise
 
-open ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-lemma integral_upper_triangular_height (M : SL(2,O)) (hc : M 1 0=0)
+lemma integral_upper_triangular_height (M : SL(2,ActualEisensteinCubic.O)) (hc : M 1 0=0)
     (z : ℂ) (v : ℝ) (hv : 0<v) :
     hyperbolicHeight (integralComplexMatrix M • upperPoint z v hv)=v := by
   have hdet : M 0 0*M 1 1=1 := by
     have h := M.property
     simpa only [Matrix.det_fin_two,hc,mul_zero,sub_zero] using h
-  let u : Oˣ := ⟨M 1 1,M 0 0,by rw [mul_comm,hdet],hdet⟩
+  let u : ActualEisensteinCubic.Oˣ := ⟨M 1 1,M 0 0,by grind,hdet⟩
   have hn : ‖eisEmbedding (M 1 1)‖=1 := GaussGeneratorTransport.norm_eisEmbedding_unit u
   rw [hyperbolicHeight_action_upperPoint]
-  simp only [integralComplexMatrix_apply,hc,map_zero,zero_mul,zero_add,norm_zero,
-    hn,one_pow,]
-  norm_num
+  simp_all
 
 def hyperbolicSpatialCoordinates (w : HyperbolicSpace) : SpatialCoordinates :=
   ![(hyperbolicHorizontal w).re,(hyperbolicHorizontal w).im,hyperbolicHeight w]
@@ -190,9 +164,7 @@ end CubicEisenstein
 
 namespace SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
-open ActualEisensteinCubic
+open scoped Classical
 
 variable {ι : Type*} [DecidableEq ι]
   (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
@@ -201,10 +173,9 @@ variable {ι : Type*} [DecidableEq ι]
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace CanonicalQuadraticSieve
 
-open ActualEisensteinCubic
 
 theorem finite_inverse_norm_sum (S : Finset (Ideal O)) (H : ℝ)
     (hS : ∀ I∈S,I≠0) (hH : ∀I∈S,(Ideal.absNorm I:ℝ)≤H) :
@@ -221,23 +192,23 @@ theorem finite_inverse_norm_sum (S : Finset (Ideal O)) (H : ℝ)
         exact hS I (Finset.mem_filter.mp hI).1
       · intro I hI
         obtain ⟨hIS,hj⟩ := Finset.mem_filter.mp hI
-        have hb := (divisorDyadicLabel_bounds H I (hpos I hIS) (hH I hIS)).2
-        simpa only [hj] using hb
+        have hb := (divisorDyadicLabel_bounds H I (by grind) (by grind)).2
+        simp_all
     have hterm (I : Ideal O) (hI : I∈divisorDyadicBin S H j) :
         1/(Ideal.absNorm I:ℝ)≤2/(2:ℝ)^j.val := by
       obtain ⟨hIS,hj⟩ := Finset.mem_filter.mp hI
-      have hb := (divisorDyadicLabel_bounds H I (hpos I hIS) (hH I hIS)).1
+      have hb := (divisorDyadicLabel_bounds H I (by grind) (by grind)).1
       rw [hj] at hb
-      apply (div_le_div_iff₀ (by linarith [hpos I hIS]) hp).mpr
+      apply (div_le_div_iff₀ (by linarith) hp).mpr
       linarith
     calc
       _ ≤ ∑_I∈divisorDyadicBin S H j,2/(2:ℝ)^j.val := Finset.sum_le_sum hterm
       _ = ((divisorDyadicBin S H j).card:ℝ)*(2/(2:ℝ)^j.val) := by simp
       _ ≤ (128*(2:ℝ)^j.val)*(2/(2:ℝ)^j.val) := by gcongr
-      _ = _ := by field_simp; ring
+      _ = _ := by grind
   rw [sum_divisorDyadicBins S H]
   calc
-    _ ≤ ∑j : Fin (columnDyadicLength H+1),(256:ℝ) := Finset.sum_le_sum (fun j _ => hbin j)
+    _ ≤ ∑j : Fin (columnDyadicLength H+1),(256:ℝ) := Finset.sum_le_sum (by grind)
     _ = _ := by simp; ring
 
 theorem ideal_reciprocal_cauchy (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
@@ -248,13 +219,11 @@ theorem ideal_reciprocal_cauchy (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
     exact_mod_cast Nat.pos_of_ne_zero (fun hz => hS I hI (Ideal.absNorm_eq_zero_iff.mp hz))
   apply (pow_le_pow_left₀ (norm_nonneg _) (norm_sum_le S v) 2).trans
   apply Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul S
-    (fun I hI => by positivity) (fun I hI => by positivity)
+    (by simp) (fun I hI => by positivity)
   intro I hI
-  exact le_of_eq (by field_simp [(hpos I hI).ne'])
+  exact le_of_eq (by grind)
 
-open ActualEisensteinCubic CompletedGauss QuadraticSquarefreeKernel
 
-open ActualEisensteinCubic CompletedGauss QuadraticSquarefreeKernel
 
 end CanonicalQuadraticSieve
 

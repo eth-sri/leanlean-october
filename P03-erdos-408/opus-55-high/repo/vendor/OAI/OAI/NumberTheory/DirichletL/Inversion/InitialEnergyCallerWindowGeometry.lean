@@ -8,15 +8,13 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
 namespace SevenEighths.InverseInitialEnergyCallerWindowGeometry
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
+open InverseInitialArithmetic
 open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerGeometry
-open InverseInitialProfile InverseInitialKernelBridge ConcreteTraceCRT
-local notation "Eis"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
+open InverseInitialEnergyCallerWindows
+open ConcreteTraceCRT
+variable {ι:Type*}[DecidableEq ι](p:ι→ActualEisensteinCubic.O)
 
 theorem retained_source_windows
     (S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
@@ -32,7 +30,7 @@ theorem retained_source_windows
     apply Finset.mem_biUnion.mpr
     refine ⟨x,hx,?_⟩
     apply Finset.mem_image.mpr
-    exact ⟨(∅,∅),by simp,rfl⟩
+    exact by simp
   have hh (i:Fin 4) := hψ i (windowSource_four_nonzero p ∅ S ψ Z D B v θ H hm i)
   have h0 := hh 0
   have h1 := hh 1
@@ -42,11 +40,11 @@ theorem retained_source_windows
   change ((sourceIdeal p x.divisor).absNorm:ℝ)/Z^θ∈Set.Icc (lo 1) (hi 1) at h1
   change ((sourceIdeal p x.overlap).absNorm:ℝ)/Z^v∈Set.Icc (lo 2) (hi 2) at h2
   change ‖eisEmbedding x.frequency‖^2/Z^H∈Set.Icc (lo 3) (hi 3) at h3
-  exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h0.2,
-    (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h1.1,
-    (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h1.2,
-    (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h2.2,
-    (div_le_iff₀ (Real.rpow_pos_of_pos hZ _)).mp h3.2⟩
+  exact ⟨(div_le_iff₀ (by positivity)).mp h0.2,
+    (le_div_iff₀ (by positivity)).mp h1.1,
+    (div_le_iff₀ (by positivity)).mp h1.2,
+    (div_le_iff₀ (by positivity)).mp h2.2,
+    (div_le_iff₀ (by positivity)).mp h3.2⟩
 
 variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
 include hp

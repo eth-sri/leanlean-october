@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.NonprincipalContour
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 lemma continuedPhysicalRowKernel_eq_calibratedTuple {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (W : Fin K→ℝ→ℂ) (Yp : Fin K→ℝ)
     (hW : ∀i,W i (((P i).val.absNorm:ℝ)/Yp i)=1) (x w z : ℂ) :
@@ -27,14 +26,13 @@ lemma continuedPhysicalRowKernel_eq_calibratedTuple {K : ℕ}
     rw [primaryTuple_norm (P i) (outside_prime_supported S hS.bad (P i) (hPS i))]
     norm_cast
   unfold continuedPhysicalRowKernel calibratedTupleValue
-  simp only [hW,one_mul,hnorm]
-  ring
+  grind
 
 theorem continuedPhysicalRowKernel_integrable {K : ℕ}
     (e σ υ r : ℝ) (he : 0<e) (he' : e<1/1000)
     (hσ : (7/8:ℝ)≤σ) (hσβ : HeckeZeroSupremum.beta+8*e≤σ)
     (hυ : (1/2:ℝ)≤υ) (hr : (17/50:ℝ)≤r)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P)
     (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow) (hu : u.val≠1)
     (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
@@ -46,12 +44,12 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
   let Yp : Fin K→ℝ := fun i=>(P i).val.absNorm
   let T : Fin K→Finset PrimeIdeal := fun i=>{P i}
   have hT (i : Fin K) (Q : PrimeIdeal) (hQ : Q∈T i) : Q.val∉S := by
-    have heq : Q=P i := Finset.mem_singleton.mp hQ
+    have heq := Finset.mem_singleton.mp hQ
     simpa only [heq] using hPS i
   let P0 : ∀i,T i := fun i=>⟨P i,Finset.mem_singleton_self _⟩
   have hTP (Q : ∀i,T i) : (fun i=>(Q i).val)=P := by
     funext i
-    exact Finset.mem_singleton.mp (Q i).property
+    exact by grind
   have hdis (Q : ∀i,T i) : Function.Injective (fun i=>(Q i).val) := by rw [hTP Q];exact hP
   have hYp (i : Fin K) : 1≤Yp i := by
     dsimp [Yp]
@@ -59,13 +57,13 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
   have hWS (i : Fin K) : Function.support (W i)⊆Icc (1:ℝ) 1 := by
     intro y hy
     by_cases h : y=1
-    · simpa only [h] using (show (1:ℝ)∈Icc 1 1 from ⟨le_rfl,le_rfl⟩)
-    · simp [W,h,Function.mem_support] at hy
+    · simp_all
+    · simp [W, h] at hy
   have hWB (i : Fin K) (y : ℝ) : ‖W i y‖≤1 := by dsimp [W];split_ifs <;> simp
   have hWeq (i : Fin K) : W i (((P i).val.absNorm:ℝ)/Yp i)=1 := by
     have hn : Yp i≠0 := by linarith [hYp i]
     simp [W,Yp,div_self hn]
-  let U : ℝ := (Ideal.span {u.val}:Ideal O).absNorm
+  let U : ℝ := (Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm
   have hU : 1≤U := by
     dsimp [U]
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
@@ -74,15 +72,15 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
     (by norm_num) (by norm_num) (by norm_num) (by norm_num) hr (by norm_num) hσ hσβ hυ
     S hS hmax hfirst W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
   have hR (v : FreeRow) (hv : v∈({u}:Finset FreeRow)) :
-      v.val≠1 ∧ U≤((Ideal.span {v.val}:Ideal O).absNorm:ℝ) ∧
-      ((Ideal.span {v.val}:Ideal O).absNorm:ℝ)≤2*U := by
+      v.val≠1 ∧ U≤((Ideal.span {v.val}:Ideal HeckeFamily.O).absNorm:ℝ) ∧
+      ((Ideal.span {v.val}:Ideal HeckeFamily.O).absNorm:ℝ)≤2*U := by
     have hvu := Finset.mem_singleton.mp hv
     subst v
-    exact ⟨hu,le_rfl,by change U≤2*U;linarith⟩
+    exact ⟨hu,le_rfl,by linarith⟩
   have hi := (hmain η U hU {u} hR T hT hdis Yp hYp W hWS hWB X Y Z hX hY hZ).1
   have hm := calibratedTupleValue_onLines_aestronglyMeasurable S hS hmax η u P hPS W Yp σ υ r heightMeasure
   have hfn : (elementNorm u.val:ℂ)≠0 := by
-    exact_mod_cast (elementNorm_pos u.val u.property.1).ne'
+    exact_mod_cast (by positivity)
   have hf : Continuous (fun p : HeightSpace=>frequencyWeight ((r:ℂ)+p.1.2*Complex.I) ⟨u.val,u.property.1⟩) := by
     unfold frequencyWeight
     exact (by fun_prop : Continuous (fun p : HeightSpace=>-((r:ℂ)+p.1.2*Complex.I))).const_cpow (Or.inl hfn)
@@ -104,7 +102,7 @@ theorem continuedPhysicalRowKernel_integrable {K : ℕ}
       calibratedTupleValue S hS hmax η u (fun i=>(Q i).val)
         (fun i=>hT i (Q i).val (Q i).property) W Yp ((σ:ℂ)+p.1.1*Complex.I)
           ((υ:ℂ)+p.2*Complex.I) ((r:ℂ)+p.1.2*Complex.I))) (Finset.mem_univ P0)
-  exact hh
+  omega
 
 end SevenEighths.ProbeHighRowFamily
 end

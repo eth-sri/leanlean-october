@@ -8,7 +8,6 @@ public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
 @[expose] public section
 
 namespace OAI
-open scoped BigOperators
 
 namespace Problem337.ExponentialSum
 
@@ -50,7 +49,6 @@ lemma sin_pi_lower {β x : ℝ} (hβ : 0 < β) (hlo : β ≤ x) (hhi : x ≤ 1 -
   by_cases hx : x ≤ 1 / 2
   · have h := Real.mul_le_sin (x := Real.pi * x) (by nlinarith) (by nlinarith)
     have heq : 2 / Real.pi * (Real.pi * x) = 2 * x := by field_simp
-    rw [heq] at h
     linarith
   · have h := Real.mul_le_sin (x := Real.pi * (1 - x)) (by nlinarith) (by nlinarith)
     have heq : 2 / Real.pi * (Real.pi * (1 - x)) = 2 * (1 - x) := by field_simp
@@ -78,12 +76,12 @@ lemma phaseWeight_identity {x : ℝ} (hx : 0 < x) (hx' : x < 1) :
   simp only [Complex.ofReal_sub, Complex.ofReal_mul, Complex.ofReal_pow,
     Complex.ofReal_ofNat, Complex.ofReal_div]
   have hsc : (Real.sin (Real.pi * x) : ℂ) ^ 2 + (Real.cos (Real.pi * x) : ℂ) ^ 2 = 1 := by
-    exact_mod_cast Real.sin_sq_add_cos_sq (Real.pi * x)
+    exact_mod_cast (by simp)
   have hsC : (Real.sin (Real.pi * x) : ℂ) ≠ 0 := by exact_mod_cast hs
   field_simp
   ring_nf
   norm_num only [Complex.ofReal_one, Complex.I_sq]
-  linear_combination -2 * (Real.cos (Real.pi * x) : ℂ) * Complex.I * hsc
+  grind
 
 lemma phaseWeight_norm_le {β x : ℝ} (hβ : 0 < β) (hlo : β ≤ x) (hhi : x ≤ 1 - β) :
     ‖phaseWeight x‖ ≤ 1 / 2 + 1 / (4 * β) := by
@@ -134,9 +132,7 @@ lemma weighted_telescope (z w : ℕ → ℂ) (N : ℕ)
         ∑ i ∈ Finset.range N,
           ((z (i + 1) * w (i + 1) - z i * w i) + z (i + 1) * (w i - w (i + 1))) := by
       apply Finset.sum_congr rfl
-      intro i hi
-      have h := hstep i (Finset.mem_range.mp hi)
-      linear_combination -h
+      grind
     _ = _ := by rw [Finset.sum_add_distrib, Finset.sum_range_sub (fun i => z i * w i)]
 
 /-- Endpoint-efficient form: the last weight is attached to the last summand. -/
@@ -144,9 +140,8 @@ lemma weighted_telescope_succ (z w : ℕ → ℂ) (N : ℕ)
     (hstep : ∀ i ≤ N, (z (i + 1) - z i) * w i = z i) :
     (∑ i ∈ Finset.range (N + 1), z i) = z (N + 1) * w N - z 0 * w 0 +
       ∑ i ∈ Finset.range N, z (i + 1) * (w i - w (i + 1)) := by
-  rw [Finset.sum_range_succ, weighted_telescope z w N (fun i hi => hstep i hi.le)]
-  have h := hstep N le_rfl
-  linear_combination -h
+  rw [Finset.sum_range_succ, weighted_telescope z w N (by grind)]
+  grind
 
 /-- A discrete first-derivative estimate (Kusmin--Landau): monotone consecutive
 phase increments, uniformly separated from the integers, force cancellation.
@@ -171,7 +166,7 @@ theorem first_derivative_sum_bound (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (hβ :
             (Real.cot (Real.pi * d i) - Real.cot (Real.pi * d (i + 1))) / 2 := by
         apply Finset.sum_congr rfl
         intro i hi
-        have hiN : i < N := Finset.mem_range.mp hi
+        have hiN := Finset.mem_range.mp hi
         exact phaseWeight_difference_norm (hdlo i hiN.le)
           (hmono (show i ≤ N from hiN.le) (show i + 1 ≤ N by omega) (by omega)) (hdhi (i + 1) (by omega))
       _ = _ := by rw [← Finset.sum_div, Finset.sum_range_sub']
@@ -192,7 +187,7 @@ theorem first_derivative_sum_bound (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (hβ :
       _ ≤ ∑ i ∈ Finset.range N, ‖phase (f (i + 1)) * (w i - w (i + 1))‖ := norm_sum_le _ _
       _ = _ := by simp only [norm_mul, phase_norm, one_mul]
   have hβle : β ≤ 1 := by have := hlo 0 (Nat.zero_le N); have := hhi 0 (Nat.zero_le N); linarith
-  have hinv : 1 ≤ 1 / β := (le_div_iff₀ hβ).2 (by simpa using hβle)
+  have hinv : 1 ≤ 1 / β := (le_div_iff₀ hβ).2 (by linarith)
   rw [htel]
   calc
     _ ≤ ‖phase (f N) * w N - phase (f 0) * w 0‖ +
@@ -202,9 +197,9 @@ theorem first_derivative_sum_bound (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (hβ :
     _ = (‖w N‖ + ‖w 0‖) + ∑ i ∈ Finset.range N, ‖w i - w (i + 1)‖ := by
       simp only [norm_mul, phase_norm, one_mul]
     _ ≤ (1 / 2 + 1 / (4 * β)) + (1 / 2 + 1 / (4 * β)) + 1 / (2 * β) := by
-      exact add_le_add (add_le_add hwN hw0) hvbound
+      linarith
     _ = 1 + 1 / β := by ring
-    _ ≤ 1 / β + 1 / β := by simpa [add_comm] using add_le_add_right hinv (1 / β)
+    _ ≤ 1 / β + 1 / β := by linarith
     _ = 2 / β := by ring
 
 /-- Cancellation using only the increments attached to the summands. -/
@@ -228,7 +223,7 @@ theorem first_derivative_sum_bound_succ (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (
             (Real.cot (Real.pi * d i) - Real.cot (Real.pi * d (i + 1))) / 2 := by
         apply Finset.sum_congr rfl
         intro i hi
-        have hiN : i < N := Finset.mem_range.mp hi
+        have hiN := Finset.mem_range.mp hi
         exact phaseWeight_difference_norm (hdlo i hiN.le)
           (hmono (show i ≤ N from hiN.le) (show i + 1 ≤ N by omega) (by omega)) (hdhi (i + 1) (by omega))
       _ = _ := by rw [← Finset.sum_div, Finset.sum_range_sub']
@@ -249,7 +244,7 @@ theorem first_derivative_sum_bound_succ (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (
       _ ≤ ∑ i ∈ Finset.range N, ‖phase (f (i + 1)) * (w i - w (i + 1))‖ := norm_sum_le _ _
       _ = _ := by simp only [norm_mul, phase_norm, one_mul]
   have hβle : β ≤ 1 := by have := hlo 0 (Nat.zero_le N); have := hhi 0 (Nat.zero_le N); linarith
-  have hinv : 1 ≤ 1 / β := (le_div_iff₀ hβ).2 (by simpa using hβle)
+  have hinv : 1 ≤ 1 / β := (le_div_iff₀ hβ).2 (by linarith)
   rw [htel]
   calc
     _ ≤ ‖phase (f (N + 1)) * w N - phase (f 0) * w 0‖ +
@@ -259,9 +254,9 @@ theorem first_derivative_sum_bound_succ (f : ℕ → ℝ) (N : ℕ) (β : ℝ) (
     _ = (‖w N‖ + ‖w 0‖) + ∑ i ∈ Finset.range N, ‖w i - w (i + 1)‖ := by
       simp only [norm_mul, phase_norm, one_mul]
     _ ≤ (1 / 2 + 1 / (4 * β)) + (1 / 2 + 1 / (4 * β)) + 1 / (2 * β) := by
-      exact add_le_add (add_le_add hwN hw0) hvbound
+      linarith
     _ = 1 + 1 / β := by ring
-    _ ≤ 1 / β + 1 / β := by simpa [add_comm] using add_le_add_right hinv (1 / β)
+    _ ≤ 1 / β + 1 / β := by linarith
     _ = 2 / β := by ring
 
 lemma phase_int (q : ℤ) : phase (q : ℝ) = 1 := by
@@ -275,8 +270,7 @@ lemma phase_neg (x : ℝ) : phase (-x) = (starRingEnd ℂ) (phase x) := by
   rw [← Complex.exp_conj]
   congr 1
   simp only [map_mul, Complex.conj_ofReal, Complex.conj_I]
-  push_cast
-  ring
+  simp
 
 lemma phase_sub_int_mul (x : ℝ) (q : ℤ) (n : ℕ) :
     phase (x - (q : ℝ) * n) = phase x := by
@@ -299,8 +293,8 @@ theorem first_derivative_sum_bound_strip (f : ℕ → ℝ) (N : ℕ) (β : ℝ) 
     push_cast
     ring
   have H := first_derivative_sum_bound g N β hβ
-    (by intro i hi; rw [hg]; have := hlo i hi; linarith)
-    (by intro i hi; rw [hg]; have := hhi i hi; linarith)
+    (by grind)
+    (by grind)
     (by
       intro i hi j hj hij
       dsimp only
@@ -321,8 +315,8 @@ theorem first_derivative_sum_bound_strip_succ (f : ℕ → ℝ) (N : ℕ) (β : 
     push_cast
     ring
   have H := first_derivative_sum_bound_succ g N β hβ
-    (by intro i hi; rw [hg]; have := hlo i hi; linarith)
-    (by intro i hi; rw [hg]; have := hhi i hi; linarith)
+    (by grind)
+    (by grind)
     (by
       intro i hi j hj hij
       dsimp only
@@ -342,12 +336,11 @@ theorem first_derivative_sum_bound_either_succ (f : ℕ → ℝ) (N : ℕ) (β :
   rcases hmono with hmono | hanti
   · exact first_derivative_sum_bound_strip_succ f N β q hβ hlo hhi hmono
   · have H := first_derivative_sum_bound_strip_succ (fun i => -f i) N β (-q - 1) hβ
-      (by intro i hi; push_cast; have := hhi i hi; linarith)
-      (by intro i hi; push_cast; have := hlo i hi; linarith)
+      (by grind)
+      (by grind)
       (by
         intro i hi j hj hij
         have := hanti hi hj hij
-        dsimp only
         linarith)
     simpa only [phase_neg, ← map_sum, Complex.norm_conj] using H
 

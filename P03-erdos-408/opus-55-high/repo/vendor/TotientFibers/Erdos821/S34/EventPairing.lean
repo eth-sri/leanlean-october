@@ -6,7 +6,7 @@ public import Erdos821.S34.FrameBridge
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S34Core
@@ -17,7 +17,7 @@ theorem weighted_event_pairing {α : Type} [Fintype α]
     ‖∑ x, if event x then (w x : ℂ) * F x else 0‖ ≤
       Real.sqrt (∑ x, if event x then w x else 0) * weightedFrameNorm w F := by
   let v := fun x => if event x then w x else 0
-  have hv (x : α) : 0 ≤ v x := by dsimp [v]; split_ifs <;> first | exact hw x | exact le_rfl
+  have hv (x : α) : 0 ≤ v x := by dsimp [v]; split_ifs <;> first | exact hw x | simp
   have hc := Erdos821.S34.Proofs.norm_weighted_sum_sq v hv F
   have he : (∑ x, v x * ‖F x‖ ^ 2) ≤ ∑ x, w x * ‖F x‖ ^ 2 := by
     apply Finset.sum_le_sum
@@ -61,8 +61,7 @@ theorem independent_event_pairing {α β : Type} [Fintype α] [Fintype β]
           simp [ha, hb, mul_nonneg (hw x) (hv y)]
       _ = _ := by
         simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.sum_mul]
-        rw [hwprob, hvprob]
-        ring
+        simp_all
   have henergy : (∑ p : α × β, W p * ‖F p‖ ^ 2) ≤
       (∑ x, w x * ‖g x‖ ^ 2) * (∑ y, v y * ‖f y‖ ^ 2) := by
     rw [Fintype.sum_prod_type, Finset.sum_mul]
@@ -84,7 +83,7 @@ theorem independent_event_pairing {α β : Type} [Fintype α] [Fintype β]
       ∑ p : α × β, if EA p.1 ∨ EB p.2 then W p else 0 := by
     apply Finset.sum_congr rfl
     intro p _
-    by_cases hp : EA p.1 ∨ EB p.2 <;> simp [hp]
+    by_cases hp : EA p.1 ∨ EB p.2 <;> simp
   rw [hmask] at ht
   have hnorm : weightedFrameNorm W F ≤ weightedFrameNorm w g * weightedFrameNorm v f := by
     unfold weightedFrameNorm
@@ -94,8 +93,7 @@ theorem independent_event_pairing {α β : Type} [Fintype α] [Fintype β]
   have hb := ht.trans (mul_le_mul (Real.sqrt_le_sqrt hmass) hnorm
     (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
   simp only [Fintype.sum_prod_type, W, F, Complex.ofReal_mul] at hb
-  convert hb using 1 <;>
-    simp only [mul_assoc]
+  grind
 
 end
 end Erdos821.S34Core

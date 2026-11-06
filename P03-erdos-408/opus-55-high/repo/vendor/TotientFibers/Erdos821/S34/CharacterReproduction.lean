@@ -6,7 +6,7 @@ public import Erdos821.S34.ProductSupport
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34Core
 noncomputable section
@@ -21,8 +21,8 @@ theorem tuple_product_coprime (G : PrimeGroups) (k : Fin G.size → ℕ)
   intro g _
   apply Nat.coprime_prod_left_iff.mpr
   intro j _
-  exact Nat.coprime_of_lt_prime hr.ne' (hp g (by have hj := j.isLt; omega) (z g j).val (z g j).property)
-    (G.prime g (z g j).val (z g j).property)
+  exact Nat.coprime_of_lt_prime hr.ne' (hp g (by have hj := j.isLt; omega) (z g j).val (by simp))
+    (G.prime g (z g j).val (by simp))
 
 theorem charValue_norm_of_coprime {Q : ℕ} (χ : CharacterIndex Q) (n : ℕ)
     (hn : Nat.Coprime n (χ.1.val + 1)) : ‖charValue χ n‖ = 1 := by
@@ -56,11 +56,11 @@ theorem cell_character_reproduction (G : PrimeGroups) (k : Fin G.size → ℕ)
       simp only [Complex.star_def, Complex.conj_mul', hn]
       norm_num
     split_ifs
-    · rw [mul_assoc, hs, mul_one]
+    · grind
     · simp
   have hg (a : ↥(primitiveCharacters Q)) (hab : a ≠ b) :
       ‖∑ D, if c D = c X then (w D : ℂ) * star (chars a D) * chars b D else 0‖ ≤ δ := by
-    have ha : a.val ≠ χ := fun he => hab (Subtype.ext he)
+    have ha : a.val ≠ χ := by grind
     simpa only [expect, w, c, chars, b, mul_ite, mul_zero, mul_assoc] using
       hgram (c X) hret a.val a.property ha
   have ht := frame_reproduction w c chars ξ δ hξ hδ

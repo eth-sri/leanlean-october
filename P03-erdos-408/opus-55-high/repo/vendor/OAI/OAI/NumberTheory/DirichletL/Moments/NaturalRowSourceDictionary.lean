@@ -8,23 +8,22 @@ public import OAI.NumberTheory.DirichletL.Moments.RetainedEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalRowSource
 open HeckeFamily CenteredMomentSecondHeightFamily ConcretePrimeRowBridge
 open CenteredMomentHeckeHeight CenteredMomentHeckeTwist CenteredMomentHeckeSlots
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-local notation "O" => HeckeFamily.O
+open CenteredMomentRetainedEnergy
 
-lemma NaturalRow.masked_plain {η : Character} {z : O} (F : NaturalRow η z)
-    (R : Ideal O) (hR : R≠0) (W : ℝ→ℂ) (t X : ℝ) :
+lemma NaturalRow.masked_plain {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z)
+    (R : Ideal HeckeFamily.O) (hR : R≠0) (W : ℝ→ℂ) (t X : ℝ) :
     rowTwistedSum η (fixedBadMask*idealGenerator R) 1 z W t X=
-      twistedIdealSum (excluded F.character R) W t X := by
-  exact rowTwistedSum_eq η (excluded F.character R) (fixedBadMask*idealGenerator R) 1 z
-    (by simpa only [one_mul] using F.masked_element R hR) W t X
+      twistedIdealSum (excluded F.character R) W t X :=
+  rowTwistedSum_eq η (excluded F.character R) (fixedBadMask*idealGenerator R) 1 z
+    (by simpa using F.masked_element R hR) W t X
 
-lemma NaturalRow.masked_slot {η : Character} {z : O} (F : NaturalRow η z)
-    (R : Ideal O) (hR : R≠0) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (t : ℝ) :
+lemma NaturalRow.masked_slot {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z)
+    (R : Ideal HeckeFamily.O) (hR : R≠0) (S : Finset (Ideal HeckeFamily.O)) (β : Ideal HeckeFamily.O→ℂ) (t : ℝ) :
     rowSlot η (fixedBadMask*idealGenerator R) 1 z S β t=
       ∑I∈S,β I*idealCoeff (excluded F.character R) I*(I.absNorm:ℂ)^(Complex.I*t) := by
   unfold rowSlot
@@ -33,8 +32,8 @@ lemma NaturalRow.masked_slot {η : Character} {z : O} (F : NaturalRow η z)
   rw [F.masked_ideal R hR I,one_mul]
 
 theorem NaturalRow.masked_positive {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {η : Character} {z : O} (F : NaturalRow η z) (R : Ideal O) (hR : R≠0)
-    (W₁ W₂ : ℝ→ℂ) (S : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ)
+    {η : Character} {z : HeckeFamily.O} (F : NaturalRow η z) (R : Ideal HeckeFamily.O) (hR : R≠0)
+    (W₁ W₂ : ℝ→ℂ) (S : ι→Finset (Ideal HeckeFamily.O)) (β : ι→Ideal HeckeFamily.O→ℂ)
     (P : ι→ℝ) (t X₁ X₂ : ℝ) :
     positiveSlotRow η (fixedBadMask*idealGenerator R) 1 z W₁ W₂ S β P t X₁ X₂=
       (Real.sqrt (X₁*X₂*∏i,P i):ℂ)⁻¹*

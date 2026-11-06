@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Detector.LocalWeights
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeEuler
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
+open CompletedGauss ConcretePrimeRowBridge ProbePrimePower
 
-variable (p : O) (hp : Prime p) [(Ideal.span {p} : Ideal O).IsMaximal]
-  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p} : Ideal ActualEisensteinCubic.O).IsMaximal]
+  (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p}) ≠ 2)
 
 def principalMarkedTerm (eta a X W V : ℂ) (e l k m : ℕ) : ℂ :=
   if e+3*l=0 then 0 else
@@ -31,8 +30,8 @@ lemma localGamma_conjugate_three_sq :
   rw [← star_pow, hg3]
   have hω := actualSextic_neg_one_sq (Ideal.span {p}) hg
   rcases (sq_eq_one_iff).mp hω with h | h
-  · simp [h]
-  · simp [h]
+  · simp_all
+  simp_all
 
 include hc in
 lemma firstGauss_ne_zero : primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 ≠ 0 := by
@@ -46,9 +45,7 @@ lemma firstGauss_ne_zero : primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}
     (actualSextic (Ideal.span {p}) hg).apply_ne_zero_iff.mpr isUnit_one.neg
   have hQ : (Ideal.absNorm (Ideal.span {p}):ℂ) ≠ 0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero)
-  intro hz
-  rw [hz, zero_mul] at he
-  exact (mul_ne_zero hω hQ) he.symm
+  grind
 
 omit [(Ideal.span {p}).IsMaximal] in
 include hp in
@@ -60,7 +57,7 @@ include hc
 omit hc in
 @[simp] theorem markedTerm_zero_index (eta a X W V : ℂ) (k m : ℕ) :
     principalMarkedTerm p hp hg eta a X W V 0 0 k m = 0 := by
-  simp only [principalMarkedTerm, mul_zero, add_zero, ite_true]
+  simp only [principalMarkedTerm, ite_true]
 
 omit hc in
 lemma markedTerm_higher_outer (eta a X W V : ℂ) (e l k m : ℕ) :

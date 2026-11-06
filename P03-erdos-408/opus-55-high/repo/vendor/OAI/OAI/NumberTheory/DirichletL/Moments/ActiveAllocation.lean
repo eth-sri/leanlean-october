@@ -8,31 +8,30 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorActualBoundary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentActiveAllocation
-open HeckeFamily CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction
+open HeckeFamily CenteredMomentDivisorAllocation
 open CenteredMomentDivisorRows CenteredMomentDivisorRaw CenteredMomentDivisorRawEnergy
-open CenteredMomentRetainedEnergy CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
-open CenteredMomentSlotRatios CenteredMomentDivisorActualBoundary CenteredMomentDivisorRectangle
-local notation "O" => ActualEisensteinCubic.O
+open CenteredMomentDivisorRowEnergy CenteredMomentDivisorRetained
+open CenteredMomentSlotRatios CenteredMomentDivisorActualBoundary
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 
-def activeAllocations (η:Character) (m A:O) (t:ℝ) (S:ι→Finset (Ideal O))
-    (β:ι→Ideal O→ℂ) (D:Ideal O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ) :
+def activeAllocations (η:Character) (m A:ActualEisensteinCubic.O) (t:ℝ) (S:ι→Finset (Ideal ActualEisensteinCubic.O))
+    (β:ι→Ideal ActualEisensteinCubic.O→ℂ) (D:Ideal ActualEisensteinCubic.O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ) :
     Finset (Allocation D (Finset.univ:Finset (ι⊕Fin 2))) :=
-  Finset.univ.filter (fun a=>∃z:O,allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂≠0)
+  Finset.univ.filter (fun a=>∃z:ActualEisensteinCubic.O,allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂≠0)
 
-theorem inactive_zero (η:Character) (m A:O) (t:ℝ) (S:ι→Finset (Ideal O))
-    (β:ι→Ideal O→ℂ) (D:Ideal O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ)
+theorem inactive_zero (η:Character) (m A:ActualEisensteinCubic.O) (t:ℝ) (S:ι→Finset (Ideal ActualEisensteinCubic.O))
+    (β:ι→Ideal ActualEisensteinCubic.O→ℂ) (D:Ideal ActualEisensteinCubic.O) (W₁ W₂:ℝ→ℂ) (X₁ X₂ Y₁ Y₂:ℝ)
     (a:Allocation D (Finset.univ:Finset (ι⊕Fin 2)))
-    (ha:a∉activeAllocations η m A t S β D W₁ W₂ X₁ X₂ Y₁ Y₂) (z:O) :
+    (ha:a∉activeAllocations η m A t S β D W₁ W₂ X₁ X₂ Y₁ Y₂) (z:ActualEisensteinCubic.O) :
     allocatedRectangle η m A z t S β D a W₁ W₂ X₁ X₂ Y₁ Y₂=0 := by
   by_contra hn
-  exact ha (Finset.mem_filter.mpr ⟨Finset.mem_univ _,z,hn⟩)
+  exact ha (Finset.mem_filter.mpr (by grind))
 
-theorem masked_eq_active_allocations (η:Character) (m A z:O) (t:ℝ)
-    (S:ι→Finset (Ideal O)) (β:ι→Ideal O→ℂ) (D:Ideal O) (hD:Squarefree D)
+theorem masked_eq_active_allocations (η:Character) (m A z:ActualEisensteinCubic.O) (t:ℝ)
+    (S:ι→Finset (Ideal ActualEisensteinCubic.O)) (β:ι→Ideal ActualEisensteinCubic.O→ℂ) (D:Ideal ActualEisensteinCubic.O) (hD:Squarefree D)
     (W₁ W₂:ℝ→ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂:ℝ)
     (hs₁:Function.support W₁⊆Set.Iic b₁) (hs₂:Function.support W₂⊆Set.Iic b₂)
     (hX₁:0<X₁) (hX₂:0<X₂) (hY₁:0<Y₁) (hY₂:0<Y₂) :
@@ -48,12 +47,12 @@ theorem masked_eq_active_allocations (η:Character) (m A z:O) (t:ℝ)
 
 theorem active_allocated_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
     (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ,0 < C ∧ ∀ (η : Character) (m A : O) (t : ℝ)
-      (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ)
-      (D : Ideal O),Squarefree D → ∀ (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ),
+    ∃ C : ℝ,0 < C ∧ ∀ (η : Character) (m A : ActualEisensteinCubic.O) (t : ℝ)
+      (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ)
+      (D : Ideal ActualEisensteinCubic.O),Squarefree D → ∀ (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ),
       Function.support W₁ ⊆ Set.Iic b₁ → Function.support W₂ ⊆ Set.Iic b₂ →
       0 < X₁ → 0 < X₂ → 0 < Y₁ → 0 < Y₂ →
-      ∀ (rows : Finset O) (ω : O → ℝ),(∀ z ∈ rows,0 ≤ ω z) →
+      ∀ (rows : Finset ActualEisensteinCubic.O) (ω : ActualEisensteinCubic.O → ℝ),(∀ z ∈ rows,0 ≤ ω z) →
       (∑ z ∈ rows,ω z*‖maskedRectangle η m A z t S β D W₁ W₂ X₁ X₂ Y₁ Y₂‖^2) ≤
         C*(Ideal.absNorm D:ℝ)^ε*
           ∑ a ∈ activeAllocations η m A t S β D W₁ W₂ X₁ X₂ Y₁ Y₂,
@@ -110,14 +109,14 @@ theorem active_raw_to_retained_energy (N : ℕ) (hslots : Fintype.card ι ≤ N)
   have hb := mul_le_mul_of_nonneg_left
     (allocated_to_retained_energy η m A z t S hS β M P hM hP hβ D a W₁ W₂
       b₁ b₂ X₁ X₂ Y₁ Y₂ T hW₁ hW₂ hX₁ hX₂ hY₁ hY₂ hX hY) (hω z hz)
-  convert hb using 1 ; ring
+  linarith
 
-theorem active_formal_boundary (η : Character) (m A : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
-    (ν : ι → Ideal O → ℂ) (W : ι → ℝ → ℂ) (lo hi P : ι → ℝ)
+theorem active_formal_boundary (η : Character) (m A : ActualEisensteinCubic.O) (t : ℝ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ i,∀ I∈S i,Prime I)
+    (ν : ι → Ideal ActualEisensteinCubic.O → ℂ) (W : ι → ℝ → ℂ) (lo hi P : ι → ℝ)
     (hlo : ∀ i,0 < lo i) (hP : ∀ i,0 < P i)
     (hW : ∀ i,Function.support (W i) ⊆ Set.Icc (lo i) (hi i))
-    (D : Ideal O) (hD : Squarefree D)
+    (D : Ideal ActualEisensteinCubic.O) (hD : Squarefree D)
     (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ Z : ℝ) (hZ : 1 < Z)
     (hactive : a∈activeAllocations η m A t S

@@ -55,9 +55,8 @@ theorem unramifiedClosed_first_analytic_z (Q : ℝ) (A eta v x w : ℂ)
   have hd := first_open_region_denominators Q A eta v x z hQ hA he hv hx hz.le
   exact (unramifiedClosed_differentiableAt_z Q (by linarith) A eta v x w z hd.1 hd.2.1 hd.2.2).differentiableWithinAt
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ProbePrimePower
-local notation "O" => ActualEisensteinCubic.O
-variable (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
+open ConcretePrimeRowBridge
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) [(Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal]
   (hg : goodLambda∉Ideal.span {p})
 
 lemma ramifiedClosed_first_analytic_x (eta a rho w z : ℂ)
@@ -66,7 +65,7 @@ lemma ramifiedClosed_first_analytic_x (eta a rho w z : ℂ)
   apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
   intro x hx
   have hd := first_open_region_denominators _ (a^2) 0 0 x z hQ
-    (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha) (by norm_num) (by norm_num) hx.le hz
+    (by simp_all) (by norm_num) (by norm_num) hx.le hz
   exact (ramifiedClosed_differentiableAt p hp hg eta a rho id (fun _=>w) (fun _=>z) x
     differentiableAt_id (differentiableAt_const w) (differentiableAt_const z) hd.2.1 hd.1 j).differentiableWithinAt
 
@@ -76,7 +75,7 @@ lemma ramifiedClosed_first_analytic_w (eta a rho x z : ℂ)
     Differentiable ℂ (fun w=>ramifiedClosed p hp hg eta a rho x w z j) := by
   intro w
   have hd := first_open_region_denominators _ (a^2) 0 0 x z hQ
-    (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha) (by norm_num) (by norm_num) hx hz
+    (by simp_all) (by norm_num) (by norm_num) hx hz
   exact ramifiedClosed_differentiableAt p hp hg eta a rho (fun _=>x) id (fun _=>z) w
     (differentiableAt_const x) differentiableAt_id (differentiableAt_const z) hd.2.1 hd.1 j
 
@@ -86,7 +85,7 @@ lemma ramifiedClosed_first_analytic_z (eta a rho x w : ℂ)
   apply DifferentiableOn.analyticOnNhd _ (Complex.isOpen_re_gt _)
   intro z hz
   have hd := first_open_region_denominators _ (a^2) 0 0 x z hQ
-    (by simpa only [norm_pow] using pow_le_one₀ (norm_nonneg a) ha) (by norm_num) (by norm_num) hx hz.le
+    (by simp_all) (by norm_num) (by norm_num) hx hz.le
   exact (ramifiedClosed_differentiableAt p hp hg eta a rho (fun _=>x) (fun _=>w) id z
     (differentiableAt_const x) (differentiableAt_const w) differentiableAt_id hd.2.1 hd.1 j).differentiableWithinAt
 

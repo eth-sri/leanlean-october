@@ -9,33 +9,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped SchwartzMap
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -44,42 +33,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped SchwartzMap
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical SchwartzMap
+open scoped Classical
+open scoped Classical SchwartzMap
+open Set
+open scoped Classical
+open scoped Classical
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct bit parity retained b0Exponent aLabel jLabel j2Label squarefreeLabel b0Label)
 
 variable {ι : Type*} [DecidableEq ι]
@@ -88,7 +69,6 @@ variable (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -100,9 +80,9 @@ end
 
 end SecondPassArithmetic
 
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
+open ConcretePrimeRowBridge IdealMobiusDivisorSum
 
 theorem maskedPairDualTail_bound (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -138,7 +118,7 @@ theorem maskedPairDualTail_bound (A : ℕ) :
     have hq1 : 1≤(Ideal.absNorm q:ℝ) := by
       exact_mod_cast Nat.one_le_iff_ne_zero.mpr (fun hz => hq0 (Ideal.absNorm_eq_zero_iff.mp hz))
     have hqN : (Ideal.absNorm q:ℝ)≤(Ideal.absNorm G:ℝ) := by
-      exact_mod_cast Nat.le_of_dvd (by exact_mod_cast hNG) (map_dvd Ideal.absNorm hqG)
+      exact_mod_cast Nat.le_of_dvd (by simp_all) (map_dvd Ideal.absNorm hqG)
     have ht : 0<M/((Ideal.absNorm q:ℝ)*(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)) := by positivity
     have htlo : t0≤M/((Ideal.absNorm q:ℝ)*(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)) := by
       apply div_le_div_of_nonneg_left hM.le (by positivity)
@@ -153,7 +133,7 @@ theorem maskedPairDualTail_bound (A : ℕ) :
         _ ≤ (1*1)/(Ideal.absNorm q:ℝ) := by
           gcongr
           exact QuadraticInitialBound.norm_ideal_moebius_le_one q
-        _ ≤ 1 := by simpa only [one_mul,div_one] using (one_div_le_one_div_of_le (by norm_num : (0:ℝ)<1) hq1)
+        _ ≤ 1 := by simpa using (one_div_le_one_div_of_le (by norm_num : (0:ℝ)<1) hq1)
     have hb : ‖dualSquarefreeTail I J W
         (M/((Ideal.absNorm q:ℝ)*(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ))) K‖≤T := by
       apply (hbound I J W _ K ht hK).trans
@@ -167,7 +147,7 @@ theorem maskedPairDualTail_bound (A : ℕ) :
       abs_of_nonneg (Real.sqrt_nonneg _)]
     simpa only [mul_one,one_mul] using
       dual_truncation_prefactor_bound M 1 N (Ideal.absNorm I) (Ideal.absNorm J)
-        hM (by norm_num) hN0 ⟨hIl,hIu⟩ ⟨hJl,hJu⟩
+        hM (by norm_num) hN0 (by grind) (by grind)
   rw [maskedPairDualTail,norm_mul]
   calc
     _ ≤ (2*M/N)*(∑ q ∈ idealDivisors G, T) := mul_le_mul hpref
@@ -180,7 +160,7 @@ theorem coprime_pair_error_energy {n : Type} [Fintype n]
     ‖∑ j, ∑ k, if IsCoprime (cols j) (cols k) then star (a j)*a k*error j k else 0‖ ≤
       (Fintype.card n:ℝ)*E*∑ j, ‖a j‖^2 := by
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => (1:ℝ))
-  simp only [mul_one,one_pow,Finset.sum_const,Finset.card_univ,nsmul_eq_mul,mul_one] at hcs
+  simp only [one_pow, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at hcs
   have hs : (∑ j, ∑ k, ‖a j‖*‖a k‖*E) = (∑ j, ‖a j‖)^2*E := by
     simp only [pow_two,Finset.sum_mul,Finset.mul_sum,mul_assoc]
     apply Finset.sum_congr rfl
@@ -189,8 +169,8 @@ theorem coprime_pair_error_energy {n : Type} [Fintype n]
     intro k _
     ring
   calc
-    _ ≤ ∑ j, ∑ k, ‖if IsCoprime (cols j) (cols k) then star (a j)*a k*error j k else 0‖ := by
-      exact (norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => norm_sum_le _ _)
+    _ ≤ ∑ j, ∑ k, ‖if IsCoprime (cols j) (cols k) then star (a j)*a k*error j k else 0‖ :=
+      (norm_sum_le _ _).trans (Finset.sum_le_sum fun j _ => norm_sum_le _ _)
     _ ≤ ∑ j, ∑ k, ‖a j‖*‖a k‖*E := by
       apply Finset.sum_le_sum
       intro j _
@@ -198,7 +178,7 @@ theorem coprime_pair_error_energy {n : Type} [Fintype n]
       intro k _
       split_ifs
       · simp only [norm_mul,norm_star]
-        exact mul_le_mul_of_nonneg_left (herr j k) (by positivity)
+        exact mul_le_mul_of_nonneg_left (by grind) (by positivity)
       · simp only [norm_zero]
         positivity
     _ = (∑ j, ‖a j‖)^2*E := hs
@@ -223,24 +203,22 @@ theorem maskedDualTailFamily_bound (A : ℕ) :
     ((min 1 (M/((Ideal.absNorm G:ℝ)*N*N)))^2*(1+(M/((Ideal.absNorm G:ℝ)*N*N))*K)^A)
   have hT : 0≤T := by dsimp only [T]; positivity
   have hn := finite_ideal_family_card_bound cols hinj N hN
-    (fun j => (hcols j).1) (fun j => (hcols j).2.2)
+    (by grind) (by grind)
   have herr (j k : n) : ‖maskedPairDualTail G (cols j) (cols k) W M K‖≤
       (2*M/N)*(idealDivisors G).card*T :=
-    hbound G (cols j) (cols k) W M N K hG (hcols j).1 (hcols k).1 hM hN hK
-      (hcols j).2.1 (hcols j).2.2 (hcols k).2.1 (hcols k).2.2
+    by grind
   calc
     _ ≤ (Fintype.card n:ℝ)*((2*M/N)*(idealDivisors G).card*T)*∑ j, ‖a j‖^2 :=
       coprime_pair_error_energy cols a _ (by positivity) _ herr
     _ ≤ (128*N)*((2*M/N)*(idealDivisors G).card*T)*∑ j, ‖a j‖^2 := by gcongr
-    _ = _ := by dsimp only [T]; field_simp; ring
+    _ = _ := by grind
 
 end CanonicalQuadraticSieve
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
@@ -249,7 +227,6 @@ variable {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 

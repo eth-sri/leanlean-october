@@ -8,12 +8,11 @@ public import OAI.NumberTheory.DirichletL.Detector.GramIdealMass
 namespace OAI
 
 noncomputable section
-open scoped Classical SchwartzMap
+open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion ConcreteTraceCRT
+open ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
 open CenteredMomentMobiusRegroup UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def sourceDivisors (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y) (C : SupportedIdeal) : Finset SupportedIdeal :=
   (divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val).preimage
@@ -32,7 +31,7 @@ lemma sourceMobiusWeight_norm (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : �
   unfold sourceMobiusWeight
   split_ifs
   · exact CubicEisenstein.norm_ideal_moebius_le_one _
-  · simp
+  simp
 
 lemma sourceDivisors_sum (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (hY : 0<Y)
     (C : SupportedIdeal) (f : Id→ℂ) :
@@ -40,18 +39,18 @@ lemma sourceDivisors_sum (W : ℝ→ℂ) (hW : HasCompactSupport W) (Y : ℝ) (h
       ∑D∈divisorPool (lowGaussColumns W hW (commonResidualScale C Y) (commonResidualScale_pos C Y hY)) Subtype.val,f D := by
   apply Finset.sum_bij (fun D _=>D.val)
   · intro D hD;exact (sourceDivisors_mem W hW Y hY C D).mp hD
-  · intro D hD E hE h;exact Subtype.val_injective h
+  · simp
   · intro D hD
     refine ⟨⟨D,divisorPool_supported _ _ hD⟩,?_,rfl⟩
     exact (sourceDivisors_mem W hW Y hY C _).mpr hD
-  · intro D hD;rfl
+  simp
 
 lemma sourceMobiusWeight_rectangle (F : Finset SupportedIdeal) (W : ℝ→ℂ) (hW : HasCompactSupport W)
     (Y : ℝ) (hY : 0<Y) (C : SupportedIdeal) (hC : C∈F) (f : SupportedIdeal→ℂ) :
     (∑D∈sourceDivisorUnion F W hW Y hY,sourceMobiusWeight W hW Y hY C D*f D)=
       ∑D∈sourceDivisors W hW Y hY C,(moebius D.val:ℂ)*f D := by
   rw [←Finset.sum_subset (show sourceDivisors W hW Y hY C⊆sourceDivisorUnion F W hW Y hY from
-    fun D hD=>Finset.mem_biUnion.mpr ⟨C,hC,hD⟩) (by intro D hD hn;simp only [sourceMobiusWeight,ite_eq_right hn,zero_mul])]
+    fun D hD=>Finset.mem_biUnion.mpr (by grind)) (by intro D hD hn;simp only [sourceMobiusWeight,ite_eq_right hn,zero_mul])]
   exact Finset.sum_congr rfl (fun D hD=>by rw [sourceMobiusWeight,ite_eq_left hD])
 
 theorem originalCommonBlock_eq_rectangle (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)

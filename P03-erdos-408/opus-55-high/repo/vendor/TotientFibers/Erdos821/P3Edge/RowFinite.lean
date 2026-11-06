@@ -5,7 +5,6 @@ public import Erdos821.P3Edge.RowSupport
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -24,16 +23,12 @@ lemma mkTarget_eq (A : Model F P J m) {n : ℕ} (i : Fin n)
     (s t : P.MemoryState (J + F.ell)) (c : EdgeChoice A s)
     (h : edgeChoiceValid A .all i s t c) :
     t = mkTarget A i s (c, t.2.1) := by
-  have h1 : t.1 = targetSmall A i s c := valid_target_small A i s t c h
+  have h1 := valid_target_small A i s t c h
   have h3 : t.2.2 = fun g => targetMem A i s c g := by
     funext g
     exact valid_target_mem A i s t c h g
   simp only [mkTarget]
-  apply Prod.ext
-  · exact h1
-  · apply Prod.ext
-    · rfl
-    · exact h3
+  grind
 
 lemma row_valid_set_finite (A : Model F P J m) {n : ℕ} (i : Fin n)
     (s : P.MemoryState (J + F.ell)) :

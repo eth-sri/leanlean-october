@@ -21,11 +21,11 @@ lemma adaptive_mixed_saving (N : ℕ) (a q Δ ε εm slotMesh ν ζ μ v d e eps
     mixedSourceExponent a v d (adaptiveRowExponent (2*a-1) q Δ ε εm slotMesh ν) q+
       ProbeCentralExponent.realLoss N v e eps loss mesh+overhead≤3/16+Δ-saving := by
   have hδ : 0<2*a-1 := by linarith
-  have hx : 0≤q/(2*a-1) := div_nonneg hq hδ.le
+  have hx : 0≤q/(2*a-1) := by positivity
   have hx' : q/(2*a-1)≤1/2 := (div_le_iff₀ hδ).mpr (by linarith)
   have hl : 0≤159*ε+εm+slotMesh+7*ν := by positivity
   have haeq : (1+(2*a-1))/2=a := by ring
-  have hqeq : (2*a-1)*(q/(2*a-1))=q := mul_div_cancel₀ q hδ.ne'
+  have hqeq : (2*a-1)*(q/(2*a-1))=q := by grind
   have hr := ProbeCentralExponent.realLoss_bound N v e eps loss mesh (by linarith) he heps
   by_cases hd : 2*a-1≤5/6
   · have hb := balanced_mixed_saving (2*a-1) (q/(2*a-1)) Δ (159*ε+εm+slotMesh+7*ν)
@@ -35,12 +35,11 @@ lemma adaptive_mixed_saving (N : ℕ) (a q Δ ε εm slotMesh ν ζ μ v d e eps
     simpa only [adaptiveRowExponent,ite_eq_left hd,add_assoc] using hb
   · have hhl : 0≤78*ε+εm := by positivity
     have hh := high_mixed_margin (2*a-1) q Δ (78*ε+εm) ζ μ v d
-      (le_of_lt (lt_of_not_ge hd)) (by linarith) hq' hhl (by linarith)
+      (by linarith) (by linarith) hq' hhl (by linarith)
       hζ hv hμ hdv
     rw [haeq] at hh
     simp only [adaptiveRowExponent,ite_eq_right hd]
-    simp only [add_assoc] at hh ⊢
-    linarith
+    grind
 
 lemma central_class_exponent_identity (N : ℕ) (a v d R q e eps loss mesh overhead : ℝ) :
     ((25/48)*a-181/300+(105/8)*e)+

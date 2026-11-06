@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Descent.FirstRowGeometry
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical
+open FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem first_physical_row_scale_bound
     (Z M r ell V delta B j eta tau dn cn jn : ℝ) (hZ : 0<Z)
@@ -28,21 +27,20 @@ theorem first_physical_row_scale_bound
       · exact mul_le_mul_of_nonneg_left hd (by positivity)
       · positivity
       · exact mul_le_mul (mul_le_mul_of_nonneg_left
-          (pow_le_pow_left₀ (Real.rpow_pos_of_pos hZ _).le hc 2) (Real.rpow_pos_of_pos hZ _).le)
-          hj (Real.rpow_pos_of_pos hZ _).le (by positivity)
+          (pow_le_pow_left₀ (by positivity) hc 2) (by positivity))
+          hj (by positivity) (by positivity)
     _ = _ := by
       simp only [hpow,←Real.rpow_add hZ,←Real.rpow_sub hZ]
       congr 1
       unfold firstPhysicalHeight
-      norm_num
       ring
 
 theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
     (S N Q : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (hv : ∀ i∈S,0<v₁ i+v₂ i)
     (hNQ : Disjoint N Q) (hNS : Disjoint N S) (hQS : Disjoint Q S)
-    (common divisor : Finset ι) (f : Ideal O) (h : O)
+    (common divisor : Finset ι) (f : Ideal ActualEisensteinCubic.O) (h : ActualEisensteinCubic.O)
     (Z M r ell V delta B j eta tau : ℝ) (hZ : 0<Z)
     (hb₁ : ‖eisEmbedding (primeProduct p S v₁)‖^2≤Z^(ell+eta))
     (hb₂ : ‖eisEmbedding (primeProduct p S v₂)‖^2≤Z^(ell+eta))
@@ -59,8 +57,8 @@ theorem first_ratio_canonical_row {ι : Type*} [DecidableEq ι]
       Z^(firstPhysicalHeight M r ell V delta B j+12*eta+tau) := by
   have hrow := first_ratio_actual_row p hp S N Q v₁ v₂ ε₁ ε₂ hv hNQ hNS hQS common divisor f h
     (Z^M) (Z^tau) (Z^(r+eta)) (Z^(ell+eta)) (Z^(V+eta))
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _)
-    (Real.rpow_pos_of_pos hZ _) (Real.rpow_pos_of_pos hZ _) hb₁ hb₂ hf hcol₁ hcol₂ hratio
+    (by positivity) (by positivity) (by positivity)
+    (by positivity) (by positivity) hb₁ hb₂ hf hcol₁ hcol₂ hratio
   exact hrow.trans (first_physical_row_scale_bound Z M r ell V delta B j eta tau
     (primeProductNorm p divisor) (primeProductNorm p common)
     (‖eisEmbedding (jLabel p S (fun i=>v₁ i+v₂ i) ε₁ ε₂)‖^2) hZ

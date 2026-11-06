@@ -7,13 +7,12 @@ public import OAI.NumberTheory.DirichletL.Reflection.RawCoefficient
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss CompletedDyadic InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {ι : Type*} [Fintype ι] {N a c : Eis} {mode : Bool}
+variable {ι : Type*} [Fintype ι] {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
-def thetaRawIndex (t : ThetaFullIndex) : Eisˣ×RawTailIndex :=
+def thetaRawIndex (t : ThetaFullIndex) : ActualEisensteinCubic.Oˣ×RawTailIndex :=
   (t.1,t.2.1,⟨t.2.2.1.val,t.2.2.1.property.1.ne_zero⟩,
     ⟨t.2.2.2.val,primaryGenerator_ne_zero_ideal _ t.2.2.2.property⟩)
 
@@ -38,7 +37,7 @@ lemma literalRawScale_pos (G : PrimeFamily ι)
 def literalRawSeries (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (t : Eisˣ×RawTailIndex) : ℂ :=
+    (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) (t : ActualEisensteinCubic.Oˣ×RawTailIndex) : ℂ :=
   rawDualKernelTerm (Vstar W) (literalRawScale G s X) 1 completedRamifiedStep
     (literalRawCoefficient G D s hc j S t.1) t.2
 
@@ -59,7 +58,7 @@ theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue D s G.generator_ne_zero hc G.generator_good j S W X=
       fixedRadialCoefficientScalar*s.stratumShapeFactor (c*∏ i,G.generator i)*
-        ∑' t : Eisˣ×RawTailIndex, literalRawSeries G D s hc j S W X t := by
+        ∑' t : ActualEisensteinCubic.Oˣ×RawTailIndex, literalRawSeries G D s hc j S W X t := by
   unfold mixedReflectedValue
   congr 1
   refine (tsum_congr ?_).trans (thetaRawIndex_injective.tsum_eq (literalRawSeries_support G D s hc j S W X))
@@ -69,7 +68,7 @@ theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
     rw [thetaFullFrequency_eq_fixedCuspArrayIndex]
     rfl
   unfold literalRawSeries rawDualKernelTerm literalRawCoefficient thetaRawIndex literalRawScale
-  rw [ite_eq_left ⟨t.2.2.1.property.1,t.2.2.1.property.2,t.2.2.2.property⟩,hx]
+  rw [ite_eq_left (by grind),hx]
   dsimp only
   simp only [ramifiedScale, one_mul]
   ring
@@ -77,13 +76,13 @@ theorem mixedReflectedValue_eq_fullRaw (G : PrimeFamily ι)
 theorem literalRawSeries_summable_norm (G : PrimeFamily ι)
     (D : ControlledStratumArithmetic G.generator N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
-    (hN : (9:Eis)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
-    (hchar : ∀ i, ringChar (Eis⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
+    (hN : (9:ActualEisensteinCubic.O)*c∣N) (hbase : if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1)
+    (hchar : ∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) (j : ι→ℕ) (hj : ∀ i, j i<6)
     (S : Finset ι) (W : ℝ→ℂ) (lo hi : ℝ) (hlo : 0<lo)
     (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0<X) :
-    Summable (fun t : Eisˣ×RawTailIndex => ‖literalRawSeries G D s hc j S W X t‖) := by
-  let : Finite Eisˣ := PrimaryIdealUnitReindex.finite_units
-  let : Fintype Eisˣ := Fintype.ofFinite _
+    Summable (fun t : ActualEisensteinCubic.Oˣ×RawTailIndex => ‖literalRawSeries G D s hc j S W X t‖) := by
+  let : Finite ActualEisensteinCubic.Oˣ := PrimaryIdealUnitReindex.finite_units
+  let : Fintype ActualEisensteinCubic.Oˣ := Fintype.ofFinite _
   apply (summable_prod_of_nonneg (fun _ => norm_nonneg _)).mpr
   refine ⟨?_,(hasSum_fintype _).summable⟩
   intro u

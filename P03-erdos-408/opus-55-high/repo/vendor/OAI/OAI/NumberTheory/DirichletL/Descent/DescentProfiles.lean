@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Foundation
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform
 open MeasureTheory FourierBridge EisensteinSchwartzPoisson JointLogSeparation
 noncomputable section
 
@@ -18,8 +18,6 @@ lemma schwartz_logPhase_inversion (g : 𝓢(ℝ, ℂ)) (x : ℝ) :
   filter_upwards with t
   congr 1
   simp only [logPhase, Real.inner_apply]
-  congr 1
-  push_cast
   ring
 
 theorem descent_profile_identity {ι : Type*} [Fintype ι]
@@ -73,7 +71,6 @@ theorem descent_profile_identity {ι : Type*} [Fintype ι]
     ring
   simp_rw [hmid]
   rw [integral_mul_const, integral_mul_const, ← schwartz_logPhase_inversion]
-  dsimp only [P, x₁, x₂, xk]
   ring
 
 theorem tripleCoefficient_weighted_integrable (b₁ b₂ b₃ : 𝓢(ℝ, ℂ)) (J : ℕ) :

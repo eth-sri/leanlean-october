@@ -9,9 +9,8 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open CanonicalQuadraticSieve HeckeInverseAmplification ProbeCompleted
-local notation "O" => ActualEisensteinCubic.O
-local notation "Id" => Ideal O
+open CanonicalQuadraticSieve HeckeInverseAmplification
+local notation "Id" => Ideal ActualEisensteinCubic.O
 
 abbrev SixthInnerIndex := HeckeInverseAmplification.NonzeroIdeal×((Id×Id)×Id)
 
@@ -26,7 +25,7 @@ def nonzeroLastEquiv : SixthInnerIndex ≃ {p : (Id×Id)×(Id×Id) // p.2.2≠0}
   right_inv _ := rfl
 
 lemma markedIdealHighSummand_last_zero (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) (I J K : Id) :
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) (I J K : Id) :
     markedIdealHighSummand S D η u x w z I J K 0=0 := by
   have hz : ¬(Squarefree I ∧ Supported I ∧ Supported J ∧ Supported K ∧ Supported (0:Id)) :=
     fun h=>h.2.2.2.2.1 rfl
@@ -34,7 +33,7 @@ lemma markedIdealHighSummand_last_zero (S : Finset Id) (D : Id) (η : HeckeFamil
     dite_eq_right hz,zero_mul,mul_zero]
 
 lemma markedIdealHighSeries_eq_sixth_inner (S : Finset Id) (D : Id) (η : HeckeFamily.Character)
-    (u : O) (x w z : ℂ) :
+    (u : ActualEisensteinCubic.O) (x w z : ℂ) :
     markedIdealHighSeries S D η u x w z=
       ∑'p : SixthInnerIndex,markedIdealHighSummand S D η u x w z p.2.1.1 p.2.1.2 p.2.2 p.1.val := by
   have he := nonzeroLastEquiv.tsum_eq (fun p=>

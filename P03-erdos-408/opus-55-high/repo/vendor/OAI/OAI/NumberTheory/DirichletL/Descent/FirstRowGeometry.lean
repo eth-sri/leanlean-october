@@ -8,11 +8,10 @@ public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 lemma first_whole_frequency_numeric (K P dn an cn a1 a2 sn tn hn L : ℝ)
     (hK : 0<K) (hP : 0<P) (hdn : 0<dn) (han : 0<an)
@@ -35,11 +34,11 @@ lemma first_whole_frequency_numeric (K P dn an cn a1 a2 sn tn hn L : ℝ)
   convert div_le_div_of_nonneg_right hfull hP.le using 1 <;> field_simp
 
 theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
     (S N Q : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (hv : ∀ i∈S,0<v₁ i+v₂ i)
     (hNQ : Disjoint N Q) (hNS : Disjoint N S) (hQS : Disjoint Q S)
-    (common divisor : Finset ι) (f : Ideal O) (h : O)
+    (common divisor : Finset ι) (f : Ideal ActualEisensteinCubic.O) (h : ActualEisensteinCubic.O)
     (K P L B F : ℝ) (hK : 0<K) (hP : 0<P) (hL : 0<L) (hB : 0<B) (hF : 0<F)
     (hb₁ : ‖eisEmbedding (primeProduct p S v₁)‖^2≤B)
     (hb₂ : ‖eisEmbedding (primeProduct p S v₂)‖^2≤B)
@@ -61,7 +60,7 @@ theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
   have hnorm : primeProductNorm p ((N∪Q)∪active)=
       primeProductNorm p N*primeProductNorm p Q*primeProductNorm p active := by
     rw [primeProductNorm_union p (N∪Q) active (Finset.disjoint_union_left.mpr
-      ⟨hNS.mono_right hactive,hQS.mono_right hactive⟩),
+      (by grind)),
       primeProductNorm_union p _ _ hNQ]
   change (K/(primeProductNorm p divisor*primeProductNorm p ((N∪Q)∪active)))*‖eisEmbedding h‖^2≤P at hratio
   rw [hnorm] at hratio
@@ -79,7 +78,7 @@ theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
     (primeProductNorm p common) (primeProductNorm p divisor) (‖eisEmbedding h‖^2)
     (Ideal.absNorm f) L (K/P) B F (primeProductNorm_pos p hp _).le (sq_nonneg _)
     (hpos _) (hpos _) (hpos _) (primeProductNorm_pos p hp _) (primeProductNorm_pos p hp _).le
-    (sq_nonneg _) (Nat.cast_nonneg _) hL (div_pos hK hP) hB hF hcon hfreq hf
+    (sq_nonneg _) (Nat.cast_nonneg _) hL (by positivity) hB hF hcon hfreq hf
   have hgen : ‖eisEmbedding (ConcretePrimeRowBridge.idealGenerator f)‖^2=(Ideal.absNorm f : ℝ) := by
     rw [eisEmbedding_norm_sq_eq_absNorm_span,ConcretePrimeRowBridge.span_idealGenerator]
   have hrow : ‖eisEmbedding (DescentWeightedCauchy.firstElementRowMap e (f,h))‖^2 =
@@ -88,8 +87,7 @@ theorem first_ratio_actual_row {ι : Type*} [DecidableEq ι]
     rw [hgen]
   rw [hrow]
   apply hnum.trans_eq
-  field_simp
-  ring
+  grind
 
 end
 end SevenEighths.InverseMoment

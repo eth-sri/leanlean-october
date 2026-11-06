@@ -9,18 +9,17 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceHomogeneous
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceReflection
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
+open HeckeFamily HeckeDyadic QuadraticInitialBound
 open CenteredMomentEnergyState CenteredMomentEnergyBands
 open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceState
 open CenteredMomentEnergyZeroReferenceMoments CenteredMomentEnergyReferenceLowWindow
 open CenteredMomentEnergyReferenceHomogeneous CenteredMomentNaturalRowSource
 open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional CenteredMomentScaleSupremum
-local notation "O"=>HeckeFamily.O
+open CenteredMomentFiniteProfileExceptional
 
 theorem reference_from_low
     (a b bΦ epsilon xi saving Lreflect:ℝ)
@@ -29,7 +28,7 @@ theorem reference_from_low
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃Dchild:ℝ,0<Dchild ∧
     ∃nlong:ℕ,∃Slong:Finset (ℕ×ℕ),∃C D:ℝ,0<C ∧ 0<D ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(Bmask L Mcap ε:ℝ)(Q:Ideal O)(degree:ℕ)(K:ℝ),0≤K →
+      ∀(Bmask L Mcap ε:ℝ)(Q:Ideal HeckeFamily.O)(degree:ℕ)(K:ℝ),0≤K →
       ZeroLowAt Q a b bΦ Bmask L Mcap ε Z degree S K → 0≤Bmask →
       ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=Q → s.width≤Mcap →
       ∀(Wlong Wshort:𝓢(ℝ,ℂ)),
@@ -69,12 +68,12 @@ theorem reference_from_low
     have hd:0≤diagonalControl s.radial.profile:=by unfold diagonalControl; positivity
     positivity
   · intro v j k x hx
-    have hwindow:=reflection_window_length Z (max 0 (s.width-along+xi)) x hZ.1 (le_max_left _ _) hx
+    have hwindow:=reflection_window_length Z (max 0 (s.width-along+xi)) x hZ.1 (by positivity) hx
     exact hchild bΦ Bmask L Mcap ε Z Q degree K hK hlow hBmask s hQ hs Wshort hsShort
       j k v t (Real.exp x) (Z^bshort) (Real.exp_pos _) (Real.rpow_pos_of_pos (zero_lt_one.trans hZ.1) _)
       (hwindow.2.trans (Real.rpow_le_rpow_of_exponent_le hZ.1.le hL))
       (Real.rpow_le_rpow_of_exponent_le hZ.1.le hbshort)
-      (by linarith [hwindow.1])
+      (by linarith)
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceReflection
 

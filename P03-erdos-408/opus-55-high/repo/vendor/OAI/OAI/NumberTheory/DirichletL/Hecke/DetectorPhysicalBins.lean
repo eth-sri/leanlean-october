@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Hecke.PrimeAmplitudeActual
 namespace OAI
 
 noncomputable section
-open Filter Set
-open scoped Topology ContDiff
+open Set
 namespace SevenEighths.HeckeDetectorPhysicalBins
-open HeckeFamily HeckeDetectorPrimeFamily HeckePrimeAmplitudeBins
+open HeckeFamily
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)

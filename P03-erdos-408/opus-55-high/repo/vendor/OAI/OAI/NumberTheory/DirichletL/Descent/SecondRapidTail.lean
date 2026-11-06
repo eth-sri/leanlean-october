@@ -7,21 +7,20 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondTailAbsorption
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem full_second_rapid_correlated_tail (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+      (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
       (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
       (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (F : Finset ι) (Ψ : O→*ℂ), (∀ a,‖Ψ a‖≤1) →
-      ∀ (m c d : O),d≠0 → ∀ (Hcol : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ))
+      (_hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+      (F : Finset ι) (Ψ : ActualEisensteinCubic.O→*ℂ), (∀ a,‖Ψ a‖≤1) →
+      ∀ (m c d : ActualEisensteinCubic.O),d≠0 → ∀ (Hcol : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ))
       (Z B Y L : ℝ) (R : Finset ι→Finset ι→ℝ),
       1≤Z → 0≤B → 0<Y → 1≤L → Y≤Z^Lcap → Y⁻¹≤Z^Lcap → L≤Z^Lcap →
       (∀ U,‖Hcol U‖≤B) → (∀ U,Hcol U≠0 → primeProductNorm p U≤L) →
@@ -35,11 +34,11 @@ theorem full_second_rapid_correlated_tail (Lcap tau saving : ℝ)
   intro ι _ p hp _ hg hinj hc F Ψ hΨ m c d hd Hcol W Z B Y L R hZ hB hY hL hy hyi hl hcol hsupp hR
   have hz : 0<Z := zero_lt_one.trans_le hZ
   have he := htail p hp hg hinj hc F Ψ hΨ m c d hd Hcol W B Y (Z^tau) L R
-    hB hY (Real.rpow_pos_of_pos hz _).le hL hcol hsupp hR
+    hB hY (by positivity) hL hcol hsupp hR
   apply he.trans
   have hh := horder Z Y L B (Ct*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)
-    hZ hY (zero_le_one.trans hL) hB (mul_nonneg hCt.le (apply_nonneg _ _)) hy hyi hl
-  convert hh using 1 ; ring
+    hZ hY (zero_le_one.trans hL) hB (by positivity) hy hyi hl
+  linarith
 
 end
 end SevenEighths.InverseMoment

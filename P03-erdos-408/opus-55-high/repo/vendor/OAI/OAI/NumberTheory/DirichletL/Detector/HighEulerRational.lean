@@ -9,9 +9,8 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open ProbeEuler ProbeRow
 
 lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
     Prime (primaryGenerator P.val) := by
@@ -19,7 +18,7 @@ lemma supported_primeGenerator_prime (P : PrimeIdeal) (hs : Supported P.val) :
   rw [span_primaryGenerator_of_supported P.val hs]
   exact Ideal.isPrime_of_prime P.property
 
-lemma targetMonoid_primaryGenerator (η : HeckeFamily.Character) (I : Ideal O) (hs : Supported I) :
+lemma targetMonoid_primaryGenerator (η : HeckeFamily.Character) (I : Ideal ActualEisensteinCubic.O) (hs : Supported I) :
     targetMonoid η (primaryGenerator I)=HeckeFamily.idealCoeff η I := by
   calc
     _ = HeckeFamily.idealCoeff η (Ideal.span {primaryGenerator I}) :=
@@ -39,7 +38,7 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have hprimary := (primaryGenerator_spec P.val (supported_primaryGenerator_ne_zero P.val hs)).2
@@ -63,7 +62,7 @@ theorem idealHighLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeIde
     exact Real.rpow_lt_one_of_one_lt_of_neg hQ1 (by linarith)
   have hD : 1-coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x≠0 := by
     intro he
-    have hh : coordD (Ideal.absNorm (Ideal.span {p})) (targetMonoid η p) 1 x=1 := (sub_eq_zero.mp he).symm
+    have hh := (sub_eq_zero.mp he).symm
     rw [hh,norm_one] at hDnorm
     exact lt_irrefl _ hDnorm
   have he := idealHighLocalFactor_euler_identity η p hp hg.1 hg.2 hprimary hsp x w z hV hR hW hD

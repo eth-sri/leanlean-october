@@ -21,7 +21,7 @@ lemma compensated_gram_scale_bound (q X Y L δ : ℝ)
         ((Y/L)^2/(q*(X/L)*(Y/L)))^2/(Y/L))*(Y/L)^δ ≤
       3*(q*X/L)*(Y/(q*X))^(1/6:ℝ)*Y^δ := by
   have hl : 0<L := lt_of_lt_of_le zero_lt_one hL
-  have hp : 1≤Y/(q*X) := (le_div_iff₀ (mul_pos hq hX)).mpr (by simpa using hP)
+  have hp : 1≤Y/(q*X) := (le_div_iff₀ (by positivity)).mpr (by linarith)
   have hr : 1≤(Y/(q*X))^(1/6:ℝ) := Real.one_le_rpow hp (by norm_num)
   have ht : (Y/(q*X))^2/(Y/L)≤1 := by
     have he : (Y/(q*X))^2/(Y/L)=L*Y/(q^2*X^2) := by field_simp
@@ -42,13 +42,11 @@ lemma source_gram_power (Z δ : ℝ) (hZ : 0<Z) :
     Z^(17/48:ℝ)*(Z^(1/8:ℝ))^(1/6:ℝ)*(Z^(23/48:ℝ))^δ=
       Z^(3/8+(23/48)*δ:ℝ) := by
   rw [←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
-  congr 1
-  ring
+  linarith
 
 lemma source_gram_sqrt_power (Z δ : ℝ) (hZ : 0<Z) :
     Real.sqrt (Z^(3/8+(23/48)*δ:ℝ))=Z^(3/16+(23/96)*δ:ℝ) := by
   rw [Real.sqrt_eq_rpow,←Real.rpow_mul hZ.le]
-  congr 1
   ring
 
 end SevenEighths.ProbePhysical

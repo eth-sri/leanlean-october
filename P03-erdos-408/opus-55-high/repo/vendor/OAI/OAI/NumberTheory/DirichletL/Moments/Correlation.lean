@@ -12,7 +12,7 @@ public import Mathlib.NumberTheory.MulChar.Lemmas
 
 namespace OAI
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.CenteredMomentCorrelation
 noncomputable section
 variable {R X Y : Type*} [CommRing R] [Fintype R] [Fintype X] [Fintype Y]
@@ -39,7 +39,7 @@ theorem fullCorrelation_swap (left : X → R) (right : Y → R)
     constructor <;> intro h <;> linear_combination -h
   by_cases h : left x - right y = j
   · simp [h, heq.mp h, star_mul]
-  · simp [h, not_congr heq |>.mp h]
+  simp_all
 
 theorem fullCorrelation_fourier (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
     (left : X → R) (right : Y → R) (f : X → ℂ) (g : Y → ℂ) (j : R) :
@@ -64,7 +64,6 @@ theorem fullCorrelation_fourier (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
           (ψ (h * left x) * ψ (-(h * right y)) * ψ (-(h * j))) := by ring
       _ = _ := by
         rw [← AddChar.map_add_eq_mul, ← AddChar.map_add_eq_mul]
-        congr 2
         ring
   simp_rw [hphase, ← Finset.mul_sum, AddChar.sum_mulShift _ hψ]
   simp only [fullCorrelation, Finset.mul_sum]
@@ -73,7 +72,7 @@ theorem fullCorrelation_fourier (ψ : AddChar R ℂ) (hψ : ψ.IsPrimitive)
   apply Finset.sum_congr rfl
   intro y _
   by_cases hxy : left x - right y = j
-  · simp [hxy, mul_comm]
+  · grind
   · simp [sub_ne_zero.mpr hxy, hxy]
 
 section FiniteField
@@ -114,18 +113,17 @@ theorem shiftCorrelation_zero (χ : MulChar F ℂ) :
   classical
   simp only [shiftCorrelation, sub_zero, MulChar.star_apply', ← MulChar.mul_apply,
     mul_inv_cancel]
-  rw [MulChar.sum_one_eq_card_units, Fintype.card_eq_card_units_add_one (α := F)]
-  simp
+  simp [MulChar.sum_one_eq_card_units, Fintype.card_eq_card_units_add_one (α := F)]
 
 theorem shiftCorrelation_nonprincipal (χ : MulChar F ℂ) (hχ : χ ≠ 1)
     {k : F} (hk : k ≠ 0) : shiftCorrelation χ k = -1 := by
   rw [shiftCorrelation_scale χ hk, shiftCorrelation_one, jacobiSum_nontrivial_inv hχ,
-    mul_neg, ← MulChar.mul_apply, inv_mul_cancel, MulChar.one_apply (isUnit_iff_ne_zero.mpr (neg_ne_zero.mpr one_ne_zero))]
+    mul_neg, ← MulChar.mul_apply, inv_mul_cancel, MulChar.one_apply (by simp)]
 
 theorem shiftCorrelation_principal {k : F} (hk : k ≠ 0) :
     shiftCorrelation (1 : MulChar F ℂ) k = (Fintype.card F : ℂ) - 2 := by
   rw [shiftCorrelation_scale _ hk, shiftCorrelation_one, inv_one,
-    MulChar.one_apply (isUnit_iff_ne_zero.mpr (neg_ne_zero.mpr one_ne_zero)), one_mul, jacobiSum_one_one]
+    MulChar.one_apply (by simp), one_mul, jacobiSum_one_one]
 
 def localCorrelation (χ : MulChar F ℂ) (n₁ n₂ k : F) : ℂ :=
   fullCorrelation (fun x : F => n₂ * x) (fun y : F => n₁ * y) χ χ k
@@ -139,16 +137,11 @@ theorem localCorrelation_eq_shift (χ : MulChar F ℂ) {n₁ n₂ : F}
     constructor <;> intro h <;> linear_combination -h
   unfold localCorrelation fullCorrelation
   simp only [hsolve, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
-  rw [← (Equiv.mulLeft₀ (n₁ / n₂) (div_ne_zero h₁ h₂)).sum_comp]
+  rw [← (Equiv.mulLeft₀ (n₁ / n₂) (by positivity)).sum_comp]
   swap
   · simp
   simp only [Equiv.mulLeft₀_apply, shiftCorrelation, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro x _
-  rw [map_mul]
-  have heq : (n₂ * (n₁ / n₂ * x) - k) / n₁ = x - k / n₁ := by
-    field_simp
-  rw [heq, mul_assoc]
+  grind
 
 theorem localCorrelation_units (χ : MulChar F ℂ) {n₁ n₂ : F}
     (h₁ : n₁ ≠ 0) (h₂ : n₂ ≠ 0) (k : F) :
@@ -178,8 +171,7 @@ theorem sum_reduction (π : A →+* B) (hπ : Function.Surjective π) (f : B →
   calc
     _ = ∑ x : A with π x = y, f y := by
       apply Finset.sum_congr rfl
-      intro x hx
-      rw [(Finset.mem_filter.mp hx).2]
+      simp_all
     _ = _ := by
       have hc := AddMonoidHom.card_fiber_eq_of_mem_range π (hπ y) (hπ 0)
       simp only [Finset.sum_const, nsmul_eq_mul]
@@ -209,10 +201,8 @@ theorem fullCorrelation_unit_right (u : Aˣ) (v k : A) (f g : A → ℂ) :
     constructor
     · intro h
       have heq : v * x - k = (u : A) * y := by linear_combination h
-      rw [heq, ← mul_assoc, Units.inv_mul, one_mul]
-    · intro h
-      rw [h, ← mul_assoc, Units.mul_inv, one_mul]
-      ring
+      simp_all
+    · simp_all
   simp only [fullCorrelation, hsolve, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
 
 theorem fullCorrelation_reduction_unit_right (π : A →+* B)
@@ -239,8 +229,7 @@ theorem fullCorrelation_reduction_unit_left (π : A →+* B)
         fullCorrelation (fun x : B => π v * x) (fun y : B => π u * y) f g (π k) := by
   rw [fullCorrelation_swap, fullCorrelation_reduction_unit_right π hπ v u (-k) g f]
   rw [fullCorrelation_swap (fun x : B => π v * x) (fun y : B => π u * y) f g (π k)]
-  simp only [map_neg, star_mul, star_natCast]
-  ring
+  simp
 
 end
 end SevenEighths.CenteredMomentCorrelation

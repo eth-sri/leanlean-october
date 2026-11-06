@@ -8,20 +8,19 @@ public import OAI.NumberTheory.DirichletL.Moments.Cancellation
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.CenteredMomentHeckeCancellation
-open HeckeFamily CenteredMomentHeckeVolume ConcreteTraceCRT EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentHeckeVolume
 open IdealMobiusDivisorSum QuadraticInitialBound
-local notation "O" => ActualEisensteinCubic.O
 
 def idealSum (χ : Character) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
-  ∑' I : Ideal O, idealCoeff χ I*W ((Ideal.absNorm I:ℝ)/X)
+  ∑' I : Ideal ActualEisensteinCubic.O, idealCoeff χ I*W ((Ideal.absNorm I:ℝ)/X)
 
-def volumeControl (Q : Ideal O) (χ : Character) (W : 𝓢(ℝ,ℂ)) : ℝ :=
-  ((idealDivisors χ.modulus).card:ℝ)*(Nat.card (O ⧸ Ideal.span {fixedPeriod Q}):ℝ)*pvControl W
+def volumeControl (Q : Ideal ActualEisensteinCubic.O) (χ : Character) (W : 𝓢(ℝ,ℂ)) : ℝ :=
+  ((idealDivisors χ.modulus).card:ℝ)*(Nat.card (ActualEisensteinCubic.O ⧸ Ideal.span {fixedPeriod Q}):ℝ)*pvControl W
 
-lemma volumeControl_nonneg (Q : Ideal O) (χ : Character) (W : 𝓢(ℝ,ℂ)) : 0 ≤ volumeControl Q χ W :=
-  mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (Nat.cast_nonneg _)) (pvControl_nonneg W)
+lemma volumeControl_nonneg (Q : Ideal ActualEisensteinCubic.O) (χ : Character) (W : 𝓢(ℝ,ℂ)) : 0 ≤ volumeControl Q χ W :=
+  mul_nonneg (by positivity) (pvControl_nonneg W)
 
 end SevenEighths.CenteredMomentHeckeCancellation
 

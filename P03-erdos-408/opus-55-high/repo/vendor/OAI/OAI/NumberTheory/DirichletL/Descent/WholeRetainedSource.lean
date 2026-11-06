@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedModeEnergy
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.InverseMomentWholeRetainedSource
-open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic
+open SecondPassArithmetic InverseMoment InverseInitialArithmetic
 open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
-local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→ActualEisensteinCubic.O) [∀ i,(Ideal.span {p i}).IsMaximal]
 
 def deleted (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
     (x : MarkedSecondSource ι Jo 0) : Finset ι :=
@@ -33,7 +32,7 @@ theorem retained_deleted_support
     (residual : Finset ι) (j : κ) (x : MarkedSecondSource ι (Jo+(J.card+J.card)) 0)
     (hx : x∈retainedPool p pool (wholeAssignedParents p (fun x=>extra x.cube) source negative J lists)
       R label residual j) :
-    ∀ i∈deleted p extra negative x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal O)∣x.quotient := by
+    ∀ i∈deleted p extra negative x,i∈x.cube.support∪x.firstCommon ∨ (Ideal.span {p i}:Ideal ActualEisensteinCubic.O)∣x.quotient := by
   have hy := ((mem_retainedPool p pool _ R label residual j x).mp hx).1
   obtain ⟨s,hs₀,q,hq,he⟩ := (mem_wholeAssignedParents p (fun x=>extra x.cube) source negative J lists _).mp hy
   have hc : x.cube=s.cube := (congrArg SecondParentSource.cube he).symm
@@ -46,7 +45,7 @@ theorem retained_deleted_support
     quotientSupport p (secondParentOf x)) at hi
   rw [hc,hC,hqs] at hi
   rcases Finset.mem_union.mp hi with hi|hi
-  · exact Or.inl (Finset.mem_union_left _ (hc.symm ▸ hextra s hs₀ hi))
+  · grind
   · rcases Finset.mem_union.mp hi with hi|hi
     · left
       rw [hc,hC]
@@ -55,7 +54,7 @@ theorem retained_deleted_support
         cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true] at hi
         · exact (hs s hs₀).admissible.1 hi
         · exact (hs s hs₀).admissible.2 hi
-      · exact Finset.mem_union_right _ hi
+      simp_all
     · right
       rw [ht]
       exact source_prime_dvd p _ i hi
@@ -72,7 +71,7 @@ theorem whole_coefficient_norm
   obtain ⟨x,hx,q,hq,rfl⟩ := (mem_wholeAssignedParents p extra source negative J lists y).mp hy
   rw [coefficient_attach p hinj,norm_mul]
   exact (mul_le_of_le_one_right (norm_nonneg _) (pairedSlotWeight_norm_le_one J J lists lists a a
-    _ q hq ha ha)).trans (hw x hx)
+    _ q hq ha ha)).trans (by grind)
 
 end SevenEighths.InverseMomentWholeRetainedSource
 

@@ -49,7 +49,7 @@ lemma exists_abs_iteratedDeriv_smoothTransition_le (r : ℕ) :
     hcont.continuousOn
   refine ⟨max K 1, fun y => ?_⟩
   by_cases hy : y ∈ Set.Icc (0 : ℝ) 1
-  · exact (hK y hy).trans (le_max_left _ _)
+  · simp_all
   refine le_trans ?_ (le_max_right _ _)
   rcases r with _ | r
   · rw [iteratedDeriv_zero, abs_le]
@@ -135,7 +135,7 @@ lemma mem_Ioo_of_upperCutoff_ne_zero {W t : ℝ} (hW : 0 < W) (h : upperCutoff W
   rcases hc with ht | ht
   · have ht' := mul_le_mul_of_nonneg_left ht hW.le
     rw [upperCutoff, smoothTransition.zero_of_nonpos (by nlinarith),
-      smoothTransition.zero_of_nonpos (mul_nonpos_of_nonneg_of_nonpos hW.le (by linarith)),
+      smoothTransition.zero_of_nonpos (by linarith),
       sub_zero]
   · have ht' := mul_le_mul_of_nonneg_left ht hW.le
     have h1W : 0 < 1 / W := by positivity
@@ -165,9 +165,8 @@ lemma isCutoff_upperCutoff {x : ℝ} (hT : 3 ≤ logLog x) :
     fun r t => ?_⟩
   · obtain ⟨h₁, h₂⟩ := mem_Ioo_of_upperCutoff_ne_zero hW0 ht
     have : 1 / logLog x ^ 400 ≤ 1 / 3 := one_div_le_one_div_of_le (by norm_num) hW
-    have h2 : 2 / logLog x ^ 400 = 2 * (1 / logLog x ^ 400) := by ring
-    constructor <;> linarith
-  · rw [show (400 : ℝ) * r = ((400 * r : ℕ) : ℝ) by push_cast; ring, Real.rpow_natCast,
+    grind
+  · rw [show (400 : ℝ) * r = ((400 * r : ℕ) : ℝ) by simp, Real.rpow_natCast,
       pow_mul]
     exact abs_iteratedDeriv_upperCutoff_le hW0 r t
 
@@ -191,20 +190,19 @@ lemma exists_abs_psi_sub_le : ∃ c > (0 : ℝ), c ≤ 1 ∧ ∃ C ≥ (0 : ℝ)
   rw [hsum, Complex.norm_real, Real.norm_eq_abs, Nat.cast_one, Real.one_rpow, mul_one] at h₁
   calc |ψ y - y| ≤ C * y ^ (1 - c) := h₁
     _ ≤ max C 0 * y ^ (1 - min c 1) :=
-      mul_le_mul (le_max_left _ _) (Real.rpow_le_rpow_of_exponent_le (by linarith)
-        (by linarith [min_le_left c 1])) (by positivity) (le_max_right _ _)
+      mul_le_mul (by simp) (Real.rpow_le_rpow_of_exponent_le (by linarith)
+        (by grind)) (by positivity) (by positivity)
 
 /-- `ψ(b) - ψ(a)` is the sum of `Λ` over `(a, b]`. -/
 lemma psi_sub_psi {a b : ℝ} (hab : a ≤ b) :
     ψ b - ψ a = ∑ n ∈ Finset.Ioc ⌊a⌋₊ ⌊b⌋₊, ArithmeticFunction.vonMangoldt n := by
-  rw [psi, psi, ← Finset.sum_Ioc_consecutive _ (Nat.zero_le ⌊a⌋₊) (Nat.floor_le_floor hab)]
-  ring
+  simp [psi, psi, ← Finset.sum_Ioc_consecutive _ (Nat.zero_le ⌊a⌋₊) (Nat.floor_le_floor hab)]
 
 /-- `θ(b) - θ(a)` is the sum of `log p` over the primes of `(a, b]`. -/
 lemma theta_sub_theta {a b : ℝ} (hab : a ≤ b) :
     θ b - θ a = ∑ p ∈ primesIoc a b, Real.log p := by
   have h := Finset.sum_Ioc_consecutive (fun p ↦ if p.Prime then Real.log p else 0)
-    (Nat.zero_le ⌊a⌋₊) (Nat.floor_le_floor hab)
+    (by positivity) (Nat.floor_le_floor hab)
   simp only [theta, primesIoc, Finset.sum_filter] at *
   linarith
 
@@ -215,9 +213,8 @@ lemma sum_log_primesIoc_le_psi_sub {a b : ℝ} (hab : a ≤ b) :
   calc ∑ p ∈ (Finset.Ioc ⌊a⌋₊ ⌊b⌋₊).filter Nat.Prime, Real.log p
       = ∑ p ∈ (Finset.Ioc ⌊a⌋₊ ⌊b⌋₊).filter Nat.Prime, ArithmeticFunction.vonMangoldt p :=
         Finset.sum_congr rfl fun p hp =>
-          (ArithmeticFunction.vonMangoldt_apply_prime (Finset.mem_filter.1 hp).2).symm
-    _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _) fun _ _ _ =>
-        ArithmeticFunction.vonMangoldt_nonneg
+          (ArithmeticFunction.vonMangoldt_apply_prime (by grind)).symm
+    _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg (by simp) (by simp)
 
 /-- An interval `(a, b]` with `1 ≤ a` has `π(b) - π(a) ≤ (ψ(b) - ψ(a)) / log a`. -/
 lemma card_primesIoc_mul_log_le {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
@@ -278,7 +275,7 @@ lemma eventually_card_dyadicPrimes_ge :
       abs_of_nonneg (by positivity)] at hx
   filter_upwards [h₁, h₂, eventually_ge_atTop 4] with x h₁ h₂ hx
   have hx0 : 0 < x := by linarith
-  have hL : 0 < Real.log x := Real.log_pos (by linarith)
+  have hL := Real.log_pos (by linarith)
   have hl2 : Real.log 2 ≤ Real.log x := Real.log_le_log (by norm_num) (by linarith)
   have hl2x : Real.log (2 * x) = Real.log 2 + Real.log x :=
     Real.log_mul (by norm_num) hx0.ne'
@@ -288,7 +285,7 @@ lemma eventually_card_dyadicPrimes_ge :
   have hsave : 12 * C * x ^ (1 - c) ≤ x := by
     calc 12 * C * x ^ (1 - c) ≤ x ^ c * x ^ (1 - c) :=
           mul_le_mul_of_nonneg_right h₁ (by positivity)
-      _ = x := by rw [mul_comm, hpow]
+      _ = x := by linarith
   have h2x : (2 * x) ^ (1 - c) ≤ 2 * x ^ (1 - c) := by
     rw [Real.mul_rpow (by norm_num) hx0.le]
     gcongr
@@ -296,7 +293,7 @@ lemma eventually_card_dyadicPrimes_ge :
           Real.rpow_le_rpow_of_exponent_le (by norm_num) (by linarith)
       _ = 2 := Real.rpow_one 2
   -- the prime powers: `2 √(2x) log (2x) ≤ 8 √x L ≤ x / 4`
-  have hsq : √x * √x = x := Real.mul_self_sqrt hx0.le
+  have hsq := Real.mul_self_sqrt hx0.le
   have hs2 : √2 ≤ 2 := by
     have := Real.sq_sqrt (show (0 : ℝ) ≤ 2 by norm_num)
     nlinarith [Real.sqrt_nonneg 2]
@@ -309,7 +306,7 @@ lemma eventually_card_dyadicPrimes_ge :
           linarith
       _ = 8 * (√x * Real.log x) := by ring
       _ ≤ 8 * (√x * (1 / 32 * √x)) := by gcongr
-      _ = x / 4 := by linear_combination (1 / 4) * hsq
+      _ = x / 4 := by linarith
   -- `θ(2x) - θ(x) ≥ x / 2`
   have hψ₂ := abs_le.1 (hψ (2 * x) (by linarith))
   have hψ₁ := abs_le.1 (hψ x (by linarith))
@@ -354,11 +351,10 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : 
         (Finset.prod_dvd_prod_of_subset _ _ id (Finset.filter_subset _ _)).trans
           (Nat.prod_primeFactors_dvd n)
       rw [← Nat.cast_prod]
-      exact_mod_cast Nat.le_of_dvd (Nat.pos_of_ne_zero hn₀) hdvd
+      exact_mod_cast Nat.le_of_dvd (by positivity) hdvd
     have hpow : (x ^ ε) ^ D.card ≤ ∏ q ∈ D, (q : ℝ) := by
       rw [← Finset.prod_const]
-      exact Finset.prod_le_prod₀ (fun _ _ => by positivity) fun q hq =>
-        (Finset.mem_filter.1 hq).2.le
+      exact Finset.prod_le_prod₀ (fun _ _ => by positivity) (by grind)
     rw [← Real.rpow_natCast, ← Real.rpow_mul (by linarith)] at hpow
     have h2 : x ^ (ε * D.card) ≤ x ^ (2 : ℝ) := by
       rw [Real.rpow_two]
@@ -370,17 +366,15 @@ lemma abs_slotCount_le {x ε : ℝ} (hx : 1 < x) (hε : 0 < ε) {k : ℕ} (hk : 
       ≤ ∑ Q ∈ (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ n), |B (Fin.init Q)| :=
         Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ Q ∈ (slotTuples x u v).filter (fun Q => ∏ i, Q i ∣ n), (1 : ℝ) :=
-        Finset.sum_le_sum fun Q _ => hB _
+        Finset.sum_le_sum (by grind)
     _ ≤ ((Fintype.piFinset fun _ : Fin (k + 1) => D).card : ℝ) := by
         rw [Finset.sum_const, nsmul_one]
         exact_mod_cast Finset.card_le_card hsub
     _ = (D.card : ℝ) ^ (k + 1) := by
-        rw [Fintype.card_piFinset, Finset.prod_const, Finset.card_univ, Fintype.card_fin]
-        push_cast
-        rfl
+        simp
     _ ≤ (2 / ε + 1) ^ (k + 1) := by gcongr; linarith
     _ ≤ (2 / ε + 1) ^ 3 :=
-        pow_le_pow_right₀ (by linarith [show 0 < 2 / ε by positivity]) (by omega)
+        pow_le_pow_right₀ (by linarith) (by omega)
 
 /-- The slot primes are at most `x`, so `|C_𝔟| ≤ (∑_{p ≤ x} 1/p)^{k+1}`. -/
 lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → ℝ}
@@ -398,12 +392,12 @@ lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → �
     have hv₀ : ∀ i, 0 ≤ v i := fun i => by
       by_contra h
       have := Real.rpow_le_rpow_of_exponent_le hx.le ((not_le.1 h).le.trans (hu i))
-      linarith [hle i]
+      grind
     intro i
     obtain ⟨hQi, hp, -⟩ := Finset.mem_filter.1 (hQ.1 i)
     refine mem_primesIoc_one.2 ⟨hp, (hle i).1.trans ?_⟩
     calc x ^ v i ≤ x ^ (1 : ℝ) := Real.rpow_le_rpow_of_exponent_le hx.le
-          ((Finset.single_le_sum (fun j _ => hv₀ j) (Finset.mem_univ i)).trans hv)
+          ((Finset.single_le_sum (by grind) (Finset.mem_univ i)).trans hv)
       _ = x := Real.rpow_one x
   have hpos : ∀ Q ∈ Fintype.piFinset (fun _ : Fin (k + 1) => primesIoc 1 x),
       0 < ∏ i, (Q i : ℝ) := fun Q hQ => Finset.prod_pos fun i _ => by
@@ -418,12 +412,10 @@ lemma abs_slotMean_le {x : ℝ} (hx : 1 < x) {k : ℕ} {u v : Fin (k + 1) → �
         exact div_le_div_of_nonneg_right (hB _) this.le
     _ ≤ ∑ Q ∈ Fintype.piFinset (fun _ : Fin (k + 1) => primesIoc 1 x),
           1 / ∏ i, (Q i : ℝ) :=
-        Finset.sum_le_sum_of_subset_of_nonneg hsub fun Q hQ _ => (one_div_pos.2 (hpos Q hQ)).le
+        Finset.sum_le_sum_of_subset_of_nonneg hsub fun Q hQ _ => by positivity
     _ = (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) := by
         rw [← Fin.prod_const, Finset.prod_univ_sum]
-        refine Finset.sum_congr rfl fun Q _ => ?_
-        rw [one_div, ← Finset.prod_inv_distrib]
-        simp only [one_div]
+        simp
 
 /-- Mertens' second theorem: `∑_{p ≤ x} 1/p ≤ T + E`. -/
 lemma exists_sum_primesIoc_one_inv_le : ∃ E : ℝ, ∀ x : ℝ, 2 ≤ x →
@@ -445,7 +437,6 @@ lemma exists_sum_primesIoc_one_inv_le : ∃ E : ℝ, ∀ x : ℝ, 2 ≤ x →
   have h := (abs_le.1 (hE 2 x le_rfl hx)).2
   rw [Real.log_div hlogx.ne' hlog2.ne'] at h
   rw [← sum_primesIoc_add _ (by norm_num : (1 : ℝ) ≤ 2) hx, h2, Finset.sum_singleton, logLog]
-  push_cast
   linarith
 
 /-- `T = log log x` tends to infinity. -/
@@ -478,14 +469,11 @@ lemma eventually_abs_slotCount_sub_slotMean_le : ∀ᶠ x : ℝ in atTop,
   have h₂' : (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ 8 * logLog x ^ 60 := by
     calc (∑ p ∈ primesIoc 1 x, (1 : ℝ) / p) ^ (k + 1) ≤ (2 * logLog x) ^ (k + 1) := by
           gcongr
-          linarith [hE x hx]
+          grind
       _ ≤ (2 * logLog x) ^ 3 := pow_le_pow_right₀ (by linarith) (by omega)
       _ = 8 * logLog x ^ 3 := by ring
       _ ≤ 8 * logLog x ^ 60 := by gcongr; norm_num
-  calc |slotCount x u v B n - slotMean x u v B|
-      ≤ |slotCount x u v B n| + |slotMean x u v B| := abs_sub _ _
-    _ ≤ 27 * logLog x ^ 60 + 8 * logLog x ^ 60 := add_le_add (h₁.trans h₁') (h₂.trans h₂')
-    _ = 35 * logLog x ^ 60 := by ring
+  grind
 
 /-! ### The endpoint strips -/
 
@@ -494,7 +482,7 @@ lemma eventually_logLog_pow_le_rpow (n : ℕ) {c : ℝ} (hc : 0 < c) :
     ∀ᶠ x : ℝ in atTop, logLog x ^ n ≤ x ^ c := by
   filter_upwards [(isLittleO_log_rpow_rpow_atTop (n : ℝ) hc).bound one_pos,
     tendsto_logLog_atTop.eventually_ge_atTop 0, eventually_ge_atTop 1] with x hx hT hx₁
-  have hL : 0 ≤ Real.log x := Real.log_nonneg hx₁
+  have hL := Real.log_nonneg hx₁
   rw [Real.rpow_natCast, Real.norm_eq_abs, Real.norm_eq_abs, abs_of_nonneg (by positivity),
     abs_of_nonneg (by positivity), one_mul] at hx
   exact (pow_le_pow_left₀ hT (Real.log_le_self hL) n).trans hx
@@ -519,14 +507,12 @@ lemma abs_upperCutoff_sub_indicator_le {x W : ℝ} (hW : 4 ≤ W) (hWx : W ≤ x
     rw [ite_eq_left hd, upperCutoff_eq_one hW0, sub_self, abs_zero]
     · positivity
     · rw [le_div_iff₀ hx0]
-      have : (1 - 1 / W) * x = x - x / W := by ring
-      linarith
+      grind
     · rw [div_le_iff₀ hx0]
       linarith
   rw [ite_eq_right hd, sub_zero, abs_of_nonneg (upperCutoff_mem_Icc hW0 _).1]
   by_cases h0 : upperCutoff W (((p : ℝ) - 1) / x) = 0
-  · rw [h0]
-    positivity
+  · linarith
   obtain ⟨h₁, h₂⟩ := mem_Ioo_of_upperCutoff_ne_zero hW0 h0
   rw [lt_div_iff₀ hx0] at h₁
   rw [div_lt_iff₀ hx0] at h₂
@@ -536,12 +522,12 @@ lemma abs_upperCutoff_sub_indicator_le {x W : ℝ} (hW : 4 ≤ W) (hWx : W ≤ x
   rw [dyadicPrimes_eq_primesIoc, mem_primesIoc] at hd
   rcases le_or_gt (p : ℝ) x with hpx | hpx
   · -- the lower strip
-    rw [ite_eq_left (mem_primesIoc.2 ⟨hp, by linarith, hpx⟩)]
+    rw [ite_eq_left (mem_primesIoc.2 (by grind))]
     linarith
   · -- the upper strip
     have h2x : 2 * x < p := by
       by_contra h
-      exact hd ⟨hp, hpx, not_lt.1 h⟩
+      exact by grind
     have h2W : 2 * x / W = 2 * (x / W) := by ring
     rw [ite_eq_left (mem_primesIoc.2 ⟨hp, h2x, by linarith⟩)]
     linarith
@@ -550,7 +536,7 @@ lemma abs_upperCutoff_sub_indicator_le {x W : ℝ} (hW : 4 ≤ W) (hWx : W ≤ x
 lemma sum_indicator_le_card (A S : Finset ℕ) :
     ∑ p ∈ A, (if p ∈ S then (1 : ℝ) else 0) ≤ S.card := by
   rw [Finset.sum_boole]
-  exact_mod_cast Finset.card_le_card fun p hp => (Finset.mem_filter.1 hp).2
+  exact_mod_cast Finset.card_le_card (by grind)
 
 end Unsmooth
 
@@ -593,7 +579,7 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
     intro p hp
     obtain ⟨hpI, hp⟩ := Finset.mem_filter.1 hp
     have hp3 : (p : ℝ) ≤ 3 * x + 1 :=
-      (Nat.le_floor_iff (by linarith)).1 (Finset.mem_Icc.1 hpI).2
+      (Nat.le_floor_iff (by linarith)).1 (by grind)
     have hp1 : ((p - 1 : ℕ) : ℝ) = p - 1 := by
       rw [Nat.cast_sub hp.one_le, Nat.cast_one]
     refine hslot k hk u v B hadm hB (p - 1) (by have := hp.two_le; omega) ?_
@@ -612,11 +598,11 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
           refine Finset.sum_le_sum fun p hp => ?_
           rw [abs_mul]
           exact mul_le_mul (abs_upperCutoff_sub_indicator_le hW hWx (Finset.mem_filter.1 hp).2)
-            (hg₀ p hp) (abs_nonneg _) (by split_ifs <;> norm_num)
+            (by grind) (abs_nonneg _) (by positivity)
       _ = 35 * T ^ 60 * (∑ p ∈ A, (if p ∈ primesIoc (x - 2 * x / W) x then (1 : ℝ) else 0) +
             ∑ p ∈ A, if p ∈ primesIoc (2 * x) (2 * x + 2 * x / W) then (1 : ℝ) else 0) := by
           rw [← Finset.sum_add_distrib, Finset.mul_sum]
-          exact Finset.sum_congr rfl fun p _ => by ring
+          exact Finset.sum_congr rfl (by grind)
       _ ≤ _ := by
           gcongr
           · exact sum_indicator_le_card _ _
@@ -675,7 +661,7 @@ theorem rectangleInput_of_oneSidedTypeII_of_twoSidedCorrelation (h₁ : OneSided
     rw [hsplit]
     refine (abs_sub _ _).trans ?_
     calc _ ≤ x / L * (C₀ * τ) + x / L * (140 * (2 + C) * τ) :=
-          add_le_add hΦ (hstrip.trans hstrip')
+          by linarith
       _ = _ := by ring
   -- normalizing by `π_x ≥ x / (4L)`
   have hN : 0 < ((dyadicPrimes x).card : ℝ) := lt_of_lt_of_le (by positivity) hdyad

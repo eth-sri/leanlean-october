@@ -8,7 +8,6 @@ public import Erdos821.S2.SpanEdge
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core

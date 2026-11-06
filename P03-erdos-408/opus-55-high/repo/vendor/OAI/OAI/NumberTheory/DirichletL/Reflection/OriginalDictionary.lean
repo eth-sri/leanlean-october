@@ -9,18 +9,17 @@ public import OAI.NumberTheory.DirichletL.Reflection.ReindexReflection
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
-def poolPrimeFamily (R Q Q₀ : Ideal Eis) : PrimeFamily (FreeReflection.pool R Q Q₀) where
+def poolPrimeFamily (R Q Q₀ : Ideal ActualEisensteinCubic.O) : PrimeFamily (FreeReflection.pool R Q Q₀) where
   ideal P := P.val
   maximal P := FreeReflection.pool_maximal R Q Q₀ P
   good P := FreeReflection.pool_good R Q Q₀ P
 
-variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+variable {σ : Type*} [Fintype σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))

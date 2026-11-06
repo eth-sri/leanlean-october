@@ -39,7 +39,7 @@ theorem exists_primitive_reciprocal_reduction (σ ε : ℝ) (hσ : 0 < σ) (hε 
   obtain ⟨ψ, _, hp, hn, hm⟩ := exists_primitive_character χ
   refine ⟨ψ, hp, hn, hm, ?_⟩
   intro s hs
-  rw [reciprocal_eq_of_mask χ ψ hm (hσ.trans_le hs), norm_mul]
+  rw [reciprocal_eq_of_mask χ ψ hm (by linarith), norm_mul]
   have hf := hb χ.modulus ψ s hs
   have hfb : ‖(factors χ.modulus ψ s)⁻¹‖ ≤ C*((radical χ.modulus).absNorm : ℝ)^ε := by
     linarith [norm_nonneg (factors χ.modulus ψ s)]

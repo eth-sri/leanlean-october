@@ -8,8 +8,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.InverseAmplificationConjugation
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology
-open Set Filter Complex
+open scoped Classical ContDiff
+open Set Filter
 namespace SevenEighths.HeckeInverseAmplification
 open HeckeFamily HeckeDyadic
 
@@ -47,7 +47,7 @@ theorem twistProfile_smooth (W : ℝ→ℂ) (σ freq a b : ℝ) (ha : 0<a)
     have hl : ContDiffAt ℝ ∞ (fun y : ℝ => (Real.log y : ℂ)) x :=
       Complex.ofRealCLM.contDiff.contDiffAt.comp x (Real.contDiffAt_log.mpr hx.ne')
     exact hl.mul contDiffAt_const
-  · have hxa : x<a := lt_of_le_of_lt (le_of_not_gt hx) ha
+  · have hxa : x<a := by linarith
     have he : twistProfile W σ freq =ᶠ[nhds x] (fun _ => 0) := by
       filter_upwards [isOpen_Iio.mem_nhds hxa] with y hy
       have hw : W y=0 := by

@@ -12,7 +12,7 @@ public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSourceBounded
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighBound
@@ -27,12 +27,11 @@ open CenteredMomentFirstSourceReduction CenteredMomentSourceInputTailUniform
 open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
 open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance : DecidableEq (α⊕Fin 2):=Classical.decEq _
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance : Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 open CenteredMomentEnergyPositiveHighAssembly (low_restrict)
 
@@ -51,7 +50,7 @@ theorem actual_high_from_physical
     ∀degree:ℕ,∀S:Finset (ℕ×ℕ),∀Jmass:ℕ,∀Smass:Finset (ℕ×ℕ),
     ∃Jout:ℕ,∃U:Finset (ℕ×ℕ),∃Cfixed:ℝ,0<Cfixed ∧
       ∀ᶠ Z:ℝ in atTop,1<Z ∧
-      ∀(e emass efinal Lslot κ:ℝ)(η₀:Character)(Q:Ideal O)(K Cmass:ℝ),
+      ∀(e emass efinal Lslot κ:ℝ)(η₀:Character)(Q:Ideal HeckeFamily.O)(K Cmass:ℝ),
         0≤e→0≤K→0≤Cmass→e+ε≤efinal→emass≤efinal→εdiag≤efinal→-saving≤efinal→
       PositiveLowAt (α:=α) M H hH Wslot bslot a b bΦ Bmask L Lslot lo hi
         Mcap e κ Z η₀ Q degree S K→
@@ -135,7 +134,7 @@ theorem actual_high_from_physical
     apply hunbalanced.trans
     dsimp [F] at hh' hc ⊢
     rw [show s.width+e+ε=s.width+(e+ε) by ring]
-    nlinarith only [hh',hc]
+    linarith
   · have hmass:=hphysical hfour
     have hmEnv:=henv Smass Jmass emass hm hjm hmassFinal
     have hmass':physicalMass inp s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z ξ/
@@ -162,7 +161,7 @@ theorem actual_high_from_physical
             _ = (c*P*A*(p.control U)^2*Z^(s.width+efinal))*1 := by ring
             _ ≤ (c*P*A*(p.control U)^2*Z^(s.width+efinal))*
                 (1+|t|+height)^Jout := mul_le_mul_of_nonneg_left hheight1 (by positivity)
-            _ = c*P*A*F := by dsimp [F]; ring
+            _ = c*P*A*F := by ring
     have hdterm:=hterm Cdiag (Sdiag.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ) εdiag hCd.le (apply_nonneg _ _) hdiagFinal
     have htterm:=hterm Ctail (Stail.sup (schwartzSeminormFamily ℝ ℝ ℂ) Ψ) (-saving) hCt.le (apply_nonneg _ _) htailFinal
     have hrEnv:=henv Ur Jr (e+ε) hr hjr hefinal

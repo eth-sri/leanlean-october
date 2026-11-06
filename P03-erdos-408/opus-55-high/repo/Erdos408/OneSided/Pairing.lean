@@ -64,8 +64,8 @@ theorem listProd_le_exp {C CX alo ahi g x : ℝ} {d : Data K} {Y d₀ : ℝ}
   unfold listProd
   push_cast
   calc ∏ i, ∏ h, (t.1.2 i h : ℝ) ≤ ∏ _i : Fin K, ∏ _h : Fin (J + 1), Real.exp (2 * L ^ ahi) :=
-        prod_le_prod₀ (fun i _ => prod_nonneg fun h _ => Nat.cast_nonneg _) fun i _ =>
-          prod_le_prod₀ (fun h _ => Nat.cast_nonneg _) fun h _ => hlabel i h
+        prod_le_prod₀ (fun i _ => by positivity) fun i _ =>
+          prod_le_prod₀ (by simp) (by grind)
     _ = Real.exp (K * ((J + 1 : ℕ) * (2 * L ^ ahi))) := by
         rw [prod_const, prod_const, card_univ, card_univ, Fintype.card_fin, Fintype.card_fin,
           ← Real.exp_nat_mul, ← Real.exp_nat_mul]
@@ -95,7 +95,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
     rcases lt_or_gt_of_ne hij with h | h
     · exact hE1 _ _ (hd.gap i j h)
     · exact (hE1 _ _ (hd.gap j i h)).symm
-  have hrough : ∀ i, ∀ p ∈ band x (d.a i), ∀ m : ℕ, m ≠ 0 → IsRough x m → ¬ p ∣ m :=
+  have hrough :=
     fun i => hE2 (d.a i) (hd.window i).2
   have hγ : 0 < d.γ := (Real.rpow_pos_of_pos hL0 _).trans_le hd.γ_ge
   have hHm : 1 ≤ d.Hm := (Real.one_le_rpow hx1 hγ.le).trans hd.Hm_ge
@@ -133,7 +133,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
       ext s s'
       by_contra h
       obtain ⟨t, t', -, -, h'⟩ := exists_rowOp_ne_zero h
-      exact hT ⟨t, t', h'⟩
+      exact by grind
     rw [pairing, hA, Matrix.zero_mulVec]
     simp only [stateInner, Pi.zero_apply, mul_zero, sum_const_zero, norm_zero]
     positivity
@@ -214,7 +214,7 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
         push_cast
         ring_nf
       rw [← h₅]
-      exact hNH.trans (mul_le_mul_of_nonneg_right h₄ (Real.exp_pos _).le)
+      exact hNH.trans (mul_le_mul_of_nonneg_right h₄ (by positivity))
     rw [hC₀, mul_pow, mul_pow, mul_pow]
     calc (21 : ℝ) ^ (R + 1) * 64 ^ (2 * R + 1) * N
         ≤ 21 ^ n * 64 ^ n * (8721 ^ n * Real.exp (4 * K) ^ n) :=
@@ -225,27 +225,24 @@ theorem eventually_pairing_of_moment {q C CX alo ahi g : ℝ} (hq : 0 < q) (hq�
   have hS0 : 0 ≤ S := sqNorm_nonneg _
   have hρ0 : 0 ≤ ‖ρ‖ := norm_nonneg _
   have hNσ : 0 ≤ (N : ℝ) * σ := mul_nonneg (Nat.cast_nonneg _) hσ0
-  have hσZ : 0 ≤ 64 * σ * Z := mul_nonneg (mul_nonneg (by norm_num) hσ0) hZ0.le
+  have hσZ : 0 ≤ 64 * σ * Z := by positivity
   rw [hpair]
   refine le_of_pow_le_pow_left₀ hn0
-    (mul_nonneg (mul_nonneg (by positivity) hZ0.le) (by positivity)) ?_
-  calc (m * P) ^ n = m ^ n * P ^ n := mul_pow _ _ _
+    (by positivity) ?_
+  calc (m * P) ^ n = m ^ n * P ^ n := by ring
     _ ≤ m ^ n * ((2 * ((10 : ℕ) : ℝ) + 1) ^ (R + 1) * S ^ (2 * R + 1) * (N * σ) * ‖ρ‖) :=
         mul_le_mul_of_nonneg_left hcells (pow_nonneg hm0 _)
     _ = 21 ^ (R + 1) * (m * S) ^ (2 * R + 1) * (N * σ) * (m * ‖ρ‖) := by
-        rw [hn]
-        push_cast
         ring
     _ ≤ 21 ^ (R + 1) * (64 * σ * Z) ^ (2 * R + 1) * (N * σ) * (Z * L ^ (-(E * (n : ℝ)))) :=
         mul_le_mul (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left
           (pow_le_pow_left₀ (mul_nonneg hm0 hS0) hS' _) (by positivity)) hNσ) hmom'
-          (mul_nonneg hm0 hρ0) (mul_nonneg (mul_nonneg (by positivity) (pow_nonneg hσZ _)) hNσ)
+          (by grind) (mul_nonneg (by positivity) hNσ)
     _ = (21 ^ (R + 1) * 64 ^ (2 * R + 1) * N) * (σ ^ n * L ^ (-(E * (n : ℝ)))) * Z ^ n := by
-        rw [hn]
         ring
     _ ≤ C₀ ^ n * (σ ^ n * L ^ (-(E * (n : ℝ)))) * Z ^ n :=
         mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hnum
-          (mul_nonneg (pow_nonneg hσ0 _) (by positivity))) (pow_nonneg hZ0.le _)
+          (by positivity)) (by positivity)
     _ = (C₀ * Z * L ^ (4 * C - E)) ^ n := by
         rw [hrpow]
         ring

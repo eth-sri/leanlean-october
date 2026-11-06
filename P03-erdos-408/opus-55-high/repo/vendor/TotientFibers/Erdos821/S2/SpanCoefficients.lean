@@ -7,7 +7,6 @@ public import Erdos821.S2.SpanHistory
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.S2Core
 
@@ -35,7 +34,7 @@ theorem edgeCoefficient_split (theta : ℝ) (i : Fin n) :
         (A.pattern (Q.pattern i)).auxMass (Q.free i) *
         (A.pattern (Q.pattern i)).physicalTargetMass : ℝ) * Q.edgeOscillation theta i := by
   dsimp only [edgeCoefficient, edgeOscillation]
-  rw [mul_assoc]
+  ring
 
 def reconstructedRawWeight (S : LifespanAssignment P n) (y : P.SmallResidues)
     (rho : ℝ) (i : Fin n) : ℝ :=
@@ -53,7 +52,7 @@ theorem reconstructed_edge_coefficient (S : LifespanAssignment P n)
       (Q.reconstructedRawWeight S y rho i : ℂ) * Q.edgeOscillation theta i := by
   dsimp only [reconstructedHistory, edgeChoiceCoefficient, reconstructedRawWeight,
     edgeOscillation, stateAfter, stateBefore, permuteActive, source, target, step]
-  rw [mul_assoc]
+  ring
 
 def reconstructedScalarWeight (S : LifespanAssignment P n) (hS : Q.lifespanValid S)
     (y : P.SmallResidues) (rho : ℝ) : ℝ :=

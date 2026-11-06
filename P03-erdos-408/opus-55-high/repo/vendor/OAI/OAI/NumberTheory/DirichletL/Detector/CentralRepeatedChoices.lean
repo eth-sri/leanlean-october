@@ -8,10 +8,9 @@ public import OAI.NumberTheory.DirichletL.Detector.SelectedPrimeSums
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.ProbeCentralRepeatedChoices
 open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily ProbePhysical
-local notation "O" => HeckeFamily.O
 
 def activeChoices {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
     (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ) : Finset (∀j,T j) :=
@@ -21,7 +20,7 @@ def activeChoices {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
 lemma active_card_le_divisors {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeIdeal)
     (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ) :
     (activeChoices u T W Y).card≤(IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card^k := by
-  let U : Ideal O := Ideal.span {u.val}
+  let U : Ideal HeckeFamily.O := Ideal.span {u.val}
   have hU : U≠0 := Ideal.span_singleton_eq_bot.not.mpr u.property.1
   let f : activeChoices u T W Y→(Fin k→IdealMobiusDivisorSum.idealDivisors U) :=
     fun P j=>⟨(P.val j).val.val,(IdealMobiusDivisorSum.mem_idealDivisors hU).mpr
@@ -39,29 +38,29 @@ lemma active_card_le_divisors {k : ℕ} (u : FreeRow) (T : Fin k→Finset PrimeI
 theorem active_card_subpower (N : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀k : ℕ,k≤N → ∀(u : FreeRow) (T : Fin k→Finset PrimeIdeal)
       (W : Fin k→ℝ→ℂ) (Y : Fin k→ℝ),
-      ((activeChoices u T W Y).card:ℝ)≤C*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^eps := by
+      ((activeChoices u T W Y).card:ℝ)≤C*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^eps := by
   let δ := eps/(N+1)
   have hδ : 0<δ := by dsimp [δ];positivity
   obtain ⟨D,hD,hdiv⟩ := IdealDivisorBound.ideal_divisor_small_power δ hδ
   refine ⟨(max 1 D)^N,by positivity,?_⟩
   intro k hk u T W Y
-  have hU : (Ideal.span {u.val}:Ideal O)≠0 := Ideal.span_singleton_eq_bot.not.mpr u.property.1
-  have hU1 : (1:ℝ)≤(Ideal.span {u.val}:Ideal O).absNorm := by
+  have hU : (Ideal.span {u.val}:Ideal HeckeFamily.O)≠0 := Ideal.span_singleton_eq_bot.not.mpr u.property.1
+  have hU1 : (1:ℝ)≤(Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hU)
   have hd := hdiv (Ideal.span {u.val}) hU
   have hcard : ((activeChoices u T W Y).card:ℝ)≤
       ((IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card:ℝ)^k := by
     exact_mod_cast active_card_le_divisors u T W Y
   have hpow : D^k≤(max 1 D)^N :=
-    (pow_le_pow_left₀ hD.le (le_max_right 1 D) k).trans (pow_le_pow_right₀ (le_max_left 1 D) hk)
+    (pow_le_pow_left₀ hD.le (by simp) k).trans (pow_le_pow_right₀ (by simp) hk)
   have hke : δ*k≤eps := by
     have hn : (k:ℝ)≤N := by exact_mod_cast hk
     have he : δ*(N+1)=eps := by dsimp [δ];field_simp
     nlinarith
   calc
     _ ≤ ((IdealMobiusDivisorSum.idealDivisors (Ideal.span {u.val})).card:ℝ)^k := hcard
-    _ ≤ (D*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^δ)^k := pow_le_pow_left₀ (by positivity) hd k
-    _ = D^k*((Ideal.span {u.val}:Ideal O).absNorm:ℝ)^(δ*k) := by
+    _ ≤ (D*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^δ)^k := pow_le_pow_left₀ (by positivity) hd k
+    _ = D^k*((Ideal.span {u.val}:Ideal HeckeFamily.O).absNorm:ℝ)^(δ*k) := by
       rw [mul_pow]
       congr 1
       rw [←Real.rpow_natCast,←Real.rpow_mul (by positivity)]
@@ -85,7 +84,7 @@ lemma sum_products_restrict {k : ℕ} (η : Character) (u : FreeRow)
   obtain ⟨j,hj⟩ := hn
   apply Finset.prod_eq_zero (Finset.mem_univ j)
   by_cases hr : repeatedRowPrime u (P j).val
-  · simp [hj hr]
+  · simp_all
   · simp [centralRepeatedTerm,hr]
 end SevenEighths.ProbeCentralRepeatedChoices
 

@@ -8,9 +8,8 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorRowCountEndpoint
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.HeckeDetectorAdaptiveCutoff
-open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorRowCount
+open HeckeDetectorRowCount
 
 def cutoff (δ q : ℝ) : ℝ :=
   if δ≤5/6 then Endpoint.balancedCutoff δ (1/2-min (1/2) (max 0 (q/δ))) else 3/2
@@ -18,13 +17,13 @@ def cutoff (δ q : ℝ) : ℝ :=
 theorem cutoff_bounds (δ q : ℝ) (hδ : 0≤δ) : 1≤cutoff δ q ∧ cutoff δ q≤3/2 := by
   unfold cutoff
   split_ifs with hd
-  · exact balanced_cutoff_bounds hδ hd (le_min (by norm_num) (le_max_left _ _)) (min_le_left _ _)
-  · norm_num
+  · exact balanced_cutoff_bounds hδ hd (by positivity) (by simp)
+  grind
 
 theorem cutoff_eq_balanced (δ q : ℝ) (hδ : 0<δ) (hd : δ≤5/6)
     (hq : 0≤q) (hq' : q≤δ/2) :
     cutoff δ q=Endpoint.balancedCutoff δ (1/2-q/δ) := by
-  have hx : 0≤q/δ := div_nonneg hq hδ.le
+  have hx : 0≤q/δ := by positivity
   have hx' : q/δ≤1/2 := (div_le_iff₀ hδ).mpr (by linarith)
   simp only [cutoff,ite_eq_left hd,max_eq_right hx,min_eq_right hx']
 

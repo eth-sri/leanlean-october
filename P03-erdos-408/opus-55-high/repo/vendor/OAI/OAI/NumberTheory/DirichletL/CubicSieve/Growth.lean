@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.ExtractionOptimization
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical
+open scoped Classical
 noncomputable section
 
 def HasCubicExponent (ξ : ℝ) : Prop :=
@@ -25,14 +25,14 @@ theorem hasCubicExponent_initial : HasCubicExponent 2 := by
   have hceil : (⌈N⌉₊ : ℝ) ≤ 2*N := by
     have hh := Nat.ceil_lt_add_one hN0
     linarith
-  have hn : (⌈N⌉₊ : ℝ)^2 ≤ 4*N^2 := by nlinarith [sq_nonneg ((⌈N⌉₊ : ℝ) - 2*N)]
-  have hp : 1 ≤ (M*N)^ε := Real.one_le_rpow (by nlinarith [mul_nonneg (sub_nonneg.mpr hM) (sub_nonneg.mpr hN)]) hε.le
-  have hx : 0 ≤ (M*N)^(2/3 : ℝ) := Real.rpow_nonneg (by positivity) _
+  have hn : (⌈N⌉₊ : ℝ)^2 ≤ 4*N^2 := by nlinarith
+  have hp : 1 ≤ (M*N)^ε := Real.one_le_rpow (by nlinarith) hε.le
+  have hx : 0 ≤ (M*N)^(2/3 : ℝ) := by positivity
   calc
     _ ≤ C*(M+(⌈N⌉₊ : ℝ)^2) := sieveNorm_initial M N hM hN
     _ ≤ 4*C*(M + N^(2 : ℝ) + (M*N)^(2/3 : ℝ)) := by
       rw [Real.rpow_two]
-      nlinarith [mul_nonneg hC.le (sub_nonneg.mpr hn), mul_nonneg hC.le hx]
+      nlinarith
     _ ≤ _ := by
       have hs : 0 ≤ M + N^(2 : ℝ) + (M*N)^(2/3 : ℝ) := by positivity
       nlinarith [mul_nonneg (mul_nonneg (by positivity : 0 ≤ 4*C) hs) (sub_nonneg.mpr hp)]
@@ -45,7 +45,7 @@ lemma HasCubicExponent.swapped {ξ : ℝ} (h : HasCubicExponent ξ)
   refine ⟨C,hC,?_⟩
   intro M N hM hN
   rw [sieveNorm_reciprocity]
-  simpa only [mul_comm, add_comm, add_left_comm, add_assoc] using hb N M hN hM
+  grind
 
 lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
     (ε : ℝ) (hε : 0 < ε) : ∃ C : ℝ, 0 < C ∧
@@ -63,18 +63,15 @@ lemma HasCubicExponent.doubled {ξ : ℝ} (h : HasCubicExponent ξ)
   have hshape : (2*X)^ξ + N + ((2*X)*N)^(2/3 : ℝ) ≤
       A*(X^ξ+N+(X*N)^(2/3 : ℝ)) := by
     rw [Real.mul_rpow (by norm_num) hX0]
-    rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (mul_nonneg hX0 hN0)]
+    rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (by positivity)]
     dsimp only [A]
-    nlinarith [mul_nonneg (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) ξ) hN0,
-      mul_nonneg (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) ξ) hcross,
-      mul_nonneg (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) (2/3 : ℝ)) hN0,
-      mul_nonneg (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) (2/3 : ℝ)) hxξ]
+    nlinarith [mul_nonneg (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) ξ) hN0, mul_nonneg (Real.rpow_nonneg (by norm_num : (0:ℝ)≤2) (2/3 : ℝ)) hN0]
   calc
-    _ ≤ C*((2*X)*N)^ε*((2*X)^ξ+N+((2*X)*N)^(2/3 : ℝ)) := hb (2*X) N (by linarith) hN
+    _ ≤ C*((2*X)*N)^ε*((2*X)^ξ+N+((2*X)*N)^(2/3 : ℝ)) := by grind
     _ ≤ C*((2*X)*N)^ε*(A*(X^ξ+N+(X*N)^(2/3 : ℝ))) :=
       mul_le_mul_of_nonneg_left hshape (by positivity)
     _ = _ := by
-      rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (mul_nonneg hX0 hN0)]
+      rw [show (2*X)*N = 2*(X*N) by ring, Real.mul_rpow (by norm_num) (by positivity)]
       ring
 
 end

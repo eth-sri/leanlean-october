@@ -10,13 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentSecondSourceMask
-open CanonicalQuadraticSieve CenteredMomentSecondSectorColumns CenteredMomentFirstSectors
-open CenteredMomentSourceRow CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentAmplificationLiveMask
-open CenteredMomentCompleteCommon
 local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [Fintype ι]

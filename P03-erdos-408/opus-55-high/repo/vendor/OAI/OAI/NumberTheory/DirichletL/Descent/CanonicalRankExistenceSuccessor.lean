@@ -9,12 +9,11 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths
+open MeasureTheory ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
+open CanonicalRowCompletion
 open CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
-local notation "O"=>ActualEisensteinCubic.O
 
 theorem rank_energy_exists_succ_of_reference
     (n:ℕ)(L cstar cutoff eta:ℝ)(K:ℕ)
@@ -118,10 +117,10 @@ theorem rank_energy_exists_succ_of_reference
   have hssdis:(ss:Set σ).PairwiseDisjoint lists:=by
     intro i hi j hj hij
     exact hdis (hss hi) (hss hj) hij
-  have hssH:∀i∈ss,1≤H i:=fun i hi=>hH i (hss hi)
+  have hssH:=fun i hi=>hH i (hss hi)
   have hssP:∀i∈ss,∀P∈lists i,(Ideal.absNorm P.val:ℝ)≤H i:=fun i hi=>hP i (hss hi)
-  have hssa:∀i∈ss,∀P∈lists i,‖a i P‖≤1:=fun i hi=>ha i (hss hi)
-  have hssprod:(∏i∈ss,H i)≤Z^z:=canonical_rank_subslot_cap slots ss H Z z hss hH hprod
+  have hssa:=fun i hi=>ha i (hss hi)
+  have hssprod:=canonical_rank_subslot_cap slots ss H Z z hss hH hprod
   obtain ⟨hsmallM,hsmallF,hsmallc⟩:=actual_rank_successor_caps n L cstar cutoff eta M (N+V)
     (rankMargin (n+1) cstar eta) hMc hFc le_rfl
   have lift (w:𝓢(ℝ,ℂ))(Cw:ℝ)(Jw:ℕ)(hCw:0≤Cw)(hCwA:Cw≤A)(hJw:Jw≤J)
@@ -171,7 +170,7 @@ theorem rank_energy_exists_succ_of_reference
   have hmrg:=actual_complete_height_merge ds dl Z (N+V) cstar (rankLoss (n+1) eta) Cs Cb A theta
     hZ1.le hcstar.le hloss0 hCs.le hCb hA
   have hpow:(1+‖theta‖)^Jout≤(1+‖theta‖)^(2*Jout):=
-    pow_le_pow_right₀ (by linarith [norm_nonneg theta]) (by omega)
+    pow_le_pow_right₀ (by simp) (by omega)
   have hf:childLogTest W theta=normTwistedSource W theta:=by
     funext y
     simp only [childLogTest,normTwistedSource,mul_comm]
@@ -181,7 +180,7 @@ theorem rank_energy_exists_succ_of_reference
   have hx:=mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left hpow (show 0≤(Cs+Cb)*(1+A) by positivity))
     (Real.rpow_nonneg hZ0.le (N+V+rankLoss (n+1) eta))
-  convert hx using 1 ; ring
+  linarith
 
 end SevenEighths.InverseMoment
 

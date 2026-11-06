@@ -7,25 +7,24 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstAssembly
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstFrequency
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalQuadraticSieve CanonicalRowCompletion
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve
 open CenteredMomentFirstNormalization CenteredMomentFirstReduced CenteredMomentFirstAssembly
-open CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentPrimitive CenteredMomentGaussEnergy CenteredMomentChildAssembly CenteredMomentMobiusRegroup
-open RayFourExpansion
+open CenteredMomentSupportedCorrelation
+open CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
+    (hchar : ∀ i,ringChar (ActualEisensteinCubic.O ⧸ P i)≠2)
     (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
-    (e a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+    (e a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
-    (k : ℝ) (h : O) :
+    (k : ℝ) (h : ActualEisensteinCubic.O) :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     let ρ := finiteSexticRow P hg j
@@ -45,7 +44,7 @@ theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
     _ = (k:ℂ)*tripleRow a b (finitePrimeModulus P) (supportedModulusCharacter a ha)
         (supportedModulusCharacter b hb)⁻¹
         (principalSexticRow P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P)) e*
-        (tripleFourier a b (finitePrimeModulus P) (supported_element_ne_zero a ha) (supported_element_ne_zero b hb)
+        (tripleFourier a b (finitePrimeModulus P) (by grind) (by grind)
           (finitePrimeModulus_ne_zero P) (supportedModulusCharacter a ha) (supportedModulusCharacter b hb)⁻¹
           (principalSexticRow P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P)) h /
           (‖eisEmbedding (a*(b*finitePrimeModulus P))‖^2:ℝ)) := by ring
@@ -57,11 +56,11 @@ theorem normalized_dilated_frequency {ι : Type*} [Fintype ι]
       ring
 
 def dilatedFrequency {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
+    (P : ι → Ideal ActualEisensteinCubic.O) [∀ i,(P i).IsMaximal]
     (hcop : Pairwise (Function.onFun IsCoprime P))
     (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i) (j : ι → ℕ)
-    (e a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
-    (k : ℝ) (h : O) : ℂ :=
+    (e a b : ActualEisensteinCubic.O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+    (k : ℝ) (h : ActualEisensteinCubic.O) : ℂ :=
   let r := finitePrimeModulus P
   let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
   tripleRow a b r (supportedModulusCharacter a ha) (supportedModulusCharacter b hb)⁻¹ G e*

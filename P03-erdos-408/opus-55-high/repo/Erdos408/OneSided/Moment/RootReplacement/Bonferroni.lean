@@ -38,7 +38,7 @@ def dampMass (x : ℝ) (d : Data K) (act : Finset ℕ) (lam : ℕ → ℕ → �
 theorem dampMass_nonneg {x : ℝ} {d : Data K} {act : Finset ℕ} {lam : ℕ → ℕ → ℝ}
     (hlam : ∀ p ∈ bandPrimes x d, ∀ l, lam p l ≤ 1) : 0 ≤ dampMass x d act lam :=
   sum_nonneg fun p hp => mul_nonneg (by positivity)
-    (sum_nonneg fun l _ => sub_nonneg.2 (hlam p (mem_sdiff.1 hp).1 l))
+    (sum_nonneg (by grind))
 
 /-- The line average of a real function is the real average over the line assignments. -/
 theorem lineAverage_ofReal (x : ℝ) (d : Data K) (g : (ℕ → ℕ) → ℝ) :
@@ -69,7 +69,7 @@ theorem lineAssignments_prod (x : ℝ) (d : Data K) {I : Finset ℕ} (hI : I ⊆
     rw [prod_congr rfl fun (p : ℕ) _ => show ((p : ℂ) + 1)⁻¹ *
         ∑ l ∈ range (p + 1), (if p ∈ I then (f p l : ℂ) else 1) =
           if p ∈ I then ((p : ℂ) + 1)⁻¹ * ∑ l ∈ range (p + 1), (f p l : ℂ) else 1 by
-        by_cases hp : p ∈ I <;> simp [hp, hp1], prod_ite_mem, inter_eq_right.2 hI]
+        simp_all, prod_ite_mem, inter_eq_right.2 hI]
     push_cast
     rfl
   rw [hl, hr, lineAverage_ofReal] at h
@@ -90,8 +90,8 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
           (((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, g ℓ)| ≤
       C₀ * pmax ^ (6 * k) * min U V ^ (-(1 / 5 : ℝ)) := by
   have h := hE x d U V hU hV a₁ b₁ a₂ b₂ a₃ b₃ ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃ hab₃ hb₃ S hS
-    (fun ℓ => (g ℓ : ℂ)) 1 (fun ℓ ℓ' h => by rw [hg ℓ ℓ' h])
-    (fun ℓ => by rw [Complex.norm_real, Real.norm_eq_abs]; exact hg₁ ℓ)
+    (fun ℓ => (g ℓ : ℂ)) 1 (fun ℓ ℓ' h => by grind)
+    (fun ℓ => by simp_all)
   rw [lineAverage_ofReal] at h
   set L := ((lineAssignments x d).card : ℝ)⁻¹ * ∑ ℓ ∈ lineAssignments x d, g ℓ
   set R₀ := ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃, g (rootLines P₀)
@@ -105,15 +105,15 @@ theorem abs_boxRoots_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEquidist
   -- step: the modulus `S⁶ ≤ p_max^{6k}`
   have hprod : ∏ p ∈ S, (p : ℝ) ≤ pmax ^ k :=
     calc ∏ p ∈ S, (p : ℝ) ≤ ∏ _p ∈ S, pmax :=
-          prod_le_prod₀ (fun _ _ => Nat.cast_nonneg _) fun p hp => hpmax p (hS hp)
+          prod_le_prod₀ (by simp) (by grind)
       _ = pmax ^ S.card := prod_const _
       _ ≤ pmax ^ k := pow_le_pow_right₀ hpmax₁ hk
   have hprod6 : (∏ p ∈ S, (p : ℝ)) ^ 6 ≤ pmax ^ (6 * k) := by
     rw [mul_comm, pow_mul]
-    exact pow_le_pow_left₀ (prod_nonneg fun _ _ => Nat.cast_nonneg _) hprod 6
+    exact pow_le_pow_left₀ (by positivity) hprod 6
   have hUV : 0 < U * V := by positivity
   have hm : 0 ≤ C₀ * min U V ^ (-(1 / 5 : ℝ)) :=
-    mul_nonneg hC₀ (Real.rpow_nonneg (le_min (by linarith) (by linarith)) _)
+    by positivity
   have hid : (U * V)⁻¹ * R₀ - primitiveDensity * ((b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃)) * L =
       (U * V)⁻¹ * (R₀ - primitiveDensity * U * V * (b₁ - a₁) * (b₂ - a₂) * (b₃ - a₃) * L) := by
     field_simp
@@ -135,17 +135,17 @@ theorem card_powerset_card_lt_add_le (s : Finset ℕ) (T : ℕ) :
   have hlt : (s.powerset.filter fun I => I.card < T).card =
       ∑ k ∈ range T, (s.powersetCard k).card := by
     rw [card_eq_sum_card_fiberwise (f := card) (t := range T)
-      (fun I hI => mem_range.2 (mem_filter.1 hI).2)]
+      (fun I hI => by grind)]
     refine sum_congr rfl fun k hk => ?_
     rw [powersetCard_eq_filter, filter_filter]
-    exact congrArg _ (filter_congr fun I _ => ⟨fun h => h.2, fun h => ⟨h ▸ mem_range.1 hk, h⟩⟩)
+    exact congrArg _ (by grind)
   have hnat : (s.powerset.filter fun I => I.card < T).card + (s.powersetCard T).card ≤
       (s.card + 1) ^ T := by
     rw [hlt, ← sum_range_succ (fun k => (s.powersetCard k).card), add_pow]
     refine sum_le_sum fun k hk => ?_
     rw [card_powersetCard, one_pow, mul_one]
     exact (Nat.choose_le_pow _ _).trans
-      (Nat.le_mul_of_pos_right _ (Nat.choose_pos (Nat.lt_succ_iff.1 (mem_range.1 hk))))
+      (Nat.le_mul_of_pos_right _ (Nat.choose_pos (by grind)))
   exact_mod_cast hnat
 
 /-- **Root replacement on one box.** For a product `F = ∏_p λ_p` of line factors in `[0, 1]`,
@@ -175,7 +175,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   obtain ⟨h, hh⟩ : ∃ h : Finset ℕ → (ℕ → ℕ) → ℝ, h = fun I ℓ => ∏ p ∈ I, (1 - lam p (ℓ p)) :=
     ⟨_, rfl⟩
   obtain ⟨Q, hQ⟩ : ∃ Q : Finset ℕ, Q = bandPrimes x d \ act := ⟨_, rfl⟩
-  have hQP : Q ⊆ bandPrimes x d := hQ ▸ sdiff_subset
+  have hQP := hQ ▸ sdiff_subset
   -- step: pass to real quantities
   have hgoal : ((U * V : ℝ) : ℂ)⁻¹ * ∑ P₀ ∈ boxRoots U V a₁ b₁ a₂ b₂ a₃ b₃,
           ∏ p ∈ bandPrimes x d, (lam p (rootLines P₀ p) : ℂ) -
@@ -208,8 +208,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
   have hact₁ : ∀ ℓ : ℕ → ℕ, ∏ p ∈ act, lam p (ℓ p) ≤ 1 := fun ℓ =>
     prod_le_one₀ (fun p hp => (hlam p (hact hp) (ℓ p)).1) fun p hp => (hlam p (hact hp) (ℓ p)).2
   have hX : ∀ ℓ : ℕ → ℕ, ∀ p ∈ Q, 0 ≤ 1 - lam p (ℓ p) ∧ 1 - lam p (ℓ p) ≤ 1 := fun ℓ p hp => by
-    obtain ⟨h0, h1⟩ := hlam p (hQP hp) (ℓ p)
-    constructor <;> linarith
+    grind
   have hh₀ : ∀ ℓ, ∀ I ⊆ Q, 0 ≤ h I ℓ := fun ℓ I hI => by
     rw [hh]
     exact prod_nonneg fun p hp => (hX ℓ p (hI hp)).1
@@ -230,7 +229,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       rw [← prod_sdiff hact, ← hQ, mul_sub, mul_sum]
       congr 1
       · ring
-      · exact sum_congr rfl fun I _ => by ring
+      · ring
     have hE₀ : 0 ≤ ∑ I ∈ Q.powersetCard T, h I ℓ :=
       sum_nonneg fun I hI => hh₀ ℓ I (mem_powersetCard.1 hI).1
     rw [hid, abs_mul, abs_of_nonneg (hact₀ ℓ)]
@@ -253,11 +252,10 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
       (union_subset hact (hIQ'.trans hQP)) (g I) (fun ℓ ℓ' hl => ?_) (fun ℓ => ?_) hpmax₁ hpmax
       ((card_union_le _ _).trans (by omega))
     · have h1 : ∏ p ∈ act, lam p (ℓ p) = ∏ p ∈ act, lam p (ℓ' p) :=
-        prod_congr rfl fun p hp => by rw [hl p (mem_union_left _ hp)]
+        prod_congr rfl fun p hp => by grind
       have h2 : ∏ p ∈ I, (1 - lam p (ℓ p)) = ∏ p ∈ I, (1 - lam p (ℓ' p)) :=
-        prod_congr rfl fun p hp => by rw [hl p (mem_union_right _ hp)]
-      simp only [hg]
-      rw [h1, h2]
+        prod_congr rfl fun p hp => by grind
+      grind
     · have h0 := hh₀ ℓ I hIQ'
       have h1 := hh₁ ℓ I hIQ'
       rw [hh] at h0 h1
@@ -275,9 +273,8 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     refine abs_boxRoots_sub_le hC₀ hE x d hU hV ha₁ hab₁ hb₁ ha₂ hab₂ hb₂ ha₃ hab₃ hb₃
       (hIQ.trans hQP) (h I) (fun ℓ ℓ' hl => ?_) (fun ℓ => ?_) hpmax₁ hpmax (by omega)
     · simp only [hh]
-      exact prod_congr rfl fun p hp => by rw [hl p hp]
-    · rw [abs_of_nonneg (hh₀ ℓ I hIQ)]
-      exact hh₁ ℓ I hIQ
+      exact prod_congr rfl fun p hp => by grind
+    · grind
   -- step: the root average and the line average are linear
   have hsum : ∀ (s : Finset (Finset ℕ)) (f : Finset ℕ → (ℕ → ℕ) → ℝ),
       w * ∑ P₀ ∈ box, ∑ I ∈ s, f I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, ∑ I ∈ s, f I ℓ) =
@@ -294,7 +291,7 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
     calc _ ≤ ∑ I ∈ s, |w * ∑ P₀ ∈ box, f I (rootLines P₀) - c * vol * (z * ∑ ℓ ∈ LA, f I ℓ)| :=
           abs_sum_le_sum_abs _ _
       _ ≤ ∑ _I ∈ s, C₀ * pmax ^ (6 * (act.card + T)) * min U V ^ (-(1 / 5 : ℝ)) := sum_le_sum hf
-      _ = _ := by rw [sum_const, nsmul_eq_mul]
+      _ = _ := by simp
   have hdB := hdev _ g hgI
   have hdE := hdev _ h hhI
   -- step: the Bonferroni gap in the root average and the line average
@@ -378,8 +375,8 @@ theorem norm_boxRoots_prod_sub_le {C₀ : ℝ} (hC₀ : 0 ≤ C₀) (hE : RootEq
           min U V ^ (-(1 / 5 : ℝ)) := by
     rw [← add_mul]
     calc _ ≤ (((bandPrimes x d).card : ℝ) + 1) ^ T * e := mul_le_mul_of_nonneg_right hcard herr
-      _ = _ := by simp only [e]; ring
+      _ = _ := by linarith
   have hrE := abs_le.1 hdE
-  linarith [abs_le.1 hRgap, abs_nonneg a]
+  linarith
 
 end Erdos408.OneSided

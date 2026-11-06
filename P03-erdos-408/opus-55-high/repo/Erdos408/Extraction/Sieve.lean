@@ -75,7 +75,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
       hxκ hL k hk u v B Φ hslot hB hΦ
   have hx0 : 0 < x := by linarith
   have hL0 : 0 < Real.log x := by linarith
-  have hB' : ∀ Q, |B Q| ≤ 1 := fun Q => by rw [abs_le]; constructor <;> linarith [hB Q]
+  have hB' : ∀ Q, |B Q| ≤ 1 := fun Q => by rw [abs_le]; grind
   set T := logLog x
   set J := compositeCutoff 1001 x
   set Pw := inertPoly (1 / 2) (1 / 12) K (30000 * K) x
@@ -116,7 +116,7 @@ lemma eventually_smooth_rectangle_nonneg (h₁ : OneSidedTypeII) (h₂ : TwoSide
       simp only [C₁₂]
       linarith
     calc (j.factorial : ℝ)⁻¹ * |Comp| ≤ 1 * |Comp| := mul_le_mul_of_nonneg_right hfi (abs_nonneg _)
-      _ ≤ _ := by rw [one_mul]; exact h3
+      _ ≤ _ := by linarith
   have hcompsum : |∑ j ∈ Icc 2 J, ((j.factorial : ℝ))⁻¹ *
       compositeSum (1 / 2) (1 / 12) K (30000 * K) x (presieveExponent c 200 x) κ j Φ u v B| ≤
       x / Real.log x * (J * (C₁₂ * Real.log x ^ (-c'))) := by
@@ -250,11 +250,9 @@ theorem eventually_smooth_rectangle (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorr
   -- E0: split `𝔟 = 𝔟⁺ - 𝔟⁻` into nonnegative parts
   set B₁ : (Fin k → ℕ) → ℝ := fun Q => max (B Q) 0
   set B₂ : (Fin k → ℕ) → ℝ := fun Q => max (-B Q) 0
-  have hB₁ : ∀ Q, 0 ≤ B₁ Q ∧ B₁ Q ≤ 1 := fun Q =>
-    ⟨le_max_right _ _, max_le (le_abs_self _ |>.trans (hB Q)) zero_le_one⟩
-  have hB₂ : ∀ Q, 0 ≤ B₂ Q ∧ B₂ Q ≤ 1 := fun Q =>
-    ⟨le_max_right _ _, max_le (neg_le_abs _ |>.trans (hB Q)) zero_le_one⟩
-  have hBeq : B = fun Q => B₁ Q - B₂ Q := funext fun Q => (max_zero_sub_max_neg_zero_eq_self _).symm
+  have hB₁ : ∀ Q, 0 ≤ B₁ Q ∧ B₁ Q ≤ 1 := by grind
+  have hB₂ : ∀ Q, 0 ≤ B₂ Q ∧ B₂ Q ≤ 1 := by grind
+  have hBeq : B = fun Q => B₁ Q - B₂ Q := by grind
   have hsplit : ∑ p ∈ primesIcc 2 (κ * x + 1),
       Φ (((p : ℝ) - 1) / x) * (slotCount x u v B (p - 1) - slotMean x u v B) =
       ∑ p ∈ primesIcc 2 (κ * x + 1),
@@ -271,7 +269,7 @@ theorem eventually_smooth_rectangle (h₁ : OneSidedTypeII) (h₂ : TwoSidedCorr
   rw [rpow_neg hT.le, show (300 : ℝ) = ((300 : ℕ) : ℝ) by norm_num, rpow_natCast, hsplit]
   calc Real.log x / x * |_ - _| ≤ Real.log x / x * (|_| + |_|) :=
         mul_le_mul_of_nonneg_left (abs_sub _ _) hLx
-    _ ≤ 7 * (logLog x ^ 300)⁻¹ + 7 * (logLog x ^ 300)⁻¹ := by rw [mul_add]; linarith
+    _ ≤ 7 * (logLog x ^ 300)⁻¹ + 7 * (logLog x ^ 300)⁻¹ := by linarith
     _ = 14 * (logLog x ^ 300)⁻¹ := by ring
 
 end Erdos408

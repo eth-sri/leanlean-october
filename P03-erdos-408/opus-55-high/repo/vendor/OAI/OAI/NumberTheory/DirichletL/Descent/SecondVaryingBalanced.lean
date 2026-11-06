@@ -8,13 +8,12 @@ public import OAI.NumberTheory.DirichletL.Inversion.SecondProfileUniform
 namespace OAI
 
 namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open MeasureTheory JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open scoped Classical SchwartzMap
+open MeasureTheory JointLogSeparation FirstPassCubeLabels
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 
 variable {κ ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
 
@@ -56,11 +55,11 @@ theorem actual_second_varying_balanced_source (source : Finset κ) (F : Finset �
   have h2 := hω₂ j.1 hjS j.2.2 hM
   have h3 : star (ω₁ (primeProductNorm p j.2.1/X₀)) ≠ 0 → ω₂ (primeProductNorm p j.2.2/X₀) ≠ 0 → ∀ i,
       V i (secondRelativeLog (secondActualNorms p (x j.1) j.2.1 j.2.2) G₀ E₀ V₀ K₀ X₀ i) = 1 :=
-    fun ha hb => hcut j hj (star_ne_zero.mp ha) hb
+    by grind
   have he := InverseSecondProfileUniform.fresh_physical_profile
     (fun x => star (W₁ x)) W₂ Φ V G₀ E₀ V₀ K₀ X₀ Y L hG hE hV hK hX
     (fun x => star (ω₁ x)) ω₂ (secondActualNorms p (x j.1) j.2.1 j.2.2)
-    (secondActualNorms_pos p hp (x j.1) (hn j.1 hjS).1 (hn j.1 hjS).2 j.2.1 j.2.2)
+    (secondActualNorms_pos p hp (x j.1) (by grind) (by grind) j.2.1 j.2.2)
     (by simpa [secondActualNorms] using h1)
     (by simpa [secondActualNorms] using h2)
     (by simpa [secondActualNorms] using h3)

@@ -32,8 +32,8 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
-open MeasureTheory Set
+open scoped MeasureTheory
+open MeasureTheory
 
 section
 
@@ -91,11 +91,9 @@ lemma enorm_fderiv_apply_le_enorm_grad_mul (f : E → ℝ) (x a : E) :
     -- `grad f x = (toDual).symm (fderiv f x)` and `toDual.symm` is an isometry.
     simp only [grad]
     exact
-      (LinearIsometry.enorm_map
-        (f := (InnerProductSpace.toDual ℝ E).symm.toLinearIsometry)
-        (fderiv ℝ f x))
+      by simp
   -- Replace the operator norm by the gradient norm.
-  simpa [h₂, mul_assoc, mul_left_comm, mul_comm] using h₁
+  simp_all
 
 lemma enorm_deriv_comp_line_le (x a : E) {f : E → ℝ} (hf : ContDiff ℝ 1 f) (t : ℝ) :
     ‖deriv (fun t => f (line (x := x) (a := a) t)) t‖ₑ ≤
@@ -124,7 +122,7 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
       ‖f (x + a) - f x‖ₑ ≤ ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖deriv (fun t : ℝ => f (x + t • a)) t‖ₑ := by
     simpa using
       (enorm_sub_le_lintegral_deriv_of_contDiffOn_Icc (f := fun t : ℝ => f (x + t • a))
-        (a := (0 : ℝ)) (b := 1) hCont (by exact zero_le_one))
+        (a := (0 : ℝ)) (b := 1) hCont (by simp))
   refine hFTC.trans ?_
   have hDerivBound :
       (fun t : ℝ => ‖deriv (fun t : ℝ => f (x + t • a)) t‖ₑ)
@@ -138,26 +136,23 @@ lemma enorm_sub_le_enorm_mul_lintegral_grad (x a : E) {f : E → ℝ} (hf : Cont
   -- Pull out the constant `‖a‖ₑ`.
   have :
       (∫⁻ t in Set.Icc (0 : ℝ) 1, ‖deriv (fun t : ℝ => f (x + t • a)) t‖ₑ) ≤
-        ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖a‖ₑ * ‖grad (E := E) f (x + t • a)‖ₑ := by
-    exact lintegral_mono_ae hDerivBound
+        ∫⁻ t in Set.Icc (0 : ℝ) 1, ‖a‖ₑ * ‖grad (E := E) f (x + t • a)‖ₑ :=
+    lintegral_mono_ae hDerivBound
   refine this.trans ?_
   -- Pull out the constant factor.
   have hMeas :
       Measurable fun t : ℝ => ‖grad (E := E) f (x + t • a)‖ₑ := by
     -- `grad f` is continuous when `f` is `C¹`.
-    have hgradCont : Continuous (grad (E := E) f) := continuous_grad (E := E) (f := f) (by
+    have hgradCont := continuous_grad (E := E) (f := f) (by
       -- `ContDiff` gives continuity of `grad`.
-      exact hf)
+      omega)
     -- hence `t ↦ grad f (x + t•a)` is measurable; take `enorm`.
     exact (hgradCont.comp (by
       have : Continuous (fun t : ℝ => x + t • a) := by
         fun_prop
-      exact this)).measurable.enorm
+      omega)).measurable.enorm
   -- Now finish: `∫⁻ t in Set.Icc, ‖a‖ * g t = ‖a‖ * ∫⁻ t in Set.Icc, g t`.
-  exact le_of_eq <| by
-    simpa [mul_assoc] using
-      (MeasureTheory.lintegral_const_mul (μ := volume.restrict (Set.Icc (0 : ℝ) 1)) (r := ‖a‖ₑ)
-        (f := fun t : ℝ => ‖grad (E := E) f (x + t • a)‖ₑ) hMeas)
+  simp_all
 
 end
 

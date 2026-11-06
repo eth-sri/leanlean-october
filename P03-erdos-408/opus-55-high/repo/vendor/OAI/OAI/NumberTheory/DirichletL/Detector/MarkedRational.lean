@@ -8,9 +8,8 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open ProbeEuler ProbeRow ConcretePrimeRowBridge
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open ProbeEuler ProbeRow
 
 def idealMarkedClosed (η : HeckeFamily.Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
   let Q : ℝ := Ideal.absNorm P.val
@@ -24,7 +23,7 @@ theorem idealMarkedLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeI
   let p := primaryGenerator P.val
   have hp : Prime p := supported_primeGenerator_prime P hs
   have hspan : Ideal.span {p}=P.val := span_primaryGenerator_of_supported P.val hs
-  let : (Ideal.span {p}:Ideal O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
+  let : (Ideal.span {p}:Ideal ActualEisensteinCubic.O).IsMaximal := PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
   have hsp : Supported (Ideal.span {p}) := hspan.symm ▸ hs
   have hg := supported_prime_data p hp hsp
   have hQ2 : (2:ℝ)≤Ideal.absNorm (Ideal.span {p}) := by
@@ -43,7 +42,7 @@ theorem idealMarkedLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeI
   simp only [Complex.ofReal_natCast] at hr
   have he := principalMarkedSeries_eq p hp hg.1 hg.2 (targetMonoid η p) (actualACube η p)
     ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-x)) ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-w))
-    (coordV (Ideal.absNorm (Ideal.span {p})) z) hV (by simpa only [hr] using hR)
+    (coordV (Ideal.absNorm (Ideal.span {p})) z) hV (by simp_all)
   have hsource := idealMarkedLocalFactor_eq_source η P hs x w z
   dsimp only at hsource
   rw [hsource]
@@ -52,7 +51,7 @@ theorem idealMarkedLocalFactor_rational (η : HeckeFamily.Character) (P : PrimeI
   rw [hr,←hk] at he
   simp only [actualACube_sq] at he
   convert he using 1
-  · congr 2 <;> simp only [hspan,p]
+  · grind
   · simp only [idealMarkedClosed,coordD,coordW,star_one,mul_one,one_mul]
     simp only [hspan,p,targetMonoid_primaryGenerator η P.val hs,Complex.ofReal_natCast,neg_mul]
 

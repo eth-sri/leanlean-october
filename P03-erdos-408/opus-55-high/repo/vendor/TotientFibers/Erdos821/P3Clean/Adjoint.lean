@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.Contractions
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -32,16 +31,12 @@ theorem normBound_weightedAdjoint {α : Type*} (mass : α → ℝ) (K : α → �
     apply Finset.sum_congr rfl
     intro a _
     unfold weightedAdjoint
-    have hma : (mass a : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (hm a)
+    have hma := Complex.ofReal_ne_zero.mpr (hm a)
     simp only [Complex.ofReal_div, Complex.star_def]
     simp only [starRingEnd_apply]
-    field_simp [hma]
+    field_simp
   rw [hform, norm_star]
-  have heq : C * Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) *
-      Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) =
-      C * Real.sqrt (∑ a ∈ s, mass a * ‖f a‖ ^ 2) *
-        Real.sqrt (∑ b ∈ t, mass b * ‖g b‖ ^ 2) := by ring
-  exact h.trans_eq heq
+  linarith
 
 
 end Erdos821.P3Clean

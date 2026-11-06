@@ -11,23 +11,17 @@ namespace LargePrimeGaps
 
 open Filter
 
-open Set Filter MeasureTheory
+open Set MeasureTheory
 
-open scoped Topology ContDiff
 
-open Asymptotics
 
-open Asymptotics
 
-open Asymptotics
 
 open scoped Classical
 
-open scoped ContDiff
 
 section FourierLaplace
 
-open scoped FourierTransform SchwartzMap ContDiff
 
 variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
   [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
@@ -68,13 +62,13 @@ noncomputable def fiberRay {ι α : Type*} [Fintype ι]
     laplaceFrequency (fourierCoordinateSum ι) (EuclideanSpace.single i (1:ℝ)) u =
       frequencyW (u i) := by
   classical
-  simp [laplaceFrequency,frequencyW,fourierCoordinateSum_apply,EuclideanSpace.inner_single_right]
+  simp [laplaceFrequency, frequencyW, EuclideanSpace.inner_single_right]
 
 omit [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] in
 theorem laplaceFrequency_sum {α : Type*} (ℓ : V →L[ℝ] ℝ) (S : Finset α)
     (m : α → V) (u : V) :
     laplaceFrequency ℓ (∑ i∈S, m i) u = ∑ i∈S, laplaceFrequency ℓ (m i) u := by
-  simp [laplaceFrequency,map_sum,inner_sum,Complex.ofReal_sum,Finset.mul_sum,Finset.sum_add_distrib]
+  simp [laplaceFrequency, inner_sum, Finset.mul_sum, Finset.sum_add_distrib]
 
 @[simp] theorem laplaceFrequency_fiberRay {ι α : Type*} [Fintype ι]
     (b : ι → α) (r : α) (u : EuclideanSpace ℝ ι) :
@@ -88,13 +82,12 @@ theorem laplaceFrequency_sum {α : Type*} (ℓ : V →L[ℝ] ℝ) (S : Finset α
     ((coordinateDirectionList ι).map (fun m => laplaceFrequency (fourierCoordinateSum ι) m u)).prod =
       ∏ i, frequencyW (u i) := by
   classical
-  simp [coordinateDirectionList,List.map_map,Function.comp_def]
+  simp [coordinateDirectionList]
 
 end SmallFiberCoefficient
 
-open Topology
 
-open scoped Convolution ContDiff Pointwise
+open scoped Convolution Pointwise
 
 noncomputable def negativeCube {ι : Type*} [Fintype ι] (T : ℝ) : Set (EuclideanSpace ℝ ι) :=
   {x | ∀ i, -T≤x i ∧ x i≤0}

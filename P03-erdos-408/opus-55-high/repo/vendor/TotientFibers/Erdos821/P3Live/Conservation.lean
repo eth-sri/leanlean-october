@@ -8,7 +8,6 @@ public import Erdos821.S2.MemoryIndices
 
 set_option autoImplicit false
 
-open scoped BigOperators
 
 noncomputable section
 
@@ -107,8 +106,8 @@ theorem promoted_eq_retrieved {M : ℕ} {s : P.MemoryState M}
   classical
   have hdef : retrievedIndices c g = Finset.univ.image (c.2.2 g) := rfl
   rw [hdef, ← slotPrimes_eq_val_map]
-  have hInjOn : Set.InjOn (c.2.2 g) (↑(Finset.univ : Finset {i : Fin M // i ∈ c.2.1 g})) := by
-    exact hInj.injOn
+  have hInjOn : Set.InjOn (c.2.2 g) (↑(Finset.univ : Finset {i : Fin M // i ∈ c.2.1 g})) :=
+    hInj.injOn
   have himage : slotPrimes (fun k : Fin (s.2.2 g).card => (memoryEntry (s.2.2 g) k).1)
       (Finset.univ.image (c.2.2 g))
       = ∑ j : {i : Fin M // i ∈ c.2.1 g},
@@ -175,7 +174,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
     have hmem : ν.shared g.val i := by
       rw [hSharedDef] at hi
       simpa using (Finset.mem_filter.mp hi).2
-    have heq : s.2.1 g.val i = t.2.1 g.val i := hcompat g.val i hmem
+    have heq := hcompat g.val i hmem
     rw [heq]
   have hS_split : slotPrimes (s.2.1 g.val) Shared
         + slotPrimes (s.2.1 g.val) Unshared
@@ -206,7 +205,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
       Finset.sum_sdiff hStoresSub
     rw [hDsEq] at h
     rw [add_comm] at h
-    exact h.symm.trans (by rw [add_comm])
+    exact h.symm.trans (by simp)
   have hT_unshared : slotPrimes (t.2.1 g.val) Unshared
       = slotPrimes (t.2.1 g.val) (c.2.1 g) + slotPrimes (t.2.1 g.val) Dt := by
     show (∑ i ∈ Unshared, ({t.2.1 g.val i} : Multiset _))
@@ -218,7 +217,7 @@ theorem EdgeLiveConservationTask_proof : EdgeLiveConservationTask := by
       Finset.sum_sdiff hPromSub
     rw [hDtEq] at h
     rw [add_comm] at h
-    exact h.symm.trans (by rw [add_comm])
+    exact h.symm.trans (by simp)
   have hSP : pendingPrimes (s.2.2 g)
       = pendingPrimes (deleteMemoryIndices (s.2.2 g) (retrievedIndices c g))
         + slotPrimes (t.2.1 g.val) (c.2.1 g) := by

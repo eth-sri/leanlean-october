@@ -7,21 +7,20 @@ public import OAI.NumberTheory.DirichletL.Reflection.HeightTail
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators ContDiff SchwartzMap
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CompletedDyadic CanonicalQuadraticSieve InverseMoment
+open scoped Classical ContDiff
+open CubicEisenstein CompletedGauss CompletedDyadic
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 universe u
-variable {N a c : Eis} {mode : Bool}
+variable {N a c : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem literal_reflected_raw_tail_type_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc a₀ b₀ →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸G.ideal i)≠2) →
-    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : Eisˣ) (scale T : ℝ), 0<scale → 0<T →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) →
+    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (scale T : ℝ), 0<scale → 0<T →
     ∀ cut : RawTailIndex→Prop,
       (∀ x, cut x → T≤scale*(ramifiedScale 1 completedRamifiedStep x.1)^3*
         (Ideal.absNorm x.2.1.val:ℝ)*(Ideal.absNorm x.2.2.val:ℝ)^3) →
@@ -35,16 +34,16 @@ theorem literal_reflected_raw_tail_type_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a�
   intro V hV ι _ G D s hc hN hbase hchar j hj S u scale T hs hT cut hcut
   have hh := hb V hV scale 1 (Ideal.absNorm (∏ i,G.ideal i):ℝ) T hs (by norm_num) (Nat.cast_nonneg _) hT
     (literalRawCoefficient G D s hc j S u) (literalRawCoefficient_norm G D s hc hN hbase hchar j hj S u) cut hcut
-  simpa only [one_pow,mul_one] using hh
+  grind
 
 theorem literal_reflected_dyadic_tail_type_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
     ∀ (V : SchwartzMap ℝ ℂ), Function.support (V : ℝ→ℂ)⊆Set.Icc lo hi →
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸G.ideal i)≠2) →
-    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : Eisˣ) (scale T : ℝ), 0<scale → 0<T →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) →
+    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (scale T : ℝ), 0<scale → 0<T →
     ∀ cut : (ℕ×ℕ×ℕ)→Prop,
       (∀ i, cut i → 16*T≤rawDyadicCenter scale i) →
       ‖∑' i : ℕ×ℕ×ℕ, if cut i then
@@ -63,16 +62,16 @@ theorem literal_reflected_dyadic_tail_type_uniform (lo hi : ℝ) (hlo : 0<lo) (A
       have hl := rawDyadicCenter_lower scale hs.le x
       linarith)
   rw [tsum_cut_dyadic _ cut hn.of_norm] at hh
-  exact hh
+  omega
 
 theorem literal_dyadic_tail_uniform_height_type_uniform (lo hi : ℝ) (hlo : 0<lo) (A : ℕ)
     (W : ℝ→ℂ) (hWs : Function.support W⊆Set.Icc lo hi) (hW : ContDiff ℝ ∞ W) :
     ∃ (degree : ℕ) (C : ℝ), 0<C ∧
     ∀ {ι : Type u} [Fintype ι], ∀ (G : PrimeFamily ι) (D : ControlledStratumArithmetic G.generator N a c mode)
       (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0),
-      (9:Eis)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
-      (∀ i, ringChar (Eis⧸G.ideal i)≠2) →
-    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : Eisˣ) (θ X T : ℝ), 0<X → 0<T →
+      (9:ActualEisensteinCubic.O)*c∣N → (if mode then ConcretePrimeRowBridge.goodLambda^2∣a-1 else ConcretePrimeRowBridge.goodLambda^2∣c-1) →
+      (∀ i, ringChar (ActualEisensteinCubic.O⧸G.ideal i)≠2) →
+    ∀ (j : ι→ℕ), (∀ i, j i<6) → ∀ (S : Finset ι) (u : ActualEisensteinCubic.Oˣ) (θ X T : ℝ), 0<X → 0<T →
     ∀ cut : (ℕ×ℕ×ℕ)→Prop,
       (∀ i, cut i → 16*T≤rawDyadicCenter (literalRawScale G s X) i) →
       ‖∑' i : ℕ×ℕ×ℕ, if cut i then
@@ -94,7 +93,7 @@ theorem literal_dyadic_tail_uniform_height_type_uniform (lo hi : ℝ) (hlo : 0<l
     change H θ x≠0 at hx
     rw [hH θ x] at hx
     exact hV (CompletedHeight.normTwistedSource_support V θ hx)
-  refine ⟨degree,C*C₁,mul_pos hC hC₁,?_⟩
+  refine ⟨degree,C*C₁,by positivity,?_⟩
   intro ι _ G D s hc hN hbase hchar j hj S u θ X T hX hT cut hcut
   have hh := hbound (H θ) (hHs θ) G D s hc hN hbase hchar j hj S u
     (literalRawScale G s X) T (literalRawScale_pos G s hc X hX) hT cut hcut
@@ -106,18 +105,12 @@ theorem literal_dyadic_tail_uniform_height_type_uniform (lo hi : ℝ) (hlo : 0<l
               ⟨b.val,((mem_dualIdealDyad _ _).mp b.property).1⟩) else 0)=
       ∑' i : ℕ×ℕ×ℕ, if cut i then
         literalDyadicBlock G D s hc j S (CompletedHeight.normTwistedSource W θ) X u i else 0 := by
-    simp only [rawDualKernelTerm,hlink,literalDyadicBlock,literalRawSeries]
+    simp only [hlink, literalDyadicBlock, literalRawSeries]
   rw [hleft] at hh
   apply hh.trans
   have hsemi' := mul_le_mul_of_nonneg_left (hsemi θ) hC.le
   have hrest : 0≤(Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹ := by positivity
-  calc
-    _ = (C*orders.sup (schwartzSeminormFamily ℝ ℝ ℂ) (H θ))*
-        ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) := by ring
-    _ ≤ (C*(C₁*(1+‖θ‖)^degree))*
-        ((Ideal.absNorm (∏ i,G.ideal i):ℝ)*T^(-(A:ℝ))*(literalRawScale G s X^2)⁻¹) :=
-      mul_le_mul_of_nonneg_right hsemi' hrest
-    _ = _ := by ring
+  nlinarith
 end
 end SevenEighths.InverseReflectedPhase
 

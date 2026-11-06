@@ -8,18 +8,16 @@ public import OAI.NumberTheory.DirichletL.CubicSieve.PairPoisson
 namespace OAI
 
 namespace SevenEighths.CubicSieve
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
+open scoped Classical SchwartzMap
 open EisensteinSchwartzPoisson FourierBridge
 noncomputable section
-local notation "O" => ActualEisensteinCubic.O
 
 theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
     (hLr : 0 ≤ Lr) (hLc : 0 ≤ Lc) (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
       ∀ {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
         (ε : ℝ) (hε : 0 < ε) (M N : ℝ) (_hN : 0 ≤ N)
-        (rows : m → O) (cols : n → Ideal O)
+        (rows : m → ActualEisensteinCubic.O) (cols : n → Ideal ActualEisensteinCubic.O)
         (_hr : Function.Injective rows) (_hc : Function.Injective cols)
         (_hrows : ∀ i, rows i ≠ 0 ∧ (Ideal.absNorm (Ideal.span {rows i}) : ℝ) ≤ M)
         (_hcols : ∀ j, Admissible (cols j) ∧ (Ideal.absNorm (cols j) : ℝ) ≤ N)
@@ -43,10 +41,10 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
   let H := elementSieveNorm M N * (IdealCoprimeSieveOperator.supportConstant ε hε * N ^ ε) * E
   have hfac : 0 ≤ elementSieveNorm M N * (IdealCoprimeSieveOperator.supportConstant ε hε * N ^ ε) :=
     mul_nonneg (elementSieveNorm_nonneg _ _)
-      (mul_nonneg (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le (Real.rpow_nonneg hN _))
+      (mul_nonneg (IdealCoprimeSieveOperator.supportConstant_pos ε hε).le (by positivity))
   have hH : 0 ≤ H := mul_nonneg hfac hE
   have hyy (p : n × n) : |y p.1 + y p.2| ≤ 2 * Lc :=
-    (abs_add_le _ _).trans (by linarith [hy p.1, hy p.2])
+    (abs_add_le _ _).trans (by grind)
   have hphase (t : ℝ) : (∑ i, ‖∑ p : n × n, c i p * logPhase t (y p.1 + y p.2)‖) ≤ H := by
     let aTwist : n → ℂ := fun j => a j * star (logPhase t (y j))
     let bTwist : n → ℂ := fun j => b j * logPhase t (y j)
@@ -66,7 +64,7 @@ theorem cubic_radial_kernel_transfer (W : 𝓢(ℝ, ℂ)) (Lr Lc : ℝ)
       · rw [logPhase_add]
         simp only [star_mul, star_star]
         ring
-      · simp only [zero_mul]
+      · simp
     simp_rw [he]
     have hbil := element_coprime_bilinear_bound ε hε M N hN rows cols hr hc hrows hcols aTwist bTwist
     apply (sq_le_sq₀ (by positivity) hH).mp

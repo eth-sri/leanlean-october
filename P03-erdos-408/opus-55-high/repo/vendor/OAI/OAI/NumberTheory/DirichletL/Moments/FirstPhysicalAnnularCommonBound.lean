@@ -9,25 +9,24 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstPhysicalSourceCommonBound
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalAnnularCommonBound
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
+open CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
+open CenteredMomentCanonicalFirst
 open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
+open CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
 universe u
 
 theorem actual_annular_block_from_common_energy (W : 𝓢(ℝ,ℂ)) (decay J₁ J₂ : ℕ) :
     ∃ Cbound : ℝ, 0≤Cbound ∧ ∀ {ι : Type u} [Fintype ι],
     ∀ (η : Character) (s : OriginalData ι) (t : ℝ)
-      (C D : Ideal O) (hC : Supported C) (hD : Supported D),
+      (C D : Ideal HeckeFamily.O) (hC : Supported C) (hD : Supported D),
     primeSupport C=primeSupport D → ∀ (E : Finset (CommonIndex C D))
-      (rows : Finset O) (K : ℝ), 0<K → ∀ n : Fin 4→ℤ,
-    ∀ E₁ E₂ : Ideal O→ℝ,
+      (rows : Finset HeckeFamily.O) (K : ℝ), 0<K → ∀ n : Fin 4→ℤ,
+    ∀ E₁ E₂ : Ideal HeckeFamily.O→ℝ,
     (∀ L∈divisorPool (Finset.univ : Finset (columns C D hD.1 s.columns))
       (fun b=>Ideal.span {element C D hD.1 s.columns b}), 0≤E₁ L) →
     (∀ L∈divisorPool (Finset.univ : Finset (columns C D hD.1 s.columns))

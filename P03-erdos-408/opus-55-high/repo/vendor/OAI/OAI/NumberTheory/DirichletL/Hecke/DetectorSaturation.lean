@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorDyadicActual
 namespace OAI
 
 noncomputable section
-open scoped Classical Topology
+open scoped Topology
 open Filter
 namespace SevenEighths.HeckeDetectorSaturation
 open HeckeDetectorFrequency
@@ -21,16 +21,16 @@ lemma logarithmic_cost_eventually (C ε : ℝ) (hε : 0<ε) :
       C^2*((Real.logb 2 U)^2/U^(ε/2))^2≤1 := by
     have hh : Tendsto (fun U : ℝ => C^2*((Real.logb 2 U)^2/U^(ε/2))^2)
         atTop (𝓝 0) := by simpa using ht'
-    exact (tendsto_order.mp hh).2 1 (by norm_num) |>.mono (fun _ h => h.le)
+    exact (tendsto_order.mp hh).2 1 (by norm_num) |>.mono (by grind)
   filter_upwards [hbound,eventually_gt_atTop (0 : ℝ)] with U hb hU
   have he : (U^(ε/2))^2=U^ε := by
     rw [← Real.rpow_natCast,← Real.rpow_mul hU.le]
     congr 1
     norm_num
   rw [div_pow, he] at hb
-  have hh := (div_le_iff₀ (Real.rpow_pos_of_pos hU ε)).mp
-    (show C^2*((Real.logb 2 U)^2)^2/U^ε≤1 by simpa only [mul_div_assoc] using hb)
-  simpa only [one_mul,mul_one,mul_pow] using hh
+  have hh := (div_le_iff₀ (by positivity)).mp
+    (show C^2*((Real.logb 2 U)^2)^2/U^ε≤1 by grind)
+  linarith
 
 lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
     (hU : 1<U) (hr : 0≤r) (hm : 0≤m) (hσ : a≤σ)
@@ -46,7 +46,7 @@ lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
   have hp : 1≤K*U^((1/2-σ)*(r+m))*(A*B) := by
     calc
       1 ≤ K*(U^r)^(1/2-σ)*(U^m)^(1/2-σ)*(A*B) := hprod
-      _ = _ := by rw [←hcentral]; ring
+      _ = _ := by grind
   have hsq : 1≤(K*U^((1/2-σ)*(r+m))*(A*B))^2 := by nlinarith
   have he : (U^((1/2-σ)*(r+m)))^2=U^((1-2*σ)*(r+m)) := by
     rw [←Real.rpow_natCast,←Real.rpow_mul hUp.le]
@@ -58,8 +58,8 @@ lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
   have hLq : L*U^q≤1 := by
     calc
       _ ≤ U^ε*U^((1-2*σ)*(r+m))*U^q := by
-        apply mul_le_mul_of_nonneg_right _ (Real.rpow_nonneg hUp.le _)
-        exact mul_le_mul_of_nonneg_right hcost (Real.rpow_nonneg hUp.le _)
+        apply mul_le_mul_of_nonneg_right _ (by positivity)
+        exact mul_le_mul_of_nonneg_right hcost (by positivity)
       _ = U^(ε+(1-2*σ)*(r+m)+q) := by rw [←Real.rpow_add hUp,←Real.rpow_add hUp]
       _ ≤ U^0 := Real.rpow_le_rpow_of_exponent_le hU.le (by
         dsimp [q]
@@ -67,7 +67,7 @@ lemma normalized_product_lower (U r m σ a ε K A B : ℝ)
       _ = 1 := Real.rpow_zero _
   calc
     U^q = U^q*1 := by ring
-    _ ≤ U^q*(L*(A^2*B^2)) := mul_le_mul_of_nonneg_left hsq (Real.rpow_nonneg hUp.le _)
+    _ ≤ U^q*(L*(A^2*B^2)) := mul_le_mul_of_nonneg_left hsq (by positivity)
     _ = (L*U^q)*(A^2*B^2) := by ring
     _ ≤ 1*(A^2*B^2) := mul_le_mul_of_nonneg_right hLq (by positivity)
     _ = _ := by ring
@@ -110,12 +110,12 @@ theorem actual_saturation (R dmax τ ε e κ η Clower : ℝ)
     hQ hDs hr hrR hm hmR hratio hσlo hσ' hfreq hheight
   have hp := normalized_product_lower (Z^d) r m σ a ε
     (Clower*(Real.logb 2 (Z^d))^2) ‖M‖ ‖S‖ hU hr hm hσ
-    (mul_nonneg hClower (sq_nonneg _)) (norm_nonneg _) (norm_nonneg _) hcost hprod
+    (by positivity) (norm_nonneg _) (norm_nonneg _) hcost hprod
   have hbound (x : ℝ) : Cu*(Z^d)^(x+ε/2)≤(Z^d)^(x+ε) := by
     calc
       _ ≤ (Z^d)^(ε/2)*(Z^d)^(x+ε/2) :=
-        mul_le_mul_of_nonneg_right hconst (Real.rpow_nonneg (by linarith) _)
-      _ = _ := by rw [←Real.rpow_add (by linarith : 0<Z^d)]; congr 1; ring
+        mul_le_mul_of_nonneg_right hconst (by positivity)
+      _ = _ := by rw [←Real.rpow_add (by positivity)]; ring
   exact Detector.simultaneous_saturation hU (by linarith) hε.le (sq_nonneg _) (sq_nonneg _)
     hp (hMu.trans (hbound _)) (hSu.trans (hbound _))
 

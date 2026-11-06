@@ -7,30 +7,28 @@ public import OAI.NumberTheory.DirichletL.Reflection.OriginalDictionary
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
+open scoped Classical
+open CubicEisenstein CompletedGauss CanonicalQuadraticSieve CanonicalRowCompletion InverseMoment
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-def castControlled {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
+def castControlled {ι : Type*} [Fintype ι] {p q : ι→ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
     (h : p=q) (D : ControlledStratumArithmetic p N a c mode) :
     ControlledStratumArithmetic q N a c mode := h ▸ D
 
-lemma mixedReflectedValue_cast {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
+lemma mixedReflectedValue_cast {ι : Type*} [Fintype ι] {p q : ι→ActualEisensteinCubic.O} {N a c : ActualEisensteinCubic.O} {mode : Bool}
     [∀ i, (Ideal.span {p i}).IsMaximal] [∀ i, (Ideal.span {q i}).IsMaximal]
     (h : p=q) (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i≠0) (hq : ∀ i, q i≠0) (hc : c≠0)
-    (hgp : ∀ i, λ₀∉Ideal.span {p i}) (hgq : ∀ i, λ₀∉Ideal.span {q i})
+    (hgp : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i}) (hgq : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {q i})
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue (castControlled h D) s hq hc hgq j S W X=
       mixedReflectedValue D s hp hc hgp j S W X := by
   subst q
   rfl
 
-variable {σ : Type*} [Fintype σ] {m f z : Eis} (D : GoodMaskRowData m f z)
-variable (R I F Q₀ : Ideal Eis) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
+variable {σ : Type*} [Fintype σ] {m f z : ActualEisensteinCubic.O} (D : GoodMaskRowData m f z)
+variable (R I F Q₀ : Ideal ActualEisensteinCubic.O) (hR : R≠0) (hI : I≠0) (hF : Squarefree F)
     (hm : m≠0) (hf : Ideal.span {f}=F) (hz : Ideal.span {z}=I)
     (hbad : ∀ P∈fixedBadPrimes, P∣Ideal.span {m}*F)
     (hcop : IsCoprime Q₀ (rowResidualPart I (Ideal.span {m}*F)))

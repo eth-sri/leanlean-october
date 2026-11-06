@@ -10,29 +10,28 @@ noncomputable section
 open scoped Classical
 namespace SevenEighths.HeckeRowClosure
 open HeckeFamily
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
 theorem periodic_of_primary (M : Ideal O)
-    (hM : M ≤ Ideal.span {λ₀ ^ 2}) (G F : O →* ℂ)
+    (hM : M ≤ Ideal.span {ConcretePrimeRowBridge.goodLambda ^ 2}) (G F : O →* ℂ)
     (hF : CanonicalCoefficientClass.FactorsModulo M F)
     (hu : ∀ (u : Oˣ) x, G ((u : O) * x) = G x)
-    (hz : ∀ x, λ₀ ∣ x → G x = 0)
-    (hagree : ∀ x, λ₀ ^ 2 ∣ x - 1 → G x = F x) :
+    (hz : ∀ x, ConcretePrimeRowBridge.goodLambda ∣ x → G x = 0)
+    (hagree : ∀ x, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ x - 1 → G x = F x) :
     CanonicalCoefficientClass.FactorsModulo M G := by
   intro x y hxy
-  have hdiff : λ₀ ^ 2 ∣ x - y := Ideal.mem_span_singleton.mp (hM hxy)
-  have hdiff' : λ₀ ∣ x - y := (dvd_pow_self λ₀ (by decide : 2 ≠ 0)).trans hdiff
-  by_cases hx : λ₀ ∣ x
-  · have hy : λ₀ ∣ y := by
+  have hdiff : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ x - y := Ideal.mem_span_singleton.mp (hM hxy)
+  have hdiff' : ConcretePrimeRowBridge.goodLambda ∣ x - y := (dvd_pow_self ConcretePrimeRowBridge.goodLambda (by positivity)).trans hdiff
+  by_cases hx : ConcretePrimeRowBridge.goodLambda ∣ x
+  · have hy : ConcretePrimeRowBridge.goodLambda ∣ y := by
       convert dvd_sub hx hdiff' using 1 ; ring
-    rw [hz x hx, hz y hy]
+    simp_all
   · have hg := PrimaryIdealUnitReindex.primaryGenerator_span_ne_zero_iff x |>.mpr hx
     have hspec := CompletedGauss.primaryGenerator_spec (Ideal.span {x}) hg
     obtain ⟨u, hu'⟩ := Ideal.span_singleton_eq_span_singleton.mp hspec.1.symm
-    have hp : λ₀ ^ 2 ∣ (u : O) * x - 1 := by
-      have hp' : λ₀ ^ 2 ∣ CompletedGauss.primaryGenerator (Ideal.span {x}) - 1 := hspec.2
+    have hp : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (u : O) * x - 1 := by
+      have hp' : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ CompletedGauss.primaryGenerator (Ideal.span {x}) - 1 := hspec.2
       rwa [mul_comm, hu']
-    have hq : λ₀ ^ 2 ∣ (u : O) * y - 1 := by
+    have hq : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (u : O) * y - 1 := by
       have hd := hdiff.trans (dvd_mul_left (x-y) (u : O))
       convert dvd_sub hp hd using 1 ; ring
     rw [← hu u x, ← hu u y, hagree _ hp, hagree _ hq]
@@ -64,8 +63,7 @@ theorem residueRow_mk (M : Ideal O) (G : O →* ℂ)
     rw [ite_eq_left (hu ▸ u.isUnit), ← hu]
     change MulChar.ofUnitHom (Units.map (quotientRow M G hG)) (u : O ⧸ M) = G z
     rw [MulChar.ofUnitHom_coe]
-    change quotientRow M G hG (u : O ⧸ M) = G z
-    rw [hu, quotientRow_mk]
+    simp_all
   · rw [ite_eq_right hz]
     exact MulChar.map_nonunit _ hz
 
@@ -109,10 +107,10 @@ theorem rowTwist_unit (η : Character) (m f z : O) (u : Oˣ) :
   simpa using rowTwist_unit_mul η m f z u 1
 
 theorem rowTwist_periodic (η : Character) (m f z : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
     (hr : CanonicalQuadraticSieve.Supported (Ideal.span {r}))
-    (hpr : λ₀ ^ 2 ∣ r-1) (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r) :
+    (hpr : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ r-1) (hx : f^4*z = (u : O)*ConcretePrimeRowBridge.goodLambda^a*(2 : O)^b*r) :
     CanonicalCoefficientClass.FactorsModulo
       (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r})
       (CanonicalRowCompletion.rowTwist (elementHom η) m f z) := by
@@ -120,8 +118,8 @@ theorem rowTwist_periodic (η : Character) (m f z : O)
     (CanonicalRowCompletion.actualPeriodicRow (elementHom η) m u a b r hr)
     (CanonicalRowCompletion.actualPeriodicRow_periodic _ _ (elementHom_periodic η) _ _ _ _ _ hr)
     (rowTwist_unit_mul η m f z) ?_ ?_
-  · have hd3 : λ₀ ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
-    have hd72 : λ₀ ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
+  · have hd3 : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (3 : O) := ActualEisensteinCubic.lambda_sq_dvd_three
+    have hd72 : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ (72 : O) := hd3.trans ⟨24, by norm_num⟩
     exact (Ideal.mul_le_left.trans Ideal.mul_le_right).trans
       ((Ideal.span_singleton_le_iff_mem _).mpr (Ideal.mem_span_singleton.mpr hd72))
   · intro n hn
@@ -132,7 +130,7 @@ theorem rowTwist_periodic (η : Character) (m f z : O)
       _ _ _ _ hmLam hm2 u a b r hr hpr hx
 
 theorem rowTwist_nonzero_coprime (η : Character) (m f z n : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (hn : CanonicalRowCompletion.rowTwist (elementHom η) m f z n ≠ 0) :
     CanonicalQuadraticSieve.Supported (Ideal.span {n}) ∧ IsCoprime n (m^6*f^4*z) := by
   have hs : CanonicalQuadraticSieve.Supported (Ideal.span {n}) := by
@@ -146,20 +144,20 @@ theorem rowTwist_nonzero_coprime (η : Character) (m f z n : O)
     CanonicalRowCompletion.idealRowHom_sixth_mask _ _ hs] at hp
   by_cases hc : IsCoprime (Ideal.span {n}) (Ideal.span {m^6*f^4*z})
   · exact (Ideal.isCoprime_span_singleton_iff _ _).mp hc
-  · simp [hc] at hp
+  simp_all
 
 theorem rowTwist_nonzero_unit (η : Character) (m f z n : O)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m)
     (u : Oˣ) (a b : ℕ) (r : O)
-    (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r)
+    (hx : f^4*z = (u : O)*ConcretePrimeRowBridge.goodLambda^a*(2 : O)^b*r)
     (hn : CanonicalRowCompletion.rowTwist (elementHom η) m f z n ≠ 0) :
     IsUnit (Ideal.Quotient.mk
       (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}) n) := by
   obtain ⟨hs, hc⟩ := rowTwist_nonzero_coprime η m f z n hmLam hm2 hn
-  have hm : IsCoprime n m := hc.of_isCoprime_of_dvd_right ⟨m^5*f^4*z, by ring⟩
+  have hm := hc.of_isCoprime_of_dvd_right ⟨m^5*f^4*z, by ring⟩
   have hr : IsCoprime n r := hc.of_isCoprime_of_dvd_right
-    ⟨m^6*((u : O)*λ₀^a*(2 : O)^b), by
-      rw [show m^6*f^4*z = m^6*(f^4*z) by ring, hx]; ring⟩
+    ⟨m^6*((u : O)*ConcretePrimeRowBridge.goodLambda^a*(2 : O)^b), by
+      grind⟩
   have h2 := hm.of_isCoprime_of_dvd_right hm2
   have h9 := (ShortDraftCRT.nine_coprime_of_not_lambda_dvd n
     ((CanonicalQuadraticSieve.supported_span_iff n).mp hs).1).symm
@@ -177,7 +175,7 @@ theorem rowTwist_nonzero_unit (η : Character) (m f z n : O)
 
 theorem exists_row_character (η : Character) (m f z : O)
     (hm : m ≠ 0) (hf : f ≠ 0) (hz : z ≠ 0)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m) :
     ∃ χ : Character, ∀ n : O, elementCoeff χ n =
       CanonicalRowCompletion.rowTwist (elementHom η) m f z n := by
   obtain ⟨u, a, b, r, hr, hpr, hx, hM, _, _, _⟩ :=
@@ -199,16 +197,16 @@ def rowConductorBound (η : Character) (m f z : O) : ℕ :=
 
 theorem row_modulus_norm_le (η : Character) (m f z : O)
     (hf : f ≠ 0) (hz : z ≠ 0) (u : Oˣ) (a b : ℕ) (r : O)
-    (hx : f^4*z = (u : O)*λ₀^a*(2 : O)^b*r) :
+    (hx : f^4*z = (u : O)*ConcretePrimeRowBridge.goodLambda^a*(2 : O)^b*r) :
     (η.modulus * Ideal.span {m} * Ideal.span {(72 : O)} * Ideal.span {r}).absNorm ≤
       rowConductorBound η m f z := by
   have hprod : (Ideal.span {f^4*z} : Ideal O) ≠ ⊥ :=
-    Ideal.span_singleton_eq_bot.not.mpr (mul_ne_zero (pow_ne_zero _ hf) hz)
+    Ideal.span_singleton_eq_bot.not.mpr (by positivity)
   let : Finite (O ⧸ Ideal.span {f^4*z}) := Ring.HasFiniteQuotients.finiteQuotient hprod
   have hle : (Ideal.span {f^4*z} : Ideal O) ≤ Ideal.span {r} := by
     apply (Ideal.span_singleton_le_iff_mem _).mpr
     apply Ideal.mem_span_singleton.mpr
-    exact ⟨(u : O)*λ₀^a*(2 : O)^b, by rw [hx]; ring⟩
+    exact ⟨(u : O)*ConcretePrimeRowBridge.goodLambda^a*(2 : O)^b, by grind⟩
   have hn := FiniteConductor.absNorm_le_of_le hle
   have heq : (Ideal.span {f^4*z} : Ideal O) = (Ideal.span {f})^4 * Ideal.span {z} := by
     rw [Ideal.span_singleton_pow, Ideal.span_singleton_mul_span_singleton]
@@ -219,7 +217,7 @@ theorem row_modulus_norm_le (η : Character) (m f z : O)
 
 theorem exists_row_character_with_conductor (η : Character) (m f z : O)
     (hm : m ≠ 0) (hf : f ≠ 0) (hz : z ≠ 0)
-    (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
+    (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2 : O) ∣ m) :
     ∃ χ : Character, χ.modulus.absNorm ≤ rowConductorBound η m f z ∧
       ∀ n : O, elementCoeff χ n =
         CanonicalRowCompletion.rowTwist (elementHom η) m f z n := by
@@ -242,8 +240,7 @@ theorem idealCoeff_eq_row (η χ : Character) (m f z : O)
       CanonicalRowCompletion.rowTwist (elementHom η) m f z n) (I : Ideal O) :
     idealCoeff χ I = idealCoeff η I * CanonicalRowCompletion.idealRowHom (m^6*f^4*z) I := by
   by_cases hI : I = 0
-  · subst I
-    rw [map_zero, map_zero, zero_mul]
+  · grind
   let n := ConcretePrimeRowBridge.idealGenerator I
   have hn : n ≠ 0 := ConcretePrimeRowBridge.idealGenerator_ne_zero I hI
   have hs : Ideal.span {n} = I := ConcretePrimeRowBridge.span_idealGenerator I

@@ -50,7 +50,7 @@ namespace FunctionalSpaces
 namespace Sobolev
 namespace Euclidean
 
-open scoped ENNReal MeasureTheory Topology
+open scoped ENNReal MeasureTheory
 open MeasureTheory Set
 
 noncomputable section
@@ -77,7 +77,7 @@ local instance instFactOneLeTwoSobolevEuclideanRellich : Fact (1 ≤ (2 : ℝ≥
 
 We model “supported in `K`” as belonging to the closed range of the extension-by-zero map
 `Lp(volume.restrict K) →ₗᵢ Lp(volume)`. -/
-noncomputable def h1On (K : Set E) (hKm : MeasurableSet K) :
+def h1On (K : Set E) (hKm : MeasurableSet K) :
     Submodule ℝ (↥(h1 (μ := (volume : Measure E)) (E := E))) :=
   Submodule.comap
     (h1ToL2 (μ := (volume : Measure E)) (E := E)).toLinearMap
@@ -86,7 +86,7 @@ noncomputable def h1On (K : Set E) (hKm : MeasurableSet K) :
           (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞)) (s := K) hKm).toLinearMap))
 
 /-- The inclusion `h1On K → L²(volume)` as a continuous linear map. -/
-noncomputable def h1OnToL2 (K : Set E) (hKm : MeasurableSet K) :
+def h1OnToL2 (K : Set E) (hKm : MeasurableSet K) :
     ↥(h1On K hKm) →L[ℝ] (E →₂[(volume : Measure E)] ℝ) :=
   (h1ToL2 (μ := (volume : Measure E)) (E := E)).comp (h1On K hKm).subtypeL
 
@@ -107,8 +107,8 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         T '' Metric.closedBall (0 : ↥(h1On (E := E) K hKm)) 1}
   let C : ℝ :=
     ‖h1ToL2 (μ := (volume : Measure E)) (E := E)‖
-  have hCnonneg : 0 ≤ C := by
-    exact norm_nonneg (h1ToL2 (μ := (volume : Measure E)) (E := E))
+  have hCnonneg : 0 ≤ C :=
+    by positivity
   have hA_ball :
       A ⊆
         Metric.closedBall
@@ -163,7 +163,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
           ‖(translateL2 (μ := (volume : Measure E)) (-t)) (T x) - T x‖ ≤ ε / 2 := by
       intro t ht
       have ht' : ‖t‖ ≤ ε / 2 := le_of_lt (by
-        simpa [Metric.ball, dist_eq_norm, mem_ofPred_eq] using ht)
+        simpa using ht)
       have hgrad_le :
           ‖h1ToL2Grad (μ := (volume : Measure E)) (E := E) (x : H1vol)‖ ≤ ‖(x : H1vol)‖ := by
         let V : Type _ := (E →₂[(volume : Measure E)] ℝ) × (E →₂[(volume : Measure E)] E)
@@ -195,7 +195,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
         (E := E) (ψ := ψ) hψc hψcs hψ0 hψint (deltaLoss := ε / 2) (η := ε / 2) hη hψsupp (T x) hmod
     simpa [hxEq] using hbound
   have hcomp : IsCompact (closure (T '' Metric.closedBall (0 : ↥(h1On (E := E) K hKm)) 1)) := by
-    have hR : 0 ≤ C := hCnonneg
+    have hR := hCnonneg
     have hA_eq :
         T '' Metric.closedBall (0 : ↥(h1On (E := E) K hKm)) 1 =
           L2Compactness.extendByZeroL2 (E := E) (K := K) hKm '' A := by
@@ -212,8 +212,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
           -- Unfold membership in the defining `comap` without
           -- letting `simp` use `x.property`
           -- (which would rewrite the goal to `True`).
-          have hxmem :
-              (x : H1vol) ∈ h1On (E := E) K hKm := x.property
+          have hxmem := x.property
           dsimp [h1On] at hxmem
           change
               ((h1ToL2 (μ := (volume : Measure E)) (E := E)).toLinearMap
@@ -248,7 +247,7 @@ theorem isCompactOperator_h1OnToL2 {K : Set E} (_hK : IsCompact K) (hKm : Measur
     have : IsCompact
         (closure (L2Compactness.extendByZeroL2 (E := E) (K := K) hKm '' A)) :=
     L2Compactness.isCompact_closure_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-      (E := E) (K := K) (hK := (_hK : IsCompact K))
+      (E := E) (K := K) (hK := by omega)
       (hKm := hKm) hR hA_ball hApprox
     simpa [hA_eq] using this
   -- Use the topological definition of `IsCompactOperator` to avoid expensive normed-space

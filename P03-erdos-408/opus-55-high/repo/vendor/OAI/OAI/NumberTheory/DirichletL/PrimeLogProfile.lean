@@ -7,8 +7,8 @@ public import OAI.NumberTheory.DirichletL.CompactProfileFamily
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff Topology FourierTransform SchwartzMap
-open Set Filter MeasureTheory
+open scoped Classical ContDiff FourierTransform
+open Set Filter
 namespace SevenEighths.PrimeLogProfile
 
 def safeInverse (x : ℝ) : ℂ :=
@@ -21,7 +21,7 @@ theorem safeInverse_eq (x : ℝ) (hx : 1/2≤|x|) : safeInverse x=(x : ℂ)⁻¹
     rw [dist_zero_right, Real.norm_eq_abs, abs_mul]
     norm_num
     linarith
-  simp [safeInverse, QuadraticInitialBound.sieveCutoff_apply, hz]
+  simp [safeInverse, hz]
 
 theorem safeInverse_smooth : ContDiff ℝ ∞ safeInverse := by
   apply contDiff_iff_contDiffAt.mpr
@@ -37,7 +37,7 @@ theorem safeInverse_smooth : ContDiff ℝ ∞ safeInverse := by
         rw [dist_zero_right, Real.norm_eq_abs, abs_mul]
         norm_num
         linarith
-      simp [safeInverse, QuadraticInitialBound.sieveCutoff_apply, hone]
+      simp [safeInverse, hone]
     exact contDiffAt_const.congr_of_eventuallyEq he
   · have hnum : ContDiff ℝ ∞ (fun y : ℝ => (1 : ℂ)-QuadraticInitialBound.sieveCutoff (4*y)) :=
       contDiff_const.sub ((QuadraticInitialBound.sieveCutoff.smooth ⊤).comp
@@ -87,7 +87,6 @@ theorem logFamily_smooth (W : ℝ→ℂ) (hW : ContDiff ℝ ∞ W) :
 theorem logFamily_eq (W : ℝ→ℂ) (A σ u : ℝ) :
     logFamily W (A,σ) u = CubicReflectionKernel.mellinLogFamily (profile W A) σ u := by
   simp only [logFamily, CubicReflectionKernel.mellinLogFamily, profile, Real.log_exp]
-  congr 3
   ring
 
 theorem logFamily_support (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
@@ -128,7 +127,7 @@ theorem uniform_mellin_decay (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
       mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) hbase j) (norm_nonneg _)
     _ = (1+2*Real.pi)^j*((1+|t/(2*Real.pi)|)^j *
         ‖𝓕 (logFamily W (A,σ)) (t/(2*Real.pi))‖) := by rw [mul_pow,mul_assoc]
-    _ ≤ _ := mul_le_mul_of_nonneg_left (hb (A,σ) ⟨hA,hσ⟩ _) (by positivity)
+    _ ≤ _ := mul_le_mul_of_nonneg_left (by grind) (by positivity)
 
 theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     (hWs : Function.support W⊆Icc a b) (hP : 0<P)
@@ -143,9 +142,9 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     apply abs_le.mpr
     constructor
     · have h := Real.log_le_log ha hs.1
-      linarith [neg_abs_le (Real.log a),abs_nonneg (Real.log b)]
+      grind
     · have h := Real.log_le_log hyp hs.2
-      linarith [le_abs_self (Real.log b),abs_nonneg (Real.log a)]
+      grind
   have hp : 0<Real.log P := by linarith [abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
   have hhalf : 1/2≤1+(1/Real.log P)*Real.log y := by
     have he : 1+(1/Real.log P)*Real.log y = (Real.log P+Real.log y)/Real.log P := by field_simp
@@ -153,15 +152,11 @@ theorem profile_eq_log_division (W : ℝ→ℂ) (a b P : ℝ) (ha : 0<a)
     apply (le_div_iff₀ hp).mpr
     linarith [(abs_le.mp hlogs).1]
   have hi := safeInverse_eq (1+(1/Real.log P)*Real.log y)
-    (hhalf.trans (le_abs_self _))
+    (by grind)
   rw [profile,hi,Real.log_mul (ne_of_gt hP) (ne_of_gt hyp)]
   push_cast
-  have hn : (Real.log P : ℂ)≠0 := Complex.ofReal_ne_zero.mpr hp.ne'
-  have hn' : (Real.log P : ℂ)+(Real.log y : ℂ)≠0 := by
-    have : 0<Real.log P+Real.log y := by
-      linarith [(abs_le.mp hlogs).1,abs_nonneg (Real.log a),abs_nonneg (Real.log b)]
-    exact_mod_cast this.ne'
-  field_simp
+  have hn := Complex.ofReal_ne_zero.mpr hp.ne'
+  grind
 
 end SevenEighths.PrimeLogProfile
 

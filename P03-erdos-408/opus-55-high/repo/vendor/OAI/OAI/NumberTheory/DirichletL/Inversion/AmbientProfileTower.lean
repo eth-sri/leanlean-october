@@ -10,8 +10,8 @@ public import OAI.NumberTheory.DirichletL.Descent.FullProfile
 namespace OAI
 
 namespace SevenEighths.InverseAmbientProfileTower
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
+open scoped Classical SchwartzMap FourierTransform
+open MeasureTheory JointLogSeparation
 open SevenEighths.InverseMoment
 noncomputable section
 
@@ -30,10 +30,10 @@ theorem ambientWeight_one_le {ι : Type*} [Fintype ι] (J : ℕ) (p : Ambient ι
   unfold ambientWeight
   exact one_le_mul_of_one_le_of_one_le
     (one_le_mul_of_one_le_of_one_le
-      (one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by linarith [norm_nonneg p.1.1]))
-        (one_le_pow₀ (by linarith [norm_nonneg p.1.2.1])))
-        (one_le_pow₀ (by linarith [norm_nonneg p.1.2.2])))
-    (Finset.one_le_prod₀ (fun i _ => one_le_pow₀ (by linarith [norm_nonneg (p.2 i)])))
+      (one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by simp))
+        (one_le_pow₀ (by simp)))
+        (one_le_pow₀ (by simp)))
+    (Finset.one_le_prod₀ (fun i _ => one_le_pow₀ (by simp)))
 
 theorem ambientWeight_add {ι : Type*} [Fintype ι] (J K : ℕ) (p : Ambient ι) :
     ambientWeight (J + K) p = ambientWeight J p * ambientWeight K p := by
@@ -50,14 +50,14 @@ private theorem one_add_norm_add_le (x y : ℝ) :
   have h := norm_add_le x y
   have hx := norm_nonneg x
   have hy := norm_nonneg y
-  nlinarith [mul_nonneg hx hy]
+  nlinarith
 
 private theorem coordinate_factor_le {ι : Type*} [Fintype ι]
     (i : ι) (u : ι → ℝ) :
     1 + ‖u i‖ ≤ ∏ j, (1 + ‖u j‖) :=
   by
   have hm (j : ι) : max (1 + ‖u j‖) 1 = 1 + ‖u j‖ :=
-    max_eq_left (by linarith [norm_nonneg (u j)])
+    max_eq_left (by simp)
   simpa only [hm] using
     Finset.le_prod_max_one (Finset.mem_univ i) (fun j => 1 + ‖u j‖)
 
@@ -69,11 +69,10 @@ theorem inheritedLeft_bound {ι : Type*} [Fintype ι] (i : ι) (p : Ambient ι) 
   have hc := coordinate_factor_le i p.2
   have ht : (1 + ‖p.1.1‖) * (1 + ‖p.1.2.2‖) ≤
       (1 + ‖p.1.1‖) * (1 + ‖p.1.2.1‖) * (1 + ‖p.1.2.2‖) := by
-    nlinarith [norm_nonneg p.1.1, norm_nonneg p.1.2.1, norm_nonneg p.1.2.2,
-      mul_nonneg (mul_nonneg (show 0 ≤ 1 + ‖p.1.1‖ by positivity)
+    nlinarith [mul_nonneg (mul_nonneg (show 0 ≤ 1 + ‖p.1.1‖ by positivity)
         (norm_nonneg p.1.2.1)) (show 0 ≤ 1 + ‖p.1.2.2‖ by positivity)]
   have hh := mul_le_mul hc ht (by positivity)
-    (Finset.prod_nonneg (fun j _ => by positivity))
+    (by positivity)
   change _ ≤ (∏ j, (1 + ‖p.2 j‖)) * _ at hh
   exact h.trans (by simpa [ambientWeight, inheritedLeft, mul_comm, mul_left_comm, mul_assoc] using hh)
 
@@ -94,7 +93,7 @@ theorem inherited_pair_weight_bound {ι : Type*} [Fintype ι]
     (pow_nonneg (le_trans zero_le_one (ambientWeight_one_le 1 p)) K)
   rw [← pow_add] at hh
   rw [ambientWeight_add, ambientWeight_eq_pow (2*K)]
-  exact mul_le_mul_of_nonneg_left (by simpa [two_mul] using hh)
+  exact mul_le_mul_of_nonneg_left (by grind)
     (le_trans zero_le_one (ambientWeight_one_le J p))
 
 def twistedFullDensity {ι : Type*} [Fintype ι]

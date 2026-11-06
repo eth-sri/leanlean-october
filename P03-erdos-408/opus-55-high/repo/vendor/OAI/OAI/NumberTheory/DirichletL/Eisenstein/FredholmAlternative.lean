@@ -8,33 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
-open scoped Topology
 open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
+open scoped LSeries.notation
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
@@ -43,43 +30,34 @@ open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
 open Filter Asymptotics
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics Ideal NumberField
 open Filter
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open Filter Asymptotics MeasureTheory
-open scoped Topology
 open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology InnerProductSpace
+open scoped Classical
 
 section
 
@@ -102,13 +80,13 @@ lemma ker_orthogonal_restriction_range (T : E→L[ℂ]F) :
   let : CompleteSpace T.ker := T.isClosed_ker.completeSpace_coe
   apply Set.Subset.antisymm
   · rintro _ ⟨u,rfl⟩
-    exact ⟨u.1,rfl⟩
+    simp
   · rintro _ ⟨u,rfl⟩
     refine ⟨⟨u-T.ker.starProjection u,T.ker.sub_starProjection_mem_orthogonal u⟩,?_⟩
     change T (u-T.ker.starProjection u)=T u
     rw [map_sub]
     have hz : T (T.ker.starProjection u)=0 := T.ker.starProjection_apply_mem u
-    rw [hz,sub_zero]
+    simp_all
 
 lemma ker_orthogonal_restriction_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G)
     (hK : IsCompactOperator K) (A B : ℝ)
@@ -125,14 +103,14 @@ lemma closed_range_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
   let : CompleteSpace T.kerᗮ := T.ker.isClosed_orthogonal.completeSpace_coe
   obtain ⟨D,hD⟩ := ker_orthogonal_restriction_antilipschitz T K hK A B hest
   rw [←ker_orthogonal_restriction_range T]
-  exact hD.isClosed_range (T.domRestrict T.kerᗮ).uniformContinuous
+  exact hD.isClosed_range (by simp)
 
 lemma selfAdjoint_range_eq_ker_orthogonal (T : E→L[ℂ]E) (hT : IsSelfAdjoint T)
     (hrange : IsClosed (Set.range T)) : T.range=T.kerᗮ := by
   have hh := T.orthogonal_ker
   rw [hT.adjoint_eq] at hh
   rw [hrange.submodule_topologicalClosure_eq] at hh
-  exact hh.symm
+  simp_all
 
 end
 
@@ -149,11 +127,11 @@ lemma selfAdjoint_fredholm_of_compact_estimate (T : E→L[ℂ]E) (hT : IsSelfAdj
     (T.kerᗮ.quotientEquivOfIsCompl T.ker T.ker.isCompl_orthogonal.symm).symm.finiteDimensional
   have hrange := closed_range_of_compact_estimate T K hK A B hest
   have heq := selfAdjoint_range_eq_ker_orthogonal T hT hrange
-  let : T.range.CoFG := heq.symm ▸ (inferInstance : T.kerᗮ.CoFG)
+  let : T.range.CoFG := heq.symm ▸ (by omega)
   obtain ⟨D,hD⟩ := ker_orthogonal_restriction_antilipschitz T K hK A B hest
   let : CompleteSpace T.kerᗮ := T.ker.isClosed_orthogonal.completeSpace_coe
   have hf : (T.domRestrict T.kerᗮ).IsFredholm := by
-    apply (hD.isClosedEmbedding (T.domRestrict T.kerᗮ).uniformContinuous).isFredholm
+    apply (hD.isClosedEmbedding (by simp)).isFredholm
     have he : (T.domRestrict T.kerᗮ).range=T.range := by
       apply SetLike.coe_injective
       exact ker_orthogonal_restriction_range T
@@ -197,16 +175,15 @@ lemma scalar_compact_energy_estimate (m g n t k spectralParam C : ℝ)
     n^2≤(4/(1-spectralParam)^2)*t^2+(4*C/(1-spectralParam))*k^2 := by
   have hd : 0<1-spectralParam := sub_pos.mpr hspectralParamone
   have hlow : (1-spectralParam)/2*n^2≤n*t+C*k^2 := by
-    nlinarith [mul_nonneg (show 0≤1+spectralParam by linarith) (sub_nonneg.mpr hcore),
-      mul_nonneg hd.le (mul_nonneg hC (sq_nonneg k))]
-  have hlow' := mul_le_mul_of_nonneg_left hlow (show 0≤4*(1-spectralParam) by positivity)
+    nlinarith [mul_nonneg hd.le (mul_nonneg hC (sq_nonneg k))]
+  have hlow' := mul_le_mul_of_nonneg_left hlow (by positivity)
   have hsq : (1-spectralParam)^2*n^2≤4*t^2+4*(1-spectralParam)*C*k^2 := by
     nlinarith [sq_nonneg ((1-spectralParam)*n-2*t)]
   have he : (4/(1-spectralParam)^2)*t^2+(4*C/(1-spectralParam))*k^2=
       (4*t^2+4*(1-spectralParam)*C*k^2)/(1-spectralParam)^2 := by
-    field_simp [hd.ne']
+    field_simp
   rw [he]
-  exact (le_div_iff₀ (sq_pos_of_pos hd)).mpr (by nlinarith [hsq])
+  exact (le_div_iff₀ (sq_pos_of_pos hd)).mpr (by linarith)
 
 lemma kernelSpectralFormOperator_compact_estimate
     (K : Set KernelQuotient) (hK : MeasurableSet K) (C : ℝ) (hC : 0≤C)
@@ -247,8 +224,7 @@ lemma kernelSpectralFormOperator_of_domain (z : ℂ) (u : kernelEnergyLaplacian.
     (z+1)•kernelVariationalSolution (kernelEnergyMass (kernelVariationalSolution (kernelEnergyLaplacian u+u)))=_
   rw [hu,←map_smul,←map_sub]
   congr 1
-  rw [add_smul,one_smul]
-  abel
+  simp [add_smul,one_smul]
 
 theorem kernelSpectralFormOperator_isFredholm (spectralParam : ℝ)
     (hzero : 0≤spectralParam) (hone : spectralParam<1) :
@@ -279,7 +255,7 @@ theorem cubeLogRange_sq_small_power (b ε : ℝ) (_hb : 0≤b) (hε : 0<ε) :
   have hB : 1≤B:=le_max_left _ _
   have hB0 : 0<B:=zero_lt_one.trans_le hB
   have hδ : 0<deltaLoss:=by dsimp [deltaLoss];positivity
-  have hlogB : 0≤Real.log B:=Real.log_nonneg hB
+  have hlogB:=Real.log_nonneg hB
   have hC₀ : 0<C₀:=by dsimp [C₀];positivity
   refine ⟨C₀^2,by positivity,?_⟩
   intro X Z hX hZ hXZ
@@ -289,61 +265,52 @@ theorem cubeLogRange_sq_small_power (b ε : ℝ) (_hb : 0≤b) (hε : 0<ε) :
   have hxY : max 1 (b*X)≤B*Z^3 := by
     apply max_le hY
     calc
-      b*X ≤ B*X:=mul_le_mul_of_nonneg_right (le_max_right _ _) hX
+      b*X ≤ B*X:=mul_le_mul_of_nonneg_right (by grind) hX
       _ ≤ B*Z^3:=mul_le_mul_of_nonneg_left hXZ hB0.le
   have hcard : ((cubeLogRange b X).card:ℝ)≤1+Real.log B+3*Real.log Z := by
     rw [cubeLogRange_card,Nat.cast_add,Nat.cast_one]
     have hlog:=normLogBin_le_log_upper (max 1 (b*X)) (B*Z^3)
-      (zero_lt_one.trans_le (le_max_left _ _)) hxY hY
-    rw [Real.log_mul hB0.ne' (pow_pos hZ0 3).ne',Real.log_pow] at hlog
+      (by positivity) hxY hY
+    rw [Real.log_mul hB0.ne' (by positivity),Real.log_pow] at hlog
     norm_num at hlog
     linarith
-  have hr : 1≤Z^deltaLoss:=Real.one_le_rpow hZ hδ.le
-  have hl : Real.log Z≤Z^deltaLoss/deltaLoss:=Real.log_le_rpow_div hZ0.le hδ
+  have hr:=Real.one_le_rpow hZ hδ.le
+  have hl:=Real.log_le_rpow_div hZ0.le hδ
   have hc : 1+Real.log B+3*Real.log Z≤C₀*Z^deltaLoss := by
     calc
       _ ≤ (1+Real.log B)*Z^deltaLoss+3*(Z^deltaLoss/deltaLoss) := by
         gcongr
-        exact le_mul_of_one_le_right (by linarith) hr
-      _ = _:=by dsimp [C₀];ring
+        nlinarith
+      _ = _:=by ring
   calc
     _ ≤ (C₀*Z^deltaLoss)^2:=pow_le_pow_left₀ (Nat.cast_nonneg _) (hcard.trans hc) 2
     _ = C₀^2*Z^ε:=by
       rw [mul_pow,←Real.rpow_natCast (Z^deltaLoss) 2,←Real.rpow_mul hZ0.le]
-      congr 1
-      dsimp [deltaLoss]
-      congr 1
-      ring
+      grind
 
 end CanonicalRowCompletion
 
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 
 end SecondPassArithmetic
 
 namespace CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic
+open scoped Classical
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
 open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion
 
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace CompletedGauss
-open ActualEisensteinCubic
 
 end CompletedGauss
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
@@ -352,15 +319,12 @@ open ConcreteTraceCRT (eisEmbedding)
 
 end CanonicalRowCompletion
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
+open scoped Classical
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic
 open CompletedGauss hiding O
 open ConcretePrimeRowBridge hiding O columnWeight
 open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
 open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion

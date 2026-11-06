@@ -8,7 +8,7 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 namespace SevenEighths.InverseInitialUniformFresh
 
 theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
@@ -35,13 +35,12 @@ theorem exists_uniform_fresh (K:ℕ)(a b:ℝ)(ha:0<a)(hab:a≤b):
     linarith
   · intro σ dec I hI V hV y yj yc hy hj hc hn
     have hh:=InverseInitialOverlapFresh.overlap_column_interval I (fun _=>1) (fun _=>2) y
-      a b 1 ((2:ℝ)^K) yj yc ha hab (by intros;norm_num) hy (by norm_num) hj hc (hV hn)
+      a b 1 ((2:ℝ)^K) yj yc ha hab (by simp) hy (by norm_num) hj hc (hV hn)
     simp only [Finset.prod_const,one_pow,mul_one,div_one] at hh
     apply hWone
     refine ⟨hh.1,?_⟩
     have hp:(2:ℝ)^I.card≤(2:ℝ)^K:=pow_le_pow_right₀ (by norm_num) hI
     have hup:yc≤b*(2:ℝ)^K:=hh.2.trans (mul_le_mul_of_nonneg_left hp hb.le)
-    dsimp [hi]
     linarith
 
 end SevenEighths.InverseInitialUniformFresh

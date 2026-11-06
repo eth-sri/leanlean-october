@@ -25,12 +25,8 @@ theorem discrete_increment_bounds (d : ℕ → ℝ) (a b : ℕ) (L U : ℝ)
   | succ b hab ih =>
     have hprev : ∀ j ∈ Finset.Ico a b, L ≤ d (j + 1) - d j ∧ d (j + 1) - d j ≤ U := by
       intro j hj
-      exact hstep j (Finset.mem_Ico.mpr ⟨(Finset.mem_Ico.mp hj).1,
-        (Finset.mem_Ico.mp hj).2.trans (Nat.lt_succ_self b)⟩)
-    have hlast := hstep b (Finset.mem_Ico.mpr ⟨hab, by omega⟩)
-    have hprior := ih hprev
-    push_cast
-    constructor <;> nlinarith [hprior.1, hprior.2, hlast.1, hlast.2]
+      exact by grind
+    grind
 
 /-- Darboux's theorem makes the sign of a nonvanishing second derivative
 constant. Absolute derivative bounds therefore give one uniform signed strip. -/
@@ -47,14 +43,8 @@ theorem second_derivative_signed_bounds (f' f'' : ℝ → ℝ) (s : Set ℝ)
     linarith
   rcases hasDerivWithinAt_forall_lt_or_forall_gt_of_forall_ne hs
       (fun x hx => (hf' x hx).hasDerivWithinAt) hn with hneg | hpos
-  · right
-    intro x hx
-    have hb := hbound x hx
-    rw [abs_of_neg (hneg x hx)] at hb
-    constructor <;> linarith [hb.1, hb.2]
-  · left
-    intro x hx
-    simpa only [abs_of_pos (hpos x hx)] using hbound x hx
+  · grind
+  grind
 
 end Problem337
 

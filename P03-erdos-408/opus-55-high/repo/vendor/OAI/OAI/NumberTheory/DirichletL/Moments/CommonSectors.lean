@@ -7,29 +7,27 @@ public import OAI.NumberTheory.DirichletL.Moments.CompleteCommon
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentCommonSectors
 open CenteredMomentCompleteCommon CenteredMomentSupport IdealMobiusDivisorSum UniqueFactorizationMonoid
-local notation "O" => ActualEisensteinCubic.O
 
-theorem primeSupport_mul (I J : Ideal O) (hI : I≠0) (hJ : J≠0) :
+theorem primeSupport_mul (I J : Ideal ActualEisensteinCubic.O) (hI : I≠0) (hJ : J≠0) :
     primeSupport (I*J)=primeSupport I∪primeSupport J := by
   simp only [primeSupport,normalizedFactors_mul hI hJ,Multiset.toFinset_add]
 
-theorem supportExtract_of_subset (I : Ideal O) (hI : I≠0) (S : Finset (Ideal O))
+theorem supportExtract_of_subset (I : Ideal ActualEisensteinCubic.O) (hI : I≠0) (S : Finset (Ideal ActualEisensteinCubic.O))
     (hS : primeSupport I⊆S) : supportExtract I S=I := by
   unfold supportExtract
   rw [Multiset.filter_eq_self.mpr (fun P hP => hS (Multiset.mem_toFinset.mpr hP))]
   exact Ideal.prod_normalizedFactors_eq_self hI
 
-theorem supportExtract_of_disjoint (I : Ideal O) (S : Finset (Ideal O))
+theorem supportExtract_of_disjoint (I : Ideal ActualEisensteinCubic.O) (S : Finset (Ideal ActualEisensteinCubic.O))
     (hS : Disjoint (primeSupport I) S) : supportExtract I S=1 := by
   unfold supportExtract
-  rw [Multiset.filter_eq_nil.mpr (fun P hP => Finset.disjoint_left.mp hS (Multiset.mem_toFinset.mpr hP))]
-  rfl
+  simp [Multiset.filter_eq_nil.mpr (fun P hP => Finset.disjoint_left.mp hS (Multiset.mem_toFinset.mpr hP))]
 
-theorem reconstructed_commonSupport (C D a b : Ideal O)
+theorem reconstructed_commonSupport (C D a b : Ideal ActualEisensteinCubic.O)
     (hC : C≠0) (hD : D≠0) (ha : a≠0) (hb : b≠0)
     (hCD : primeSupport C=primeSupport D)
     (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b) :
@@ -43,13 +41,13 @@ theorem reconstructed_commonSupport (C D a b : Ideal O)
   simp only [Finset.mem_inter,Finset.mem_union]
   constructor
   · rintro ⟨hc|ha',hd|hb'⟩
-    · exact hc
-    · exact hc
-    · exact hd
+    · omega
+    · omega
+    · omega
     · exact False.elim (Finset.disjoint_left.mp h₃ ha' hb')
-  · exact fun hp => ⟨Or.inl hp,Or.inl hp⟩
+  simp_all
 
-theorem reconstructed_commonParts (C D a b : Ideal O)
+theorem reconstructed_commonParts (C D a b : Ideal ActualEisensteinCubic.O)
     (hC : C≠0) (hD : D≠0) (ha : a≠0) (hb : b≠0)
     (hCD : primeSupport C=primeSupport D)
     (hCa : IsCoprime C a) (hCb : IsCoprime C b) (hab : IsCoprime a b) :
@@ -62,7 +60,7 @@ theorem reconstructed_commonParts (C D a b : Ideal O)
       supportExtract_of_subset C hC _ (Finset.Subset.refl _),supportExtract_of_disjoint a _ h₁.symm,mul_one]
   · rw [commonPart_eq_supportExtract,commonSupport_comm (D*b) (C*a),hs,
       supportExtract_mul D b hD hb,
-      supportExtract_of_subset D hD _ (by rw [hCD]),supportExtract_of_disjoint b _ h₂.symm,mul_one]
+      supportExtract_of_subset D hD _ (by simp_all),supportExtract_of_disjoint b _ h₂.symm,mul_one]
 
 end SevenEighths.CenteredMomentCommonSectors
 

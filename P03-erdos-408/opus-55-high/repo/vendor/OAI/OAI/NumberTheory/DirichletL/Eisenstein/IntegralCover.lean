@@ -8,31 +8,22 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
 open Finset Complex
 open scoped Classical
 open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
+open ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ConcreteTraceCRT
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -52,38 +43,33 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical
 
 namespace CubicEisenstein
 
 section
 open MeasureTheory Filter
-open scoped BigOperators Classical MatrixGroups
+open scoped Classical MatrixGroups
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def ramifiedOmegaUnit : Eisˣ := (omega_primitive.isUnit (by decide)).unit
@@ -119,9 +105,9 @@ lemma onceCusp_q_dvd_frequency (t:Eisˣ) (l:Fin 3) (h:Eis)
     (hfreq:(3:Eis)∣h-onceCuspScale t) : onceCuspScale t*omega^l.val∣h := by
   have hd:(3:Eis)∣h-onceCuspScale t*omega^l.val:=by
     convert dvd_sub hfreq (onceCusp_q_congr_scale t l) using 1 ;ring
-  have hh:onceCuspScale t*omega^l.val∣h-onceCuspScale t*omega^l.val:=
+  have hh:=
     (onceCusp_q_dvd_three t l).trans hd
-  simpa only [sub_add_cancel] using dvd_add hh (dvd_refl (onceCuspScale t*omega^l.val))
+  simp_all
 
 lemma onceCusp_period_congruence (t:Eisˣ) (l:Fin 3) (h:Eis) (j:ℕ)
     (hfreq:(3:Eis)∣h-onceCuspScale t) :
@@ -155,10 +141,7 @@ lemma onceCuspRayIndex_spec (u t:Eisˣ) (l:Fin 3) :
   have hh:=Classical.choose_spec (unit_eq_sign_omega (onceCuspRayUnit u t l))
   change (onceCuspRayUnit u t l:Eis)=omega^(onceCuspRayIndex u t l).val ∨
     (onceCuspRayUnit u t l:Eis)=-(omega^(onceCuspRayIndex u t l).val) at hh
-  rw [he]
-  rcases hh with hh|hh
-  · exact Or.inl (by rw [hh])
-  · exact Or.inr (by rw [hh];ring)
+  grind
 
 def onceCuspGaussSeries (u t:Eisˣ) (h:Eis) (hfreq:(3:Eis)∣h-onceCuspScale t) (s:ℂ) : ℂ :=
   ∑l:Fin 3,if (3:Eis)∣onceCuspFrequencyQuotient t h hfreq l+
@@ -178,16 +161,13 @@ theorem onceCusp_eisenstein_fourier (u t:Eisˣ) (h:Eis)
       (onceCuspFrequencyQuotient_spec t h hfreq)
         (fun l=>onceCusp_period_congruence t l h _ hfreq) v hv s hs,
     onceCuspGaussSeries,Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro l hl
-  split_ifs <;>ring
+  grind
 
 end
 
 section
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Manifold ContDiff
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology MatrixGroups Manifold ContDiff
 
 lemma hyperbolicAction_contMDiff (g : SL(2,ℂ)) :
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,SpatialCoordinates) ∞
@@ -203,9 +183,7 @@ lemma hyperbolicAction_contMDiff (g : SL(2,ℂ)) :
     rw [mobiusSpatial_coordinates_global]
     exact congrArg (mobiusSpatial g) (hyperbolicSpatialChart.right_inv hpt)
   have hd := ((mobiusSpatial_contDiffAt g _ (hyperbolicSpatialCoordinates_positive w)).congr_of_eventuallyEq he).contDiffWithinAt (s:=Set.univ)
-  simpa only [extChartAt_coe,extChartAt_coe_symm,modelWithCornersSelf_coe,
-    modelWithCornersSelf_coe_symm,Function.id_comp,Function.comp_id,Set.preimage_id_eq,Set.range_id,
-    hyperbolicSpatial_chartAt,hyperbolicSpatialChart_apply,Function.comp_def,id_eq] using hd
+  simpa
 
 lemma kernel_contMDiff_of_lift (f : KernelQuotient→ℂ)
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞
@@ -213,7 +191,7 @@ lemma kernel_contMDiff_of_lift (f : KernelQuotient→ℂ)
     ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f := by
   intro q
   have hq : q∈(kernelQuotientChart q).source := mem_chart_source SpatialCoordinates q
-  have hp : kernelQuotientChart q q∈hyperbolicSpatialChart.target :=
+  have hp :=
     ((kernelQuotientChart q).map_source hq).1
   have hs : ContMDiffOn 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,SpatialCoordinates) ∞
       hyperbolicSpatialChart.symm hyperbolicSpatialChart.target := by
@@ -239,9 +217,7 @@ lemma kernel_contMDiff_of_lift (f : KernelQuotient→ℂ)
   rw [contMDiffAt_iff]
   refine ⟨hc,?_⟩
   have hh := hdc.contDiffWithinAt (s:=Set.univ)
-  simpa only [extChartAt_coe,extChartAt_coe_symm,modelWithCornersSelf_coe,
-    modelWithCornersSelf_coe_symm,Function.id_comp,Function.comp_id,Set.range_id,
-    kernelSpatial_chartAt,chartAt_self_eq,OpenPartialHomeomorph.refl_apply,Function.comp_def,id_eq] using hh
+  simpa
 
 lemma kernelSource_comp_contMDiff (M : CubicKubota.levelTwo) (f : KernelQuotient→ℂ)
     (hf : ContMDiff 𝓘(ℝ,SpatialCoordinates) 𝓘(ℝ,ℂ) ∞ f) :
@@ -336,8 +312,7 @@ lemma kernelSourceEnergyPullback_mass (M : CubicKubota.levelTwo) (u : KernelEner
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups InnerProductSpace
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology MatrixGroups
 
 lemma kernelSourceEnergyPullback_inverse (M : CubicKubota.levelTwo) (u : KernelEnergyGraph) :
     kernelSourceEnergyPullback M (kernelSourceEnergyPullback M⁻¹ u)=u := by
@@ -375,15 +350,15 @@ theorem kernelSource_operatorGraph (M : CubicKubota.levelTwo)
 theorem kernelSource_eigenvector (M : CubicKubota.levelTwo) (F : KernelQuotientL2)
     (eigenvalue : ℂ) (hF : (F,eigenvalue • F)∈kernelEnergyLaplacian.graph) :
     (kernelSourcePullback M F,eigenvalue • kernelSourcePullback M F)∈kernelEnergyLaplacian.graph := by
-  simpa only [map_smul] using kernelSource_operatorGraph M F (eigenvalue • F) hF
+  simpa using kernelSource_operatorGraph M F (eigenvalue • F) hF
 
 end CubicEisenstein
 
 section
 
-open scoped Classical MatrixGroups BigOperators
+open scoped Classical MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CubicJacobiGlobal
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubeCuspHeightWeight (p:Eis) (j:Fin 4) : ℂ :=
@@ -412,11 +387,10 @@ theorem actualCubeCuspPhaseSum_height (A:levelTwo) (p:Eis) (hp:Prime p)
   · rw [actualCubeCuspPhaseSum_dvd A p hp hprimary hA hc,
       cubeCuspHeightWeight_zero]
     field_simp
-  · have hcop:IsCoprime ((A:SL(2,Eis)) 1 0) p:=(hp.coprime_iff_not_dvd.mpr hc).symm
+  · have hcop:=(hp.coprime_iff_not_dvd.mpr hc).symm
     rw [actualCubeCuspPhaseSum_coprime A p hp hprimary hA hcop,
       cubeCuspHeightWeight_zero,cubeCuspHeightWeight_three]
-    field_simp
-    ; ring
+    grind
 
 theorem actualCubeCuspPhaseSum_normalized (A:levelTwo) (p:Eis) (hp:Prime p)
     (hprimary:lambda^2∣p-1) (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1) :
@@ -434,7 +408,7 @@ end CubicKubota
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubeDilationRoot (p:Eis) : ℂ :=
@@ -461,7 +435,7 @@ lemma cubeAverageMatrix_entries (p:Eis) (hp:p≠0) (q:Eis) :
   apply Matrix.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [complexDiagonal, complexTranslation, Matrix.mul_apply, Fin.sum_univ_two]
+    simp [complexDiagonal, complexTranslation]
 
 lemma cubeAverageMatrix_add_multiple (p:Eis) (hp:p≠0) (q n:Eis) :
     cubeAverageMatrix p hp (q+p^3*n)=
@@ -473,10 +447,8 @@ lemma cubeAverageMatrix_add_multiple (p:Eis) (hp:p≠0) (q n:Eis) :
   have hz := cubeDilationRoot_ne_zero p hp
   have he := cubeDilationRoot_sq p
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, complexTranslation,
-      map_add, map_mul, map_pow]
-  rw [← he]
-  field_simp
+    simp [Matrix.mul_apply, complexTranslation]
+  grind
 
 lemma cubeAverageMatrix_translate_one (p:Eis) (hp:p≠0) (q t:Eis)
     (ht:3*t=1-p^3) :
@@ -491,9 +463,8 @@ lemma cubeAverageMatrix_translate_one (p:Eis) (hp:p≠0) (q t:Eis)
   apply Matrix.ext
   intro i j
   fin_cases i <;> fin_cases j <;>
-    simp [Matrix.mul_apply, Fin.sum_univ_two, complexTranslation, map_add]
-  field_simp
-  linear_combination -ht'-he
+    simp [Matrix.mul_apply, complexTranslation]
+  grind
 
 def cubeAverage (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ) (w:HyperbolicSpace) : ℂ :=
   (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹^3 *
@@ -510,7 +481,7 @@ lemma cubeAverage_summand_congr (p:Eis) (hp:p≠0) (F:HyperbolicSpace→ℂ)
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicKubota
+open CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma cubeAverageMatrix_action (p:Eis) (hp:p≠0) (q:Eis)
@@ -540,8 +511,8 @@ theorem cubeAverage_period_one (p:Eis) (hp:p≠0) (hprimary:lambda^2∣p-1)
   let a:(Eis⧸Ideal.span {p^3})≃(Eis⧸Ideal.span {p^3}):=
     { toFun:=fun r=>r+Ideal.Quotient.mk _ t
       invFun:=fun r=>r-Ideal.Quotient.mk _ t
-      left_inv:=fun r=>add_sub_cancel_right r _
-      right_inv:=fun r=>sub_add_cancel r _ }
+      left_inv:=by grind
+      right_inv:=by grind }
   let f (r:Eis⧸Ideal.span {p^3}):=
     F (cubeAverageMatrix p hp (GaussianShiftedPartition.representative (p^3) r) • w)
   have hpoint (r:Eis⧸Ideal.span {p^3}):
@@ -564,11 +535,9 @@ end CubicEisenstein
 end
 
 open Filter MeasureTheory
-open scoped BigOperators Classical Topology MatrixGroups Pointwise
-open Finset AddChar MulChar EisensteinEmbedding
+open scoped Classical Topology MatrixGroups Pointwise
 
 namespace CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
 def integralCoverMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) :
     IntegralOrbitQuotient H→IntegralOrbitQuotient K :=
@@ -649,8 +618,8 @@ private lemma mem_integralCoverSheet (H K : Subgroup (SL(2,ActualEisensteinCubic
 lemma integralCoverSheet_membership {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤K) (q : IntegralCoverCosets H K) (h : H) (w : HyperbolicSpace) :
     h•w∈integralCoverSheet H K q ↔
-      (integralCoverRep H K q*Subgroup.inclusion hHK h)•w∈hyperbolicFundamentalSet K := by
-  exact (mem_integralCoverSheet H K q (h • w)).trans
+      (integralCoverRep H K q*Subgroup.inclusion hHK h)•w∈hyperbolicFundamentalSet K :=
+  (mem_integralCoverSheet H K q (h • w)).trans
     (mul_smul_mem_set_iff (integralCoverRep H K q) (Subgroup.inclusion hHK h)
       w (h • w) (integralCover_inclusion_smul hHK h w).symm (hyperbolicFundamentalSet K))
 
@@ -667,8 +636,7 @@ lemma integralCoverDomain_covers {H K : Subgroup (SL(2,ActualEisensteinCubic.O))
   refine ⟨h,Set.mem_iUnion.mpr ⟨q,?_⟩⟩
   apply (integralCoverSheet_membership hHK q h w).mpr
   change (r*Subgroup.inclusion hHK h)•w∈hyperbolicFundamentalSet K
-  rw [hin,mul_inv_cancel_left]
-  exact hk
+  simp_all
 
 lemma integralCoverDomain_unique {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤K) (hK : K≤CubicKubota.levelThree) (w : HyperbolicSpace)
@@ -686,8 +654,7 @@ lemma integralCoverDomain_unique {H K : Subgroup (SL(2,ActualEisensteinCubic.O))
     rw [integralCoverRep_mul_projection hHK q1 h1,
       integralCoverRep_mul_projection hHK q2 h2] at hproj
     exact hproj
-  subst q2
-  exact (Subgroup.inclusion_injective hHK) (mul_left_cancel he)
+  simp_all
 
 theorem integralCoverDomain_isFundamentalDomain {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
     (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :

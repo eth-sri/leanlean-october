@@ -9,20 +9,18 @@ public import OAI.NumberTheory.DirichletL.Moments.SupportedCorrelation
 namespace OAI
 
 noncomputable section
-open scoped Classical
 namespace SevenEighths.ProbeGramCommon
 open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
-local notation "O" => ActualEisensteinCubic.O
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcreteTraceCRT
 
-def actualCommon (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : O) : ℂ := by
+def actualCommon (C : ActualEisensteinCubic.O) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : ActualEisensteinCubic.O) : ℂ := by
   letI := finite_quotient_span (supported_element_ne_zero C hC)
   letI : Fintype (ResidueQ C) := Fintype.ofFinite _
   exact fullCorrelation (fun x : ResidueQ C=>Ideal.Quotient.mk _ n₂*x)
     (fun y : ResidueQ C=>Ideal.Quotient.mk _ n₁*y)
     (supportedModulusCharacter C hC) (supportedModulusCharacter C hC) (Ideal.Quotient.mk _ k)
 
-lemma actualCommon_parameter (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ a b k : O)
+lemma actualCommon_parameter (C : ActualEisensteinCubic.O) (hC : Supported (Ideal.span {C})) (n₁ n₂ a b k : ActualEisensteinCubic.O)
     (hab : a*n₁+b*n₂=1) :
     letI := finite_quotient_span (supported_element_ne_zero C hC)
     letI : Fintype (ResidueQ C) := Fintype.ofFinite _

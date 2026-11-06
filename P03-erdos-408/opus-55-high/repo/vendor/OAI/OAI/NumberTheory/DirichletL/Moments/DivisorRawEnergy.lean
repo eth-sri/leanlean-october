@@ -7,12 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.DivisorRaw
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentDivisorRawEnergy
 open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
 open CenteredMomentDivisorRaw CenteredMomentHeckeSlots CenteredMomentHeckeHeight HeckeFamily
-local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
 theorem normalized_norm_sq (T : ℝ) (hT : 0 < T) (x : ℂ) :
@@ -21,9 +20,9 @@ theorem normalized_norm_sq (T : ℝ) (hT : 0 < T) (x : ℂ) :
     Real.sq_sqrt hT.le]
   ring
 
-def residualCenteredRow (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (P : ι → ℝ)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+def residualCenteredRow (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (P : ι → ℝ)
+    (D : Ideal ActualEisensteinCubic.O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ T : ℝ) : ℂ :=
   centeredSlotRow η m A z W₁ W₂
     (fun i : liveIndices D a => S i) (fun i : liveIndices D a => β i)
@@ -32,11 +31,11 @@ def residualCenteredRow (η : Character) (m A z : O) (t : ℝ)
     (Y₁/Ideal.absNorm (selectedPlain D a 0)) (Y₂/Ideal.absNorm (selectedPlain D a 1))
     (T/selectedNorm D a)
 
-theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
-    (S : ι → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,Prime I)
-    (β : ι → Ideal O → ℂ) (M P : ι → ℝ) (hM : ∀ i,0 ≤ M i) (hP : ∀ i,0 < P i)
+theorem allocated_raw_energy (η : Character) (m A z : ActualEisensteinCubic.O) (t : ℝ)
+    (S : ι → Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀ i,∀ I∈S i,Prime I)
+    (β : ι → Ideal ActualEisensteinCubic.O → ℂ) (M P : ι → ℝ) (hM : ∀ i,0 ≤ M i) (hP : ∀ i,0 < P i)
     (hβ : ∀ i,∀ I∈S i,‖β i I‖ ≤ M i)
-    (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
+    (D : Ideal ActualEisensteinCubic.O) (a : Allocation D (Finset.univ : Finset (ι ⊕ Fin 2)))
     (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ T : ℝ)
     (hW₁ : Function.support W₁ ⊆ Set.Iic b₁) (hW₂ : Function.support W₂ ⊆ Set.Iic b₂)
     (hX₁ : 0 < X₁) (hX₂ : 0 < X₂) (hY₁ : 0 < Y₁) (hY₂ : 0 < Y₂) (hT : 0 < T) :
@@ -60,10 +59,10 @@ theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
     rw [norm_mul,norm_prod]
     convert hh using 1 ; ring
   have hraw : 0 < rawRemaining D a T P := mul_pos (div_pos hT (selectedNorm_pos D a))
-    (Finset.prod_pos (fun i _ => hP i))
+    (Finset.prod_pos (by grind))
   have hformal : 0 < formalReductionFactor D a P := mul_pos (selectedNorm_pos D a)
-    (Finset.prod_pos (fun i _ => hP i))
-  have htotal : 0 < T*∏ i,P i := mul_pos hT (Finset.prod_pos (fun i _ => hP i))
+    (Finset.prod_pos (by grind))
+  have htotal : 0 < T*∏ i,P i := mul_pos hT (Finset.prod_pos (by grind))
   have hres : ‖residualCenteredRow η m A z t S β P D a W₁ W₂ X₁ X₂ Y₁ Y₂ T‖^2 =
       ‖L‖^2/rawRemaining D a T P := by
     unfold residualCenteredRow centeredSlotRow
@@ -76,7 +75,7 @@ theorem allocated_raw_energy (η : Character) (m A z : O) (t : ℝ)
       div_le_div_of_nonneg_right (pow_le_pow_left₀ (norm_nonneg _) hn 2) htotal.le
     _ = _ := by
       rw [← raw_scale_identity D a T P,mul_pow]
-      field_simp [hraw.ne',hformal.ne']
+      ring
 
 end SevenEighths.CenteredMomentDivisorRawEnergy
 

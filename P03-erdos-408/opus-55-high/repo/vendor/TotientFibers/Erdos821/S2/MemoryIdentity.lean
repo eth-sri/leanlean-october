@@ -9,7 +9,6 @@ public import Erdos821.S2.ResidueFactorizationTask
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -92,7 +91,7 @@ theorem memory_fiber_sum (hGhost : SpanGhostWeightTask) (hMark : SpanMarkWeightT
   rw [sum_pair_factor, hY]
   have hC : (∑ S : {S : LifespanAssignment P n // Q.lifespanValid S}, (Q.spanProduct S.val : ℂ)) =
       ((∑ S : {S : LifespanAssignment P n // Q.lifespanValid S}, Q.spanProduct S.val : ℝ) : ℂ) :=
-    (Complex.ofReal_sum _ _).symm
+    by simp
   rw [hC]
   calc
     _ = Q.coefficientPrefactor theta * (Q.smallResidueExpression : ℂ) *

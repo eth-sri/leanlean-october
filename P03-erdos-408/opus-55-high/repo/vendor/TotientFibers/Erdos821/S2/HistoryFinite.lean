@@ -7,7 +7,6 @@ public import Erdos821.S2.HistoryBirths
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -18,13 +17,10 @@ variable {F : FixedData} {P : PrimeGroups} {J m : ℕ}
 
 theorem multiset_card_sum {α ι : Type*} (s : Finset ι) (f : ι → Multiset α) :
     (∑ i ∈ s, f i).card = ∑ i ∈ s, (f i).card := by
-  classical
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert i s hi ih => simp [hi, ih, Multiset.card_add]
+  simp
 
 theorem group_prime_mem_all (g : P.Group) (p : P.Prime g) : p.val ∈ P.allPrimes :=
-  Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, p.property⟩
+  Finset.mem_biUnion.mpr (by grind)
 
 /-- A bounded multiset over a finite alphabet is the image of a bounded
 ordered-list representation. This keeps diagonal multiplicities. -/
@@ -56,17 +52,17 @@ theorem bounded_memoryState_finite (P : PrimeGroups) (M B : ℕ) :
       have hg : (s.val.2.2 g).card ≤ P.memorySize s.val := by
         unfold PrimeGroups.memorySize
         exact Finset.single_le_sum (f := fun h => (s.val.2.2 h).card)
-          (fun _ _ => Nat.zero_le _) (Finset.mem_univ g)
-      exact hg.trans s.property⟩)
+          (by omega) (Finset.mem_univ g)
+      omega⟩)
   apply Finite.of_injective enc
   intro s t he
   apply Subtype.ext
-  have hy : s.val.1 = t.val.1 := congrArg (fun z => z.1) he
-  have ha : s.val.2.1 = t.val.2.1 := congrArg (fun z => z.2.1) he
+  have hy : s.val.1 = t.val.1 := by grind
+  have ha : s.val.2.1 = t.val.2.1 := by grind
   have hz : s.val.2.2 = t.val.2.2 := by
     funext g
     exact congrArg (fun z => (z.2.2 g).val) he
-  exact Prod.ext hy (Prod.ext ha hz)
+  grind
 
 abbrev BoundedHistoryData (A : Model F P J m) (n B : ℕ) :=
   Σ before : Fin (n + 1) → BoundedMemoryState P (J + F.ell) B,
@@ -86,13 +82,12 @@ theorem truncated_history_finite (A : Model F P J m) (n B : ℕ) :
     infer_instance
   let mk : BoundedHistoryData A n B → {H : MemoryHistory A n // H.Truncated B} :=
     fun d => ⟨⟨(fun i => (d.1 i).val), (fun i => (d.2.1 i).val), d.2.2.1, d.2.2.2⟩,
-      fun i => ⟨(d.1 i).property, (d.2.1 i).property⟩⟩
+      fun i => by grind⟩
   apply Finite.of_surjective mk
   intro H
   refine ⟨⟨(fun i => ⟨H.val.before i, (H.property i).1⟩),
     (fun i => ⟨H.val.after i, (H.property i).2⟩), H.val.ghost, H.val.edge⟩, ?_⟩
-  apply Subtype.ext
-  rfl
+  grind
 
 namespace MemoryHistory
 
@@ -123,7 +118,7 @@ theorem birthValues_subset_allprimes : H.birthValues ⊆ P.allPrimes.val := by
     exact group_prime_mem_all g.val ((permuteActive (H.edge i).2.1 (H.before i.succ)).2.1 g.val h)
 
 theorem birthValues_card_le (hH : H.DistinctBirths) : H.birthValues.card ≤ P.allPrimes.card := by
-  have he : H.birthValues ≤ P.allPrimes.val :=
+  have he :=
     (Multiset.le_iff_subset hH).mpr H.birthValues_subset_allprimes
   exact Multiset.card_le_card he
 
@@ -136,7 +131,7 @@ theorem distinct_truncated (hH : H.Valid) (hd : H.DistinctBirths) :
   have ht := H.totalGhostBirths_le_card.trans (H.birthValues_card_le hd)
   have hi : i.val ≤ n := by omega
   have hc := Nat.mul_le_mul_right ((J + F.ell) * Fintype.card P.BigGroup) hi
-  constructor <;> omega
+  omega
 
 theorem valid_distinct_finite (A : Model F P J m) (n : ℕ) :
     Finite {H : MemoryHistory A n // H.Valid ∧ H.DistinctBirths} := by
@@ -148,8 +143,7 @@ theorem valid_distinct_finite (A : Model F P J m) (n : ℕ) :
     fun H => ⟨H.val, H.val.distinct_truncated H.property.1 H.property.2⟩
   apply Finite.of_injective enc
   intro H K he
-  apply Subtype.ext
-  exact congrArg (fun z : {H : MemoryHistory A n // H.Truncated B} => z.val) he
+  grind
 
 end MemoryHistory
 
@@ -169,14 +163,12 @@ theorem distinctMemoryExpression_eq_finite_sum (A : Model F P J m) (n : ℕ) (rh
     intro H hH
     change (if H.Valid ∧ H.DistinctBirths then H.Weight rho theta else 0) ≠ 0 at hH
     by_contra hn
-    exact hH (ite_eq_right hn)
+    exact by grind
   unfold distinctMemoryExpression
   rw [← tsum_subtype_eq_of_support_subset hs]
   change (∑' H : ValidDistinctHistory A n,
     if H.val.Valid ∧ H.val.DistinctBirths then H.val.Weight rho theta else 0) = _
   rw [tsum_fintype]
-  apply Finset.sum_congr rfl
-  intro H _
-  exact ite_eq_left H.property
+  grind
 
 end Erdos821.S2Core

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Inversion.AmbientProfileTower
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge JointLogSeparation EisensteinSchwartzPoisson
 open SevenEighths.InverseMoment
 open SevenEighths.InverseInitialProfile
@@ -28,7 +28,7 @@ theorem rooted_support (g : 𝓢(ℝ, ℂ)) (M a : ℝ)
     (hg : Function.support g ⊆ Set.Icc (-M) M) :
     Function.support (rooted g M a hg) ⊆ Set.Icc (-M) M := by
   intro y hy
-  exact hg (by simpa using hy)
+  exact hg (by simp_all)
 
 def translated (g : 𝓢(ℝ, ℂ)) (ρ : ℝ) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.compSubConstCLM ℂ (-ρ) g
@@ -67,7 +67,7 @@ private theorem fourier_twist (g : 𝓢(ℝ, ℂ)) (θ t : ℝ) :
   rw [SchwartzMap.fourier_coe]
   have he : (frequencyTwist g θ : ℝ → ℂ) = fun y => logPhase θ y * g y := by
     ext y
-    exact frequencyTwist_apply g θ y
+    exact by simp
   rw [he, InverseClippingProfiles.fourier_phase_shift, ← SchwartzMap.fourier_coe]
 
 theorem density_norm (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
@@ -96,7 +96,7 @@ theorem normalization_bound (B : Fin 6 → ℝ) (b : ℝ)
     calc
       _ ≤ |InverseClippingProfiles.secondBalancedSlope i*ρ i| := neg_le_abs _
       _ = |InverseClippingProfiles.secondBalancedSlope i| *|ρ i| := abs_mul _ _
-      _ ≤ _ := mul_le_mul_of_nonneg_left (hρ i) (abs_nonneg _)
+      _ ≤ _ := mul_le_mul_of_nonneg_left (by grind) (abs_nonneg _)
   have h1 := Real.log_le_log hc₁ hc₁b
   have h2 := Real.log_le_log hc₂ hc₂b
   linarith
@@ -134,24 +134,20 @@ private theorem radial_common_box (Φ : 𝓢(ℝ, ℂ)) (M : Fin 6 → ℝ)
   intro V hV y
   simp only [Finset.prod_mul_distrib]
   by_cases hz : (∏ i, V i (y i)) = 0
-  · simp [hz]
+  · simp_all
   · have hall (i : Fin 6) : V i (y i) ≠ 0 :=
       (Finset.prod_ne_zero_iff.mp hz) i (Finset.mem_univ i)
     have hbox (i : Fin 6) : box i (y i) = 1 := by simp [box, hV i _ (hall i)]
     have h := he y
     simp only [hbox, one_mul, Finset.prod_const_one] at h
     rw [h, ← integral_const_mul]
-    apply integral_congr_ae
-    filter_upwards with t
     ring
 
 theorem translated_box (g : 𝓢(ℝ, ℂ)) (M B ρ : ℝ)
     (hg : Function.support g ⊆ Set.Icc (-M) M) (hρ : |ρ| ≤ B)
     {y : ℝ} (hy : translated g ρ y ≠ 0) : |y| ≤ M+B := by
-  have h := hg (show g (y+ρ) ≠ 0 from by simpa only [translated_apply] using hy)
-  have hr := abs_le.mp hρ
-  apply abs_le.mpr
-  constructor <;> linarith [h.1,h.2,hr.1,hr.2]
+  have h := hg (show g (y+ρ) ≠ 0 from by simp_all)
+  grind
 
 theorem density_weighted_integral (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ, ℂ))
     (ρ : Fin 6 → ℝ) (c₁ c₂ θ₁ θ₂ L : ℝ) (J : ℕ) :
@@ -201,13 +197,13 @@ theorem common_measure (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, 
         C*((1+‖θ₁‖)^(InverseClippingProfiles.momentOrder J) *
           (1+‖θ₂‖)^(InverseClippingProfiles.momentOrder J)) := by
   obtain ⟨C₃,hC₃,hsep⟩ := radial_common_box Φ (fun i => M i+B i)
-    (fun i => add_nonneg (hM i) (hB i)) A J
+    (by grind) A J
   obtain ⟨C₁,hC₁,h₁⟩ := frequencyTwist_fourier_moment J g₁
   obtain ⟨C₂,hC₂,h₂⟩ := frequencyTwist_fourier_moment J g₂
   let D := ∏ i, ∫ t : ℝ, (1+‖t‖)^J * ‖(𝓕 (g i)) t‖
   let E := Real.exp ((∑ i, |InverseClippingProfiles.secondBalancedSlope i| * B i)+Real.log b)
-  have hD : 0 ≤ D := Finset.prod_nonneg (fun i _ => integral_nonneg (fun _ => by positivity))
-  have hE : 0 ≤ E := (Real.exp_pos _).le
+  have hD : 0 ≤ D := by positivity
+  have hE : 0 ≤ E := by positivity
   refine ⟨E*C₁*C₂*C₃*D, by positivity, ?_⟩
   intro R hR
   obtain ⟨b₃,he,hm⟩ := hsep R hR
@@ -216,7 +212,7 @@ theorem common_measure (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, 
   refine ⟨?_, density_weighted_integrable _ _ _ _ _ _ _ _ _ _ _, ?_⟩
   · intro y
     have hb : ∀ i z, translated (g i) (ρ i) z ≠ 0 → |z| ≤ M i+B i :=
-      fun i z hz => translated_box (g i) (M i) (B i) (ρ i) (hg i) (hρ i) hz
+      fun i z hz => translated_box (g i) (M i) (B i) (ρ i) (hg i) (by grind) hz
     have hid := descent_profile_identity (clippedTwist g₁ c₁ θ₁) (clippedTwist g₂ c₂ θ₂)
       Φ (fun i => translated (g i) (ρ i)) secondLeftSlope secondRightSlope secondKernelSlope
       R b₃ (he _ hb) y
@@ -232,7 +228,7 @@ theorem common_measure (g : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, 
     ring
   · rw [density_weighted_integral]
     have h12 := mul_le_mul (h₁ θ₁) (h₂ θ₂)
-      (integral_nonneg (fun _ => by positivity)) (by positivity)
+      (by positivity) (by positivity)
     have h123 := mul_le_mul h12 hm (by positivity) (by positivity)
     have hd := mul_le_mul_of_nonneg_right h123 hD
     have hn := normalization_bound B b ρ c₁ c₂ L hρ hc₁ hc₂ hc₁b hc₂b hL
@@ -264,7 +260,7 @@ theorem positiveSource_logSchwartz (W : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
       clippedSource W c θ x := by
   simp only [positiveSource, CubicReflectionKernel.logSchwartz_apply,
     Real.exp_add, Real.exp_log hc, Real.exp_log hx, clippedSource]
-  rw [mul_comm x c]
+  ring
 
 theorem balanced_profile_identity
     (U : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
@@ -285,12 +281,7 @@ theorem balanced_profile_identity
   rw [InverseClippingProfiles.secondRootWindows_prod]
   simp only [translated_apply, clippedTwist_apply, rooted_apply, positiveSource, Real.log_exp,
     Finset.prod_mul_distrib]
-  linear_combination
-    (∏ i, U i (y i+ρ i)) * logPhase θ₁ (∑ i, secondLeftSlope i*y i) *
-    g₁ ((∑ i, secondLeftSlope i*y i)+Real.log c₁) *
-    logPhase θ₂ (∑ i, secondRightSlope i*y i) *
-    g₂ ((∑ i, secondRightSlope i*y i)+Real.log c₂) *
-    paperRadialFourier Φ (R*Real.exp (∑ i, secondKernelSlope i*y i)) * he
+  grind
 
 theorem second_profile_common_measure
     (U : Fin 6 → 𝓢(ℝ, ℂ)) (g₁ g₂ Φ : 𝓢(ℝ, ℂ))
@@ -327,12 +318,12 @@ theorem second_profile_common_measure
   obtain ⟨b₃,hb₃⟩ := hs R hR
   refine ⟨b₃,?_⟩
   intro ρ c₁ c₂ θ₁ θ₂ L hρ hc₁ hc₂ hc₁b hc₂b hL
-  have h := hb₃ ρ c₁ c₂ θ₁ θ₂ L hρ (zero_lt_one.trans_le hc₁)
-    (zero_lt_one.trans_le hc₂) hc₁b hc₂b hL
+  have h := hb₃ ρ c₁ c₂ θ₁ θ₂ L hρ (by positivity)
+    (by positivity) hc₁b hc₂b hL
   refine ⟨?_,h.2⟩
   intro y
   rw [← balanced_profile_identity U g₁ g₂ Φ M m₁ m₂ hU h₁ h₂]
-  exact h.1 y
+  grind
 
 theorem fresh_physical_profile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
     (V : Fin 6 → ℝ → ℂ) (G₀ E₀ V₀ K₀ X₀ Y L : ℝ)
@@ -351,12 +342,12 @@ theorem fresh_physical_profile (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ, ℂ))
   by_cases hw₁ : ω₁ (q 4/X₀) = 0
   · have hW : W₁ (q 0*q 2*q 4/(G₀*V₀*X₀)) = 0 := by
       by_contra hn
-      exact zero_ne_one (hw₁.symm.trans (hω₁ hn))
+      exact by grind
     simp only [secondNormProfile,hW,hw₁,mul_zero,zero_mul,zero_div]
   by_cases hw₂ : ω₂ (q 5/X₀) = 0
   · have hW : W₂ (q 0*q 2*q 5/(G₀*V₀*X₀)) = 0 := by
       by_contra hn
-      exact zero_ne_one (hw₂.symm.trans (hω₂ hn))
+      exact by grind
     simp only [secondNormProfile,hW,hw₂,mul_zero,zero_mul,zero_div]
   have hm : secondNormProfile (fun x => W₁ (x/(G₀*V₀*X₀)))
       (fun x => W₂ (x/(G₀*V₀*X₀))) Φ (fun _ _ => 1) Y q =

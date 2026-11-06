@@ -19,16 +19,14 @@ theorem compensated_reflected_exponent_with_length (d ell₀ O₀ H A₀ N₀ S�
     reflectedExponent O₀ H S₀ B₀ za v ell el
       (2*H+2*A₀+2*za-1-ell₀-θ-N₀-3*B₀)≤5/6-2*d+40*ε := by
   let Td := 2*H+2*A₀+2*za-1-ell₀-θ-N₀-3*B₀
-  have hθlo : -ε≤θ := (abs_le.mp hθ).1
-  have hθhi : θ≤ε := (abs_le.mp hθ).2
+  have hθlo : -ε≤θ := by grind
+  have hθhi : θ≤ε := by grind
   have hTd : Td≤H-3*d+6*ε := by dsimp [Td];linarith
   have hcol : v+ell≤H+10*ε := by dsimp [Td] at hTd;linarith
-  have hmax : max H (v+ell)≤H+10*ε := max_le (by linarith) hcol
+  have hmax : max H (v+ell)≤H+10*ε := by grind
   have hk := le_max_left 0 (Td-v-3*ell-el)
   by_cases hu : hybridSaving v za=za
   · unfold reflectedExponent
-    rw [hu]
-    change O₀/2+max H (v+ell)-S₀-B₀+za-za-ell-2*el/3-max 0 (Td-v-3*ell-el)/2≤_
     linarith
   · have hhalf := hybrid_half_with_error hv hε hu
     have hquarter := retained_kernel_quarter Td (v+3*ell+el)
@@ -41,9 +39,6 @@ theorem compensated_reflected_exponent_with_length (d ell₀ O₀ H A₀ N₀ S�
         O₀/2+H-S₀-B₀+za-Td/4+(10+17/12)*ε := by
       unfold reflectedExponent
       linarith
-    change reflectedExponent O₀ H S₀ B₀ za v ell el Td≤_
-    apply hbound.trans
-    dsimp [Td]
     linarith
 
 end SevenEighths.ProbeLowReflected

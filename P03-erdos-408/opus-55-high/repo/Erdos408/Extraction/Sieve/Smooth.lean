@@ -59,14 +59,13 @@ lemma abs_card_modEq_sub_le {q : ℕ} (hq : 0 < q) (v : ℕ) {m N : ℕ} (hm : 1
     push_cast
     constructor <;> linarith
   have hR := (Rat.cast_le (K := ℝ)).2 hQ
-  push_cast at hR
-  exact hR
+  simp_all
 
 /-- `f(u) = ∑_{1 ≤ m ≤ u} (f(m) - f(m-1))` when `f(0) = 0`. -/
 lemma eq_sum_Icc_sub {f : ℕ → ℝ} (hf0 : f 0 = 0) (u : ℕ) :
     f u = ∑ m ∈ Icc 1 u, (f m - f (m - 1)) := by
   induction u with
-  | zero => simp [hf0]
+  | zero => simp_all
   | succ u ih => rw [sum_Icc_succ_top (by omega), ← ih, Nat.add_sub_cancel]; ring
 
 /-- A sum over `[1, N]` restricted by a condition, through the increments of `f`. -/
@@ -78,13 +77,7 @@ lemma sum_filter_eq_sum_sub {f : ℕ → ℝ} (hf0 : f 0 = 0) (N : ℕ) (p : ℕ
   rw [sum_comm' (t' := Icc 1 N) (s' := fun m => (Icc m N).filter p)]
   · refine sum_congr rfl fun m _ => ?_
     rw [sum_const, nsmul_eq_mul, mul_comm]
-  · intro u m
-    simp only [mem_filter, mem_Icc]
-    constructor
-    · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4, h5⟩
-      exact ⟨⟨⟨h5, h2⟩, h3⟩, h4, h5.trans h2⟩
-    · rintro ⟨⟨⟨h1, h2⟩, h3⟩, h4, h5⟩
-      exact ⟨⟨⟨h4.trans h1, h2⟩, h3⟩, h4, h1⟩
+  grind
 
 /-- A sum over a residue class modulo `q` in `[1, N]` is `1/q` of the full sum, up to the
 total variation. -/
@@ -127,7 +120,7 @@ lemma exists_modEq_iff {r d : ℕ} (hr : 0 < r) (hrd : Nat.Coprime r d) :
   have h2 : d ∣ u ↔ u ≡ k [MOD d] := by
     rw [← Nat.modEq_zero_iff_dvd]
     exact ⟨fun h => h.trans hk₂.symm, fun h => h.trans hk₂⟩
-  rw [h1, h2]
+  simp_all
 
 /-- The progression sum `∑_{u ≤ N, r ∣ u+1, d ∣ u} f(u)` is `1/(r d)` of the full sum up to
 the total variation, for coprime `r, d`. -/
@@ -138,7 +131,7 @@ lemma abs_sum_dvd_sub_le {r d : ℕ} (hr : 0 < r) (hd : 0 < d) (hrd : Nat.Coprim
       ∑ m ∈ Icc 1 N, |f m - f (m - 1)| := by
   obtain ⟨v, hv⟩ := exists_modEq_iff hr hrd
   rw [filter_congr fun u _ => hv u]
-  exact abs_sum_modEq_sub_le (Nat.mul_pos hr hd) v N hf0
+  exact abs_sum_modEq_sub_le (by positivity) v N hf0
 
 /-- The total variation of `u ↦ Φ(u/x)` on `[1, N]` is at most `N M₁ T^{C_Φ} / x`. -/
 lemma sum_abs_sub_cutoff_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} (hx : 0 < x) {Φ : ℝ → ℝ}
@@ -148,7 +141,7 @@ lemma sum_abs_sub_cutoff_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} (hx : 0 <
   have hd : Differentiable ℝ Φ := hΦ.1.differentiable (by simp)
   have hbd : ∀ y, ‖deriv Φ y‖ ≤ M 1 * logLog x ^ CΦ := fun y => by
     have := hΦ.2.2.2 1 y
-    rwa [iteratedDeriv_one, Nat.cast_one, mul_one] at this
+    simp_all
   have hterm : ∀ m ∈ Icc 1 N, |Φ ((m : ℝ) / x) - Φ (((m - 1 : ℕ) : ℝ) / x)| ≤
       M 1 * logLog x ^ CΦ / x := by
     intro m hm
@@ -163,7 +156,7 @@ lemma sum_abs_sub_cutoff_le {κ CΦ : ℝ} {M : ℕ → ℝ} {x : ℝ} (hx : 0 <
     calc _ ≤ M 1 * logLog x ^ CΦ * (1 / x) := h
       _ = _ := by ring
   calc _ ≤ ∑ _m ∈ Icc 1 N, M 1 * logLog x ^ CΦ / x := sum_le_sum hterm
-    _ = _ := by rw [sum_const, Nat.card_Icc, Nat.add_sub_cancel, nsmul_eq_mul]
+    _ = _ := by simp
 
 end
 

@@ -12,12 +12,11 @@ noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Ideal O)
-    (η : HeckeFamily.Character) (C : CalibrationData) (s : O) (hs : Supported (Ideal.span {s}))
+theorem physical_spectral_coefficient_scale (S : Finset (Ideal ActualEisensteinCubic.O)) (D I J : Ideal ActualEisensteinCubic.O)
+    (η : HeckeFamily.Character) (C : CalibrationData) (s : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {s}))
     (hI : Supported I) (hJ : Supported J) (hsf : Squarefree I)
-    (hcop : IsCoprime C.generator (completedIndex I J)) (X : ℝ) (hX : 0<X) (t : ℂ) (H : O) :
+    (hcop : IsCoprime C.generator (completedIndex I J)) (X : ℝ) (hX : 0<X) (t : ℂ) (H : ActualEisensteinCubic.O) :
     let A := completedIndex I J
     let hA := supportedElement_ne_zero A (supported_completed _ _
       ((supported_span_primaryGenerator_iff I).mpr hI) ((supported_span_primaryGenerator_iff J).mpr hJ))

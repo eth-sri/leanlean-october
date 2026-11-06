@@ -132,7 +132,7 @@ private theorem mul_apply_equiv_of_apply (σ : α ≃ β) {A B : Matrix α α �
     (hB : ∀ i j, B' (σ i) (σ j) = B i j) (i j : α) :
     (A' * B') (σ i) (σ j) = (A * B) i j := by
   simp only [Matrix.mul_apply]
-  exact (Fintype.sum_equiv σ _ _ fun k => by rw [hA, hB]).symm
+  exact (Fintype.sum_equiv σ _ _ fun k => by simp_all).symm
 
 /-- `𝒢 𝒮 𝒯 𝒮 𝒢` agrees along an equivalence of indices when `𝒢`, `𝒮` and `𝒯` do. -/
 private theorem edge_apply_equiv_of_apply (σ : α ≃ β) {G S T : Matrix α α ℂ}
@@ -148,7 +148,7 @@ private theorem momentPow_apply_equiv_of_apply [DecidableEq α] [DecidableEq β]
     ((A' * A'ᴴ) ^ R) (σ i) (σ j) = ((A * Aᴴ) ^ R) i j := by
   -- `𝒜𝒜^*` agrees
   have hAA : ∀ i j, (A' * A'ᴴ) (σ i) (σ j) = (A * Aᴴ) i j :=
-    mul_apply_equiv_of_apply σ hA fun i j => by simp [Matrix.conjTranspose_apply, hA]
+    mul_apply_equiv_of_apply σ hA fun i j => by simp_all
   induction R generalizing i j with
   | zero => simp [Matrix.one_apply, σ.injective.eq_iff]
   | succ R ih =>
@@ -208,7 +208,7 @@ theorem PosModel.sum_moment (M : PosModel) (q A₀ x : ℝ) (d : Data K) (Y d₀
   refine sum_congr rfl fun s' _ => ?_
   -- only the common position contributes
   by_cases h : s.1.1 = s'.1.1
-  · simp [h]
+  · simp_all
   · simp only [h, ite_false]
     exact sum_eq_zero fun P₀ _ => ite_eq_right_iff.2 fun hP => (h (hP.1.trans hP.2.symm)).elim
 
@@ -330,8 +330,7 @@ def physStateEquiv (x : ℝ) (d : Data K) (Y d₀ : ℝ) :
 theorem physModel_bandCount (x : ℝ) (d : Data K) (Y d₀ : ℝ) (P : (physModel d Y d₀).Pos) :
     (physModel d Y d₀).bandCount x d P = bandCount x d P.1.1 := by
   simp only [PosModel.bandCount, bandCount, primeCount, physModel]
-  refine sum_congr rfl fun i _ => ?_
-  exact congrArg card (filter_congr_decidable _ _ _)
+  linarith
 
 /-- The physical model's `𝒜` is the physical `𝒜`. -/
 theorem physModel_edgeOp_physStateEquiv (q A₀ x : ℝ) (d : Data K) (Y d₀ : ℝ)

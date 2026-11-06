@@ -29,7 +29,7 @@ noncomputable section
 
 namespace Erdos408.OneSided
 
-open Filter Real
+open Filter
 
 /-- A nonnegative multiple of an exponential is at most a quarter of `exp (-τ)` once the
 exponent, shifted by `τ` and by `log (4c + 1)`, is nonpositive. -/
@@ -38,7 +38,7 @@ theorem mul_exp_le_exp_neg_div_four {c y τ : ℝ} (hc : 0 ≤ c)
   have h1 : (4 * c + 1) * Real.exp y ≤ Real.exp (-τ) := by
     rw [← Real.exp_log (by positivity : (0 : ℝ) < 4 * c + 1), ← Real.exp_add]
     exact Real.exp_le_exp.2 (by linarith)
-  have h2 : 0 < Real.exp y := Real.exp_pos y
+  have h2 := Real.exp_pos y
   nlinarith
 
 /-- **Domination by `ℓ^99`**: once `ℓ ≥ 1` exceeds `40 (A + B)`, the quantity `A + B ℓ^96` is at
@@ -47,12 +47,7 @@ theorem add_mul_pow_le_pow_div {ℓ A B : ℝ} (hA : 0 ≤ A) (hℓ : 1 ≤ ℓ)
     (h : 40 * (A + B) ≤ ℓ) : A + B * ℓ ^ 96 ≤ ℓ ^ 99 / 40 := by
   have h96 : 1 ≤ ℓ ^ 96 := one_le_pow₀ hℓ
   have h3 : ℓ ≤ ℓ ^ 3 := le_self_pow₀ hℓ (by norm_num)
-  have h1 : 40 * (A + B) * ℓ ^ 96 ≤ ℓ ^ 3 * ℓ ^ 96 :=
-    mul_le_mul_of_nonneg_right (h.trans h3) (by positivity)
-  have h2 : A * 1 ≤ A * ℓ ^ 96 := mul_le_mul_of_nonneg_left h96 hA
-  have h4 : ℓ ^ 99 = ℓ ^ 3 * ℓ ^ 96 := by ring
-  rw [h4]
-  linarith
+  nlinarith
 
 /-- **The gap term**: with `T = ⌈ℓ^76⌉`, `σ ≤ K (ℓ^50 + 3)` and `ℓ ≥ max(241, 4e⁴K)`, the
 coefficient mass times `60 σ^T / T!` is at most `exp(-ℓ^76) / 4`. Here `ℓ = L^{1/100}`. -/
@@ -75,20 +70,20 @@ theorem budget_gap (K : ℕ) {ℓ σ : ℝ} (hℓK : 4 * Real.exp 4 * K ≤ ℓ)
       _ ≤ (σ / T) ^ T * Real.exp T :=
           mul_le_mul_of_nonneg_left hf (pow_nonneg (div_nonneg hσ0 hT0.le) T)
       _ = (Real.exp 1 * σ / T) ^ T := by
-          rw [← Real.exp_one_pow, ← mul_pow]; congr 1; ring
+          rw [← Real.exp_one_pow, ← mul_pow]; ring
   -- step: `e σ / T ≤ e⁻³`
   have h2 : Real.exp 1 * σ / T ≤ Real.exp (-3) := by
     rw [div_le_iff₀ hT0]
     have hσ4 : σ ≤ K * (4 * ℓ ^ 50) := by
       have : (1 : ℝ) ≤ ℓ ^ 50 := one_le_pow₀ hℓ
       calc σ ≤ K * (ℓ ^ 50 + 3) := hσ
-        _ ≤ K * (4 * ℓ ^ 50) := by gcongr; linarith
+        _ ≤ K * (4 * ℓ ^ 50) := by nlinarith
     have h51 : ℓ * ℓ ^ 50 ≤ τ := by
       rw [← pow_succ']; exact pow_le_pow_right₀ hℓ (by norm_num)
     have he : Real.exp 1 = Real.exp (-3) * Real.exp 4 := by
       rw [← Real.exp_add]; norm_num
     calc Real.exp 1 * σ ≤ Real.exp 1 * (K * (4 * ℓ ^ 50)) := by gcongr
-      _ = Real.exp (-3) * ((4 * Real.exp 4 * K) * ℓ ^ 50) := by rw [he]; ring
+      _ = Real.exp (-3) * ((4 * Real.exp 4 * K) * ℓ ^ 50) := by grind
       _ ≤ Real.exp (-3) * (ℓ * ℓ ^ 50) := by gcongr
       _ ≤ Real.exp (-3) * τ := by gcongr
       _ ≤ Real.exp (-3) * T := by gcongr
@@ -118,16 +113,14 @@ theorem budget_faces {ℓ m U V : ℝ} (hℓ : 1 ≤ ℓ) (hm : Real.exp (ℓ ^ 
     rw [Real.exp_neg, ← one_div]; exact one_div_le_one_div_of_le (Real.exp_pos _) hm
   have h1 : (16 * U + 2 * V + 2) / (U * V) ≤ 20 * (1 / m) := by
     rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]
-    nlinarith [mul_nonneg (by linarith : (0 : ℝ) ≤ U) (by linarith : (0 : ℝ) ≤ V - m),
-      mul_nonneg (by linarith : (0 : ℝ) ≤ V) (by linarith : (0 : ℝ) ≤ U - m),
-      mul_nonneg (by linarith : (0 : ℝ) ≤ V) (by linarith : (0 : ℝ) ≤ U - 1)]
+    nlinarith
   have h74 : ℓ ^ 74 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
   have h76 : ℓ ^ 76 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
   calc Real.exp (ℓ ^ 74) * ((16 * U + 2 * V + 2) / (U * V)) ≤
-        Real.exp (ℓ ^ 74) * (20 * Real.exp (-ℓ ^ 99)) := by gcongr; exact h1.trans (by gcongr)
+        Real.exp (ℓ ^ 74) * (20 * Real.exp (-ℓ ^ 99)) := by gcongr; linarith
     _ = 20 * Real.exp (ℓ ^ 74 + -ℓ ^ 99) := by rw [Real.exp_add]; ring
     _ ≤ Real.exp (-ℓ ^ 76) / 4 :=
-        mul_exp_le_exp_neg_div_four (by norm_num) (by norm_num; linarith)
+        mul_exp_le_exp_neg_div_four (by norm_num) (by grind)
 
 /-- **The discrepancy term**: with `s = m^{1/40} ≥ exp(ℓ^99/40)`, `s ≤ n ≤ 2s`, `μ ≤ s⁻⁸`
 (standing for `min(U, V)^{-1/5}`), `n_P ≤ K exp(2ℓ^20)`, `p_max ≤ exp(2ℓ^20)`,
@@ -157,7 +150,7 @@ theorem budget_discrepancy (K : ℕ) {ℓ s n μ C₀ nP pmax : ℝ} (a T : ℕ)
       _ ≤ 8 * Real.exp (-(ℓ ^ 99 / 40)) := by gcongr
   -- step: `n_P + 1 ≤ (K + 1) exp(2ℓ^20) ≤ exp(K + 2ℓ^20)`
   have h2 : nP + 1 ≤ Real.exp (K + 2 * ℓ ^ 20) := by
-    have : 1 ≤ Real.exp (2 * ℓ ^ 20) := Real.one_le_exp (by positivity)
+    have : 1 ≤ Real.exp (2 * ℓ ^ 20) := by linarith
     calc nP + 1 ≤ (K + 1) * Real.exp (2 * ℓ ^ 20) := by linarith
       _ ≤ Real.exp K * Real.exp (2 * ℓ ^ 20) := by gcongr; exact Real.add_one_le_exp _
       _ = Real.exp (K + 2 * ℓ ^ 20) := (Real.exp_add _ _).symm
@@ -198,15 +191,13 @@ theorem budget_discrepancy (K : ℕ) {ℓ s n μ C₀ nP pmax : ℝ} (a T : ℕ)
       _ = 2 * K * ℓ ^ 96 := by ring
   have hTl : (T : ℝ) * ℓ ^ 20 ≤ 2 * ℓ ^ 96 := by
     calc (T : ℝ) * ℓ ^ 20 ≤ (2 * ℓ ^ 76) * ℓ ^ 20 := by gcongr
-      _ = 2 * ℓ ^ 96 := by rw [mul_assoc, e96]
+      _ = 2 * ℓ ^ 96 := by linarith
   have hal : (a : ℝ) * ℓ ^ 20 ≤ 8 * K * ℓ ^ 96 := by
     calc (a : ℝ) * ℓ ^ 20 ≤ (8 * K * ℓ ^ 76) * ℓ ^ 20 := by gcongr
-      _ = 8 * K * ℓ ^ 96 := by rw [mul_assoc, e96]
+      _ = 8 * K * ℓ ^ 96 := by linarith
   have hlog : 4 * (120 * C₀) + 1 = 480 * C₀ + 1 := by ring
   refine h3.trans (mul_exp_le_exp_neg_div_four (by positivity) ?_)
-  rw [hlog]
-  push_cast
-  linarith
+  grind
 
 /-- **The boundary term**: with `s = m^{1/40} ≥ exp(ℓ^99/40)`, `s ≤ n ≤ 2s`,
 `μ ≤ s⁻⁸` (standing for `min(U, V)^{-1/5}`) and `b ≤ n² exp(ℓ^50)` bad cubes, the coefficient mass
@@ -241,8 +232,8 @@ theorem budget_boundary {ℓ s n b μ C₀ : ℝ} (hℓ : 1 ≤ ℓ) (hC₀ : 0 
           apply mul_le_mul hb _ (by positivity) (by positivity)
           gcongr
       _ = Real.exp (ℓ ^ 50) * (n ^ 2 * (4 / n ^ 3 + C₀ * (1 / s ^ 8))) := by ring
-      _ ≤ Real.exp (ℓ ^ 50) * ((4 + 4 * C₀) * Real.exp (-(ℓ ^ 99 / 40))) := by
-          exact mul_le_mul_of_nonneg_left (h1.trans (by gcongr)) (by positivity)
+      _ ≤ Real.exp (ℓ ^ 50) * ((4 + 4 * C₀) * Real.exp (-(ℓ ^ 99 / 40))) :=
+          mul_le_mul_of_nonneg_left (h1.trans (by gcongr)) (by positivity)
   have h74 : ℓ ^ 74 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
   have h76 : ℓ ^ 76 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
   have h50 : ℓ ^ 50 ≤ ℓ ^ 96 := pow_le_pow_right₀ hℓ (by norm_num)
@@ -253,7 +244,7 @@ theorem budget_boundary {ℓ s n b μ C₀ : ℝ} (hℓ : 1 ≤ ℓ) (hC₀ : 0 
     _ = (4 + 4 * C₀) * Real.exp (ℓ ^ 74 + ℓ ^ 50 + -(ℓ ^ 99 / 40)) := by
         rw [Real.exp_add, Real.exp_add]; ring
     _ ≤ Real.exp (-ℓ ^ 76) / 4 :=
-        mul_exp_le_exp_neg_div_four (by positivity) (by rw [hlog]; linarith)
+        mul_exp_le_exp_neg_div_four (by positivity) (by grind)
 
 /-- **The budget of root replacement**: eventually in `x`, for all parameters in the ranges
 of §5.4, the coefficient mass times the per-configuration error is below `exp(-L^{0.76})`. -/
@@ -277,7 +268,7 @@ theorem eventually_budget (K : ℕ) {C₀ : ℝ} (hC₀ : 0 ≤ C₀) :
   -- step: the threshold for `ℓ = L^{1/100}`
   set A : ℝ := Real.log 81 + Real.log (16 * C₀ + 17) + Real.log (480 * C₀ + 1) with hA
   set M : ℝ := 241 + 4 * Real.exp 4 * K + 40 * (A + (98 * K + 30)) with hM
-  have hlog81 : 0 ≤ Real.log 81 := Real.log_nonneg (by norm_num)
+  have hlog81 : 0 ≤ Real.log 81 := by positivity
   have hlog16 : 0 ≤ Real.log (16 * C₀ + 17) := Real.log_nonneg (by linarith)
   have hlog480 : 0 ≤ Real.log (480 * C₀ + 1) := Real.log_nonneg (by linarith)
   have hA0 : 0 ≤ A := by positivity
@@ -285,11 +276,11 @@ theorem eventually_budget (K : ℕ) {C₀ : ℝ} (hC₀ : 0 ≤ C₀) :
     (tendsto_rpow_atTop (by norm_num)).comp Real.tendsto_log_atTop
   filter_upwards [hlim.eventually_ge_atTop M, eventually_ge_atTop 1] with x hxM hx1
   intro n a m U V σ nP pmax b hn1 hn2 hn3 hm hmU hmV hσ0 hσ hnP0 hnP hp1 hp ha hb0 hb
-  have hL0 : 0 ≤ Real.log x := Real.log_nonneg hx1
+  have hL0 := Real.log_nonneg hx1
   -- step: rewrite every power of `L` as a power of `ℓ = L^{1/100}`
   set ℓ := Real.log x ^ (1 / 100 : ℝ) with hℓ
   have hpow : ∀ k : ℕ, Real.log x ^ ((k : ℝ) / 100) = ℓ ^ k := fun k => by
-    rw [hℓ, ← Real.rpow_mul_natCast hL0]; congr 1; ring
+    rw [hℓ, ← Real.rpow_mul_natCast hL0]; ring
   have h20 : Real.log x ^ (1 / 5 : ℝ) = ℓ ^ 20 := by
     rw [show (1 / 5 : ℝ) = ((20 : ℕ) : ℝ) / 100 by norm_num, hpow]
   have h50 : Real.log x ^ (1 / 2 : ℝ) = ℓ ^ 50 := by
@@ -317,12 +308,12 @@ theorem eventually_budget (K : ℕ) {C₀ : ℝ} (hC₀ : 0 ≤ C₀) :
   have hm0 : 0 < m := (Real.exp_pos _).trans_le hm
   have hs : Real.exp (ℓ ^ 99 / 40) ≤ m ^ (1 / 40 : ℝ) := by
     rw [div_eq_mul_one_div, Real.exp_mul]
-    exact Real.rpow_le_rpow (Real.exp_pos _).le hm (by norm_num)
+    exact Real.rpow_le_rpow (by positivity) hm (by norm_num)
   have hμ0 : 0 ≤ min U V ^ (-(1 / 5 : ℝ)) :=
-    Real.rpow_nonneg (le_min (hm0.le.trans hmU) (hm0.le.trans hmV)) _
+    Real.rpow_nonneg (by grind) _
   have hμ : min U V ^ (-(1 / 5 : ℝ)) ≤ 1 / (m ^ (1 / 40 : ℝ)) ^ 8 := by
     calc min U V ^ (-(1 / 5 : ℝ)) ≤ m ^ (-(1 / 5 : ℝ)) :=
-          Real.rpow_le_rpow_of_nonpos hm0 (le_min hmU hmV) (by norm_num)
+          Real.rpow_le_rpow_of_nonpos hm0 (by grind) (by norm_num)
       _ = 1 / (m ^ (1 / 40 : ℝ)) ^ 8 := by
           rw [Real.rpow_neg hm0.le, ← Real.rpow_mul_natCast hm0.le, one_div]; norm_num
   -- step: the four terms

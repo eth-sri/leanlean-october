@@ -8,7 +8,6 @@ public import Erdos821.P3Clean.Contractions
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -63,7 +62,7 @@ theorem memoryEdgeKernel_rho {J m : ℕ} (A : Model F P J m) (n : ℕ)
     by_cases h : edgeChoiceValid A mode i s t c
     · rw [ite_eq_left h, ite_eq_left h, edgeChoiceCoefficient_rho]
       ring
-    · simp only [ite_eq_right h, mul_zero, zero_mul]
+    · simp_all
   simp only [memoryEdgeKernel]
   simp_rw [hc]
   rw [← Finset.sum_mul, ← Finset.mul_sum]
@@ -78,14 +77,14 @@ theorem memoryMass_nonneg (J n : ℕ)
     unfold tiltedMu
     apply inv_nonneg.mpr
     exact (mul_pos (mul_pos (hV g.val)
-      (by exact_mod_cast (P.prime g.val p.val p.property).pos)) (hb g p)).le
+      (by exact_mod_cast (P.prime g.val p.val p.property).pos)) (by grind)).le
   have hg (g : P.BigGroup) : 0 ≤ P.groupMemoryMass F n g.val (s.2.2 g) := by
     unfold PrimeGroups.groupMemoryMass
     apply div_nonneg
     · apply Multiset.prod_nonneg
       intro z hz
       obtain ⟨p, _, rfl⟩ := Multiset.mem_map.mp hz
-      exact ht g p.1
+      grind
     · positivity
   unfold PrimeGroups.memoryMass
   split_ifs
@@ -93,9 +92,9 @@ theorem memoryMass_nonneg (J n : ℕ)
     · apply mul_nonneg
       · apply mul_nonneg
         · positivity
-        · exact Finset.prod_nonneg (fun g _ => zpow_nonneg (hV g.val).le _)
-      · exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (fun i _ => ht g _))
-    · exact Finset.prod_nonneg (fun g _ => hg g)
-  · exact le_refl 0
+        · exact Finset.prod_nonneg (fun g _ => zpow_nonneg (by grind) _)
+      · exact Finset.prod_nonneg (fun g _ => Finset.prod_nonneg (by grind))
+    · exact Finset.prod_nonneg (by grind)
+  simp
 
 end Erdos821.P3Clean

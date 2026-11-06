@@ -10,14 +10,13 @@ public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
+open scoped Classical SchwartzMap FourierTransform
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
 open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
-local notation "O" => ActualEisensteinCubic.O
+open InverseInitialOverlapFourier
+open ActualEisensteinCubic
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
     Function.support (inverseSourceSchwartz scaled reverse n U tstar r σ t : ℝ→ℂ) ⊆
@@ -55,9 +54,7 @@ theorem exists_reference_window :
       ∀x∈Set.Icc (1/9 : ℝ) (9/4), w x = 1 := by
   obtain ⟨w,hc,hone,hs⟩ := InverseSecondChildWindows.positive_cutoff
     (1/9 : ℝ) (9/4) (by norm_num) (by norm_num)
-  refine ⟨w,hc,?_,hone⟩
-  convert hs using 1
-  norm_num
+  grind
 
 def referenceWindow : 𝓢(ℝ,ℂ) := Classical.choose exists_reference_window
 
@@ -74,7 +71,7 @@ theorem referenceWindow_agrees (scaled reverse : Bool) (n : ℕ) (U tstar r σ t
     referenceWindow y * inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) =
       inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) := by
   by_cases hz : inverseSourceSchwartz scaled reverse n U tstar r σ t (c*y) = 0
-  · simp [hz]
+  · simp_all
   have hs := source_support scaled reverse n U tstar r σ t hz
   have hh : y∈Set.Icc (1/9 : ℝ) (9/4) := by
     constructor <;> nlinarith [hs.1,hs.2]
@@ -125,8 +122,8 @@ theorem familyDensity_moment (J : ℕ) :
   intro scaled reverse n hn U hU tstar r σ hσ t c
   let W := inverseSourceSchwartz scaled reverse n U tstar r σ t
   let g := logSource scaled reverse n U tstar r σ t
-  have hb : S.sup (schwartzSeminormFamily ℝ ℝ ℂ) g ≤ A*B*(1+‖t‖)^K := by
-    exact (hop W).trans ((mul_le_mul_of_nonneg_left
+  have hb : S.sup (schwartzSeminormFamily ℝ ℝ ℂ) g ≤ A*B*(1+‖t‖)^K :=
+    (hop W).trans ((mul_le_mul_of_nonneg_left
       (hsource scaled reverse n hn U hU tstar r σ hσ t) hA.le).trans_eq (by ring))
   have hs (i : ℕ) (hi : i≤J+p) :
       (SchwartzMap.seminorm ℝ 0 i) g + (SchwartzMap.seminorm ℝ p i) g ≤
@@ -142,7 +139,7 @@ theorem familyDensity_moment (J : ℕ) :
     linarith
   have hmoment := uniform_fourier_one_plus_moment g J 1
     (2*A*B*(1+‖t‖)^K) (by norm_num) (by positivity)
-    (by intro i hi; simpa only [one_mul] using hs i hi)
+    (by grind)
   simp only [one_mul] at hmoment
   simp only [familyDensity_norm]
   apply hmoment.trans
@@ -157,7 +154,7 @@ theorem familyDensity_moment (J : ℕ) :
 
 section Rows
 variable {ι ρ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
   (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 

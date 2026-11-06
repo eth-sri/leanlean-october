@@ -10,7 +10,7 @@ namespace OAI
 
 noncomputable section
 open Filter Set
-open scoped Classical SchwartzMap ContDiff Topology
+open scoped Classical SchwartzMap ContDiff
 
 namespace ProbeGramJointConstruction
 open ProbeGramLatticeDecay EisensteinSchwartzPoisson
@@ -103,7 +103,7 @@ lemma support_amplitude (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   intro z hz
   have h1 : W (q1 z)≠0 := fun h => hz (by simp [amplitude,h])
   have h2 : W (q2 z)≠0 := fun h => hz (by simp [amplitude,h])
-  exact ⟨(hs h1).1,(hs h1).2,(hs h2).1,(hs h2).2⟩
+  simp_all
 
 lemma annulus_subset_sourceCompact (a b : ℝ) (ha : 0<a) (hab : a<b) :
     {z : Joint | a≤q1 z ∧ q1 z≤b ∧ a≤q2 z ∧ q2 z≤b}⊆sourceCompact b := by
@@ -112,12 +112,12 @@ lemma annulus_subset_sourceCompact (a b : ℝ) (ha : 0<a) (hab : a<b) :
   rw [dist_zero_right]
   have hn := norm_sq_eq z
   have hb : 0<b := ha.trans hab
-  nlinarith [norm_nonneg z, sq_nonneg (‖z‖-1),hz.2.1,hz.2.2.2]
+  nlinarith [hz.2.1, hz.2.2.2]
 
 lemma tsupport_amplitude_subset (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
     (hs : Function.support W⊆Icc a b) :
-    tsupport (amplitude W a b ha)⊆sourceCompact b := by
-  exact closure_minimal ((support_amplitude W a b ha hs).trans
+    tsupport (amplitude W a b ha)⊆sourceCompact b :=
+  closure_minimal ((support_amplitude W a b ha hs).trans
     (annulus_subset_sourceCompact a b ha hab)) Metric.isClosed_closedBall
 
 lemma amplitude_hasCompactSupport (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
@@ -138,9 +138,8 @@ lemma norm_power_pair (v x y : ℝ) (hx : 0<x) (hy : 0<y) :
   rw [←Complex.exp_add,←Complex.exp_add]
   congr 1
   push_cast
-  have hpi : (Real.pi:ℂ)≠0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-  field_simp
-  ring
+  have hpi := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+  grind
 
 lemma sqrt_reciprocal_product (T x y : ℝ) (hT : 0≤T) (hx : 0<x) (hy : 0<y) :
     Real.sqrt (T/(x*y))=Real.sqrt T*Real.exp (-(Real.log x+Real.log y)/2) := by
@@ -194,7 +193,7 @@ def amplitudeSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a) (hab : a<b)
 lemma rawProfile_smooth (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (hs : Function.support W⊆Icc a b) (hW : ContDiff ℝ ∞ W)
     (v T : ℝ) (hT : 0≤T) : ContDiff ℝ ∞ (rawProfile W U v T) := by
-  have he : rawProfile W U v T=patchedProfile W U a b ha v T :=
+  have he :=
     funext (rawProfile_eq_patchedProfile W U a b ha hs v T hT)
   rw [he]
   exact patchedProfile_smooth W hW U a b ha v T
@@ -205,7 +204,7 @@ lemma support_rawProfile (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
   intro z hz
   have h1 : W (q1 z)≠0 := fun h => hz (rawProfile_zero_left W U v T z h)
   have h2 : W (q2 z)≠0 := fun h => hz (rawProfile_zero_right W U v T z h)
-  exact ⟨(hs h1).1,(hs h1).2,(hs h2).1,(hs h2).2⟩
+  simp_all
 
 lemma rawProfile_hasCompactSupport (W : ℝ→ℂ) (U : 𝓢(ℝ,ℂ))
     (a b : ℝ) (ha : 0<a) (hab : a<b) (hs : Function.support W⊆Icc a b) (v T : ℝ) :

@@ -9,7 +9,6 @@ public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.ProbeCentralExponent
 
 def sourceExponent (a d R q : ℝ) : ℝ :=
@@ -27,7 +26,7 @@ lemma original_exponent_identity (a d R q : ℝ) :
 lemma relative_extend (δ d R q ζ : ℝ) (hζ : 0≤ζ) (hd : d≤13/16+ζ)
     (hslo : 0≤R+δ/2-17/50) (hshi : R+δ/2-17/50≤2) :
     relativeExponent δ d R q≤relativeExponent δ (13/16) R q+2*ζ := by
-  have hh := mul_le_mul_of_nonneg_right (show d-13/16≤ζ by linarith) hslo
+  have hh := mul_le_mul_of_nonneg_right (by linarith) hslo
   have hh' := mul_le_mul_of_nonneg_left hshi hζ
   unfold relativeExponent
   nlinarith
@@ -86,7 +85,6 @@ lemma physical_scale_identity (Z a e : ℝ) (hZ : 0<Z) :
     (Z^(17/48:ℝ))^(4/25:ℝ)*Z^(a+16*e-33/50)*(Z^(23/48:ℝ))^(-a-6*e)=
       Z^((25/48)*a-181/300+(105/8)*e) := by
   rw [←Real.rpow_mul hZ.le,←Real.rpow_mul hZ.le,←Real.rpow_add hZ,←Real.rpow_add hZ]
-  congr 1
   ring
 end SevenEighths.ProbeCentralExponent
 

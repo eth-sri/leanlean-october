@@ -9,12 +9,12 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalTransport
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
+open HeckeFamily ProbePhysical
 open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
+open ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma gaussianMoment_tendsto (n : ℕ) : Tendsto (gaussianMoment n) atTop (𝓝 0) := by
@@ -23,8 +23,8 @@ lemma gaussianMoment_tendsto (n : ℕ) : Tendsto (gaussianMoment n) atTop (𝓝 
     unfold gaussianMoment height Continuation.polynomialGaussian
     calc
       _ ≤ ((2:ℝ)^(n-1)*(1^n+|t|^n))*Real.exp (-(t^2)) :=
-        mul_le_mul_of_nonneg_right h (Real.exp_pos _).le
-      _ = _ := by simp only [one_pow]; ring
+        mul_le_mul_of_nonneg_right h (by positivity)
+      _ = _ := by ring
   exact squeeze_zero (gaussianMoment_nonneg n) hb
     (by simpa using (Continuation.polynomialGaussian_tendsto n).const_mul ((2:ℝ)^(n-1)))
 
@@ -32,8 +32,8 @@ lemma gaussianMoment_even (n : ℕ) (t : ℝ) : gaussianMoment n (-t)=gaussianMo
   simp [gaussianMoment,height]
 
 lemma shifted_gaussian_integrable (n : ℕ) (v : ℝ) :
-    Integrable (fun t : ℝ => gaussianMoment n (t+v)) := by
-  exact (measurePreserving_add_right volume v).integrable_comp_of_integrable (gaussianMoment_integrable n)
+    Integrable (fun t : ℝ => gaussianMoment n (t+v)) :=
+  (measurePreserving_add_right volume v).integrable_comp_of_integrable (gaussianMoment_integrable n)
 
 lemma shifted_gaussian_top (n : ℕ) (v : ℝ) :
     Tendsto (fun t : ℝ => gaussianMoment n (t+v)) atTop (𝓝 0) :=
@@ -45,7 +45,6 @@ by
   convert shifted_gaussian_top n (-v) using 1
   funext t
   rw [←gaussianMoment_even n (t + -v)]
-  congr 1
   ring
 
 theorem verticalIntegral_eq_of_shifted_gaussian (F : ℂ → ℂ) {a c A : ℝ}
@@ -54,26 +53,26 @@ theorem verticalIntegral_eq_of_shifted_gaussian (F : ℂ → ℂ) {a c A : ℝ}
     (hb : ∀σ∈Icc a c,∀t : ℝ,‖F ((σ:ℂ)+t*I)‖≤A*gaussianMoment n (t+v)) :
     verticalIntegral a F=verticalIntegral c F := by
   have hc (σ : ℝ) (hσ : σ∈Icc a c) : Continuous (fun t : ℝ => F ((σ:ℂ)+t*I)) :=
-    hF.continuousOn.comp_continuous (by fun_prop) (by intro t; simpa using hσ)
+    hF.continuousOn.comp_continuous (by fun_prop) (by simp_all)
   have hi (σ : ℝ) (hσ : σ∈Icc a c) : Integrable (fun t : ℝ => F ((σ:ℂ)+t*I)) :=
     ((shifted_gaussian_integrable n v).const_mul A).mono' (hc σ hσ).aestronglyMeasurable
-      (Eventually.of_forall (hb σ hσ))
+      (Eventually.of_forall (by grind))
   have hj (T : ℝ) : ‖∫σ : ℝ in a..c,F ((σ:ℂ)+T*I)‖≤A*gaussianMoment n (T+v)*|c-a| := by
     apply intervalIntegral.norm_integral_le_of_norm_le_const
     intro σ hσ
-    exact hb σ (by simpa [uIcc_of_le hac] using uIoc_subset_uIcc hσ) T
+    exact hb σ (by grind) T
   have ht : Tendsto (fun T : ℝ => ∫σ : ℝ in a..c,F ((σ:ℂ)+T*I)) atTop (𝓝 0) := by
     apply tendsto_zero_iff_norm_tendsto_zero.mpr
-    exact squeeze_zero (fun _ => norm_nonneg _) hj
+    exact squeeze_zero (by simp) hj
       (by simpa using ((shifted_gaussian_top n v).const_mul A).mul_const |c-a|)
   have hbot : Tendsto (fun T : ℝ => ∫σ : ℝ in a..c,F ((σ:ℂ)+(-T)*I)) atTop (𝓝 0) := by
     apply tendsto_zero_iff_norm_tendsto_zero.mpr
-    exact squeeze_zero (fun _ => norm_nonneg _) (fun T => by simpa only [Complex.ofReal_neg] using hj (-T))
+    exact squeeze_zero (by simp) (fun T => by simpa using hj (-T))
       (by simpa using ((shifted_gaussian_bottom n v).const_mul A).mul_const |c-a|)
   unfold verticalIntegral
   congr 1
   exact Continuation.vertical_integral_eq_of_horizontal_vanish F hac hF
-    (hi a ⟨le_rfl,hac⟩) (hi c ⟨hac,le_rfl⟩) hbot ht
+    (hi a (by grind)) (hi c (by grind)) hbot ht
 
 theorem principal_box_majorant {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -100,22 +99,21 @@ theorem principal_box_majorant {ι : Type*} (η : Character) (S : Finset Id)
   have hB : 0≤B := by dsimp [B]; have := (realGaussianBound_pos a 3 ξlo 2).le; positivity
   refine ⟨A*B,mul_nonneg hA hB,?_⟩
   intro σ hσ ξ hξ p
-  have hξ' : ξ∈Icc (33/200 : ℝ) 2 := ⟨by linarith [hξ.1],hξ.2⟩
+  have hξ' : ξ∈Icc (33/200 : ℝ) 2 := ⟨by grind,hξ.2⟩
   have hw : (2:ℝ)≤‖((3:ℂ)+p.2*I)-1‖ := by
     convert pole_distance_vertical 1 3 p.2 using 1; norm_num
   have hz : 6*ξlo-1≤‖6*((ξ:ℂ)+p.1.2*I)-1‖ := by
     have h := Complex.abs_re_le_norm (6*((ξ:ℂ)+p.1.2*I)-1)
     have hh : 0≤6*ξ-1 := by linarith [hξ.1]
-    simp only [sub_re,mul_re,ofReal_re,ofReal_im,add_re,I_re,I_im,mul_zero,
-      zero_mul,sub_zero,add_zero,one_re] at h
+    simp only [sub_re, mul_re, ofReal_re, ofReal_im, add_re, I_re, mul_zero, zero_mul, sub_zero, add_zero, one_re] at h
     norm_num only [show (6:ℂ).re=6 by norm_num,show (6:ℂ).im=0 by norm_num,zero_mul,sub_zero] at h
     rw [abs_of_nonneg hh] at h
-    exact le_trans (by linarith [hξ.1]) h
+    exact le_trans (by grind) h
   have hb := arithmetic_onLines_bound_of_gaps η S hS J T b hT X Y Z a 3 2 3 σ ξ 3 C
     hX hY hZ ha hσ hξ' (by norm_num) (by norm_num) 2 (6*ξlo-1)
     (by norm_num) (by linarith) hC hR p hw hz
   have hp := profile_moment_majorant W0 W1 8 hσ hξ hD.le hE.le (hd ξ hξ)
-    (he 3 ⟨le_rfl,le_rfl⟩) p
+    (he 3 (by simp)) p
   rw [←arithmetic_profile_eq_source,norm_mul]
   calc
     _ ≤ (A*jointHeight p.1.1 p.1.2 p.2^8)*‖profile W0 W1
@@ -148,7 +146,7 @@ theorem continued_x_shift {ι : Type*} (η : Character) (S : Finset Id)
   apply verticalIntegral_eq_of_shifted_gaussian _ 8 v ha3
     ((hh.mul_const _).mul_const _) (A:=A*cauchy v*cauchy u)
   intro σ hσ t
-  have h := hb σ hσ ξ ⟨le_rfl,hξ2⟩ ((t,v),u)
+  have h := hb σ hσ ξ (by grind) ((t,v),u)
   simpa only [jointEnvelope,Prod.fst,Prod.snd,mul_assoc,mul_left_comm,mul_comm] using h
 
 lemma continued_source_differentiable_z {ι : Type*} (η : Character) (S : Finset Id)
@@ -160,7 +158,7 @@ lemma continued_source_differentiable_z {ι : Type*} (η : Character) (S : Finse
       {z : ℂ | 4/25<z.re} := by
   have hM : DifferentiableOn ℂ (mellin (EisensteinSchwartzPoisson.paperRadialFourier W0))
       {z : ℂ | 4/25<z.re} := (ProbeRadialMellin.radial_mellin_differentiable W0).mono
-        (by intro z hz; change 0<z.re; change (4/25:ℝ)<z.re at hz; linarith)
+        (by grind)
   have hH := (combined_slot_analytic_z η S hS.tail J T b hT s w hs hw).differentiableOn
   have hnX : (X:ℂ)≠0 := by exact_mod_cast hX.ne'
   have hnZ : (Z:ℂ)≠0 := by exact_mod_cast hZ.ne'
@@ -182,7 +180,7 @@ lemma continued_principal_differentiable_z {ι : Type*} (η : Character) (S : Fi
       LFunction (fixedSourcePrincipal S hS.prime) (6*z)*LFunction (fixedSourcePrincipal S hS.prime) w)
       {z : ℂ | 1/6<z.re} := by
   have hK := continued_source_differentiable_z η S hS J T b hT W0 W1 X Y Z hX hZ s w hs hw
-  apply ((hK.mono (by intro z hz; change (4/25:ℝ)<z.re; change (1/6:ℝ)<z.re at hz; linarith)).mul ?_).mul_const
+  apply ((hK.mono (by grind)).mul ?_).mul_const
   intro z hz
   have h0 : (6*z:ℂ)≠0 := by
     intro he; have hh := congrArg Complex.re he; norm_num at hh; change (1/6:ℝ)<z.re at hz; linarith
@@ -210,9 +208,9 @@ theorem continued_z_shift {ι : Type*} (η : Character) (S : Finset Id)
   have hh := continued_principal_differentiable_z η S hS J T b hT W0 W1 X Y Z hX hZ
     ((a:ℂ)+t*I) ((3:ℂ)+u*I) (by simpa using ha) (by norm_num)
   apply verticalIntegral_eq_of_shifted_gaussian _ 8 t hξ2
-    (hh.mono (by intro z hz; change (1/6:ℝ)<z.re; exact hξ.trans_le hz.1)) (A:=A*cauchy u)
+    (hh.mono (by grind)) (A:=A*cauchy u)
   intro ζ hζ v
-  have h := hb a ⟨le_rfl,ha3⟩ ζ hζ ((t,v),u)
+  have h := hb a (by grind) ζ hζ ((t,v),u)
   calc
     _ ≤ A*(gaussianMoment 8 (t+v)*cauchy v*cauchy u) := h
     _ ≤ A*(gaussianMoment 8 (t+v)*1*cauchy u) := by
@@ -220,7 +218,7 @@ theorem continued_z_shift {ι : Type*} (η : Character) (S : Finset Id)
       have hcu := cauchy_nonneg u
       gcongr
       exact cauchy_le_one v
-    _ = _ := by rw [add_comm t v]; ring
+    _ = _ := by ring
 
 lemma verticalIntegral_swap (F : ℂ → ℂ → ℂ) (a b : ℝ)
     (hi : Integrable (fun q : ℝ×ℝ => F ((a:ℂ)+q.1*I) ((b:ℂ)+q.2*I)) (volume.prod volume)) :
@@ -245,13 +243,12 @@ lemma verticalIntegral_triple_reverse (F : ℂ → ℂ → ℂ → ℂ) (a ξ υ
     exact integral_prod_symm _ hu
   have he := h2.symm.trans (h1.symm.trans (h3.trans h4))
   simp only [verticalIntegral,integral_const_mul]
-  congr 3
+  simp_all
 
 lemma verticalIntegral_congr_line (F G : ℂ → ℂ) (a : ℝ)
     (h : ∀t : ℝ,F ((a:ℂ)+t*I)=G ((a:ℂ)+t*I)) : verticalIntegral a F=verticalIntegral a G := by
   unfold verticalIntegral
-  congr 1
-  exact integral_congr_ae (Eventually.of_forall h)
+  simp_all
 
 theorem continued_triple_x_shift {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -269,7 +266,7 @@ theorem continued_triple_x_shift {ι : Type*} (η : Character) (S : Finset Id)
   have hiA := continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a ξ 3 3 hX hY hZ ha.le hβ (by linarith) (by norm_num) (by norm_num) (by linarith) (by norm_num)
   have hi3 := continued_source_joint_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    X Y Z 3 ξ 3 3 hX hY hZ (by norm_num) (hβ.trans_le ha3) (by linarith)
+    X Y Z 3 ξ 3 3 hX hY hZ (by norm_num) (by linarith) (by linarith)
     (by norm_num) (by norm_num) (by linarith) (by norm_num)
   change verticalIntegral a (fun s => verticalIntegral ξ (fun z => verticalIntegral 3 (fun w => F s w z)))=_
   rw [verticalIntegral_triple_reverse F a ξ 3 hiA,verticalIntegral_triple_reverse F 3 ξ 3 hi3]
@@ -348,7 +345,7 @@ theorem source_initial_placement {ι : Type*} (η : Character) (S : Finset Id)
     X Y Z a 2 hX hY hZ ha ha3 hβ (by norm_num) le_rfl
   have hz := continued_triple_z_shift η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a (1/6+e) hX hY hZ ha.le ha3 hβ (by linarith) (by linarith)
-  exact hx.symm.trans hz.symm
+  simp_all
 
 theorem source_initial_ordered_at_a {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -366,8 +363,8 @@ theorem source_initial_ordered_at_a {ι : Type*} (η : Character) (S : Finset Id
     verticalIntegral a (fun s => verticalIntegral (1/6+e) (fun z => verticalIntegral (19/20)
       (fun w => K s w z*LFunction π (6*z)*LFunction π w)))+
     R*verticalIntegral a (fun s => verticalIntegral (33/200) (fun z => K s 1 z*LFunction π (6*z)))+
-    R^2/6*verticalIntegral a (fun s => K s 1 (1/6)) := by
-  exact (source_initial_placement η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+    R^2/6*verticalIntegral a (fun s => K s 1 (1/6)) :=
+  (source_initial_placement η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a e hX hY hZ ha ha3 hβ he he2).trans
     (source_ordered_outer η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
       X Y Z a e 3 hX hY hZ ha.le hβ (by norm_num) he)
@@ -396,7 +393,7 @@ theorem source_initial_joint_ordered_at_a {ι : Type*} (η : Character) (S : Fin
   have hh := source_initial_ordered_at_a η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
     X Y Z a e hX hY hZ ha ha3 hβ he he2
   have hf := (source_joint_fubini η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
-    X Y Z 3 2 3 3 hX hY hZ (by norm_num) (hβ.trans_le ha3) (by norm_num)
+    X Y Z 3 2 3 3 hX hY hZ (by norm_num) (by linarith) (by norm_num)
     (by norm_num) (by norm_num) (by norm_num) (by norm_num)).1
   have hi : (((1/(2*Real.pi):ℝ):ℂ)^3)*(∫p : HeightSpace,
       K ((3:ℂ)+p.1.1*I) ((3:ℂ)+p.2*I) ((2:ℂ)+p.1.2*I)*
@@ -408,7 +405,7 @@ theorem source_initial_joint_ordered_at_a {ι : Type*} (η : Character) (S : Fin
     rw [hf]
     simp only [verticalIntegral,integral_const_mul,ofReal_ofNat]
     ring
-  exact hi.trans hh
+  grind
 
 end SevenEighths.ProbePrincipalTransport
 end

@@ -7,7 +7,6 @@ public import Erdos821.P3Clean.FourierLifting
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P3Clean
 
@@ -30,7 +29,7 @@ theorem weighted_fibre_forms_bound {α β : Type*} [Fintype α] [Fintype β]
     rw [Real.sqrt_mul (hw j), Real.sqrt_mul (hw j)]
     have he := Real.sq_sqrt (hw j)
     calc
-      _ = C * ((Real.sqrt (weight j)) ^ 2 * (Real.sqrt U * Real.sqrt V)) := by rw [he]; ring
+      _ = C * ((Real.sqrt (weight j)) ^ 2 * (Real.sqrt U * Real.sqrt V)) := by grind
       _ = _ := by ring
   calc
     _ ≤ ∑ j, ‖(weight j : ℂ) *
@@ -46,9 +45,7 @@ theorem weighted_fibre_forms_bound {α β : Type*} [Fintype α] [Fintype β]
     _ = C * ∑ j, Real.sqrt (weight j * ∑ a, mass a * ‖f j a‖ ^ 2) *
         Real.sqrt (weight j * ∑ b, mass b * ‖g j b‖ ^ 2) := by
       rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro j _
-      exact hscale j _ _
+      simp_all
     _ ≤ _ := by
       simpa only [mul_assoc] using
         mul_le_mul_of_nonneg_left (Real.sum_sqrt_mul_sqrt_le Finset.univ hf hg) hC
@@ -62,7 +59,7 @@ theorem weighted_orbit_sum_real {G V : Type*} [Fintype G] [Fintype V]
   have h (r : G) : (∑ v : V, weight v * f (act r v)) = ∑ v : V, weight v * f v := by
     have hh := Equiv.sum_comp (act r) (fun v => weight v * f v)
     simpa only [hw] using hh
-  simp only [h, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  simp_all
 
 theorem weighted_orbit_sum_complex {G V : Type*} [Fintype G] [Fintype V]
     (act : G → V ≃ V) (weight : V → ℝ)
@@ -74,7 +71,7 @@ theorem weighted_orbit_sum_complex {G V : Type*} [Fintype G] [Fintype V]
       ∑ v : V, (weight v : ℂ) * f v := by
     have hh := Equiv.sum_comp (act r) (fun v => (weight v : ℂ) * f v)
     simpa only [hw] using hh
-  simp only [h, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+  simp_all
 
 theorem orbit_energy {α G V : Type*} [Fintype α] [Fintype G] [Fintype V]
     (mass : α → ℝ) (weight : V → ℝ) (act : G → V ≃ V)
@@ -91,11 +88,7 @@ theorem orbit_energy {α G V : Type*} [Fintype α] [Fintype G] [Fintype V]
       exact weighted_orbit_sum_real act weight hw (fun v => mass a * ‖f (a, v)‖ ^ 2)
     _ = _ := by
       simp only [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro a _
-      apply Finset.sum_congr rfl
-      intro v _
-      ring
+      grind
 
 theorem orbit_regular_form {α G V : Type*} [Fintype α] [AddCommGroup G]
     [Fintype G] [Fintype V] (mass : α → ℝ) (weight : V → ℝ)
@@ -140,7 +133,7 @@ theorem controlled_translation_form_bound {α G V : Type*} [Fintype α] [AddComm
         Real.sqrt (∑ p : α × V, mass p.1 * weight p.2 * ‖g p‖ ^ 2) := by
   have hreg := normBound_translationLift mass H C hm hC hH
   have h := weighted_fibre_forms_bound (fun p : α × G => mass p.1) weight
-    (fun _ => translationLift H) C (fun p => hm p.1) hw0 hC (fun _ => hreg)
+    (fun _ => translationLift H) C (by grind) hw0 hC (by grind)
     (fun v p => f (p.1, act p.2 v)) (fun v p => g (p.1, act p.2 v))
   rw [orbit_regular_form mass weight act hw hact H f g,
     orbit_energy mass weight act hw f, orbit_energy mass weight act hw g] at h
@@ -153,9 +146,9 @@ theorem controlled_translation_form_bound {α G V : Type*} [Fintype α] [AddComm
     calc
       _ = (Real.sqrt (Fintype.card G : ℝ)) ^ 2 *
           (C * Real.sqrt U * Real.sqrt V) := by ring
-      _ = _ := by rw [Real.sq_sqrt hn.le]
+      _ = _ := by simp
   rw [heq] at h
-  exact le_of_mul_le_mul_left h hn
+  nlinarith
 
 
 end Erdos821.P3Clean

@@ -5,7 +5,6 @@ public import Erdos821.P3Edge.ColBound
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -24,13 +23,13 @@ lemma col_valid_set_finite (A : Model F P J m) {n : ℕ} (i : Fin n)
   have hmem_fin : ∀ g : P.BigGroup, Set.Finite {z : P.Memory (g : P.Group) | z.card ≤ bound g} := by
     intro g
     exact finite_multiset_bounded (P.Particle (g : P.Group)) (bound g)
-  have hpi : Set.Finite (Set.univ.pi (fun g : P.BigGroup => {z : P.Memory (g : P.Group) | z.card ≤ bound g})) :=
-    Set.Finite.pi (fun g => hmem_fin g)
+  have hpi :=
+    Set.Finite.pi (by omega)
   have hsmall : Set.Finite (Set.univ : Set P.SmallResidues) := Set.finite_univ
   have hlabels : Set.Finite (Set.univ : Set (P.Labels (J + F.ell))) := Set.finite_univ
-  have hprod_labels : Set.Finite ((Set.univ : Set (P.Labels (J + F.ell))) ×ˢ (Set.univ.pi (fun g : P.BigGroup => {z : P.Memory (g : P.Group) | z.card ≤ bound g}))) :=
+  have hprod_labels :=
     hlabels.prod hpi
-  have hprod : Set.Finite ((Set.univ : Set P.SmallResidues) ×ˢ ((Set.univ : Set (P.Labels (J + F.ell))) ×ˢ (Set.univ.pi (fun g : P.BigGroup => {z : P.Memory (g : P.Group) | z.card ≤ bound g})))) :=
+  have hprod :=
     hsmall.prod hprod_labels
   have hsub : {s : P.MemoryState (J + F.ell) | ∃ c : EdgeChoice A s, edgeChoiceValid A .all i s t c} ⊆
       (Set.univ : Set P.SmallResidues) ×ˢ ((Set.univ : Set (P.Labels (J + F.ell))) ×ˢ (Set.univ.pi (fun g : P.BigGroup => {z : P.Memory (g : P.Group) | z.card ≤ bound g}))) := by

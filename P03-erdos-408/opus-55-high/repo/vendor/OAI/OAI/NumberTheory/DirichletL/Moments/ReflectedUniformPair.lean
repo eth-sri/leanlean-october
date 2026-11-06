@@ -7,11 +7,11 @@ public import OAI.NumberTheory.DirichletL.Moments.ReflectedPairEnergy
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentReflectedUniformPair
-open HeckeFamily FourierBridge EisensteinSchwartzPoisson
-open CenteredMomentReflectedProfileMeasure CenteredMomentReflectedPairEnergy
+open EisensteinSchwartzPoisson
+open CenteredMomentReflectedProfileMeasure
 
 def heightScale (A n : ℕ) (s t : ℝ) : ℝ := (1+s)^A/(1+‖t‖)^n
 
@@ -60,7 +60,7 @@ lemma normalized_density_bound (A n J : ℕ) (s t C : ℝ) (hs : 0<s)
   have hnorm : 0≤(1+‖v‖)^J*‖(((heightScale A n s t:ℝ):ℂ) • b) v‖ := by positivity
   have hb := CubicReflectionKernel.weighted_two_to_cauchy hnorm v hh
   apply (le_div_iff₀ hv).mpr
-  simpa only [envelope,mul_comm] using hb
+  linarith
 
 end SevenEighths.CenteredMomentReflectedUniformPair
 

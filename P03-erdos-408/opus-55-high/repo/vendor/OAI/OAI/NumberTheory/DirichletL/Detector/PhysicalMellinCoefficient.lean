@@ -11,20 +11,19 @@ noncomputable section
 namespace SevenEighths.ProbePhysical
 open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
 open ProbeCompleted ProbeRow CubicEisenstein
-local notation "O" => ActualEisensteinCubic.O
 
-lemma completedIndex_norm (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
+lemma completedIndex_norm (I J : Ideal ActualEisensteinCubic.O) (hI : Supported I) (hJ : Supported J) :
     elementNorm (completedIndex I J)=(Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)^3 := by
   rw [completedIndex, elementNorm_mul, elementNorm_pow]
   unfold elementNorm
   rw [(primaryGenerator_spec I (supported_primaryGenerator_ne_zero I hI)).1,
     (primaryGenerator_spec J (supported_primaryGenerator_ne_zero J hJ)).1]
 
-theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMaximal)
-    (D I J : Ideal O) (η : HeckeFamily.Character) (s : O) (hs : Supported (Ideal.span {s}))
+theorem physical_mellin_coefficient (S : Finset (Ideal ActualEisensteinCubic.O)) (hS : ∀P∈S,P.IsMaximal)
+    (D I J : Ideal ActualEisensteinCubic.O) (η : HeckeFamily.Character) (s : ActualEisensteinCubic.O) (hs : Supported (Ideal.span {s}))
     (hI : Supported I) (hJ : Supported J) (hsf : Squarefree I)
     (hcop : IsCoprime (calibrationForSet S hS).generator (completedIndex I J*s))
-    (X : ℝ) (hX : 0<X) (H : O) (hH : H≠0) (t z : ℂ) :
+    (X : ℝ) (hX : 0<X) (H : ActualEisensteinCubic.O) (hH : H≠0) (t z : ℂ) :
     let C := calibrationForSet S hS
     let A := completedIndex I J
     let hA := supportedElement_ne_zero A (supported_completed _ _
@@ -61,11 +60,7 @@ theorem physical_mellin_coefficient (S : Finset (Ideal O)) (hS : ∀P∈S,P.IsMa
     hi hj (elementNorm_pos H hH) hX t z
   rw [show -(t+1-z)-1/2= -(t+1-z+1/2) by ring] at hn
   simp only [fullIdealWeight,hI.1,hJ.1,ite_false,Complex.ofReal_natCast,Complex.ofReal_div,Complex.ofReal_mul,Complex.ofReal_pow] at hn ⊢
-  have he := congrArg (fun v : ℂ=>v*completedMask S D I J*
-    star ((calibrationForSet S hS).residueMonoid H)*
-    bareSourceCoefficient η I (supported_primaryGenerator_ne_zero I hI) (completedIndex I J) s
-      (supportedElement_ne_zero _ hA) H) hn
-  convert he using 1 <;> ring_nf
+  grind
 
 end SevenEighths.ProbePhysical
 end

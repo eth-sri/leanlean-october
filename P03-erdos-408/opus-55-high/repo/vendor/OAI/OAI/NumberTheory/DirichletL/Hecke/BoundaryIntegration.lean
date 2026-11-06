@@ -28,9 +28,7 @@ theorem LFunction_boundary_ne_zero (χ : Character) (t : ℝ)
   have h1 (t : ℝ) (ht : t ≠ 0) : (1 + Complex.I * t : ℂ) ≠ 1 := by
     intro h
     have hi := congrArg Complex.im h
-    simp only [Complex.add_im, Complex.one_im, Complex.mul_im, Complex.I_re,
-      Complex.ofReal_im, Complex.I_im, Complex.ofReal_re, zero_mul, one_mul,
-      zero_add] at hi
+    simp only [Complex.add_im, Complex.one_im, Complex.mul_im, Complex.I_re, Complex.I_im, Complex.ofReal_re, zero_mul, one_mul, zero_add] at hi
     exact ht hi
   have h0 (t : ℝ) : (1 + Complex.I * t : ℂ) ≠ 0 := by
     intro h
@@ -41,15 +39,15 @@ theorem LFunction_boundary_ne_zero (χ : Character) (t : ℝ)
     (fun s hs => LFunction_eq_series χ hs)
     (fun s hs => LFunction_eq_series (χ.power 2) hs) t
   · apply LFunction_differentiableAt χ (h0 t)
-    exact hpole.imp (h1 t) id
+    simp_all
   · have heq : (1 + 2 * Complex.I * t : ℂ) = 1 + Complex.I * (2 * t : ℝ) := by
       push_cast
       ring
     rw [heq]
     apply DifferentiableAt.continuousAt (𝕜 := ℂ)
-    apply LFunction_differentiableAt (χ.power 2) (h0 (2*t))
+    apply LFunction_differentiableAt (χ.power 2) (by grind)
     rcases hsquare with ht | hsq
-    · exact Or.inl (h1 (2*t) (mul_ne_zero (by norm_num) ht))
+    · simp_all
     · exact Or.inr hsq
 
 theorem LFunction_one_ne_zero_nonprincipal (χ : Character) (hχ : χ.residue ≠ 1) :
@@ -57,7 +55,7 @@ theorem LFunction_one_ne_zero_nonprincipal (χ : Character) (hχ : χ.residue �
   by_cases hquad : χ.residue ^ 2 = 1
   · exact LFunction_one_ne_zero_quadratic χ hχ hquad
   · simpa only [Complex.ofReal_zero, mul_zero, add_zero] using
-      LFunction_boundary_ne_zero χ 0 (Or.inr hχ) (Or.inr hquad)
+      LFunction_boundary_ne_zero χ 0 (by grind) (Or.inr hquad)
 
 theorem LFunction_ne_zero_of_re_eq_one (χ : Character) {s : ℂ}
     (hs : s.re = 1) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) : LFunction χ s ≠ 0 := by
@@ -66,7 +64,7 @@ theorem LFunction_ne_zero_of_re_eq_one (χ : Character) {s : ℂ}
   by_cases ht : s.im = 0
   · have hs1 : s = 1 := by rw [heq, ht]; simp
     subst s
-    exact LFunction_one_ne_zero_nonprincipal χ (hpole.resolve_left (not_not.mpr rfl))
+    exact LFunction_one_ne_zero_nonprincipal χ (by grind)
   · rw [heq]
     exact LFunction_boundary_ne_zero χ s.im (Or.inl ht) (Or.inl ht)
 

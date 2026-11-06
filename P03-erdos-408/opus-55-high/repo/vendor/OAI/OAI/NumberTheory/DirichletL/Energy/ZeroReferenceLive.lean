@@ -10,14 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
-open Filter
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentEnergyZeroReferenceLive
-open HeckeFamily HeckeDyadic ConcreteTraceCRT QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyZeroReferencePower CenteredMomentFiniteProfileExceptional
 local notation "O"=>HeckeFamily.O
 
 end SevenEighths.CenteredMomentEnergyZeroReferenceLive

@@ -69,7 +69,7 @@ theorem targetEndpoint_eq_zero (q₀ : ℝ) {ι : Type} [Fintype ι] (P : ι →
 theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀ < 1) {ι : Type}
     [Fintype ι] {P : ι → Finset ℕ} {G : ℕ → ℝ} (hG : CoreAdmissible B₀ x P G) (J : ℕ)
     (X : ℝ) (n : ℕ) : ‖targetEndpoint q₀ P J G X n‖ ≤ Real.log x ^ B₀ := by
-  have hL0 : 0 < Real.log x := Real.log_pos hx
+  have hL0 := Real.log_pos hx
   have hh0 : 0 ≤ physicalDamping q₀ P (J + 1) n := pow_nonneg (Real.sqrt_nonneg _) _
   have hh1 : physicalDamping q₀ P (J + 1) n ≤ 1 :=
     pow_le_one₀ (Real.sqrt_nonneg _) (Real.sqrt_le_one.2 hq₀₁.le)
@@ -77,10 +77,10 @@ theorem norm_targetEndpoint_le {B₀ x q₀ : ℝ} (hx : 1 < x) (hq₀₁ : q₀
   split_ifs
   · rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hG.2 n).1 hh0)]
     calc G n * physicalDamping q₀ P (J + 1) n ≤ Real.log x ^ B₀ * 1 :=
-          mul_le_mul (hG.2 n).2 hh1 hh0 (Real.rpow_nonneg hL0.le _)
+          mul_le_mul (hG.2 n).2 hh1 hh0 (by positivity)
       _ = Real.log x ^ B₀ := mul_one _
   · rw [norm_zero]
-    exact Real.rpow_nonneg hL0.le _
+    positivity
 
 /-- A dyad `X = 2^m` satisfies `√x ≤ X ≤ x²`. -/
 theorem mem_dyads {x : ℝ} {m : ℕ} (hm : m ∈ dyads x) : √x ≤ 2 ^ m ∧ (2 : ℝ) ^ m ≤ x ^ 2 :=
@@ -96,7 +96,7 @@ theorem eventually_card_dyads_le : ∀ᶠ x : ℝ in atTop, ((dyads x).card : �
   have h0 : 0 ≤ Real.logb 2 x := div_nonneg (by linarith) (by linarith)
   calc ((dyads x).card : ℝ) ≤ ((Finset.range (⌊2 * Real.logb 2 x⌋₊ + 1)).card : ℝ) := by
         exact_mod_cast Finset.card_filter_le _ _
-    _ = ⌊2 * Real.logb 2 x⌋₊ + 1 := by rw [Finset.card_range]; push_cast; ring
+    _ = ⌊2 * Real.logb 2 x⌋₊ + 1 := by simp
     _ ≤ 2 * Real.logb 2 x + 1 := by
         gcongr
         exact Nat.floor_le (by positivity)
@@ -185,7 +185,6 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     have h := GraphBounds.physicalNormSq_Ico_le hdisj hprime hV (J + 1) hab hba
       (fun n _ => hf n)
     unfold dyadSource
-    rw [one_pow, one_mul] at h
     linarith
   · -- the target norm: `L^{2B₀} (2X + 2 ∏ (|P| V⁻¹)^M) ≤ 3X L^{2B₀} ≤ X L^{2C₃}`
     have hab : ⌈X⌉₊ ≤ ⌈3 * X⌉₊ := Nat.ceil_mono (by linarith)
@@ -203,7 +202,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
       rw [Nat.cast_ofNat]
       linarith [le_max_left B₀ 0]
     have hsplit : L ^ (2 * (max B₀ 0 + 1)) = L ^ (2 * max B₀ 0) * L ^ 2 := by
-      rw [show 2 * (max B₀ 0 + 1) = 2 * max B₀ 0 + (2 : ℕ) by push_cast; ring,
+      rw [show 2 * (max B₀ 0 + 1) = 2 * max B₀ 0 + (2 : ℕ) by ring,
         Real.rpow_add hL0, Real.rpow_natCast]
     have hL4 : 4 ≤ L ^ 2 := by nlinarith
     have hP0 : 0 ≤ L ^ (2 * max B₀ 0) := Real.rpow_nonneg hL0.le _
@@ -215,7 +214,7 @@ theorem eventually_endpoint_bounds (q q₀ c₀ C₀ vlo vhi alo ahi : ℝ) (K�
     calc (L ^ B₀) ^ 2 * (2 * X + 2 * ∏ g, ((Finset.card (P g) : ℝ) *
           (harmonicMass (P g))⁻¹) ^ (J + 1))
         ≤ L ^ (2 * max B₀ 0) * (3 * X) :=
-          mul_le_mul hpow (by linarith) (by linarith [hprod0]) hP0
+          mul_le_mul hpow (by linarith) (by linarith) hP0
       _ ≤ L ^ (2 * max B₀ 0) * (L ^ 2 * X) :=
           mul_le_mul_of_nonneg_left (by nlinarith) hP0
       _ = X * (L ^ (2 * max B₀ 0) * L ^ 2) := by ring

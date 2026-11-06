@@ -11,23 +11,21 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators Topology
+open scoped Classical
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open CanonicalCoefficientClass InverseInitialExcludedPeriod CanonicalQuadraticSieve
-open InverseInitialRayAttachment CanonicalRowCompletion
+open HeckeFamily InverseInitialDetectorSource
 local notation "O"=>HeckeFamily.O
-variable (M:Ideal O)[NeZero M]
-local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
+variable (M:Ideal HeckeFamily.O)[NeZero M]
+local instance:Finite (HeckeFamily.O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
+variable (H:Subgroup (HeckeFamily.O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 local instance:Fintype (Sum Bool (RayQuotient.Characters M H)):=Fintype.ofFinite _
 
-def sourceMomentConductorBound (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character):ℝ:=
+def sourceMomentConductorBound (S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)(η:Character):ℝ:=
   1+∑j:Sum Bool (RayQuotient.Characters M H),
     ((baseCharacter (sourceMomentData M H hH S hS η j)).modulus.absNorm:ℝ)
 
-theorem sourceMomentConductor_le (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character)
+theorem sourceMomentConductor_le (S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)(η:Character)
     (j:Sum Bool (RayQuotient.Characters M H)):
     ((baseCharacter (sourceMomentData M H hH S hS η j)).modulus.absNorm:ℝ)<
       sourceMomentConductorBound M H hH S hS η:=by
@@ -37,7 +35,7 @@ theorem sourceMomentConductor_le (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Ch
   unfold sourceMomentConductorBound
   linarith
 
-theorem sourceMoment_large_eventually (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(η:Character)
+theorem sourceMoment_large_eventually (S:Finset (Ideal HeckeFamily.O))(hS:∀P∈S,Prime P)(η:Character)
     {Slot:Type*}[Fintype Slot](ell:Slot→ℝ)(hell:∀s,0<ell s):
     ∀ᶠZ:ℝ in atTop,1≤Z ∧ ∀d:ℝ,0<d→
       ∀j:Sum Bool (RayQuotient.Characters M H),∀s:Slot,
@@ -50,7 +48,7 @@ theorem sourceMoment_large_eventually (S:Finset (Ideal O))(hS:∀P∈S,Prime P)(
   filter_upwards [eventually_ge_atTop (1:ℝ),ht] with Z hZ ht
   refine ⟨hZ,?_⟩
   intro d hd j s
-  rw [←Real.rpow_mul (by linarith:0≤Z),mul_div_cancel₀ _ hd.ne']
+  rw [←Real.rpow_mul (by positivity),mul_div_cancel₀ _ hd.ne']
   exact (sourceMomentConductor_le M H hH S hS η j).trans (ht s)
 
 end SevenEighths.ProbeHighRowFamily

@@ -6,7 +6,6 @@ public import Erdos821.S2Empty.BigMass
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Empty
@@ -27,17 +26,16 @@ theorem big_boundary_factor_le_two (F : FixedData) (P : PrimeGroups) (n M : ℕ)
     have hp : 0 < (p.val : ℝ) := by
       exact_mod_cast (P.prime g.val p.val p.property).pos
     have hbase : 0 < baselinePrime F n p.val :=
-      lt_of_lt_of_le (by linarith [hehalf]) (hfloor g p)
+      lt_of_lt_of_le (by linarith) (hfloor g p)
     unfold tiltedMu
     exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) hbase)
   have hS (g : P.BigGroup) : 0 ≤ S g ∧ S g ≤ (1 - e)⁻¹ := by
     constructor
     · dsimp [S]
       apply Finset.sum_nonneg
-      intro p hp
-      exact (htermPos g p).le
+      grind
     · exact big_tilted_sum_le_inv F P n g e (hV g.val)
-        (by linarith [hehalf]) (hfloor g)
+        (by linarith) (hfloor g)
   change (∑ b : BigLabels P M,
     ∏ g : P.BigGroup, ∏ j : Fin M, tiltedMu F P n g.val (b g j)) ≤ 2
   rw [big_label_sum_eq_prod F P n M]
@@ -62,7 +60,7 @@ theorem initial_boundary_mass_le_two_of_budget
   have hbase : ∀ g : P.BigGroup, ∀ p : P.Prime g.val,
       0 < baselinePrime F n p.val := by
     intro g p
-    exact lt_of_lt_of_le (by linarith [hehalf]) (hfloor g p)
+    exact lt_of_lt_of_le (by linarith) (hfloor g p)
   have hfactor : Erdos821.S2Core.initialMemoryBoundaryMass A n = smallTerm * bigTerm := by
     rw [initial_boundary_mass_factorization F P J m n A hV hbase]
     dsimp [smallTerm, bigTerm, M]
@@ -79,16 +77,16 @@ theorem initial_boundary_mass_le_two_of_budget
     have hp : 0 < (p.val : ℝ) := by
       exact_mod_cast (P.prime g.val p.val p.property).pos
     have hbaseP : 0 < baselinePrime F n p.val :=
-      lt_of_lt_of_le (by linarith [hehalf]) (hfloor g p)
+      lt_of_lt_of_le (by linarith) (hfloor g p)
     unfold tiltedMu
     exact inv_pos.mpr (mul_pos (mul_pos (hV g.val) hp) hbaseP)
   have hcardSmall : 0 < (Fintype.card P.SmallResidues : ℝ) := by
-    exact_mod_cast (Fintype.card_pos_iff.mpr ⟨fun _ _ => 0⟩)
+    exact_mod_cast (by positivity)
   have hsmallProduct :
       0 ≤ ∏ g : P.SmallGroup, (P.V g.val) ^ (-(M : ℤ)) := by
     apply Finset.prod_nonneg
     intro g hg
-    exact zpow_nonneg (hV g.val).le _
+    exact zpow_nonneg (by grind) _
   have hsmallSum :
       0 ≤ ∑ y : P.SmallResidues, ∑ s : SmallLabels P M,
         if ∀ g : P.SmallGroup, smallLocalGood g (y g) (s g) then (1 : ℝ) else 0 := by
@@ -99,24 +97,8 @@ theorem initial_boundary_mass_le_two_of_budget
     split_ifs <;> positivity
   have hsmall0 : 0 ≤ smallTerm := by
     dsimp [smallTerm]
-    exact mul_nonneg (mul_nonneg (by positivity) hsmallProduct) hsmallSum
-  have hweight0 (b : BigLabels P M) : 0 ≤ bigLabelWeight F P n M b := by
-    unfold bigLabelWeight
-    apply Finset.prod_nonneg
-    intro g hg
-    apply Finset.prod_nonneg
-    intro j hj
-    exact (htermPos g (b g j)).le
-  have hbig0 : 0 ≤ bigTerm := by
-    dsimp [bigTerm]
-    apply Finset.sum_nonneg
-    intro b hb
-    exact hweight0 b
-  calc
-    Erdos821.S2Core.initialMemoryBoundaryMass A n = smallTerm * bigTerm := hfactor
-    _ ≤ 1 * bigTerm := mul_le_mul_of_nonneg_right hsmall_le hbig0
-    _ ≤ 1 * 2 := mul_le_mul_of_nonneg_left hbig_le (by norm_num)
-    _ = 2 := by norm_num
+    exact mul_nonneg (by positivity) hsmallSum
+  nlinarith
 
 
 end Erdos821.S2Empty

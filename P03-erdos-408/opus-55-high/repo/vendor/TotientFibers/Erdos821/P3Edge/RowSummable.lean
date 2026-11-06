@@ -6,7 +6,6 @@ public import Mathlib.Algebra.Ring.IsFormallyReal
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P3Edge
@@ -54,12 +53,12 @@ lemma row_kernel_support_subset (A : Model F P J m) {n : ℕ} (rho theta : ℝ) 
     simp [hn]
   have hsum0 : (∑ c : EdgeChoice A s, if edgeChoiceValid A .all i s t c then ‖edgeChoiceCoefficient A n rho theta i s t c‖ else 0) = 0 := by
     simp [hall]
-  exact hsum hsum0
+  grind
 
 lemma row_kernel_set_finite (A : Model F P J m) {n : ℕ} (rho theta : ℝ) (i : Fin n)
     (s : P.MemoryState (J + F.ell)) :
-    Set.Finite {t | absoluteMemoryEdgeKernel A n rho theta i .all s t ≠ 0} := by
-  exact (row_valid_set_finite A i s).subset (row_kernel_support_subset A rho theta i s)
+    Set.Finite {t | absoluteMemoryEdgeKernel A n rho theta i .all s t ≠ 0} :=
+  (row_valid_set_finite A i s).subset (row_kernel_support_subset A rho theta i s)
 
 lemma row_summable (F : FixedData) (r : MemoryParameters F)
     (A : Model F P J m) (n : ℕ) (theta : ℝ) (i : Fin n)

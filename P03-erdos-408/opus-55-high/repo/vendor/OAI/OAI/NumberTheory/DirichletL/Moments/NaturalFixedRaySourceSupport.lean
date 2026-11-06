@@ -10,11 +10,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators ComplexConjugate
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentNaturalFixedRaySource
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open CenteredMomentDetectorDictionary HeckeDetectorRawFiber ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 end SevenEighths.CenteredMomentNaturalFixedRaySource

@@ -7,11 +7,10 @@ public import OAI.NumberTheory.DirichletL.Reflection.AnnularExponent
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open CompletedDyadic CompletedGauss ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve
+open scoped Classical
+open CompletedDyadic CompletedGauss CubicEisenstein
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-variable {φ : Type*} [Fintype φ] {a c : Eis} {mode : Bool}
+variable {φ : Type*} [Fintype φ] {a c : ActualEisensteinCubic.O} {mode : Bool}
 
 theorem actual_kernel_upper_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : φ→Fin 3)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -33,7 +32,6 @@ theorem actual_kernel_upper_threshold (F : PrimeFamily φ) (jF : φ→ℕ) (e : 
   rw [Real.logb_div (by positivity) (by positivity),Real.logb_mul hkK.ne' hK.ne',
     Real.logb_mul hkP.ne' hP.ne',Real.logb_mul (pow_ne_zero _ hkK.ne') (pow_ne_zero _ hkP.ne'),
     Real.logb_pow,Real.logb_pow]
-  norm_num only [Nat.cast_ofNat]
   ring
 
 end

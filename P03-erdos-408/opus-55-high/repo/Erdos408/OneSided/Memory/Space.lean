@@ -41,7 +41,7 @@ def memStates (B : ℕ) : Finset (X → ℕ) :=
 
 omit [DecidableEq X] in
 theorem le_memSize (S : X → ℕ) (x : X) : S x ≤ memSize S :=
-  single_le_sum (fun _ _ => Nat.zero_le _) (mem_univ x)
+  single_le_sum (by omega) (mem_univ x)
 
 theorem mem_memStates {B : ℕ} {S : X → ℕ} : S ∈ memStates B ↔ memSize S ≤ B := by
   simp only [memStates, mem_filter, Fintype.mem_piFinset, mem_range, and_iff_right_iff_imp]
@@ -57,6 +57,6 @@ noncomputable def memWeight (ν : X → ℝ) (S : X → ℕ) : ℝ := ∏ x, ν 
 
 omit [DecidableEq X] in
 theorem memWeight_nonneg {ν : X → ℝ} (hν : ∀ x, 0 ≤ ν x) (S : X → ℕ) : 0 ≤ memWeight ν S :=
-  prod_nonneg fun x _ => div_nonneg (pow_nonneg (hν x) _) (Nat.cast_nonneg _)
+  prod_nonneg fun x _ => div_nonneg (pow_nonneg (by grind) _) (Nat.cast_nonneg _)
 
 end Erdos408.OneSided

@@ -9,14 +9,12 @@ public import OAI.NumberTheory.DirichletL.Descent.Basic
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve
 open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialQuotientGeometry
 
-local notation "Eis" => ActualEisensteinCubic.O
-local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
-variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
+variable {ι : Type*} [DecidableEq ι] (p : ι → ActualEisensteinCubic.O)
 
 def sourceWeight {J : ℕ} (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
     (Z B θ : ℝ) (x : Source (ι:=ι) J) : ℂ :=
@@ -27,7 +25,7 @@ def retained {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ) (Z B θ : ℝ) : Finset (Source (ι:=ι) J) :=
   S.filter (fun x => sourceWeight p A ψC ψd Z B θ x ≠ 0)
 
-def quotientSet {J : ℕ} (S : Finset (Source (ι:=ι) J)) : Finset (Ideal Eis) :=
+def quotientSet {J : ℕ} (S : Finset (Source (ι:=ι) J)) : Finset (Ideal ActualEisensteinCubic.O) :=
   S.image (fun x => sourceIdeal p (x.common\x.divisor))
 
 variable (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
@@ -43,7 +41,7 @@ theorem quotientSet_nonzero {J : ℕ} (S : Finset (Source (ι:=ι) J)) :
 include hp in
 
 theorem quotientSet_eq_initial {J : ℕ} (S : Finset (Source (ι:=ι) J))
-    (u : Eisˣ) (hdiv : ∀ x ∈ S, x.divisor ⊆ x.common) :
+    (u : ActualEisensteinCubic.Oˣ) (hdiv : ∀ x ∈ S, x.divisor ⊆ x.common) :
     initialQuotientSet (S.image (fun x => toTuple p (sectorSource u x))) = quotientSet p S := by
   rw [initialQuotientSet, Finset.image_image]
   apply Finset.image_congr
@@ -59,12 +57,11 @@ theorem quotient_norm_eq {J : ℕ} (x : Source (ι:=ι) J) (hdiv : x.divisor ⊆
   have he : sourceIdeal p x.divisor * sourceIdeal p (x.common\x.divisor) = sourceIdeal p x.common := by
     rw [←sourceIdeal_union p x.divisor (x.common\x.divisor) Finset.disjoint_sdiff,
       Finset.union_sdiff_of_subset hdiv]
-  have hn := congrArg (fun I : Ideal Eis => (Ideal.absNorm I : ℝ)) he
+  have hn := congrArg (fun I : Ideal ActualEisensteinCubic.O => (Ideal.absNorm I : ℝ)) he
   simp only [map_mul,Nat.cast_mul] at hn
   have hd : (Ideal.absNorm (sourceIdeal p x.divisor) : ℝ) ≠ 0 := by
     exact_mod_cast Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp _)
-  apply (eq_div_iff hd).mpr
-  simpa only [mul_comm] using hn
+  grind
 
 omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
 
@@ -107,11 +104,11 @@ theorem retained_quotient_bound {J : ℕ} (S : Finset (Source (ι:=ι) J))
   have he : Z^(θ-η) ≤ (Ideal.absNorm (sourceIdeal p x.divisor) : ℝ) := by
     apply le_trans _ hw.2
     calc
-      _ = Z^(-η)*Z^θ := by rw [←Real.rpow_add hZ]; congr 1; ring
+      _ = Z^(-η)*Z^θ := by rw [←Real.rpow_add hZ]; ring
       _ ≤ _ := mul_le_mul_of_nonneg_right hdlo (Real.rpow_pos_of_pos hZ _).le
   calc
     _ ≤ Z^(B+η)/Z^(θ-η) := div_le_div₀ (by positivity) hc (Real.rpow_pos_of_pos hZ _) he
-    _ = _ := by rw [←Real.rpow_sub hZ]; congr 1; ring
+    _ = _ := by rw [←Real.rpow_sub hZ]; ring
 
 include hp in
 omit [∀ i, (Ideal.span {p i}).IsMaximal] in
@@ -125,13 +122,13 @@ theorem nonempty_radius {J : ℕ} (S : Finset (Source (ι:=ι) J)) (Z P η : ℝ
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ht0)
   have hh := hn.trans (hnorm t ht)
   refine ⟨hh,?_⟩
-  exact (Real.rpow_le_rpow_left_iff hZ).mp (by simpa only [Real.rpow_zero] using hh)
+  exact (Real.rpow_le_rpow_left_iff hZ).mp (by simp_all)
 
-def normalizedMass (J : ℕ) (T : Finset (Ideal Eis)) (H : ℝ) : ℝ :=
+def normalizedMass (J : ℕ) (T : Finset (Ideal ActualEisensteinCubic.O)) (H : ℝ) : ℝ :=
   H⁻¹ * ∑ t ∈ T, ((idealDivisors t).card : ℝ)^J
 
 theorem normalized_mass_bound (J : ℕ) (ε : ℝ) (hε : 0 < ε) :
-    ∃ C : ℝ, 0 < C ∧ ∀ (T : Finset (Ideal Eis)) (H : ℝ), 0 < H →
+    ∃ C : ℝ, 0 < C ∧ ∀ (T : Finset (Ideal ActualEisensteinCubic.O)) (H : ℝ), 0 < H →
       (∀ t ∈ T, t ≠ 0) → (∀ t ∈ T, (Ideal.absNorm t : ℝ) ≤ H) →
       normalizedMass J T H ≤ C*H^ε := by
   obtain ⟨C,hC,hb⟩ := ideal_divisor_power_small J ε hε
@@ -168,12 +165,11 @@ theorem assigned_register {σ : Type*} [DecidableEq σ]
   refine ⟨Finset.sum_nonneg (fun i hi => hz i (ha hi)),
     Finset.sum_nonneg (fun i hi => hz i (Finset.mem_sdiff.mp hi).1),?_⟩
   unfold assignedCenter
-  have h := Finset.sum_sdiff ha (f := z)
-  linarith
+  simp_all
 
-def assignedElement {σ : Type*} (slots : Finset σ) (q : σ → Eis) : Eis := ∏ i ∈ slots, q i
+def assignedElement {σ : Type*} (slots : Finset σ) (q : σ → ActualEisensteinCubic.O) : ActualEisensteinCubic.O := ∏ i ∈ slots, q i
 
-theorem assigned_norm_bound {σ : Type*} (slots : Finset σ) (q : σ → Eis)
+theorem assigned_norm_bound {σ : Type*} (slots : Finset σ) (q : σ → ActualEisensteinCubic.O)
     (z a b : σ → ℝ) (W : σ → ℝ → ℂ) (Z : ℝ) (hZ : 0 < Z)
     (hW : ∀ i ∈ slots, Function.support (W i) ⊆ Set.Icc (a i) (b i))
     (hret : ∀ i ∈ slots, W i ((Ideal.absNorm (Ideal.span {q i}) : ℝ)/Z^(z i)) ≠ 0) :
@@ -186,7 +182,7 @@ theorem assigned_norm_bound {σ : Type*} (slots : Finset σ) (q : σ → Eis)
   simpa only [assignedElement,FiniteGaussPhase.span_finset_prod,map_prod,Nat.cast_prod,
     Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,assignedCenter] using hp
 
-theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
+theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → ActualEisensteinCubic.O)
     (z a b : σ → ℝ) (W : σ → ℝ → ℂ) (Z η : ℝ) (hZ : 0 < Z)
     (hW : ∀ i ∈ slots, Function.support (W i) ⊆ Set.Icc (a i) (b i))
     (hret : ∀ i ∈ slots, W i ((Ideal.absNorm (Ideal.span {q i}) : ℝ)/Z^(z i)) ≠ 0)
@@ -196,13 +192,13 @@ theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
   apply (assigned_norm_bound slots q z a b W Z hZ hW hret).trans
   calc
     _ ≤ Z^η*Z^(assignedCenter slots z) := mul_le_mul_of_nonneg_right hthreshold (by positivity)
-    _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
+    _ = _ := by rw [←Real.rpow_add hZ]; ring
 
 include hp in
 omit [∀ i, (Ideal.span {p i}).IsMaximal] in
 theorem span_source_puncture {J : ℕ} (S : Finset (Source (ι:=ι) J))
-    (hpr : ∀ i, λ₀^2 ∣ p i-1) (j : Eis)
-    {t : Ideal Eis} (ht : t ∈ quotientSet p S) :
+    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) (j : ActualEisensteinCubic.O)
+    {t : Ideal ActualEisensteinCubic.O} (ht : t ∈ quotientSet p S) :
     Ideal.span {j*primaryGenerator t} = t*Ideal.span {j} := by
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp ht
   rw [sourceIdeal_gen p hp hpr]

@@ -8,31 +8,20 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators
 open MulChar AddChar
-open scoped BigOperators
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open Real
+open scoped FourierTransform
 open Finset Complex
-open scoped Classical
-open scoped Classical
 open Filter Real Asymptotics
 open ActualEisensteinCubic
 open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 open Filter
 open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open EisensteinEmbedding
 open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics
@@ -52,32 +41,28 @@ open Filter Asymptotics MeasureTheory
 open scoped Topology
 open Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff FourierTransform
+open scoped Classical
+open scoped Classical
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical ContDiff
+open scoped Classical
+open scoped Classical ContDiff
+open Set
+open scoped Classical
+open scoped Classical
 
 namespace CubicReflectionKernel
 
 section
-open scoped Classical FourierTransform SchwartzMap ContDiff
-open MeasureTheory
+open scoped Classical FourierTransform ContDiff
 
 def momentScale : ℝ :=
   2 ^ (volume : Measure ℝ).integrablePower *
@@ -85,7 +70,7 @@ def momentScale : ℝ :=
 
 end
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform ContDiff Topology
 open MeasureTheory Filter Asymptotics
 
 def paperScale : ℝ := (2 * Real.pi) ^ 4 / 27
@@ -106,8 +91,8 @@ theorem logProfile_compact (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
   have huv : V (Real.exp u) ≠ 0 := hu
   have hm := hsupp huv
   constructor
-  · simpa only [Real.log_exp] using Real.log_le_log ha hm.1
-  · simpa only [Real.log_exp] using Real.log_le_log (Real.exp_pos u) hm.2
+  · simpa using Real.log_le_log ha hm.1
+  · simpa using Real.log_le_log (Real.exp_pos u) hm.2
 
 def logSchwartz (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V) :
@@ -144,8 +129,7 @@ theorem mellin_axis_eq_fourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ �
     mellin V (-((2 * Real.pi * u : ℝ) * Complex.I)) = (𝓕 logSource) u := by
   rw [mellin_eq_fourier]
   have hfreq : (-((2 * Real.pi * u : ℝ) * Complex.I) : ℂ).im / (2 * Real.pi) = -u := by
-    simp only [Complex.neg_im, Complex.mul_im, Complex.ofReal_re, Complex.I_im,
-      Complex.ofReal_im, Complex.I_re, mul_one, mul_zero, add_zero]
+    simp only [Complex.neg_im, Complex.mul_im, Complex.ofReal_re, Complex.I_im, Complex.I_re, mul_one, mul_zero, add_zero]
     field_simp
   rw [hfreq]
   have hfun : (fun v : ℝ => Real.exp
@@ -176,7 +160,7 @@ theorem paperKernel_eq_logFourier (V : ℝ → ℂ) (logSource : SchwartzMap ℝ
 
 end CubicReflectionKernel
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform ContDiff Topology
 open MeasureTheory Filter
 namespace CubicReflectionKernel
 
@@ -200,19 +184,18 @@ theorem paperKernel_euler_eq (V : ℝ → ℂ) (logSource : SchwartzMap ℝ ℂ)
   have hfun : (fun t : ℝ => paperKernel V (x * Real.exp t)) =
       (fun t : ℝ => reflectedLogProfile logSource (Real.log (paperScale * x) + t)) := by
     funext t
-    rw [paperKernel_eq_logFourier V logSource hL _ (mul_pos hx (Real.exp_pos t))]
+    rw [paperKernel_eq_logFourier V logSource hL _ (by positivity)]
     rw [← mul_assoc, Real.log_mul (ne_of_gt (mul_pos paperScale_pos hx))
-      (ne_of_gt (Real.exp_pos t)), Real.log_exp]
-  rw [LocalLogFourier.eulerDeriv, hfun, iteratedDeriv_comp_const_add]
-  simp
+      (by positivity), Real.log_exp]
+  simp [LocalLogFourier.eulerDeriv, hfun, iteratedDeriv_comp_const_add]
 
 theorem paperKernel_compact_source_smooth
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V) :
     ContDiffOn ℝ ∞ (paperKernel V) (Set.Ioi 0) :=
-  paperKernel_contDiffOn V (logSchwartz V a b ha hsupp hV) (by intro u; rfl)
+  paperKernel_contDiffOn V (logSchwartz V a b ha hsupp hV) (by simp)
 
-open scoped Classical FourierTransform SchwartzMap ContDiff Topology
+open scoped Classical FourierTransform ContDiff Topology
 open MeasureTheory Filter Asymptotics
 
 theorem compact_source_mellin_hasDerivAt
@@ -249,16 +232,15 @@ theorem Gamma_differentiableAt_of_re_pos (z : ℂ) (hz : 0 < z.re) :
   intro m hm
   have hr := congrArg Complex.re hm
   simp only [Complex.neg_re, Complex.natCast_re] at hr
-  have hn : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   linarith
 
 theorem gammaMultiplier_differentiableAt (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
     DifferentiableAt ℂ gammaMultiplier s := by
   have h1 := (Gamma_differentiableAt_of_re_pos ((7 / 6 : ℂ) + s) (by
-    norm_num [Complex.add_re, Complex.div_re]
+    norm_num
     linarith)).comp s (differentiableAt_const _ |>.add differentiableAt_id)
   have h2 := (Gamma_differentiableAt_of_re_pos ((5 / 6 : ℂ) + s) (by
-    norm_num [Complex.add_re, Complex.div_re]
+    norm_num
     linarith)).comp s (differentiableAt_const _ |>.add differentiableAt_id)
   have h3 := (Complex.differentiable_one_div_Gamma ((7 / 6 : ℂ) - s)).comp s
     (differentiableAt_const _ |>.sub differentiableAt_id)
@@ -273,13 +255,13 @@ theorem kernelMellinIntegrand_differentiableAt
     (V : ℝ → ℂ) (a b : ℝ) (ha : 0 < a)
     (hsupp : Function.support V ⊆ Set.Icc a b) (hV : ContDiff ℝ ∞ V)
     (s : ℂ) (hs : -(5 / 6 : ℝ) < s.re) :
-    DifferentiableAt ℂ (fun t => mellin V (-t) * gammaMultiplier t) s := by
-  exact ((compact_source_mellin_differentiable V a b ha hsupp hV (-s)).comp s
+    DifferentiableAt ℂ (fun t => mellin V (-t) * gammaMultiplier t) s :=
+  ((compact_source_mellin_differentiable V a b ha hsupp hV (-s)).comp s
     differentiableAt_id.neg).mul (gammaMultiplier_differentiableAt s hs)
 
 end CubicReflectionKernel
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace DescentWeightedCauchy
 
@@ -294,10 +276,10 @@ theorem weighted_cauchy_sq {ι : Type*} (s : Finset ι)
       norm_sum_le s (fun i => w i * U i * star (V i))
   calc
     _ ≤ (∑ i ∈ s, ‖w i‖ * ‖U i‖ * ‖V i‖) ^ 2 :=
-      sq_le_sq₀ (norm_nonneg _) (Finset.sum_nonneg (fun i _ => by positivity)) |>.mpr hnorm
+      sq_le_sq₀ (norm_nonneg _) (by positivity) |>.mpr hnorm
     _ ≤ _ := Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul s
       (fun i _ => by positivity) (fun i _ => by positivity)
-      (fun i _ => by ring_nf; exact le_rfl)
+      (fun i _ => by linarith)
 
 theorem weighted_cauchy {ι : Type*} (s : Finset ι)
     (w U V : ι → ℂ) :
@@ -305,9 +287,9 @@ theorem weighted_cauchy {ι : Type*} (s : Finset ι)
       Real.sqrt (∑ i ∈ s, ‖w i‖ * ‖U i‖ ^ 2) *
       Real.sqrt (∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2) := by
   have h1 : 0 ≤ ∑ i ∈ s, ‖w i‖ * ‖U i‖ ^ 2 :=
-    Finset.sum_nonneg (fun i _ => by positivity)
+    by positivity
   have h2 : 0 ≤ ∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2 :=
-    Finset.sum_nonneg (fun i _ => by positivity)
+    by positivity
   have hs := weighted_cauchy_sq s w U V
   have he1 := Real.sq_sqrt h1
   have he2 := Real.sq_sqrt h2
@@ -315,7 +297,7 @@ theorem weighted_cauchy {ι : Type*} (s : Finset ι)
       Real.sqrt (∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2)) ^ 2 =
       (∑ i ∈ s, ‖w i‖ * ‖U i‖ ^ 2) *
       (∑ i ∈ s, ‖w i‖ * ‖V i‖ ^ 2) := by rw [mul_pow, he1, he2]
-  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp (hp ▸ hs)
+  exact (sq_le_sq₀ (norm_nonneg _) (by positivity)).mp (by linarith)
 
 theorem weighted_energy_pushforward {ι κ : Type*} [DecidableEq κ]
     (s : Finset ι) (t : Finset κ) (f : ι → κ) (w : ι → ℂ)
@@ -333,10 +315,9 @@ theorem weighted_energy_pushforward {ι κ : Type*} [DecidableEq κ]
       intro y hy
       rw [Finset.sum_mul]
       apply Finset.sum_congr rfl
-      intro i hi
-      rw [(Finset.mem_filter.mp hi).2]
+      simp_all
     _ ≤ _ := Finset.sum_le_sum (fun y hy =>
-      mul_le_mul_of_nonneg_right (hfib y hy) (sq_nonneg _))
+      mul_le_mul_of_nonneg_right (by grind) (sq_nonneg _))
 
 theorem bounded_energy_pushforward {ι κ : Type*} [DecidableEq κ]
     (s : Finset ι) (t : Finset κ) (f : ι → κ) (w : ι → ℂ)
@@ -348,7 +329,7 @@ theorem bounded_energy_pushforward {ι κ : Type*} [DecidableEq κ]
   intro y hy
   calc
     _ ≤ ∑ i ∈ s with f i = y, C := Finset.sum_le_sum
-      (fun i hi => hw i (Finset.mem_filter.mp hi).1)
+      (by grind)
     _ = _ := by simp [mul_comm]
 
 abbrev O := ActualEisensteinCubic.O

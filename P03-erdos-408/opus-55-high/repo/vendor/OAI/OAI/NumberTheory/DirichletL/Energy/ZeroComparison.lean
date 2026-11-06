@@ -8,18 +8,16 @@ public import OAI.NumberTheory.DirichletL.Moments.RetainedProfile
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroComparison
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
-open CenteredMomentRadialEligibleEnergy CenteredMomentInductionEnergy
+open CenteredMomentCommonRadialData CenteredMomentEnergyOriginalSource
+open CenteredMomentRadialEligibleEnergy
 open CenteredMomentRetainedProfile CenteredMomentRetainedEnergy
-open CenteredMomentHeckeExpansion CenteredMomentOriginalCommonHarmonic
-open CenteredMomentAmplificationChildInput CenteredMomentSourceRow
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
-open CenteredMomentSourceProfileMass CenteredMomentHeckeHeight CenteredMomentSourceMass
-local notation "O" => HeckeFamily.O
+open CenteredMomentAmplificationChildInput
+open ConcretePrimeRowBridge CenteredMomentSecondHeightFamily
+open CenteredMomentHeckeHeight
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=energyOriginalSourceDecidableSum
 
@@ -29,15 +27,15 @@ lemma smallScale_pos (b:ℝ):0<smallScale b:=by unfold smallScale;positivity
 
 lemma smallScale_le_one (b:ℝ):smallScale b≤1:=by
   unfold smallScale
-  apply (div_le_iff₀ (by positivity:0<(2:ℝ)*max 1 b)).mpr
-  linarith [le_max_left (1:ℝ) b]
+  apply (div_le_iff₀ (by positivity)).mpr
+  grind
 
 lemma smallScale_strict (b:ℝ):smallScale b*b<1:=by
-  have hm:0<max 1 b:=zero_lt_one.trans_le (le_max_left _ _)
+  have hm:0<max 1 b:=by positivity
   unfold smallScale
   have hb:=le_max_right (1:ℝ) b
   rw [div_mul_eq_mul_div,one_mul]
-  exact (div_lt_iff₀ (mul_pos (by norm_num) hm)).mpr (by linarith)
+  exact (div_lt_iff₀ (by positivity)).mpr (by linarith)
 
 def zeroData (s:Input ι):CenteredMomentEligibleEnergy.Data ι := { s.toData with
   Y₁ := smallScale s.b₁
@@ -56,18 +54,18 @@ omit [DecidableEq ι] in
 
 omit [DecidableEq ι] in
 lemma comparison_row_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
-    (R:Ideal O)(z:O):
+    (R:Ideal HeckeFamily.O)(z:HeckeFamily.O):
     positiveSlotRow s.η (fixedBadMask*idealGenerator R) 1 z s.W₁ s.W₂ s.slots
       s.toData.coefficient s.P s.t (zeroInput s hz₁ hz₂).Y₁ (zeroInput s hz₁ hz₂).Y₂=0:=by
   unfold positiveSlotRow
   change _*(rowTwistedSum s.η (fixedBadMask*idealGenerator R) 1 z s.W₁ s.t (smallScale s.b₁)*_*_)=0
   rw [strict_subunit_rowTwistedSum_zero s.η (fixedBadMask*idealGenerator R) 1 z
     s.W₁ s.b₁ s.t (smallScale s.b₁) (smallScale_pos _) s.support₁ (smallScale_strict _)]
-  simp only [zero_mul,mul_zero]
+  simp
 
 omit [DecidableEq ι] in
 lemma comparison_energy_zero (s:Input ι)(hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)
-    (R:Ideal O)(r:Radial):
+    (R:Ideal HeckeFamily.O)(r:Radial):
     CenteredMomentInductionEnergy.energy s.η (fixedBadMask*idealGenerator R) 1 s.t s.W₁ s.W₂ s.slots
       s.toData.coefficient s.P (zeroInput s hz₁ hz₂).Y₁ (zeroInput s hz₁ hz₂).Y₂
       r.keep r.profile r.scale=0:=by

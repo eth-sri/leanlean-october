@@ -7,16 +7,15 @@ public import OAI.NumberTheory.DirichletL.Moments.SourceInputTailUniform
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputZeroUniform
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass CenteredMomentSourceRow
+open HeckeFamily CenteredMomentCommonRadialData
+open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceMass
 open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
 open CenteredMomentSourceProfileMass CenteredMomentSourceInputTailUniform
 open CenteredMomentFirstLocalization EisensteinSchwartzPoisson
 open CenteredMomentExceptionalAmplitudePair CenteredMomentAddedZeroUniform
-local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -26,13 +25,13 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
     ∃C:ℝ,0<C ∧ ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
       ‖zeroEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*K*‖paperRadialFourier Φ 0‖*(volume s.toData)^ε:=by
   obtain ⟨C₀,hC₀,hbound⟩:=active_tuple_zero_energy_bound (Fintype.card ι) ε hε
   let L:=1+(∏i,hi i)*whi^2
-  have hprod:0≤∏i,hi i:=Finset.prod_nonneg (fun i _=>hhi i)
+  have hprod:0≤∏i,hi i:=Finset.prod_nonneg (by grind)
   have hL:0<L:=by dsimp [L];positivity
   refine ⟨4*C₀*L^(1+ε),by positivity,?_⟩
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK
@@ -45,7 +44,7 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
   have hβ (v:Tuple ι):‖β v‖≤2*plainControl s W₁ W₂:=by
     have hb:=profileCoefficient_norm_le R s.ν s.ν_bound s.W s.P s.M W₁ W₂
       (SchwartzMap.seminorm ℝ 0 0 W₁) (SchwartzMap.seminorm ℝ 0 0 W₂)
-      (fun i=>zero_le_one.trans (s.M_ge_one i)) (apply_nonneg _ _) (apply_nonneg _ _)
+      (fun i=>zero_le_one.trans (s.M_ge_one i)) (by positivity) (by positivity)
       s.W_bound (SchwartzMap.norm_le_seminorm ℝ W₁) (SchwartzMap.norm_le_seminorm ℝ W₂)
       s.X₁ s.X₂ s.Y₁ s.Y₂ 1 1 seed v
     exact hb.trans_eq (by dsimp [plainControl];ring)
@@ -60,7 +59,7 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
     have hp:=profileCoefficient_product_bound R s.ν s.W s.P hi W₁ W₂ whi whi
       s.X₁ s.X₂ s.Y₁ s.Y₂ (s.X₁*s.X₂) 1 1 seed
       s.P_pos s.X₁_pos s.X₂_pos s.Y₁_pos s.Y₂_pos one_ne_zero one_ne_zero rfl s.same_product
-      hz (hzW W₁ hs₁) (hzW W₂ hs₂) (fun i x hx=>((s.support i hx).2).trans (hshi i))
+      hz (by grind) (by grind) (fun i x hx=>((s.support i hx).2).trans (hshi i))
       (fun x hx=>(hs₁ hx).2) (fun x hx=>(hs₂ hx).2) v hv
     refine ⟨hp.1,hp.2.trans ?_⟩
     simp only [map_one,Nat.cast_one,one_mul,div_one]
@@ -71,21 +70,18 @@ theorem first_input_zero_bound (hi:ι→ℝ)(wlo whi ε:ℝ)
   rw [hc]
   by_cases hsmall:L*V<1
   · rw [zeroEnergy_eq_zero_of_subunit s.η m A s.t (Fintype.piFinset s.pools) β Φ K
-      (L*V) hsmall (fun v _ hv=>hN v hv),norm_zero,zero_div]
+      (L*V) hsmall (by grind),norm_zero,zero_div]
     positivity
-  have hb:=hbound (le_refl (Fintype.card ι)) s.η m A s.t (Fintype.piFinset s.pools) β Φ
+  have hb:=hbound (by omega) s.η m A s.t (Fintype.piFinset s.pools) β Φ
     (L*V) K (2*plainControl s W₁ W₂) (le_of_not_gt hsmall) hK (by positivity)
-    (fun v _ _=>hβ v) (fun I _ hI=>by
+    (by grind) (fun I _ hI=>by
       obtain ⟨v,hv,hn,he⟩:=finiteColumnCoefficient_witness _ _ I hI
-      rw [←he];exact (hN v hn).2)
+      grind)
   apply (div_le_div_of_nonneg_right hb hV.le).trans_eq
   have hp:(L*V)^(1+ε)/V=L^(1+ε)*V^ε:=by
     rw [Real.mul_rpow hL.le hV.le,Real.rpow_add hV,Real.rpow_one]
     field_simp
-  change C₀*K*(2*plainControl s W₁ W₂)^2*‖paperRadialFourier Φ 0‖*(L*V)^(1+ε)/V=_
-  calc
-    _=4*C₀*(plainControl s W₁ W₂)^2*K*‖paperRadialFourier Φ 0‖*((L*V)^(1+ε)/V):=by ring
-    _=_:=by rw [hp];ring
+  grind
 
 omit [DecidableEq ι] in
 theorem first_input_zero_uniform (hi:ι→ℝ)(wlo whi ε:ℝ)
@@ -94,14 +90,14 @@ theorem first_input_zero_uniform (hi:ι→ℝ)(wlo whi ε:ℝ)
       ∀(s:Input ι)(W₁ W₂:𝓢(ℝ,ℂ)),s.W₁=W₁→s.W₂=W₂→
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
-      (∀i,s.hi i≤hi i)→∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
+      (∀i,s.hi i≤hi i)→∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
       ‖zeroEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K*
         (volume s.toData)^ε:=by
   obtain ⟨C₀,hC₀,hb⟩:=first_input_zero_bound hi wlo whi ε hhi hwlo hwhi hε
   obtain ⟨SΦ,D,hD,hd⟩:=paperRadialFourier_euler_source_weighted_bound 0 0
-  refine ⟨SΦ,C₀*D,mul_pos hC₀ hD,?_⟩
+  refine ⟨SΦ,C₀*D,by positivity,?_⟩
   intro s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi m A R seed Φ K hK
   have hf:‖paperRadialFourier Φ 0‖≤D*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ:=by
     simpa only [LocalLogFourier.eulerDeriv,iteratedDeriv_zero,pow_zero,one_mul,zero_mul] using
@@ -121,12 +117,12 @@ theorem first_input_zero_capped (hi:ι→ℝ)(wlo whi B ε:ℝ)
       Function.support (W₁:ℝ→ℂ)⊆Set.Icc wlo whi→
       Function.support (W₂:ℝ→ℂ)⊆Set.Icc wlo whi→
       (∀i,s.hi i≤hi i)→volume s.toData≤Z^B→
-      ∀(m A:O)(R seed:Ideal O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
+      ∀(m A:HeckeFamily.O)(R seed:Ideal HeckeFamily.O)(Φ:𝓢(ℝ,ℂ))(K:ℝ),0≤K→
       ‖zeroEnergy s.η m A s.t (finiteColumns (Fintype.piFinset s.pools))
         (coefficient s R seed) Φ K‖/volume s.toData≤
       C*(plainControl s W₁ W₂)^2*SΦ.sup (schwartzSeminormFamily ℝ ℝ ℂ) Φ*K*Z^ε:=by
   let δ:=ε/(B+1)
-  have hδ:0<δ:=div_pos hε (by linarith)
+  have hδ:0<δ:=by positivity
   obtain ⟨SΦ,C,hC,hb⟩:=first_input_zero_uniform hi wlo whi δ hhi hwlo hwhi hδ
   refine ⟨SΦ,C,hC,?_⟩
   intro Z hZ s W₁ W₂ he₁ he₂ hs₁ hs₂ hshi hV m A R seed Φ K hK

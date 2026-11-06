@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorSimultaneous
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 namespace SevenEighths.HeckeDetectorRowCount
 open HeckeFamily HeckeDyadic
 
@@ -24,7 +24,7 @@ lemma card_of_energy {α : Type*} (rows : Finset α) (F : α→ℂ)
   apply (mul_le_mul_iff_left₀ (Real.rpow_pos_of_pos hU p)).mp
   calc
     _ ≤ C*U^b := hs
-    _ = (C*U^(b-p))*U^p := by rw [mul_assoc,←Real.rpow_add hU]; congr 2; ring
+    _ = (C*U^(b-p))*U^p := by rw [mul_assoc,←Real.rpow_add hU]; simp
 
 theorem inverse_count {α : Type*} (rows : Finset α) (χ : α→Character)
     (W : ℝ→ℂ) (D : ℝ) (σ freq : α→ℝ) (P : α→ℂ)
@@ -37,9 +37,9 @@ theorem inverse_count {α : Type*} (rows : Finset α) (χ : α→Character)
   have hs (u : α) (hu : u∈rows) :
       U^((δ*r-εw)+(2*q*z-εp))≤‖polynomial (χ u) true W D (σ u) (freq u)*P u‖^2 := by
     rw [Real.rpow_add hU,norm_mul,mul_pow]
-    exact mul_le_mul (hM u hu) (hP u hu) (Real.rpow_nonneg hU.le _) (sq_nonneg _)
+    exact mul_le_mul (by grind) (by grind) (by positivity) (sq_nonneg _)
   have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
-  convert hh using 1; congr 2; ring
+  grind
 
 theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
     (W : ℝ→ℂ) (N : ℝ) (σ freq : α→ℝ) (P : α→ℂ)
@@ -55,10 +55,10 @@ theorem plain_count {α : Type*} (rows : Finset α) (χ : α→Character)
         ‖polynomial (χ u) false W N (σ u) (freq u)*
           polynomial (χ u) false W N (σ u) (freq u)*P u‖^2 := by
     rw [Real.rpow_add hU,Real.rpow_add hU,norm_mul,norm_mul,mul_pow,mul_pow]
-    exact mul_le_mul (mul_le_mul (hS u hu) (hS u hu) (Real.rpow_nonneg hU.le _) (sq_nonneg _))
-      (hP u hu) (Real.rpow_nonneg hU.le _) (mul_nonneg (sq_nonneg _) (sq_nonneg _))
+    exact mul_le_mul (mul_le_mul (by grind) (by grind) (by positivity) (sq_nonneg _))
+      (by grind) (by positivity) (by positivity)
   have hh := card_of_energy rows _ U _ (1+εm) C hU hs henergy
-  convert hh using 1; congr 2; ring
+  grind
 
 end SevenEighths.HeckeDetectorRowCount
 

@@ -8,17 +8,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
-open SevenEighths.InverseInitialEnergyCallerCanonical
+open scoped Classical
+open IdealMobiusDivisorSum
+open SevenEighths.InverseMoment
 namespace SevenEighths.InverseInitialEnergyCallerOpposite
-local notation "Eis" => ActualEisensteinCubic.O
 
 def negativeChild (c : InitialChild) : InitialChild := (c.1,c.2.1,-c.2.2)
 
-theorem energy_neg_rows (T labels : Finset (Ideal Eis)) (rows : Finset Eis)
+theorem energy_neg_rows (T labels : Finset (Ideal ActualEisensteinCubic.O)) (rows : Finset ActualEisensteinCubic.O)
     (hneg : ∀ k∈rows,-k∈rows) (J : ℕ) (F : InitialChild→ℂ) :
     (∑ t∈T,((idealDivisors t).card:ℝ)^J *
       ∑ f∈labels,((idealDivisors f).card:ℝ)^(J+1) *
@@ -33,16 +30,14 @@ theorem energy_neg_rows (T labels : Finset (Ideal Eis)) (rows : Finset Eis)
   intro f hf
   congr 1
   apply Finset.sum_bij (fun k _=>-k)
-  · exact hneg
-  · intro a ha b hb he
-    exact neg_injective he
-  · intro b hb
-    exact ⟨-b,hneg b hb,neg_neg b⟩
+  · omega
+  · simp
+  · grind
   · intro k hk
     rfl
 
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
   (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
   (hg : ∀ i, ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
 

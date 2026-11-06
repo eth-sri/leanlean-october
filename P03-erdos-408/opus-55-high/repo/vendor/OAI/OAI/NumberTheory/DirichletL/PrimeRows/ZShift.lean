@@ -7,14 +7,13 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.ZBoundary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators Topology
+open scoped Classical
 open MeasureTheory Set Complex Filter
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-local notation "O" => HeckeFamily.O
 
 theorem first_z_integral_eq {K : ℕ}
-    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S)
+    (eps : ℝ) (heps : 0<eps) (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S)
     (hfirst : FirstTail (eps/2) S) (hmax : ∀P∈S,P.IsMaximal)
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (a b : ℝ) (ha : 0<a) (hW : Function.support W0⊆Icc a b)

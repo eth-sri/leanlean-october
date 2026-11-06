@@ -7,7 +7,7 @@ public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowControl
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyReferenceProfileBudget
 open CenteredMomentEnergyReferenceChild CenteredMomentEnergyReferenceChildProfiles
@@ -56,7 +56,7 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
     · apply pow_le_pow_left₀ (by positivity)
       dsimp only [H]
       simp only [Real.norm_eq_abs]
-      linarith [abs_nonneg t]
+      linarith
     · positivity
     · positivity
   have hd:(independentProfiles ha W₁ W₂ hs₁ hs₂ t t).control S^2*H^degree≤
@@ -69,7 +69,7 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
       ring_nf
     rw [hid] at hmul
     exact hmul.trans (mul_le_mul_of_nonneg_left
-      (pow_le_pow_right₀ hH (by dsimp only [J];omega)) (by positivity))
+      (pow_le_pow_right₀ hH (by omega)) (by positivity))
   have hm:(sourceControl Slong W₂)^2*(sourceControl T W₁)^2≤A^2:=by
     rw [←mul_pow]
     apply pow_le_pow_left₀ (mul_nonneg (sourceControl_nonneg _ _) (sourceControl_nonneg _ _))
@@ -98,12 +98,12 @@ theorem reference_envelopes (a b:ℝ)(ha:0<a)
       _≤C*A^2*H^J:=by
         apply mul_le_mul_of_nonneg_left _ (mul_nonneg hC.le (sq_nonneg A))
         rw [←pow_add]
-        exact pow_le_pow_right₀ hH (by dsimp only [J];omega)
+        exact pow_le_pow_right₀ hH (by omega)
   · calc
       _=Dref*((sourceControl Slong W₂)^2*((schwartzSeminormFamily ℝ ℝ ℂ (0,0)) W₁)^2)*(1+‖t‖)^(2*nlong):=by ring
       _≤C*A^2*H^(2*nlong):=by gcongr
       _≤C*A^2*H^J:=mul_le_mul_of_nonneg_left
-        (pow_le_pow_right₀ hH (by dsimp only [J];omega)) (mul_nonneg hC.le (sq_nonneg A))
+        (pow_le_pow_right₀ hH (by omega)) (mul_nonneg hC.le (sq_nonneg A))
 
 end SevenEighths.CenteredMomentEnergyReferenceProfileBudget
 

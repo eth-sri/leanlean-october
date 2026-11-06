@@ -10,14 +10,13 @@ public import OAI.NumberTheory.DirichletL.PeriodicThetaRegularity
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.HeckePrimitive
 open HeckeFamily
 
 variable (c : O) [NeZero c]
 
 theorem span_ne_bot : Ideal.span ({c} : Set O) ≠ ⊥ := by
-  simpa only [ne_eq, Ideal.span_singleton_eq_bot] using NeZero.ne c
+  simpa using NeZero.ne c
 
 instance : Fintype (O ⧸ Ideal.span {c}) := by
   letI : Finite (O ⧸ Ideal.span {c}) := Ring.HasFiniteQuotients.finiteQuotient (span_ne_bot c)
@@ -133,9 +132,7 @@ theorem symm_completed_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv).Λ s := by
   apply HeckeMellinIdentity.eq_of_f (pair c χ hu hp).symm
     (pair c χ⁻¹ (inverse_unit_trivial c χ hu) hp.inv) rfl rfl _ rfl h0 h1
-  intro t _
-  change (pair c χ hu hp).g t = _
-  rw [pair_g, pair_f]
+  simp
 
 theorem completedL_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
@@ -147,8 +144,7 @@ theorem completedL_functional_equation (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (pair c χ hu hp).symm.Λ s at h
   rw [symm_completed_eq c χ hu hp h0 h1] at h
   unfold completedL
-  rw [h]
-  ring
+  grind
 
 theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
@@ -160,8 +156,8 @@ theorem completedL_eq_gamma_mul_LFunction (χ : MulChar (O ⧸ Ideal.span {c}) �
   rw [pair_completed_eq c χ hu hp h0 h1]
   unfold LFunction continuedLattice HeckeTheta.latticeL
   simp only [Complex.cpow_neg]
-  have hπ : (Real.pi : ℂ)^s ≠ 0 := by
-    exact (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp [Real.pi_ne_zero])
+  have hπ : (Real.pi : ℂ)^s ≠ 0 :=
+    (Complex.cpow_eq_zero_iff _ _).not.mpr (by simp)
   field_simp
 
 end SevenEighths.HeckePrimitive

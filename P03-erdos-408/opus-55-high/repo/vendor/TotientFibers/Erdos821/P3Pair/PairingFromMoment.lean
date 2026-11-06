@@ -14,8 +14,8 @@ public import Mathlib.RingTheory.HopfAlgebra.Basic
 
 noncomputable section
 set_option maxHeartbeats 1000000
-open scoped BigOperators Matrix
-open Filter InnerProductSpace
+open scoped Matrix
+open Filter
 open scoped ComplexOrder
 attribute [local instance] Classical.propDecidable
 
@@ -35,8 +35,8 @@ private theorem spectral_holder {E : Type*} [NormedAddCommGroup E]
   let b := hS.eigenvectorBasis rfl
   let c : Fin n → ℂ := fun i => (b.repr x).ofLp i
   let lam : Fin n → ℝ := hS.eigenvalues rfl
-  have hlam (i : Fin n) : 0 ≤ lam i := by
-    exact hT.nonneg_eigenvalues rfl i
+  have hlam (i : Fin n) : 0 ≤ lam i :=
+    hT.nonneg_eigenvalues rfl i
   have hcoord (k : ℕ) (i : Fin n) :
       (b.repr ((T ^ k) x)).ofLp i = ((lam i : ℝ) ^ k : ℂ) * c i := by
     induction k with
@@ -46,8 +46,8 @@ private theorem spectral_holder {E : Type*} [NormedAddCommGroup E]
       calc
         (b.repr (T ((T ^ k) x))).ofLp i =
             (lam i : ℂ) * (b.repr ((T ^ k) x)).ofLp i := by
-          simpa [b, lam] using hS.eigenvectorBasis_apply_self_apply rfl ((T ^ k) x) i
-        _ = _ := by rw [ih]; simp only [pow_succ]; ring
+          simpa using hS.eigenvectorBasis_apply_self_apply rfl ((T ^ k) x) i
+        _ = _ := by grind
   have hquad (k : ℕ) :
       (inner ℂ x ((T ^ k) x)).re =
         ∑ i : Fin n, lam i ^ k * ‖c i‖ ^ 2 := by
@@ -70,18 +70,18 @@ private theorem spectral_holder {E : Type*} [NormedAddCommGroup E]
     simpa only [Complex.re_sum, Complex.ofReal_re] using hre
   have hnorm : ‖x‖ ^ 2 = ∑ i : Fin n, ‖c i‖ ^ 2 := by
     calc
-      ‖x‖ ^ 2 = ‖b.repr x‖ ^ 2 := by rw [← b.repr.norm_map]
+      ‖x‖ ^ 2 = ‖b.repr x‖ ^ 2 := by simp
       _ = ∑ i, ‖(b.repr x).ofLp i‖ ^ 2 := EuclideanSpace.norm_sq_eq (b.repr x)
       _ = _ := by rfl
   have hw (i : Fin n) : 0 ≤ ‖c i‖ ^ 2 := sq_nonneg _
-  have := Real.inner_le_weight_mul_Lp_of_nonneg Finset.univ (p := (R : ℝ)) (by exact_mod_cast hR)
+  have := Real.inner_le_weight_mul_Lp_of_nonneg Finset.univ (p := (R : ℝ)) (by simp_all)
       (fun i => ‖c i‖ ^ 2) lam hw hlam
   calc
     (inner ℂ x (T x)).re = ∑ i : Fin n, ‖c i‖ ^ 2 * lam i := by
       simpa [mul_comm] using hquad 1
     _ ≤ (∑ i : Fin n, ‖c i‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
         (∑ i : Fin n, ‖c i‖ ^ 2 * lam i ^ R) ^ (R : ℝ)⁻¹ := by
-      simpa [mul_comm] using this
+      simp_all
     _ = (‖x‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
         (inner ℂ x ((T ^ R) x)).re ^ (R : ℝ)⁻¹ := by rw [hnorm, hquad R]; simp [mul_comm]
 
@@ -95,10 +95,10 @@ private theorem pattern_D_le_sup_pow {P : PrimeGroups} {J ell m : ℕ}
     split_ifs with hi
     · change (u g i).val ≤ P.allPrimes.sup id
       exact Finset.le_sup (s := P.allPrimes) (f := id) (b := (u g i).val)
-        (Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, (u g i).property⟩)
+        (Finset.mem_biUnion.mpr (by grind))
     · change (a g (ν.slot i)).val ≤ P.allPrimes.sup id
       exact Finset.le_sup (s := P.allPrimes) (f := id) (b := (a g (ν.slot i)).val)
-        (Finset.mem_biUnion.mpr ⟨g, Finset.mem_univ g, (a g (ν.slot i)).property⟩)
+        (Finset.mem_biUnion.mpr (by grind))
   calc
     ν.D a u = ∏ z ∈ (Finset.univ : Finset P.Group).product (Finset.univ : Finset (Fin J)),
         (if z.2 ∈ ν.changed z.1 then (u z.1 z.2).val else (a z.1 (ν.slot z.2)).val) := by
@@ -107,8 +107,7 @@ private theorem pattern_D_le_sup_pow {P : PrimeGroups} {J ell m : ℕ}
           (fun g i => if i ∈ ν.changed g then (u g i).val else (a g (ν.slot i)).val)).symm
     _ ≤ S ^ ((Finset.univ : Finset P.Group).product (Finset.univ : Finset (Fin J))).card :=
       Finset.prod_le_pow_card _ _ S (by
-        intro z hz
-        exact hval z.1 z.2)
+        simp_all)
     _ = S ^ (J * P.count) := by simp [mul_comm]
 
 private theorem displacement_mem_neighbors {F : FixedData} {P : PrimeGroups} {J m : ℕ}
@@ -149,9 +148,9 @@ private theorem physicalKernel_false_zero_of_not_neighbor {F : FixedData} {P : P
           (A.pattern v).ban (P.act π z.2) (P.act τ z'.2) u ∧
           z'.1 = z.1 + A.k * ((A.pattern v).D (P.act π z.2) u : ℤ)
       · have hmem := displacement_mem_neighbors A z z' (A.pattern v) (P.act π z.2) u hc.2.2
-        exact (hz hmem).elim
-      · simp [hc]
-    · simp [hphys]
+        simp_all
+      grind
+    · grind
   simp [Model.physicalKernel, hraw]
 
 private theorem neighbors_symm {F : FixedData} {P : PrimeGroups} {J m : ℕ}
@@ -191,7 +190,7 @@ private theorem kernelComp_zero_of_not_twoNeighbors {F : FixedData} {P : PrimeGr
   intro z hz
   have hbz : b ∉ A.neighbors z.1 := by
     intro hbz
-    exact h (Finset.mem_biUnion.mpr ⟨z, hz, hbz⟩)
+    exact h (Finset.mem_biUnion.mpr (by grind))
   simp [adjointKernel_zero_of_not_neighbor A z b hbz]
 
 private theorem kernelComp_eq_twoNeighbors {F : FixedData} {P : PrimeGroups}
@@ -214,29 +213,25 @@ private theorem twoReach_mono {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     twoReach A s n ⊆ twoReach A s (n + 1) := by
   intro z hz
   simp only [twoReach, Finset.mem_union]
-  exact Or.inl hz
+  grind
 
 private theorem twoReach_subset {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) (s : Finset A.State) {n r : ℕ} (h : n ≤ r) :
     twoReach A s n ⊆ twoReach A s r := by
   induction r with
   | zero =>
-    have hn : n = 0 := by omega
-    subst n
-    exact Finset.Subset.rfl
+    simp_all
   | succ r ih =>
     by_cases hn : n ≤ r
     · exact (ih hn).trans (twoReach_mono A s r)
-    · have : n = r + 1 := by omega
-      subst n
-      exact Finset.Subset.rfl
+    grind
 
 private theorem twoHop_mem_reach_succ {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (s : Finset A.State) (n : ℕ)
     {a z : A.State} (ha : a ∈ twoReach A s n) (hz : z ∈ twoNeighbors A a) :
     z ∈ twoReach A s (n + 1) := by
   simp only [twoReach, Finset.mem_union]
-  exact Or.inr (Finset.mem_biUnion.mpr ⟨a, ha, hz⟩)
+  grind
 
 private def finiteKernelPower {α : Type*} (B : α → α → ℂ) (S : Finset α) :
     ℕ → α → α → ℂ
@@ -269,8 +264,7 @@ private theorem kernelPower_eq_finite {F : FixedData} {P : PrimeGroups} {J m : �
             apply Finset.sum_congr rfl
             intro z hz
             have hz' := twoHop_mem_reach_succ A s k ha hz
-            have hih := ih (k + 1) (by omega) z hz'
-            rw [hih]
+            grind
       _ = ∑ z ∈ twoReach A s R,
           kernelComp (A.physicalKernel false) A.adjointKernel a z *
             finiteKernelPower (kernelComp (A.physicalKernel false) A.adjointKernel)
@@ -300,7 +294,7 @@ private theorem matrix_pow_apply_eq_finiteKernelPower {α : Type*} [DecidableEq 
         intro h
         apply hij
         exact Subtype.ext h
-      simp [finiteKernelPower, hij, hv]
+      simp [finiteKernelPower, hij]
   | succ n ih =>
     intro i j
     rw [pow_succ' (finiteKernelMatrix S B) n, Matrix.mul_apply]
@@ -309,7 +303,7 @@ private theorem matrix_pow_apply_eq_finiteKernelPower {α : Type*} [DecidableEq 
       finiteKernelPower B S n z.1 j.1) =
       ∑ z ∈ S, B i.1 z * finiteKernelPower B S n z j.1
     symm
-    exact Finset.sum_subtype S (by intro x; simp) _
+    exact Finset.sum_subtype S (by simp) _
 
 def neighborUnion {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) (S : Finset A.State) : Finset A.State :=
@@ -319,7 +313,7 @@ private theorem neighbors_subset_neighborUnion {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (S : Finset A.State)
     {a : A.State} (ha : a ∈ S) : A.neighbors a.1 ⊆ neighborUnion A S := by
   intro z hz
-  exact Finset.mem_biUnion.mpr ⟨a, ha, hz⟩
+  exact Finset.mem_biUnion.mpr (by grind)
 
 private def finitePhysicalMatrix {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) (S T : Finset A.State) :
@@ -341,14 +335,14 @@ private theorem kernelComp_eq_matrix_gram {F : FixedData} {P : PrimeGroups}
           A.physicalKernel false a z * A.adjointKernel z b :=
       kernelComp_eq_sum_neighbors A a b
     _ = ∑ z ∈ T, A.physicalKernel false a z * star (A.physicalKernel false b z) := by
-      refine Finset.sum_subset (hST a ha) ?_
+      refine Finset.sum_subset (by grind) ?_
       intro z hz hnot
       simp [physicalKernel_false_zero_of_not_neighbor A a z hnot]
     _ = ∑ z : {z // z ∈ T},
           A.physicalKernel false a z.1 * star (A.physicalKernel false b z.1) :=
-      Finset.sum_subtype T (by intro z; simp) _
+      Finset.sum_subtype T (by simp) _
     _ = _ := by
-      simp [Matrix.mul_apply, Matrix.conjTranspose_apply, finitePhysicalMatrix]
+      simp [Matrix.mul_apply, finitePhysicalMatrix]
 
 private theorem gram_toEuclideanLin {ι κ : Type*} [Fintype ι] [Fintype κ]
     [DecidableEq ι] [DecidableEq κ] (C : Matrix ι κ ℂ) :
@@ -357,19 +351,19 @@ private theorem gram_toEuclideanLin {ι κ : Type*} [Fintype ι] [Fintype κ]
   calc
     (C * Matrix.conjTranspose C).toEuclideanLin =
         C.toEuclideanLin.comp (Matrix.conjTranspose C).toEuclideanLin := by
-      simp [Matrix.toEuclideanLin]
+      simp
     _ = C.toEuclideanLin.comp C.toEuclideanLin.adjoint := by
       rw [Matrix.toEuclideanLin_conjTranspose_eq_adjoint]
 
 private theorem matrix_toEuclideanLin_mul {m n o : Type*} [Fintype n] [DecidableEq n]
     [Fintype o] [DecidableEq o] (A : Matrix m n ℂ) (B : Matrix n o ℂ) :
     (A * B).toEuclideanLin = A.toEuclideanLin.comp B.toEuclideanLin := by
-  simp [Matrix.toEuclideanLin]
+  simp
 
 private theorem matrix_pow_toEuclideanLin {ι : Type*} [Fintype ι] [DecidableEq ι]
     (G : Matrix ι ι ℂ) (R : ℕ) :
     (G ^ R).toEuclideanLin = (G.toEuclideanLin) ^ R := by
-  simp [Matrix.toEuclideanLin, Matrix.toLpLin_pow]
+  simp
 
 private theorem posSemidef_quadratic_le_trace {ι : Type*} [Fintype ι] [DecidableEq ι]
     (G : Matrix ι ι ℂ) (hG : G.PosSemidef) (x : EuclideanSpace ℂ ι) :
@@ -394,8 +388,8 @@ private theorem posSemidef_quadratic_le_trace {ι : Type*} [Fintype ι] [Decidab
       calc
         (b.repr (T ((T ^ k) x))).ofLp i =
             (lam i : ℂ) * (b.repr ((T ^ k) x)).ofLp i := by
-          simpa [b, lam] using hS.eigenvectorBasis_apply_self_apply rfl ((T ^ k) x) i
-        _ = _ := by rw [ih]; simp only [pow_succ]; ring
+          simpa using hS.eigenvectorBasis_apply_self_apply rfl ((T ^ k) x) i
+        _ = _ := by rw [ih]; ring
   have hquad (k : ℕ) :
       (inner ℂ x ((T ^ k) x)).re =
         ∑ i : Fin n, lam i ^ k * ‖c i‖ ^ 2 := by
@@ -418,11 +412,11 @@ private theorem posSemidef_quadratic_le_trace {ι : Type*} [Fintype ι] [Decidab
     simpa only [Complex.re_sum, Complex.ofReal_re] using hre
   have hnorm : ‖x‖ ^ 2 = ∑ i : Fin n, ‖c i‖ ^ 2 := by
     calc
-      ‖x‖ ^ 2 = ‖b.repr x‖ ^ 2 := by rw [← b.repr.norm_map]
+      ‖x‖ ^ 2 = ‖b.repr x‖ ^ 2 := by simp
       _ = ∑ i, ‖(b.repr x).ofLp i‖ ^ 2 := EuclideanSpace.norm_sq_eq (b.repr x)
       _ = _ := by rfl
-  have htrace : (T.trace ℂ (EuclideanSpace ℂ ι)).re = ∑ i : Fin n, lam i := by
-    exact hS.re_trace_eq_sum_eigenvalues rfl
+  have htrace : (T.trace ℂ (EuclideanSpace ℂ ι)).re = ∑ i : Fin n, lam i :=
+    hS.re_trace_eq_sum_eigenvalues rfl
   have htraceG : (T.trace ℂ (EuclideanSpace ℂ ι)) = G.trace := by
     change (Matrix.toEuclideanLin G).trace ℂ (EuclideanSpace ℂ ι) = G.trace
     simpa only [Matrix.toEuclideanLin_eq_toLin_orthonormal] using
@@ -441,7 +435,7 @@ private theorem posSemidef_quadratic_le_trace {ι : Type*} [Fintype ι] [Decidab
       exact mul_le_mul_of_nonneg_right (hLamBound i) (sq_nonneg _)
     _ = (∑ j : Fin n, lam j) * (∑ i : Fin n, ‖c i‖ ^ 2) := by
       rw [Finset.mul_sum]
-    _ = G.trace.re * ‖x‖ ^ 2 := by rw [hLamSum, hnorm]
+    _ = G.trace.re * ‖x‖ ^ 2 := by simp_all
 
 private theorem finite_matrix_pairing_sq_bound {S T I : Type*}
     [Fintype S] [Fintype T] [Fintype I]
@@ -457,16 +451,16 @@ private theorem finite_matrix_pairing_sq_bound {S T I : Type*}
   let H : Matrix I I ℂ := Matrix.conjTranspose U * (G ^ R) * U
   let Um : EuclideanSpace ℂ I →ₗ[ℂ] EuclideanSpace ℂ S := U.toEuclideanLin
   let Cm : EuclideanSpace ℂ T →ₗ[ℂ] EuclideanSpace ℂ S := C.toEuclideanLin
-  have hBdecomp : B = Cm.comp Cm.adjoint := by
-    exact gram_toEuclideanLin C
+  have hBdecomp : B = Cm.comp Cm.adjoint :=
+    gram_toEuclideanLin C
   have hB : B.IsPositive := by
     rw [hBdecomp]
     exact LinearMap.isPositive_self_comp_adjoint Cm
-  have hGpos : G.PosSemidef := by
-    exact Matrix.posSemidef_self_mul_conjTranspose C
+  have hGpos : G.PosSemidef :=
+    Matrix.posSemidef_self_mul_conjTranspose C
   have hGpow : (G ^ R).PosSemidef := hGpos.pow R
-  have hHpos : H.PosSemidef := by
-    exact hGpow.conjTranspose_mul_mul_same U
+  have hHpos : H.PosSemidef :=
+    hGpow.conjTranspose_mul_mul_same U
   have hBpow : (G ^ R).toEuclideanLin = B ^ R := by
     dsimp [B]
     exact matrix_pow_toEuclideanLin G R
@@ -488,8 +482,7 @@ private theorem finite_matrix_pairing_sq_bound {S T I : Type*}
     have hdot := hHpos.dotProduct_mulVec_nonneg (fun i => c i)
     have hEq : (inner ℂ c (H.toEuclideanLin c)).re =
         (star (fun i => c i) ⬝ᵥ (H *ᵥ fun i => c i)).re := by
-      simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.inner_apply,
-        Matrix.mulVec, dotProduct]
+      simp [PiLp.inner_apply, Matrix.mulVec, dotProduct]
       apply Finset.sum_congr rfl
       intro i hi
       ring
@@ -510,13 +503,13 @@ private theorem finite_matrix_pairing_sq_bound {S T I : Type*}
       _ = (inner ℂ F (Cm (Cm.adjoint F))).re :=
         congrArg Complex.re (LinearMap.adjoint_inner_left Cm (Cm.adjoint F) F)
       _ = (inner ℂ F (B F)).re := by
-        simp [hBdecomp, LinearMap.comp_apply]
+        simp [hBdecomp]
   have hCS : ‖inner ℂ F (Cm g)‖ ≤ ‖Cm.adjoint F‖ * ‖g‖ := by
     calc
       _ = ‖inner ℂ (Cm.adjoint F) g‖ := by
         rw [← LinearMap.adjoint_inner_left Cm g F]
       _ ≤ _ := norm_inner_le_norm _ _
-  have hCSsq := (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))).mpr hCS
+  have hCSsq := (sq_le_sq₀ (norm_nonneg _) (by positivity)).mpr hCS
   have hspec' : ‖Cm.adjoint F‖ ^ 2 ≤
       (‖F‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
         (H.trace.re * ‖c‖ ^ 2) ^ (R : ℝ)⁻¹ := by
@@ -530,7 +523,7 @@ private theorem finite_matrix_pairing_sq_bound {S T I : Type*}
     _ = ‖g‖ ^ 2 * ‖Cm.adjoint F‖ ^ 2 := by ring
     _ ≤ _ := by
       simpa [F, Um, H, G, mul_assoc] using
-        mul_le_mul_of_nonneg_left hspec' (sq_nonneg (‖g‖))
+        mul_le_mul_of_nonneg_left hspec' (by positivity)
 
 private theorem finite_matrix_pairing_bound {S T I : Type*}
     [Fintype S] [Fintype T] [Fintype I]
@@ -554,8 +547,8 @@ private theorem finite_matrix_pairing_bound {S T I : Type*}
   have hA2 : A ^ 2 = ‖g‖ ^ 2 * (‖U.toEuclideanLin c‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
       (d ^ (R : ℝ)⁻¹) := by
     dsimp [A]
-    rw [mul_pow, mul_pow, Real.sq_sqrt (Real.rpow_nonneg (sq_nonneg _) _),
-      Real.sq_sqrt (Real.rpow_nonneg hd' _)]
+    rw [mul_pow, mul_pow, Real.sq_sqrt (by positivity),
+      Real.sq_sqrt (by positivity)]
   have hsq : ‖inner ℂ (U.toEuclideanLin c) (C.toEuclideanLin g)‖ ^ 2 ≤ A ^ 2 := by
     calc
       _ ≤ ‖g‖ ^ 2 * (‖U.toEuclideanLin c‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) * d ^ (R : ℝ)⁻¹ := hs
@@ -573,7 +566,7 @@ private theorem physical_act_iff {P : PrimeGroups} {M : ℕ}
       have h' : (P.act π a) g ((π g).symm i) = (P.act π a) g ((π g).symm j) := by
         simpa [PrimeGroups.act] using hij
       have heq := hi h'
-      simpa using congrArg (π g) heq
+      simp_all
     · intro i
       simpa [PrimeGroups.act] using hd ((π g).symm i)
   · intro h g
@@ -599,7 +592,7 @@ private theorem physicalKernel_false_zero_of_invalid_left {F : FixedData} {P : P
       intro hp
       exact hz ((physical_act_iff π z.1 z.2).mp hp)
     simp [hp]
-  simp [hraw]
+  simp_all
 
 private theorem physicalKernel_false_zero_of_invalid_right {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (z z' : A.State)
@@ -614,7 +607,7 @@ private theorem physicalKernel_false_zero_of_invalid_right {F : FixedData} {P : 
       intro hp
       exact hz ((physical_act_iff τ z'.1 z'.2).mp hp)
     simp [hp]
-  simp [hraw]
+  simp_all
 
 private theorem markMass_nonneg_of_admissible {F : FixedData} {P : PrimeGroups} {x : ℝ}
     (hP : P.Admissible F x) (M : ℕ) : 0 ≤ P.markMass M := by
@@ -622,7 +615,7 @@ private theorem markMass_nonneg_of_admissible {F : FixedData} {P : PrimeGroups} 
   unfold PrimeGroups.markMass
   apply Finset.prod_nonneg
   intro g hg
-  have hv : 0 < P.V g := lt_of_lt_of_le F.vMin_pos (hV g).1
+  have hv : 0 < P.V g := lt_of_lt_of_le F.vMin_pos (by grind)
   positivity
 
 private theorem stateMass_nonneg_of_admissible {F : FixedData} {P : PrimeGroups}
@@ -631,7 +624,7 @@ private theorem stateMass_nonneg_of_admissible {F : FixedData} {P : PrimeGroups}
   unfold Model.stateMass
   split_ifs
   · exact markMass_nonneg_of_admissible hP (J + F.ell)
-  · exact le_rfl
+  simp
 
 private theorem stateMass_eq_markMass_of_physical {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (n : ℤ) (a : A.Labels)
@@ -648,21 +641,13 @@ private theorem kernelComp_zero_of_left_zero {α : Type*} [Countable α]
     (K H : α → α → ℂ) (a b : α) (h : ∀ z, K a z = 0) :
     kernelComp K H a b = 0 := by
   unfold kernelComp
-  have hzero : (fun z => K a z * H z b) = 0 := by
-    funext z
-    simp [h z]
-  rw [hzero]
-  exact tsum_zero
+  simp_all
 
 private theorem kernelComp_zero_of_right_zero {α : Type*} [Countable α]
     (K H : α → α → ℂ) (a b : α) (h : ∀ z, H z b = 0) :
     kernelComp K H a b = 0 := by
   unfold kernelComp
-  have hzero : (fun z => K a z * H z b) = 0 := by
-    funext z
-    simp [h z]
-  rw [hzero]
-  exact tsum_zero
+  simp_all
 
 private theorem physicalKernelComp_zero_of_invalid_left {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (a b : A.State)
@@ -679,8 +664,7 @@ private theorem physicalKernelComp_zero_of_invalid_right {F : FixedData} {P : Pr
   apply kernelComp_zero_of_right_zero
   intro z
   change star (A.physicalKernel false b z) = 0
-  rw [physicalKernel_false_zero_of_invalid_left A b z hb]
-  simp
+  simp [physicalKernel_false_zero_of_invalid_left A b z hb]
 
 private theorem kernelComp_invalid_left {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (H : A.State → A.State → ℂ)
@@ -695,17 +679,14 @@ private theorem kernelComp_invalid_right {F : FixedData} {P : PrimeGroups}
     (a b : A.State) (hb : ∀ z, K z b = 0) :
     kernelComp (kernelComp (A.physicalKernel false) A.adjointKernel) K a b = 0 := by
   apply kernelComp_zero_of_right_zero
-  exact hb
+  omega
 
 private theorem kernelPower_one {α : Type*} [Countable α] (K : α → α → ℂ)
     (a b : α) : kernelPower K 1 a b = K a b := by
   rw [kernelPower]
   unfold kernelComp
   change (∑' z, K a z * (if z = b then (1 : ℂ) else 0)) = K a b
-  rw [tsum_eq_single b]
-  · simp
-  · intro z hz
-    simp [hz]
+  simp
 
 private theorem kernelPower_zero_of_invalid_left {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (R : ℕ) (hR : 1 ≤ R) (a b : A.State)
@@ -752,13 +733,13 @@ private theorem kernelPower_eq_matrix_entry {F : FixedData} {P : PrimeGroups}
   let C := finitePhysicalMatrix A S T
   let D : A.State → A.State → ℂ := kernelComp (A.physicalKernel false) A.adjointKernel
   let G : Matrix {z // z ∈ S} {z // z ∈ S} ℂ := fun x y => D x.1 y.1
-  have haS : a ∈ S := twoReach_subset A base (Nat.zero_le R) (by simpa [twoReach] using ha)
-  have hbS : b ∈ S := twoReach_subset A base (Nat.zero_le R) (by simpa [twoReach] using hb)
+  have haS : a ∈ S := twoReach_subset A base (Nat.zero_le R) (by simpa)
+  have hbS : b ∈ S := twoReach_subset A base (Nat.zero_le R) (by simpa)
   have hST : ∀ x ∈ S, A.neighbors x.1 ⊆ T := fun x hx => neighbors_subset_neighborUnion A S hx
   have hG : G = C * Matrix.conjTranspose C := by
     ext x y
     simpa [G, C, D] using kernelComp_eq_matrix_gram A S T hST x.1 y.1 x.2 y.2
-  have hfin := kernelPower_eq_finite A base R R 0 (by omega) a b (by simpa [twoReach] using ha)
+  have hfin := kernelPower_eq_finite A base R R 0 (by omega) a b (by simpa)
   have hmatrix := matrix_pow_apply_eq_finiteKernelPower S D R
     ⟨a, haS⟩ ⟨b, hbS⟩
   have hM : finiteKernelMatrix S D = G := by
@@ -767,8 +748,8 @@ private theorem kernelPower_eq_matrix_entry {F : FixedData} {P : PrimeGroups}
   calc
     kernelPower D R a b = finiteKernelPower D S R a b := hfin
     _ = (finiteKernelMatrix S D ^ R) ⟨a, haS⟩ ⟨b, hbS⟩ := hmatrix.symm
-    _ = (G ^ R) ⟨a, haS⟩ ⟨b, hbS⟩ := by rw [hM]
-    _ = ((C * Matrix.conjTranspose C) ^ R) ⟨a, haS⟩ ⟨b, hbS⟩ := by rw [hG]
+    _ = (G ^ R) ⟨a, haS⟩ ⟨b, hbS⟩ := by grind
+    _ = ((C * Matrix.conjTranspose C) ^ R) ⟨a, haS⟩ ⟨b, hbS⟩ := by grind
 
 private def blockStates {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) (I : Finset ℤ) : Finset A.State := I.product Finset.univ
@@ -797,13 +778,7 @@ private theorem sum_subtype_states_at_time {F : FixedData} {P : PrimeGroups}
   have hfilter : S.filter (fun z : A.State => z.1 = n) = Finset.univ.image e := by
     ext z
     constructor
-    · intro hz
-      rcases Finset.mem_filter.mp hz with ⟨hzS, hzn⟩
-      rcases z with ⟨z, a⟩
-      simp only at hzn
-      subst z
-      apply Finset.mem_image.mpr
-      exact ⟨a, Finset.mem_univ _, rfl⟩
+    · grind
     · intro hz
       rcases Finset.mem_image.mp hz with ⟨a, -, hza⟩
       subst z
@@ -811,22 +786,22 @@ private theorem sum_subtype_states_at_time {F : FixedData} {P : PrimeGroups}
       apply Finset.mem_filter.mpr
       constructor
       · exact hbase (by simp [blockStates, hn])
-      · rfl
+      omega
   have hsubtype :
       (∑ z : {z // z ∈ S}, if z.1.1 = n then f z.1 else 0) =
         ∑ z ∈ S, if z.1 = n then f z else 0 := by
     symm
-    exact Finset.sum_subtype S (by intro z; simp)
+    exact Finset.sum_subtype S (by simp)
       (fun z => if z.1 = n then f z else 0)
   calc
     _ = ∑ z ∈ S, if z.1 = n then f z else 0 := hsubtype
     _ = ∑ z ∈ S.filter (fun z : A.State => z.1 = n), f z := by
       rw [Finset.sum_filter]
-    _ = ∑ z ∈ Finset.univ.image e, f z := by rw [hfilter]
+    _ = ∑ z ∈ Finset.univ.image e, f z := by grind
     _ = ∑ a : A.Labels, f (n, a) := by
       rw [Finset.sum_image (by
         intro a ha b hb hab
-        injection hab)]
+        grind)]
 
 private theorem rootMatrix_column_pairing {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (I : Finset ℤ) (S : Finset A.State)
@@ -847,20 +822,7 @@ private theorem rootMatrix_column_pairing {F : FixedData} {P : PrimeGroups}
   let q (z : A.State) : ℂ := (Real.sqrt (A.stateMass z) : ℂ) * f (r z.2)
   calc
     _ = ∑ z : {z // z ∈ S}, if z.1.1 = n then q z.1 else 0 := by
-      apply Finset.sum_congr rfl
-      intro z hz
-      by_cases htime : z.1.1 = n
-      · have hrow : z = r z.1.2 := by
-          apply Subtype.ext
-          rcases z with ⟨⟨k, a⟩, hz⟩
-          simp only at htime
-          subst k
-          rfl
-        rw [hstar]
-        simp only [ite_eq_left htime]
-        rw [hrow]
-      · rw [hstar]
-        simp [htime]
+      grind
     _ = ∑ a : A.Labels, q (n, a) :=
       sum_subtype_states_at_time A I S hbase n hn q
     _ = _ := by rfl
@@ -890,20 +852,7 @@ private theorem rootMatrix_quadratic_expansion {F : FixedData} {P : PrimeGroups}
         ∑ a : A.Labels, (Real.sqrt (A.stateMass (n, a)) : ℂ) * M (r a) j := by
     calc
       _ = ∑ i : {z // z ∈ S}, if i.1.1 = n then q j i.1 else 0 := by
-            apply Finset.sum_congr rfl
-            intro i hi
-            by_cases hit : i.1.1 = n
-            · have hrow : i = r i.1.2 := by
-                apply Subtype.ext
-                rcases i with ⟨⟨k, a⟩, hi⟩
-                simp only at hit
-                subst k
-                rfl
-              rw [hstarU]
-              simp only [ite_eq_left hit]
-              rw [hrow]
-            · rw [hstarU]
-              simp [hit]
+            grind
       _ = ∑ a : A.Labels, q j (n, a) :=
         sum_subtype_states_at_time A I S hbase n hn (q j)
       _ = _ := by rfl
@@ -924,13 +873,7 @@ private theorem rootMatrix_quadratic_expansion {F : FixedData} {P : PrimeGroups}
           rw [hinner j]
     _ = ∑ j : {z // z ∈ S},
         if j.1.1 = n then x j * (Real.sqrt (A.stateMass j.1) : ℂ) else 0 := by
-          apply Finset.sum_congr rfl
-          intro j hj
-          by_cases htime : j.1.1 = n
-          · rw [hUrow]
-            simp only [ite_eq_left htime]
-          · rw [hUrow]
-            simp [htime]
+          grind
     _ = ∑ b : A.Labels,
         (∑ a : A.Labels, (Real.sqrt (A.stateMass (n, a)) : ℂ) *
           M (r a) (r b)) * (Real.sqrt (A.stateMass (n, b)) : ℂ) := by
@@ -939,17 +882,7 @@ private theorem rootMatrix_quadratic_expansion {F : FixedData} {P : PrimeGroups}
               (Real.sqrt (A.stateMass (n, z.2)) : ℂ)
           calc
             _ = ∑ j : {z // z ∈ S}, if j.1.1 = n then v j.1 else 0 := by
-              apply Finset.sum_congr rfl
-              intro j hj
-              by_cases htime : j.1.1 = n
-              · have hrow : j = r j.1.2 := by
-                  apply Subtype.ext
-                  rcases j with ⟨⟨k, a⟩, hj⟩
-                  simp only at htime
-                  subst k
-                  rfl
-                rw [hrow]
-              · simp [htime]
+              grind
             _ = ∑ b : A.Labels, v (n, b) :=
               sum_subtype_states_at_time A I S hbase n hn v
             _ = _ := by rfl
@@ -972,11 +905,8 @@ private theorem euclidean_matrix_pairing_expansion {S T I : Type*}
     (c : EuclideanSpace ℂ I) (g : EuclideanSpace ℂ T) :
     inner ℂ (U.toEuclideanLin c) (C.toEuclideanLin g) =
       ∑ s : S, star (∑ i : I, U s i * c i) * (∑ t : T, C s t * g t) := by
-  simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply, PiLp.inner_apply,
-    Matrix.mulVec, dotProduct]
-  apply Finset.sum_congr rfl
-  intro s hs
-  ring
+  simp [Matrix.toLpLin_apply, PiLp.inner_apply, Matrix.mulVec, dotProduct]
+  grind
 
 private theorem root_weighted_power_eq {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -996,16 +926,12 @@ private theorem root_weighted_power_eq {F : FixedData} {P : PrimeGroups}
       have hsqrt : (Real.sqrt (P.markMass (J + F.ell)) : ℂ) ^ 2 =
           (P.markMass (J + F.ell) : ℂ) := by
         exact_mod_cast Real.sq_sqrt hμ
-      calc
-        _ = ((Real.sqrt (P.markMass (J + F.ell)) : ℂ) ^ 2) *
-              kernelPower (kernelComp (A.physicalKernel false) A.adjointKernel) R
-                (n, a) (n, b) := by ring
-        _ = _ := by rw [hsqrt]
+      grind
     · rw [stateMass_eq_markMass_of_physical A n a ha,
         stateMass_eq_zero_of_not_physical A n b hb]
       simp [kernelPower_zero_of_invalid_right A R hR (n, a) (n, b) hb]
   · rw [stateMass_eq_zero_of_not_physical A n a ha]
-    simp [kernelPower_zero_of_invalid_left A R hR (n, a) (n, b) ha]
+    simp
 
 private theorem root_weighted_kernel_eq {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -1021,15 +947,12 @@ private theorem root_weighted_kernel_eq {F : FixedData} {P : PrimeGroups}
       have hsqrt : (Real.sqrt (P.markMass (J + F.ell)) : ℂ) ^ 2 =
           (P.markMass (J + F.ell) : ℂ) := by
         exact_mod_cast Real.sq_sqrt hμ
-      calc
-        _ = ((Real.sqrt (P.markMass (J + F.ell)) : ℂ) ^ 2) *
-              A.physicalKernel false (n, a) z := by ring
-        _ = _ := by rw [hsqrt]
+      grind
     · rw [stateMass_eq_markMass_of_physical A n a ha]
       rw [stateMass_eq_zero_of_not_physical A z.1 z.2 hz]
       simp [physicalKernel_false_zero_of_invalid_right A (n, a) z hz]
   · rw [stateMass_eq_zero_of_not_physical A n a ha]
-    simp [physicalKernel_false_zero_of_invalid_left A (n, a) z ha]
+    simp
 
 private theorem sum_supported_kernel_restrict {α : Type*} [DecidableEq α]
     (T t : Finset α) (K : α → α → ℂ) (a : α) (w : α → ℂ)
@@ -1039,7 +962,7 @@ private theorem sum_supported_kernel_restrict {α : Type*} [DecidableEq α]
   classical
   have hT : T.filter (fun z => z ∈ t) ⊆ t := by
     intro z hz
-    exact (Finset.mem_filter.mp hz).2
+    exact by grind
   calc
     (∑ z ∈ T, K a z * (if z ∈ t then w z else 0)) =
         ∑ z ∈ T.filter (fun z => z ∈ t), K a z * w z := by
@@ -1047,11 +970,7 @@ private theorem sum_supported_kernel_restrict {α : Type*} [DecidableEq α]
           rw [Finset.sum_filter]
     _ = ∑ z ∈ t, K a z * w z := by
       refine Finset.sum_subset hT ?_
-      intro z hz hnot
-      have hzT : z ∉ T := by
-        intro hzT
-        exact hnot (Finset.mem_filter.mpr ⟨hzT, hz⟩)
-      simp [hK z hzT]
+      simp_all
 
 private theorem block_pairing_eq_matrix {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -1083,7 +1002,7 @@ private theorem block_pairing_eq_matrix {F : FixedData} {P : PrimeGroups}
     WithLp.toLp 2 (fun z : {z // z ∈ T} =>
       if z.1 ∈ t then (Real.sqrt (A.stateMass z.1) : ℂ) * g z.1 else 0)
   let action (s : {z // z ∈ S}) : ℂ := ∑ z : {z // z ∈ T}, C s z * v z
-  have hbase : B ⊆ S := by exact twoReach_subset A B (Nat.zero_le R)
+  have hbase : B ⊆ S := twoReach_subset A B (Nat.zero_le R)
   change blockStates A I ⊆ S at hbase
   have hroot (n : {n // n ∈ I}) (a : A.Labels) : (n.1, a) ∈ S :=
     hbase (by simp [blockStates, n.2])
@@ -1091,8 +1010,8 @@ private theorem block_pairing_eq_matrix {F : FixedData} {P : PrimeGroups}
     ⟨(n.1, a), hroot n a⟩
   have hsource (n : {n // n ∈ I}) :
       (∑ s : {z // z ∈ S}, star (U s n) * action s) =
-        ∑ a : A.Labels, (Real.sqrt (A.stateMass (n.1, a)) : ℂ) * action (r n a) := by
-    exact rootMatrix_column_pairing A I S hbase n.1 n.2 action
+        ∑ a : A.Labels, (Real.sqrt (A.stateMass (n.1, a)) : ℂ) * action (r n a) :=
+    rootMatrix_column_pairing A I S hbase n.1 n.2 action
   have haction (n : {n // n ∈ I}) (a : A.Labels) :
       action (r n a) =
         ∑ z ∈ t, A.physicalKernel false (n.1, a) z *
@@ -1101,14 +1020,14 @@ private theorem block_pairing_eq_matrix {F : FixedData} {P : PrimeGroups}
       apply physicalKernel_false_zero_of_not_neighbor A (n.1, a) z
       intro hnbr
       exact hz (neighbors_subset_neighborUnion A S
-        (hroot n a) hnbr)
+        (by grind) hnbr)
     calc
       action (r n a) =
           ∑ z ∈ T, A.physicalKernel false (n.1, a) z *
             (if z ∈ t then (Real.sqrt (A.stateMass z) : ℂ) * g z else 0) := by
               change (∑ z : {z // z ∈ T}, C (r n a) z * v z) = _
               simpa only [C, finitePhysicalMatrix, v, WithLp.ofLp_toLp] using
-                (Finset.sum_subtype T (by intro z; simp)
+                (Finset.sum_subtype T (by simp)
                   (fun z => A.physicalKernel false (n.1, a) z *
                     (if z ∈ t then (Real.sqrt (A.stateMass z) : ℂ) * g z else 0))).symm
       _ = ∑ z ∈ t, A.physicalKernel false (n.1, a) z *
@@ -1120,8 +1039,8 @@ private theorem block_pairing_eq_matrix {F : FixedData} {P : PrimeGroups}
         star (c n) * star (U s n) * action s := by
     calc
       _ = ∑ s : {z // z ∈ S},
-          star (∑ n : {n // n ∈ I}, U s n * c n) * action s := by
-            exact euclidean_matrix_pairing_expansion C U c v
+          star (∑ n : {n // n ∈ I}, U s n * c n) * action s :=
+            euclidean_matrix_pairing_expansion C U c v
       _ = ∑ n : {n // n ∈ I}, ∑ s : {z // z ∈ S},
           star (c n) * star (U s n) * action s := by
             calc
@@ -1151,8 +1070,6 @@ private theorem block_pairing_eq_matrix {F : FixedData} {P : PrimeGroups}
             rw [hmatrix]
             apply Finset.sum_congr rfl
             intro n hn
-            apply Finset.sum_congr rfl
-            intro s hs
             ring
       _ = ∑ n : {n // n ∈ I}, ∑ a : A.Labels,
           (Real.sqrt (A.stateMass (n.1, a)) : ℂ) *
@@ -1230,7 +1147,7 @@ private theorem sum_by_chunk {α β γ : Type*} [DecidableEq β] [AddCommMonoid 
     (∑ a ∈ s, f a) = ∑ b ∈ s.image q, ∑ a ∈ s with q a = b, f a := by
   classical
   exact (Finset.sum_fiberwise_of_maps_to
-    (fun a ha => Finset.mem_image_of_mem q ha) f).symm
+    (by grind) f).symm
 
 private theorem dyad_card_bounds {X : ℝ} (hX : 1 ≤ X) :
     0 < ((dyad X).card : ℝ) ∧ ((dyad X).card : ℝ) ≤ 2 * X := by
@@ -1245,17 +1162,16 @@ private theorem dyad_card_bounds {X : ℝ} (hX : 1 ≤ X) :
     refine ⟨Int.ceil X, ?_⟩
     simp only [dyad, Finset.mem_Ico]
     constructor
-    · exact le_rfl
+    · omega
     · apply Int.lt_ceil.mpr
       have hXceilLt : (Int.ceil X : ℝ) < 2 * X := by
         calc
           (Int.ceil X : ℝ) < X + 1 := Int.ceil_lt_add_one _
           _ ≤ 2 * X := by linarith
-      exact hXceilLt
+      omega
   constructor
-  · exact_mod_cast hcardPos
-  · rw [hcard]
-    linarith
+  · positivity
+  linarith
 
 private theorem allPrimes_sup_le_two_exp {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (_A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -1269,8 +1185,7 @@ private theorem allPrimes_sup_le_two_exp {F : FixedData} {P : PrimeGroups}
     rcases Finset.mem_biUnion.mp hp with ⟨g, hg, hpGroup⟩
     have hprime := hP.2.2.2.2.2 g p hpGroup
     by_cases hbig : P.big g
-    · simp [hbig] at hprime
-      exact hprime.2
+    · grind
     · simp [hbig] at hprime
       calc
         (p : ℝ) ≤ Real.exp (y ^ F.b) := hprime.2
@@ -1289,14 +1204,10 @@ private theorem allPrimes_sup_le_two_exp {F : FixedData} {P : PrimeGroups}
   have hceil : (Nat.ceil Z : ℝ) ≤ Z + 1 := by
     have hcf : (Nat.ceil Z : ℝ) ≤ (Nat.floor Z : ℝ) + 1 := by
       exact_mod_cast Nat.ceil_le_floor_add_one Z
-    have hfloor : (Nat.floor Z : ℝ) ≤ Z := Nat.floor_le (le_of_lt (Real.exp_pos _))
+    have hfloor : (Nat.floor Z : ℝ) ≤ Z := Nat.floor_le (by positivity)
     linarith
-  have hZ : 1 ≤ Z := Real.one_le_exp_iff.mpr (Real.rpow_nonneg (by linarith [hy]) _)
-  calc
-    ((P.allPrimes.sup id : ℕ) : ℝ) ≤ (Nat.ceil Z : ℝ) := hsupCast
-    _ ≤ Z + 1 := hceil
-    _ ≤ 2 * Z := by linarith
-    _ = 2 * Real.exp ((L x) ^ F.d) := by simp [Z, y]
+  have hZ : 1 ≤ Z := Real.one_le_exp_iff.mpr (Real.rpow_nonneg (by linarith) _)
+  linarith
 
 private theorem model_stepBound_exp_bound {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x C₂ : ℝ}
@@ -1328,7 +1239,7 @@ private theorem model_stepBound_exp_bound {F : FixedData} {P : PrimeGroups}
         rw [Nat.add_comm]
         exact Finset.card_filter_add_card_filter_not
           (p := fun g : P.Group => P.big g = true)
-      _ = P.count := by simp [PrimeGroups.Group]
+      _ = P.count := by simp
   have hcount : (P.count : ℝ) ≤ 2 * F.C₀ * Real.log y := by
     have hcast : (P.count : ℝ) =
         (P.smallGroups.card : ℝ) + (P.bigGroups.card : ℝ) := by exact_mod_cast hcounts.symm
@@ -1337,9 +1248,9 @@ private theorem model_stepBound_exp_bound {F : FixedData} {P : PrimeGroups}
   have hnatAbs : (A.k.natAbs : ℝ) = |(A.k : ℝ)| := by
     calc
       (A.k.natAbs : ℝ) = ((A.k.natAbs : ℤ) : ℝ) := by norm_num
-      _ = ((|A.k| : ℤ) : ℝ) := by exact_mod_cast (Int.natCast_natAbs A.k)
+      _ = ((|A.k| : ℤ) : ℝ) := by simp
       _ = |(A.k : ℝ)| := by norm_cast
-  have hYpos : 0 < y := by linarith [hy]
+  have hYpos : 0 < y := by linarith
   have hQpos : 0 < Q := by positivity
   have hlogQ : Real.log Q = Real.log 2 + y ^ F.d := by
     dsimp [Q]
@@ -1359,8 +1270,8 @@ private theorem model_stepBound_exp_bound {F : FixedData} {P : PrimeGroups}
       Real.exp ((J : ℝ) * (2 * F.C₀ * Real.log y) * (Real.log 2 + y ^ F.d)) := by
     apply Real.exp_le_exp.mpr
     have hlogQ0 : 0 ≤ Real.log 2 + y ^ F.d := by
-      have hyPow : 0 ≤ y ^ F.d := Real.rpow_nonneg (le_of_lt hYpos) _
-      exact add_nonneg (Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 2)) hyPow
+      have hyPow : 0 ≤ y ^ F.d := by positivity
+      exact by positivity
     exact mul_le_mul_of_nonneg_right hn hlogQ0
   have hyRpow : y ^ C₂ = Real.exp (C₂ * Real.log y) := by
     rw [Real.rpow_def_of_pos hYpos]
@@ -1368,15 +1279,15 @@ private theorem model_stepBound_exp_bound {F : FixedData} {P : PrimeGroups}
     ring
   calc
     (A.stepBound : ℝ) = (A.k.natAbs : ℝ) * (S : ℝ) ^ n := by
-      simp [Model.stepBound, S, n, Nat.cast_mul, Nat.cast_pow]
+      simp [Model.stepBound, S, n]
     _ ≤ y ^ C₂ * Q ^ n := by
       rw [hnatAbs]
       exact mul_le_mul hkBound hpow (by positivity) (by positivity)
     _ = Real.exp (C₂ * Real.log y) *
-          Real.exp ((n : ℝ) * (Real.log 2 + y ^ F.d)) := by rw [hyRpow, hpowEq]
+          Real.exp ((n : ℝ) * (Real.log 2 + y ^ F.d)) := by simp_all
     _ ≤ Real.exp (C₂ * Real.log y) *
           Real.exp ((J : ℝ) * (2 * F.C₀ * Real.log y) * (Real.log 2 + y ^ F.d)) :=
-        mul_le_mul_of_nonneg_left hpowExp (Real.exp_pos _).le
+        mul_le_mul_of_nonneg_left hpowExp (by positivity)
     _ = _ := by rw [← Real.exp_add]
 
 private theorem blockLength_exp_bound {F : FixedData} {P : PrimeGroups}
@@ -1604,9 +1515,9 @@ private theorem packet_scalar_cleanup (E C₃ Cf X y : ℝ) (R B : ℕ)
       _ ≤ 2 * (R : ℝ) := by gcongr
   have hβlog : β * Real.log y ≤ 2 := by
     calc
-      β * Real.log y = Real.log y / (R : ℝ) := by dsimp [β]; ring
+      β * Real.log y = Real.log y / (R : ℝ) := by ring
       _ ≤ 2 := (div_le_iff₀ hRpos).2 hlogUpperR
-  have hlognonneg : 0 ≤ Real.log y := Real.log_nonneg hy
+  have hlognonneg := Real.log_nonneg hy
   have hUpos : 0 < U := by dsimp [U]; positivity
   have hVpos : 0 < V := by dsimp [V]; positivity
   have hW0 : 0 ≤ W := by dsimp [W]; positivity
@@ -1616,8 +1527,8 @@ private theorem packet_scalar_cleanup (E C₃ Cf X y : ℝ) (R B : ℕ)
         Real.exp (y ^ ((51 : ℝ) / 100)) * Real.exp (2 * Cf * Real.sqrt y) :=
       mul_le_mul_of_nonneg_right hB (Real.exp_pos _).le
     exact mul_le_mul hbExp hr (by positivity) (by positivity)
-  have hRpowSource : s ^ α ≤ U ^ α := Real.rpow_le_rpow hs0 hs (by exact hα0)
-  have hRpowMoment : W ^ β ≤ V ^ β := Real.rpow_le_rpow hW0 hWleV hβ0
+  have hRpowSource : s ^ α ≤ U ^ α := Real.rpow_le_rpow hs0 hs (by omega)
+  have hRpowMoment := Real.rpow_le_rpow hW0 hWleV hβ0
   have hRad :
       2 * t * s ^ α * W ^ β ≤ Upper := by
     dsimp [Upper]
@@ -1625,13 +1536,13 @@ private theorem packet_scalar_cleanup (E C₃ Cf X y : ℝ) (R B : ℕ)
       _ ≤ 2 * U * s ^ α * W ^ β := by
         apply mul_le_mul_of_nonneg_right
         · apply mul_le_mul_of_nonneg_right
-          · exact mul_le_mul_of_nonneg_left ht (by norm_num)
-          · exact Real.rpow_nonneg hs0 _
-        · exact Real.rpow_nonneg hW0 _
+          · linarith
+          positivity
+        positivity
       _ ≤ 2 * U * U ^ α * W ^ β := by
         apply mul_le_mul_of_nonneg_right
-        · exact mul_le_mul_of_nonneg_left hRpowSource (by positivity)
-        · exact Real.rpow_nonneg hW0 _
+        · simp_all
+        positivity
       _ ≤ 2 * U * U ^ α * V ^ β := by
         exact mul_le_mul_of_nonneg_left hRpowMoment
           (mul_nonneg (mul_nonneg (by norm_num) hUpos.le)
@@ -1681,12 +1592,12 @@ private theorem packet_scalar_cleanup (E C₃ Cf X y : ℝ) (R B : ℕ)
         (-2 * (E + 1)) * Real.log y := by
       calc
         _ = (-2 * (E + 1)) * (β * (R : ℝ)) * Real.log y := by ring
-        _ = _ := by rw [hβR]; ring
+        _ = _ := by simp_all
     calc
       _ = β * y ^ ((51 : ℝ) / 100) + 2 * Cf * β * Real.sqrt y +
             β * Real.log 2 + β * Real.log X +
             β * ((-2 * (E + 1) * (R : ℝ)) * Real.log y) := by ring
-      _ = _ := by rw [hcancel]
+      _ = _ := by linarith
   have hlogUpperSimplified : Real.log Upper =
       2 * Real.log X +
         (4 * C₃ - 2 * C₃ * β - 2 * (E + 1)) * Real.log y +
@@ -1728,18 +1639,18 @@ private theorem packet_scalar_cleanup (E C₃ Cf X y : ℝ) (R B : ℕ)
       have hcoef : 1 + (R : ℝ)⁻¹ ≤ 2 := by linarith [hβ1]
       calc
         _ ≤ 2 * Real.log 2 := mul_le_mul_of_nonneg_right hcoef hlog2_nonneg
-        _ ≤ 4 := by nlinarith [hlog2le]
+        _ ≤ 4 := by linarith
     have hLterm : -2 * Real.log y ≤ 0 := by nlinarith [hlognonneg]
     nlinarith [hBetaY51, hCfTerm, hC₃Term, hlog2part', hLterm,
       hβR, hβlog, hlognonneg]
-  have hupper_le_target : Upper ≤ (K * X * y ^ (-E + 2 * C₃)) ^ 2 :=
+  have hupper_le_target :=
     (Real.log_le_log_iff (by positivity) (by positivity)).mp hlogUpper_le_target
   have hrad_le_target :
       2 * t * s ^ α * W ^ β ≤ (K * X * y ^ (-E + 2 * C₃)) ^ 2 :=
     hRad.trans hupper_le_target
   have htarget_nonneg : 0 ≤ K * X * y ^ (-E + 2 * C₃) := by positivity
   rw [Real.sqrt_le_iff]
-  exact ⟨htarget_nonneg, hrad_le_target⟩
+  grind
 
 private theorem chunk_fiber_card_le {B : ℕ} (hB : 0 < B) (lo : ℤ) (D : Finset ℤ)
     (j : ℤ) :
@@ -1769,17 +1680,17 @@ private theorem chunk_fiber_card_le {B : ℕ} (hB : 0 < B) (lo : ℤ) (D : Finse
     have heq : (n - lo) % (B : ℤ) = (m - lo) % (B : ℤ) := by
       have hc := congrArg (fun k : ℕ => (k : ℤ)) hnm
       simpa [rem, Int.toNat_of_nonneg hremn, Int.toNat_of_nonneg hremm] using hc
-    have hnq : chunkIndex lo B n = j := hn.2
-    have hmq : chunkIndex lo B m = j := hm.2
+    have hnq := hn.2
+    have hmq := hm.2
     have hdiv : (n - lo) / (B : ℤ) = (m - lo) / (B : ℤ) := by simpa [chunkIndex] using hnq.trans hmq.symm
-    have hdecompN : n - lo = (n - lo) % (B : ℤ) + (B : ℤ) * ((n - lo) / (B : ℤ)) :=
+    have hdecompN :=
       (Int.emod_add_mul_ediv (n - lo) (B : ℤ)).symm
-    have hdecompM : m - lo = (m - lo) % (B : ℤ) + (B : ℤ) * ((m - lo) / (B : ℤ)) :=
+    have hdecompM :=
       (Int.emod_add_mul_ediv (m - lo) (B : ℤ)).symm
     have hsub : n - lo = m - lo := by rw [hdecompN, hdecompM, heq, hdiv]
     omega
   have hcard := Finset.card_le_card_of_injOn rem hmaps hinj
-  simpa [I] using hcard
+  grind
 
 private theorem chunkIndex_close {B : ℕ} (hB : 0 < B) (lo n m : ℤ) (M : ℤ)
     (hBM : 2 * M < B) (hclose : |n - m| ≤ 2 * M) :
@@ -1791,9 +1702,9 @@ private theorem chunkIndex_close {B : ℕ} (hB : 0 < B) (lo n m : ℤ) (M : ℤ)
     simpa [abs_of_pos hBz] using Int.emod_lt_abs (n - lo) (ne_of_gt hBz)
   have hmodmlt : (m - lo) % (B : ℤ) < B := by
     simpa [abs_of_pos hBz] using Int.emod_lt_abs (m - lo) (ne_of_gt hBz)
-  have hdecompN : n - lo = (n - lo) % (B : ℤ) + (B : ℤ) * ((n - lo) / (B : ℤ)) :=
+  have hdecompN :=
     (Int.emod_add_mul_ediv (n - lo) (B : ℤ)).symm
-  have hdecompM : m - lo = (m - lo) % (B : ℤ) + (B : ℤ) * ((m - lo) / (B : ℤ)) :=
+  have hdecompM :=
     (Int.emod_add_mul_ediv (m - lo) (B : ℤ)).symm
   by_contra hnot
   have hnotQ : ¬ |(n - lo) / (B : ℤ) - (m - lo) / (B : ℤ)| ≤ 1 := by
@@ -1804,36 +1715,20 @@ private theorem chunkIndex_close {B : ℕ} (hB : 0 < B) (lo n m : ℤ) (M : ℤ)
     have hbigQ : 1 < |(n - lo) / (B : ℤ) - (m - lo) / (B : ℤ)| :=
       lt_of_not_ge hnotQ
     by_cases hq : (n - lo) / (B : ℤ) ≤ (m - lo) / (B : ℤ)
-    · left
-      have hgap : 1 < (m - lo) / (B : ℤ) - (n - lo) / (B : ℤ) := by
-        simpa [abs_of_nonpos (sub_nonpos.mpr hq)] using hbigQ
-      omega
-    · right
-      have hq' : (m - lo) / (B : ℤ) ≤ (n - lo) / (B : ℤ) := by omega
-      have hgap : 1 < (n - lo) / (B : ℤ) - (m - lo) / (B : ℤ) := by
-        simpa [abs_of_nonneg (sub_nonneg.mpr hq')] using hbigQ
-      omega
+    · grind
+    · grind
   rcases hdiff with hdiff | hdiff
   · have hmul := mul_le_mul_of_nonneg_left hdiff (le_of_lt hBz)
-    have hmn : B + 1 ≤ m - n := by
-      nlinarith [hdecompN, hdecompM, hmul, hmodn0, hmodm0, hmodnlt, hmodmlt]
-    have hclose' := (abs_le.mp hclose).1
-    nlinarith [hBM]
+    grind
   · have hmul := mul_le_mul_of_nonneg_left hdiff (le_of_lt hBz)
-    have hnm : B + 1 ≤ n - m := by
-      nlinarith [hdecompN, hdecompM, hmul, hmodn0, hmodm0, hmodnlt, hmodmlt]
-    have hclose' := (abs_le.mp hclose).2
-    nlinarith [hBM]
+    grind
 
 private theorem neighbors_time_span {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (a z : A.State) (hz : z ∈ A.neighbors a.1) :
     |z.1 - a.1| ≤ (A.stepBound : ℤ) := by
   have hz' : z ∈ Finset.Icc (a.1 - A.stepBound) (a.1 + A.stepBound) ×ˢ Finset.univ := by
     simpa [Model.neighbors] using hz
-  have htime : z.1 ∈ Finset.Icc (a.1 - A.stepBound) (a.1 + A.stepBound) :=
-    (Finset.mem_product.mp hz').1
-  simp only [Finset.mem_Icc] at htime
-  exact abs_le.mpr ⟨by omega, by omega⟩
+  grind
 
 private theorem twoNeighbors_time_span {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (a z : A.State) (hz : z ∈ twoNeighbors A a) :
@@ -1842,9 +1737,7 @@ private theorem twoNeighbors_time_span {F : FixedData} {P : PrimeGroups}
   rcases Finset.mem_biUnion.mp hz with ⟨w, hwa, hwz⟩
   have h1 := neighbors_time_span A a w hwa
   have h2 := neighbors_time_span A w z hwz
-  calc
-    |z.1 - a.1| ≤ |z.1 - w.1| + |w.1 - a.1| := abs_sub_le _ _ _
-    _ ≤ 2 * (A.stepBound : ℤ) := by omega
+  grind
 
 private theorem twoReach_time_span {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (base : Finset A.State) :
@@ -1855,30 +1748,17 @@ private theorem twoReach_time_span {F : FixedData} {P : PrimeGroups}
   | zero =>
       intro z hz
       simp only [twoReach] at hz
-      exact ⟨z, hz, by simp⟩
+      grind
   | succ R ih =>
       intro z hz
       simp only [twoReach, Finset.mem_union, Finset.mem_biUnion] at hz
       rcases hz with hz | ⟨w, hw, hwz⟩
       · obtain ⟨a, ha, hspan⟩ := ih z hz
-        refine ⟨a, ha, ?_⟩
-        have hstep : 0 ≤ (A.stepBound : ℤ) := Nat.cast_nonneg _
-        have hR : (R : ℤ) ≤ (R + 1 : ℤ) := by omega
-        have hmono : 2 * (R : ℤ) * (A.stepBound : ℤ) ≤
-            2 * (R + 1 : ℤ) * (A.stepBound : ℤ) := by
-          exact mul_le_mul_of_nonneg_right
-            (mul_le_mul_of_nonneg_left hR (by norm_num)) hstep
-        exact hspan.trans hmono
+        grind
       · obtain ⟨a, ha, hspan⟩ := ih w hw
         have hstep := twoNeighbors_time_span A w z hwz
         refine ⟨a, ha, ?_⟩
-        calc
-          |z.1 - a.1| ≤ |z.1 - w.1| + |w.1 - a.1| := abs_sub_le _ _ _
-          _ ≤ 2 * (A.stepBound : ℤ) + 2 * (R : ℤ) * (A.stepBound : ℤ) :=
-            add_le_add hstep hspan
-          _ = 2 * ((R + 1 : ℕ) : ℤ) * (A.stepBound : ℤ) := by
-            simp only [Nat.cast_add, Nat.cast_one]
-            ring
+        grind
 
 private theorem neighborUnion_time_span {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (base : Finset A.State) (R : ℕ)
@@ -1890,10 +1770,7 @@ private theorem neighborUnion_time_span {F : FixedData} {P : PrimeGroups}
   obtain ⟨a, ha, hspan⟩ := twoReach_time_span A base R w hw
   have hstep := neighbors_time_span A w z hwz
   refine ⟨a, ha, ?_⟩
-  calc
-    |z.1 - a.1| ≤ |z.1 - w.1| + |w.1 - a.1| := abs_sub_le _ _ _
-    _ ≤ (A.stepBound : ℤ) + 2 * (R : ℤ) * (A.stepBound : ℤ) := add_le_add hstep hspan
-    _ = (2 * (R : ℤ) + 1) * (A.stepBound : ℤ) := by ring
+  grind
 
 private theorem block_target_time_span {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (I : Finset ℤ) (R : ℕ)
@@ -1902,7 +1779,7 @@ private theorem block_target_time_span {F : FixedData} {P : PrimeGroups}
     ∃ n ∈ I, |z.1 - n| ≤ (2 * (R : ℤ) + 1) * (A.stepBound : ℤ) := by
   obtain ⟨a, ha, hspan⟩ := neighborUnion_time_span A (blockStates A I) R z hz
   have ha' : a.1 ∈ I := by simpa [blockStates] using ha
-  exact ⟨a.1, ha', hspan⟩
+  grind
 
 private theorem chunk_target_overlap {α : Type*} (D : Finset ℤ) (lo : ℤ)
     {B : ℕ} (hB : 0 < B) (M : ℤ) (hBM : 2 * M < B)
@@ -1920,10 +1797,9 @@ private theorem chunk_target_overlap {α : Type*} (D : Finset ℤ) (lo : ℤ)
     obtain ⟨m, hm, hqM, hM⟩ := hspan k hk'.1 z hk'.2
     have hclose : |n - m| ≤ 2 * M := by
       calc
-        |n - m| ≤ |n - time z| + |time z - m| := abs_sub_le _ _ _
+        |n - m| ≤ |n - time z| + |time z - m| := by grind
         _ = |time z - n| + |time z - m| := by
-          congr 1
-          rw [show n - time z = -(time z - n) by ring, abs_neg]
+          grind
         _ ≤ M + M := add_le_add hN hM
         _ = 2 * M := by ring
     have hqclose := chunkIndex_close hB lo n m M hBM hclose
@@ -1940,7 +1816,7 @@ private theorem chunk_target_overlap {α : Type*} (D : Finset ℤ) (lo : ℤ)
     have hsub : U ⊆ Finset.Icc j₀ (j₀ + 1) := by
       intro j hj
       simp only [Finset.mem_Icc]
-      exact ⟨hlo j hj, hhi j hj⟩
+      exact by grind
     have hcard : (Finset.Icc j₀ (j₀ + 1)).card = 2 := by
       simp only [Int.card_Icc]
       rw [show j₀ + 1 + 1 - j₀ = (2 : ℤ) by ring]
@@ -1948,8 +1824,8 @@ private theorem chunk_target_overlap {α : Type*} (D : Finset ℤ) (lo : ℤ)
     calc
       U.card ≤ (Finset.Icc j₀ (j₀ + 1)).card := Finset.card_le_card hsub
       _ = 2 := hcard
-  · have hU : U = ∅ := Finset.not_nonempty_iff_eq_empty.mp hne
-    simp [U, hU]
+  · have hU := Finset.not_nonempty_iff_eq_empty.mp hne
+    grind
 
 private theorem model_chunk_target_overlap {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (D : Finset ℤ) (lo : ℤ)
@@ -1970,8 +1846,7 @@ private theorem model_chunk_target_overlap {F : FixedData} {P : PrimeGroups}
       intro j hj z' hz
       obtain ⟨n, hn, hdist⟩ := block_target_time_span A
         (D.filter (fun n => chunkIndex lo B n = j)) R z' hz
-      rcases Finset.mem_filter.mp hn with ⟨hnD, hq⟩
-      exact ⟨n, hnD, hq, hdist⟩) z)
+      grind) z)
 
 private theorem rootMatrix_mul_coordinate {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (I : Finset ℤ) (S : Finset A.State)
@@ -1981,8 +1856,7 @@ private theorem rootMatrix_mul_coordinate {F : FixedData} {P : PrimeGroups}
       if s.1.1 ∈ I then
         (Real.sqrt (A.stateMass s.1) : ℂ) * f s.1.1 else 0 := by
   classical
-  simp [Matrix.toEuclideanLin, Matrix.toLpLin_apply, Matrix.mulVec,
-    dotProduct, rootMatrix, WithLp.ofLp_toLp]
+  simp [Matrix.toLpLin_apply, Matrix.mulVec, dotProduct, rootMatrix]
   by_cases htime : s.1.1 ∈ I
   · rw [ite_eq_left htime]
     change (∑ i ∈ I.attach,
@@ -1996,30 +1870,19 @@ private theorem rootMatrix_mul_coordinate {F : FixedData} {P : PrimeGroups}
                 (Real.sqrt (A.stateMass s.1) : ℂ) * f i₀.1 else 0 :=
                   Finset.sum_eq_single (s := I.attach) i₀
                     (by
-                      intro i hi hne
-                      have hneq : s.1.1 ≠ i.1 := by
-                        intro heq
-                        apply hne
-                        exact Subtype.ext heq.symm
-                      change (if s.1.1 = i.1 then
-                        (Real.sqrt (A.stateMass s.1) : ℂ) * f i.1 else 0) = 0
-                      split_ifs with heq
-                      · exact (hneq heq).elim
-                      · rfl)
+                      grind)
                     (by
-                      intro hnot
-                      exact False.elim (hnot (Finset.mem_attach I i₀)))
-          _ = (Real.sqrt (A.stateMass s.1) : ℂ) * f i₀.1 := by simp [i₀]
-      _ = _ := by simp [i₀]
+                      simp)
+          _ = (Real.sqrt (A.stateMass s.1) : ℂ) * f i₀.1 := by grind
+      _ = _ := by ring
   · rw [ite_eq_right htime]
     have hzero (i : {n // n ∈ I}) (hi : i ∈ I.attach) : s.1.1 ≠ i.1 := by
       intro heq
-      exact htime (heq ▸ i.2)
+      exact by grind
     change (∑ i ∈ I.attach,
         if s.1.1 = i.1 then (Real.sqrt (A.stateMass s.1) : ℂ) * f i.1 else 0) = 0
     apply Finset.sum_eq_zero
-    intro i hi
-    simp [hzero i hi]
+    grind
 
 private theorem blockStates_filter_eq {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) (I : Finset ℤ) (S : Finset A.State)
@@ -2031,12 +1894,11 @@ private theorem blockStates_filter_eq {F : FixedData} {P : PrimeGroups}
   · intro hz
     rcases Finset.mem_filter.mp hz with ⟨_, htime⟩
     change z ∈ I.product Finset.univ
-    exact Finset.mem_product.mpr ⟨htime, Finset.mem_univ _⟩
+    exact Finset.mem_product.mpr (by grind)
   · intro hz
     have hz' : z ∈ I.product Finset.univ := by simpa [blockStates] using hz
     have htime := (Finset.mem_product.mp hz').1
-    apply Finset.mem_filter.mpr
-    exact ⟨hbase (by simpa [blockStates] using hz), htime⟩
+    grind
 
 private theorem rootMatrix_mul_norm_sq {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -2056,8 +1918,8 @@ private theorem rootMatrix_mul_norm_sq {F : FixedData} {P : PrimeGroups}
   have hcoord (z : {z // z ∈ S}) :
       (U.toEuclideanLin c).ofLp z =
         if z.1.1 ∈ I then
-          (Real.sqrt (A.stateMass z.1) : ℂ) * f z.1.1 else 0 := by
-    exact rootMatrix_mul_coordinate A I S f z
+          (Real.sqrt (A.stateMass z.1) : ℂ) * f z.1.1 else 0 :=
+    rootMatrix_mul_coordinate A I S f z
   let w (z : A.State) : ℝ :=
     if z.1 ∈ I then A.stateMass z * ‖f z.1‖ ^ 2 else 0
   have hsubsum :
@@ -2077,10 +1939,10 @@ private theorem rootMatrix_mul_norm_sq {F : FixedData} {P : PrimeGroups}
                       rw [norm_mul]
                       ring
                 _ = w z.1 := by
-                      simp [w, htime, Complex.norm_real, Real.sq_sqrt hmass]
+                      simp [w, htime, Real.sq_sqrt hmass]
             · simp [w, htime]
       _ = ∑ z ∈ S, w z :=
-        (Finset.sum_subtype S (by intro z; simp) w).symm
+        (Finset.sum_subtype S (by simp) w).symm
   have hsum :
       (∑ z : {z // z ∈ S}, ‖(U.toEuclideanLin c).ofLp z‖ ^ 2) =
         ∑ n ∈ I, ∑ a : A.Labels,
@@ -2102,9 +1964,7 @@ private theorem rootMatrix_mul_norm_sq {F : FixedData} {P : PrimeGroups}
       _ = ∑ z ∈ blockStates A I, A.stateMass z * ‖f z.1‖ ^ 2 := by
         rw [blockStates_filter_eq A I S hbase]
       _ = _ := hproduct
-  calc
-    _ = ∑ z : {z // z ∈ S}, ‖(U.toEuclideanLin c).ofLp z‖ ^ 2 := hnorm
-    _ = _ := hsum
+  linarith
 
 private theorem targetVector_norm_sq_eq {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -2135,19 +1995,16 @@ private theorem targetVector_norm_sq_eq {F : FixedData} {P : PrimeGroups}
                       rw [norm_mul]
                       ring
                 _ = A.stateMass z.1 * ‖g z.1‖ ^ 2 := by
-                      simp [Complex.norm_real, Real.sq_sqrt hmass]
-            · simp [hzt]
-      _ = ∑ z ∈ T, if z ∈ t then A.stateMass z * ‖g z‖ ^ 2 else 0 := by
-            exact (Finset.sum_subtype T (by intro z; simp)
+                      simp_all
+            simp_all
+      _ = ∑ z ∈ T, if z ∈ t then A.stateMass z * ‖g z‖ ^ 2 else 0 :=
+            (Finset.sum_subtype T (by simp)
               (fun z => if z ∈ t then A.stateMass z * ‖g z‖ ^ 2 else 0)).symm
   have hfilter :
       (∑ z ∈ T, if z ∈ t then A.stateMass z * ‖g z‖ ^ 2 else 0) =
         ∑ z ∈ T.filter (fun z => z ∈ t), A.stateMass z * ‖g z‖ ^ 2 := by
     rw [Finset.sum_filter]
-  calc
-    ‖v‖ ^ 2 = ∑ z : {z // z ∈ T}, ‖v.ofLp z‖ ^ 2 := hnorm
-    _ = ∑ z ∈ T, if z ∈ t then A.stateMass z * ‖g z‖ ^ 2 else 0 := hsum
-    _ = ∑ z ∈ T.filter (fun z => z ∈ t), A.stateMass z * ‖g z‖ ^ 2 := hfilter
+  linarith
 
 private theorem sourceVector_norm_sq (I : Finset ℤ) (f : ℤ → ℂ) :
     ‖WithLp.toLp 2 (fun n : {n // n ∈ I} => f n.1)‖ ^ 2 =
@@ -2160,7 +2017,7 @@ private theorem sourceVector_norm_sq (I : Finset ℤ) (f : ℤ → ℂ) :
     _ = ∑ n ∈ I, ‖f n‖ ^ 2 := by
       change (∑ n : {n // n ∈ I}, ‖f n.1‖ ^ 2) = ∑ n ∈ I, ‖f n‖ ^ 2
       exact (Finset.sum_subtype I (p := fun n => n ∈ I)
-        (by intro n; simp) (fun n => ‖f n‖ ^ 2)).symm
+        (by simp) (fun n => ‖f n‖ ^ 2)).symm
 
 private theorem rootMoment_eq_matrix_quadratic {F : FixedData} {P : PrimeGroups}
     {J m : ℕ} (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -2193,7 +2050,7 @@ private theorem rootMoment_eq_matrix_quadratic {F : FixedData} {P : PrimeGroups}
     exact root_weighted_power_eq A hP R hR n a b
   rw [rootMatrix_quadratic_expansion A I S hbase M n hn]
   unfold Model.rootMoment
-  exact (congrArg Complex.re hsum).symm
+  grind
 
 private theorem block_root_trace {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -2214,8 +2071,8 @@ private theorem block_root_trace {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   let U := rootMatrix A S I
   let M : Matrix {z // z ∈ S} {z // z ∈ S} ℂ := (C * Matrix.conjTranspose C) ^ R
   let H : Matrix {n // n ∈ I} {n // n ∈ I} ℂ := Matrix.conjTranspose U * M * U
-  have hbase : B ⊆ S := by
-    exact twoReach_subset A B (Nat.zero_le R)
+  have hbase : B ⊆ S :=
+    twoReach_subset A B (Nat.zero_le R)
   have hM (n : ℤ) (hn : n ∈ I) (a b : A.Labels) :
       M ⟨(n, a), hbase (by simp [B, blockStates, hn])⟩
           ⟨(n, b), hbase (by simp [B, blockStates, hn])⟩ =
@@ -2224,9 +2081,9 @@ private theorem block_root_trace {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     dsimp [M, C, T, S, B]
     exact (kernelPower_eq_matrix_entry A (blockStates A I) R
       (by simp [blockStates, hn]) (by simp [blockStates, hn])).symm
-  have hdiag (n : ℤ) (hn : n ∈ I) : A.rootMoment R n = (H ⟨n, hn⟩ ⟨n, hn⟩).re := by
-    exact rootMoment_eq_matrix_quadratic A hP I S hbase M R hR n hn
-      (hM n hn)
+  have hdiag (n : ℤ) (hn : n ∈ I) : A.rootMoment R n = (H ⟨n, hn⟩ ⟨n, hn⟩).re :=
+    rootMoment_eq_matrix_quadratic A hP I S hbase M R hR n hn
+      (by grind)
   have htrace : H.trace.re = ∑ n : {n // n ∈ I}, A.rootMoment R n := by
     rw [Matrix.trace, Complex.re_sum]
     apply Finset.sum_congr rfl
@@ -2235,7 +2092,7 @@ private theorem block_root_trace {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   calc
     H.trace.re = ∑ n : {n // n ∈ I}, A.rootMoment R n := htrace
     _ = ∑ n ∈ I, A.rootMoment R n :=
-      (Finset.sum_subtype I (by intro n; simp) (fun n => A.rootMoment R n)).symm
+      (Finset.sum_subtype I (by simp) (fun n => A.rootMoment R n)).symm
 
 private theorem rootMoment_nonneg {F : FixedData} {P : PrimeGroups} {J m : ℕ}
     (A : Model F P J m) {x : ℝ} (hP : P.Admissible F x)
@@ -2259,8 +2116,7 @@ private theorem rootMoment_nonneg {F : FixedData} {P : PrimeGroups} {J m : ℕ}
   have hEq : H.trace.re = A.rootMoment R n := by
     have h := block_root_trace A hP I R hR
     simpa [I, B, S, T, C, U, G, H] using h
-  rw [← hEq]
-  exact htrace
+  linarith
 
 private theorem sum_three_factors_le {ι : Type*} (s : Finset ι)
     (b u d : ι → ℝ) (R : ℕ) (hR : 2 ≤ R)
@@ -2274,7 +2130,7 @@ private theorem sum_three_factors_le {ι : Type*} (s : Finset ι)
   let α : ℝ := 1 - (R : ℝ)⁻¹
   let β : ℝ := (R : ℝ)⁻¹
   have hRpos : 0 < (R : ℝ) := by positivity
-  have hRgt : (1 : ℝ) < (R : ℝ) := by exact_mod_cast (by omega : 1 < R)
+  have hRgt : (1 : ℝ) < (R : ℝ) := by exact_mod_cast (by omega)
   have hα : 0 < α := by
     dsimp [α]
     have hi : (R : ℝ)⁻¹ < 1 := (inv_lt_one₀ hRpos).2 hRgt
@@ -2308,15 +2164,9 @@ private theorem sum_three_factors_le {ι : Type*} (s : Finset ι)
         (∑ i ∈ s, u i) ^ α * (∑ i ∈ s, d i) ^ β := by
     calc
       _ = ∑ i ∈ s, u i ^ α * d i ^ β := by
-        apply Finset.sum_congr rfl
-        intro i hi
-        exact hq2 i
+        simp_all
       _ ≤ _ := by
-        have hHolderSum := hHolder
-        rw [hsumU, hsumD] at hHolderSum
-        have hαexp : (1 : ℝ) / α⁻¹ = α := by field_simp
-        have hβexp : (1 : ℝ) / β⁻¹ = β := by field_simp
-        simpa only [Real.rpow_one, hαexp, hβexp] using hHolderSum
+        simp_all
   have hCS := Finset.sum_mul_sq_le_sq_mul_sq s b q
   have hsum_nonneg : 0 ≤ ∑ i ∈ s, b i * q i :=
     Finset.sum_nonneg fun i hi => mul_nonneg (hb i) (hq i)
@@ -2326,7 +2176,7 @@ private theorem sum_three_factors_le {ι : Type*} (s : Finset ι)
           ((∑ i ∈ s, u i) ^ α * (∑ i ∈ s, d i) ^ β) := by
     calc
       _ ≤ (∑ i ∈ s, b i ^ 2) * ∑ i ∈ s, q i ^ 2 := hCS
-      _ ≤ _ := mul_le_mul_of_nonneg_left hqSum (Finset.sum_nonneg fun i hi => sq_nonneg _)
+      _ ≤ _ := mul_le_mul_of_nonneg_left hqSum (by positivity)
   have hmain := Real.le_sqrt_of_sq_le hbound
   simpa [q, α, β, mul_assoc] using hmain
 
@@ -2418,8 +2268,8 @@ private theorem block_pairing_factored {F : FixedData} {P : PrimeGroups}
           A.physicalKernel false (n.1, a) z * g z) =
         ∑ n ∈ I, ∑ a : A.Labels, ∑ z ∈ t,
           (A.stateMass (n, a) : ℂ) * star (f n) *
-            A.physicalKernel false (n, a) z * g z := by
-    exact (Finset.sum_subtype I (p := fun n => n ∈ I) (by intro n; simp)
+            A.physicalKernel false (n, a) z * g z :=
+    (Finset.sum_subtype I (p := fun n => n ∈ I) (by simp)
       (fun n : ℤ => ∑ a : A.Labels, ∑ z ∈ t,
         (A.stateMass (n, a) : ℂ) * star (f n) *
           A.physicalKernel false (n, a) z * g z)).symm
@@ -2427,9 +2277,9 @@ private theorem block_pairing_factored {F : FixedData} {P : PrimeGroups}
   have hsource := rootMatrix_mul_norm_sq A hP I S hbase f
   have htrace := block_root_trace A hP I R hR
   have hcoord := sourceVector_norm_sq I f
-  dsimp only [U, c, S, B, T, C] at hsource htrace
+  dsimp only [S, B] at hsource htrace
   rw [← hsubtype]
-  dsimp only [B, S, T, C, U, c, v] at hspec ⊢
+  dsimp only at hspec ⊢
   simpa only [hsource, htrace, hcoord] using hspec
 
 private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
@@ -2508,25 +2358,18 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
   have hbsq : (∑ j ∈ chunks, b j ^ 2) ≤ 2 * (∑ z ∈ t, w z) := by
     calc
       _ = ∑ j ∈ chunks, ‖v j‖ ^ 2 := by
-        apply Finset.sum_congr rfl
-        intro j hj
-        rfl
+        linarith
       _ ≤ ∑ j ∈ chunks, ∑ z ∈ (Tgt j).filter (fun z => z ∈ t), w z := by
         apply Finset.sum_le_sum
         intro j hj
         have hv := targetVector_norm_sq_eq A hP (Tgt j) t g
-        have hv' : ‖v j‖ ^ 2 =
-            ∑ z ∈ (Tgt j).filter (fun z => z ∈ t), w z := by
-          simpa [v, b, w, Tgt, I, q] using hv
-        simpa [b] using hv'.le
+        linarith
       _ = ∑ j ∈ chunks, ∑ z ∈ t.filter (fun z => z ∈ Tgt j), w z := by
         apply Finset.sum_congr rfl
         intro j hj
         apply Finset.sum_congr
-        · ext z
-          simp [and_comm]
-        · intro z hz
-          rfl
+        · grind
+        simp
       _ = ∑ j ∈ chunks, ∑ z ∈ t, if z ∈ Tgt j then w z else 0 := by
         apply Finset.sum_congr rfl
         intro j hj
@@ -2537,7 +2380,7 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
         apply Finset.sum_congr rfl
         intro z hz
         rw [← Finset.sum_filter]
-        simp [Finset.sum_const, mul_comm]
+        simp
       _ ≤ ∑ z ∈ t, (2 : ℝ) * w z := by
         apply Finset.sum_le_sum
         intro z hz
@@ -2555,21 +2398,20 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
   have hcBound (j : ℤ) : c j ≤ (B : ℝ) * Real.exp (2 * Cf * Real.sqrt (L x)) := by
     have hterms : ∀ n ∈ I j, ‖f n‖ ^ 2 ≤ Real.exp (2 * Cf * Real.sqrt (L x)) := by
       intro n hn
-      have hnD : n ∈ D := (Finset.mem_filter.mp hn).1
+      have hnD := (Finset.mem_filter.mp hn).1
       have hfn := hf n hnD
       calc
         ‖f n‖ ^ 2 ≤ Real.exp (Cf * Real.sqrt (L x)) ^ 2 :=
-          (sq_le_sq₀ (norm_nonneg _) (le_of_lt (Real.exp_pos _))).2 hfn
+          (sq_le_sq₀ (norm_nonneg _) (by positivity)).2 hfn
         _ = Real.exp (2 * Cf * Real.sqrt (L x)) := by
           rw [← Real.exp_nat_mul (Cf * Real.sqrt (L x)) 2]
           ring_nf
     calc
       c j ≤ ∑ n ∈ I j, Real.exp (2 * Cf * Real.sqrt (L x)) := by
         apply Finset.sum_le_sum
-        intro n hn
-        exact hterms n hn
+        omega
       _ = ((I j).card : ℝ) * Real.exp (2 * Cf * Real.sqrt (L x)) := by
-        simp [Finset.sum_const, mul_comm]
+        simp
       _ ≤ (B : ℝ) * Real.exp (2 * Cf * Real.sqrt (L x)) := by
         gcongr
         exact chunk_fiber_card_le hB lo D j
@@ -2588,9 +2430,8 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
           (∑ j ∈ chunks, r j) := by
         rw [Finset.mul_sum]
         apply Finset.sum_congr rfl
-        intro j hj
-        ring
-      _ = _ := by rw [hrEq]
+        grind
+      _ = _ := by grind
   have hsumLocal :
       ‖∑ j ∈ chunks, blockPair j‖ ≤
         Real.sqrt ((∑ j ∈ chunks, b j ^ 2) *
@@ -2601,8 +2442,7 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
       _ ≤ ∑ j ∈ chunks, b j * Real.sqrt (u j ^ (1 - (R : ℝ)⁻¹)) *
             Real.sqrt (d j ^ (R : ℝ)⁻¹) := by
         apply Finset.sum_le_sum
-        intro j hj
-        exact hlocal j hj
+        omega
       _ ≤ _ := sum_three_factors_le chunks b u d R hR hb hu hd
   have hfinal :
       Real.sqrt ((∑ j ∈ chunks, b j ^ 2) *
@@ -2619,14 +2459,14 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
       rw [← huEq]
       exact Finset.sum_nonneg fun j hj => hu j
     have htarget0 : 0 ≤ ∑ z ∈ t, w z :=
-      Finset.sum_nonneg fun z hz => hw z
+      Finset.sum_nonneg (by grind)
     have hroot0 : 0 ≤ ∑ n ∈ D, A.rootMoment R n := by
       apply Finset.sum_nonneg
       intro n hn
       exact rootMoment_nonneg A hP n R (by omega)
     have hα : 0 ≤ 1 - (R : ℝ)⁻¹ := by
       have hRpos : 0 < (R : ℝ) := by positivity
-      have hRone : (1 : ℝ) ≤ (R : ℝ) := by exact_mod_cast (by omega : 1 ≤ R)
+      have hRone : (1 : ℝ) ≤ (R : ℝ) := by exact_mod_cast (by omega)
       have hinv : (R : ℝ)⁻¹ ≤ 1 := (inv_le_one₀ hRpos).2 hRone
       linarith
     have hβ : 0 ≤ (R : ℝ)⁻¹ := by positivity
@@ -2638,16 +2478,13 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
     have hblockBase0 : 0 ≤
         (B : ℝ) * Real.exp (2 * Cf * Real.sqrt (L x)) *
           (∑ n ∈ D, A.rootMoment R n) := by positivity
-    have hdPow_le :
-        (∑ j ∈ chunks, d j) ^ (R : ℝ)⁻¹ ≤
-          ((B : ℝ) * Real.exp (2 * Cf * Real.sqrt (L x)) *
-            (∑ n ∈ D, A.rootMoment R n)) ^ (R : ℝ)⁻¹ :=
+    have hdPow_le :=
       Real.rpow_le_rpow (Finset.sum_nonneg fun j hj => hd j) hdSum hβ
     calc
       _ = (∑ j ∈ chunks, b j ^ 2) *
             (∑ n ∈ D, ∑ a : A.Labels,
               A.stateMass (n, a) * ‖f n‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
-            (∑ j ∈ chunks, d j) ^ (R : ℝ)⁻¹ := by rw [huEq]
+            (∑ j ∈ chunks, d j) ^ (R : ℝ)⁻¹ := by grind
       _ ≤ (2 * (∑ z ∈ t, w z)) *
             (∑ n ∈ D, ∑ a : A.Labels,
               A.stateMass (n, a) * ‖f n‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
@@ -2668,9 +2505,8 @@ private theorem dyad_chunk_pairing_bound {F : FixedData} {P : PrimeGroups}
               A.stateMass (n, a) * ‖f n‖ ^ 2) ^ (1 - (R : ℝ)⁻¹) *
             ((B : ℝ) * Real.exp (2 * Cf * Real.sqrt (L x)) *
               (∑ n ∈ D, A.rootMoment R n)) ^ (R : ℝ)⁻¹ :=
-          mul_le_mul_of_nonneg_left hdPow_le (mul_nonneg (by positivity) hsourcePow)
-  rw [hparts]
-  exact hsumLocal.trans hfinal
+          mul_le_mul_of_nonneg_left hdPow_le (by positivity)
+  grind
 
 theorem PairingFromMomentTask_proof : PairingFromMomentTask := by
   intro _habs htrans
@@ -2723,7 +2559,7 @@ theorem PairingFromMomentTask_proof : PairingFromMomentTask := by
   have hBexp : (B : ℝ) ≤ Real.exp (y ^ ((51 : ℝ) / 100)) := by
     simpa [B, R, y, Cblock] using
       blockLength_exp_bound A hP hy hC₂ hkBound hCblock
-  have hxpow : 1 < x ^ γ := Real.one_lt_rpow hx hγ
+  have hxpow := Real.one_lt_rpow hx hγ
   have hX : 1 ≤ X := le_trans hxpow.le hXlo
   have hDcard : 0 < (D.card : ℝ) ∧ (D.card : ℝ) ≤ 2 * X := by
     simpa [D, dyad] using dyad_card_bounds hX
@@ -2755,7 +2591,7 @@ theorem PairingFromMomentTask_proof : PairingFromMomentTask := by
       _ ≤ y ^ (-(E + 1) * (2 * (R : ℝ))) * (2 * X) :=
         mul_le_mul_of_nonneg_left hDcard.2 (Real.rpow_nonneg (le_of_lt hypos) _)
       _ = 2 * X * y ^ (-(E + 1) * (2 * (R : ℝ))) := by ring
-      _ = 2 * X * y ^ (-2 * (E + 1) * (R : ℝ)) := by rw [hpowEq]
+      _ = 2 * X * y ^ (-2 * (E + 1) * (R : ℝ)) := by ring
   let sourceSq : ℝ := ∑ n ∈ D, ∑ a : A.Labels,
     A.stateMass (n, a) * ‖f n‖ ^ 2
   let targetSq : ℝ := ∑ z ∈ t, A.stateMass z * ‖g z‖ ^ 2
@@ -2789,7 +2625,7 @@ theorem PairingFromMomentTask_proof : PairingFromMomentTask := by
       calc
         (y ^ C₃) ^ 2 = (y ^ C₃) ^ (2 : ℝ) := (Real.rpow_natCast _ _).symm
         _ = y ^ (C₃ * 2) := (Real.rpow_mul (le_of_lt hypos) C₃ 2).symm
-        _ = y ^ (2 * C₃) := by congr 1; ring
+        _ = y ^ (2 * C₃) := by ring
     calc
       sourceSq = A.normOn (D.product Finset.univ) (fun z => f z.1) ^ 2 := hSourceNormSq.symm
       _ ≤ (Real.sqrt X * y ^ C₃) ^ 2 :=
@@ -2801,7 +2637,7 @@ theorem PairingFromMomentTask_proof : PairingFromMomentTask := by
       calc
         (y ^ C₃) ^ 2 = (y ^ C₃) ^ (2 : ℝ) := (Real.rpow_natCast _ _).symm
         _ = y ^ (C₃ * 2) := (Real.rpow_mul (le_of_lt hypos) C₃ 2).symm
-        _ = y ^ (2 * C₃) := by congr 1; ring
+        _ = y ^ (2 * C₃) := by ring
     calc
       targetSq = A.normOn t g ^ 2 := hTargetNormSq.symm
       _ ≤ (Real.sqrt X * y ^ C₃) ^ 2 :=
@@ -2823,8 +2659,6 @@ theorem PairingFromMomentTask_proof : PairingFromMomentTask := by
         Finset.sum_nonneg fun a ha =>
           mul_nonneg (stateMass_nonneg_of_admissible A hP (n, a)) (sq_nonneg _))
     hSourceSqBound hrootSum0 hrootSum
-  calc
-    ‖A.pairing X t f g‖ ≤ _ := hPair'
-    _ ≤ K * X * y ^ (-E + 2 * C₃) := by simpa [K] using hClean
+  linarith
 
 end Erdos821.S2Core

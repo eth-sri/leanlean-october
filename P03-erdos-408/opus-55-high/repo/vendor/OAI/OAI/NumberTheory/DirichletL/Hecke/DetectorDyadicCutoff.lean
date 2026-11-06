@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Hecke.DetectorProfilesCutoffs
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped ContDiff
 open Set
 namespace SevenEighths.HeckeDetectorDyadicProfiles
 open HeckeDetectorProfiles
@@ -25,15 +25,13 @@ lemma exists_positive_annular : ∃ W : ℝ→ℂ,
   · intro x hx
     have hg : g (4*x-5)≠0 := (mul_ne_zero_iff.mp hx).1
     have hh := hgsupp (subset_tsupport g hg)
-    constructor <;> norm_num at hh <;> linarith [hh.1,hh.2]
+    grind
   · intro x hx
     by_cases hh : DyadicTransfer.annularCutoff cutoff x=0
-    · simp [W,hh]
+    · grind
     have ha := HeckeDetectorPartition.annular_support cutoff cutoff_one cutoff_zero x hx 0
-      (by simpa using hh)
-    norm_num at ha
-    have hg : g (4*x-5)=1 := hgone _ (abs_le.mpr ⟨by linarith [ha.1],by linarith [ha.2]⟩)
-    simp only [W,hg,one_mul]
+      (by simp_all)
+    grind
 
 def positiveAnnular : ℝ→ℂ := Classical.choose exists_positive_annular
 

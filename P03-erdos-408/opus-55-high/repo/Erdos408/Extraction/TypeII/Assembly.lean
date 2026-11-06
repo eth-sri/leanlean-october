@@ -13,7 +13,7 @@ from the facts that hold at every large `x`.
 
 namespace Erdos408.TypeII
 
-open Finset Real Filter
+open Finset Filter
 
 /-- The count `∑_{m ≤ w} W(m) ≤ (A₁/c₃ + 1) w / (γ L)` at one scale. -/
 theorem count_at {A₁ C₁r c₃ EM2 : ℝ} (hA₁ : 0 < A₁) (hc₃ : 0 < c₃)
@@ -152,10 +152,9 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
     hX.T25 hX.Tc (j := r + 2) (by omega) hjY
   have hsf1 := scaleFacts_of hc₃ hmert hκ hx2 hX.L16 hX.T50 hX.gamma_low hX.T21
     hX.T25 hX.Tc (j := 1) le_rfl (by
-      have : (0 : ℝ) ≤ (r + 2 : ℕ) := Nat.cast_nonneg _
-      push_cast at hjY ⊢; linarith)
+      grind)
   -- the endpoint
-  have hV : ∀ a : ℝ, 1 / 10 ≤ a → 1 / 2 ≤ harmonicMass (band x a) := fun a ha =>
+  have hV := fun a ha =>
     hL₀ x a hX.LL0 ha
   have hlay : 2 * ((inertPerCluster K CN x : ℝ) + 1) * K ≤ 4 / 100 * T := by
     have h1 : (inertPerCluster K CN x : ℝ) ≤ |CN| * s + 1 := inertPerCluster_le hK hs0
@@ -204,17 +203,14 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hN2' : ((N : ℕ) : ℝ) ≤ x ^ 2 := by linarith [hX.N2]
   have hfs := factor_sums_le hb0 hEM2 hκ hx2 hL1 hT1 hs0 hN2' hsf1 hX.gamma_low hX.gamma_le hγ2
     hEγ hEY hlogY hRY hX.expR (R := r + 1) (by
-      have : ((r + 1 : ℕ) : ℝ) ≤ ((r + 2 : ℕ) : ℝ) := by exact_mod_cast (by omega : r + 1 ≤ r + 2)
-      linarith) (by omega)
+      grind) (by omega)
   obtain ⟨hF4, hF5, hPr, hP1⟩ := hfs
   -- E4
   have hE4 := final_E4 hq₁ hE hV hX.box hC₂ hΦ hκ hX.x4 hL1 hT0 hX.N2 hX.L3 hsf hjs hSE0 hF1
     hF3 hF4 hF5 hX.TPhi
   -- E5
   have hPiY := hmert (proxyCutoff x) (by
-    have h1 : (1 : ℝ) ≤ L ^ (45 / 100 : ℝ) := Real.one_le_rpow hL1 (by norm_num)
-    have := Real.add_one_le_exp (L ^ (45 / 100 : ℝ))
-    linarith [hsf.cutoff_gt])
+    grind)
   have hlogY0 : 0 < Real.log (proxyCutoff x) := by rw [hlogY]; positivity
   have hcount := count_at (N := N) hA₁ hc₃ hG hEM2 hsf (by linarith [hX.L16]) hX.L28 hPiY hlogY0
     (by rw [hlogY]; exact hX.C1) (by
@@ -224,7 +220,7 @@ theorem final_at {q cw : ℝ} (hq : 0 < q) (hq₁ : q < 1) (hcw : 0 ≤ cw) (hcw
   have hSP := sum_candidate_log_le hL1 hEM1
   have hE5 := final_E5 hq₁ hE hV hΦ hκ hX.x4 hL1 hT1 hsf hX.gamma_low hX.gamma_le hc₃
     (CW := A₁ / c₃ + 1) (by positivity) hPiY hcount hSP hX.EM1L hEM10 hSE0 hF1 hF3
-    (by simpa using hPr) hP1 hX.T42
+    (by grind) hP1 hX.T42
   -- combine
   rw [compositeSum_eq, proxySum_eq]
   have hM0 : 0 ≤ M 0 := (abs_nonneg _).trans (by simpa using hΦ.2.2.2 0 0)

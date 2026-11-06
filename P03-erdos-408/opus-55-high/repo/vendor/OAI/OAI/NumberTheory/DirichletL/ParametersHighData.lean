@@ -7,7 +7,6 @@ public import OAI.NumberTheory.DirichletL.ParametersCentralBudget
 namespace OAI
 
 noncomputable section
-open scoped BigOperators
 namespace SevenEighths.Parameters
 
 structure HighData (Δ : ℝ) where

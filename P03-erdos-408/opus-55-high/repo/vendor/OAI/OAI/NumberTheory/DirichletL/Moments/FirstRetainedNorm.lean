@@ -9,22 +9,20 @@ public import OAI.NumberTheory.DirichletL.Moments.FirstTailAggregate
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedNorm
 open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
 open CenteredMomentFirstRetainedAssembly CenteredMomentFirstRetainedActive
 open CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentHeckeExpansion
 open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
+open CenteredMomentSourceRow
 open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
 open CenteredMomentActiveSource (activeSource)
-local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
-def sector (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (m A:O)(t:ℝ)(S:Finset (Ideal O))(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+def sector (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal ActualEisensteinCubic.O)
+    (m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):ℂ:=
   ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets C D,
     let R:=frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K X) Z ξ
@@ -36,8 +34,8 @@ def sector (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
         (fun _=>logAnnulus) K (dyadicScale (n 0)) (dyadicScale (n 1))
         (dyadicScale (n 2)) (dyadicScale (n 3))
 
-def sectorMass (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (m A:O)(t:ℝ)(S:Finset (Ideal O))(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+def sectorMass (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal ActualEisensteinCubic.O)
+    (m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):ℝ:=
   ∑E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets C D,
     let R:=frequencyRadius (firstNominalScale C D (∏P∈E,P.val) K X) Z ξ
@@ -50,8 +48,8 @@ def sectorMass (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
         (dyadicScale (n 2)) (dyadicScale (n 3))‖
 
 omit [DecidableEq ι] in
-theorem sector_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (m A:O)(t:ℝ)(S:Finset (Ideal O))(C D:Ideal O)(hC:Supported C)(hD:Supported D)
+theorem sector_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal ActualEisensteinCubic.O)
+    (m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))(C D:Ideal ActualEisensteinCubic.O)(hC:Supported C)(hD:Supported D)
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ):
     ‖sector s Rbad seed m A t S C D hC hD W K X Z ξ‖≤
       sectorMass s Rbad seed m A t S C D hC hD W K X Z ξ:=by
@@ -61,8 +59,8 @@ theorem sector_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal 
   intro E hE
   exact norm_sum_le _ _
 
-theorem original_active_sectors (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(m A:O)(t:ℝ)(S:Finset (Ideal O))
+theorem original_active_sectors (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal ActualEisensteinCubic.O)
+    (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ)(hK:0<K):
     let β:=CenteredMomentOriginalCommonHarmonic.coefficient s Rbad seed
     let T:=activeSource S β
@@ -75,8 +73,8 @@ theorem original_active_sectors (s:CenteredMomentCommonRadialData.Input ι)(Rbad
   rw [←retained_energy_active s.η m A t S _ W K X Z ξ]
   exact original_retained_physical s Rbad seed hz₁ hz₂ m A t _ W K X Z ξ hK
 
-theorem original_retained_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(m A:O)(t:ℝ)(S:Finset (Ideal O))
+theorem original_retained_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal ActualEisensteinCubic.O)
+    (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(m A:ActualEisensteinCubic.O)(t:ℝ)(S:Finset (Ideal ActualEisensteinCubic.O))
     (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ)(hK:0<K):
     let β:=CenteredMomentOriginalCommonHarmonic.coefficient s Rbad seed
     let T:=activeSource S β

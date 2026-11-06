@@ -9,12 +9,8 @@ public import OAI.NumberTheory.DirichletL.Descent.Basic
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseMarkedPadding
-open HeckeFamily HeckeDyadic HeckeInverseAmplification HeckeDetectorRawFiber
-open HeckeDetectorCoefficientTransfer InverseInitialPhysicalSlots
-open InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy
-open HeckeDetectorPhysicalSelection ConcreteTraceCRT CanonicalQuadraticSieve ActualEisensteinCubic
 local notation "O" => HeckeFamily.O
 
 def radialMajorant : 𝓢(ℝ,ℂ) :=
@@ -26,7 +22,7 @@ theorem radialMajorant_nonneg (x : ℝ) : 0≤(radialMajorant x).re :=
 theorem radialMajorant_one (x : ℝ) (hx : x∈Set.Icc (0:ℝ) 1) : radialMajorant x=1 :=
   (Classical.choose_spec DetectorDictionaryInverseRawRadial.exists_raw_radial_majorant).2.2 x hx
 
-variable {M : Ideal O} [NeZero M] {H : Subgroup (O ⧸ M)ˣ} {Label Slot : Type*}
+variable {M : Ideal HeckeFamily.O} [NeZero M] {H : Subgroup (HeckeFamily.O ⧸ M)ˣ} {Label Slot : Type*}
   {U a ε tstar T allowance : ℝ} {i : ℕ}
 
 end SevenEighths.DetectorDictionaryInverseMarkedPadding

@@ -8,7 +8,6 @@ public import Erdos821.S2.RankEncoding
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2
@@ -33,24 +32,22 @@ theorem rank_coefficient_eq_card (a r : ℕ) :
     apply Finset.mem_filter.mpr
     refine ⟨Finset.mem_powerset.mpr ?_, cycleBirthBlocks_collection σ, hr⟩
     intro B _
-    exact Finset.mem_powerset.mpr (Finset.subset_univ _)
+    exact by simp
   have hfiber (π : Finset (Finset (Fin a))) (hπ : π ∈ C) :
       (rankPermutations a r).filter (fun σ => cycleBirthBlocks σ = π) = permutationsWithBlocks π := by
-    have hr : birthRank π = r := (Finset.mem_filter.mp hπ).2.2
+    have hr := (Finset.mem_filter.mp hπ).2.2
     ext σ
     simp only [rankPermutations, permutationsWithBlocks, Finset.mem_filter, Finset.mem_univ, true_and]
     constructor
-    · rintro ⟨_, h⟩
-      exact h
-    · intro h
-      exact ⟨by rw [h, hr], h⟩
+    · simp
+    · simp_all
   calc
     _ = ∑ π ∈ C, (permutationsWithBlocks π).card := by
       apply Finset.sum_congr rfl
       intro π hπ
-      exact birthMobius_natAbs_eq_card π (Finset.mem_filter.mp hπ).2.1
+      exact birthMobius_natAbs_eq_card π (by grind)
     _ = ∑ π ∈ C, ((rankPermutations a r).filter (fun σ => cycleBirthBlocks σ = π)).card :=
-      Finset.sum_congr rfl (fun π hπ => congrArg Finset.card (hfiber π hπ).symm)
+      Finset.sum_congr rfl (by grind)
     _ = _ := (Finset.card_eq_sum_card_fiberwise hmap).symm
 
 /-- eq:rank-coefficient-count, including rank zero and empty address sets. -/

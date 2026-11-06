@@ -8,7 +8,7 @@ public import Mathlib.Analysis.CStarAlgebra.Classes
 
 set_option autoImplicit false
 
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace Erdos821.S34.Proofs
 
@@ -20,12 +20,11 @@ theorem norm_weighted_sum_sq {α : Type*} [Fintype α]
       _ ≤ ∑ x, ‖(w x : ℂ) * f x‖ := norm_sum_le _ _
       _ = _ := by
         apply Finset.sum_congr rfl
-        intro x _
-        simp [abs_of_nonneg (hw x)]
+        simp_all
   have hc := Finset.sum_sq_le_sum_mul_sum_of_sq_le_mul Finset.univ
     (r := fun x => w x * ‖f x‖) (f := w) (g := fun x => w x * ‖f x‖ ^ 2)
-    (fun x _ => hw x) (fun x _ => mul_nonneg (hw x) (sq_nonneg _))
-    (fun x _ => le_of_eq (by ring))
+    (by grind) (fun x _ => mul_nonneg (hw x) (sq_nonneg _))
+    (by grind)
   exact (pow_le_pow_left₀ (norm_nonneg _) hn 2).trans hc
 
 theorem finite_collapse_l2 {α β : Type*} [Fintype α] [DecidableEq β]
@@ -39,7 +38,7 @@ theorem finite_collapse_l2 {α β : Type*} [Fintype α] [DecidableEq β]
         (∑ x, if P x = n then w x else 0) *
           (∑ x, if P x = n then w x * ‖f x‖ ^ 2 else 0) := by
     have h := norm_weighted_sum_sq (fun x => if P x = n then w x else 0)
-      (fun x => by split_ifs <;> first | exact hw x | exact le_rfl) f
+      (fun x => by grind) f
     simpa [apply_ite, ite_mul] using h
   have henergy :
       (∑ n ∈ s, ∑ x, if P x = n then w x * ‖f x‖ ^ 2 else 0) ≤
@@ -49,23 +48,23 @@ theorem finite_collapse_l2 {α β : Type*} [Fintype α] [DecidableEq β]
     intro x _
     have hwf : 0 ≤ w x * ‖f x‖ ^ 2 := mul_nonneg (hw x) (sq_nonneg _)
     by_cases hx : P x ∈ s
-    · simp [hx]
-    · simp [hx, hwf]
+    · simp_all
+    · simp_all
   calc
     _ ≤ ∑ n ∈ s, R * (∑ x, if P x = n then w x * ‖f x‖ ^ 2 else 0) := by
       apply Finset.sum_le_sum
       intro n hn
-      exact (hcs n).trans (mul_le_mul_of_nonneg_right (hρ n hn)
+      exact (hcs n).trans (mul_le_mul_of_nonneg_right (by grind)
         (Finset.sum_nonneg (fun x _ => by
           split_ifs
           · exact mul_nonneg (hw x) (sq_nonneg _)
-          · exact le_rfl)))
+          simp)))
     _ = R * (∑ n ∈ s, ∑ x, if P x = n then w x * ‖f x‖ ^ 2 else 0) :=
       (Finset.mul_sum ..).symm
     _ ≤ _ := mul_le_mul_of_nonneg_left henergy hR
 
-theorem mass_nonneg (G : Core.PrimeGroups) (g : Fin G.size) : 0 ≤ Core.mass G g := by
-  exact Finset.sum_nonneg fun _ _ => by positivity
+theorem mass_nonneg (G : Core.PrimeGroups) (g : Fin G.size) : 0 ≤ Core.mass G g :=
+  Finset.sum_nonneg (by simp)
 
 theorem mu_nonneg (G : Core.PrimeGroups) (g : Fin G.size) (p : ℕ) : 0 ≤ Core.mu G g p := by
   have h := mass_nonneg G g
@@ -73,7 +72,7 @@ theorem mu_nonneg (G : Core.PrimeGroups) (g : Fin G.size) (p : ℕ) : 0 ≤ Core
   positivity
 
 theorem tupleWeight_nonneg (G : Core.PrimeGroups) (k : Fin G.size → ℕ) (z : Core.Tuple G k) :
-    0 ≤ Core.tupleWeight G k z := by
-  exact Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun j _ => mu_nonneg G g (z g j).val
+    0 ≤ Core.tupleWeight G k z :=
+  Finset.prod_nonneg fun g _ => Finset.prod_nonneg fun j _ => mu_nonneg G g (z g j).val
 
 end Erdos821.S34.Proofs

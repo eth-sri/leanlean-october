@@ -23,7 +23,7 @@ and `ψ(n) ≪ n`. This closes for `A = 2 (2 + C_ψ)` once `log Y ≥ 4E`.
 
 namespace Erdos408.TypeII
 
-open Finset Real ArithmeticFunction
+open Finset ArithmeticFunction
 
 /-- The number of `Y`-rough `b ≤ n`: those whose prime factors all exceed `Y`. -/
 noncomputable def roughCount (Y : ℝ) (n : ℕ) : ℕ :=
@@ -38,10 +38,10 @@ theorem roughCount_le_one {Y : ℝ} {n : ℕ} (h : (n : ℝ) < Y) : roughCount Y
   rw [mem_singleton]
   by_contra hne
   have hp := Nat.minFac_prime hne
-  have hmem : b.minFac ∈ b.primeFactors :=
+  have hmem :=
     Nat.mem_primeFactors.2 ⟨hp, Nat.minFac_dvd b, by omega⟩
   have hle : (b.minFac : ℝ) ≤ n := by exact_mod_cast (Nat.minFac_le (by omega)).trans hbn
-  linarith [hrough _ hmem]
+  grind
 
 /-- `∑_{b ≤ n} log(n / b) ≤ 2n`, from Stirling's lower bound `log n! ≥ n log n - 2n`. -/
 theorem sum_log_div_le (n : ℕ) : ∑ b ∈ Icc 1 n, Real.log ((n : ℝ) / b) ≤ 2 * n := by
@@ -56,7 +56,6 @@ theorem sum_log_div_le (n : ℕ) : ∑ b ∈ Icc 1 n, Real.log ((n : ℝ) / b) �
     rw [hIcc, Finset.sum_congr rfl fun b hb => Real.log_div (by positivity)
       (by have := (mem_Ioc.1 hb).1; positivity), sum_sub_distrib]
     simp
-  rw [hsplit]
   linarith
 
 /-- A rough multiple `b ≤ n` of `d ≥ 1` is `d c` with `c ≤ n / d` rough, so there are at
@@ -74,16 +73,16 @@ theorem card_rough_dvd_le {Y : ℝ} {n d : ℕ} (hd : 0 < d) :
     rw [Nat.mul_div_cancel_left c hd]
     have hc : 0 < c := by
       rcases Nat.eq_zero_or_pos c with rfl | h
-      · simp at h1
-      · exact h
-    refine ⟨⟨hc, (Nat.le_div_iff_mul_le hd).2 (by linarith [Nat.mul_comm d c])⟩, fun p hp => ?_⟩
-    exact hr p (Nat.primeFactors_mono (Dvd.intro_left d rfl) (by positivity) hp)
+      · omega
+      · omega
+    refine ⟨⟨hc, (Nat.le_div_iff_mul_le hd).2 (by linarith)⟩, fun p hp => ?_⟩
+    grind
   · intro b hb b' hb' h
     rw [mem_coe, mem_filter] at hb hb'
     obtain ⟨c, rfl⟩ := hb.2
     obtain ⟨c', rfl⟩ := hb'.2
     simp only [Nat.mul_div_cancel_left _ hd] at h
-    rw [h]
+    grind
 
 /-- Chebyshev's bound for rough numbers: `Φ_Y(n) ≤ A n / log Y + 1` once `log Y` is
 large. -/
@@ -104,7 +103,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
   push Not at hnY
   have hn1 : (1 : ℝ) ≤ n := by linarith
   have hn0 : 0 < n := by exact_mod_cast (show (0 : ℝ) < n by linarith)
-  have hlogn : Real.log Y ≤ Real.log n := Real.log_le_log (by linarith) hnY
+  have hlogn := Real.log_le_log (by linarith) hnY
   set R := (Icc 1 n).filter fun b => ∀ p : ℕ, p ∈ b.primeFactors → Y < p with hR
   -- `log n · Φ(n) ≤ ∑_R log b + ∑_{b ≤ n} log(n/b)`
   have hsplit : Real.log n * (R.card : ℝ) ≤ ∑ b ∈ R, Real.log b + 2 * n := by
@@ -136,16 +135,15 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
       · rintro ⟨⟨⟨h1, hbn⟩, hr⟩, hdb, hb0⟩
         exact ⟨⟨⟨⟨h1, hbn⟩, hr⟩, hdb⟩, Nat.pos_of_dvd_of_pos hdb (by omega),
           (Nat.le_of_dvd (by omega) hdb).trans hbn⟩
-      · rintro ⟨⟨⟨⟨h1, hbn⟩, hr⟩, hdb⟩, -⟩
-        exact ⟨⟨⟨h1, hbn⟩, hr⟩, hdb, by omega⟩
+      grind
   -- each `d` contributes at most `Λ(d) (A n / (d log Y) + 1)`, and only for `d > Y`
   have hterm : ∀ d ∈ Icc 1 n, Λ d * ((R.filter (d ∣ ·)).card : ℝ) ≤
       if Y < d then Λ d * (A * n / (d * Real.log Y) + 1) else 0 := by
     intro d hd
     obtain ⟨hd1, hdn⟩ := mem_Icc.1 hd
     by_cases hΛ : Λ d = 0
-    · rw [hΛ, zero_mul]; split_ifs <;> simp
-    have hpp : IsPrimePow d := vonMangoldt_ne_zero_iff.1 hΛ
+    · rw [hΛ, zero_mul]; simp
+    have hpp := vonMangoldt_ne_zero_iff.1 hΛ
     have hd2 : d ≠ 1 := hpp.ne_one
     have hp := Nat.minFac_prime hd2
     by_cases hpY : (d.minFac : ℝ) ≤ Y
@@ -157,9 +155,7 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
         have := hr _ (Nat.mem_primeFactors.2 ⟨hp, (Nat.minFac_dvd d).trans hdb, hb0⟩)
         linarith
       rw [hempty, card_empty, Nat.cast_zero, mul_zero]
-      split_ifs
-      · exact mul_nonneg vonMangoldt_nonneg (by positivity)
-      · exact le_rfl
+      positivity
     push Not at hpY
     have hYd : Y < d := lt_of_lt_of_le hpY (by exact_mod_cast Nat.minFac_le (by omega))
     simp only [hYd, ite_true]
@@ -233,7 +229,6 @@ theorem roughCount_le : ∃ A C₁ : ℝ, 0 < A ∧ ∀ Y : ℝ, 2 ≤ Y → C�
     nlinarith
   show ((roughCount Y n : ℕ) : ℝ) ≤ _
   unfold roughCount
-  rw [← hR]
   linarith
 
 end Erdos408.TypeII

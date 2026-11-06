@@ -11,31 +11,23 @@ public import OAI.NumberTheory.DirichletL.Energy.InputParentCapacity
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators SchwartzMap
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedActiveCapacitySource
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
+open HeckeFamily
 open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
+open CenteredMomentCommonRawScale
 open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentAmplifiedRetainedRadius
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-open CenteredMomentFirstAmplifiedCapacitySource CenteredMomentFirstSecondActiveErrorGates
+open CenteredMomentFirstSecondActiveErrorGates
 open CenteredMomentFirstAnnularInput
 
-theorem active_error_volume (s : Input ι) (C R : Ideal O)
+theorem active_error_volume (s : Input ι) (C R : Ideal HeckeFamily.O)
     (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
-    (Q : Ideal O) (hQ : Q≠0) (k : ℕ)
+    (Q : Ideal HeckeFamily.O) (hQ : Q≠0) (k : ℕ)
     (hslot : ∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) :

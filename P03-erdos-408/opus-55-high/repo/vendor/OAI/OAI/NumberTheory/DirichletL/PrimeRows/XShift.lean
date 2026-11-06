@@ -7,15 +7,14 @@ public import OAI.NumberTheory.DirichletL.PrimeRows.XBoundary
 namespace OAI
 
 noncomputable section
-open scoped Classical BigOperators
+open scoped Classical
 open MeasureTheory Set Complex
 namespace SevenEighths.ProbeHighRowFamily
 open HeckeFamily HeckeInverseAmplification ProbePhysical
-local notation "O" => HeckeFamily.O
 
 theorem first_x_integral_eq {K : ℕ}
     (e eps : ℝ) (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
+    (S : Finset (Ideal HeckeFamily.O)) (hS : SourceExclusions S) (hfirst : FirstTail (eps/2) S)
     (hmax : ∀P∈S,P.IsMaximal) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (W0 W1 : SchwartzMap ℝ ℂ)
     (X Y Z : ℝ) (hZ : 0<Z) (w z : ℂ) (l r : ℝ) (hlr : l≤r)
@@ -30,9 +29,9 @@ theorem first_x_integral_eq {K : ℕ}
     (fun x=>continuedPhysicalRowKernel S hS hmax P hPS η u W0 W1 X Y Z x w z) z.im 2 hlr _ hbound
   intro x hx
   apply (continuedPhysicalRowKernel_buffered_differentiableAt_x eps heps S hS hfirst hmax P hPS η u
-    W0 W1 X Y Z hZ x w z (hl.trans hx.1) hw hz (by linarith [hx.1]) ?_).differentiableWithinAt
+    W0 W1 X Y Z hZ x w z (hl.trans hx.1) hw hz (by grind) ?_).differentiableWithinAt
   intro hpole
-  exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt _ (by linarith [hx.1]) (by tauto)
+  exact HeckeZeroSupremum.LFunction_ne_zero_of_beta_lt _ (by grind) (by tauto)
 
 end SevenEighths.ProbeHighRowFamily
 

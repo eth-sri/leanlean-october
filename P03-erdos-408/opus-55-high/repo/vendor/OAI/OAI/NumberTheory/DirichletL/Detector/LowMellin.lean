@@ -8,14 +8,13 @@ public import OAI.NumberTheory.DirichletL.Detector.PhysicalNorms
 namespace OAI
 
 noncomputable section
-open scoped Classical ContDiff
+open scoped ContDiff
 open MeasureTheory CompletedGauss
 namespace SevenEighths.ProbePhysical
 
 lemma low_mellin_phase_norm (a v : ℝ) (ha : 0<a) :
     ‖(a:ℂ)^((v:ℂ)*Complex.I)‖=1 := by
-  rw [Complex.norm_cpow_eq_rpow_re_of_pos ha]
-  simp
+  simp [Complex.norm_cpow_eq_rpow_re_of_pos ha]
 
 lemma low_mellin_ratio_integrable (W : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
     (hW : Function.support W⊆Set.Icc a0 b0) (hWs : ContDiff ℝ ∞ W)
@@ -40,7 +39,7 @@ lemma low_mellin_ratio (W : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
     (a b : ℝ) (ha : 0<a) (hb : 0<b) :
     W (a/b)=(1/(2*Real.pi):ℂ)*∫v : ℝ,
       (a:ℂ)^(-((v:ℂ)*Complex.I))*(b:ℂ)^((v:ℂ)*Complex.I)*mellin W ((v:ℂ)*Complex.I) := by
-  rw [compactMellin_inversion W a0 b0 ha0 hW hWs 0 _ (div_pos ha hb)]
+  rw [compactMellin_inversion W a0 b0 ha0 hW hWs 0 _ (by positivity)]
   congr 1
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
@@ -56,7 +55,7 @@ lemma low_sqrt_ratio (B q X Y : ℝ) (hB : 0<B) (hq : 0<q) (hX : 0<X) (hY : 0<Y)
   have hb : 0<q/Y := div_pos hq hY
   have he : B*q*X=(B*X*Y)*(q/Y) := by field_simp
   rw [he,Real.sqrt_mul hQ.le,Complex.ofReal_mul,Complex.cpow_neg,ProbeEuler.cpow_half_eq_sqrt _ hb.le]
-  simp only [mul_inv_rev,mul_comm]
+  ring
 
 theorem physical_radial_low_mellin (W : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
     (hW : Function.support W⊆Set.Icc a0 b0) (hWs : ContDiff ℝ ∞ W)
@@ -68,14 +67,14 @@ theorem physical_radial_low_mellin (W : ℝ→ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
   have hQ : 0<B*X*Y := by positivity
   have ha : 0<m/(B*X*Y) := div_pos hm hQ
   have hb : 0<q/Y := div_pos hq hY
-  have hbc : ((q/Y:ℝ):ℂ)≠0 := Complex.ofReal_ne_zero.mpr hb.ne'
+  have hbc := Complex.ofReal_ne_zero.mpr hb.ne'
   have he : m/(B*q*X)=(m/(B*X*Y))/(q/Y) := by field_simp
   rw [he,low_mellin_ratio W a0 b0 ha0 hW hWs _ _ ha hb,low_sqrt_ratio B q X Y hB hq hX hY]
   simp_rw [Complex.cpow_add _ _ hbc]
   rw [show (fun v : ℝ=>((m/(B*X*Y):ℝ):ℂ)^(-((v:ℂ)*Complex.I))*
     (((q/Y:ℝ):ℂ)^(-(1/2:ℂ))*((q/Y:ℝ):ℂ)^((v:ℂ)*Complex.I))*mellin W ((v:ℂ)*Complex.I))=
     (fun v : ℝ=>((q/Y:ℝ):ℂ)^(-(1/2:ℂ))*
-      (((m/(B*X*Y):ℝ):ℂ)^(-((v:ℂ)*Complex.I))*((q/Y:ℝ):ℂ)^((v:ℂ)*Complex.I)*mellin W ((v:ℂ)*Complex.I))) by funext v; ring]
+      (((m/(B*X*Y):ℝ):ℂ)^(-((v:ℂ)*Complex.I))*((q/Y:ℝ):ℂ)^((v:ℂ)*Complex.I)*mellin W ((v:ℂ)*Complex.I))) by grind]
   rw [integral_const_mul]
   ring
 

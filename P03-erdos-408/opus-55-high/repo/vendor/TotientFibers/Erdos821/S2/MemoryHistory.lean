@@ -7,7 +7,6 @@ public import Erdos821.S2.MemoryEdge
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.S2Core
@@ -100,7 +99,7 @@ theorem birthAddress_card (P : PrimeGroups) (M n B : ℕ) :
     Fintype.card (BirthAddress P M n B) =
       M * Fintype.card P.BigGroup * (n + 1) +
         (n + 1) * Fintype.card P.BigGroup * B := by
-  simp only [BirthAddress, Fintype.card_sum, Fintype.card_prod, Fintype.card_fin]
+  simp only [Fintype.card_sum, Fintype.card_prod, Fintype.card_fin]
   ring
 
 

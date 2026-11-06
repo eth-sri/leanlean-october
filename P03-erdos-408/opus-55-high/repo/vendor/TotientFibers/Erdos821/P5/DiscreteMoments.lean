@@ -6,14 +6,13 @@ public import Erdos821.Classical.DirichletMean
 @[expose] public section
 
 noncomputable section
-open scoped BigOperators
 
 namespace Erdos821.P5Core
 open Blueprint.Analytic
 
 theorem nat_mul_log_nonneg (N : ℕ) : 0 ≤ (N : ℝ) * Real.log (2 * N) := by
   by_cases hN : N = 0
-  · simp [hN]
+  · simp_all
   · have hN' : (1 : ℝ) ≤ N := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hN
     exact mul_nonneg (Nat.cast_nonneg _) (Real.log_nonneg (by linarith))
 

@@ -8,7 +8,7 @@ public import OAI.NumberTheory.DirichletL.Moments.Extraction
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
+open scoped Classical SchwartzMap
 open MeasureTheory
 namespace SevenEighths.CenteredMomentSmooth
 open FourierBridge EisensteinSchwartzPoisson
@@ -74,9 +74,7 @@ lemma separated_integrable (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
       c * separatedKernel V ρ x u v t * b t)).aestronglyMeasurable
   · filter_upwards [] with t
     simp only [separatedKernel, rowPhase, columnPhase, norm_mul, logPhase_norm, mul_one]
-    dsimp only [K]
-    ring_nf
-    exact le_rfl
+    linarith
 
 theorem finite_pair_separation {α β : Type*}
     (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ) (R : ℝ) (b : 𝓢(ℝ, ℂ))
@@ -96,8 +94,6 @@ theorem finite_pair_separation {α β : Type*}
       apply Finset.sum_congr rfl
       intro j hj
       rw [hsep, ← integral_const_mul]
-      congr 1
-      funext t
       ring
     _ = ∫ t : ℝ, ∑ i ∈ S, ∑ j ∈ T,
         (c i * star (d j)) * separatedKernel V ρ x (u i) (v j) t * b t := by
@@ -112,11 +108,7 @@ theorem finite_pair_separation {α β : Type*}
       filter_upwards [] with t
       simp only [Finset.sum_mul, Finset.mul_sum, separatedKernel]
       rw [Finset.sum_comm]
-      apply Finset.sum_congr rfl
-      intro i hi
-      apply Finset.sum_congr rfl
-      intro j hj
-      ring
+      grind
 
 theorem whole_product_pair_separation (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
@@ -154,11 +146,8 @@ theorem logPhase_norm_ratio (q X θ : ℝ) (hq : 0 < q) (hX : 0 < X) :
   push_cast at hn
   rw [← hn]
   unfold logPhase
-  congr 1
-  push_cast
-  ring
+  simp
 
-open CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentSmooth

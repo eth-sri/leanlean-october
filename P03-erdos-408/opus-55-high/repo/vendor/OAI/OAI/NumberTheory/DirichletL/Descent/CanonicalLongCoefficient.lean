@@ -8,27 +8,26 @@ namespace OAI
 
 noncomputable section
 
-open scoped BigOperators Classical
+open scoped Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels SecondPassArithmetic
-local notation "O"=>ActualEisensteinCubic.O
+open ActualEisensteinCubic CanonicalRowCompletion ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CanonicalCubeSeparation FirstPassCubeLabels
 
-def actualLongCoefficient {ι:Type*}(p:ι→O)(Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)
-    (I:Ideal O)(v:ι→₀ℕ) : ℂ :=
+def actualLongCoefficient {ι:Type*}(p:ι→ActualEisensteinCubic.O)(Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(H₀ B ξ:ℝ)
+    (I:Ideal ActualEisensteinCubic.O)(v:ι→₀ℕ) : ℂ :=
   separatedCubeCoefficient
     (fun u:ι→₀ℕ=>reopenedCubeCoefficient H₀ (rowTwist Ψ m (idealGenerator I) 1)
       (Ideal.span {primeProduct p u.support u}))
     (fun u:ι→₀ℕ=>(Ideal.absNorm (Ideal.span {primeProduct p u.support u}):ℝ)) B ξ v
 
 theorem actualLongCoefficient_uniform (eps:ℝ)(heps:0<eps) :
-    ∃C:ℝ,0<C ∧ ∀{ι:Type*}(p:ι→O)(_hp:∀i,p i≠0)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)
-      (m:O)(H₀ B ξ:ℝ)(I:Ideal O)(v:ι→₀ℕ),0<B→
+    ∃C:ℝ,0<C ∧ ∀{ι:Type*}(p:ι→ActualEisensteinCubic.O)(_hp:∀i,p i≠0)(Ψ:ActualEisensteinCubic.O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)
+      (m:ActualEisensteinCubic.O)(H₀ B ξ:ℝ)(I:Ideal ActualEisensteinCubic.O)(v:ι→₀ℕ),0<B→
       B≤‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2→
       ‖ConcreteTraceCRT.eisEmbedding (primeProduct p v.support v)‖^2≤Real.exp 1*B→
       ‖actualLongCoefficient p Ψ m H₀ B ξ I v‖≤C*(Real.exp 1*B)^eps := by
   obtain ⟨C,hC,hbound⟩:=reopenedCubeCoefficient_small_power eps heps
-  refine ⟨C*Real.exp (1/2),mul_pos hC (Real.exp_pos _),?_⟩
+  refine ⟨C*Real.exp (1/2),by positivity,?_⟩
   intro ι p hp Ψ hΨ m H₀ B ξ I v hB hlo hhi
   have hne:Ideal.span {primeProduct p v.support v}≠0 := by
     apply Ideal.span_singleton_eq_bot.not.mpr
@@ -45,11 +44,11 @@ theorem actualLongCoefficient_uniform (eps:ℝ)(heps:0<eps) :
     (fun u:ι→₀ℕ=>(Ideal.absNorm (Ideal.span {primeProduct p u.support u}):ℝ)) B ξ
     (C*(Real.exp 1*B)^eps) hB (by positivity) v hlo hhi hb
   unfold actualLongCoefficient
-  convert hs using 1 ; ring
+  linarith
 
 theorem actualLongCoefficient_complete
-    (S:Finset (Ideal O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
-    (Ψ:O→*ℂ)(m:O)(H₀ B ξ:ℝ)(I:Ideal O)
+    (S:Finset (Ideal ActualEisensteinCubic.O))(D:ℕ)(hbad:fixedBadPrimes⊆S)
+    (Ψ:ActualEisensteinCubic.O→*ℂ)(m:ActualEisensteinCubic.O)(H₀ B ξ:ℝ)(I:Ideal ActualEisensteinCubic.O)
     (v:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→₀ℕ) :
     actualLongCoefficient (poolPrimary (InitialMeanSquare.outsideSquarefreeIdeals S D))
       Ψ (m*excludedGenerator S) H₀ B ξ I v=

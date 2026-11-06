@@ -9,13 +9,9 @@ set_option linter.privateModule false
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical
+open scoped Classical
 
 namespace SevenEighths.CenteredMomentFirstChildProfile
-open HeckeFamily CenteredMomentFirstIdealFamily CenteredMomentHeckeColumnWindow
-open CenteredMomentFirstCanonicalFamily CenteredMomentCanonicalFirst CenteredMomentHeckeExpansion
-open CenteredMomentFirstColumns CenteredMomentChildAssembly CenteredMomentSourceRow
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 end SevenEighths.CenteredMomentFirstChildProfile

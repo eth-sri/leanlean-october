@@ -11,15 +11,14 @@ namespace OAI
 
 noncomputable section
 
-open scoped Classical BigOperators SchwartzMap ContDiff
+open scoped Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedPhysical
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseReflectedPhase InverseMoment InverseInitialClippedColumns
-open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
+open CanonicalRowCompletion InverseMoment
+open CanonicalCoefficientClass ConcreteTraceCRT SecondPassArithmetic IdealMobiusDivisorSum
 open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource
 open InverseInitialEnergyCallerModes
-open InverseInitialQuotientGeometry InverseInitialEnergyCallerGeometry InverseInitialCanonicalState
-local notation "O"=>ActualEisensteinCubic.O
+open InverseInitialQuotientGeometry InverseInitialCanonicalState
 
 theorem retained_physical_bound
     (W₁ W₂:ℝ→ℂ)(a₀ b₀:ℝ)(ha₀:0<a₀)
@@ -46,15 +45,15 @@ theorem retained_physical_bound
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,1≤Hslot i)→
       (∀i∈slots,∀P∈lists i,(P.val.absNorm:ℝ)≤Hslot i)→
       (∀i∈slots,∀P∈lists i,‖a i P‖≤1)→∀z:ℝ,0≤z→(∏i∈slots,Hslot i)≤Z^z→
-    ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
+    ∀Ψ:ActualEisensteinCubic.O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
     ∀(S:Finset (Source (ι:=primePool F) 0)),
       (∀x∈S,x.divisor⊆x.common)→(∀x∈S,x.frequency≠0)→
-    ∀(j:O)(D B v θ H R m η:ℝ),R≤U→0≤η→
+    ∀(j:ActualEisensteinCubic.O)(D B v θ H R m η:ℝ),R≤U→0≤η→
     ∀(c₁ c₂ θ₁ θ₂:ℝ),0<c₁→0<c₂→
       BlockSupport p (pointSource Finset.univ S) W₁ W₂ ω₁ ω₂ Vlog Z D B v θ H c₁ c₂ θ₁ θ₂→
       (∀t∈quotientSet p S,(t.absNorm:ℝ)≤Z^R)→
     ∀(w:Source (ι:=primePool F) 0→ℂ),(∀x∈S,‖w x‖≤1)→
-    ∀(labels:Finset (Ideal O))(rows:Finset O),
+    ∀(labels:Finset (Ideal ActualEisensteinCubic.O))(rows:Finset ActualEisensteinCubic.O),
       (∀f∈labels,Admissible f ∧ (f.absNorm:ℝ)≤Z^(θ+v+2*η))→
       rows⊆nonzeroChildFrequencyBall 1 (Z^(θ+H+2*η))→(∀k∈rows,-k∈rows)→
       (∀x∈S,(initialChild (toTuple p (sectorSource
@@ -81,25 +80,25 @@ theorem retained_physical_bound
   obtain ⟨af₁,bf₁,haf₁,hab₁,_,hs₁f⟩:=hsf₁
   obtain ⟨af₂,bf₂,haf₂,hab₂,_,hs₂f⟩:=hsf₂
   obtain ⟨J₁,B₁,hB₁,hm₁⟩:=canonical_marked_energy_exists cap cap margin eps hcap hcap hmargin heps
-    K fresh₁ af₁ bf₁ haf₁ (haf₁.le.trans hab₁) (subset_trans (subset_closure) hs₁f)
+    K fresh₁ af₁ bf₁ haf₁ (by linarith) (subset_trans (subset_closure) hs₁f)
   obtain ⟨J₂,B₂,hB₂,hm₂⟩:=canonical_marked_energy_exists cap cap margin eps hcap hcap hmargin heps
-    K fresh₂ af₂ bf₂ haf₂ (haf₂.le.trans hab₂) (subset_trans (subset_closure) hs₂f)
+    K fresh₂ af₂ bf₂ haf₂ (by linarith) (subset_trans (subset_closure) hs₂f)
   let J:=J₁+J₂
   obtain ⟨Cp,hCp,hphysical⟩:=hphysical J K U π hU hπ
   refine ⟨J,B₁+B₂,by linarith,?_⟩
   intro q hq
   obtain ⟨C₁,Z₁,hC₁,hZ₁,hm₁⟩:=hm₁ q hq
   obtain ⟨C₂,Z₂,hC₂,hZ₂,hm₂⟩:=hm₂ q hq
-  refine ⟨Cp*(C₁+C₂),max Z₁ Z₂,mul_pos hCp (add_pos hC₁ hC₂),lt_max_of_lt_left hZ₁,?_⟩
+  refine ⟨Cp*(C₁+C₂),max Z₁ Z₂,by positivity,lt_max_of_lt_left hZ₁,?_⟩
   intro Z hZ Dpool hD F hFa
   let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
   intro p hp hcop hg σ dec slots hslots lists Hslot a hdis hHslot hP ha z hz hprod Ψ hΨ hperiod
     S hdiv hf j D B v θ H R m η hR hη c₁ c₂ θ₁ θ₂ hc₁ hc₂ hsupport hn w hw labels rows hlabels hrows hneg hchild hclip hReq hstate
   have hZp:1<Z:=hZ₁.trans_le ((le_max_left _ _).trans hZ)
   have hD₁:B₁*Z^(cap+1)≤Dpool:=
-    (mul_le_mul_of_nonneg_right (by linarith : B₁≤B₁+B₂) (Real.rpow_nonneg (by linarith) _)).trans hD
+    (mul_le_mul_of_nonneg_right (by linarith) (by positivity)).trans hD
   have hD₂:B₂*Z^(cap+1)≤Dpool:=
-    (mul_le_mul_of_nonneg_right (by linarith : B₂≤B₁+B₂) (Real.rpow_nonneg (by linarith) _)).trans hD
+    (mul_le_mul_of_nonneg_right (by linarith) (by positivity)).trans hD
   have hmoment₁:=hm₁ Z ((le_max_left _ _).trans hZ) Dpool hD₁ slots hslots lists Hslot a hdis hHslot hP ha z hz hprod Ψ hΨ hperiod
   have hmoment₂:=hm₂ Z ((le_max_right _ _).trans hZ) Dpool hD₂ slots hslots lists Hslot a hdis hHslot hP ha z hz hprod Ψ hΨ hperiod
   have hbound:=hphysical p hp hcop hg
@@ -112,7 +111,6 @@ theorem retained_physical_bound
     (max 0 (columnCenter D B v)+(θ+v)) (C₁+C₂) (eps+4*η) (by positivity) hclip
     (by unfold columnCenter;ring) hReq ?_
   · convert hbound using 1
-    rw [show m+11*η+π+(eps+4*η)=m+15*η+π+eps by ring]
     ring
   · intro s ρ A₁ hA₁ A₂ hA₂ t ht
     obtain ⟨hm,hV,hM,hQ,hnorm,hMc,hFc,hmargin⟩:=hstate t ht
@@ -124,14 +122,14 @@ theorem retained_physical_bound
       (secondRayMinus Ψ ρ) slots (slots\A₁) lists a fresh₁ Z cap cap z margin eps C₁
       (max 0 (columnCenter D B v)) (θ+v) (θ+H+2*η) (fullPunctureWidth Z t j) η K J₁
       (j*primaryGenerator t) hZp ((show IsBaseRayTwist Ψ Ψ from Or.inl rfl).secondMinus ρ) hm
-      (le_max_left _ _) hV hM hQ hMc hFc hmargin hnorm Finset.sdiff_subset labels hlabels rows hrows
-      _ (by intros;positivity) hweight s hmoment₁
+      (by positivity) hV hM hQ hMc hFc hmargin hnorm Finset.sdiff_subset labels hlabels rows hrows
+      _ (by simp) hweight s hmoment₁
     have hright:=InverseInitialCanonicalEnergy.initial_child_from_rank p hp hcop hg Finset.univ Ψ
       (secondRayPlus Ψ ρ) slots (slots\A₂) lists a fresh₂ Z cap cap z margin eps C₂
       (max 0 (columnCenter D B v)) (θ+v) (θ+H+2*η) (fullPunctureWidth Z t j) η K J₂
       (j*primaryGenerator t) hZp ((show IsBaseRayTwist Ψ Ψ from Or.inl rfl).secondPlus ρ) hm
-      (le_max_left _ _) hV hM hQ hMc hFc hmargin hnorm Finset.sdiff_subset labels hlabels rows hrows
-      _ (by intros;positivity) hweight s hmoment₂
+      (by positivity) hV hM hQ hMc hFc hmargin hnorm Finset.sdiff_subset labels hlabels rows hrows
+      _ (by simp) hweight s hmoment₂
     constructor
     · apply hleft.trans
       have hexp:max 0 (columnCenter D B v)+(θ+v)+eps+4*η=
@@ -139,16 +137,16 @@ theorem retained_physical_bound
       rw [hexp]
       gcongr
       · linarith
-      · linarith [norm_nonneg s]
-      · dsimp [J]; omega
+      · simp
+      omega
     · apply hright.trans
       have hexp:max 0 (columnCenter D B v)+(θ+v)+eps+4*η=
         max 0 (columnCenter D B v)+(θ+v)+(eps+4*η):=by ring
       rw [hexp]
       gcongr
       · linarith
-      · linarith [norm_nonneg s]
-      · dsimp [J]; omega
+      · simp
+      omega
 
 end SevenEighths.InverseInitialRetainedPhysical
 

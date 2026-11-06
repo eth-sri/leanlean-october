@@ -5,7 +5,6 @@ public import Erdos821.P4Probe.BigAveraging
 @[expose] public section
 
 set_option autoImplicit false
-open scoped BigOperators
 attribute [local instance] Classical.propDecidable
 
 namespace Erdos821.P4Probe
@@ -59,7 +58,7 @@ lemma idealFullPair_source_average (P : PrimeGroups) (M : ℕ)
   rw [← Finset.sum_mul, ← Finset.sum_mul]
   have h := bigCoordinateAverage_duality P M S f (fun a => K a b)
   rw [hK b] at h
-  exact congrArg (fun z => z * g b) h.symm
+  grind
 
 lemma idealFullPair_target_average (P : PrimeGroups) (M : ℕ)
     (S : P.BigGroup → Finset (Fin M)) (H : P.BigLabels M → P.BigLabels M → ℂ)

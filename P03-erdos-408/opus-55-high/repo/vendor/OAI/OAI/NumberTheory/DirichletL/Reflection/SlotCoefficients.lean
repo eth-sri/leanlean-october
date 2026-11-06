@@ -8,19 +8,15 @@ public import OAI.NumberTheory.DirichletL.Reflection.TupleFamily
 namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
-open scoped Classical BigOperators
-open ActualEisensteinCubic CanonicalQuadraticSieve InverseMoment
+open scoped Classical
 noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
 
 lemma PrimeFamily.eq_of_ideal_eq {ι : Type*} (P Q : PrimeFamily ι) (h : P.ideal=Q.ideal) : P=Q := by
   cases P
-  cases Q
-  cases h
-  rfl
+  simp_all
 
-def slotChoiceFamily (L : σ→Finset (Ideal Eis))
+def slotChoiceFamily (L : σ→Finset (Ideal ActualEisensteinCubic.O))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
     (p : ∀ i,L i) : PrimeFamily σ where
@@ -29,7 +25,7 @@ def slotChoiceFamily (L : σ→Finset (Ideal Eis))
   good i := hgood i _ (p i).property
 
 omit [Fintype σ] in
-lemma slotChoiceFamily_active (L : σ→Finset (Ideal Eis))
+lemma slotChoiceFamily_active (L : σ→Finset (Ideal ActualEisensteinCubic.O))
     (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
     (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
     (T : Finset σ) (a : ∀ i : T,L i.val) (b : ∀ i : {i // i∉T},L i.val) :
@@ -39,7 +35,7 @@ lemma slotChoiceFamily_active (L : σ→Finset (Ideal Eis))
   funext i
   exact congrArg Subtype.val (slotChoiceSplit_active L T a b i)
 
-lemma slot_coefficient_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
+lemma slot_coefficient_split (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (T : Finset σ)
     (w : ∀ i,L i→ℂ) (a : ∀ i : T,L i.val) (b : ∀ i : {i // i∉T},L i.val) :
     (∏ i,w i ((slotChoiceSplit L T).symm (a,b) i))=
       (∏ i : T,w i.val (a i))*(∏ i : {i // i∉T},w i.val (b i)) := by
@@ -48,15 +44,14 @@ lemma slot_coefficient_split (L : σ→Finset (Ideal Eis)) (T : Finset σ)
   simp only [slotChoiceSplit_active,slotChoiceSplit_inactive] at he
   refine he.symm.trans ?_
   congr 1
-  apply Finset.prod_congr (by ext; simp only [Finset.mem_univ])
-  intro i hi
-  rfl
+  apply Finset.prod_congr (by grind)
+  simp
 
 omit [DecidableEq σ] in
-lemma slot_coefficient_norm (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ)
+lemma slot_coefficient_norm (L : σ→Finset (Ideal ActualEisensteinCubic.O)) (w : ∀ i,L i→ℂ)
     (hw : ∀ i P,‖w i P‖≤1) (p : ∀ i,L i) : ‖∏ i,w i (p i)‖≤1 := by
   rw [norm_prod]
-  exact Finset.prod_le_one₀ (fun i _ => norm_nonneg _) (fun i _ => hw i (p i))
+  exact Finset.prod_le_one₀ (by simp) (by grind)
 end
 end SevenEighths.InverseReflectedPhase
 
