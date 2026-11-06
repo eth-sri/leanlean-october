@@ -1,6 +1,64 @@
 module
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Calculus.Deriv.Star
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.InnerProductSpace.GramSchmidtOrtho
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.MetricSpace.ProperSpace.Real
+public import Mathlib.Topology.OpenPartialHomeomorph.Basic
+public import Mathlib.Topology.Order.Compact
+public import GS.CompactFibres
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.CholeskySupport
+public import GS.Unitary.Factorization
+public import GS.Unitary.Frobenius
+public import GS.Unitary.GeometryAlgebra
+public import GS.Unitary.OrdinaryQR
+public import GS.Unitary.Permutations
+public import GS.Unitary.Projection
+public import GS.Unitary.StructuredQR
+public import GS.Unitary.Support
+public import GS.UnitaryManifold.Action
+public import GS.UnitaryManifold.BlockGroup
+public import GS.UnitaryManifold.CayleyAlgebra
+public import GS.UnitaryManifold.CayleyCharts
+public import GS.UnitaryManifold.CayleyDifferential
+public import GS.UnitaryManifold.CayleyModel
+public import GS.UnitaryManifold.CayleySmooth
+public import GS.UnitaryManifold.Factors
+public import GS.UnitaryManifold.MatrixCalculus
 
-public import GS.UnitaryManifold.OrbitDifferential
 
 @[expose] public section
 
@@ -39,37 +97,5 @@ theorem cayley_intertwine (A B P : CMat n) (hA : admissible A)
       simp only [Matrix.sub_mul, Matrix.mul_sub, Matrix.one_mul, Matrix.mul_one]
       rw [h]
     _ = P * cayley B * (1 + B) := by rw [Matrix.mul_assoc, cayley_mul B hB]
-
-theorem orbitParam_kernel_iff_intertwine (P : CMat n)
-    (v : PairModel block₁ block₂) :
-    fderiv ℝ (orbitParam (1 : FactorGroup block₁ block₂) P) 0 v = 0 ↔
-      v.1.val * P = P * v.2.val := by
-  rw [orbitParam_fderiv_zero]
-  change GS.UnitaryGeometry.tangentParam (1 : CMat n) P (1 : CMat n)ᴴ
-    ((-2 : ℝ) • v.1.val) ((2 : ℝ) • v.2.val) = 0 ↔ _
-  simp only [GS.UnitaryGeometry.tangentParam, Matrix.conjTranspose_one, Matrix.one_mul, Matrix.mul_one,
-    Matrix.smul_mul, Matrix.mul_smul]
-  constructor
-  · intro h
-    have hz : (-2 : ℝ) • (v.1.val * P - P * v.2.val) = 0 := by
-      simpa only [smul_sub, sub_eq_add_neg, smul_add, smul_neg, neg_smul, neg_add_rev, neg_neg] using h
-    exact sub_eq_zero.mp ((smul_eq_zero.mp hz).resolve_left (by norm_num))
-  · intro h
-    rw [h, ← add_smul]
-    norm_num
-
-theorem kernel_factorLift_stabilizes (P : CMat n) (v : PairModel block₁ block₂)
-    (hv : fderiv ℝ (orbitParam (1 : FactorGroup block₁ block₂) P) 0 v = 0) :
-    factorLift (1 : FactorGroup block₁ block₂) v • P = P := by
-  have he := cayley_intertwine v.1.val v.2.val P
-    (admissible_model v.1) (admissible_model v.2)
-    ((orbitParam_kernel_iff_intertwine P v).mp hv)
-  have ho := cayley_unitary v.2.val v.2.property.2 (admissible_model v.2)
-  rw [action_apply, factorLift_left_val, factorLift_right_val]
-  change (chartInv (1 : BlockU block₂) v.1 * P) *
-    (chartInv (1 : BlockU block₁) v.2)ᴴ = P
-  simp only [chartInv, show (1 : BlockU block₂).val = (1 : CMat n) from rfl,
-    show (1 : BlockU block₁).val = (1 : CMat n) from rfl, Matrix.one_mul]
-  rw [he, Matrix.mul_assoc, ho.2, Matrix.mul_one]
 
 end GS.UnitaryManifold

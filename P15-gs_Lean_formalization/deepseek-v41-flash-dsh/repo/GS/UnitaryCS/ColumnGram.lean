@@ -1,7 +1,20 @@
 module
-
-public import GS.ComplexAlgebra
 public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+
 
 @[expose] public section
 

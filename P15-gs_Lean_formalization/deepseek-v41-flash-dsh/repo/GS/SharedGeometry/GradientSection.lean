@@ -1,8 +1,125 @@
 module
-
-public import GS.SharedGeometry.BundleRetraction
-public import GS.SharedGeometry.Gradient
+public import Mathlib.Analysis.Calculus.ContDiff.Basic
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Calculus.Deriv.Slope
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.ContDiff
+public import Mathlib.Analysis.Calculus.LocalExtr.Basic
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.ProdL2
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import Mathlib.Analysis.LocallyConvex.Bounded
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Geometry.Manifold.Algebra.LieGroup
+public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.Geometry.Manifold.MFDeriv.Basic
+public import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.BilinearForm.Basic
+public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Rank
+public import Mathlib.LinearAlgebra.Projection
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Constructions.SumProd
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Instances.Real.Lemmas
+public import Mathlib.Topology.Order.Compact
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.BlockCharts
+public import GS.CayleyCharts.Model
+public import GS.CayleyCharts.OrbitCharts
+public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Continuation.AmbientProjection
+public import GS.Continuation.ExponentialBasics
+public import GS.Continuation.ExponentialCurves
+public import GS.Core
+public import GS.Extensions.FiniteTopology
+public import GS.Extensions.GeodesicNormal
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.OriginalCompact
+public import GS.Extensions.ProjectionSmooth
 public import GS.Extensions.TangentSections
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Fibres
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.GlobalGeometry.BalancedLift
+public import GS.GlobalGeometry.CayleyRetraction
+public import GS.GlobalGeometry.ExactSharing
+public import GS.GlobalGeometry.FrobeniusProjection
+public import GS.GlobalGeometry.SharedAlgebra
+public import GS.GlobalGeometry.SharedDescent
+public import GS.GlobalGeometry.SharedFactorCurves
+public import GS.GlobalGeometry.SharedNormalEquations
+public import GS.LieAction.Action
+public import GS.LieAction.BlockGroup
+public import GS.LieAction.Nonoverlap
+public import GS.ManifoldCompletion.OrbitDifferential
+public import GS.OriginalLocalModel
+public import GS.OverlapGeometry.FactorChartOpen
+public import GS.OverlapGeometry.HorizontalModel
+public import GS.OverlapGeometry.KernelCayley
+public import GS.OverlapGeometry.ManifoldSmoothMaps
+public import GS.OverlapGeometry.SliceAtlas
+public import GS.OverlapGeometry.SmoothMaps
+public import GS.Projection
+public import GS.RiemannianCompletion.FrobeniusDual
+public import GS.SharedGeometry.Algebra
+public import GS.SharedGeometry.BundleRetraction
+public import GS.SharedGeometry.CayleyStep
+public import GS.SharedGeometry.Differential
+public import GS.SharedGeometry.Directions
+public import GS.SharedGeometry.FactorCharts
+public import GS.SharedGeometry.FactorCoordinates
+public import GS.SharedGeometry.Factors
+public import GS.SharedGeometry.GeneratorAction
+public import GS.SharedGeometry.Gradient
+public import GS.SharedGeometry.HorizontalDifferential
+public import GS.SharedGeometry.HorizontalModel
+public import GS.SharedGeometry.LocalProduct
+public import GS.SharedGeometry.LocalSections
+public import GS.SharedGeometry.MinimumNormLift
+public import GS.SharedGeometry.Orbit
+public import GS.SharedGeometry.OrbitAtlas
+public import GS.SharedGeometry.ProjectedSlice
+public import GS.SharedGeometry.Projection
+public import GS.SharedGeometry.Retraction
+public import GS.SharedGeometry.Riemannian
+public import GS.SharedGeometry.SmoothLift
+public import GS.SharedGeometry.SmoothProjection
+public import GS.SharedGeometry.TangentBridge
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -41,9 +158,6 @@ def tangentProjectionCLM (X : MatrixOrbit right left P) :
      map_add' := tangentProjection_add right left P X
      map_smul' := tangentProjection_smul right left P X
    } : Mat n →ₗ[ℝ] HorizontalModel right left P).toContinuousLinearMap
-
-@[simp] theorem tangentProjectionCLM_apply (X : MatrixOrbit right left P) (Z : Mat n) :
-    tangentProjectionCLM right left P X Z = tangentProjection right left P X Z := rfl
 
 /-- Ambient-input extension of the retraction, still valued in the exact orbit. -/
 def ambientRetraction (p : MatrixOrbit right left P × Mat n) :
@@ -161,9 +275,6 @@ def intrinsicGradientSection (f : Mat n → ℝ) (X : MatrixOrbit right left P) 
     TangentBundle (𝓘(ℝ, HorizontalModel right left P)) (MatrixOrbit right left P) :=
   ⟨X, intrinsicGradient right left P f X⟩
 
-@[simp] theorem intrinsicGradientSection_proj (f : Mat n → ℝ) (X : MatrixOrbit right left P) :
-    (intrinsicGradientSection right left P f X).proj = X := rfl
-
 /-- Regularity of the ambient Frobenius gradient, with the precise loss of
 one derivative. This also distinguishes C-infinity from analytic order omega. -/
 theorem ambientGradient_contDiff_of_loss (f : Mat n → ℝ) {r s : WithTop ℕ∞}
@@ -196,14 +307,5 @@ theorem intrinsicGradientSection_smooth (f : Mat n → ℝ) (hf : ContDiff ℝ �
       (𝓘(ℝ, HorizontalModel right left P)).tangent ∞
       (intrinsicGradientSection right left P f) :=
   intrinsicGradientSection_contMDiff_of_order right left P f hf (by simp)
-
-/-- Exact gradient step with arbitrary real step size. Feasibility is automatic. -/
-def gradientUpdate (f : Mat n → ℝ) (p : MatrixOrbit right left P × ℝ) :
-    MatrixOrbit right left P :=
-  cayleyRetraction right left P ⟨p.1, (-p.2) • intrinsicGradient right left P f p.1⟩
-
-@[simp] theorem gradientUpdate_zero (f : Mat n → ℝ) (X : MatrixOrbit right left P) :
-    gradientUpdate right left P f (X, 0) = X := by
-  simp [gradientUpdate]
 
 end GS.SharedGeometry

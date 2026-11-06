@@ -1,7 +1,31 @@
 module
-
-public import GS.UnitaryManifold.FrobeniusDual
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Normed.Operator.NormedSpace
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.Frobenius
+public import GS.Unitary.Support
+public import GS.UnitaryManifold.FrobeniusDual
+
 
 @[expose] public section
 
@@ -42,9 +66,6 @@ def dualMatrixCLM : (CMat n →L[ℝ] ℝ) →L[ℝ] CMat n :=
        rw [← h, dualMatrix_frobDual]
        rfl
    } : (CMat n →L[ℝ] ℝ) →ₗ[ℝ] CMat n).toContinuousLinearMap
-
-@[simp] theorem dualMatrixCLM_apply (D : CMat n →L[ℝ] ℝ) :
-    dualMatrixCLM D = dualMatrix D := rfl
 
 theorem ambientGradient_contDiff_of_loss (f : CMat n → ℝ) {r s : WithTop ℕ∞}
     (hf : ContDiff ℝ s f) (hrs : r + 1 ≤ s) : ContDiff ℝ r (ambientGradient f) :=

@@ -1,10 +1,20 @@
 module
-
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
 public import Mathlib.Topology.Algebra.Group.Basic
 public import Mathlib.Topology.Algebra.Ring.Real
-public import Mathlib.Topology.Order.Compact
 public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Order.Compact
 public import GS.Core
+
 
 @[expose] public section
 
@@ -38,15 +48,6 @@ instance blockOGroup (block : Fin n → ℕ) : Group (BlockO block) where
   one_mul A := Subtype.ext (Matrix.one_mul A.val)
   mul_one A := Subtype.ext (Matrix.mul_one A.val)
   inv_mul_cancel A := Subtype.ext A.property.2.1
-
-@[simp] theorem blockO_one_val (block : Fin n → ℕ) :
-    ((1 : BlockO block) : Mat n) = 1 := rfl
-
-@[simp] theorem blockO_mul_val {block : Fin n → ℕ} (A B : BlockO block) :
-    ((A * B : BlockO block) : Mat n) = (A : Mat n) * (B : Mat n) := rfl
-
-@[simp] theorem blockO_inv_val {block : Fin n → ℕ} (A : BlockO block) :
-    ((A⁻¹ : BlockO block) : Mat n) = (A : Mat n)ᵀ := rfl
 
 /-- Matrix multiplication is continuous for the inherited finite-product topology. -/
 theorem continuous_matrix_product {X : Type*} [TopologicalSpace X]

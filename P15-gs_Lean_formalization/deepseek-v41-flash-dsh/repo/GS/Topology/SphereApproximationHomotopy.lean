@@ -1,8 +1,8 @@
 module
-
 public import Mathlib.Analysis.Normed.Module.Convex
-public import Mathlib.Topology.Homotopy.Contractible
 public import Mathlib.Tactic.FunProp
+public import Mathlib.Topology.Homotopy.Contractible
+
 
 @[expose] public section
 

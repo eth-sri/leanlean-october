@@ -1,8 +1,44 @@
 module
-
-public import GS.UnitaryManifold.CayleySmooth
-public import GS.UnitaryManifold.BlockGroup
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.MetricSpace.ProperSpace.Real
 public import Mathlib.Topology.OpenPartialHomeomorph.Basic
+public import Mathlib.Topology.Order.Compact
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.Frobenius
+public import GS.Unitary.GeometryAlgebra
+public import GS.Unitary.Projection
+public import GS.Unitary.Support
+public import GS.UnitaryManifold.BlockGroup
+public import GS.UnitaryManifold.CayleyAlgebra
+public import GS.UnitaryManifold.CayleyModel
+public import GS.UnitaryManifold.CayleySmooth
+
 
 @[expose] public section
 
@@ -32,11 +68,6 @@ variable {n : ℕ} {block : Fin n → ℕ}
 def parameterDomain (block : Fin n → ℕ) : Set (Model block) :=
   {x | admissible x.val}
 
-/-- Skew coordinates require no size restriction: their denominator is always invertible. -/
-@[simp] theorem parameterDomain_eq_univ (block : Fin n → ℕ) :
-    parameterDomain block = Set.univ := by
-  exact Set.eq_univ_iff_forall.mpr (fun x => admissible_model x)
-
 def chartSource (Q : BlockU block) : Set (BlockU block) :=
   {U | admissible (Q.valᴴ * U.val)}
 
@@ -56,9 +87,6 @@ theorem parameterDomain_open (block : Fin n → ℕ) :
 theorem chartSource_open (Q : BlockU block) : IsOpen (chartSource Q) :=
   admissible_open.preimage
     (continuous_matrix_product continuous_const continuous_subtype_val)
-
-@[simp] theorem zero_mem_parameterDomain (block : Fin n → ℕ) :
-    (0 : Model block) ∈ parameterDomain block := admissible_zero
 
 @[simp] theorem base_mem_chartSource (Q : BlockU block) : Q ∈ chartSource Q := by
   change admissible (Q.valᴴ * Q.val)
@@ -169,20 +197,10 @@ def blockChartHomeomorph (Q : BlockU block) :
   continuous_toFun := (continuous_chartMap_restrict Q).subtype_mk _
   continuous_invFun := ((continuous_chartInv_restrict Q).subtype_mk _).subtype_mk _
 
-@[simp] theorem blockChartHomeomorph_apply (Q : BlockU block) (U : chartSource Q) :
-    (blockChartHomeomorph Q U).val = chartMap Q U.val.val := rfl
-
-@[simp] theorem blockChartHomeomorph_symm_apply (Q : BlockU block)
-    (x : parameterDomain block) :
-    ((blockChartHomeomorph Q).symm x).val.val = chartInv Q x.val := rfl
-
 /-- Total reconstruction; skew-Hermitian parameters need no domain restriction. -/
 def blockChartInverse (Q : BlockU block) (x : Model block) : BlockU block :=
   ⟨chartInv Q x, chartInv_supported Q x (admissible_model x),
     chartInv_unitary Q x (admissible_model x)⟩
-
-@[simp] theorem blockChartInverse_val_everywhere (Q : BlockU block) (x : Model block) :
-    (blockChartInverse Q x).val = chartInv Q x := rfl
 
 theorem continuous_blockChartInverse (Q : BlockU block) :
     Continuous (blockChartInverse Q) := (chartInv_smooth Q).continuous.subtype_mk _
@@ -210,11 +228,5 @@ def blockPartialChart (Q : BlockU block) :
     exact ((chartMap_smooth_at Q U.val hU).continuousAt.comp
       continuous_subtype_val.continuousAt).continuousWithinAt
   continuousOn_invFun := (continuous_blockChartInverse Q).continuousOn
-
-@[simp] theorem blockPartialChart_source (Q : BlockU block) :
-    (blockPartialChart Q).source = chartSource Q := rfl
-
-@[simp] theorem blockPartialChart_target (Q : BlockU block) :
-    (blockPartialChart Q).target = parameterDomain block := rfl
 
 end GS.UnitaryManifold

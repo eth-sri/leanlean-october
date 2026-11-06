@@ -1,10 +1,22 @@
 module
-
-public import GS.ComplexAlgebra
 public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
 public import Mathlib.LinearAlgebra.Matrix.Diagonal
-public import Mathlib.Tactic.Ring
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
 public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+
 
 @[expose] public section
 
@@ -59,9 +71,6 @@ def AnchorNonzero (Q A : CMat q) (o : Fin q) : Prop :=
 
 def rowPhase (Q A : CMat q) (o : Fin q) (i : Fin q) : ℂ := phase (A i o / Q i o)
 def colPhase (Q A : CMat q) (o : Fin q) (j : Fin q) : ℂ := phase (A o j / Q o j)
-
-@[simp] theorem rowPhase_anchor (Q A : CMat q) (o : Fin q) :
-    rowPhase Q A o o = colPhase Q A o o := rfl
 
 /-- Remove the row and column phases, retaining one anchor phase to avoid
 counting the shared row/column gauge twice. -/

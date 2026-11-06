@@ -1,8 +1,55 @@
 module
-
-public import GS.ManifoldCompletion.OrbitSmooth
-public import GS.CayleyCharts.Differential
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Order.Compact
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.BlockCharts
+public import GS.CayleyCharts.Model
+public import GS.CayleyCharts.OrbitCharts
+public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Continuation.AmbientProjection
+public import GS.Core
 public import GS.Extensions.GeodesicNormal
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.LieAction.Action
+public import GS.LieAction.BlockGroup
+public import GS.LieAction.Nonoverlap
+public import GS.Projection
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -65,31 +112,6 @@ theorem chartInv_line_hasDerivAt_zero (Q : BlockO block) (v : Model block) :
     linarith
   rwa [he] at hd
 
-/-- Exact Frechet derivative of the actual matrix-valued orbit chart at its
-centre. The coefficients reflect the chosen Cayley convention. -/
-theorem orbitParam_fderiv_zero (g : FactorGroup block₁ block₂) (P : Mat n)
-    (v : PairModel block₁ block₂) :
-    fderiv ℝ (orbitParam g P) 0 v =
-      tangentParam g.1.val P g.2.valᵀ ((-2 : ℝ) • v.1.val) ((2 : ℝ) • v.2.val) := by
-  have hdL := chartInv_line_hasDerivAt_zero g.1 v.1
-  have hdR := hasDerivAt_matrix_transpose (chartInv_line_hasDerivAt_zero g.2 v.2)
-  have ht : ((-2 : ℝ) • (g.2.val * v.2.val))ᵀ =
-      (2 : ℝ) • (v.2.val * g.2.valᵀ) := by
-    rw [Matrix.transpose_smul, Matrix.transpose_mul, v.2.property.2,
-      Matrix.neg_mul, smul_neg, ← neg_smul]
-    norm_num
-  rw [ht] at hdR
-  have hactual := hasDerivAt_product2 P hdL hdR
-  have hi := ((orbitParam_smooth g P).differentiable (by simp) 0).hasFDerivAt
-  have hcomputed := hi.comp_hasDerivAt_of_eq 0
-    ((hasDerivAt_id (0 : ℝ)).smul_const v) (by simp)
-  have ha : HasDerivAt (fun t : ℝ => orbitParam g P (t • v))
-      (tangentParam g.1.val P g.2.valᵀ ((-2 : ℝ) • v.1.val) ((2 : ℝ) • v.2.val)) 0 := by
-    simpa only [orbitParam, product2, zero_smul, Prod.smul_fst, Prod.smul_snd,
-      chartInv_zero, tangentParam, Matrix.smul_mul, Matrix.mul_smul,
-      Matrix.mul_assoc] using hactual
-  simpa only [one_smul] using hcomputed.unique ha
-
 /-- Translate the factor-side injectivity condition into the original
 left-coordinate disjoint-support condition. -/
 theorem noOverlap_offDiagonalDisjoint (σ : Equiv.Perm (Fin n))
@@ -101,82 +123,5 @@ theorem noOverlap_offDiagonalDisjoint (σ : Equiv.Perm (Fin n))
   apply Prod.ext
   · exact h₁
   · simpa only [Equiv.apply_symm_apply] using h₂
-
-/-- This norm identity is for the actual fderiv, not merely a formal generator. -/
-theorem orbitParam_fderiv_zero_frobSq (σ : Equiv.Perm (Fin n))
-    (hn : NoOffDiagonalOverlap block₁ block₂ σ) (g : FactorGroup block₁ block₂)
-    (v : PairModel block₁ block₂) :
-    frobSq (fderiv ℝ (orbitParam g (permMatrix σ)) 0 v) =
-      frobSq ((-2 : ℝ) • v.1.val) + frobSq ((2 : ℝ) • v.2.val) := by
-  rw [orbitParam_fderiv_zero]
-  apply tangentParam_frobSq _ _ _ _ _ g.1.property.2
-    (perm_orthogonal σ) g.2.property.2.transpose
-  have hC : Supported block₂ ((-2 : ℝ) • v.1.val) := Supported.smul (-2) v.1.property.1
-  have hΩ : Supported block₁ ((2 : ℝ) • v.2.val) := Supported.smul 2 v.2.property.1
-  have hsΩ : IsSkew ((2 : ℝ) • v.2.val) := by
-    change (((2 : ℝ) • v.2.val)ᵀ) = -((2 : ℝ) • v.2.val)
-    rw [Matrix.transpose_smul, v.2.property.2, smul_neg]
-  exact frobInner_disjoint_supported_skew (noOverlap_offDiagonalDisjoint σ hn)
-    _ _ hC ((supported_perm_conjugate_iff block₁ σ _).mpr hΩ)
-    (conjugate_skew (permMatrix σ) _ hsΩ)
-
-theorem orbitParam_fderiv_zero_kernel (σ : Equiv.Perm (Fin n))
-    (hn : NoOffDiagonalOverlap block₁ block₂ σ) (g : FactorGroup block₁ block₂)
-    (v : PairModel block₁ block₂)
-    (hv : fderiv ℝ (orbitParam g (permMatrix σ)) 0 v = 0) : v = 0 := by
-  have he := orbitParam_fderiv_zero_frobSq σ hn g v
-  have hzero : frobSq (0 : Mat n) = 0 := by simp [frobSq]
-  rw [hv, hzero] at he
-  have ha : frobSq ((-2 : ℝ) • v.1.val) = 0 := by
-    have := frobSq_nonneg ((2 : ℝ) • v.2.val)
-    have := frobSq_nonneg ((-2 : ℝ) • v.1.val)
-    linarith
-  have hb : frobSq ((2 : ℝ) • v.2.val) = 0 := by
-    linarith
-  have hA := (frobSq_eq_zero_iff _).mp ha
-  have hB := (frobSq_eq_zero_iff _).mp hb
-  apply Prod.ext
-  · apply Subtype.ext
-    ext i j
-    have hh := congrFun (congrFun hA i) j
-    change (-2 : ℝ) * v.1.val i j = 0 at hh
-    change v.1.val i j = 0
-    linarith
-  · apply Subtype.ext
-    ext i j
-    have hh := congrFun (congrFun hB i) j
-    change (2 : ℝ) * v.2.val i j = 0 at hh
-    change v.2.val i j = 0
-    linarith
-
-/-- Every preferred orbit chart is immersive at its centre. -/
-theorem orbitParam_fderiv_zero_injective (σ : Equiv.Perm (Fin n))
-    (hn : NoOffDiagonalOverlap block₁ block₂ σ) (g : FactorGroup block₁ block₂) :
-    Function.Injective (fderiv ℝ (orbitParam g (permMatrix σ)) 0) := by
-  intro v w hvw
-  apply sub_eq_zero.mp
-  apply orbitParam_fderiv_zero_kernel σ hn g (v - w)
-  rw [map_sub, hvw, sub_self]
-
-/-- The image of the actual coordinate differential is exactly the space used
-by the checked projection formula. This also holds before using no-overlap. -/
-theorem orbitParam_fderiv_zero_range (g : FactorGroup block₁ block₂) (P X : Mat n) :
-    (∃ v : PairModel block₁ block₂, fderiv ℝ (orbitParam g P) 0 v = X) ↔
-      TwoFactorDirection block₁ block₂ g.1.val P g.2.valᵀ X := by
-  constructor
-  · rintro ⟨v, rfl⟩
-    rw [orbitParam_fderiv_zero]
-    let hc : Model block₂ := (-2 : ℝ) • v.1
-    let hΩ : Model block₁ := (2 : ℝ) • v.2
-    exact ⟨hc.val, hΩ.val, hc.property.1, hc.property.2,
-      hΩ.property.1, hΩ.property.2, rfl⟩
-  · rintro ⟨C, Ω, hsC, hC, hsΩ, hΩ, rfl⟩
-    let c : Model block₂ := ⟨C, hsC, hC⟩
-    let w : Model block₁ := ⟨Ω, hsΩ, hΩ⟩
-    refine ⟨((-1 / 2 : ℝ) • c, (1 / 2 : ℝ) • w), ?_⟩
-    rw [orbitParam_fderiv_zero]
-    change tangentParam g.1.val P g.2.valᵀ
-      ((-2 : ℝ) • ((-1 / 2 : ℝ) • C)) ((2 : ℝ) • ((1 / 2 : ℝ) • Ω)) = _
-    norm_num [smul_smul]
 
 end GS.ManifoldCompletion

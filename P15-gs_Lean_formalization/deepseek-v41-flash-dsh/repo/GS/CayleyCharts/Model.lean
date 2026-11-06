@@ -1,9 +1,26 @@
 module
-
-public import GS.CayleyCharts.Algebra
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.CayleyCharts.Algebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.Projection
+
 
 @[expose] public section
 
@@ -51,57 +68,5 @@ theorem admissible_model {block : Fin n → ℕ} (x : Model block) :
 /-- Continuous linear inclusion into the original matrix space. -/
 def modelInclusion (block : Fin n → ℕ) : Model block →L[ℝ] Mat n :=
   (modelSpace block).subtypeL
-
-@[simp] theorem modelInclusion_apply (block : Fin n → ℕ) (x : Model block) :
-    modelInclusion block x = x.val := rfl
-
-/-- The original masked skew part lands in the coordinate model. -/
-theorem masked_skew_model (block : Fin n → ℕ) (A : Mat n) :
-    GS.blockProjection block (GS.skew A) ∈ modelSpace block := by
-  constructor
-  · intro i j hij
-    simp [GS.blockProjection, GS.mask, hij]
-  · ext i j
-    change (GS.blockProjection block (GS.skew A)) j i =
-      -(GS.blockProjection block (GS.skew A)) i j
-    by_cases hij : block i = block j
-    · simp only [GS.blockProjection, GS.mask, if_pos hij, if_pos hij.symm, GS.skew]
-      ring
-    · simp [GS.blockProjection, GS.mask, hij, Ne.symm hij]
-
-def modelProjectionLinear (block : Fin n → ℕ) : Mat n →ₗ[ℝ] Model block where
-  toFun A := ⟨GS.blockProjection block (GS.skew A), masked_skew_model block A⟩
-  map_add' A B := by
-    apply Subtype.ext
-    ext i j
-    by_cases hij : block i = block j
-    · simp [GS.blockProjection, GS.mask, hij, GS.skew]
-      <;> ring
-    · simp [GS.blockProjection, GS.mask, hij]
-  map_smul' c A := by
-    apply Subtype.ext
-    ext i j
-    by_cases hij : block i = block j
-    · simp [GS.blockProjection, GS.mask, hij, GS.skew]
-      <;> ring
-    · simp [GS.blockProjection, GS.mask, hij]
-
-/-- Continuity is obtained from finite-dimensional linearity, not from a
-matrix norm being submultiplicative. -/
-def modelProjection (block : Fin n → ℕ) : Mat n →L[ℝ] Model block :=
-  (modelProjectionLinear block).toContinuousLinearMap
-
-@[simp] theorem modelProjection_val (block : Fin n → ℕ) (A : Mat n) :
-    (modelProjection block A).val = GS.blockProjection block (GS.skew A) := rfl
-
-theorem modelProjection_val_of_mem (block : Fin n → ℕ) (A : Mat n)
-    (hA : A ∈ modelSpace block) : (modelProjection block A).val = A := by
-  rw [modelProjection_val, GS.skew_of_isSkew hA.2]
-  exact blockProjection_eq_self block A hA.1
-
-@[simp] theorem modelProjection_inclusion (block : Fin n → ℕ) (x : Model block) :
-    modelProjection block x.val = x := by
-  apply Subtype.ext
-  exact modelProjection_val_of_mem block x.val x.property
 
 end GS.CayleyCharts

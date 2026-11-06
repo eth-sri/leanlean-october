@@ -1,7 +1,57 @@
 module
-
-public import GS.ManifoldCompletion.OrbitDifferential
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
 public import Mathlib.LinearAlgebra.Projection
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Order.Compact
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.BlockCharts
+public import GS.CayleyCharts.Model
+public import GS.CayleyCharts.OrbitCharts
+public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Continuation.AmbientProjection
+public import GS.Core
+public import GS.Extensions.GeodesicNormal
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.LieAction.Action
+public import GS.LieAction.BlockGroup
+public import GS.LieAction.Nonoverlap
+public import GS.ManifoldCompletion.OrbitDifferential
+public import GS.Projection
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -40,17 +90,10 @@ def complementKernelEquiv (D : E →L[ℝ] F) :
     (horizontalComplement D × (LinearMap.ker D.toLinearMap)) ≃L[ℝ] E :=
   (Submodule.prodEquivOfIsCompl _ _ (horizontalComplement_isCompl D)).toContinuousLinearEquiv
 
-@[simp] theorem complementKernelEquiv_apply (D : E →L[ℝ] F)
-    (x : horizontalComplement D × (LinearMap.ker D.toLinearMap)) :
-    complementKernelEquiv D x = (x.1 : E) + (x.2 : E) := rfl
-
 def horizontalRestriction (D : E →L[ℝ] F) : horizontalComplement D →L[ℝ] F :=
   D.comp (horizontalComplement D).subtypeL
 
 omit [FiniteDimensional ℝ E] [FiniteDimensional ℝ F] in
-@[simp] theorem horizontalRestriction_apply (D : E →L[ℝ] F)
-    (x : horizontalComplement D) : horizontalRestriction D x = D x := rfl
-
 theorem horizontalRestriction_injective (D : E →L[ℝ] F) :
     Function.Injective (horizontalRestriction D) := by
   intro x y h
@@ -101,18 +144,5 @@ abbrev OrbitKernel (b₁ b₂ : Fin n → ℕ) (σ : Equiv.Perm (Fin n)) :=
 
 abbrev HorizontalModel (b₁ b₂ : Fin n → ℕ) (σ : Equiv.Perm (Fin n)) :=
   horizontalComplement (orbitDerivative b₁ b₂ σ)
-
-def horizontalKernelEquiv (b₁ b₂ : Fin n → ℕ) (σ : Equiv.Perm (Fin n)) :
-    (HorizontalModel b₁ b₂ σ × OrbitKernel b₁ b₂ σ) ≃L[ℝ] PairModel b₁ b₂ :=
-  complementKernelEquiv (orbitDerivative b₁ b₂ σ)
-
-def orbitHorizontalInverse (b₁ b₂ : Fin n → ℕ) (σ : Equiv.Perm (Fin n)) :
-    Mat n →L[ℝ] HorizontalModel b₁ b₂ σ :=
-  horizontalLeftInverse (orbitDerivative b₁ b₂ σ)
-
-@[simp] theorem orbitHorizontalInverse_derivative (b₁ b₂ : Fin n → ℕ)
-    (σ : Equiv.Perm (Fin n)) (h : HorizontalModel b₁ b₂ σ) :
-    orbitHorizontalInverse b₁ b₂ σ (orbitDerivative b₁ b₂ σ h) = h :=
-  horizontalLeftInverse_apply _ h
 
 end GS.OverlapGeometry

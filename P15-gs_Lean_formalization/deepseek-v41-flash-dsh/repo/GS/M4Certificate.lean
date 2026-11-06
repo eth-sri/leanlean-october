@@ -1,7 +1,21 @@
 module
-
-public import GS.GeometryAlgebra
 public import Mathlib.Analysis.Real.Sqrt
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.Core
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.Projection
+
 
 @[expose] public section
 
@@ -82,307 +96,27 @@ def B4Param (s2 s3 s7 : ℝ) : Mat 6 := !![((1/2 : ℝ) * s2), 0, 0, 0, 0, 0;
 
 theorem core_identity : P*B3*P*B2*P = C := by
   ext i j
-  fin_cases i <;> fin_cases j
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
+  fin_cases i <;> fin_cases j <;>
+    norm_num [P, B2, B3, C, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
+    ring <;> simp
 
 theorem metric_identity : C*H*Cᵀ = G := by
   ext i j
-  fin_cases i <;> fin_cases j
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
+  fin_cases i <;> fin_cases j <;>
+    norm_num [C, H, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
+    ring <;> simp
 
 theorem gram_B1 (s2 s3 s7 : ℝ) (h2 : s2^2=2) (h3 : s3^2=3) (h7 : s7^2=7) : B1Param s2 s3 s7 * (B1Param s2 s3 s7)ᵀ = H := by
   ext i j
-  fin_cases i <;> fin_cases j
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/4 : ℝ) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (-3/7 : ℝ) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (-3/7 : ℝ) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/196 : ℝ) * (s7 ^ 2)) * h3 + (3/4 : ℝ) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/36 : ℝ) * h2 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/4 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (-1/3 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (-1/3 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/36 : ℝ) * (s3 ^ 2)) * h2 + (1/2 : ℝ) * h3 | nlinarith [h2, h3, h7]
+  fin_cases i <;> fin_cases j <;>
+    norm_num [B1Param, H, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
+    nlinarith [h2, h3, h7]
 
 theorem normalize_B4 (s2 s3 s7 : ℝ) (h2 : s2^2=2) (h3 : s3^2=3) (h7 : s7^2=7) : B4Param s2 s3 s7 * G * (B4Param s2 s3 s7)ᵀ = 1 := by
   ext i j
-  fin_cases i <;> fin_cases j
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/2 : ℝ) * h2 | nlinarith [h2, h3, h7]
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/3 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/6 : ℝ) * (s3 ^ 2)) * h2 + (1/3 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/7 : ℝ) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      ring <;> simp
-  · norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/21 : ℝ) * (s7 ^ 2)) * h3 + (1/7 : ℝ) * h7 | nlinarith [h2, h3, h7]
+  fin_cases i <;> fin_cases j <;>
+    norm_num [B4Param, G, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
+    first | nlinarith [h2, h3, h7] | (left; ring) | ring
 
 def B1 : Mat 6 := B1Param (Real.sqrt 2) (Real.sqrt 3) (Real.sqrt 7)
 def B4 : Mat 6 := B4Param (Real.sqrt 2) (Real.sqrt 3) (Real.sqrt 7)
@@ -435,24 +169,15 @@ def detTable (s2 s3 : ℝ) : Mat 3 := !![((-3/16 : ℝ) * s2 * s3), (1/8 : ℝ),
 theorem detTable_param (s2 s3 s7 : ℝ) (h2 : s2^2=2) (h3 : s3^2=3) (h7 : s7^2=7) : (fun i j => detBlock (B4Param s2 s3 s7*C*B1Param s2 s3 s7) i j) = detTable s2 s3 := by
   ext i j
   fin_cases i <;> fin_cases j
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((-3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination (1/16 : ℝ) * h2 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/16 : ℝ) * (s3 ^ 2)) * h2 + (1/8 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/112 : ℝ) * s2 * s3 * (s7 ^ 2)) * h3 + ((3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((-1/16 : ℝ) * (s3 ^ 2)) * h2 + (-1/8 : ℝ) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((-1/144 : ℝ) * (s3 ^ 4)) * h2 + ((-1/24 : ℝ) + ((-1/72 : ℝ) * (s3 ^ 2))) * h3 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((1/2352 : ℝ) * (s7 ^ 4)) * h3 + ((1/112 : ℝ) + ((1/784 : ℝ) * (s7 ^ 2))) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((-3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
-  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;>
-      first | linear_combination ((-1/112 : ℝ) * s2 * s3 * (s7 ^ 2)) * h3 + ((-3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((-3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination (1/16 : ℝ) * h2 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((1/16 : ℝ) * (s3 ^ 2)) * h2 + (1/8 : ℝ) * h3 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((1/112 : ℝ) * s2 * s3 * (s7 ^ 2)) * h3 + ((3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((-1/16 : ℝ) * (s3 ^ 2)) * h2 + (-1/8 : ℝ) * h3 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((-1/144 : ℝ) * (s3 ^ 4)) * h2 + ((-1/24 : ℝ) + ((-1/72 : ℝ) * (s3 ^ 2))) * h3 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((1/2352 : ℝ) * (s7 ^ 4)) * h3 + ((1/112 : ℝ) + ((1/784 : ℝ) * (s7 ^ 2))) * h7 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((-3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
+  · norm_num [detBlock, cell, B4Param, B1Param, C, detTable, Matrix.mul_apply, Matrix.transpose_apply, Matrix.one_apply, Fin.sum_univ_succ] <;> first | linear_combination ((-1/112 : ℝ) * s2 * s3 * (s7 ^ 2)) * h3 + ((-3/112 : ℝ) * s2 * s3) * h7 | nlinarith [h2, h3, h7]
 
 theorem detTable_Q : (fun i j => detBlock Q i j) = detTable (Real.sqrt 2) (Real.sqrt 3) :=
   detTable_param _ _ _ sqrt2_sq sqrt3_sq sqrt7_sq

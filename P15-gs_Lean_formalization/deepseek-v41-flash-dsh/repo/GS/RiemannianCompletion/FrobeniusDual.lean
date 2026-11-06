@@ -1,9 +1,25 @@
 module
-
-public import GS.Frobenius
-public import GS.Extensions.ProjectionSmooth
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.Core
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.Projection
+
 
 @[expose] public section
 
@@ -31,31 +47,12 @@ variable {n : ℕ}
 def unitEntry (i j : Fin n) : Mat n :=
   fun k l => if k = i then if l = j then 1 else 0 else 0
 
-@[simp] theorem frobInner_unitEntry_right (Z : Mat n) (i j : Fin n) :
-    frobInner Z (unitEntry i j) = Z i j := by
-  classical
-  simp [frobInner, unitEntry]
-
 /-- An equality of actual matrices, not a basis postulate. -/
 theorem matrix_expansion (Z : Mat n) :
     Z = ∑ i, ∑ j, Z i j • unitEntry i j := by
   classical
   ext k l
   simp [unitEntry, Matrix.sum_apply, Matrix.smul_apply, eq_comm]
-
-/-- Explicit Frobenius dual, continuous for the original matrix topology. -/
-def frobDualLinear (Z : Mat n) : Mat n →ₗ[ℝ] ℝ where
-  toFun A := frobInner Z A
-  map_add' A B := frobInner_add_right Z A B
-  map_smul' c A := by
-    change frobInner Z (c • A) = c * frobInner Z A
-    rw [frobInner_comm Z, frobInner_smul_left, frobInner_comm A]
-
-def frobDual (Z : Mat n) : Mat n →L[ℝ] ℝ :=
-  (frobDualLinear Z).toContinuousLinearMap
-
-@[simp] theorem frobDual_apply (Z A : Mat n) :
-    frobDual Z A = frobInner Z A := rfl
 
 /-- Frobenius representative of a functional, defined without differentiability. -/
 def dualMatrix (D : Mat n →L[ℝ] ℝ) : Mat n := fun i j => D (unitEntry i j)
@@ -75,16 +72,6 @@ theorem functional_eq_frobInner (D : Mat n →L[ℝ] ℝ) (A : Mat n) :
       intro j hj
       exact mul_comm _ _
 
-@[simp] theorem frobDual_dualMatrix (D : Mat n →L[ℝ] ℝ) :
-    frobDual (dualMatrix D) = D := by
-  ext A
-  exact (functional_eq_frobInner D A).symm
-
-@[simp] theorem dualMatrix_frobDual (Z : Mat n) :
-    dualMatrix (frobDual Z) = Z := by
-  ext i j
-  exact frobInner_unitEntry_right Z i j
-
 /-- The ambient Frobenius gradient is computed from mathlib's real fderiv.
 For nondifferentiable functions this follows fderiv's zero convention; all
 calculus statements below explicitly assume differentiability. -/
@@ -94,20 +81,5 @@ def ambientGradient (f : Mat n → ℝ) (X : Mat n) : Mat n :=
 theorem ambientGradient_represents (f : Mat n → ℝ) (X A : Mat n) :
     fderiv ℝ f X A = frobInner (ambientGradient f X) A :=
   functional_eq_frobInner (fderiv ℝ f X) A
-
-theorem frobInner_smul_right (a : ℝ) (A B : Mat n) :
-    frobInner A (a • B) = a * frobInner A B := by
-  rw [frobInner_comm A, frobInner_smul_left, frobInner_comm B]
-
-/-- Joint smoothness of the fixed Frobenius pairing, with the original norms. -/
-theorem frobInner_smooth :
-    ContDiff ℝ ⊤ (fun p : Mat n × Mat n => frobInner p.1 p.2) := by
-  unfold frobInner
-  apply ContDiff.sum
-  intro i hi
-  apply ContDiff.sum
-  intro j hj
-  exact ((contDiff_pi.mp (contDiff_pi.mp contDiff_fst i) j).mul
-    (contDiff_pi.mp (contDiff_pi.mp contDiff_snd i) j))
 
 end GS.RiemannianCompletion

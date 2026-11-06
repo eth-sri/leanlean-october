@@ -1,6 +1,56 @@
 module
-
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Order.Compact
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.BlockCharts
+public import GS.CayleyCharts.Model
+public import GS.CayleyCharts.OrbitCharts
+public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Continuation.AmbientProjection
+public import GS.Core
+public import GS.Extensions.GeodesicNormal
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.LieAction.Action
+public import GS.LieAction.BlockGroup
+public import GS.LieAction.Nonoverlap
 public import GS.ManifoldCompletion.OrbitDifferential
+public import GS.Projection
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -39,40 +89,5 @@ theorem cayley_intertwine (A B P : Mat n) (hA : admissible A)
       simp only [Matrix.sub_mul, Matrix.mul_sub, Matrix.one_mul, Matrix.mul_one]
       rw [h]
     _ = P * cayley B * (1 + B) := by rw [Matrix.mul_assoc, cayley_mul B hB]
-
-theorem orbitParam_kernel_iff_intertwine (P : Mat n)
-    (v : PairModel block₁ block₂) :
-    fderiv ℝ (orbitParam (1 : FactorGroup block₁ block₂) P) 0 v = 0 ↔
-      v.1.val * P = P * v.2.val := by
-  rw [orbitParam_fderiv_zero]
-  change tangentParam (1 : Mat n) P (1 : Mat n)ᵀ
-    ((-2 : ℝ) • v.1.val) ((2 : ℝ) • v.2.val) = 0 ↔ _
-  simp only [tangentParam, Matrix.transpose_one, Matrix.one_mul, Matrix.mul_one,
-    Matrix.smul_mul, Matrix.mul_smul]
-  constructor
-  · intro h
-    ext i j
-    have he := congrFun (congrFun h i) j
-    change (-2 : ℝ) * (v.1.val * P) i j + 2 * (P * v.2.val) i j = 0 at he
-    linarith
-  · intro h
-    rw [h]
-    ext i j
-    change (-2 : ℝ) * (P * v.2.val) i j + 2 * (P * v.2.val) i j = 0
-    ring
-
-theorem kernel_factorLift_stabilizes (P : Mat n) (v : PairModel block₁ block₂)
-    (hv : fderiv ℝ (orbitParam (1 : FactorGroup block₁ block₂) P) 0 v = 0) :
-    factorLift (1 : FactorGroup block₁ block₂) v • P = P := by
-  have he := cayley_intertwine v.1.val v.2.val P
-    (admissible_model v.1) (admissible_model v.2)
-    ((orbitParam_kernel_iff_intertwine P v).mp hv)
-  have ho := cayley_orthogonal v.2.val v.2.property.2 (admissible_model v.2)
-  rw [action_apply, factorLift_left_val, factorLift_right_val]
-  change (chartInv (1 : BlockO block₂) v.1 * P) *
-    (chartInv (1 : BlockO block₁) v.2)ᵀ = P
-  simp only [chartInv, show (1 : BlockO block₂).val = (1 : Mat n) from rfl,
-    show (1 : BlockO block₁).val = (1 : Mat n) from rfl, Matrix.one_mul]
-  rw [he, Matrix.mul_assoc, ho.2, Matrix.mul_one]
 
 end GS.OverlapGeometry

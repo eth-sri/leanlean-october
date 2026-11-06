@@ -1,8 +1,34 @@
 module
-
-public import GS.LieAction.CompactQuotient
-public import GS.Shuffle
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Order.Compact
+public import GS.CompactFibres
+public import GS.Core
+public import GS.Frobenius
 public import GS.GeometryAlgebra
+public import GS.LieAction.Action
+public import GS.LieAction.BlockGroup
+public import GS.Projection
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -29,42 +55,5 @@ at most one coordinate. This is the exact no-offdiagonal-overlap condition. -/
 def NoOffDiagonalOverlap (block₁ block₂ : Fin n → ℕ)
     (σ : Equiv.Perm (Fin n)) : Prop :=
   Function.Injective (fun i => (block₁ i, block₂ (σ i)))
-
-theorem common_matrix_diagonal (σ : Equiv.Perm (Fin n))
-    (hn : NoOffDiagonalOverlap block₁ block₂ σ) {T : Mat n}
-    (h₁ : Supported block₁ T) (h₂ : Supported (fun i => block₂ (σ i)) T) :
-    T = Matrix.diagonal (fun i => T i i) := by
-  ext i j
-  by_cases hij : i = j
-  · subst j; simp
-  · have ht : T i j = 0 := by
-      by_cases h : block₁ i = block₁ j
-      · have h' : block₂ (σ i) ≠ block₂ (σ j) := by
-          intro h''
-          exact hij (hn (Prod.ext h h''))
-        exact h₂ i j h'
-      · exact h₁ i j h
-    simpa [Matrix.diagonal, hij] using ht
-
-theorem commonRight_diagonal (σ : Equiv.Perm (Fin n))
-    (hn : NoOffDiagonalOverlap block₁ block₂ σ)
-    (T : commonRightSubgroup block₁ block₂ (permMatrix σ) (perm_orthogonal σ)) :
-    T.val.val = Matrix.diagonal (fun i => T.val.val i i) :=
-  common_matrix_diagonal σ hn T.val.property.1
-    ((commonRight_mem_iff σ T.val).mp T.property)
-
-theorem orthogonal_diagonal_sign {T : Mat n} (hT : Orthogonal T)
-    (hd : T = Matrix.diagonal (fun i => T i i)) (i : Fin n) :
-    T i i = 1 ∨ T i i = -1 := by
-  have he := congrArg (fun A : Mat n => (Aᵀ * A) i i) hd
-  have hg : (Tᵀ * T) i i = 1 := by rw [hT.1]; simp
-  change (Tᵀ * T) i i = _ at he
-  rw [he] at hg
-  have hs : T i i * T i i = 1 := by
-    simpa [Matrix.mul_apply, Matrix.diagonal, Matrix.transpose_apply] using hg
-  have hz : (T i i - 1) * (T i i + 1) = 0 := by nlinarith
-  rcases mul_eq_zero.mp hz with h | h
-  · left; linarith
-  · right; linarith
 
 end GS.LieAction

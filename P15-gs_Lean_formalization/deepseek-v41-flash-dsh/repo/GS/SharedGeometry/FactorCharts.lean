@@ -1,9 +1,71 @@
 module
-
-public import GS.SharedGeometry.Factors
-public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.Basic.Real.Basic
 public import Mathlib.Geometry.Manifold.Algebra.LieGroup
 public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Rank
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Instances.Real.Lemmas
+public import Mathlib.Topology.Order.Compact
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.Model
+public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Continuation.AmbientProjection
+public import GS.Continuation.ExponentialBasics
+public import GS.Continuation.ExponentialCurves
+public import GS.Core
+public import GS.Extensions.FiniteTopology
+public import GS.Extensions.GeodesicNormal
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.OriginalCompact
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Fibres
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.GlobalGeometry.ExactSharing
+public import GS.GlobalGeometry.FrobeniusProjection
+public import GS.GlobalGeometry.SharedAlgebra
+public import GS.GlobalGeometry.SharedFactorCurves
+public import GS.GlobalGeometry.SharedNormalEquations
+public import GS.LieAction.BlockGroup
+public import GS.OriginalLocalModel
+public import GS.Projection
+public import GS.SharedGeometry.Algebra
+public import GS.SharedGeometry.Factors
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -41,9 +103,6 @@ def modelProjection (s : Pattern n) : Mat n →L[ℝ] Generator s :=
        intro a A
        apply Subtype.ext
        exact map_smul _ a A } : Mat n →ₗ[ℝ] Generator s).toContinuousLinearMap
-
-@[simp] theorem modelProjection_val (s : Pattern n) (A : Mat n) :
-    (modelProjection s A).val = frobProjection (sharedSkewSpace s.size s.label) A := rfl
 
 theorem modelProjection_val_of_mem (s : Pattern n) (A : Mat n)
     (hA : A ∈ sharedSkewSpace s.size s.label) : (modelProjection s A).val = A :=
@@ -116,11 +175,6 @@ theorem reconstruct_factorCoordinates (Q U : Factor s) (hU : U ∈ factorSource 
   apply Factor.matrix_injective
   simp only [reconstruct_matrix, Submodule.coe_zero, cayley_zero, Matrix.mul_one]
 
-@[simp] theorem factorCoordinates_base (Q : Factor s) :
-    factorCoordinates Q (Factor.matrix Q) = 0 := by
-  unfold factorCoordinates
-  rw [(Factor.matrix_orthogonal Q).1, cayley_one, map_zero]
-
 theorem factorCoordinates_smooth_at (Q : Factor s) (A : Mat n)
     (hA : admissible ((Factor.matrix Q)ᵀ * A)) :
     ContDiffAt ℝ ⊤ (factorCoordinates Q) A :=
@@ -157,104 +211,11 @@ def factorPartialChart (Q : Factor s) : OpenPartialHomeomorph (Factor s) (Genera
       Factor.continuous_matrix.continuousAt).continuousWithinAt
   continuousOn_invFun := (continuous_reconstruct Q).continuousOn
 
-/-- The charted-space structure does not alter the existing topology. -/
-instance factorChartedSpace (s : Pattern n) : ChartedSpace (Generator s) (Factor s) where
-  atlas := Set.range factorPartialChart
-  chartAt := factorPartialChart
-  mem_chart_source := base_mem_factorSource
-  chart_mem_atlas Q := ⟨Q, rfl⟩
-
-theorem factorPartialChart_transition_smooth (Q U : Factor s) :
-    ContDiffOn ℝ ⊤ ((factorPartialChart Q).symm.trans (factorPartialChart U))
-      ((factorPartialChart Q).symm.trans (factorPartialChart U)).source := by
-  intro C hC
-  change C ∈ (Set.univ : Set (Generator s)) ∧ reconstruct Q C ∈ factorSource U at hC
-  exact ((factorCoordinates_smooth_at U (Factor.matrix (reconstruct Q C)) hC.2).comp C
-    (reconstruct_matrix_smooth Q).contDiffAt).contDiffWithinAt
-
-/-- Smooth factor geometry is proved from the rational transitions.  This
-instance does not claim that the two-factor image has already been charted. -/
-instance factorIsManifold (s : Pattern n) : IsManifold (𝓘(ℝ, Generator s)) ⊤ (Factor s) := by
-  apply isManifold_of_contDiffOn
-  intro e e' he he'
-  change e ∈ Set.range factorPartialChart at he
-  change e' ∈ Set.range factorPartialChart at he'
-  obtain ⟨Q, rfl⟩ := he
-  obtain ⟨U, rfl⟩ := he'
-  simpa only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
-    Function.comp_id, Function.id_comp, Set.preimage_id, Set.range_id,
-    Set.inter_univ] using factorPartialChart_transition_smooth Q U
-
-/-- The smooth inclusion uses the inherited matrix topology. -/
-theorem factor_matrix_contMDiff (s : Pattern n) :
-    ContMDiff (𝓘(ℝ, Generator s)) (𝓘(ℝ, Mat n)) ⊤
-      (Factor.matrix : Factor s → Mat n) := by
-  intro Q
-  rw [contMDiffAt_iff]
-  refine ⟨Factor.continuous_matrix.continuousAt, ?_⟩
-  change ContDiffWithinAt ℝ ⊤
-    (fun x : Generator s => Factor.matrix (reconstruct Q x))
-    (Set.range (id : Generator s → Generator s))
-    (factorCoordinates Q (Factor.matrix Q))
-  exact (reconstruct_matrix_smooth Q).contDiffAt.contDiffWithinAt
-
 section Source
 variable {E H M : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
   [TopologicalSpace H] {I : ModelWithCorners ℝ E H}
   [TopologicalSpace M] [ChartedSpace H M]
 
-/-- A criterion for maps valued in this explicitly constructed factor atlas. -/
-theorem contMDiffAt_factor_of_matrix {f : M → Factor s} {x : M}
-    (hf : ContMDiffAt I (𝓘(ℝ, Mat n)) ⊤ (fun y => Factor.matrix (f y)) x) :
-    ContMDiffAt I (𝓘(ℝ, Generator s)) ⊤ f x := by
-  rw [contMDiffAt_iff_target]
-  refine ⟨tendsto_subtype_rng.mpr (tendsto_subtype_rng.mpr hf.continuousAt), ?_⟩
-  change ContMDiffAt I (𝓘(ℝ, Generator s)) ⊤
-    (fun y => factorCoordinates (f x) (Factor.matrix (f y))) x
-  exact ContDiffAt.comp_contMDiffAt (I := I)
-    (g := factorCoordinates (f x)) (f := fun y => Factor.matrix (f y))
-    (factorCoordinates_smooth_at (f x) (Factor.matrix (f x))
-      (base_mem_factorSource (f x))) hf
-
-theorem contMDiff_factor_of_matrix {f : M → Factor s}
-    (hf : ContMDiff I (𝓘(ℝ, Mat n)) ⊤ (fun y => Factor.matrix (f y))) :
-    ContMDiff I (𝓘(ℝ, Generator s)) ⊤ f := by
-  intro x
-  exact contMDiffAt_factor_of_matrix (hf x)
-
 end Source
-
-/-- Group multiplication is smooth for the tied factor atlas itself. -/
-theorem factor_mul_contMDiff (s : Pattern n) :
-    ContMDiff ((𝓘(ℝ, Generator s)).prod (𝓘(ℝ, Generator s)))
-      (𝓘(ℝ, Generator s)) ⊤ (fun p : Factor s × Factor s => p.1 * p.2) := by
-  apply contMDiff_factor_of_matrix
-  have hl : ContMDiff ((𝓘(ℝ, Generator s)).prod (𝓘(ℝ, Generator s)))
-      (𝓘(ℝ, Mat n)) ⊤ (fun p : Factor s × Factor s => Factor.matrix p.1) :=
-    (factor_matrix_contMDiff s).comp contMDiff_fst
-  have hr : ContMDiff ((𝓘(ℝ, Generator s)).prod (𝓘(ℝ, Generator s)))
-      (𝓘(ℝ, Mat n)) ⊤ (fun p : Factor s × Factor s => Factor.matrix p.2) :=
-    (factor_matrix_contMDiff s).comp contMDiff_snd
-  have hm : ContDiff ℝ ⊤ (fun p : Mat n × Mat n => p.1 * p.2) :=
-    contDiff_iff_contDiffAt.mpr (fun _ => smooth_mul_at contDiffAt_fst contDiffAt_snd)
-  simpa only [Factor.matrix_mul, Function.comp_def] using hm.comp_contMDiff (hl.prodMk_space hr)
-
-theorem factor_inv_contMDiff (s : Pattern n) :
-    ContMDiff (𝓘(ℝ, Generator s)) (𝓘(ℝ, Generator s)) ⊤
-      (fun Q : Factor s => Q⁻¹) := by
-  apply contMDiff_factor_of_matrix
-  have ht : ContDiff ℝ ⊤ (fun A : Mat n => Aᵀ) :=
-    contDiff_iff_contDiffAt.mpr (fun _ => smooth_transpose_at contDiffAt_id)
-  simpa only [Factor.matrix_inv, Function.comp_def] using ht.comp_contMDiff (factor_matrix_contMDiff s)
-
-instance factorContMDiffMul (s : Pattern n) :
-    ContMDiffMul (𝓘(ℝ, Generator s)) ⊤ (Factor s) where
-  toIsManifold := factorIsManifold s
-  contMDiff_mul := factor_mul_contMDiff s
-
-/-- Genuine mathlib Lie-group structure on the concrete compact subgroup. -/
-instance factorLieGroup (s : Pattern n) : LieGroup (𝓘(ℝ, Generator s)) ⊤ (Factor s) where
-  toContMDiffMul := factorContMDiffMul s
-  contMDiff_inv := factor_inv_contMDiff s
 
 end GS.SharedGeometry

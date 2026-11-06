@@ -1,10 +1,21 @@
 module
-
-public import GS.Frobenius
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
 public import Mathlib.LinearAlgebra.Matrix.Rank
-public import Mathlib.Topology.Instances.Real.Lemmas
-public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
 public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Instances.Real.Lemmas
+public import GS.Core
+public import GS.Frobenius
+
 
 @[expose] public section
 

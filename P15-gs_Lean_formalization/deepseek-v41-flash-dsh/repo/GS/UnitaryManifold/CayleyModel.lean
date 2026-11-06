@@ -1,9 +1,34 @@
 module
-
-public import GS.UnitaryManifold.CayleyAlgebra
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
 public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.Frobenius
+public import GS.Unitary.GeometryAlgebra
+public import GS.Unitary.Projection
+public import GS.Unitary.Support
+public import GS.UnitaryManifold.CayleyAlgebra
+
 
 @[expose] public section
 
@@ -25,9 +50,6 @@ theorem admissible_model {block : Fin n → ℕ} (x : Model block) :
 
 def modelInclusion (block : Fin n → ℕ) : Model block →L[ℝ] CMat n :=
   (modelSpace block).subtypeL
-
-@[simp] theorem modelInclusion_apply (block : Fin n → ℕ) (x : Model block) :
-    modelInclusion block x = x.val := rfl
 
 theorem masked_skew_model (block : Fin n → ℕ) (A : CMat n) :
     cBlockProjection block (GS.skewHermitianPart A) ∈ modelSpace block := by

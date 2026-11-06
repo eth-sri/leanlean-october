@@ -1,15 +1,15 @@
 module
-
+public import Mathlib.Basic.Real.Basic
 public import Mathlib.LinearAlgebra.Matrix.Block
 public import Mathlib.LinearAlgebra.Matrix.Notation
-public import Mathlib.Basic.Real.Basic
-public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Abel
 public import Mathlib.Tactic.FieldSimp
-public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.FinCases
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
-public import Mathlib.Tactic.Abel
+
 
 @[expose] public section
 
@@ -105,11 +105,6 @@ theorem add (hA : Supported block A) (hB : Supported block B) :
   intro i j hij
   change A i j + B i j = 0
   rw [hA i j hij, hB i j hij, add_zero]
-
-theorem neg (hA : Supported block A) : Supported block (-A) := by
-  intro i j hij
-  change -A i j = 0
-  rw [hA i j hij, neg_zero]
 
 theorem smul (a : ℝ) (hA : Supported block A) : Supported block (a • A) := by
   intro i j hij

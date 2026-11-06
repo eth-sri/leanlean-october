@@ -1,11 +1,30 @@
 module
-
-public import GS.Unitary.Frobenius
-public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
-public import Mathlib.Analysis.Matrix.Normed
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.Frobenius
+public import GS.Unitary.Support
+
 
 @[expose] public section
 
@@ -111,16 +130,6 @@ theorem cFrobProjection_unique_normal (S : Submodule ℝ (CMat n)) (Z Y : CMat n
   apply cFrobProjection_unique_normal S Y Y hY
   intro W hW
   simp
-
-@[simp] theorem cFrobProjection_idempotent (S : Submodule ℝ (CMat n)) (Z : CMat n) :
-    cFrobProjection S (cFrobProjection S Z) = cFrobProjection S Z :=
-  cFrobProjection_of_mem S _ (cFrobProjection_mem S Z)
-
-theorem cFrobProjection_fixed_iff (S : Submodule ℝ (CMat n)) (Z : CMat n) :
-    cFrobProjection S Z = Z ↔ Z ∈ S := by
-  constructor
-  · intro h; rw [← h]; exact cFrobProjection_mem S Z
-  · exact cFrobProjection_of_mem S Z
 
 theorem cFrobProjection_self_adjoint (S : Submodule ℝ (CMat n)) (A B : CMat n) :
     cFrobInner (cFrobProjection S A) B = cFrobInner A (cFrobProjection S B) := by

@@ -1,7 +1,26 @@
 module
-
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
 public import GS.Unitary.Frobenius
 public import GS.Unitary.GeometryAlgebra
+public import GS.Unitary.Support
+
 
 @[expose] public section
 
@@ -67,21 +86,5 @@ def maskedSkewHermitianMap (p : Fin n → Fin n → Prop) [DecidableRel p] :
   map_smul' a A := by
     simp only [maskedSkewHermitian, skewHermitianPart_real_smul, cMask_real_smul,
       RingHom.id_apply]
-
-theorem maskedSkewHermitian_hasSupport (p : Fin n → Fin n → Prop) [DecidableRel p]
-    (A : CMat n) : CHasSupport p (maskedSkewHermitian p A) := cMask_hasSupport _ _
-theorem maskedSkewHermitian_isSkewHermitian {p : Fin n → Fin n → Prop} [DecidableRel p]
-    (hp : CMaskSymmetric p) (A : CMat n) : IsSkewHermitian (maskedSkewHermitian p A) :=
-  cMask_isSkewHermitian hp (isSkewHermitian_skewHermitianPart A)
-
-theorem maskedSkewHermitian_fixed {p : Fin n → Fin n → Prop} [DecidableRel p]
-    {A : CMat n} (hs : CHasSupport p A) (hk : IsSkewHermitian A) :
-    maskedSkewHermitian p A = A := by
-  rw [maskedSkewHermitian, skewHermitianPart_fixed hk, cMask_fixed hs]
-@[simp] theorem maskedSkewHermitian_idempotent {p : Fin n → Fin n → Prop} [DecidableRel p]
-    (hp : CMaskSymmetric p) (A : CMat n) :
-    maskedSkewHermitian p (maskedSkewHermitian p A) = maskedSkewHermitian p A :=
-  maskedSkewHermitian_fixed (maskedSkewHermitian_hasSupport _ _)
-    (maskedSkewHermitian_isSkewHermitian hp _)
 
 end GS.UnitaryGeometry

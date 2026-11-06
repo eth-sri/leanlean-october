@@ -1,6 +1,51 @@
 module
-
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Calculus.Deriv.Star
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.MetricSpace.ProperSpace.Real
+public import Mathlib.Topology.OpenPartialHomeomorph.Basic
+public import Mathlib.Topology.Order.Compact
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.Frobenius
+public import GS.Unitary.GeometryAlgebra
+public import GS.Unitary.Projection
+public import GS.Unitary.Support
+public import GS.UnitaryManifold.BlockGroup
+public import GS.UnitaryManifold.CayleyAlgebra
+public import GS.UnitaryManifold.CayleyCharts
 public import GS.UnitaryManifold.CayleyDifferential
+public import GS.UnitaryManifold.CayleyModel
+public import GS.UnitaryManifold.CayleySmooth
+public import GS.UnitaryManifold.MatrixCalculus
+
 
 @[expose] public section
 
@@ -24,16 +69,6 @@ def unitCayley (A : CMat n) : CMat n := cayley ((-1 / 2 : ℝ) • A)
 
 @[simp] theorem unitCayley_zero : unitCayley (0 : CMat n) = 1 := by
   simp [unitCayley]
-
-theorem unitCayley_supported (b : Fin n → ℕ) (A : CMat n)
-    (hs : CSupported b A) (hk : IsSkewHermitian A) : CSupported b (unitCayley A) :=
-  cayley_supported b _ (hs.real_smul (-1 / 2))
-    (admissible_of_isSkew _ (skewHermitian_real_smul _ hk))
-
-theorem unitCayley_unitary (A : CMat n) (hk : IsSkewHermitian A) :
-    Unitary (unitCayley A) :=
-  cayley_unitary _ (skewHermitian_real_smul _ hk)
-    (admissible_of_isSkew _ (skewHermitian_real_smul _ hk))
 
 theorem unitCayley_smooth_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (A : E → CMat n) (hs : ContDiff ℝ ⊤ A) (hk : ∀ x, IsSkewHermitian (A x)) :

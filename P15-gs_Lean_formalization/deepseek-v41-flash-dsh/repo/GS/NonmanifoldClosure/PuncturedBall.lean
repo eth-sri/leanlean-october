@@ -1,13 +1,14 @@
 module
-
-public import GS.Topology.SectionPair
-public import GS.Topology.EuclideanSphere
 public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Topology.Homotopy.Basic
 public import Mathlib.Tactic.Abel
 public import Mathlib.Tactic.FunProp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.ContinuousMap.Basic
+public import Mathlib.Topology.Homotopy.Basic
+public import GS.Topology.EuclideanSphere
+public import GS.Topology.SectionPair
+
 
 @[expose] public section
 
@@ -71,14 +72,6 @@ theorem continuous_ballNormalize (r : ℝ) :
 theorem continuous_ballSection {r : ℝ} (hr : 0 < r) :
     Continuous (ballSection (E := E) hr) :=
   (continuous_const.smul continuous_subtype_val).subtype_mk _
-
-@[simp] theorem ballNormalize_section {r : ℝ} (hr : 0 < r) (v : NormSphere E) :
-    ballNormalize (ballSection hr v) = v := by
-  apply Subtype.ext
-  have ht : 0 < r / 2 := by linarith
-  change ‖(r / 2) • v.val‖⁻¹ • ((r / 2) • v.val) = v.val
-  rw [norm_smul, Real.norm_eq_abs, abs_of_pos ht, v.property, mul_one,
-    smul_smul, inv_mul_cancel₀ (ne_of_gt ht), one_smul]
 
 @[simp] theorem norm_smul_ballNormalize {r : ℝ} (x : PuncturedNormBall E r) :
     ‖x.val‖ • (ballNormalize x).val = x.val := by

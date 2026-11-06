@@ -1,6 +1,47 @@
 module
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Group.Quotient
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Order.Compact
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.BlockCharts
+public import GS.CayleyCharts.Model
+public import GS.CayleyCharts.OrbitCharts
+public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Core
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.LieAction.Action
+public import GS.LieAction.BlockGroup
+public import GS.LieAction.Nonoverlap
+public import GS.Projection
+public import GS.Shuffle
 
-public import GS.ManifoldCompletion.FactorCoordinates
 
 @[expose] public section
 
@@ -18,32 +59,11 @@ horizontal/stabilizer decomposition of an orbit with overlap.
 
 noncomputable section
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
-open Matrix GS GS.LieAction GS.CayleyCharts GS.ManifoldCompletion Set
+open Matrix GS GS.LieAction GS.CayleyCharts Set
 
 namespace GS.OverlapGeometry
 
 variable {n : ℕ} {block block₁ block₂ : Fin n → ℕ}
-
-/-- All supported skew matrices are in the inverse Cayley chart's domain;
-consequently its total inverse is an open map. -/
-theorem blockChartInverse_isOpenMap (Q : BlockO block) :
-    IsOpenMap (blockChartInverse Q) := by
-  intro U hU
-  exact (blockPartialChart Q).isOpen_image_symm_of_subset_target hU
-    (by simp only [blockPartialChart_target, parameterDomain_eq_univ, subset_univ])
-
-/-- The full factor reconstruction is open, including in the presence of
-arbitrary overlap between the two block partitions. -/
-theorem factorLift_isOpenMap (g : FactorGroup block₁ block₂) :
-    IsOpenMap (factorLift g) :=
-  (blockChartInverse_isOpenMap g.1).prodMap (blockChartInverse_isOpenMap g.2)
-
-/-- The orbit map composed with factor reconstruction is open, even when the
-factor-to-orbit map has a positive-dimensional kernel. -/
-theorem factorLift_orbit_isOpenMap (g : FactorGroup block₁ block₂) (P : Mat n) :
-    IsOpenMap (fun x : PairModel block₁ block₂ =>
-      orbitMapToOrbit block₁ block₂ P (factorLift g x)) :=
-  (orbitMapToOrbit_isOpenMap P).comp (factorLift_isOpenMap g)
 
 /-- A local product chart descends to open slice images when the projection is
 constant in the second coordinate. Only a representative above every point of

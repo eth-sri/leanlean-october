@@ -1,7 +1,47 @@
 module
-
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Rank
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Instances.Real.Lemmas
+public import GS.CompactFibres
 public import GS.Continuation.ExponentialBasics
+public import GS.Core
+public import GS.Extensions.FiniteTopology
 public import GS.Extensions.GeodesicNormal
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.OriginalCompact
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Fibres
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.OriginalLocalModel
+public import GS.Projection
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -42,16 +82,6 @@ def gsExpVelocity (B₂ P B₁ C Ω : Mat n) (t : ℝ) : Mat n :=
 def gsExpAcceleration (B₂ P B₁ C Ω : Mat n) (t : ℝ) : Mat n :=
   lift (gsExpLeft B₂ C t) (P * gsExpRight B₁ Ω t)
     (accelerationCore C (P * Ω * Pᵀ))
-
-@[simp] theorem gsExpLeft_zero (B₂ C : Mat n) : gsExpLeft B₂ C 0 = B₂ := by
-  simp only [gsExpLeft, expLine_zero, Matrix.mul_one]
-
-@[simp] theorem gsExpRight_zero (B₁ Ω : Mat n) : gsExpRight B₁ Ω 0 = B₁ := by
-  simp only [gsExpRight, expLine_zero, Matrix.one_mul]
-
-@[simp] theorem gsExpCurve_zero (B₂ P B₁ C Ω : Mat n) :
-    gsExpCurve B₂ P B₁ C Ω 0 = product2 B₂ P B₁ := by
-  simp only [gsExpCurve, gsExpLeft_zero, gsExpRight_zero]
 
 theorem gsExpLeft_supported {block : Fin n → ℕ} (B₂ C : Mat n)
     (hB₂ : Supported block B₂) (hC : Supported block C) (t : ℝ) :

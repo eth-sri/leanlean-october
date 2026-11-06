@@ -1,13 +1,38 @@
 module
-
-public import GS.Topology.BrouwerFixedPoint
-public import GS.Topology.Brouwer.Brouwer
+public import Mathlib.Algebra.BigOperators.Field
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.Ring.Parity
+public import Mathlib.Analysis.Convex.Topology
 public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Tactic.FunProp
+public import Mathlib.Analysis.Normed.Group.Constructions
+public import Mathlib.Analysis.Normed.Group.Real
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Analysis.Real.Sqrt
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Data.Finset.Card
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Fintype.Card
+public import Mathlib.Data.Fintype.Powerset
+public import Mathlib.Data.Fintype.Prod
+public import Mathlib.Data.PNat.Basic
+public import Mathlib.Order.PiLex
+public import Mathlib.Tactic.ByContra
+public import Mathlib.Tactic.Cases
+public import Mathlib.Tactic.Convert
 public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FunProp
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Push
 public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Tauto
+public import Mathlib.Topology.MetricSpace.Basic
+public import Mathlib.Topology.MetricSpace.Sequences
+public import GS.Topology.Brouwer.Brouwer
+public import GS.Topology.Brouwer.Scarf
+public import GS.Topology.BrouwerFixedPoint
+
 
 @[expose] public section
 

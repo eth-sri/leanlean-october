@@ -1,6 +1,10 @@
 module
-
+public import Mathlib.Analysis.Calculus.ContDiff.Basic
+public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.Geometry.Manifold.MFDeriv.Basic
 public import GS.OverlapGeometry.SliceAtlas
+
 
 @[expose] public section
 

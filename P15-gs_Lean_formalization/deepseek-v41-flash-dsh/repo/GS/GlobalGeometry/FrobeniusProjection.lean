@@ -1,11 +1,23 @@
 module
-
-public import GS.Sharing
-public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
-public import Mathlib.Analysis.InnerProductSpace.PiL2
-public import Mathlib.Analysis.Normed.Module.FiniteDimension
-public import Mathlib.Analysis.Matrix.Normed
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.Core
+public import GS.Frobenius
+public import GS.Projection
+
 
 @[expose] public section
 
@@ -121,10 +133,6 @@ theorem frobProjection_unique_normal (S : Submodule ℝ (Mat n)) (Z Y : Mat n)
   apply frobProjection_unique_normal S Y Y hY
   intro W hW
   simp
-
-@[simp] theorem frobProjection_idempotent (S : Submodule ℝ (Mat n)) (Z : Mat n) :
-    frobProjection S (frobProjection S Z) = frobProjection S Z :=
-  frobProjection_of_mem S _ (frobProjection_mem S Z)
 
 theorem frobProjection_self_adjoint (S : Submodule ℝ (Mat n)) (A B : Mat n) :
     frobInner (frobProjection S A) B = frobInner A (frobProjection S B) := by

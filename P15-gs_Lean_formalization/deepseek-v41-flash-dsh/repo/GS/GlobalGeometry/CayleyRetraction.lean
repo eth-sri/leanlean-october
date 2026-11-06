@@ -1,8 +1,54 @@
 module
-
-public import GS.GlobalGeometry.BalancedLift
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Algebra.MatrixExponential
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Rank
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.Instances.Real.Lemmas
+public import GS.CayleyCharts.Algebra
+public import GS.CayleyCharts.Model
 public import GS.CayleyCharts.Smooth
+public import GS.CompactFibres
+public import GS.Continuation.AmbientProjection
 public import GS.Continuation.ExponentialBasics
+public import GS.Core
+public import GS.Extensions.FiniteTopology
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.OriginalCompact
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Fibres
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.GlobalGeometry.BalancedLift
+public import GS.OriginalLocalModel
+public import GS.Projection
+public import GS.Shuffle
+
 
 @[expose] public section
 
@@ -33,16 +79,6 @@ def unitCayley (A : Mat n) : Mat n := cayley ((-1/2 : ℝ) • A)
 
 @[simp] theorem unitCayley_zero : unitCayley (0 : Mat n) = 1 := by
   simp [unitCayley]
-
-theorem unitCayley_supported (b : Fin n → ℕ) (A : Mat n)
-    (hs : Supported b A) (hk : IsSkew A) : Supported b (unitCayley A) := by
-  apply cayley_supported b _ (hs.smul (-1/2))
-  exact admissible_of_isSkew _ (isSkew_smul _ hk)
-
-theorem unitCayley_orthogonal (A : Mat n) (hk : IsSkew A) :
-    Orthogonal (unitCayley A) :=
-  cayley_orthogonal _ (isSkew_smul _ hk)
-    (admissible_of_isSkew _ (isSkew_smul _ hk))
 
 theorem unitCayley_smooth_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     (A : E → Mat n) (hs : ContDiff ℝ ⊤ A) (hk : ∀ x, IsSkew (A x)) :
@@ -94,16 +130,5 @@ theorem unitCayley_line_derivative (A : Mat n) (hk : IsSkew A) :
     rw [smul_comm]
   rw [hf]
   simpa only [smul_smul, show (-2 : ℝ) * (-1/2) = 1 by norm_num, one_smul] using hd
-
-/-- Globally defined matrix update; Z need not already be tangent. -/
-def pointCayleyStep (b₁ b₂ : Fin n → ℕ) (X Z : Mat n) (t : ℝ) : Mat n :=
-  unitCayley (t • balancedLeft b₁ b₂ X Z) * X *
-    unitCayley (t • balancedRight b₁ b₂ X Z)
-
-@[simp] theorem pointCayleyStep_zero_time (b₁ b₂ : Fin n → ℕ) (X Z : Mat n) :
-    pointCayleyStep b₁ b₂ X Z 0 = X := by simp [pointCayleyStep]
-
-@[simp] theorem pointCayleyStep_zero_vector (b₁ b₂ : Fin n → ℕ) (X : Mat n) (t : ℝ) :
-    pointCayleyStep b₁ b₂ X 0 t = X := by simp [pointCayleyStep]
 
 end GS.GlobalGeometry

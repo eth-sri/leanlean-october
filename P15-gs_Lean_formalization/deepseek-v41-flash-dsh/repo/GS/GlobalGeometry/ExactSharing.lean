@@ -1,9 +1,35 @@
 module
-
-public import GS.GlobalGeometry.FrobeniusProjection
-public import GS.Continuation.AmbientProjection
-public import GS.Extensions.ProjectionSmooth
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.Continuation.AmbientProjection
+public import GS.Core
+public import GS.Extensions.MatrixCalculus
+public import GS.Extensions.ProjectionSmooth
+public import GS.Extensions.TransportedProjection
+public import GS.Extensions.TwoFactorProjection
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.GlobalGeometry.FrobeniusProjection
+public import GS.Projection
+
 
 @[expose] public section
 
@@ -59,22 +85,6 @@ def sharedSkewSpace (b : ℕ) (τ : ℕ → ℕ) : Submodule ℝ (Mat n) where
       simp only [IsSkew, Matrix.transpose_smul, hk, smul_neg]
     · intro i j i' j' h h' hτ hi hj
       simp only [Matrix.smul_apply, ht i j i' j' h h' hτ hi hj]
-
-/-- Two actual shared generator spaces, not free parameters for a projector. -/
-def sharedCoreMap (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P : Mat n) :
-    (sharedSkewSpace (n := n) b₂ τ₂ × sharedSkewSpace (n := n) b₁ τ₁) →ₗ[ℝ] Mat n where
-  toFun v := v.1.val + P * v.2.val * Pᵀ
-  map_add' v w := by
-    simp only [Prod.fst_add, Prod.snd_add, Submodule.coe_add,
-      Matrix.mul_add, Matrix.add_mul]
-    abel
-  map_smul' a v := by
-    change (a • v.1.val) + P * (a • v.2.val) * Pᵀ =
-      a • (v.1.val + P * v.2.val * Pᵀ)
-    simp only [Matrix.mul_smul, Matrix.smul_mul, smul_add]
-
-def sharedCore (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P : Mat n) : Submodule ℝ (Mat n) :=
-  LinearMap.range (sharedCoreMap b₁ b₂ τ₁ τ₂ P)
 
 def SharedDirection (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P L R Y : Mat n) : Prop :=
   ∃ C ∈ sharedSkewSpace b₂ τ₂, ∃ Ω ∈ sharedSkewSpace b₁ τ₁,

@@ -1,6 +1,24 @@
 module
-
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.Matrix.Spectrum
+public import Mathlib.Analysis.SpecialFunctions.Sqrt
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.UnitaryCS.ColumnGram
 public import GS.UnitaryCS.Thin
+
 
 @[expose] public section
 
@@ -17,13 +35,6 @@ invertibility or distinctness is imposed on the singular values.
 noncomputable section
 open Matrix
 namespace GS.UnitaryCS
-
-@[simp] theorem conjTranspose_realDiagonal {n : ℕ} (d : Fin n → ℝ) :
-    (diagonal (fun i => (d i : ℂ)))ᴴ = diagonal (fun i => (d i : ℂ)) := by
-  ext i j
-  by_cases hij : i = j
-  · subst j; simp [Matrix.conjTranspose_apply]
-  · simp [Matrix.conjTranspose_apply, Matrix.diagonal_apply, hij, Ne.symm hij]
 
 @[simp] theorem star_real_function {n : ℕ} (d : Fin n → ℝ) :
     star (fun i => (d i : ℂ)) = fun i => (d i : ℂ) := by ext i; simp

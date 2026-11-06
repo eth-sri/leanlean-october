@@ -1,10 +1,13 @@
 module
-
-public import GS.Topology.SphereApproximationHomotopy
 public import Mathlib.Analysis.Calculus.BumpFunction.SmoothApprox
+public import Mathlib.Analysis.Convex.Contractible
+public import Mathlib.Analysis.Normed.Module.Convex
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Topology.Homotopy.Contractible
 public import Mathlib.Topology.MetricSpace.HausdorffDimension
 public import Mathlib.Topology.TietzeExtension
-public import Mathlib.Analysis.Convex.Contractible
+public import GS.Topology.SphereApproximationHomotopy
+
 
 @[expose] public section
 

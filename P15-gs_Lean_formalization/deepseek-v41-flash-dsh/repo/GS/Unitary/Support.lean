@@ -1,8 +1,21 @@
 module
-
-public import GS.ComplexAlgebra
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
 public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
 public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.ComplexAlgebra
+public import GS.Core
+
 
 @[expose] public section
 
@@ -37,8 +50,6 @@ theorem add (hA : CSupported block A) (hB : CSupported block B) :
 theorem neg (hA : CSupported block A) : CSupported block (-A) := by
   intro i j hij
   simp [Matrix.neg_apply, hA i j hij]
-theorem sub (hA : CSupported block A) (hB : CSupported block B) :
-    CSupported block (A-B) := by simpa [sub_eq_add_neg] using hA.add hB.neg
 theorem real_smul (a : ℝ) (hA : CSupported block A) : CSupported block (a • A) := by
   intro i j hij
   simp [Matrix.smul_apply, hA i j hij]
@@ -58,19 +69,8 @@ end CSupported
 def cMask (p : Fin n → Fin n → Prop) [DecidableRel p] (A : CMat n) : CMat n :=
   fun i j => if p i j then A i j else 0
 
-def CHasSupport (p : Fin n → Fin n → Prop) (A : CMat n) : Prop :=
-  ∀ i j, ¬p i j → A i j = 0
-
 def CMaskSymmetric (p : Fin n → Fin n → Prop) : Prop := ∀ i j, p i j ↔ p j i
 
-theorem cMask_hasSupport (p : Fin n → Fin n → Prop) [DecidableRel p] (A : CMat n) :
-    CHasSupport p (cMask p A) := by intro i j hij; simp [cMask, hij]
-theorem cMask_fixed {p : Fin n → Fin n → Prop} [DecidableRel p] {A : CMat n}
-    (h : CHasSupport p A) : cMask p A = A := by
-  ext i j
-  by_cases hp : p i j <;> simp [cMask, hp, h i j]
-@[simp] theorem cMask_idempotent (p : Fin n → Fin n → Prop) [DecidableRel p]
-    (A : CMat n) : cMask p (cMask p A) = cMask p A := cMask_fixed (cMask_hasSupport p A)
 theorem cMask_add (p : Fin n → Fin n → Prop) [DecidableRel p] (A B : CMat n) :
     cMask p (A+B) = cMask p A + cMask p B := by
   ext i j; by_cases hp : p i j <;> simp [cMask, hp]

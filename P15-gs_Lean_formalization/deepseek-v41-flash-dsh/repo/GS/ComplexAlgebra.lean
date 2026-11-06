@@ -1,8 +1,18 @@
 module
-
-public import GS.Core
+public import Mathlib.Basic.Real.Basic
 public import Mathlib.Data.Complex.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
 public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.Core
+
 
 @[expose] public section
 
@@ -25,9 +35,6 @@ def IsSkewHermitian {n : ℕ} (A : CMat n) : Prop := Aᴴ = -A
 
 def skewHermitianPart {n : ℕ} (A : CMat n) : CMat n :=
   (1/2 : ℂ) • (A-Aᴴ)
-
-def tracelessPart {n : ℕ} (A : CMat n) : CMat n :=
-  A - (A.trace/(n : ℂ)) • (1 : CMat n)
 
 namespace Unitary
 variable {n : ℕ} {A B : CMat n}

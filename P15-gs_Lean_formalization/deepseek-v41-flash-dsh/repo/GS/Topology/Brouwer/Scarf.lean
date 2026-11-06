@@ -1,4 +1,19 @@
 module
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.Ring.Parity
+public import Mathlib.Data.Finset.Card
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Fintype.Card
+public import Mathlib.Data.Fintype.Powerset
+public import Mathlib.Data.Fintype.Prod
+public import Mathlib.Tactic.ByContra
+public import Mathlib.Tactic.Cases
+public import Mathlib.Tactic.Convert
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Push
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Tauto
 
 /-
 Copyright (c) 2025 Math_XMUM. All rights reserved.
@@ -9,21 +24,6 @@ Gametheory/Scarf.lean, to the project's pinned mathlib v4.19.0.
 Upstream: https://github.com/math-xmum/Brouwer
 Only import/API compatibility and proof elaboration changes are intended.
 -/
-public import Mathlib.Data.Finset.Max
-public import Mathlib.Data.Finset.Card
-public import Mathlib.Data.Fintype.Powerset
-public import Mathlib.Data.Fintype.Prod
-public import Mathlib.Tactic.Ring
-public import Mathlib.Data.Fintype.Card
-public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Algebra.Ring.Parity
-public import Mathlib.Tactic.Linarith
-public import Mathlib.Tactic.Tauto
-public import Mathlib.Tactic.Push
-public import Mathlib.Tactic.NormNum
-public import Mathlib.Tactic.Convert
-public import Mathlib.Tactic.ByContra
-public import Mathlib.Tactic.Cases
 
 @[expose] public section
 

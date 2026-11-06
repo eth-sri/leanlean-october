@@ -1,8 +1,23 @@
 module
-
-public import GS.Extensions.TransportedProjection
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
 public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import GS.Core
+public import GS.Extensions.TransportedProjection
+public import GS.Frobenius
+public import GS.GeometryAlgebra
+public import GS.Projection
+
 
 @[expose] public section
 

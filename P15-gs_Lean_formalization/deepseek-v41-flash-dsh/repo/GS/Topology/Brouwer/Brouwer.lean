@@ -1,4 +1,32 @@
 module
+public import Mathlib.Algebra.BigOperators.Field
+public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
+public import Mathlib.Algebra.Ring.Parity
+public import Mathlib.Analysis.Convex.Topology
+public import Mathlib.Analysis.Normed.Group.Constructions
+public import Mathlib.Analysis.Normed.Group.Real
+public import Mathlib.Analysis.Real.Sqrt
+public import Mathlib.Analysis.SpecificLimits.Basic
+public import Mathlib.Data.Finset.Card
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Fintype.Card
+public import Mathlib.Data.Fintype.Powerset
+public import Mathlib.Data.Fintype.Prod
+public import Mathlib.Data.PNat.Basic
+public import Mathlib.Order.PiLex
+public import Mathlib.Tactic.ByContra
+public import Mathlib.Tactic.Cases
+public import Mathlib.Tactic.Convert
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FunProp
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Push
+public import Mathlib.Tactic.Ring
+public import Mathlib.Tactic.Tauto
+public import Mathlib.Topology.MetricSpace.Sequences
+public import GS.Topology.Brouwer.Scarf
 
 /-
 Copyright (c) 2025 Math_XMUM. All rights reserved.
@@ -9,19 +37,6 @@ Gametheory/Brouwer.lean, to the project's pinned mathlib v4.19.0.
 Upstream: https://github.com/math-xmum/Brouwer
 Only import/API compatibility and proof elaboration changes are intended.
 -/
-public import GS.Topology.Brouwer.Scarf
-public import Mathlib.Analysis.Normed.Group.Constructions
-public import Mathlib.Analysis.Normed.Group.Real
-public import Mathlib.Algebra.BigOperators.Field
-public import Mathlib.Analysis.Real.Sqrt
-public import Mathlib.Analysis.Convex.Topology
-public import Mathlib.Analysis.SpecificLimits.Basic
-public import Mathlib.Order.PiLex
-public import Mathlib.Data.PNat.Basic
-public import Mathlib.Topology.MetricSpace.Sequences
-public import Mathlib.Tactic.FunProp
-public import Mathlib.Tactic.FieldSimp
-public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 

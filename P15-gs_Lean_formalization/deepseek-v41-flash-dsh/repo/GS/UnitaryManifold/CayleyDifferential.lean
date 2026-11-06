@@ -1,7 +1,50 @@
 module
-
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.Calculus.Deriv.Star
+public import Mathlib.Analysis.Complex.Basic
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Matrix.PosDef
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Complex.Basic
+public import Mathlib.Data.Complex.BigOperators
+public import Mathlib.LinearAlgebra.Complex.Module
+public import Mathlib.LinearAlgebra.Matrix.Block
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.Notation
+public import Mathlib.LinearAlgebra.Matrix.Trace
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.FieldSimp
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.LinearCombination
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Tactic.Positivity
+public import Mathlib.Tactic.Ring
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Instances.Matrix
+public import Mathlib.Topology.MetricSpace.ProperSpace.Real
+public import Mathlib.Topology.OpenPartialHomeomorph.Basic
+public import Mathlib.Topology.Order.Compact
+public import GS.ComplexAlgebra
+public import GS.Core
+public import GS.Frobenius
+public import GS.Unitary.Frobenius
+public import GS.Unitary.GeometryAlgebra
+public import GS.Unitary.Projection
+public import GS.Unitary.Support
+public import GS.UnitaryManifold.BlockGroup
+public import GS.UnitaryManifold.CayleyAlgebra
 public import GS.UnitaryManifold.CayleyCharts
+public import GS.UnitaryManifold.CayleyModel
+public import GS.UnitaryManifold.CayleySmooth
 public import GS.UnitaryManifold.MatrixCalculus
+
 
 @[expose] public section
 
@@ -49,23 +92,5 @@ theorem chartInv_line_hasDerivAt_zero (Q : BlockU block) (v : Model block) :
     rw [hz, neg_smul, two_smul]
     abel
   rwa [he] at hd
-
-/-- Differentiating the local left inverse gives a split-injective derivative. -/
-theorem chart_differential_left_inverse (Q : BlockU block) (x : Model block)
-    (hx : x ∈ parameterDomain block) :
-    (fderiv ℝ (chartMap Q) (chartInv Q x)).comp (fderiv ℝ (chartInv Q) x) =
-      ContinuousLinearMap.id ℝ (Model block) := by
-  have hi : DifferentiableAt ℝ (chartInv Q) x :=
-    (chartInv_smooth_at Q x hx).differentiableAt (by simp)
-  have hm : DifferentiableAt ℝ (chartMap Q) (chartInv Q x) := by
-    apply (chartMap_smooth_at Q _ _).differentiableAt (by simp)
-    rw [centered_chartInv]
-    exact admissible_cayley x.val hx
-  have he : (fun y => chartMap Q (chartInv Q y)) =ᶠ[𝓝 x] (fun y => y) := by
-    filter_upwards [(parameterDomain_open block).mem_nhds hx] with y hy
-    exact chartMap_chartInv Q y hy
-  have hcomp := hm.hasFDerivAt.comp x hi.hasFDerivAt
-  have hid := (hasFDerivAt_id (𝕜 := ℝ) x).congr_of_eventuallyEq he
-  exact hcomp.unique hid
 
 end GS.UnitaryManifold
